@@ -1,0 +1,303 @@
+{
+    "targets": [
+        {
+            "isStage": true,
+            "name": "Stage",
+            "variables": {
+                "`jEk@4|i[#Fk?(8x)AV.-my variable": [
+                    "my variable",
+                    0
+                ]
+            },
+            "lists": {},
+            "broadcasts": {},
+            "customVars": [],
+            "blocks": {},
+            "comments": {},
+            "currentCostume": 0,
+            "costumes": [
+                {
+                    "name": "backdrop1",
+                    "dataFormat": "svg",
+                    "assetId": "cd21514d0531fdffb22204e0ec5ed84a",
+                    "md5ext": "cd21514d0531fdffb22204e0ec5ed84a.svg",
+                    "rotationCenterX": 240,
+                    "rotationCenterY": 180
+                }
+            ],
+            "sounds": [],
+            "id": "p]_uD8#0^Q=ryfqeQLud",
+            "volume": 100,
+            "layerOrder": 0,
+            "tempo": 60,
+            "videoTransparency": 50,
+            "videoState": "on",
+            "textToSpeechLanguage": null
+        },
+        {
+            "isStage": false,
+            "name": "Sprite1",
+            "variables": {},
+            "lists": {},
+            "broadcasts": {},
+            "customVars": [],
+            "blocks": {
+                "h": {
+                    "opcode": "motion_movesteps",
+                    "next": null,
+                    "parent": null,
+                    "inputs": {
+                        "STEPS": [
+                            1,
+                            [
+                                4,
+                                "10"
+                            ]
+                        ]
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 264,
+                    "y": 73
+                },
+                "b": {
+                    "opcode": "motion_glideto",
+                    "next": null,
+                    "parent": null,
+                    "inputs": {
+                        "SECS": [
+                            1,
+                            [
+                                4,
+                                "1"
+                            ]
+                        ],
+                        "TO": [
+                            1,
+                            "c"
+                        ]
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 674,
+                    "y": 340
+                },
+                "c": {
+                    "opcode": "motion_glideto_menu",
+                    "next": null,
+                    "parent": "b",
+                    "inputs": {},
+                    "fields": {
+                        "TO": [
+                            "_random_",
+                            "P}JwwkZoqMIpxc%.)eiK"
+                        ]
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                "d": {
+                    "opcode": "operator_advMathExpanded",
+                    "next": null,
+                    "parent": null,
+                    "inputs": {
+                        "ONE": [
+                            1,
+                            [
+                                4,
+                                "3"
+                            ]
+                        ],
+                        "TWO": [
+                            1,
+                            [
+                                4,
+                                "2"
+                            ]
+                        ],
+                        "THREE": [
+                            3,
+                            "e",
+                            [
+                                4,
+                                "16"
+                            ]
+                        ]
+                    },
+                    "fields": {
+                        "OPTION": [
+                            "root",
+                            "45Mke7-xI(mLW0vKYhxS"
+                        ]
+                    },
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 504,
+                    "y": 696
+                },
+                "e": {
+                    "opcode": "operator_random",
+                    "next": null,
+                    "parent": "d",
+                    "inputs": {
+                        "FROM": [
+                            1,
+                            [
+                                4,
+                                "1"
+                            ]
+                        ],
+                        "TO": [
+                            1,
+                            [
+                                4,
+                                "10"
+                            ]
+                        ]
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                "f": {
+                    "opcode": "procedures_definition",
+                    "next": null,
+                    "parent": null,
+                    "inputs": {
+                        "custom_block": [
+                            1,
+                            "a"
+                        ]
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 407,
+                    "y": 917
+                },
+                "a": {
+                    "opcode": "procedures_prototype",
+                    "next": null,
+                    "parent": "f",
+                    "inputs": {
+                        "|%aQk0nd}|c.tVn$e}ST": [
+                            1,
+                            "g"
+                        ]
+                    },
+                    "fields": {},
+                    "shadow": true,
+                    "topLevel": false,
+                    "mutation": {
+                        "tagName": "mutation",
+                        "children": [],
+                        "proccode": "de %b label text",
+                        "argumentids": "[\"|%aQk0nd}|c.tVn$e}ST\"]",
+                        "argumentnames": "[\"boolean\"]",
+                        "argumentdefaults": "[\"false\"]",
+                        "warp": "false",
+                        "returns": "null",
+                        "edited": "true",
+                        "optype": "null",
+                        "color": "[\"#FF6680\",\"#FF4D6A\",\"#FF3355\"]"
+                    }
+                },
+                "g": {
+                    "opcode": "argument_reporter_boolean",
+                    "next": null,
+                    "parent": "a",
+                    "inputs": {},
+                    "fields": {
+                        "VALUE": [
+                            "boolean",
+                            "8*?)n2kWDFp~q~|Hur*D"
+                        ]
+                    },
+                    "shadow": true,
+                    "topLevel": false,
+                    "mutation": {
+                        "tagName": "mutation",
+                        "children": [],
+                        "color": "[\"#FF6680\",\"#FF4D6A\",\"#FF3355\"]"
+                    }
+                },
+                "i": {
+                    "opcode": "argument_reporter_boolean",
+                    "next": null,
+                    "parent": "a",
+                    "inputs": {},
+                    "fields": {
+                        "VALUE": [
+                            "boolean",
+                            ")LBzGi.OGV?JcjR@wp5L"
+                        ]
+                    },
+                    "shadow": true,
+                    "topLevel": false,
+                    "mutation": {
+                        "tagName": "mutation",
+                        "children": [],
+                        "color": "[\"#FF6680\",\"#FF4D6A\",\"#FF3355\"]"
+                    }
+                }
+            },
+            "comments": {},
+            "currentCostume": 0,
+            "costumes": [
+                {
+                    "name": "costume1",
+                    "bitmapResolution": 1,
+                    "dataFormat": "svg",
+                    "assetId": "c434b674f2da18ba13cdfe51dbc05ecc",
+                    "md5ext": "c434b674f2da18ba13cdfe51dbc05ecc.svg",
+                    "rotationCenterX": 26,
+                    "rotationCenterY": 46
+                }
+            ],
+            "sounds": [
+                {
+                    "name": "Squawk",
+                    "assetId": "e140d7ff07de8fa35c3d1595bba835ac",
+                    "dataFormat": "wav",
+                    "rate": 48000,
+                    "sampleCount": 17867,
+                    "md5ext": "e140d7ff07de8fa35c3d1595bba835ac.wav"
+                }
+            ],
+            "id": "5I9nI;7P)jdiR-_X;/%l",
+            "volume": 100,
+            "layerOrder": 1,
+            "visible": true,
+            "x": 0,
+            "y": 0,
+            "size": 100,
+            "direction": 90,
+            "draggable": false,
+            "rotationStyle": "all around"
+        }
+    ],
+    "monitors": [],
+    "extensionData": {},
+    "extensions": [
+        "textVarAccess",
+        "cst1229zip",
+        "helloworld"
+    ],
+    "extensionURLs": {
+        "textVarAccess": "https://fritzforcode.github.io/Scratch-Extensions/extensions/textVarAccess.js",
+        "cst1229zip": "https://extensions.turbowarp.org/CST1229/zip.js",
+        "helloworld": "data:application/javascript,class%20HelloWorld%20%7B%0A%20%20getInfo()%20%7B%0A%20%20%20%20return%20%7B%0A%20%20%20%20%20%20id%3A%20'helloworld'%2C%0A%20%20%20%20%20%20name%3A%20'It%20works!'%2C%0A%20%20%20%20%20%20blocks%3A%20%5B%0A%20%20%20%20%20%20%20%20%7B%0A%20%20%20%20%20%20%20%20%20%20opcode%3A%20'hello'%2C%0A%20%20%20%20%20%20%20%20%20%20blockType%3A%20Scratch.BlockType.REPORTER%2C%0A%20%20%20%20%20%20%20%20%20%20text%3A%20'Hello!'%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%5D%0A%20%20%20%20%7D%3B%0A%20%20%7D%0A%0A%20%20hello()%20%7B%0A%20%20%20%20return%20'World!'%3B%0A%20%20%7D%0A%7D%0A%0AScratch.extensions.register(new%20HelloWorld())%3B"
+    },
+    "meta": {
+        "semver": "3.0.0",
+        "vm": "0.2.0",
+        "agent": "",
+        "platform": {
+            "name": "PenguinMod",
+            "url": "https://penguinmod.com/",
+            "version": "stable"
+        }
+    }
+}
