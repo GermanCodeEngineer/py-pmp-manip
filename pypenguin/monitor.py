@@ -19,11 +19,9 @@ class FLMonitor:
     slider_max: int | float | None
     is_discrete: bool | None
 
-    @staticmethod
-    def from_data(data):
-        return FLMonitor(data)
-    
-    def __init__(self, data):
+    @classmethod
+    def from_data(cls, data):
+        self = cls()
         self.id          = data["id"        ] 
         self.mode        = data["mode"      ] 
         self.opcode      = data["opcode"    ] 
@@ -38,3 +36,4 @@ class FLMonitor:
         self.slider_min  = data.get("sliderMin" )
         self.slider_max  = data.get("sliderMax" )
         self.is_discrete = data.get("isDiscrete")
+        return self

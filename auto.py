@@ -1,4 +1,4 @@
-camel_names = ["id", "mode", "opcode", "params", "spriteName", "value", "width", "height", "x", "y", "visible", "sliderMin", "sliderMax", "isDiscrete"]
+camel_names = ["name", "assetId", "dataFormat", "md5ext", "rotationCenterX", "rotationCenterY", "bitmapResolution"]
 
 var = "data"
 

@@ -75,7 +75,11 @@ def gprint(*objects, sep=" ", end="\n"):
 # Files
 import json
 import zipfile
+import os
+from .errors import PathError
+
 def read_file_of_zip(zip_path, file_path):
+    zip_path = ensure_correct_path(zip_path)
     with zipfile.ZipFile(zip_path, "r") as zip_ref:
         with zip_ref.open(file_path) as file_ref:
             content = file_ref.read().decode("utf-8")
@@ -85,4 +89,26 @@ def read_file_of_zip(zip_path, file_path):
 #    with open(file_path, 'r') as file:
 #        data = json.load(file)
 #    return data
+
+def ensure_correct_path(_path, target_folder_name="pypenguin"):
+    if target_folder_name != None:
+        initial_path = __file__
+        current_path = os.path.normpath(initial_path)
+
+        while True:
+            base_name = os.path.basename(current_path)
+            
+            if base_name == target_folder_name and os.path.isdir(current_path):
+                break
+            
+            parent_path = os.path.dirname(current_path)
+            
+            if parent_path == current_path:
+                raise PathError(f"Target folder '{target_folder_name}' not found in the _path '{initial_path}'")
+            
+            current_path = parent_path
+
+        final_path = os.path.join(current_path, _path)
+        return final_path    
+
 

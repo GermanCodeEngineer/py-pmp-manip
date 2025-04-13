@@ -15,14 +15,14 @@ class FLProject:
 
     targets: typing.List[FLStage | FLSprite]
     monitors: typing.List[FLMonitor]
+    extension_data: typing.Dict[typing.Any, typing.Any] # I couldn't find out what it would be used for
     extensions: typing.List[str]
     extension_urls: typing.Dict[str, str] | None
+    meta: FLMeta
 
-    @staticmethod
-    def from_pmp_file(file_path):
-        return FLProject(file_path)
-    
-    def __init__(self, file_path):    
+    @classmethod
+    def from_pmp_file(cls, file_path):
+        self = cls()
         project_data = json.loads(read_file_of_zip(file_path, "project.json"))
         
         self.targets = [
@@ -38,14 +38,17 @@ class FLProject:
         self.extensions     = project_data["extensions"   ]
         self.extension_urls = project_data.get("extensionURLs", None)
         self.meta           = FLMeta.from_data(project_data["meta"])
-
-        # "targets", "monitors", "extensions", "extension_urls", "meta"
+        return self
+        
+    def step(self):
+        #TODO: Scratch to PenguinMod Conversion
+        for target in self.targets:
+            target.step()
         
 
-
-file_path = "assets/from_online/my 1st platformer.pmp"
-#file_path = "assets/from_online/dumb example.pmp"
+#file_path = "../assets/from_online/my 1st platformer.pmp"
+file_path = "../assets/from_online/dumb example.pmp"
 
 project = FLProject.from_pmp_file(file_path)
 gprint(project)
-
+project.step()
