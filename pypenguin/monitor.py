@@ -1,15 +1,15 @@
-import typing
+from typing import Any
 
-class FLMonitor:
+class FRMonitor:
     _grepr = True
     _grepr_fields = ["id", "mode", "opcode", "params", "sprite_name", "value", "width", "height", "x", "y", "visible", "slider_min", "slider_max", "is_discrete"]
 
     id: str
     mode: str
     opcode: str
-    params: typing.Dict[str, typing.Any]
+    params: dict[str, Any]
     sprite_name: str | None
-    value: typing.Any
+    value: Any
     width: int | float
     height: int | float
     x: int | float

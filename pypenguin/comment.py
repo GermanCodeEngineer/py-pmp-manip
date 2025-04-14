@@ -1,6 +1,4 @@
-import typing
-
-class FLComment:
+class FRComment:
     _grepr = True
     _grepr_fields = ["block_id", "x", "y", "width", "height", "minimized", "text"]
     
@@ -28,14 +26,14 @@ class FLComment:
         position = (self.x, self.y)
         size = (self.width, self.height)
         if self.block_id == None: 
-            return SLFloatingComment(
+            return SRFloatingComment(
                 position=position,
                 size=size,
                 isMinimized=self.minimized,
                 text=self.text,
             )
         else:
-            return SLAttachedComment(
+            return SRAttachedComment(
                 block_id=self.block_id,
                 position=position,
                 size=size,
@@ -72,12 +70,12 @@ class FLComment:
     'text': 'as block: hi'}
 
 
-class SLComment:
+class SRComment:
     _grepr = True
     _grepr_fields = ["position", "size", "isMinimized", "text"]
     
-    position: typing.Tuple[int | float, int | float]
-    size: typing.Tuple[int | float, int | float]
+    position: tuple[int | float, int | float]
+    size: tuple[int | float, int | float]
     isMinimized: bool
     text: str
     
@@ -87,13 +85,13 @@ class SLComment:
         self.isMinimized = isMinimized
         self.text        = text
 
-class SLFloatingComment(SLComment):
+class SRFloatingComment(SRComment):
     pass
 
-class SLAttachedComment(SLComment):
-    _grepr_fields = SLComment._grepr_fields + ["_block_id"]
+class SRAttachedComment(SRComment):
+    _grepr_fields = SRComment._grepr_fields + ["block_id"]
 
-    _block_id = str
+    block_id = str
 
     def __init__(self, block_id, position, size, isMinimized, text):
         super().__init__(
@@ -102,5 +100,5 @@ class SLAttachedComment(SLComment):
             isMinimized=isMinimized, 
             text=text
         )
-        self._block_id = block_id
+        self.block_id = block_id
 

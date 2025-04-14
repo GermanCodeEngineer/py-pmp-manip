@@ -1,11 +1,11 @@
-class FLMeta:
+class FRMeta:
     _grepr = True
     _grepr_fields = ["semver", "vm", "agent", "platform"]
     
     semver: str
     vm: str
     agent: str
-    platform: "FLPlatform"
+    platform: "FRPlatform"
     
     @classmethod
     def from_data(cls, data):
@@ -13,11 +13,11 @@ class FLMeta:
         self.semver = data["semver"]
         self.vm     = data["vm"    ]
         self.agent  = data["agent" ]
-        self.platform = FLPlatform.from_data(data["platform"])
+        self.platform = FRPlatform.from_data(data["platform"])
         return self
 
 
-class FLPlatform:
+class FRPlatform:
     _grepr = True
     _grepr_fields = ["name", "url", "version"]
     

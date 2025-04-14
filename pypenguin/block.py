@@ -1,11 +1,11 @@
-import typing
 import json
 
 from utility import gprint
+from block_mutation import FRMutation, FRCustomBlockMutation, FRCustomArgumentMutation
 
 # Variables
-OPCODE_VAR_VALUE      = "data_variable_value"
-OPCODE_LIST_VALUE     = "data_list_value"
+OPCODE_VAR_VALUE      = "data_variableValue"
+OPCODE_LIST_VALUE     = "data_listValue"
 OPCODE_VAR_VALUE_NUM  = 12
 OPCODE_LIST_VALUE_NUM = 13
 
@@ -20,23 +20,24 @@ OPCODE_CB_ARG_TEXT  = "argument_reporter_string_number"
 OPCODE_CB_ARG_BOOL  = "argument_reporter_boolean"
 ANY_OPCODE_CB_ARG   = {OPCODE_CB_ARG_TEXT, OPCODE_CB_ARG_BOOL}
 
-class FLBlock:
+class FRBlock:
     _grepr = True
-    _grepr_fields = ["opcode", "next", "parent", "inputs", "fields", "shadow", "top_level", "x", "y", "mutation"]
+    _grepr_fields = ["opcode", "next", "parent", "inputs", "fields", "shadow", "top_level", "x", "y", "comment", "mutation"]
 
     opcode: str
     next: str
     parent: str
-    inputs: typing.Dict[str, (
-       typing.Tuple[int, str | typing.Tuple] 
-     | typing.Tuple[int, str | typing.Tuple, str | typing.Tuple]
+    inputs: dict[str, (
+       tuple[int, str | tuple] 
+     | tuple[int, str | tuple, str | tuple]
     )]
-    fields: typing.Dict[str, typing.Tuple[str, str] | typing.Tuple[str, str, str]]
+    fields: dict[str, tuple[str, str] | tuple[str, str, str]]
     shadow: bool
     top_level: bool
     x: int | float | None
     y: int | float | None
-    mutation: "FLMutation | None"
+    comment: str | None # a comment id
+    mutation: "FRMutation | None"
 
     @classmethod
     def from_data(cls, data):
@@ -53,12 +54,13 @@ class FLBlock:
         }
         self.shadow    = data["shadow"  ]
         self.top_level = data["topLevel"]
-        self.x         = data.get("x"       , None)
-        self.y         = data.get("y"       , None)
+        self.x         = data.get("x", None)
+        self.y         = data.get("y", None)
+        self.comment   = data.get("comment", None)
         if self.opcode == OPCODE_CB_PROTOTYPE:
-            self.mutation = FLCustomBlockMutation.from_data(data["mutation"])
+            self.mutation = FRCustomBlockMutation.from_data(data["mutation"])
         elif self.opcode in ANY_OPCODE_CB_ARG:
-            self.mutation = FLCustomArgumentMutation.from_data(data["mutation"])
+            self.mutation = FRCustomArgumentMutation.from_data(data["mutation"])
         elif "mutation" in data:
             raise ValueError(data)
         else:
@@ -73,7 +75,7 @@ class FLBlock:
                 "next"  : None,
                 "parent": parent_id,
                 "inputs": {},
-                "fields": {"VARIABLE": obj[1]},
+                "fields": {"VARIABLE": (obj[1], obj[2], '')},
                 "shadow": False,
                 "topLevel": parent_id == None,
             }
@@ -83,7 +85,7 @@ class FLBlock:
                 "next"  : None,
                 "parent": parent_id,
                 "inputs": {},
-                "fields": {"LIST": obj[1]},
+                "fields": {"LIST": (obj[1], obj[2], '')},
                 "shadow": False,
                 "topLevel": parent_id == None,
             }
@@ -97,84 +99,29 @@ class FLBlock:
         return cls.from_data(block_data)
 
     def step(self, get_comment, get_cb_mutation):
-        newBlockData = {
-            "opcode"      : getOptimizedOpcode(opcode=blockData["opcode"]),
-            "inputs"      : prepareInputs(
-                data=blockData["inputs"],
-                opcode=blockData["opcode"],
-                commentDatas=commentDatas,
-            ),
-            "options"     : prepareOptions(
-                data=blockData["fields"],
-                opcode=blockData["opcode"],
-            ),
-            "_info_"      : {
-                "next"    : blockData["next"],
-                "topLevel": blockData["topLevel"],
-            },
-        }
-        if not isListBlock and blockData["topLevel"] == True:
-            newBlockData["_info_"]["position"] = [blockData["x"], blockData["y"]]
-        if not isListBlock and "comment" in blockData:
-            newBlockData["comment"] = commentDatas[blockData["comment"]]
-        if newBlockData != None:
-            newBlockDatas[blockId] = newBlockData
-        #TODO: add custom handler system here
+        if False:
+            pass #TODO: add custom handler system here to possibly replace below
+                 #      for e.g. custom block defs, prototypes, calls
+        else:
+            new_block = SRBlock(
+                opcode    = self.opcode,
+                inputs    = self.inputs, #TODO
+                options   = self.fields, #TODO,
+                next      = self.next,
+                top_level = self.top_level,
+                position  = (self.x, self.y) if self.top_level else None,
+                comment   = self.comment,
+                mutation  = None if self.mutation == None else self.mutation.step(),
+            )
+        #TODO: add custom handler system here for e.g. draw polygon block
+        return new_block
 
-class FLMutation:
+class SRBlock:
     _grepr = True
-    _grepr_fields = ["tag_name", "children"]
-    
-    tag_name: str # always "mutation"
-    children: typing.List[typing.Any] # always []
-    
-    @classmethod
-    def from_data(cls, data):
-        self = cls()
-        self.tag_name = data["tagName" ]
-        self.children = data["children"]
-        return self
+    _grepr_fields = ["kws"]#["opcode", "next", "parent", "inputs", "fields", "shadow", "top_level", "x", "y", "mutation"]
 
-class FLCustomArgumentMutation(FLMutation):
-    _grepr_fields = FLMutation._grepr_fields + ["color"]
     
-    color: typing.Tuple[str, str, str]
-    
-    @classmethod
-    def from_data(cls, data):
-        self = super().from_data(data)
-        self.color = tuple(json.loads(data["color"]))
-        return self
-
-
-class FLCustomBlockMutation(FLMutation):
-    _grepr_fields = FLMutation._grepr_fields + ["proccode", "argument_ids", "argument_names", "argument_defaults", "warp", "returns", "edited", "optype", "color"]
-    
-    proccode: str
-    argument_ids: typing.List[str]
-    argument_names: typing.List[str]
-    argument_defaults: typing.List[str]
-    warp: bool
-    returns: bool | None
-    edited: bool # seems to always be true
-    optype: str
-    color: typing.Tuple[str, str, str]
-    
-    @classmethod
-    def from_data(cls, data):
-        self = super().from_data(data)
-        self.proccode          = data["proccode"]
-        self.argument_ids      = json.loads(data["argumentids"     ])
-        self.argument_names    = json.loads(data["argumentnames"   ])
-        self.argument_defaults = json.loads(data["argumentdefaults"])
-        if isinstance(data["warp"], bool):
-            self.warp = data["warp"]
-        elif isinstance(data["warp"], str):
-            self.warp = json.loads(data["warp"])
-        else: raise ValueError()
-        self.returns           = json.loads(data["returns"])
-        self.edited            = json.loads(data["edited" ])
-        self.optype            = json.loads(data["optype" ])
-        self.color       = tuple(json.loads(data["color"  ]))
-        return self
+    def __init__(self, **kwargs):
+        self.kws=kwargs
+        
 

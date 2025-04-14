@@ -1,4 +1,4 @@
-class FLAsset:
+class FRAsset:
     _grepr = True
     _grepr_fields = ["name", "asset_id", "data_format", "md5ext"]
     
@@ -16,8 +16,8 @@ class FLAsset:
         self.md5ext            = data["md5ext"         ]
         return self
 
-class FLCostume(FLAsset):
-    _grepr_fields = FLAsset._grepr_fields + ["rotation_center_x", "rotation_center_y", "bitmap_resolution"]
+class FRCostume(FRAsset):
+    _grepr_fields = FRAsset._grepr_fields + ["rotation_center_x", "rotation_center_y", "bitmap_resolution"]
     
     rotation_center_x: int | float
     rotation_center_y: int | float
@@ -32,9 +32,9 @@ class FLCostume(FLAsset):
         return self
 
 
-class FLSound(FLAsset):
+class FRSound(FRAsset):
     _grepr = True
-    _grepr_fields = FLAsset._grepr_fields + ["rate", "sample_count"]
+    _grepr_fields = FRAsset._grepr_fields + ["rate", "sample_count"]
     
     rate: int
     sample_count: int
