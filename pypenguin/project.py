@@ -21,9 +21,11 @@ class FLProject:
     meta: FLMeta
 
     @classmethod
-    def from_pmp_file(cls, file_path):
+    def from_pmp_file(cls, file_path: str):
         self = cls()
         project_data = json.loads(read_file_of_zip(file_path, "project.json"))
+        with open("extracted.json", "w") as file:
+            json.dump(project_data, file)
         
         self.targets = [
             FLStage.from_data(target_data) if i==0 else FLSprite.from_data(target_data)
@@ -50,5 +52,6 @@ class FLProject:
 file_path = "../assets/from_online/dumb example.pmp"
 
 project = FLProject.from_pmp_file(file_path)
+
 gprint(project)
 project.step()

@@ -3,6 +3,23 @@ import json
 
 from utility import gprint
 
+# Variables
+OPCODE_VAR_VALUE      = "data_variable_value"
+OPCODE_LIST_VALUE     = "data_list_value"
+OPCODE_VAR_VALUE_NUM  = 12
+OPCODE_LIST_VALUE_NUM = 13
+
+# Custom Blocks
+OPCODE_CB_DEF       = "procedures_definition"
+OPCODE_CB_DEF_RET   = "procedures_definition_return"
+ANY_OPCODE_CB_DEF   =  {OPCODE_CB_DEF, OPCODE_CB_DEF_RET}
+
+OPCODE_CB_PROTOTYPE = "procedures_prototype"
+
+OPCODE_CB_ARG_TEXT  = "argument_reporter_string_number"
+OPCODE_CB_ARG_BOOL  = "argument_reporter_boolean"
+ANY_OPCODE_CB_ARG   = {OPCODE_CB_ARG_TEXT, OPCODE_CB_ARG_BOOL}
+
 class FLBlock:
     _grepr = True
     _grepr_fields = ["opcode", "next", "parent", "inputs", "fields", "shadow", "top_level", "x", "y", "mutation"]
@@ -19,7 +36,7 @@ class FLBlock:
     top_level: bool
     x: int | float | None
     y: int | float | None
-    mutation: typing.Dict[str, typing.Any] | None
+    mutation: "FLMutation | None"
 
     @classmethod
     def from_data(cls, data):
@@ -38,15 +55,71 @@ class FLBlock:
         self.top_level = data["topLevel"]
         self.x         = data.get("x"       , None)
         self.y         = data.get("y"       , None)
-        if self.opcode == "procedures_prototype":
+        if self.opcode == OPCODE_CB_PROTOTYPE:
             self.mutation = FLCustomBlockMutation.from_data(data["mutation"])
-        elif self.opcode in {"argument_reporter_string_number", "argument_reporter_boolean"}:
+        elif self.opcode in ANY_OPCODE_CB_ARG:
             self.mutation = FLCustomArgumentMutation.from_data(data["mutation"])
         elif "mutation" in data:
             raise ValueError(data)
         else:
             self.mutation = None
         return self
+    
+    @classmethod
+    def from_tuple(cls, obj: tuple, parent_id: str|None):
+        if obj[0] == OPCODE_VAR_VALUE_NUM: # A magic value
+            block_data = {
+                "opcode": OPCODE_VAR_VALUE,
+                "next"  : None,
+                "parent": parent_id,
+                "inputs": {},
+                "fields": {"VARIABLE": obj[1]},
+                "shadow": False,
+                "topLevel": parent_id == None,
+            }
+        elif obj[0] == OPCODE_LIST_VALUE_NUM: # A magic value
+            block_data = {
+                "opcode": OPCODE_LIST_VALUE,
+                "next"  : None,
+                "parent": parent_id,
+                "inputs": {},
+                "fields": {"LIST": obj[1]},
+                "shadow": False,
+                "topLevel": parent_id == None,
+            }
+        else: raise ValueError()
+        if   (len(obj) == 3) and (parent_id != None): 
+            pass
+        elif (len(obj) == 5) and (parent_id == None):
+            block_data["x"] = obj[3]
+            block_data["y"] = obj[4]
+        else: raise ValueError()
+        return cls.from_data(block_data)
+
+    def step(self, get_comment, get_cb_mutation):
+        newBlockData = {
+            "opcode"      : getOptimizedOpcode(opcode=blockData["opcode"]),
+            "inputs"      : prepareInputs(
+                data=blockData["inputs"],
+                opcode=blockData["opcode"],
+                commentDatas=commentDatas,
+            ),
+            "options"     : prepareOptions(
+                data=blockData["fields"],
+                opcode=blockData["opcode"],
+            ),
+            "_info_"      : {
+                "next"    : blockData["next"],
+                "topLevel": blockData["topLevel"],
+            },
+        }
+        if not isListBlock and blockData["topLevel"] == True:
+            newBlockData["_info_"]["position"] = [blockData["x"], blockData["y"]]
+        if not isListBlock and "comment" in blockData:
+            newBlockData["comment"] = commentDatas[blockData["comment"]]
+        if newBlockData != None:
+            newBlockDatas[blockId] = newBlockData
+        #TODO: add custom handler system here
 
 class FLMutation:
     _grepr = True

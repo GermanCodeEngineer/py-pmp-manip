@@ -390,10 +390,35 @@
                         "children": [],
                         "color": "[\"#FF6680\",\"#FF4D6A\",\"#FF3355\"]"
                     }
+                },
+                "s": {
+                    "opcode": "data_changevariableby",
+                    "next": null,
+                    "parent": null,
+                    "inputs": {
+                        "VALUE": [
+                            1,
+                            [
+                                4,
+                                "1"
+                            ]
+                        ]
+                    },
+                    "fields": {
+                        "VARIABLE": [
+                            "my variable",
+                            "`jEk@4|i[#Fk?(8x)AV.-my variable",
+                            ""
+                        ]
+                    },
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 234,
+                    "y": 1109
                 }
             },
             "comments": {
-                "s": {
+                "t": {
                     "blockId": null,
                     "x": 158.51851851851856,
                     "y": 591.8518518518517,

@@ -1,8 +1,10 @@
+import typing
+
 class FLComment:
     _grepr = True
     _grepr_fields = ["block_id", "x", "y", "width", "height", "minimized", "text"]
     
-    block_id: str
+    block_id: str | None
     x: int | float
     y: int | float
     width: int | float
@@ -13,14 +15,43 @@ class FLComment:
     @classmethod
     def from_data(cls, data):
         self = cls()
-        self.block_id  = data["blockId"]
-        self.x         = data["x"]
-        self.y         = data["y"]
-        self.width     = data["width"]
-        self.height    = data["height"]
+        self.block_id  = data["blockId"  ]
+        self.x         = data["x"        ]
+        self.y         = data["y"        ]
+        self.width     = data["width"    ]
+        self.height    = data["height"   ]
         self.minimized = data["minimized"]
-        self.text      = data["text"]
+        self.text      = data["text"     ]
         return self
+    
+    def step(self):
+        position = (self.x, self.y)
+        size = (self.width, self.height)
+        if self.block_id == None: 
+            return SLFloatingComment(
+                position=position,
+                size=size,
+                isMinimized=self.minimized,
+                text=self.text,
+            )
+        else:
+            return SLAttachedComment(
+                block_id=self.block_id,
+                position=position,
+                size=size,
+                isMinimized=self.minimized,
+                text=self.text,
+            )
+        
+        {
+            "position"   : [data["x"], data["y"]],
+            "size"       : [data["width"], data["height"]],
+            "isMinimized": data["minimized"],
+            "text"       : data["text"],
+            "_info_"     : {
+                "block": data["blockId"],
+            },
+        }
 
 
 {
@@ -39,4 +70,37 @@ class FLComment:
     'height': 200,
     'minimized': False,
     'text': 'as block: hi'}
+
+
+class SLComment:
+    _grepr = True
+    _grepr_fields = ["position", "size", "isMinimized", "text"]
+    
+    position: typing.Tuple[int | float, int | float]
+    size: typing.Tuple[int | float, int | float]
+    isMinimized: bool
+    text: str
+    
+    def __init__(self, position, size, isMinimized, text):
+        self.position    = position
+        self.size        = size
+        self.isMinimized = isMinimized
+        self.text        = text
+
+class SLFloatingComment(SLComment):
+    pass
+
+class SLAttachedComment(SLComment):
+    _grepr_fields = SLComment._grepr_fields + ["_block_id"]
+
+    _block_id = str
+
+    def __init__(self, block_id, position, size, isMinimized, text):
+        super().__init__(
+            position=position, 
+            size=size, 
+            isMinimized=isMinimized, 
+            text=text
+        )
+        self._block_id = block_id
 

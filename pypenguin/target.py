@@ -1,7 +1,7 @@
 import typing
 
-from block   import FLBlock
-from comment import FLComment
+from block   import FLBlock, FLCustomBlockMutation
+from comment import FLComment, SLFloatingComment, SLAttachedComment
 from asset   import FLCostume, FLSound
 
 class FLTarget:
@@ -14,7 +14,7 @@ class FLTarget:
     lists: typing.Dict[str, typing.Tuple[str, typing.Any]]
     broadcasts: typing.Dict[str, str]
     custom_vars: typing.List | None
-    blocks: typing.Dict[str, FLBlock]
+    blocks: typing.Dict[str, tuple | FLBlock]
     comments: typing.Dict[str, FLComment]
     current_costume: int
     costumes: typing.List[FLCostume]
@@ -26,12 +26,12 @@ class FLTarget:
     @classmethod
     def from_data(cls, data):
         self = cls()
-        self.is_stage        = data["isStage"       ]
-        self.name            = data["name"          ]
+        self.is_stage        = data["isStage"   ]
+        self.name            = data["name"      ]
         self.variables       = {key: tuple(value) for key, value in data["variables"].items()}
         self.lists           = {key: tuple(value) for key, value in data["lists"    ].items()}
-        self.broadcasts      = data["broadcasts"    ]
-        self.custom_vars     = data["customVars"    ]
+        self.broadcasts      = data["broadcasts"]
+        self.custom_vars     = data["customVars"]
         self.blocks          = {
             block_id: (
                 tuple(block_data) if isinstance(block_data, list) else FLBlock.from_data(block_data)
@@ -48,10 +48,40 @@ class FLTarget:
         self.sounds          = [
           FLSound.  from_data(sound_data  ) for sound_data   in data["sounds"  ]
         ]
-        self.id              = data["id"            ]
-        self.volume          = data["volume"        ] # Yep. I like order.
-        self.layer_order     = data["layerOrder"    ]
+        self.id              = data["id"        ]
+        self.volume          = data["volume"    ] # Yep. I like order.
+        self.layer_order     = data["layerOrder"]
         return self
+
+    def get_cb_mutation(self, proccode: str):
+        for block in self.blocks.values():
+            if not isinstance(block, FLBlock): continue
+            if not isinstance(block.mutation, FLCustomBlockMutation): continue
+            if block.mutation.proccode == proccode:
+                return block.mutation
+        raise ValueError(f"Mutation of proccode {repr(proccode)} not found.")
+        
+    def step(self):
+        floating_comments = []
+        attached_comments = {}
+        for comment_id, comment in self.comments.items():
+            new_comment = comment.step()
+            if isinstance(new_comment, SLFloatingComment):
+                floating_comments.append(new_comment)
+            elif isinstance(new_comment, SLAttachedComment):
+                attached_comments[comment_id] = new_comment
+
+        for block_id, block in self.blocks.items():
+            old_block = block
+            if isinstance(block, tuple):
+                block = FLBlock.from_tuple(block, parent_id=None)
+            from utility import gprint
+            gprint(block_id, old_block)
+            gprint("====>", block)
+            #new_block = block.step(
+            #    get_comment=(lambda comment_id: attached_comments[comment_id]),
+            #    get_cb_mutation=self.get_cb_mutation,
+            #)
 
 class FLStage(FLTarget):
     _grepr_fields = FLTarget._grepr_fields + ["tempo", "video_transparency", "video_state", "text_to_speech_language"]
