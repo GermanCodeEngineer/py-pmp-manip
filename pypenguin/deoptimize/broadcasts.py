@@ -22,7 +22,7 @@ def findBlockBroadcastMessages(data):
                 broadcastMessages.append(inputData["text"])
 
         if "block" in inputData:
-            if inputData["block"] != None:
+            if inputData["block"] is not None:
                 broadcastMessages += findBlockBroadcastMessages(data=inputData["block"])
     
     if "options" not in data:

@@ -24,7 +24,7 @@ def exportBlocks(data, commentDatas, optimizedScriptDatas):
         scripts[scriptIndex]["deoptimizedBlocks"][pathString   ] = blockData
         scripts[scriptIndex]["table" ][blockSelector] = pathString
 
-        if blockData.get("comment") != None:
+        if blockData.get("comment") is not None:
             commentPathString = json.dumps(path+["comment"])
             scripts[scriptIndex]["deoptimizedComments"][commentPathString   ] = commentDatas[blockData["comment"]]
             scripts[scriptIndex]["table"   ][blockData["comment"]] = commentPathString

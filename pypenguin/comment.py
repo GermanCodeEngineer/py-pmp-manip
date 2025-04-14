@@ -25,7 +25,7 @@ class FRComment:
     def step(self):
         position = (self.x, self.y)
         size = (self.width, self.height)
-        if self.block_id == None: 
+        if self.block_id is None: 
             return SRFloatingComment(
                 position=position,
                 size=size,

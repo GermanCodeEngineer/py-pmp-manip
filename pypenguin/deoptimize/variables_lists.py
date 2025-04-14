@@ -20,7 +20,7 @@ def translateVariable(data, spriteName):
     name = data["name"]
     newData = [name, data["currentValue"]]
 
-    if spriteName == None: # stage
+    if spriteName is None: # stage
         if data["isCloudVariable"]: # cloud var
             newData.append(True)
     return newData

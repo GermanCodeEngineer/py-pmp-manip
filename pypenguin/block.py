@@ -1,31 +1,17 @@
-import json
+from typing import Callable
 
-from utility import gprint
-from block_mutation import FRMutation, FRCustomBlockMutation, FRCustomArgumentMutation
-
-# Variables
-OPCODE_VAR_VALUE      = "data_variableValue"
-OPCODE_LIST_VALUE     = "data_listValue"
-OPCODE_VAR_VALUE_NUM  = 12
-OPCODE_LIST_VALUE_NUM = 13
-
-# Custom Blocks
-OPCODE_CB_DEF       = "procedures_definition"
-OPCODE_CB_DEF_RET   = "procedures_definition_return"
-ANY_OPCODE_CB_DEF   =  {OPCODE_CB_DEF, OPCODE_CB_DEF_RET}
-
-OPCODE_CB_PROTOTYPE = "procedures_prototype"
-
-OPCODE_CB_ARG_TEXT  = "argument_reporter_string_number"
-OPCODE_CB_ARG_BOOL  = "argument_reporter_boolean"
-ANY_OPCODE_CB_ARG   = {OPCODE_CB_ARG_TEXT, OPCODE_CB_ARG_BOOL}
+from utility               import gprint
+from block_mutation        import FRMutation, FRCustomBlockMutation, FRCustomArgumentMutation
+from block_mutation        import SRMutation
+from block_opcodes         import *
+from customization_handler import CustomizationHandler, CEventType
 
 class FRBlock:
     _grepr = True
     _grepr_fields = ["opcode", "next", "parent", "inputs", "fields", "shadow", "top_level", "x", "y", "comment", "mutation"]
 
     opcode: str
-    next: str
+    next: str | None
     parent: str
     inputs: dict[str, (
        tuple[int, str | tuple] 
@@ -77,7 +63,7 @@ class FRBlock:
                 "inputs": {},
                 "fields": {"VARIABLE": (obj[1], obj[2], '')},
                 "shadow": False,
-                "topLevel": parent_id == None,
+                "topLevel": parent_id is None,
             }
         elif obj[0] == OPCODE_LIST_VALUE_NUM: # A magic value
             block_data = {
@@ -87,41 +73,70 @@ class FRBlock:
                 "inputs": {},
                 "fields": {"LIST": (obj[1], obj[2], '')},
                 "shadow": False,
-                "topLevel": parent_id == None,
+                "topLevel": parent_id is None,
             }
         else: raise ValueError()
-        if   (len(obj) == 3) and (parent_id != None): 
+        if   (len(obj) == 3) and (parent_id is not None): 
             pass
-        elif (len(obj) == 5) and (parent_id == None):
+        elif (len(obj) == 5) and (parent_id is None):
             block_data["x"] = obj[3]
             block_data["y"] = obj[4]
         else: raise ValueError()
         return cls.from_data(block_data)
 
-    def step(self, get_comment, get_cb_mutation):
-        if False:
+    def step(self, ch: CustomizationHandler, manager, get_comment: Callable, get_cb_mutation: Callable):
+        instead_event = ch.get_event(
+            event_type=CEventType.INSTEAD_FR_TO_SR,
+            opcode=self.opcode,
+        )
+        if instead_event is None:
+            new_block = SRBlock(
+                opcode       = self.opcode,
+                inputs       = self.inputs, #TODO
+                dropdowns    = self.fields, #TODO,
+                position     = (self.x, self.y) if self.top_level else None,
+                comment      = self.comment,
+                mutation     = None if self.mutation is None else self.mutation.step(),
+                next         = self.next,
+                is_top_level = self.top_level,
+            )
+        else:
+            new_block = instead_event.call(manager=manager, block=self)
             pass #TODO: add custom handler system here to possibly replace below
                  #      for e.g. custom block defs, prototypes, calls
-        else:
-            new_block = SRBlock(
-                opcode    = self.opcode,
-                inputs    = self.inputs, #TODO
-                options   = self.fields, #TODO,
-                next      = self.next,
-                top_level = self.top_level,
-                position  = (self.x, self.y) if self.top_level else None,
-                comment   = self.comment,
-                mutation  = None if self.mutation == None else self.mutation.step(),
-            )
         #TODO: add custom handler system here for e.g. draw polygon block
         return new_block
 
 class SRBlock:
     _grepr = True
-    _grepr_fields = ["kws"]#["opcode", "next", "parent", "inputs", "fields", "shadow", "top_level", "x", "y", "mutation"]
-
+    _grepr_fields = ["opcode", "inputs", "dropdowns", "position", "comment", "mutation", "next", "top_level"]
     
-    def __init__(self, **kwargs):
-        self.kws=kwargs
+    opcode: str
+    #inputs: dict[str, ?]
+    #dropdowns: dict[str, ?]
+    position: tuple[int | float, int | float] | None
+    comment: str | None # a comment id
+    mutation: "SRMutation | None"
+    next: str | None
+    is_top_level: bool
+
+    def __init__(self, 
+        opcode: str,
+        inputs,#: dict[str, ?],
+        dropdowns,#: dict[str, ?],
+        position: tuple[int | float, int | float] | None,
+        comment: str | None, # a comment id
+        mutation: "SRMutation | None",
+        next: str | None,
+        is_top_level: bool,
+    ):
+        self.opcode       = opcode
+        self.inputs       = inputs
+        self.dropdowns    = dropdowns
+        self.position     = position
+        self.comment      = comment
+        self.mutation     = mutation
+        self.next         = next
+        self.is_top_level = is_top_level
         
 

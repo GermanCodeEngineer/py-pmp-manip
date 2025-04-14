@@ -91,7 +91,7 @@ def read_file_of_zip(zip_path, file_path):
 #    return data
 
 def ensure_correct_path(_path, target_folder_name="pypenguin"):
-    if target_folder_name != None:
+    if target_folder_name is not None:
         initial_path = __file__
         current_path = os.path.normpath(initial_path)
 

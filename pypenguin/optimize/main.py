@@ -21,7 +21,7 @@ def optimizeProjectJSON(projectData, sourcePlatform):
         floatingCommentDatas = [] # The comments that aren't connected to any blocks
         attachedCommentDatas = {}
         for commentId, commentData in commentDatas.items():
-            if commentData["blockId"] == None: # No Block connection
+            if commentData["blockId"] is None: # No Block connection
                 floatingCommentDatas.append(translateComment(data=commentData))
             else:
                 attachedCommentDatas[commentId] = translateComment(data=commentData)
@@ -69,7 +69,7 @@ def optimizeProjectJSON(projectData, sourcePlatform):
         data=projectData["monitors"],
         spriteNames=spriteNames,
     )
-    if stageData["textToSpeechLanguage"] == None:
+    if stageData["textToSpeechLanguage"] is None:
         newTextToSpeechLanguage = None
     else:
         newTextToSpeechLanguage = optimizeOptionValue(

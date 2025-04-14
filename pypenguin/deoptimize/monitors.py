@@ -22,7 +22,7 @@ def translateMonitor(data):
 
     opcodeMainPart     = "_".join(opcode.split("_")[1:]) # e.g. "motion_xposition" -> "xposition"
 
-    if data["spriteName"] == None:
+    if data["spriteName"] is None:
         spriteToken = stringToToken("_stage_")
     else:
         spriteToken = stringToToken(data["spriteName"])

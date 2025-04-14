@@ -1,5 +1,6 @@
-from typing import any
 import json
+
+from custom_block import SRCustomOpcode
 
 class FRMutation:
     _grepr = True
@@ -45,6 +46,7 @@ class FRCustomBlockMutation(FRMutation):
     returns: bool | None
     edited: bool # seems to always be true
     optype: str
+    color: tuple[str, str, str]
     
     @classmethod
     def from_data(cls, data):
@@ -63,6 +65,22 @@ class FRCustomBlockMutation(FRMutation):
         self.optype            = json.loads(data["optype" ])
         self.color       = tuple(json.loads(data["color"  ]))
         return self
+    
+    def step(self):
+        return SRCustomBlockMutation(
+            custom_opcode     = SRCustomOpcode(
+                proccode          = self.proccode,
+                argument_ids      = self.argument_ids,
+                argument_names    = self.argument_names,
+                argument_defaults = self.argument_defaults,
+            ),
+            no_screen_refresh = self.warp,
+            returns           = self.returns,
+            optype            = self.optype,
+            color1            = self.color[0],
+            color2            = self.color[1],
+            color3            = self.color[2],
+        )
 
 
 class SRMutation:
@@ -85,15 +103,14 @@ class SRCustomArgumentMutation(SRMutation):
 
 # TODO: implement this correctly, dont just copy everything from FR
 class SRCustomBlockMutation(SRMutation):
-    _grepr_fields = FRMutation._grepr_fields + ["proccode", "argument_ids", "argument_names", "argument_defaults", "warp", "returns", "edited", "optype", "color1", "color2", "color3"]
+    _grepr_fields = FRMutation._grepr_fields + ["proccode", "argument_ids", "argument_names", "argument_defaults", "no_screen_refresh", "returns", "edited", "optype", "color1", "color2", "color3"]
     
-    proccode: str
+    custom_opcode: "SRCustomOpcode"
     argument_ids: list[str]
     argument_names: list[str]
     argument_defaults: list[str]
-    warp: bool
+    no_screen_refresh: bool
     returns: bool | None
-    edited: bool # seems to always be true
     optype: str
     
     # hex format
@@ -103,28 +120,19 @@ class SRCustomBlockMutation(SRMutation):
     color3: str
     
     def __init__(self,
-        proccode: str,
-        argument_ids: list[str],
-        argument_names: list[str],
-        argument_defaults: list[str],
-        warp: bool,
+        custom_opcode: "SRCustomOpcode",
+        no_screen_refresh: bool,
         returns: bool | None,
-        edited: bool,
         optype: str,
         color1: str,
         color2: str,
         color3: str,
     ):
-        self.proccode          = proccode
-        self.argument_ids      = argument_ids
-        self.argument_names    = argument_names
-        self.argument_defaults = argument_defaults
-        self.warp              = warp
+        self.custom_opcode     = custom_opcode
+        self.no_screen_refresh = no_screen_refresh
         self.returns           = returns
-        self.edited            = edited
         self.optype            = optype
         self.color1            = color1
         self.color2            = color2
         self.color3            = color3
-
 

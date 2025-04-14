@@ -45,7 +45,7 @@ def deoptimizeProject(projectData, targetPlatform):
         for scriptData in standardizedScriptDatas:
             precompiledBlockDatas, precompiledCommentDatas, usedScriptData = findMatchingScript(scriptData, precompiledScriptDatas, spriteName=spriteName)
             #print(100*"*")
-            if precompiledBlockDatas == None:
+            if precompiledBlockDatas is None:
                 unfinishedScriptDatas.append(scriptData)
                 #print("MANUAL", scriptData)
             else:
@@ -122,7 +122,7 @@ def deoptimizeProject(projectData, targetPlatform):
             "volume"        : spriteData["volume"],
         }
         if spriteData["isStage"]:
-            if projectData.get("textToSpeechLanguage", None) == None:
+            if projectData.get("textToSpeechLanguage", None) is None:
                 newTextToSpeechLanguage = None
             else:
                 newTextToSpeechLanguage = deoptimizeOptionValue(
