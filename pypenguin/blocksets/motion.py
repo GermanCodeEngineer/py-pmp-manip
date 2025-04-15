@@ -1,4 +1,4 @@
-from blocksets.blockset import BlockSet, BlockData, InputData, MenuData, DropdownData
+from pypenguin.blocksets.basis import BlockSet, BlockData, InputData, MenuData, DropdownData
 
 motion = BlockSet(name="motion", blocks={
     "movesteps": BlockData(
