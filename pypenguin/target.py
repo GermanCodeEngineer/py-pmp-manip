@@ -1,10 +1,11 @@
 from typing import Any
+import copy
 
 from utility               import gprint
 from block                 import FRBlock, FRCustomBlockMutation
 from comment               import FRComment, SRFloatingComment, SRAttachedComment
 from asset                 import FRCostume, FRSound
-from customization_handler import CEventBlockAPI, CustomizationHandler
+from customization_handler import FRtoSRApi, CustomizationHandler
 
 class FRTarget:
     _grepr = True
@@ -55,14 +56,6 @@ class FRTarget:
         self.layer_order     = data["layerOrder"]
         return self
 
-    def get_cb_mutation(self, proccode: str):
-        for block in self.blocks.values():
-            if not isinstance(block, FRBlock): continue
-            if not isinstance(block.mutation, FRCustomBlockMutation): continue
-            if block.mutation.proccode == proccode:
-                return block.mutation
-        raise ValueError(f"Mutation of proccode {repr(proccode)} not found.")
-        
     def step(self, ch: CustomizationHandler):
         floating_comments = []
         attached_comments = {}
@@ -77,23 +70,30 @@ class FRTarget:
         #gprint(floating_comments)
         #gprint(attached_comments)
 
-        blocks = self.blocks.copy()
+        blocks = copy.deepcopy(self.blocks)
         for block_id, block in blocks.items():
             if isinstance(block, tuple):
                 blocks[block_id] = FRBlock.from_tuple(block, parent_id=None)
 
-        block_api = CEventBlockAPI(blocks=blocks)
+        block_api = FRtoSRApi(blocks=blocks)
+        new_blocks = {}
         for block_id, block in blocks.items():
             new_block = block.step(
                 ch              = ch,
-                manager         = block_api,
-                get_comment     = (lambda comment_id: attached_comments[comment_id]),
-                get_cb_mutation = self.get_cb_mutation,
+                api             = block_api,
             )
-            gprint(block_id, block)
-            gprint("====>", new_block)
+            new_blocks[block_id] = new_block
+            #gprint(block_id, self.blocks[block_id])
+            #gprint("====>", new_block)
 
-        scheduled_block_removals = block_api.scheduled_block_removals
+        for block_id in block_api.scheduled_block_deletions:
+            del new_blocks[block_id]
+        
+        for block_id, block in self.blocks.items():
+            print("\n"*2)
+            print(100*"=")
+            gprint(block_id, block)
+            gprint(new_blocks.get(block_id))
 
 class FRStage(FRTarget):
     _grepr_fields = FRTarget._grepr_fields + ["tempo", "video_transparency", "video_state", "text_to_speech_language"]

@@ -53,7 +53,10 @@ class FRProject:
 #file_path = "../assets/from_online/dumb example.pmp"
 file_path = "../assets/from_online/color.pmp"
 
-project = FRProject.from_pmp_file(file_path)
+#project = FRProject.from_pmp_file(file_path)
 #gprint(project)
-from customization_handler import ch
-project.step(ch)
+#from customization_handler import ch
+#project.step(ch)
+
+from blocksets.motion import motion
+gprint(motion)

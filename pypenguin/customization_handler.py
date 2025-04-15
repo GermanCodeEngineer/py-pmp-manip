@@ -5,8 +5,8 @@ from dataclasses import dataclass
 class CEventType(Enum):
     def __repr__(self):
         return f"CET.{self.name}"
-    INSTEAD_FR_TO_SR = 0
-    POST_FR_TO_SR    = 1
+    PRE_FR_TO_SR     = 0
+    INSTEAD_FR_TO_SR = 1
 
 
 @dataclass
@@ -45,26 +45,26 @@ class CustomizationHandler:
             return None
         return self.events[event_type][opcode]
 
-class CEventBlockAPI:
+class FRtoSRApi:    
     def __init__(self, blocks):
-        self.blocks                   = blocks
-        self.scheduled_block_removals = []
+        self.blocks                    = blocks
+        self.scheduled_block_deletions = []
+    
     def get_all_blocks(self):
         return self.blocks
     def get_block(self, block_id: str):
         return self.get_all_blocks()[block_id]
-    def schedule_block_removal(self, block_id: str):
-        self.scheduled_block_removals.append(block_id)
+    
+    def schedule_block_deletion(self, block_id: str):
+        self.scheduled_block_deletions.append(block_id)
 
-from block_opcodes import *
-
+    def get_cb_mutation(self, proccode: str):
+        for block in self.blocks.values():
+            if block.mutation is None: continue
+            if block.mutation.proccode == proccode:
+                return block.mutation
+        raise ValueError(f"Mutation of proccode {repr(proccode)} not found.")
+    
 ch = CustomizationHandler()
-
-from custom_block import INSTEAD__CB_DEF
-ch.add_opcodes_event(
-    opcodes=ANY_OPCODE_CB_DEF, 
-    event=CEvent(type=CEventType.INSTEAD_FR_TO_SR, function=INSTEAD__CB_DEF)
-)
-
 
 

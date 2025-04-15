@@ -84,38 +84,53 @@ class FRBlock:
         else: raise ValueError()
         return cls.from_data(block_data)
 
-    def step(self, ch: CustomizationHandler, manager, get_comment: Callable, get_cb_mutation: Callable):
+    
+
+    def step_inputs(self):#, ch: CustomizationHandler, api):
+        #TODO: Replace the old with the new input ids
+        pass
+
+    def step(self, ch: CustomizationHandler, api):
+        block = self
+        pre_event = ch.get_event(
+            event_type = CEventType.PRE_FR_TO_SR,
+            opcode     = block.opcode,
+        )
+        if pre_event is not None:
+            block = pre_event.call(api=api, block=block)
+        
         instead_event = ch.get_event(
-            event_type=CEventType.INSTEAD_FR_TO_SR,
-            opcode=self.opcode,
+            event_type = CEventType.INSTEAD_FR_TO_SR,
+            opcode     = block.opcode,
         )
         if instead_event is None:
             new_block = SRBlock(
-                opcode       = self.opcode,
-                inputs       = self.inputs, #TODO
-                dropdowns    = self.fields, #TODO,
-                position     = (self.x, self.y) if self.top_level else None,
-                comment      = self.comment,
-                mutation     = None if self.mutation is None else self.mutation.step(),
-                next         = self.next,
-                is_top_level = self.top_level,
+                opcode       = block.opcode,
+                inputs       = block.inputs, #TODO
+                dropdowns    = block.fields, #TODO,
+                position     = (block.x, block.y) if block.top_level else None,
+                comment      = block.comment,
+                mutation     = None if block.mutation is None else block.mutation.step(),
+                next         = block.next,
+                is_top_level = block.top_level,
             )
         else:
-            new_block = instead_event.call(manager=manager, block=self)
+            new_block = instead_event.call(api=api, block=block)
             pass #TODO: add custom handler system here to possibly replace below
                  #      for e.g. custom block defs, prototypes, calls
+        
         #TODO: add custom handler system here for e.g. draw polygon block
         return new_block
 
 class SRBlock:
     _grepr = True
-    _grepr_fields = ["opcode", "inputs", "dropdowns", "position", "comment", "mutation", "next", "top_level"]
+    _grepr_fields = ["opcode", "inputs", "dropdowns", "comment", "mutation", "position", "next", "is_top_level"]
     
     opcode: str
     #inputs: dict[str, ?]
     #dropdowns: dict[str, ?]
-    position: tuple[int | float, int | float] | None
     comment: str | None # a comment id
+    position: tuple[int | float, int | float] | None
     mutation: "SRMutation | None"
     next: str | None
     is_top_level: bool
@@ -124,18 +139,18 @@ class SRBlock:
         opcode: str,
         inputs,#: dict[str, ?],
         dropdowns,#: dict[str, ?],
-        position: tuple[int | float, int | float] | None,
         comment: str | None, # a comment id
         mutation: "SRMutation | None",
+        position: tuple[int | float, int | float] | None,
         next: str | None,
         is_top_level: bool,
     ):
         self.opcode       = opcode
         self.inputs       = inputs
         self.dropdowns    = dropdowns
-        self.position     = position
         self.comment      = comment
         self.mutation     = mutation
+        self.position     = position
         self.next         = next
         self.is_top_level = is_top_level
         

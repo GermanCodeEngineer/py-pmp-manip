@@ -14,3 +14,6 @@ OPCODE_CB_PROTOTYPE = "procedures_prototype"
 OPCODE_CB_ARG_TEXT  = "argument_reporter_string_number"
 OPCODE_CB_ARG_BOOL  = "argument_reporter_boolean"
 ANY_OPCODE_CB_ARG   = {OPCODE_CB_ARG_TEXT, OPCODE_CB_ARG_BOOL}
+
+
+OPCODE_CB_CALL      = "procedures_call"
