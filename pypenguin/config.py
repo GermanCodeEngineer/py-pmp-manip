@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Callable, Iterable
 from dataclasses import dataclass
 
-class CEventType(Enum):
+class ConfigType(Enum):
     def __repr__(self):
         return f"CET.{self.name}"
     PRE_FR_TO_SR     = 0
@@ -10,8 +10,8 @@ class CEventType(Enum):
 
 
 @dataclass
-class CEvent:
-    type: CEventType
+class ConfigSetting:
+    type: ConfigType
     function: Callable
     
     def __repr__(self):
@@ -20,25 +20,25 @@ class CEvent:
     def call(self, *args, **kwargs):
         return self.function(*args, **kwargs)
 
-class CustomizationHandler:
+class Configuration:
     _grepr = True
     _grepr_fields = ["events"]
 
-    events: dict[CEventType, dict[str, CEvent]]
+    events: dict[ConfigType, dict[str, ConfigSetting]]
 
     def __init__(self):
         self.events = {}
     
-    def add_event(self, opcode: str, event: CEvent):
+    def add_event(self, opcode: str, event: ConfigSetting):
         if event.type not in self.events:
             self.events[event.type] = {}
         self.events[event.type][opcode] = event
     
-    def add_opcodes_event(self, opcodes: Iterable[str], event: CEvent):
+    def add_opcodes_event(self, opcodes: Iterable[str], event: ConfigSetting):
         for opcode in opcodes:
             self.add_event(opcode=opcode, event=event)
     
-    def get_event(self, event_type: CEventType, opcode: str) -> CEvent | None:
+    def get_event(self, event_type: ConfigType, opcode: str) -> ConfigSetting | None:
         if event_type not in self.events:
             return None
         if opcode not in self.events[event_type]:
@@ -65,6 +65,6 @@ class FRtoSRApi:
                 return block.mutation
         raise ValueError(f"Mutation of proccode {repr(proccode)} not found.")
     
-ch = CustomizationHandler()
+ch = Configuration()
 
 

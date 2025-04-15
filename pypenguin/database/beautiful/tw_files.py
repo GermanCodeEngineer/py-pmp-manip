@@ -1,0 +1,43 @@
+opcodes = {
+    "twFiles_showPickerAs": {
+        "type": "stringReporter",
+        "category": "Files",
+        "newOpcode": "open a file as ([MODE])",
+        "inputTypes": {"MODE": "read file mode"},
+        "optionTypes": {},
+        "menus": [{"new": "MODE", "outer": "as", "inner": "encoding", "menuOpcode": "twFiles_menu_encoding"}],
+    },
+    "twFiles_showPickerExtensionsAs": {
+        "type": "stringReporter",
+        "category": "Files",
+        "newOpcode": "open a (EXTENSION) file as ([MODE])",
+        "inputTypes": {"EXTENSION": "text", "MODE": "read file mode"},
+        "inputTranslation": {"extension": "EXTENSION"},
+        "optionTypes": {},
+        "menus": [{"new": "MODE", "outer": "as", "inner": "encoding", "menuOpcode": "twFiles_menu_encoding"}],
+    },
+    "twFiles_download": {
+        "type": "instruction",
+        "category": "Files",
+        "newOpcode": "download ([MODE]) (TEXT) as (FILE)",
+        "inputTypes": {"MODE": "read file mode", "TEXT": "text", "FILE": "text"},
+        "inputTranslation": {"text": "TEXT", "file": "FILE"},
+        "optionTypes": {},
+        "menus": [{"new": "MODE", "outer": "encoding", "inner": "encoding", "menuOpcode": "twFiles_menu_encoding"}],
+    },
+    "twFiles_setOpenMode": {
+        "type": "instruction",
+        "category": "Files",
+        "newOpcode": "set open file selector mode to ([MODE])",
+        "inputTypes": {"MODE": "file selector mode"},
+        "optionTypes": {},
+        "menus": [{"new": "MODE", "outer": "mode", "inner": "automaticallyOpen", "menuOpcode": "twFiles_menu_automaticallyOpen"}],
+    },
+    "twFiles_getFileName": {
+        "type": "instruction",
+        "category": "Files",
+        "newOpcode": "last opened file name",
+        "inputTypes": {},
+        "optionTypes": {},
+    },
+}

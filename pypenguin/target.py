@@ -5,7 +5,7 @@ from utility               import gprint
 from block                 import FRBlock, FRCustomBlockMutation
 from comment               import FRComment, SRFloatingComment, SRAttachedComment
 from asset                 import FRCostume, FRSound
-from customization_handler import FRtoSRApi, CustomizationHandler
+from config                import FRtoSRApi, Configuration
 
 class FRTarget:
     _grepr = True
@@ -56,7 +56,7 @@ class FRTarget:
         self.layer_order     = data["layerOrder"]
         return self
 
-    def step(self, ch: CustomizationHandler):
+    def step(self, ch: Configuration):
         floating_comments = []
         attached_comments = {}
         for comment_id, comment in self.comments.items():

@@ -1,5 +1,5 @@
 from enum import Enum
-from customization_handler import CEvent, CEventType, FRtoSRApi, ch
+from config import ConfigSetting, ConfigType, FRtoSRApi, ch
 from block_opcodes import *
 
 class SRCustomOpcode:
@@ -72,7 +72,7 @@ def PRE__CB_DEF(api: FRtoSRApi, block):
     
 ch.add_opcodes_event(
     opcodes=ANY_OPCODE_CB_DEF, 
-    event=CEvent(type=CEventType.PRE_FR_TO_SR, function=PRE__CB_DEF)
+    event=ConfigSetting(type=ConfigType.PRE_FR_TO_SR, function=PRE__CB_DEF)
 )
 
 def PRE__CB_ARG(api: FRtoSRApi, block):
@@ -84,7 +84,7 @@ def PRE__CB_ARG(api: FRtoSRApi, block):
 
 ch.add_opcodes_event(
     opcodes=ANY_OPCODE_CB_ARG,
-    event=CEvent(type=CEventType.PRE_FR_TO_SR, function=PRE__CB_ARG)
+    event=ConfigSetting(type=ConfigType.PRE_FR_TO_SR, function=PRE__CB_ARG)
 )
 
 

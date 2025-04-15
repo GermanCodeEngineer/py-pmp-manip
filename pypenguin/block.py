@@ -4,7 +4,7 @@ from utility               import gprint
 from block_mutation        import FRMutation, FRCustomBlockMutation, FRCustomArgumentMutation
 from block_mutation        import SRMutation
 from block_opcodes         import *
-from customization_handler import CustomizationHandler, CEventType
+from config                import Configuration, ConfigType
 
 class FRBlock:
     _grepr = True
@@ -90,17 +90,17 @@ class FRBlock:
         #TODO: Replace the old with the new input ids
         pass
 
-    def step(self, ch: CustomizationHandler, api):
+    def step(self, ch: Configuration, api):
         block = self
         pre_event = ch.get_event(
-            event_type = CEventType.PRE_FR_TO_SR,
+            event_type = ConfigType.PRE_FR_TO_SR,
             opcode     = block.opcode,
         )
         if pre_event is not None:
             block = pre_event.call(api=api, block=block)
         
         instead_event = ch.get_event(
-            event_type = CEventType.INSTEAD_FR_TO_SR,
+            event_type = ConfigType.INSTEAD_FR_TO_SR,
             opcode     = block.opcode,
         )
         if instead_event is None:

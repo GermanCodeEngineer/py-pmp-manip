@@ -1,0 +1,104 @@
+from block_info.basis import *
+
+sounds = BlockInfoSet(name="sounds", opcode_prefix="sound", blocks={
+    "sound_playuntildone": BlockInfo(
+        block_type="instruction",
+        new_opcode="play sound ([SOUND]) until done",
+        inputs={
+            "SOUND": InputInfo(InputType.SOUND, old="SOUND_MENU", menu=MenuInfo("sound_sounds_menu", inner="SOUND_MENU")),
+        },
+    ),
+    "sound_play_at_seconds_until_done": BlockInfo(
+        block_type="instruction",
+        new_opcode="play sound ([SOUND]) starting at (SECONDS) seconds until done",
+        inputs={
+            "SOUND": InputInfo(InputType.SOUND, old="SOUND_MENU", menu=MenuInfo("sound_sounds_menu", inner="SOUND_MENU")),
+            "SECONDS": InputInfo(InputType.NUMBER, old="VALUE"),
+        },
+    ),
+    "sound_stop": BlockInfo(
+        block_type="instruction",
+        new_opcode="stop sound ([SOUND])",
+        inputs={
+            "SOUND": InputInfo(InputType.SOUND, old="SOUND_MENU", menu=MenuInfo("sound_sounds_menu", inner="SOUND_MENU")),
+        },
+    ),
+    "sound_playallsounds": BlockInfo(
+        block_type="instruction",
+        new_opcode="play all sounds",
+    ),
+    "sound_stopallsounds": BlockInfo(
+        block_type="instruction",
+        new_opcode="stop all sounds",
+    ),
+    "sound_set_stop_fadeout_to": BlockInfo(
+        block_type="instruction",
+        new_opcode="set fadeout to (SECONDS) seconds on ([SOUND])",
+        inputs={
+            "SECONDS": InputInfo(InputType.NUMBER, old="VALUE"),
+            "SOUND": InputInfo(InputType.SOUND, old="SOUND_MENU", menu=MenuInfo("sound_sounds_menu", inner="SOUND_MENU")),
+        },
+    ),
+    "sound_isSoundPlaying": BlockInfo(
+        block_type="booleanReporter",
+        new_opcode="is ([SOUND]) playing?",
+        inputs={
+            "SOUND": InputInfo(InputType.SOUND, old="SOUND_MENU", menu=MenuInfo("sound_sounds_menu", inner="SOUND_MENU")),
+        },
+    ),
+    "sound_getLength": BlockInfo(
+        block_type="stringReporter",
+        new_opcode="length of ([SOUND])?",
+        inputs={
+            "SOUND": InputInfo(InputType.SOUND, old="SOUND_MENU", menu=MenuInfo("sound_sounds_menu", inner="SOUND_MENU")),
+        },
+    ),
+    "sound_changeeffectby": BlockInfo(
+        block_type="instruction",
+        new_opcode="change [EFFECT] sound effect by (AMOUNT)",
+        inputs={
+            "AMOUNT": InputInfo(InputType.NUMBER, old="VALUE"),
+        },
+        dropdowns={
+            "EFFECT": DropdownInfo(DropdownType.SOUND_EFFECT, old="EFFECT"),
+        },
+    ),
+    "sound_seteffectto": BlockInfo(
+        block_type="instruction",
+        new_opcode="set [EFFECT] sound effect to (VALUE)",
+        inputs={
+            "VALUE": InputInfo(InputType.NUMBER, old="VALUE"),
+        },
+        dropdowns={
+            "EFFECT": DropdownInfo(DropdownType.SOUND_EFFECT, old="EFFECT"),
+        },
+    ),
+    "sound_cleareffects": BlockInfo(
+        block_type="instruction",
+        new_opcode="clear sound effects",
+    ),
+    "sound_getEffectValue": BlockInfo(
+        block_type="stringReporter",
+        new_opcode="[EFFECT] sound effect",
+        can_have_monitor="True",
+    ),
+    "sound_changevolumeby": BlockInfo(
+        block_type="instruction",
+        new_opcode="change volume by (AMOUNT)",
+        inputs={
+            "AMOUNT": InputInfo(InputType.NUMBER, old="VOLUME"),
+        },
+    ),
+    "sound_setvolumeto": BlockInfo(
+        block_type="instruction",
+        new_opcode="set volume to (VALUE)",
+        inputs={
+            "VALUE": InputInfo(InputType.NUMBER, old="VOLUME"),
+        },
+    ),
+    "sound_volume": BlockInfo(
+        block_type="stringReporter",
+        new_opcode="volume",
+        can_have_monitor="True",
+    ),
+})

@@ -4,7 +4,7 @@ from utility               import read_file_of_zip, ThanksError
 from target                import FRStage, FRSprite
 from monitor               import FRMonitor
 from meta                  import FRMeta
-from customization_handler import CustomizationHandler, CEvent, CEventType
+from config                import Configuration, ConfigSetting, ConfigType
 from block_opcodes         import *
 
 from utility import gprint
@@ -43,20 +43,19 @@ class FRProject:
         self.meta           = FRMeta.from_data(project_data["meta"])
         return self
         
-    def step(self, ch: CustomizationHandler):
+    def step(self, ch: Configuration):
         gprint(ch)
         #TODO: Scratch to PenguinMod Conversion
         for target in self.targets:
             target.step(ch=ch)
         
 #file_path = "../assets/from_online/my 1st platformer.pmp"
-#file_path = "../assets/from_online/dumb example.pmp"
-file_path = "../assets/from_online/color.pmp"
+file_path = "../assets/from_online/dumb example.pmp"
+#file_path = "../assets/from_online/color.pmp"
 
 #project = FRProject.from_pmp_file(file_path)
 #gprint(project)
-#from customization_handler import ch
+#from config import ch
 #project.step(ch)
-
-from blocksets.motion import motion
-gprint(motion)
+from block_info import info_api
+gprint(info_api)
