@@ -1,6 +1,6 @@
 opcodes = {
     "looks_sayforsecs": {
-        "type": "intruction",
+        "type": "instruction",
         "category": "Looks",
         "newOpcode": "say (MESSAGE) for (SECONDS) seconds",
         "inputTypes": {"MESSAGE": "text", "SECONDS": "number"},
@@ -15,7 +15,7 @@ opcodes = {
         "optionTypes": {},
     },
     "looks_thinkforsecs": {
-        "type": "intruction",
+        "type": "instruction",
         "category": "Looks",
         "newOpcode": "think (MESSAGE) for (SECONDS) seconds",
         "inputTypes": {"MESSAGE": "text", "SECONDS": "number"},

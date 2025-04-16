@@ -1,0 +1,207 @@
+from block_info.basis import *
+
+special = BlockInfoSet(name="special", opcode_prefix="special", block_infos={
+    "motion_goto_menu": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#REACHABLE TARGET MENU (GO)",
+    ),
+    "motion_glideto_menu": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#REACHABLE TARGET MENU (GLIDE)",
+    ),
+    "motion_pointtowards_menu": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#OBSERVABLE TARGET MENU",
+    ),
+    "looks_costume": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#COSTUME MENU",
+    ),
+    "looks_backdrops": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#BACKDROP MENU",
+    ),
+    "looks_getinput_menu": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#COSTUME PROPERTY MENU",
+    ),
+    "looks_changeVisibilityOfSprite_menu": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#SHOW/HIDE SPRITE MENU",
+    ),
+    "looks_getOtherSpriteVisible_menu": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#IS SPRITE VISIBLE MENU",
+    ),
+    "sound_sounds_menu": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#SOUND MENU",
+    ),
+    "control_stop_sprite_menu": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#STOP SPRITE MENU",
+    ),
+    "control_create_clone_of_menu": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#CLONE TARGET MENU",
+    ),
+    "control_run_as_sprite_menu": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#RUN AS SPRITE MENU",
+    ),
+    "sensing_touchingobjectmenu": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#TOUCHING OBJECT MENU",
+    ),
+    "sensing_fulltouchingobjectmenu": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#FULL TOUCHING OBJECT MENU",
+    ),
+    "sensing_touchingobjectmenusprites": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#TOUCHING OBJECT MENU SPRITES",
+    ),
+    "sensing_distancetomenu": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#DISTANCE TO MENU",
+    ),
+    "sensing_keyoptions": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#KEY MENU",
+    ),
+    "sensing_scrolldirections": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#SCROLL DIRECTION MENU",
+    ),
+    "sensing_of_object_menu": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#OJBECT PROPERTY MENU",
+    ),
+    "sensing_fingeroptions": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#FINGER INDEX MENU",
+    ),
+    "music_menu_DRUM": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#DRUM MENU",
+    ),
+    "music_menu_INSTRUMENT": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#INSTRUMENT MENU",
+    ),
+    "pen_menu_FONT": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#PEN FONT MENU",
+    ),
+    "pen_menu_colorParam": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#PEN PROPERTY MENU",
+    ),
+    "text_menu_FONT": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#TEXT FONT MENU",
+    ),
+    "videoSensing_menu_ATTRIBUTE": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#VIDEO SENSING PROPERTY",
+    ),
+    "videoSensing_menu_SUBJECT": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#VIDEO SENSING TARGET",
+    ),
+    "videoSensing_menu_VIDEO_STATE": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#VIDEO STATE",
+    ),
+    "text2speech_menu_voices": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#TEXT TO SPEECH VOICE MENU",
+    ),
+    "text2speech_menu_languages": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#TEXT TO SPEECH LANGUAGE MENU",
+    ),
+    "translate_menu_languages": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#TRANSLATE LANGUAGE MENU",
+    ),
+    "makeymakey_menu_KEY": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#MAKEY KEY MENU",
+    ),
+    "makeymakey_menu_SEQUENCE": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#MAKEY KEY SEQUENCE MENU",
+    ),
+    "twFiles_menu_encoding": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#FILE ENCODING MENU",
+    ),
+    "twFiles_menu_automaticallyOpen": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#FILE SELECTOR MODE MENU",
+    ),
+    "note": BlockInfo(
+        block_type=BlockType.MENU,
+        new_opcode="#NOTE MENU",
+    ),
+    "polygon": BlockInfo(
+        block_type=BlockType.POLYGON_MENU,
+        new_opcode="POLYGON MENU",
+        inputs={
+            "x1": InputInfo(InputType.NUMBER, old="x1"),
+            "y1": InputInfo(InputType.NUMBER, old="y1"),
+            "x2": InputInfo(InputType.NUMBER, old="x2"),
+            "y2": InputInfo(InputType.NUMBER, old="y2"),
+            "x3": InputInfo(InputType.NUMBER, old="x3"),
+            "y3": InputInfo(InputType.NUMBER, old="y3"),
+            "x4": InputInfo(InputType.NUMBER, old="x4"),
+            "y4": InputInfo(InputType.NUMBER, old="y4"),
+        },
+        dropdowns={
+            "EXPANDED_MINIMIZED": DropdownInfo(DropdownType.EXPANDED_MINIMIZED, old="button"),
+            "VERTEX_COUNT": DropdownInfo(DropdownType.VERTEX_COUNT, old="VERTEX_COUNT"),
+        },
+    ),
+    "variable_value": BlockInfo(
+        block_type=BlockType.STRING_REPORTER,
+        new_opcode="value of [VARIABLE]",
+        can_have_monitor="True",
+    ),
+    "list_value": BlockInfo(
+        block_type=BlockType.STRING_REPORTER,
+        new_opcode="value of [LIST]",
+        can_have_monitor="True",
+    ),
+    "define": BlockInfo(
+        block_type=BlockType.HAT,
+        new_opcode="define custom block",
+    ),
+    "procedures_call": BlockInfo(
+        block_type=BlockType.DYNAMIC,
+        new_opcode="call custom block",
+    ),
+    "procedures_return": BlockInfo(
+        block_type=BlockType.ENDING_STATEMENT,
+        new_opcode="return (VALUE)",
+        inputs={
+            "VALUE": InputInfo(InputType.TEXT, old="return"),
+        },
+    ),
+    "procedures_set": BlockInfo(
+        block_type=BlockType.STATEMENT,
+        new_opcode="set (PARAM) to (VALUE)",
+        inputs={
+            "PARAM": InputInfo(InputType.ROUND, old="PARAM"),
+            "VALUE": InputInfo(InputType.TEXT, old="VALUE"),
+        },
+    ),
+    "argument_reporter_string_number": BlockInfo(
+        block_type=BlockType.STRING_REPORTER,
+        new_opcode="value of text [ARGUMENT]",
+    ),
+    "argument_reporter_boolean": BlockInfo(
+        block_type=BlockType.BOOLEAN_REPORTER,
+        new_opcode="value of boolean [ARGUMENT]",
+    ),
+})

@@ -59,3 +59,6 @@ file_path = "../assets/from_online/dumb example.pmp"
 #project.step(ch)
 from block_info import info_api
 gprint(info_api)
+gprint(info_api.get_block_info_by_opcode("argument_reporter_boolean"))
+
+

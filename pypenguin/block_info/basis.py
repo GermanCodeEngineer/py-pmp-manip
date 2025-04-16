@@ -2,47 +2,100 @@ from enum import Enum
 
 class BlockInfoSet:
     _grepr = True
-    _grepr_fields = ["name", "opcode_prefix", "blocks"]
+    _grepr_fields = ["name", "opcode_prefix", "alt_opcode_prefixes", "block_infos"]
     
     name: str
     opcode_prefix: str
-    blocks: dict[str, "BlockInfo"]
+    alt_opcode_prefixes: list[str]
+    block_infos: dict[str, "BlockInfo"]
     
-    def __init__(self, name: str, opcode_prefix: str, blocks: dict[str, "BlockInfo"]):
-        self.name          = name
-        self.opcode_prefix = opcode_prefix
-        self.blocks        = blocks
+    def __init__(self, 
+        name: str, 
+        opcode_prefix: str, 
+        alt_opcode_prefixes: list[str] | None = None,
+        block_infos: dict[str, "BlockInfo"] | None = None,
+    ):
+        self.name                = name
+        self.opcode_prefix       = opcode_prefix
+        self.alt_opcode_prefixes = alt_opcode_prefixes or []
+        self.block_infos         = {}
+        for opcode, block_info in (block_infos or {}).items():
+            self.add_block(opcode, block_info)
     
-    def get_block(self, opcode: str, default_none: bool = False):
-        if opcode in self.blocks:
-            return self.blocks[opcode]
+    def get_all_possible_prefixes(self) -> list[str]:
+        return [self.opcode_prefix] + self.alt_opcode_prefixes
+    
+    def uses_prefix(self, prefix: str) -> bool:
+        return prefix in self.get_all_possible_prefixes()
+    
+    def add_block(self, opcode: str, block_info: "BlockInfo"):
+        if block_info.alt_opcode_prefix is not None:
+            if block_info.alt_opcode_prefix not in self.alt_opcode_prefixes:
+                raise ValueError(f"Alternate opcode prefix {repr(block_info.alt_opcode_prefix)} was never added.")
+        self.block_infos[opcode] = block_info
+    
+    def get_block_info(self, opcode: str, default_none: bool = False) -> "BlockInfo":
+        if opcode in self.block_infos:
+            return self.block_infos[opcode]
         if default_none:
             return None
         raise ValueError(f"Couldn't find Block {repr(opcode)}")
 
 class BlockInfo:
     _grepr = True
-    _grepr_fields = []#["block_type", "new_opcode", "inputs", "dropdowns", "can_have_monitor"]
+    _grepr_fields = ["block_type", "new_opcode", "inputs", "dropdowns", "can_have_monitor"]
     
-    block_type: str
+    block_type: "BlockType"
     new_opcode: str
     inputs: dict[str, "InputInfo"]
     dropdowns: dict[str, "DropdownInfo"]
     can_have_monitor: bool
-    
+    alt_opcode_prefix: str | None
     
     def __init__(self, 
-        block_type: str, 
+        block_type: "BlockType", 
         new_opcode: str, 
         inputs: dict[str, "InputInfo"] = {},
         dropdowns: dict[str, "DropdownInfo"] = {},
-        can_have_monitor: bool = False
+        can_have_monitor: bool = False,
+        alt_opcode_prefix: str | None = None,
     ):
-        self.block_type       = block_type
-        self.new_opcode       = new_opcode
-        self.inputs           = inputs
-        self.dropdowns        = dropdowns
-        self.can_have_monitor = can_have_monitor
+        self.block_type        = block_type
+        self.new_opcode        = new_opcode
+        self.inputs            = inputs
+        self.dropdowns         = dropdowns
+        self.can_have_monitor  = can_have_monitor
+        self.alt_opcode_prefix = alt_opcode_prefix
+
+class BlockType(Enum):
+    def __repr__(self):
+        return f"{self.__class__.__name__}.{self.name}"
+    
+    STATEMENT         = 0
+    ENDING_STATEMENT  = 1
+    HAT               = 2
+    
+    STRING_REPORTER   = 3
+    NUMBER_REPORTER   = 4
+    BOOLEAN_REPORTER  = 5
+    
+    # Pseudo Blocktypes
+    MENU              = 6
+    POLYGON_MENU      = 7 # Exclusively for the "polygon" block
+    DYNAMIC           = 8
+    
+class InputInfo:
+    _grepr = True
+    _grepr_fields = ["type", "old", "menu"]
+    
+    type: "InputType"
+    old: str
+    menu: "MenuInfo | None"
+    
+    def __init__(self, type: "InputType", old: str, menu: "MenuInfo|None" = None):
+        self.type = type
+        self.old  = old
+        self.menu = menu
 
 class InputMode(Enum):
     def __repr__(self):
@@ -59,7 +112,7 @@ class InputType(Enum):
     def __repr__(self):
         return f"{self.__class__.__name__}.{self.name}"
     
-    def get_mode(self):
+    def get_mode(self) -> InputMode:
         return self.value[0]
     
     # BLOCK_AND_TEXT
@@ -116,29 +169,17 @@ class InputType(Enum):
     READ_FILE_MODE                      = (InputMode.BLOCK_AND_DROPDOWN, 27)
     FILE_SELECTOR_MODE                  = (InputMode.BLOCK_AND_DROPDOWN, 28)
 
-class InputInfo:
-    _grepr = True
-    _grepr_fields = ["type", "old", "menu"]
-    
-    type: InputType
-    old: str
-    menu: "MenuInfo | None"
-    
-    def __init__(self, type: InputType, old: str, menu: "MenuInfo|None" = None):
-        self.type = type
-        self.old  = old
-        self.menu = menu
-
 class DropdownInfo:
     _grepr = True
     _grepr_fields = ["type", "old"]
     
-    type: str
+    type: "DropdownType"
     old: str
     
-    def __init__(self, type: str, old: str):
+    def __init__(self, type: "DropdownType", old: str):
         self.type = type
         self.old  = old
+
 
 class DropdownTypeInfo:
     _grepr = True
@@ -147,22 +188,25 @@ class DropdownTypeInfo:
     direct_values:     list[str | int | bool] | None = None
     value_segments:    list[str]              | None = None
     old_direct_values: list[str | int | bool] | None = None
-    fallback          : list[str]              | None = None
+    fallback:          list[str]              | None = None
 
     def __init__(self,
         direct_values:     list[str | int | bool] | None = None,
         value_segments:    list[str]              | None = None,
         old_direct_values: list[str | int | bool] | None = None,
-        fallback      : list[str]              | None = None,
+        fallback:          list[str]              | None = None,
     ) -> None:
         self.direct_values     = direct_values     or []
         self.value_segments    = value_segments    or []
         self.old_direct_values = old_direct_values or []
         self.fallback          = fallback          or []
 
-class DropdownType(Enum):
+class DropdownType(Enum):    
     def __repr__(self):
         return f"{self.__class__.__name__}.{self.name}"
+    
+    def get_type_info(self) -> DropdownTypeInfo:
+        return self.value
     
     KEY = DropdownTypeInfo(
         direct_values=[
@@ -308,6 +352,11 @@ class DropdownType(Enum):
     BROADCAST = DropdownTypeInfo()
     VARIABLE = DropdownTypeInfo()
     LIST = DropdownTypeInfo()
+    
+    # Temporary, will be removed
+    ENABLE_DISABLE_SCREEN_REFRESH = DropdownTypeInfo()
+    CUSTOM_OPCODE = DropdownTypeInfo()
+    REPORTER_NAME = DropdownTypeInfo()
 
 class MenuInfo:
     _grepr = True

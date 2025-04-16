@@ -1,8 +1,8 @@
 from block_info.basis import *
 
-lists = BlockInfoSet(name="lists", opcode_prefix="data", blocks={
-    "data_addtolist": BlockInfo(
-        block_type="instruction",
+lists = BlockInfoSet(name="lists", opcode_prefix="data", block_infos={
+    "addtolist": BlockInfo(
+        block_type=BlockType.STATEMENT,
         new_opcode="add (ITEM) to [LIST]",
         inputs={
             "ITEM": InputInfo(InputType.TEXT, old="ITEM"),
@@ -11,8 +11,8 @@ lists = BlockInfoSet(name="lists", opcode_prefix="data", blocks={
             "LIST": DropdownInfo(DropdownType.LIST, old="LIST"),
         },
     ),
-    "data_deleteoflist": BlockInfo(
-        block_type="instruction",
+    "deleteoflist": BlockInfo(
+        block_type=BlockType.STATEMENT,
         new_opcode="delete (INDEX) of [LIST]",
         inputs={
             "INDEX": InputInfo(InputType.INTEGER, old="INDEX"),
@@ -21,12 +21,12 @@ lists = BlockInfoSet(name="lists", opcode_prefix="data", blocks={
             "LIST": DropdownInfo(DropdownType.LIST, old="LIST"),
         },
     ),
-    "data_deletealloflist": BlockInfo(
-        block_type="instruction",
+    "deletealloflist": BlockInfo(
+        block_type=BlockType.STATEMENT,
         new_opcode="delete all of [LIST]",
     ),
-    "data_shiftlist": BlockInfo(
-        block_type="instruction",
+    "shiftlist": BlockInfo(
+        block_type=BlockType.STATEMENT,
         new_opcode="shift [LIST] by (INDEX)",
         inputs={
             "INDEX": InputInfo(InputType.INTEGER, old="INDEX"),
@@ -35,8 +35,8 @@ lists = BlockInfoSet(name="lists", opcode_prefix="data", blocks={
             "LIST": DropdownInfo(DropdownType.LIST, old="LIST"),
         },
     ),
-    "data_insertatlist": BlockInfo(
-        block_type="instruction",
+    "insertatlist": BlockInfo(
+        block_type=BlockType.STATEMENT,
         new_opcode="insert (ITEM) at (INDEX) of [LIST]",
         inputs={
             "ITEM": InputInfo(InputType.TEXT, old="ITEM"),
@@ -46,8 +46,8 @@ lists = BlockInfoSet(name="lists", opcode_prefix="data", blocks={
             "LIST": DropdownInfo(DropdownType.LIST, old="LIST"),
         },
     ),
-    "data_replaceitemoflist": BlockInfo(
-        block_type="instruction",
+    "replaceitemoflist": BlockInfo(
+        block_type=BlockType.STATEMENT,
         new_opcode="replace item (INDEX) of [LIST] with (ITEM)",
         inputs={
             "INDEX": InputInfo(InputType.INTEGER, old="INDEX"),
@@ -57,8 +57,8 @@ lists = BlockInfoSet(name="lists", opcode_prefix="data", blocks={
             "LIST": DropdownInfo(DropdownType.LIST, old="LIST"),
         },
     ),
-    "data_listforeachitem": BlockInfo(
-        block_type="instruction",
+    "listforeachitem": BlockInfo(
+        block_type=BlockType.STATEMENT,
         new_opcode="For each item [VARIABLE] in [LIST] {BODY}",
         inputs={
             "BODY": InputInfo(InputType.SCRIPT, old="SUBSTACK"),
@@ -68,8 +68,8 @@ lists = BlockInfoSet(name="lists", opcode_prefix="data", blocks={
             "LIST": DropdownInfo(DropdownType.LIST, old="LIST"),
         },
     ),
-    "data_listforeachnum": BlockInfo(
-        block_type="instruction",
+    "listforeachnum": BlockInfo(
+        block_type=BlockType.STATEMENT,
         new_opcode="For each item # [VARIABLE] in [LIST] {BODY}",
         inputs={
             "BODY": InputInfo(InputType.SCRIPT, old="SUBSTACK"),
@@ -79,8 +79,8 @@ lists = BlockInfoSet(name="lists", opcode_prefix="data", blocks={
             "LIST": DropdownInfo(DropdownType.LIST, old="LIST"),
         },
     ),
-    "data_itemoflist": BlockInfo(
-        block_type="stringReporter",
+    "itemoflist": BlockInfo(
+        block_type=BlockType.STRING_REPORTER,
         new_opcode="item (INDEX) of [LIST]",
         inputs={
             "INDEX": InputInfo(InputType.INTEGER, old="INDEX"),
@@ -89,8 +89,8 @@ lists = BlockInfoSet(name="lists", opcode_prefix="data", blocks={
             "LIST": DropdownInfo(DropdownType.LIST, old="LIST"),
         },
     ),
-    "data_itemnumoflist": BlockInfo(
-        block_type="stringReporter",
+    "itemnumoflist": BlockInfo(
+        block_type=BlockType.STRING_REPORTER,
         new_opcode="item # of (ITEM) in [LIST]",
         inputs={
             "ITEM": InputInfo(InputType.TEXT, old="ITEM"),
@@ -99,8 +99,8 @@ lists = BlockInfoSet(name="lists", opcode_prefix="data", blocks={
             "LIST": DropdownInfo(DropdownType.LIST, old="LIST"),
         },
     ),
-    "data_amountinlist": BlockInfo(
-        block_type="stringReporter",
+    "amountinlist": BlockInfo(
+        block_type=BlockType.STRING_REPORTER,
         new_opcode="amount of (VALUE) of [LIST]",
         inputs={
             "VALUE": InputInfo(InputType.TEXT, old="VALUE"),
@@ -109,12 +109,12 @@ lists = BlockInfoSet(name="lists", opcode_prefix="data", blocks={
             "LIST": DropdownInfo(DropdownType.LIST, old="LIST"),
         },
     ),
-    "data_lengthoflist": BlockInfo(
-        block_type="stringReporter",
+    "lengthoflist": BlockInfo(
+        block_type=BlockType.STRING_REPORTER,
         new_opcode="length of [LIST]",
     ),
-    "data_listcontainsitem": BlockInfo(
-        block_type="booleanReporter",
+    "listcontainsitem": BlockInfo(
+        block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="[LIST] contains (ITEM) ?",
         inputs={
             "ITEM": InputInfo(InputType.TEXT, old="ITEM"),
@@ -123,8 +123,8 @@ lists = BlockInfoSet(name="lists", opcode_prefix="data", blocks={
             "LIST": DropdownInfo(DropdownType.LIST, old="LIST"),
         },
     ),
-    "data_itemexistslist": BlockInfo(
-        block_type="booleanReporter",
+    "itemexistslist": BlockInfo(
+        block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="item (INDEX) exists in [LIST] ?",
         inputs={
             "INDEX": InputInfo(InputType.INTEGER, old="INDEX"),
@@ -133,16 +133,16 @@ lists = BlockInfoSet(name="lists", opcode_prefix="data", blocks={
             "LIST": DropdownInfo(DropdownType.LIST, old="LIST"),
         },
     ),
-    "data_listisempty": BlockInfo(
-        block_type="booleanReporter",
+    "listisempty": BlockInfo(
+        block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="is [LIST] empty?",
     ),
-    "data_reverselist": BlockInfo(
-        block_type="instruction",
+    "reverselist": BlockInfo(
+        block_type=BlockType.STATEMENT,
         new_opcode="reverse [LIST]",
     ),
-    "data_arraylist": BlockInfo(
-        block_type="instruction",
+    "arraylist": BlockInfo(
+        block_type=BlockType.STATEMENT,
         new_opcode="set [LIST] to array (VALUE)",
         inputs={
             "VALUE": InputInfo(InputType.TEXT, old="VALUE"),
@@ -151,16 +151,16 @@ lists = BlockInfoSet(name="lists", opcode_prefix="data", blocks={
             "LIST": DropdownInfo(DropdownType.LIST, old="LIST"),
         },
     ),
-    "data_listarray": BlockInfo(
-        block_type="stringReporter",
+    "listarray": BlockInfo(
+        block_type=BlockType.STRING_REPORTER,
         new_opcode="get list [LIST] as an array",
     ),
-    "data_showlist": BlockInfo(
-        block_type="instruction",
+    "showlist": BlockInfo(
+        block_type=BlockType.STATEMENT,
         new_opcode="show list [LIST]",
     ),
-    "data_hidelist": BlockInfo(
-        block_type="instruction",
+    "hidelist": BlockInfo(
+        block_type=BlockType.STATEMENT,
         new_opcode="hide list [LIST]",
     ),
 })

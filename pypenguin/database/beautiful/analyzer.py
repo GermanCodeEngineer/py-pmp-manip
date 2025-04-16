@@ -111,9 +111,26 @@ old_option_type_name_to_enum = {
     "broadcast":"BROADCAST",
     "variable":"VARIABLE",
     "list":"LIST",
+    "boolean": "ENABLE_DISABLE_SCREEN_REFRESH",
+    "opcode": "CUSTOM_OPCODE",
+    "reporter name": "REPORTER_NAME",
 }
 
-for cat in ["motion", "looks", "sounds", "events", "control", "sensing", "operators", "variables", "lists"]:
+bt_translation = {
+    'instruction': "STATEMENT",
+    'lastInstruction': "ENDING_STATEMENT",
+    
+    'stringReporter' : "STRING_REPORTER",
+    'numberReporter': "NUMBER_REPORTER",
+    'booleanReporter': "BOOLEAN_REPORTER",
+    
+    'hat': "HAT",
+    'dynamic': "DYNAMIC",
+    "menu": "MENU",
+    "embeddedMenu": "POLYGON_MENU"
+}
+
+for cat in ["motion", "looks", "sounds", "events", "control", "sensing", "operators", "variables", "lists", "special"]:
     exec(f"from {cat} import opcodes")
     
     if   cat == "sounds": block_cat = "sound"
@@ -123,9 +140,9 @@ for cat in ["motion", "looks", "sounds", "events", "control", "sensing", "operat
     elif cat == "lists": block_cat = "data"
     else:
         block_cat = cat
-    string = "from block_info.basis import *\n\n" + cat + ' = BlockInfoSet(name="' + cat + '", opcode_prefix="' + block_cat + '", blocks={\n'
+    string = "from block_info.basis import *\n\n" + cat + ' = BlockInfoSet(name="' + cat + '", opcode_prefix="' + block_cat + '", block_infos={\n'
     for opcode, block in opcodes.items():
-        block_string = f'    "{opcode.removeprefix(block_cat+"#_")}": BlockInfo(\n'
+        block_string = f'    "{opcode.removeprefix(block_cat+"_")}": BlockInfo(\n'
         
         block["inputs"] = {}
         it = block.get("inputTranslation", {})
@@ -161,9 +178,11 @@ for cat in ["motion", "looks", "sounds", "events", "control", "sensing", "operat
         #print(block)
         for attr, value in block.items():
             match attr:
-                case "type": block_string += '        block_type="' + value + '",\n'
+                case "type": 
+                    block_string += '        block_type=BlockType.' + bt_translation[value] + ',\n'
                 case "category": pass
-                case "newOpcode": block_string += '        new_opcode="' + value + '",\n'
+                case "newOpcode": 
+                    block_string += '        new_opcode="' + value + '",\n'
                 case "inputs": 
                     if value == {}: break
                     block_string += '        inputs={\n'
@@ -199,6 +218,6 @@ for cat in ["motion", "looks", "sounds", "events", "control", "sensing", "operat
         string += block_string
     
     string += "})"
-    print(string)
-    with open("pypenguin/block_info/"+cat+".py", "w") as file:
+    #print(string)
+    with open("../../block_info/"+cat+".py", "w") as file:
         file.write(string)
