@@ -1,11 +1,12 @@
 from typing import Any
 import copy
 
-from utility               import gprint
-from block                 import FRBlock, FRCustomBlockMutation
-from comment               import FRComment, SRFloatingComment, SRAttachedComment
-from asset                 import FRCostume, FRSound
-from config                import FRtoSRApi, Configuration
+from utility    import gprint
+from block      import FRBlock, FRCustomBlockMutation
+from comment    import FRComment, SRFloatingComment, SRAttachedComment
+from asset      import FRCostume, FRSound
+from config     import FRtoSRApi, Configuration
+from block_info import BlockInfoApi
 
 class FRTarget:
     _grepr = True
@@ -56,7 +57,7 @@ class FRTarget:
         self.layer_order     = data["layerOrder"]
         return self
 
-    def step(self, ch: Configuration):
+    def step(self, config: Configuration, info_api: BlockInfoApi):
         floating_comments = []
         attached_comments = {}
         for comment_id, comment in self.comments.items():
@@ -79,8 +80,9 @@ class FRTarget:
         new_blocks = {}
         for block_id, block in blocks.items():
             new_block = block.step(
-                ch              = ch,
-                api             = block_api,
+                config    = config,
+                block_api = block_api,
+                info_api  = info_api,
             )
             new_blocks[block_id] = new_block
             #gprint(block_id, self.blocks[block_id])

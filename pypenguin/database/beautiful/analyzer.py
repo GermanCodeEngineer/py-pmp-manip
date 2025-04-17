@@ -130,7 +130,7 @@ bt_translation = {
     "embeddedMenu": "POLYGON_MENU"
 }
 
-for cat in ["motion", "looks", "sounds", "events", "control", "sensing", "operators", "variables", "lists", "special"]:
+for cat in ["motion", "looks", "sounds", "events", "control", "sensing", "operators", "variables", "lists"]:
     exec(f"from {cat} import opcodes")
     
     if   cat == "sounds": block_cat = "sound"
@@ -187,9 +187,9 @@ for cat in ["motion", "looks", "sounds", "events", "control", "sensing", "operat
                     if value == {}: break
                     block_string += '        inputs={\n'
                     for old_input_id, input_data in value.items():
-                        block_string += f'            "{old_input_id}": InputInfo(InputType.{input_data["type"]}'
+                        block_string += f'            "{input_data["old"]}": InputInfo(InputType.{input_data["type"]}'
                         if "old" in input_data:
-                            block_string += f', old="{input_data["old"]}"'
+                            block_string += f', new="{old_input_id}"'
                         if "menu" in input_data:
                             block_string += f', menu={input_data["menu"]}'
                         block_string += '),\n'
@@ -200,9 +200,9 @@ for cat in ["motion", "looks", "sounds", "events", "control", "sensing", "operat
                     if value == {}: break
                     block_string += '        dropdowns={\n'
                     for old_input_id, input_data in value.items():
-                        block_string += f'            "{old_input_id}": DropdownInfo(DropdownType.{input_data["type"]}'
+                        block_string += f'            "{input_data["old"]}": DropdownInfo(DropdownType.{input_data["type"]}'
                         if "old" in input_data:
-                            block_string += f', old="{input_data["old"]}"'
+                            block_string += f', new="{old_input_id}"'
                         block_string += '),\n'
                         
                     #raise Exception()

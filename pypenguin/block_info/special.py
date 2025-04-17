@@ -149,18 +149,18 @@ special = BlockInfoSet(name="special", opcode_prefix="special", block_infos={
         block_type=BlockType.POLYGON_MENU,
         new_opcode="POLYGON MENU",
         inputs={
-            "x1": InputInfo(InputType.NUMBER, old="x1"),
-            "y1": InputInfo(InputType.NUMBER, old="y1"),
-            "x2": InputInfo(InputType.NUMBER, old="x2"),
-            "y2": InputInfo(InputType.NUMBER, old="y2"),
-            "x3": InputInfo(InputType.NUMBER, old="x3"),
-            "y3": InputInfo(InputType.NUMBER, old="y3"),
-            "x4": InputInfo(InputType.NUMBER, old="x4"),
-            "y4": InputInfo(InputType.NUMBER, old="y4"),
+            "x1": InputInfo(InputType.NUMBER, new="x1"),
+            "y1": InputInfo(InputType.NUMBER, new="y1"),
+            "x2": InputInfo(InputType.NUMBER, new="x2"),
+            "y2": InputInfo(InputType.NUMBER, new="y2"),
+            "x3": InputInfo(InputType.NUMBER, new="x3"),
+            "y3": InputInfo(InputType.NUMBER, new="y3"),
+            "x4": InputInfo(InputType.NUMBER, new="x4"),
+            "y4": InputInfo(InputType.NUMBER, new="y4"),
         },
         dropdowns={
-            "EXPANDED_MINIMIZED": DropdownInfo(DropdownType.EXPANDED_MINIMIZED, old="button"),
-            "VERTEX_COUNT": DropdownInfo(DropdownType.VERTEX_COUNT, old="VERTEX_COUNT"),
+            "button": DropdownInfo(DropdownType.EXPANDED_MINIMIZED, new="EXPANDED_MINIMIZED"),
+            "VERTEX_COUNT": DropdownInfo(DropdownType.VERTEX_COUNT, new="VERTEX_COUNT"),
         },
     ),
     "variable_value": BlockInfo(
@@ -185,15 +185,15 @@ special = BlockInfoSet(name="special", opcode_prefix="special", block_infos={
         block_type=BlockType.ENDING_STATEMENT,
         new_opcode="return (VALUE)",
         inputs={
-            "VALUE": InputInfo(InputType.TEXT, old="return"),
+            "return": InputInfo(InputType.TEXT, new="VALUE"),
         },
     ),
     "procedures_set": BlockInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="set (PARAM) to (VALUE)",
         inputs={
-            "PARAM": InputInfo(InputType.ROUND, old="PARAM"),
-            "VALUE": InputInfo(InputType.TEXT, old="VALUE"),
+            "PARAM": InputInfo(InputType.ROUND, new="PARAM"),
+            "VALUE": InputInfo(InputType.TEXT, new="VALUE"),
         },
     ),
     "argument_reporter_string_number": BlockInfo(

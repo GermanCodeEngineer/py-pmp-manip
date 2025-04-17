@@ -1,4 +1,5 @@
 import json
+from abc import ABC, abstractmethod
 
 from custom_block import SRCustomOpcode, SRCustomBlockOptype
 
@@ -15,6 +16,9 @@ class FRMutation:
         self.tag_name = data["tagName" ]
         self.children = data["children"]
         return self
+
+    @abstractmethod
+    def step(self) -> "SRMutation": pass
 
 class FRCustomArgumentMutation(FRMutation):
     _grepr_fields = FRMutation._grepr_fields + ["color"]
@@ -86,6 +90,50 @@ class FRCustomBlockMutation(FRMutation):
             color3            = self.color[2],
         )
 
+class FRCustomBlockMutation(FRMutation):
+    _grepr_fields = FRMutation._grepr_fields + ["proccode", "argument_ids", "argument_names", "argument_defaults", "warp", "returns", "edited", "optype", "color"]
+    
+    proccode: str
+    argument_ids: list[str]
+    argument_names: list[str]
+    argument_defaults: list[str]
+    warp: bool
+    returns: bool | None
+    edited: bool # seems to always be true
+    optype: str
+    color: tuple[str, str, str]
+    
+    @classmethod
+    def from_data(cls, data):
+        self = super().from_data(data)
+        self.proccode          = data["proccode"]
+        self.argument_ids      = json.loads(data["argumentids"     ])
+        self.argument_names    = json.loads(data["argumentnames"   ])
+        self.argument_defaults = json.loads(data["argumentdefaults"])
+        if isinstance(data["warp"], bool):
+            self.warp = data["warp"]
+        elif isinstance(data["warp"], str):
+            self.warp = json.loads(data["warp"])
+        else: raise ValueError()
+        self.returns           = json.loads(data["returns"])
+        self.edited            = json.loads(data["edited" ])
+        self.optype            = json.loads(data["optype" ])
+        self.color       = tuple(json.loads(data["color"  ]))
+        return self
+    
+    def step(self):
+        return SRCustomBlockMutation(
+            custom_opcode     = SRCustomOpcode(
+                proccode          = self.proccode,
+                argument_names    = self.argument_names,
+                argument_defaults = self.argument_defaults,
+            ),
+            no_screen_refresh = self.warp,
+            optype            = SRCustomBlockOptype.from_string(self.optype),
+            color1            = self.color[0],
+            color2            = self.color[1],
+            color3            = self.color[2],
+        )
 
 class SRMutation:
     _grepr = True

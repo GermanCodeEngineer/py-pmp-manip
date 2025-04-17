@@ -5,7 +5,8 @@ from target                import FRStage, FRSprite
 from monitor               import FRMonitor
 from meta                  import FRMeta
 from config                import Configuration, ConfigSetting, ConfigType
-from block_opcodes         import *
+from block_info            import BlockInfoApi
+#from block_opcodes         import *
 
 from utility import gprint
 
@@ -43,22 +44,18 @@ class FRProject:
         self.meta           = FRMeta.from_data(project_data["meta"])
         return self
         
-    def step(self, ch: Configuration):
-        gprint(ch)
+    def step(self, config: Configuration, info_api: BlockInfoApi):
         #TODO: Scratch to PenguinMod Conversion
         for target in self.targets:
-            target.step(ch=ch)
+            target.step(config=config, info_api=info_api)
         
 #file_path = "../assets/from_online/my 1st platformer.pmp"
 file_path = "../assets/from_online/dumb example.pmp"
 #file_path = "../assets/from_online/color.pmp"
 
-#project = FRProject.from_pmp_file(file_path)
-#gprint(project)
-#from config import ch
-#project.step(ch)
+project = FRProject.from_pmp_file(file_path)
+gprint(project)
+from config import config
 from block_info import info_api
-gprint(info_api)
-gprint(info_api.get_block_info_by_opcode("argument_reporter_boolean"))
-
+project.step(config=config, info_api=info_api)
 

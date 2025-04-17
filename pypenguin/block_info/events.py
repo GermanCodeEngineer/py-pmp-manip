@@ -17,7 +17,7 @@ events = BlockInfoSet(name="events", opcode_prefix="event", block_infos={
         block_type=BlockType.HAT,
         new_opcode="when <CONDITION>",
         inputs={
-            "CONDITION": InputInfo(InputType.BOOLEAN, old="ANYTHING"),
+            "ANYTHING": InputInfo(InputType.BOOLEAN, new="CONDITION"),
         },
     ),
     "whenkeypressed": BlockInfo(
@@ -48,10 +48,10 @@ events = BlockInfoSet(name="events", opcode_prefix="event", block_infos={
         block_type=BlockType.HAT,
         new_opcode="when [OPTION] > (VALUE)",
         inputs={
-            "VALUE": InputInfo(InputType.NUMBER, old="VALUE"),
+            "VALUE": InputInfo(InputType.NUMBER, new="VALUE"),
         },
         dropdowns={
-            "OPTION": DropdownInfo(DropdownType.LOUDNESS_TIMER, old="WHENGREATERTHANMENU"),
+            "WHENGREATERTHANMENU": DropdownInfo(DropdownType.LOUDNESS_TIMER, new="OPTION"),
         },
     ),
     "whenbroadcastreceived": BlockInfo(
@@ -62,14 +62,14 @@ events = BlockInfoSet(name="events", opcode_prefix="event", block_infos={
         block_type=BlockType.STATEMENT,
         new_opcode="broadcast ([MESSAGE])",
         inputs={
-            "MESSAGE": InputInfo(InputType.BROADCAST, old="BROADCAST_INPUT"),
+            "BROADCAST_INPUT": InputInfo(InputType.BROADCAST, new="MESSAGE"),
         },
     ),
     "broadcastandwait": BlockInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="broadcast ([MESSAGE]) and wait",
         inputs={
-            "MESSAGE": InputInfo(InputType.BROADCAST, old="BROADCAST_INPUT"),
+            "BROADCAST_INPUT": InputInfo(InputType.BROADCAST, new="MESSAGE"),
         },
     ),
 })

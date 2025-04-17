@@ -66,6 +66,15 @@ class BlockInfo:
         self.dropdowns         = dropdowns
         self.can_have_monitor  = can_have_monitor
         self.alt_opcode_prefix = alt_opcode_prefix
+    
+    def get_input_info(self, input_id: str) -> "InputInfo":
+        return self.inputs[input_id]
+    
+    def get_input_type(self, input_id: str) -> "InputType":
+        return self.get_input_info(input_id).type
+    
+    def get_input_mode(self, input_id: str) -> "InputMode":
+        return self.get_input_type(input_id).get_mode()
 
 class BlockType(Enum):
     def __repr__(self):
@@ -82,19 +91,20 @@ class BlockType(Enum):
     # Pseudo Blocktypes
     MENU              = 6
     POLYGON_MENU      = 7 # Exclusively for the "polygon" block
-    DYNAMIC           = 8
+    NOT_RELEVANT      = 8
+    DYNAMIC           = 9
     
 class InputInfo:
     _grepr = True
-    _grepr_fields = ["type", "old", "menu"]
+    _grepr_fields = ["type", "new", "menu"]
     
     type: "InputType"
-    old: str
+    new: str
     menu: "MenuInfo | None"
     
-    def __init__(self, type: "InputType", old: str, menu: "MenuInfo|None" = None):
+    def __init__(self, type: "InputType", new: str, menu: "MenuInfo|None" = None):
         self.type = type
-        self.old  = old
+        self.new  = new
         self.menu = menu
 
 class InputMode(Enum):
@@ -114,6 +124,14 @@ class InputType(Enum):
     
     def get_mode(self) -> InputMode:
         return self.value[0]
+
+    def get_by_cb_default(self, default: str) -> "InputMode":
+        match default:
+            case "":
+                return InputType.TEXT,
+            case "false":
+                return InputType.BOOLEAN
+            case _: raise ValueError()
     
     # BLOCK_AND_TEXT
     DIRECTION           = (InputMode.BLOCK_AND_TEXT, 0)
@@ -171,14 +189,14 @@ class InputType(Enum):
 
 class DropdownInfo:
     _grepr = True
-    _grepr_fields = ["type", "old"]
+    _grepr_fields = ["type", "new"]
     
     type: "DropdownType"
-    old: str
+    new: str
     
-    def __init__(self, type: "DropdownType", old: str):
+    def __init__(self, type: "DropdownType", new: str):
         self.type = type
-        self.old  = old
+        self.new  = new
 
 
 class DropdownTypeInfo:

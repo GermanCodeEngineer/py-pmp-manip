@@ -5,30 +5,30 @@ looks = BlockInfoSet(name="looks", opcode_prefix="looks", block_infos={
         block_type=BlockType.STATEMENT,
         new_opcode="say (MESSAGE) for (SECONDS) seconds",
         inputs={
-            "MESSAGE": InputInfo(InputType.TEXT, old="MESSAGE"),
-            "SECONDS": InputInfo(InputType.NUMBER, old="SECS"),
+            "MESSAGE": InputInfo(InputType.TEXT, new="MESSAGE"),
+            "SECS": InputInfo(InputType.NUMBER, new="SECONDS"),
         },
     ),
     "say": BlockInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="say (MESSAGE)",
         inputs={
-            "MESSAGE": InputInfo(InputType.TEXT, old="MESSAGE"),
+            "MESSAGE": InputInfo(InputType.TEXT, new="MESSAGE"),
         },
     ),
     "thinkforsecs": BlockInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="think (MESSAGE) for (SECONDS) seconds",
         inputs={
-            "MESSAGE": InputInfo(InputType.TEXT, old="MESSAGE"),
-            "SECONDS": InputInfo(InputType.NUMBER, old="SECS"),
+            "MESSAGE": InputInfo(InputType.TEXT, new="MESSAGE"),
+            "SECS": InputInfo(InputType.NUMBER, new="SECONDS"),
         },
     ),
     "think": BlockInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="think (MESSAGE)",
         inputs={
-            "MESSAGE": InputInfo(InputType.TEXT, old="MESSAGE"),
+            "MESSAGE": InputInfo(InputType.TEXT, new="MESSAGE"),
         },
     ),
     "stoptalking": BlockInfo(
@@ -39,28 +39,28 @@ looks = BlockInfoSet(name="looks", opcode_prefix="looks", block_infos={
         block_type=BlockType.STATEMENT,
         new_opcode="set font to (FONT) with font size (FONT-SIZE)",
         inputs={
-            "FONT": InputInfo(InputType.TEXT, old="font"),
-            "FONT-SIZE": InputInfo(InputType.NUMBER, old="size"),
+            "font": InputInfo(InputType.TEXT, new="FONT"),
+            "size": InputInfo(InputType.NUMBER, new="FONT-SIZE"),
         },
     ),
     "setColor": BlockInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="set [PROPERTY] color to (COLOR)",
         inputs={
-            "COLOR": InputInfo(InputType.COLOR, old="color"),
+            "color": InputInfo(InputType.COLOR, new="COLOR"),
         },
         dropdowns={
-            "PROPERTY": DropdownInfo(DropdownType.TEXT_BUBBLE_COLOR_PROPERTY, old="prop"),
+            "prop": DropdownInfo(DropdownType.TEXT_BUBBLE_COLOR_PROPERTY, new="PROPERTY"),
         },
     ),
     "setShape": BlockInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="set text bubble [PROPERTY] to (VALUE)",
         inputs={
-            "VALUE": InputInfo(InputType.NUMBER, old="color"),
+            "color": InputInfo(InputType.NUMBER, new="VALUE"),
         },
         dropdowns={
-            "PROPERTY": DropdownInfo(DropdownType.TEXT_BUBBLE_PROPERTY, old="prop"),
+            "prop": DropdownInfo(DropdownType.TEXT_BUBBLE_PROPERTY, new="PROPERTY"),
         },
     ),
     "sayWidth": BlockInfo(
@@ -77,7 +77,7 @@ looks = BlockInfoSet(name="looks", opcode_prefix="looks", block_infos={
         block_type=BlockType.STATEMENT,
         new_opcode="switch costume to ([COSTUME])",
         inputs={
-            "COSTUME": InputInfo(InputType.COSTUME, old="COSTUME", menu=MenuInfo("looks_costume", inner="COSTUME")),
+            "COSTUME": InputInfo(InputType.COSTUME, new="COSTUME", menu=MenuInfo("looks_costume", inner="COSTUME")),
         },
     ),
     "nextcostume": BlockInfo(
@@ -88,15 +88,15 @@ looks = BlockInfoSet(name="looks", opcode_prefix="looks", block_infos={
         block_type=BlockType.STRING_REPORTER,
         new_opcode="([PROPERTY]) of ([COSTUME])",
         inputs={
-            "PROPERTY": InputInfo(InputType.COSTUME_PROPERTY, old="INPUT", menu=MenuInfo("looks_getinput_menu", inner="INPUT")),
-            "COSTUME": InputInfo(InputType.COSTUME, old="COSTUME", menu=MenuInfo("looks_costume", inner="COSTUME")),
+            "INPUT": InputInfo(InputType.COSTUME_PROPERTY, new="PROPERTY", menu=MenuInfo("looks_getinput_menu", inner="INPUT")),
+            "COSTUME": InputInfo(InputType.COSTUME, new="COSTUME", menu=MenuInfo("looks_costume", inner="COSTUME")),
         },
     ),
     "switchbackdropto": BlockInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="switch backdrop to ([BACKDROP])",
         inputs={
-            "BACKDROP": InputInfo(InputType.BACKDROP, old="BACKDROP", menu=MenuInfo("looks_backdrops", inner="BACKDROP")),
+            "BACKDROP": InputInfo(InputType.BACKDROP, new="BACKDROP", menu=MenuInfo("looks_backdrops", inner="BACKDROP")),
         },
     ),
     "nextbackdrop": BlockInfo(
@@ -107,22 +107,22 @@ looks = BlockInfoSet(name="looks", opcode_prefix="looks", block_infos={
         block_type=BlockType.STATEMENT,
         new_opcode="change size by (AMOUNT)",
         inputs={
-            "AMOUNT": InputInfo(InputType.NUMBER, old="CHANGE"),
+            "CHANGE": InputInfo(InputType.NUMBER, new="AMOUNT"),
         },
     ),
     "setsizeto": BlockInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="set size to (SIZE)",
         inputs={
-            "SIZE": InputInfo(InputType.NUMBER, old="SIZE"),
+            "SIZE": InputInfo(InputType.NUMBER, new="SIZE"),
         },
     ),
     "setStretch": BlockInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="set stretch to x: (X) y: (Y)",
         inputs={
-            "X": InputInfo(InputType.NUMBER, old="X"),
-            "Y": InputInfo(InputType.NUMBER, old="Y"),
+            "X": InputInfo(InputType.NUMBER, new="X"),
+            "Y": InputInfo(InputType.NUMBER, new="Y"),
         },
     ),
     "stretchGetX": BlockInfo(
@@ -139,27 +139,27 @@ looks = BlockInfoSet(name="looks", opcode_prefix="looks", block_infos={
         block_type=BlockType.STATEMENT,
         new_opcode="change [EFFECT] sprite effect by (AMOUNT)",
         inputs={
-            "AMOUNT": InputInfo(InputType.NUMBER, old="CHANGE"),
+            "CHANGE": InputInfo(InputType.NUMBER, new="AMOUNT"),
         },
         dropdowns={
-            "EFFECT": DropdownInfo(DropdownType.SPRITE_EFFECT, old="EFFECT"),
+            "EFFECT": DropdownInfo(DropdownType.SPRITE_EFFECT, new="EFFECT"),
         },
     ),
     "seteffectto": BlockInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="set [EFFECT] sprite effect to (VALUE)",
         inputs={
-            "VALUE": InputInfo(InputType.NUMBER, old="VALUE"),
+            "VALUE": InputInfo(InputType.NUMBER, new="VALUE"),
         },
         dropdowns={
-            "EFFECT": DropdownInfo(DropdownType.SPRITE_EFFECT, old="EFFECT"),
+            "EFFECT": DropdownInfo(DropdownType.SPRITE_EFFECT, new="EFFECT"),
         },
     ),
     "setTintColor": BlockInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="set tint color to (COLOR)",
         inputs={
-            "COLOR": InputInfo(InputType.COLOR, old="color"),
+            "color": InputInfo(InputType.COLOR, new="COLOR"),
         },
     ),
     "cleargraphiceffects": BlockInfo(
@@ -193,21 +193,21 @@ looks = BlockInfoSet(name="looks", opcode_prefix="looks", block_infos={
         block_type=BlockType.STATEMENT,
         new_opcode="show ([TARGET])",
         inputs={
-            "TARGET": InputInfo(InputType.MYSELF_OR_OTHER_SPRITE, old="VISIBLE_OPTION", menu=MenuInfo("looks_changeVisibilityOfSprite_menu", inner="VISIBLE_OPTION")),
+            "VISIBLE_OPTION": InputInfo(InputType.MYSELF_OR_OTHER_SPRITE, new="TARGET", menu=MenuInfo("looks_changeVisibilityOfSprite_menu", inner="VISIBLE_OPTION")),
         },
     ),
     "changeVisibilityOfSpriteHide": BlockInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="hide ([TARGET])",
         inputs={
-            "TARGET": InputInfo(InputType.MYSELF_OR_OTHER_SPRITE, old="VISIBLE_OPTION", menu=MenuInfo("looks_changeVisibilityOfSprite_menu", inner="VISIBLE_OPTION")),
+            "VISIBLE_OPTION": InputInfo(InputType.MYSELF_OR_OTHER_SPRITE, new="TARGET", menu=MenuInfo("looks_changeVisibilityOfSprite_menu", inner="VISIBLE_OPTION")),
         },
     ),
     "getOtherSpriteVisible": BlockInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="is ([TARGET]) visible?",
         inputs={
-            "TARGET": InputInfo(InputType.MYSELF_OR_OTHER_SPRITE, old="VISIBLE_OPTION", menu=MenuInfo("looks_getOtherSpriteVisible_menu", inner="VISIBLE_OPTION")),
+            "VISIBLE_OPTION": InputInfo(InputType.MYSELF_OR_OTHER_SPRITE, new="TARGET", menu=MenuInfo("looks_getOtherSpriteVisible_menu", inner="VISIBLE_OPTION")),
         },
     ),
     "gotofrontback": BlockInfo(
@@ -218,27 +218,27 @@ looks = BlockInfoSet(name="looks", opcode_prefix="looks", block_infos={
         block_type=BlockType.STATEMENT,
         new_opcode="go [DIRECTION] (LAYERS) layers",
         inputs={
-            "LAYERS": InputInfo(InputType.INTEGER, old="NUM"),
+            "NUM": InputInfo(InputType.INTEGER, new="LAYERS"),
         },
         dropdowns={
-            "DIRECTION": DropdownInfo(DropdownType.FORWARD_BACKWARD, old="FORWARD_BACKWARD"),
+            "FORWARD_BACKWARD": DropdownInfo(DropdownType.FORWARD_BACKWARD, new="DIRECTION"),
         },
     ),
     "layersSetLayer": BlockInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="go to layer (LAYER)",
         inputs={
-            "LAYER": InputInfo(InputType.INTEGER, old="NUM"),
+            "NUM": InputInfo(InputType.INTEGER, new="LAYER"),
         },
     ),
     "goTargetLayer": BlockInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="go [DIRECTION] ([TARGET])",
         inputs={
-            "TARGET": InputInfo(InputType.MYSELF_OR_OTHER_SPRITE, old="VISIBLE_OPTION", menu=MenuInfo("looks_getOtherSpriteVisible_menu", inner="VISIBLE_OPTION")),
+            "VISIBLE_OPTION": InputInfo(InputType.MYSELF_OR_OTHER_SPRITE, new="TARGET", menu=MenuInfo("looks_getOtherSpriteVisible_menu", inner="VISIBLE_OPTION")),
         },
         dropdowns={
-            "DIRECTION": DropdownInfo(DropdownType.INFRONT_BEHIND, old="FORWARD_BACKWARD"),
+            "FORWARD_BACKWARD": DropdownInfo(DropdownType.INFRONT_BEHIND, new="DIRECTION"),
         },
     ),
     "layersGetLayer": BlockInfo(

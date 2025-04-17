@@ -4,9 +4,13 @@ from dataclasses import dataclass
 
 class ConfigType(Enum):
     def __repr__(self):
-        return f"CET.{self.name}"
-    PRE_FR_TO_SR     = 0
-    INSTEAD_FR_TO_SR = 1
+        return f"{self.__class__.__name__}.{self.name}"
+    
+    # FRBlock.step:
+    PRE_FR_STEP     = 10
+    INSTEAD_FR_STEP = 11
+    # FRBlock.step_inputs:
+    INSTEAD_FR_STEP_INPUTS_GET_MODES = 20
 
 
 @dataclass
@@ -58,13 +62,14 @@ class FRtoSRApi:
     def schedule_block_deletion(self, block_id: str):
         self.scheduled_block_deletions.append(block_id)
 
-    def get_cb_mutation(self, proccode: str):
+    def get_cb_mutation(self, proccode: str) -> "FRCustomBlockMutation":
+        from block_mutation import FRCustomBlockMutation
         for block in self.blocks.values():
-            if block.mutation is None: continue
+            if not isinstance(block.mutation, FRCustomBlockMutation): continue
             if block.mutation.proccode == proccode:
                 return block.mutation
         raise ValueError(f"Mutation of proccode {repr(proccode)} not found.")
     
-ch = Configuration()
+config = Configuration()
 
 

@@ -28,11 +28,12 @@ class BlockInfoApi:
             if block_info_set.uses_prefix(prefix):
                 yield block_info_set
         
-    def get_block_info_by_opcode(self, opcode: str) -> BlockInfo:
-        set_name = opcode[:opcode.index("_")]
+    def get_info_by_opcode(self, opcode: str) -> BlockInfo:
+        opcode_prefix = opcode[:opcode.index("_")]
         main_opcode = opcode[opcode.index("_")+1:]
-        generator = self.get_sets_by_prefix(set_name)
+        generator = self.get_sets_by_prefix(opcode_prefix)
         for block_info_set in generator:
+            from utility import gprint
             block_info = block_info_set.get_block_info(main_opcode, default_none=True)
             if block_info is not None:
                 return block_info
@@ -48,6 +49,7 @@ from block_info.sensing   import sensing
 from block_info.operators import operators
 from block_info.variables import variables
 from block_info.lists     import lists
+from block_opcodes        import *
 
 motion.add_block("goto_menu", BlockInfo(
     block_type=BlockType.MENU,
@@ -133,12 +135,12 @@ sensing.add_block("sensing_fingeroptions", BlockInfo(
     block_type=BlockType.MENU,
     new_opcode="#FINGER INDEX MENU",
 ))
-variables.add_block("value", BlockInfo(
+variables.add_block(OPCODE_VAR_VALUE.removeprefix("data_"), BlockInfo(
     block_type=BlockType.STRING_REPORTER,
     new_opcode="value of [VARIABLE]",
     can_have_monitor="True",
 ))
-lists.add_block("list_value", BlockInfo(
+lists.add_block(OPCODE_LIST_VALUE.removeprefix("data_"), BlockInfo(
     block_type=BlockType.STRING_REPORTER,
     new_opcode="value of [LIST]",
     can_have_monitor="True",
@@ -153,6 +155,10 @@ custom_blocks = BlockInfoSet(
             block_type=BlockType.HAT,
             new_opcode="define custom block",
         ),
+        "prototype": BlockInfo( # only temporary
+            block_type=BlockType.NOT_RELEVANT,
+            new_opcode="#CUSTOM BLOCK PROTOTYPE",
+        ),
         "call": BlockInfo(
             block_type=BlockType.DYNAMIC,
             new_opcode="call custom block",
@@ -161,15 +167,15 @@ custom_blocks = BlockInfoSet(
             block_type=BlockType.ENDING_STATEMENT,
             new_opcode="return (VALUE)",
             inputs={
-                "VALUE": InputInfo(InputType.TEXT, old="return"),
+                "VALUE": InputInfo(InputType.TEXT, new="return"),
             },
         ),
         "set": BlockInfo(
             block_type=BlockType.STATEMENT,
             new_opcode="set (PARAM) to (VALUE)",
             inputs={
-                "PARAM": InputInfo(InputType.ROUND, old="PARAM"),
-                "VALUE": InputInfo(InputType.TEXT, old="VALUE"),
+                "PARAM": InputInfo(InputType.ROUND, new="PARAM"),
+                "VALUE": InputInfo(InputType.TEXT, new="VALUE"),
             },
         ),
         "reporter_string_number": BlockInfo(
