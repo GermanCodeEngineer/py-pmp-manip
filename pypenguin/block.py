@@ -1,11 +1,12 @@
-from typing import Callable
+from typing import Any
 
 from utility               import gprint, PypenguinClass
 from block_mutation        import FRMutation, FRCustomBlockMutation, FRCustomArgumentMutation, FRCustomCallMutation
 from block_mutation        import SRMutation
 from block_opcodes         import *
-from config                import FRtoSRApi, Configuration, ConfigType
+from config                import FRtoTRApi, SpecialCaseHandler, SpecialCaseType
 from block_info            import BlockInfoApi, BlockInfo, InputMode
+from comment               import SRAttachedComment
 
 class FRBlock(PypenguinClass):
     _grepr = True
@@ -30,7 +31,7 @@ class FRBlock(PypenguinClass):
     block_info: BlockInfo | None
 
     @classmethod
-    def from_data(cls, data):
+    def from_data(cls, data: dict[str, Any]):
         self = cls()
         self.opcode    = data["opcode"  ]
         self.next      = data["next"    ]
@@ -60,7 +61,7 @@ class FRBlock(PypenguinClass):
         return self
     
     @classmethod
-    def from_tuple(cls, obj: tuple, parent_id: str|None):
+    def from_tuple(cls, obj: tuple, parent_id: str|None) -> "FRBlock":
         if obj[0] == OPCODE_VAR_VALUE_NUM: # A magic value
             block_data = {
                 "opcode": OPCODE_VAR_VALUE,
@@ -90,18 +91,16 @@ class FRBlock(PypenguinClass):
         else: raise ValueError()
         return cls.from_data(block_data)
 
-    
 
     def step_inputs(self, 
-        config: Configuration, 
-        block_api: FRtoSRApi, 
+        config: SpecialCaseHandler, 
+        block_api: FRtoTRApi, 
+        info_api: BlockInfoApi,
         block_info: BlockInfo,
         own_id: str
-    ) -> dict[str, "SRInput"]:
-        #TODO: Replace the old with the new input ids
-        
+    ) -> dict[str, "TRInput"]:        
         instead_event = config.get_event(
-            event_type = ConfigType.INSTEAD_FR_STEP_INPUTS_GET_MODES,
+            event_type = SpecialCaseType.INSTEAD_FR_STEP_INPUTS_GET_MODES,
             opcode     = self.opcode
         )
         if instead_event is None:
@@ -124,7 +123,7 @@ class FRBlock(PypenguinClass):
             if   len(input_value) == 2:
                 if   item_one_type == str: # e.g. "CONDITION": (2, "b")
                     # one block only, no text
-                    references.append(SRBlockReference(input_value[1]))
+                    references.append(TRBlockReference(input_value[1]))
                 elif item_one_type == tuple: # e.g. "MESSAGE": (1, (10, "Bye!"))
                     # one block(currently empty) and text
                     text = input_value[1][1]
@@ -132,23 +131,33 @@ class FRBlock(PypenguinClass):
                 item_two_type = type(input_value[2])
                 if   item_one_type == str  and item_two_type == str: # e.g. "TOUCHINGOBJECTMENU": (3, "d", "e")
                     # two blocks(a menu, and a normal block) and no text
-                    references.append(SRBlockReference(input_value[1]))
-                    references.append(SRBlockReference(input_value[2]))
+                    references.append(TRBlockReference(input_value[1]))
+                    references.append(TRBlockReference(input_value[2]))
                 elif item_one_type == str  and item_two_type == tuple: # e.g. 'OPERAND1': (3, 'e', (10, ''))
                     # one block and text
-                    references.append(SRBlockReference(input_value[1]))
+                    references.append(TRBlockReference(input_value[1]))
                     text = input_value[2][1]
                 elif item_one_type == str  and item_two_type == type(None): # e.g. 'custom input bool': (3, 'c', None)
                     # one block
-                    references.append(SRBlockReference(input_value[1]))
+                    references.append(TRBlockReference(input_value[1]))
                 elif item_one_type == tuple and item_two_type == tuple: # e.g. 'VALUE': (3, (12, 'var', '=!vkqJLb6ODy(oqe-|ZN'), (10, '0'))
                     # one list block and text
-                    immediate_block = FRBlock.from_tuple(input_value[1], parent_id=own_id)
+                    immediate_block = FRBlock.from_tuple(input_value[1], parent_id=own_id).step(
+                        config=config,
+                        block_api=block_api,
+                        info_api=info_api,
+                        own_id=None, # None is fine, because tuple blocks can't possibly contain more tuple blocks 
+                    )
                     text      = input_value[2][1]
                 elif item_one_type == tuple and item_two_type == str: # "TOUCHINGOBJECTMENU": (3, (12, "my variable", "`jEk@4|i[#Fk?(8x)AV.-my variable"), "b")
                     # two blocks(a menu, and a list block) and no text
-                    immediate_block = FRBlock.from_tuple(input_value[1], parent_id=own_id)
-                    references.append(SRBlockReference(input_value[2]))
+                    immediate_block = FRBlock.from_tuple(input_value[1], parent_id=own_id).step(
+                        config=config,
+                        block_api=block_api,
+                        info_api=info_api,
+                        own_id=None, # None is fine, because tuple blocks can't possibly contain more tuple blocks 
+                    )
+                    references.append(TRBlockReference(input_value[2]))
                 else: raise ValueError()
             new_input_data_1 = {
                 "mode"           : input_mode,
@@ -164,11 +173,16 @@ class FRBlock(PypenguinClass):
             
             for item in input_value[1:]: # ignore first item(some irrelevant number)
                 if isinstance(item, str):
-                    references.append(SRBlockReference(item))
+                    references.append(TRBlockReference(item))
                 elif isinstance(item, tuple) and item[0] in {4, 5, 6, 7, 8, 9, 10, 11}:
                     text = item[1]
                 elif isinstance(item, tuple) and item[0] in {12, 13}:
-                    immediate_block = FRBlock.from_tuple(item, parent_id=own_id)
+                    immediate_block = FRBlock.from_tuple(item, parent_id=own_id).step(
+                        config=config,
+                        block_api=block_api,
+                        info_api=info_api,
+                        own_id=None, # None is fine, because tuple blocks can't possibly contain more tuple blocks 
+                    )
                 else: raise ValueError()
             new_input_data_2 = {
                 "mode"           : input_mode,
@@ -184,44 +198,68 @@ class FRBlock(PypenguinClass):
                 raise Exception("Conflict!")
 
             #print("input", input_id, input_mode, input_value)
-            new_inputs[input_id] = SRInput(
+            new_inputs[input_id] = TRInput(
                 mode            = input_mode,
                 references      = references,
                 immediate_block = immediate_block,
                 text            = text,
             )
+        
+        # Check for missing inputs and give a default value where possible otherwise raise
+        for input_id, input_mode in input_modes.items():
+            if input_id in new_inputs:
+                continue
+            if input_mode in {InputMode.BLOCK_ONLY, InputMode.SCRIPT}:
+                new_inputs[input_id] = {
+                    "mode"      : input_mode,
+                    "references": [],
+                    "listBlock" : None,
+                    "text"      : None,
+                }
+            # TODO: special handler case for e.g. polygon block (x4, y4)
+            else: raise ValueError()
+            
+        # Also translate old input ids to new input ids
+        new_inputs = {block_info.get_new_input_id(input_id): input_value for input_id, input_value in new_inputs.items()}
         return new_inputs
 
     def step(self, 
-        config: Configuration, 
-        block_api: FRtoSRApi, 
+        config: SpecialCaseHandler, 
+        block_api: FRtoTRApi, 
         info_api: BlockInfoApi, 
         own_id: str
-    ) -> "SRBlock":
+    ) -> "TRBlock":
         block_info = info_api.get_info_by_opcode(self.opcode)
         pre_event = config.get_event(
-            event_type = ConfigType.PRE_FR_STEP,
+            event_type = SpecialCaseType.PRE_FR_STEP,
             opcode     = self.opcode,
         )
         if pre_event is not None:
             self = pre_event.call(block_api=block_api, block=self)
         
         instead_event = config.get_event(
-            event_type = ConfigType.INSTEAD_FR_STEP,
+            event_type = SpecialCaseType.INSTEAD_FR_STEP,
             opcode     = self.opcode,
         )
         if instead_event is None:
-            new_block = SRBlock(
+            new_inputs = self.step_inputs(
+                config     = config,
+                block_api  = block_api,
+                info_api   = info_api,
+                block_info = block_info,
+                own_id     = own_id,
+            )
+            new_dropdowns = {}
+            for dropdown_id, dropdown_value in self.fields.items():
+                new_dropdown_id = block_info.get_new_dropdown_id(dropdown_id)
+                new_dropdowns[new_dropdown_id] = dropdown_value[0]
+            
+            new_block = TRBlock(
                 opcode       = self.opcode,
-                inputs       = self.step_inputs(
-                    config     = config,
-                    block_api  = block_api,
-                    block_info = block_info,
-                    own_id     = own_id,
-                ),
-                dropdowns    = self.fields, #TODO
+                inputs       = new_inputs,
+                dropdowns    = new_dropdowns,
                 position     = (self.x, self.y) if self.top_level else None,
-                comment      = self.comment,
+                comment      = None if self.comment  is None else block_api.get_comment(self.comment),
                 mutation     = None if self.mutation is None else self.mutation.step(
                     block_api = block_api,
                 ),
@@ -230,30 +268,30 @@ class FRBlock(PypenguinClass):
             )
         else:
             new_block = instead_event.call(block_api=block_api, block=self)
-            pass #TODO: add custom handler system here to possibly replace below
-                 #      for e.g. custom block defs, prototypes, calls
         
         #TODO: add custom handler system here for e.g. draw polygon block
         return new_block
 
-class SRBlock(PypenguinClass):
+
+class TRBlock(PypenguinClass):
+    """Temporary Block Representation."""
     _grepr = True
     _grepr_fields = ["opcode", "inputs", "dropdowns", "comment", "mutation", "position", "next", "is_top_level"]
     
     opcode: str
-    #inputs: dict[str, ?]
-    #dropdowns: dict[str, ?]
-    comment: str | None # a comment id
-    position: tuple[int | float, int | float] | None
+    inputs: dict[str, "TRInput"]
+    dropdowns: dict[str, Any]
+    comment: SRAttachedComment | None
     mutation: "SRMutation | None"
+    position: tuple[int | float, int | float] | None
     next: str | None
     is_top_level: bool
 
     def __init__(self, 
         opcode: str,
-        inputs,#: dict[str, ?],
-        dropdowns,#: dict[str, ?],
-        comment: str | None, # a comment id
+        inputs: dict[str, "TRInput"],
+        dropdowns: dict[str, Any],
+        comment: SRAttachedComment | None,
         mutation: "SRMutation | None",
         position: tuple[int | float, int | float] | None,
         next: str | None,
@@ -268,19 +306,80 @@ class SRBlock(PypenguinClass):
         self.next         = next
         self.is_top_level = is_top_level
     
-class SRInput(PypenguinClass):
+    def nest_recursively(self, 
+            all_blocks: dict[str, "TRBlock"],
+            own_reference: str,
+        ) -> tuple[tuple[int|float,int|float] | None, list["SRBlock"]]:
+        new_inputs = {}
+        for input_id, input_value in self.inputs.items():
+            sub_blocks = []
+            for sub_reference in input_value.references: 
+                sub_blocks.append(all_blocks[sub_reference].nest_recursively(
+                    all_blocks    = all_blocks,
+                    own_reference = sub_reference,
+                )[1])
+
+            if input_value.immediate_block is not None:
+                sub_blocks.insert(0, [input_value.immediate_block])
+            
+            block_count = len(sub_blocks)
+
+            if block_count == 2:
+                sub_script  = sub_blocks[0]
+                sub_block_0 = sub_blocks[0][0]
+                sub_block_1 = sub_blocks[1][0]
+            elif block_count == 1:
+                sub_script  = sub_blocks[0]
+                sub_block_0 = sub_blocks[0][0]
+                sub_block_1 = None
+            elif block_count == 0:
+                sub_script  = []
+                sub_block_0 = None
+                sub_block_1 = None
+            else: raise ValueError()
+
+            input_blocks   = []
+            input_block    = None
+            input_text     = None
+            input_dropdown = None
+
+            match input_value["mode"]:
+                case "block-and-text"|"block-and-broadcast-option":
+                    assert block_count in {0, 1}
+                    input_block = sub_block_0
+                    input_text  = input_value.text
+                case "block-only":
+                    assert block_count in {0, 1}
+                    input_block = sub_block_0
+                case "script":
+                    assert block_count in {0, 1}
+                    input_blocks = sub_script
+                case "block-and-option"|"block-and-menu-text":
+                    assert block_count in {1, 2}
+                    if   block_count == 1:
+                        input_block    = None
+                        input_dropdown = sub_block_0
+                    elif block_count == 2:
+                        input_block    = sub_block_0
+                        input_dropdown = sub_block_1
+            new_inputs[input_id] = SRInput(
+                mode=input_mode,
+                references=input_re
+            )
+    
+class TRInput(PypenguinClass):
     _grepr = True
     _grepr_fields = ["mode", "references", "immediate_block", "text"]
     
     mode: InputMode
-    references: list["SRBlockReference"]
-    immediate_block: SRBlock | None
+    references: list["TRBlockReference"]
+    immediate_block: TRBlock | None
     text: str | None
     
     def __init__(self,
         mode: InputMode,
-        references: list["SRBlockReference"],
-        immediate_block: SRBlock | None,
+        references: list["TRBlockReference"],
+        immediate_block: TRBlock | None,
         text: str | None,
     ):
         self.mode            = mode
@@ -288,7 +387,7 @@ class SRInput(PypenguinClass):
         self.immediate_block = immediate_block
         self.text            = text
 
-class SRBlockReference(PypenguinClass):
+class TRBlockReference(PypenguinClass):
     _grepr = True
     _grepr_fields = ["id"]
     
@@ -296,3 +395,63 @@ class SRBlockReference(PypenguinClass):
     
     def __init__(self, id):
         self.id = id
+    
+    def __hash__(self):
+        return hash(self.id)
+
+
+class SRScript(PypenguinClass):
+    _grepr = True
+    _grepr_fields = ["position", "blocks"]
+
+    position: tuple[int | float, int | float]
+    blocks: list["SRBlock"]
+
+    def __init__(self, position: tuple[int | float, int | float], blocks: list["SRBlock"]):
+        self.position = position
+        self.blocks   = blocks
+
+class SRBlock(PypenguinClass):
+    _grepr = True
+    _grepr_fields = ["opcode", "inputs", "dropdowns", "comment", "mutation"]
+    
+    opcode: str
+    inputs: dict[str, "SRInput"]
+    dropdowns: dict[str, Any]
+    comment: SRAttachedComment | None
+    mutation: "SRMutation | None"
+
+    def __init__(self, 
+        opcode: str,
+        inputs: dict[str, "TRInput"],
+        dropdowns: dict[str, Any],
+        comment: SRAttachedComment | None,
+        mutation: "SRMutation | None",
+    ):
+        self.opcode       = opcode
+        self.inputs       = inputs
+        self.dropdowns    = dropdowns
+        self.comment      = comment
+        self.mutation     = mutation
+    
+
+class SRInput(PypenguinClass):
+    _grepr = True
+    _grepr_fields = ["blocks", "block", "text", "dropdown"]
+
+    blocks: list[SRBlock] | None
+    block: SRBlock | None
+    text: str | None
+    dropdown: Any | None
+    
+    
+    def __init__(self,
+        blocks: list[SRBlock] | None,
+        block: SRBlock | None,
+        text: str | None,
+        dropdown: Any | None,
+    ):
+        self.mode            = mode
+        self.references      = references
+        self.immediate_block = immediate_block
+        self.text            = text

@@ -1,4 +1,7 @@
+from typing import Any
+
 from utility import PypenguinClass
+
 class FRComment(PypenguinClass):
     _grepr = True
     _grepr_fields = ["block_id", "x", "y", "width", "height", "minimized", "text"]
@@ -12,7 +15,7 @@ class FRComment(PypenguinClass):
     text: str
     
     @classmethod
-    def from_data(cls, data):
+    def from_data(cls, data: dict[str, Any]) -> "FRComment":
         self = cls()
         self.block_id  = data["blockId"  ]
         self.x         = data["x"        ]
@@ -23,14 +26,14 @@ class FRComment(PypenguinClass):
         self.text      = data["text"     ]
         return self
     
-    def step(self):
+    def step(self) -> "SRComment":
         position = (self.x, self.y)
         size = (self.width, self.height)
         if self.block_id is None: 
             return SRFloatingComment(
                 position=position,
                 size=size,
-                isMinimized=self.minimized,
+                is_minimized=self.minimized,
                 text=self.text,
             )
         else:
@@ -38,34 +41,29 @@ class FRComment(PypenguinClass):
                 block_id=self.block_id,
                 position=position,
                 size=size,
-                isMinimized=self.minimized,
+                is_minimized=self.minimized,
                 text=self.text,
             )
-        
-        {
-            "position"   : [data["x"], data["y"]],
-            "size"       : [data["width"], data["height"]],
-            "isMinimized": data["minimized"],
-            "text"       : data["text"],
-            "_info_"     : {
-                "block": data["blockId"],
-            },
-        }
 
 class SRComment(PypenguinClass):
     _grepr = True
-    _grepr_fields = ["position", "size", "isMinimized", "text"]
+    _grepr_fields = ["position", "size", "is_minimized", "text"]
     
     position: tuple[int | float, int | float]
     size: tuple[int | float, int | float]
-    isMinimized: bool
+    is_minimized: bool
     text: str
     
-    def __init__(self, position, size, isMinimized, text):
-        self.position    = position
-        self.size        = size
-        self.isMinimized = isMinimized
-        self.text        = text
+    def __init__(self, 
+            position: tuple[int | float, int | float], 
+            size: tuple[int | float, int | float], 
+            is_minimized: bool, 
+            text: str,
+        ):
+        self.position     = position
+        self.size         = size
+        self.is_minimized = is_minimized
+        self.text         = text
 
 class SRFloatingComment(SRComment):
     pass
@@ -75,11 +73,17 @@ class SRAttachedComment(SRComment):
 
     block_id = str
 
-    def __init__(self, block_id, position, size, isMinimized, text):
+    def __init__(self, 
+            position: tuple[int | float, int | float], 
+            size: tuple[int | float, int | float], 
+            is_minimized: bool, 
+            text: str,
+            block_id: str,
+        ):
         super().__init__(
             position=position, 
             size=size, 
-            isMinimized=isMinimized, 
+            is_minimized=is_minimized, 
             text=text
         )
         self.block_id = block_id

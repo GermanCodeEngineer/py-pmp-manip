@@ -76,6 +76,12 @@ class BlockInfo:
     def get_input_mode(self, input_id: str) -> "InputMode":
         return self.get_input_type(input_id).get_mode()
 
+    def get_new_input_id(self, input_id: str) -> str:
+        return self.inputs[input_id].new
+
+    def get_new_dropdown_id(self, dropdown_id: str) -> str:
+        return self.dropdowns[dropdown_id].new
+
 class BlockType(Enum):
     def __repr__(self):
         return f"{self.__class__.__name__}.{self.name}"

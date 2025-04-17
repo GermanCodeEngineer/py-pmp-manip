@@ -22,7 +22,7 @@ class FRMonitor(PypenguinClass):
     is_discrete: bool | None
 
     @classmethod
-    def from_data(cls, data):
+    def from_data(cls, data: dict[str, Any]) -> "FRMonitor":
         self = cls()
         self.id          = data["id"        ] 
         self.mode        = data["mode"      ] 

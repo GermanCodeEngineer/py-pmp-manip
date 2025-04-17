@@ -1,4 +1,7 @@
+from typing import Any
+
 from utility import PypenguinClass
+
 class FRMeta(PypenguinClass):
     _grepr = True
     _grepr_fields = ["semver", "vm", "agent", "platform"]
@@ -9,7 +12,7 @@ class FRMeta(PypenguinClass):
     platform: "FRPlatform"
     
     @classmethod
-    def from_data(cls, data):
+    def from_data(cls, data: dict[str, Any]) -> "FRMeta":
         self = cls()
         self.semver = data["semver"]
         self.vm     = data["vm"    ]
@@ -27,7 +30,7 @@ class FRPlatform(PypenguinClass):
     version: str
     
     @classmethod
-    def from_data(cls, data):
+    def from_data(cls, data: dict[str, str]) -> "FRPlatform":
         self = cls()
         self.name    = data["name"   ]
         self.url     = data["url"    ]

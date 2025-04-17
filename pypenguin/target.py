@@ -2,10 +2,10 @@ from typing import Any
 import copy
 
 from utility    import gprint, PypenguinClass
-from block      import FRBlock, FRCustomBlockMutation
+from block      import FRBlock, TRBlock, SRScript, TRBlockReference
 from comment    import FRComment, SRFloatingComment, SRAttachedComment
 from asset      import FRCostume, FRSound
-from config     import FRtoSRApi, Configuration
+from config     import FRtoTRApi, SpecialCaseHandler
 from block_info import BlockInfoApi
 
 class FRTarget(PypenguinClass):
@@ -28,7 +28,7 @@ class FRTarget(PypenguinClass):
     layer_order: int
 
     @classmethod
-    def from_data(cls, data):
+    def from_data(cls, data: dict[str, Any]) -> "FRTarget":
         self = cls()
         self.is_stage        = data["isStage"   ]
         self.name            = data["name"      ]
@@ -57,7 +57,7 @@ class FRTarget(PypenguinClass):
         self.layer_order     = data["layerOrder"]
         return self
 
-    def step(self, config: Configuration, info_api: BlockInfoApi):
+    def step(self, config: SpecialCaseHandler, info_api: BlockInfoApi):
         floating_comments = []
         attached_comments = {}
         for comment_id, comment in self.comments.items():
@@ -72,31 +72,60 @@ class FRTarget(PypenguinClass):
         #gprint(attached_comments)
 
         blocks = copy.deepcopy(self.blocks)
-        for block_id, block in blocks.items():
+        for block_reference, block in blocks.items():
             if isinstance(block, tuple):
-                blocks[block_id] = FRBlock.from_tuple(block, parent_id=None)
+                blocks[block_reference] = FRBlock.from_tuple(block, parent_id=None)
 
-        block_api = FRtoSRApi(blocks=blocks)
-        new_blocks = {}
-        for block_id, block in blocks.items():
+        block_api = FRtoTRApi(blocks=blocks, block_comments=attached_comments)
+        new_blocks: dict["TRBlockReference", "TRBlock"] = {}
+        for block_reference, block in blocks.items():
             new_block = block.step(
                 config    = config,
                 block_api = block_api,
                 info_api  = info_api,
-                own_id    = block_id,
+                own_id    = block_reference,
             )
-            new_blocks[block_id] = new_block
-            #gprint(block_id, self.blocks[block_id])
-            #gprint("====>", new_block)
+            new_blocks[TRBlockReference(id=block_reference)] = new_block
 
-        for block_id in block_api.scheduled_block_deletions:
-            del new_blocks[block_id]
+        for block_reference in block_api.scheduled_block_deletions:
+            del new_blocks[TRBlockReference(id=block_reference)]
         
-        for block_id, block in self.blocks.items():
+        for block_reference, block in self.blocks.items():
+            pass
             print("\n"*2)
             print(100*"=")
-            gprint(block_id, block)
-            gprint(new_blocks.get(block_id))
+            gprint(block_reference, block)
+            gprint(new_blocks.get(TRBlockReference(id=block_reference)))
+        
+        # Get all top level block ids
+        top_level_block_refs: list[TRBlockReference] = []
+        [top_level_block_refs.append(block_reference) if block.is_top_level else None for block_reference, block in new_blocks.items()]
+        
+        # Account for that one bug(not my fault), where a block is falsely independent
+        for block_reference, block in new_blocks.items():
+            for input_value in block.inputs.values():
+                for sub_reference in input_value.references:
+                    sub_block = new_blocks[sub_reference]
+                    if not sub_block.is_top_level:
+                        continue
+                    sub_block.is_top_level = False
+                    sub_block.position     = None
+                    top_level_block_refs.remove(sub_reference)
+
+        new_scripts = []
+        for top_level_block_ref in top_level_block_refs:
+            block = new_blocks[top_level_block_ref]
+            position, script_blocks = block.nest_recursively(
+                all_blocks    = new_blocks,
+                own_reference = top_level_block_ref,
+            )
+            new_scripts.append(SRScript(
+                position = position,
+                blocks   = script_blocks,
+            ))
+
+        new_costumes = [costume.step() for costume in self.costumes]
+        new_sounds   = [sound  .step() for sound   in self.sounds  ]
 
 class FRStage(FRTarget):
     _grepr_fields = FRTarget._grepr_fields + ["tempo", "video_transparency", "video_state", "text_to_speech_language"]
@@ -107,7 +136,7 @@ class FRStage(FRTarget):
     text_to_speech_language: str
     
     @classmethod
-    def from_data(cls, data):
+    def from_data(cls, data: dict[str, Any]) -> "FRStage":
         self = super().from_data(data)
         self.tempo                   = data["tempo"               ]
         self.video_transparency      = data["videoTransparency"   ]
@@ -127,7 +156,7 @@ class FRSprite(FRTarget):
     rotation_style: str
 
     @classmethod
-    def from_data(cls, data):
+    def from_data(cls, data: dict[str, Any]) -> "FRSprite":
         self = super().from_data(data)
         self.visible        = data["visible"      ]
         self.x              = data["x"            ]

@@ -1,11 +1,12 @@
 import json
 from abc import ABC, abstractmethod
+from typing import Any
 
 from custom_block import SRCustomOpcode, SRCustomBlockOptype
-from config import FRtoSRApi
+from config import FRtoTRApi
 from utility import PypenguinClass
 
-class FRMutation(PypenguinClass):
+class FRMutation(PypenguinClass, ABC):
     _grepr = True
     _grepr_fields = ["tag_name", "children"]
     
@@ -13,14 +14,14 @@ class FRMutation(PypenguinClass):
     children: list # always []
     
     @classmethod
-    def from_data(cls, data):
+    def from_data(cls, data: dict[str, Any]) -> "FRMutation":
         self = cls()
         self.tag_name = data["tagName" ]
         self.children = data["children"]
         return self
 
     @abstractmethod
-    def step(self, block_api: FRtoSRApi) -> "SRMutation": pass
+    def step(self, block_api: FRtoTRApi) -> "SRMutation": pass
 
 class FRCustomArgumentMutation(FRMutation):
     _grepr_fields = FRMutation._grepr_fields + ["color"]
@@ -28,15 +29,15 @@ class FRCustomArgumentMutation(FRMutation):
     color: tuple[str, str, str]
     
     @classmethod
-    def from_data(cls, data):
+    def from_data(cls, data: dict[str, str]) -> "FRCustomArgumentMutation":
         self = super().from_data(data)
         self.color = tuple(json.loads(data["color"]))
         return self
     
-    def set_argument_name(self, name):
+    def set_argument_name(self, name: str) -> None:
         self._argument_name = name
     
-    def step(self, block_api: FRtoSRApi) -> "SRCustomArgumentMutation":
+    def step(self, block_api: FRtoTRApi) -> "SRCustomArgumentMutation":
         if getattr(self, "_argument_name", None) is None:
             raise Exception("Argument name must be set for stepping to be possible.")
         return SRCustomArgumentMutation(
@@ -61,7 +62,7 @@ class FRCustomBlockMutation(FRMutation):
     color: tuple[str, str, str]
     
     @classmethod
-    def from_data(cls, data):
+    def from_data(cls, data: dict[str, Any]) -> "FRCustomBlockMutation":
         self = super().from_data(data)
         self.proccode          = data["proccode"]
         self.argument_ids      = json.loads(data["argumentids"     ])
@@ -78,7 +79,7 @@ class FRCustomBlockMutation(FRMutation):
         self.color       = tuple(json.loads(data["color"  ]))
         return self
     
-    def step(self, block_api: FRtoSRApi) -> "SRCustomBlockMutation":
+    def step(self, block_api: FRtoTRApi) -> "SRCustomBlockMutation":
         return SRCustomBlockMutation(
             custom_opcode     = SRCustomOpcode(
                 proccode          = self.proccode,
@@ -104,7 +105,7 @@ class FRCustomCallMutation(FRMutation):
     color: tuple[str, str, str]
     
     @classmethod
-    def from_data(cls, data):
+    def from_data(cls, data: dict[str, Any]) -> "FRCustomCallMutation":
         self = super().from_data(data)
         self.proccode          = data["proccode"]
         self.argument_ids      = json.loads(data["argumentids"     ])
@@ -119,7 +120,7 @@ class FRCustomCallMutation(FRMutation):
         self.color       = tuple(json.loads(data["color"  ]))
         return self
     
-    def step(self, block_api: FRtoSRApi):
+    def step(self, block_api: FRtoTRApi) -> "SRCustomCallMutation":
         complete_mutation = block_api.get_cb_mutation(self.proccode) # Get complete mutation
         return SRCustomCallMutation(
             custom_opcode      = SRCustomOpcode(

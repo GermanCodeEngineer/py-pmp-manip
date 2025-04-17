@@ -113,7 +113,7 @@ def ensure_correct_path(_path, target_folder_name="pypenguin"):
 
 
 class PypenguinClass:
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         if type(self) != type(other):
             return False
         
