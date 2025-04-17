@@ -8,9 +8,9 @@ from config                import Configuration
 from block_info            import BlockInfoApi
 #from block_opcodes         import *
 
-from utility import gprint
+from utility import gprint, PypenguinClass
 
-class FRProject: 
+class FRProject(PypenguinClass): 
     """The first representation (FR) of the project data tree. Its data is equivalent to the data stored in a .pmp file."""
     _grepr = True
     _grepr_fields = ["targets", "monitors", "extension_data", "extensions", "extension_urls", "meta"]

@@ -1,4 +1,6 @@
-class FRAsset:
+from utility import PypenguinClass
+
+class FRAsset(PypenguinClass):
     _grepr = True
     _grepr_fields = ["name", "asset_id", "data_format", "md5ext"]
     

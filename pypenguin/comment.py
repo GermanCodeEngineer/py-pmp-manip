@@ -1,4 +1,5 @@
-class FRComment:
+from utility import PypenguinClass
+class FRComment(PypenguinClass):
     _grepr = True
     _grepr_fields = ["block_id", "x", "y", "width", "height", "minimized", "text"]
     
@@ -51,26 +52,7 @@ class FRComment:
             },
         }
 
-
-{
-    'blockId': None,
-    'x': 158.51851851851856,
-    'y': 591.8518518518517,
-    'width': 200,
-    'height': 200,
-    'minimized': False,
-    'text': 'hi'}
-{
-    'blockId': 'b',
-    'x': 1031.0370407104492,
-    'y': 348,
-    'width': 200,
-    'height': 200,
-    'minimized': False,
-    'text': 'as block: hi'}
-
-
-class SRComment:
+class SRComment(PypenguinClass):
     _grepr = True
     _grepr_fields = ["position", "size", "isMinimized", "text"]
     

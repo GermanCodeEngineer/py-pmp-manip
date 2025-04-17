@@ -1,13 +1,13 @@
 from typing import Callable
 
-from utility               import gprint
+from utility               import gprint, PypenguinClass
 from block_mutation        import FRMutation, FRCustomBlockMutation, FRCustomArgumentMutation, FRCustomCallMutation
 from block_mutation        import SRMutation
 from block_opcodes         import *
 from config                import FRtoSRApi, Configuration, ConfigType
-from block_info            import BlockInfoApi, BlockInfo
+from block_info            import BlockInfoApi, BlockInfo, InputMode
 
-class FRBlock:
+class FRBlock(PypenguinClass):
     _grepr = True
     _grepr_fields = ["opcode", "next", "parent", "inputs", "fields", "shadow", "top_level", "x", "y", "comment", "mutation"]
 
@@ -81,7 +81,7 @@ class FRBlock:
                 "shadow": False,
                 "topLevel": parent_id is None,
             }
-        else: raise ValueError()
+        else: raise ValueError(obj)
         if   (len(obj) == 3) and (parent_id is not None): 
             pass
         elif (len(obj) == 5) and (parent_id is None):
@@ -92,7 +92,12 @@ class FRBlock:
 
     
 
-    def step_inputs(self, config: Configuration, block_api: FRtoSRApi, block_info: BlockInfo):
+    def step_inputs(self, 
+        config: Configuration, 
+        block_api: FRtoSRApi, 
+        block_info: BlockInfo,
+        own_id: str
+    ) -> dict[str, "SRInput"]:
         #TODO: Replace the old with the new input ids
         
         instead_event = config.get_event(
@@ -107,61 +112,92 @@ class FRBlock:
         else:
             input_modes = instead_event.call(block_api=block_api, block=self)                
         
+        new_inputs = {}
         for input_id, input_value in self.inputs.items():
             input_mode = input_modes[input_id]
 
-            item_one_type = type(input_value)
-            references    = []
-            list_block    = None
-            text          = None
+            item_one_type   = type(input_value[1])
+            references      = []
+            immediate_block = None
+            text            = None
             # Account for list blocks; 
             if   len(input_value) == 2:
-                if   item_one_type == str: # e.g. "CONDITION": [2, "b"]
+                if   item_one_type == str: # e.g. "CONDITION": (2, "b")
                     # one block only, no text
-                    references.append(input_value[1])
-                elif item_one_type == list: # e.g. "MESSAGE": [1, [10, "Bye!"]]
+                    references.append(SRBlockReference(input_value[1]))
+                elif item_one_type == tuple: # e.g. "MESSAGE": (1, (10, "Bye!"))
                     # one block(currently empty) and text
                     text = input_value[1][1]
             elif len(input_value) == 3:
-                #print("step 1")
-                itemTwoType = type(input_value[2])
-                if   item_one_type == str  and itemTwoType == str: # e.g. "TOUCHINGOBJECTMENU": [3, "d", "e"]
+                item_two_type = type(input_value[2])
+                if   item_one_type == str  and item_two_type == str: # e.g. "TOUCHINGOBJECTMENU": (3, "d", "e")
                     # two blocks(a menu, and a normal block) and no text
-                    references.append(input_value[1])
-                    references.append(input_value[2])
-                elif item_one_type == str  and itemTwoType == list: # e.g. 'OPERAND1': [3, 'e', [10, '']]
+                    references.append(SRBlockReference(input_value[1]))
+                    references.append(SRBlockReference(input_value[2]))
+                elif item_one_type == str  and item_two_type == tuple: # e.g. 'OPERAND1': (3, 'e', (10, ''))
                     # one block and text
-                    references.append(input_value[1])
+                    references.append(SRBlockReference(input_value[1]))
                     text = input_value[2][1]
-                elif item_one_type == str  and itemTwoType == type(None): # e.g. 'custom input bool': [3, 'c', None]
+                elif item_one_type == str  and item_two_type == type(None): # e.g. 'custom input bool': (3, 'c', None)
                     # one block
-                    references.append(input_value[1])
-                elif item_one_type == list and itemTwoType == list: # e.g. 'VALUE': [3, [12, 'var', '=!vkqJLb6ODy(oqe-|ZN'], [10, '0']]
+                    references.append(SRBlockReference(input_value[1]))
+                elif item_one_type == tuple and item_two_type == tuple: # e.g. 'VALUE': (3, (12, 'var', '=!vkqJLb6ODy(oqe-|ZN'), (10, '0'))
                     # one list block and text
-                    listBlock = prepareListBlock(
-                        data=input_value[1], 
-                        blockId=None,
-                        commentDatas=commentDatas,
-                    ) #translate list blocks into standard blocks
+                    immediate_block = FRBlock.from_tuple(input_value[1], parent_id=own_id)
                     text      = input_value[2][1]
-                elif item_one_type == list and itemTwoType == str: # "TOUCHINGOBJECTMENU": [3, [12, "my variable", "`jEk@4|i[#Fk?(8x)AV.-my variable"], "b"]
+                elif item_one_type == tuple and item_two_type == str: # "TOUCHINGOBJECTMENU": (3, (12, "my variable", "`jEk@4|i[#Fk?(8x)AV.-my variable"), "b")
                     # two blocks(a menu, and a list block) and no text
-                    listBlock = prepareListBlock(
-                        data=input_value[1], 
-                        blockId=None,
-                        commentDatas=commentDatas,
-                    )
-                    references.append(input_value[2])
-            newInputData = {
-                "mode"      : input_mode,
-                "references": references,
-                "listBlock" : listBlock,
-                "text"      : text,
-    }
+                    immediate_block = FRBlock.from_tuple(input_value[1], parent_id=own_id)
+                    references.append(SRBlockReference(input_value[2]))
+                else: raise ValueError()
+            new_input_data_1 = {
+                "mode"           : input_mode,
+                "references"     : references,
+                "immediate_block": immediate_block,
+                "text"           : text,
+            }
+            
+            
+            references      = []
+            immediate_block = None
+            text            = None
+            
+            for item in input_value[1:]: # ignore first item(some irrelevant number)
+                if isinstance(item, str):
+                    references.append(SRBlockReference(item))
+                elif isinstance(item, tuple) and item[0] in {4, 5, 6, 7, 8, 9, 10, 11}:
+                    text = item[1]
+                elif isinstance(item, tuple) and item[0] in {12, 13}:
+                    immediate_block = FRBlock.from_tuple(item, parent_id=own_id)
+                else: raise ValueError()
+            new_input_data_2 = {
+                "mode"           : input_mode,
+                "references"     : references,
+                "immediate_block": immediate_block,
+                "text"           : text,
+            }
+            
+            
+            if new_input_data_1 != new_input_data_2:
+                gprint("nid1", new_input_data_1)
+                gprint("nid2", new_input_data_2)
+                raise Exception("Conflict!")
 
-            print("input", input_id, input_mode, input_value)
+            #print("input", input_id, input_mode, input_value)
+            new_inputs[input_id] = SRInput(
+                mode            = input_mode,
+                references      = references,
+                immediate_block = immediate_block,
+                text            = text,
+            )
+        return new_inputs
 
-    def step(self, config: Configuration, block_api: FRtoSRApi, info_api: BlockInfoApi) -> "SRBlock":
+    def step(self, 
+        config: Configuration, 
+        block_api: FRtoSRApi, 
+        info_api: BlockInfoApi, 
+        own_id: str
+    ) -> "SRBlock":
         block_info = info_api.get_info_by_opcode(self.opcode)
         pre_event = config.get_event(
             event_type = ConfigType.PRE_FR_STEP,
@@ -181,6 +217,7 @@ class FRBlock:
                     config     = config,
                     block_api  = block_api,
                     block_info = block_info,
+                    own_id     = own_id,
                 ),
                 dropdowns    = self.fields, #TODO
                 position     = (self.x, self.y) if self.top_level else None,
@@ -199,7 +236,7 @@ class FRBlock:
         #TODO: add custom handler system here for e.g. draw polygon block
         return new_block
 
-class SRBlock:
+class SRBlock(PypenguinClass):
     _grepr = True
     _grepr_fields = ["opcode", "inputs", "dropdowns", "comment", "mutation", "position", "next", "is_top_level"]
     
@@ -230,5 +267,32 @@ class SRBlock:
         self.position     = position
         self.next         = next
         self.is_top_level = is_top_level
-        
+    
+class SRInput(PypenguinClass):
+    _grepr = True
+    _grepr_fields = ["mode", "references", "immediate_block", "text"]
+    
+    mode: InputMode
+    references: list["SRBlockReference"]
+    immediate_block: SRBlock | None
+    text: str | None
+    
+    def __init__(self,
+        mode: InputMode,
+        references: list["SRBlockReference"],
+        immediate_block: SRBlock | None,
+        text: str | None,
+    ):
+        self.mode            = mode
+        self.references      = references
+        self.immediate_block = immediate_block
+        self.text            = text
 
+class SRBlockReference(PypenguinClass):
+    _grepr = True
+    _grepr_fields = ["id"]
+    
+    id: str
+    
+    def __init__(self, id):
+        self.id = id

@@ -1,6 +1,8 @@
 from typing import Any
 
-class FRMonitor:
+from utility import PypenguinClass
+
+class FRMonitor(PypenguinClass):
     _grepr = True
     _grepr_fields = ["id", "mode", "opcode", "params", "sprite_name", "value", "width", "height", "x", "y", "visible", "slider_min", "slider_max", "is_discrete"]
 

@@ -2,8 +2,9 @@ from enum import Enum
 from config import ConfigSetting, ConfigType, FRtoSRApi, config
 from block_opcodes import *
 from block_info import InputType, InputMode
+from utility import PypenguinClass
 
-class SRCustomOpcode:
+class SRCustomOpcode(PypenguinClass):
     _grepr = True
     _grepr_fields = ["proccode", "arguments"]
 

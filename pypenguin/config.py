@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import Callable, Iterable
 from dataclasses import dataclass
+from utility import PypenguinClass
 
 class ConfigType(Enum):
     def __repr__(self):
@@ -14,7 +15,7 @@ class ConfigType(Enum):
 
 
 @dataclass
-class ConfigSetting:
+class ConfigSetting(PypenguinClass):
     type: ConfigType
     function: Callable
     
@@ -24,7 +25,7 @@ class ConfigSetting:
     def call(self, *args, **kwargs):
         return self.function(*args, **kwargs)
 
-class Configuration:
+class Configuration(PypenguinClass):
     _grepr = True
     _grepr_fields = ["events"]
 
@@ -49,7 +50,7 @@ class Configuration:
             return None
         return self.events[event_type][opcode]
 
-class FRtoSRApi:    
+class FRtoSRApi(PypenguinClass):
     def __init__(self, blocks):
         self.blocks                    = blocks
         self.scheduled_block_deletions = []

@@ -1,4 +1,5 @@
-class FRMeta:
+from utility import PypenguinClass
+class FRMeta(PypenguinClass):
     _grepr = True
     _grepr_fields = ["semver", "vm", "agent", "platform"]
     
@@ -17,7 +18,7 @@ class FRMeta:
         return self
 
 
-class FRPlatform:
+class FRPlatform(PypenguinClass):
     _grepr = True
     _grepr_fields = ["name", "url", "version"]
     

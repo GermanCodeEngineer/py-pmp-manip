@@ -1,14 +1,14 @@
 from typing import Any
 import copy
 
-from utility    import gprint
+from utility    import gprint, PypenguinClass
 from block      import FRBlock, FRCustomBlockMutation
 from comment    import FRComment, SRFloatingComment, SRAttachedComment
 from asset      import FRCostume, FRSound
 from config     import FRtoSRApi, Configuration
 from block_info import BlockInfoApi
 
-class FRTarget:
+class FRTarget(PypenguinClass):
     _grepr = True
     _grepr_fields = ["is_stage", "name", "variables", "lists", "broadcasts", "custom_vars", "blocks", "comments", "current_costume", "costumes", "sounds", "id", "volume", "layer_order"]
     
@@ -83,6 +83,7 @@ class FRTarget:
                 config    = config,
                 block_api = block_api,
                 info_api  = info_api,
+                own_id    = block_id,
             )
             new_blocks[block_id] = new_block
             #gprint(block_id, self.blocks[block_id])

@@ -3,8 +3,9 @@ from abc import ABC, abstractmethod
 
 from custom_block import SRCustomOpcode, SRCustomBlockOptype
 from config import FRtoSRApi
+from utility import PypenguinClass
 
-class FRMutation:
+class FRMutation(PypenguinClass):
     _grepr = True
     _grepr_fields = ["tag_name", "children"]
     
@@ -128,7 +129,7 @@ class FRCustomCallMutation(FRMutation):
             ),
         )
 
-class SRMutation:
+class SRMutation(PypenguinClass):
     _grepr = True
     _grepr_fields = []
 

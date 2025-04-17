@@ -112,3 +112,14 @@ def ensure_correct_path(_path, target_folder_name="pypenguin"):
         return final_path    
 
 
+class PypenguinClass:
+    def __eq__(self, other):
+        if type(self) != type(other):
+            return False
+        
+        if not getattr(self, "_grepr", False):
+            return NotImplemented
+        for field in self._grepr_fields:
+            if getattr(self, field) != getattr(other, field):
+                return False 
+        return True
