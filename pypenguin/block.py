@@ -109,6 +109,56 @@ class FRBlock:
         
         for input_id, input_value in self.inputs.items():
             input_mode = input_modes[input_id]
+
+            item_one_type = type(input_value)
+            references    = []
+            list_block    = None
+            text          = None
+            # Account for list blocks; 
+            if   len(input_value) == 2:
+                if   item_one_type == str: # e.g. "CONDITION": [2, "b"]
+                    # one block only, no text
+                    references.append(input_value[1])
+                elif item_one_type == list: # e.g. "MESSAGE": [1, [10, "Bye!"]]
+                    # one block(currently empty) and text
+                    text = input_value[1][1]
+            elif len(input_value) == 3:
+                #print("step 1")
+                itemTwoType = type(input_value[2])
+                if   item_one_type == str  and itemTwoType == str: # e.g. "TOUCHINGOBJECTMENU": [3, "d", "e"]
+                    # two blocks(a menu, and a normal block) and no text
+                    references.append(input_value[1])
+                    references.append(input_value[2])
+                elif item_one_type == str  and itemTwoType == list: # e.g. 'OPERAND1': [3, 'e', [10, '']]
+                    # one block and text
+                    references.append(input_value[1])
+                    text = input_value[2][1]
+                elif item_one_type == str  and itemTwoType == type(None): # e.g. 'custom input bool': [3, 'c', None]
+                    # one block
+                    references.append(input_value[1])
+                elif item_one_type == list and itemTwoType == list: # e.g. 'VALUE': [3, [12, 'var', '=!vkqJLb6ODy(oqe-|ZN'], [10, '0']]
+                    # one list block and text
+                    listBlock = prepareListBlock(
+                        data=input_value[1], 
+                        blockId=None,
+                        commentDatas=commentDatas,
+                    ) #translate list blocks into standard blocks
+                    text      = input_value[2][1]
+                elif item_one_type == list and itemTwoType == str: # "TOUCHINGOBJECTMENU": [3, [12, "my variable", "`jEk@4|i[#Fk?(8x)AV.-my variable"], "b"]
+                    # two blocks(a menu, and a list block) and no text
+                    listBlock = prepareListBlock(
+                        data=input_value[1], 
+                        blockId=None,
+                        commentDatas=commentDatas,
+                    )
+                    references.append(input_value[2])
+            newInputData = {
+                "mode"      : input_mode,
+                "references": references,
+                "listBlock" : listBlock,
+                "text"      : text,
+    }
+
             print("input", input_id, input_mode, input_value)
 
     def step(self, config: Configuration, block_api: FRtoSRApi, info_api: BlockInfoApi) -> "SRBlock":

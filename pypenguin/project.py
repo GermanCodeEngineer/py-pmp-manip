@@ -4,7 +4,7 @@ from utility               import read_file_of_zip, ThanksError
 from target                import FRStage, FRSprite
 from monitor               import FRMonitor
 from meta                  import FRMeta
-from config                import Configuration, ConfigSetting, ConfigType
+from config                import Configuration
 from block_info            import BlockInfoApi
 #from block_opcodes         import *
 
