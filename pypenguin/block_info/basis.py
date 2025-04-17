@@ -124,11 +124,12 @@ class InputType(Enum):
     
     def get_mode(self) -> InputMode:
         return self.value[0]
-
-    def get_by_cb_default(self, default: str) -> "InputMode":
+    
+    @staticmethod
+    def get_by_cb_default(default: str) -> "InputType":
         match default:
             case "":
-                return InputType.TEXT,
+                return InputType.TEXT
             case "false":
                 return InputType.BOOLEAN
             case _: raise ValueError()

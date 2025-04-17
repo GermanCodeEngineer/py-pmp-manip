@@ -135,7 +135,9 @@ class FRBlock:
                 dropdowns    = self.fields, #TODO
                 position     = (self.x, self.y) if self.top_level else None,
                 comment      = self.comment,
-                mutation     = None if self.mutation is None else self.mutation.step(),
+                mutation     = None if self.mutation is None else self.mutation.step(
+                    block_api = block_api,
+                ),
                 next         = self.next,
                 is_top_level = self.top_level,
             )

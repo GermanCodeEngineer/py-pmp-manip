@@ -155,6 +155,10 @@ custom_blocks = BlockInfoSet(
             block_type=BlockType.HAT,
             new_opcode="define custom block",
         ),
+        "definition_return": BlockInfo(
+            block_type=BlockType.HAT,
+            new_opcode="define custom block reporter",
+        ),
         "prototype": BlockInfo( # only temporary
             block_type=BlockType.NOT_RELEVANT,
             new_opcode="#CUSTOM BLOCK PROTOTYPE",
@@ -167,7 +171,7 @@ custom_blocks = BlockInfoSet(
             block_type=BlockType.ENDING_STATEMENT,
             new_opcode="return (VALUE)",
             inputs={
-                "VALUE": InputInfo(InputType.TEXT, new="return"),
+                "return": InputInfo(InputType.TEXT, new="VALUE"),
             },
         ),
         "set": BlockInfo(

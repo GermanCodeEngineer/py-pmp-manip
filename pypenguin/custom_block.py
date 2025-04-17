@@ -96,6 +96,16 @@ config.add_opcodes_event(
     ),
 )
 
+def PRE__CB_CALL(block_api: FRtoSRApi, block):
+    cb_mutation = block_api.get_cb_mutation(block.mutation.proccode)
+    new_inputs = {}
+    for input_id, input_value in block.inputs.items():
+        argument_index = cb_mutation.argument_ids.index(input_id)
+        argument_name  = cb_mutation.argument_names[argument_index]
+        new_inputs[argument_name] = input_value
+    block.inputs = new_inputs
+    return block
+
 def INSTEAD__CB_PROTOTYPE(block_api: FRtoSRApi, block) -> "SRBlock":
     # Return an empty, temporary block
     from block import SRBlock
@@ -124,7 +134,7 @@ def INSTEAD_GET_MODES__CB_CALL(block_api: FRtoSRApi, block) -> dict[str, InputMo
     # Then get the default and derive the corresponding input mode
     cb_mutation = block_api.get_cb_mutation(block.mutation.proccode)
     input_modes = {}
-    for input_id in self.inputs.keys():
+    for input_id in block.inputs.keys():
         argument_index = cb_mutation.argument_ids.index(input_id)
         argument_default = cb_mutation.argument_defaults[argument_index]
         input_modes[input_id] = InputType.get_by_cb_default(argument_default).get_mode()
