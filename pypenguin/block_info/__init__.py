@@ -38,6 +38,7 @@ class BlockInfoApi:
             if block_info is not None:
                 return block_info
         raise ValueError(f"Couldn't find BlockInfo by opcode {repr(opcode)}")
+    
 
 
 from block_info.motion    import motion

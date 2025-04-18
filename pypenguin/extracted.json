@@ -1,0 +1,397 @@
+{
+    "targets": [
+        {
+            "isStage": true,
+            "name": "Stage",
+            "variables": {
+                "`jEk@4|i[#Fk?(8x)AV.-my variable": [
+                    "my variable",
+                    0
+                ]
+            },
+            "lists": {},
+            "broadcasts": {
+                "j=tAfPe_cA|bX(oe:wR2": "message1"
+            },
+            "customVars": [],
+            "blocks": {},
+            "comments": {},
+            "currentCostume": 0,
+            "costumes": [
+                {
+                    "name": "backdrop1",
+                    "dataFormat": "svg",
+                    "assetId": "cd21514d0531fdffb22204e0ec5ed84a",
+                    "md5ext": "cd21514d0531fdffb22204e0ec5ed84a.svg",
+                    "rotationCenterX": 240,
+                    "rotationCenterY": 180
+                }
+            ],
+            "sounds": [],
+            "id": "p]_uD8#0^Q=ryfqeQLud",
+            "volume": 100,
+            "layerOrder": 0,
+            "tempo": 60,
+            "videoTransparency": 50,
+            "videoState": "on",
+            "textToSpeechLanguage": null
+        },
+        {
+            "isStage": false,
+            "name": "Sprite1",
+            "variables": {},
+            "lists": {},
+            "broadcasts": {},
+            "customVars": [],
+            "blocks": {
+                "e": {
+                    "opcode": "motion_movesteps",
+                    "next": "b",
+                    "parent": null,
+                    "inputs": {
+                        "STEPS": [
+                            1,
+                            [
+                                4,
+                                "10"
+                            ]
+                        ]
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 113,
+                    "y": -9
+                },
+                "b": {
+                    "opcode": "looks_sayforsecs",
+                    "next": null,
+                    "parent": "e",
+                    "inputs": {
+                        "MESSAGE": [
+                            3,
+                            "f",
+                            [
+                                10,
+                                "Hello!"
+                            ]
+                        ],
+                        "SECS": [
+                            1,
+                            [
+                                4,
+                                "2"
+                            ]
+                        ]
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                "f": {
+                    "opcode": "operator_join3",
+                    "next": null,
+                    "parent": "b",
+                    "inputs": {
+                        "STRING1": [
+                            1,
+                            [
+                                10,
+                                "apple "
+                            ]
+                        ],
+                        "STRING2": [
+                            1,
+                            [
+                                10,
+                                "banana "
+                            ]
+                        ],
+                        "STRING3": [
+                            1,
+                            [
+                                10,
+                                "pear"
+                            ]
+                        ]
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                "g": {
+                    "opcode": "operator_not",
+                    "next": null,
+                    "parent": null,
+                    "inputs": {
+                        "OPERAND": [
+                            2,
+                            "h"
+                        ]
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 387,
+                    "y": 219
+                },
+                "h": {
+                    "opcode": "operator_notequal",
+                    "next": null,
+                    "parent": "g",
+                    "inputs": {
+                        "OPERAND1": [
+                            1,
+                            [
+                                10,
+                                ""
+                            ]
+                        ],
+                        "OPERAND2": [
+                            1,
+                            [
+                                10,
+                                "50"
+                            ]
+                        ]
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                "a": {
+                    "opcode": "control_switch_default",
+                    "next": null,
+                    "parent": null,
+                    "inputs": {
+                        "SUBSTACK2": [
+                            2,
+                            "i"
+                        ],
+                        "SUBSTACK1": [
+                            2,
+                            "c"
+                        ],
+                        "CONDITION": [
+                            2,
+                            "j"
+                        ]
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 433,
+                    "y": 330
+                },
+                "i": {
+                    "opcode": "data_changevariableby",
+                    "next": null,
+                    "parent": "a",
+                    "inputs": {
+                        "VALUE": [
+                            1,
+                            [
+                                4,
+                                "1"
+                            ]
+                        ]
+                    },
+                    "fields": {
+                        "VARIABLE": [
+                            "my variable",
+                            "`jEk@4|i[#Fk?(8x)AV.-my variable",
+                            ""
+                        ]
+                    },
+                    "shadow": false,
+                    "topLevel": false
+                },
+                "c": {
+                    "opcode": "control_case",
+                    "next": null,
+                    "parent": "a",
+                    "inputs": {
+                        "CONDITION": [
+                            1,
+                            [
+                                10,
+                                "ello"
+                            ]
+                        ],
+                        "SUBSTACK": [
+                            2,
+                            "k"
+                        ]
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                "j": {
+                    "opcode": "operator_newLine",
+                    "next": null,
+                    "parent": "a",
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                "k": {
+                    "opcode": "event_broadcast",
+                    "next": null,
+                    "parent": "c",
+                    "inputs": {
+                        "BROADCAST_INPUT": [
+                            1,
+                            [
+                                11,
+                                "message1",
+                                "j=tAfPe_cA|bX(oe:wR2"
+                            ]
+                        ]
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                "l": {
+                    "opcode": "sensing_touchingobject",
+                    "next": null,
+                    "parent": null,
+                    "inputs": {
+                        "TOUCHINGOBJECTMENU": [
+                            1,
+                            "m"
+                        ]
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 359,
+                    "y": 744
+                },
+                "m": {
+                    "opcode": "sensing_touchingobjectmenu",
+                    "next": null,
+                    "parent": "l",
+                    "inputs": {},
+                    "fields": {
+                        "TOUCHINGOBJECTMENU": [
+                            "_mouse_",
+                            "F_2!eAt[oJ+Bu#?{=:9D"
+                        ]
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                },
+                "n": {
+                    "opcode": "sensing_distanceto",
+                    "next": null,
+                    "parent": null,
+                    "inputs": {
+                        "DISTANCETOMENU": [
+                            3,
+                            "d",
+                            "o"
+                        ]
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 391,
+                    "y": 894
+                },
+                "o": {
+                    "opcode": "sensing_distancetomenu",
+                    "next": null,
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {
+                        "DISTANCETOMENU": [
+                            "_mouse_",
+                            "i@rgTwmzQB.m_(DcW,92"
+                        ]
+                    },
+                    "shadow": true,
+                    "topLevel": true,
+                    "x": 491,
+                    "y": 898
+                },
+                "d": {
+                    "opcode": "sound_getLength",
+                    "next": null,
+                    "parent": "n",
+                    "inputs": {
+                        "SOUND_MENU": [
+                            1,
+                            "p"
+                        ]
+                    },
+                    "fields": {},
+                    "shadow": false,
+                    "topLevel": false
+                },
+                "p": {
+                    "opcode": "sound_sounds_menu",
+                    "next": null,
+                    "parent": "d",
+                    "inputs": {},
+                    "fields": {
+                        "SOUND_MENU": [
+                            "Squawk",
+                            "kPr:c#dO4|X*l.Xo^{?I"
+                        ]
+                    },
+                    "shadow": true,
+                    "topLevel": false
+                }
+            },
+            "comments": {},
+            "currentCostume": 0,
+            "costumes": [
+                {
+                    "name": "costume1",
+                    "bitmapResolution": 1,
+                    "dataFormat": "svg",
+                    "assetId": "c434b674f2da18ba13cdfe51dbc05ecc",
+                    "md5ext": "c434b674f2da18ba13cdfe51dbc05ecc.svg",
+                    "rotationCenterX": 26,
+                    "rotationCenterY": 46
+                }
+            ],
+            "sounds": [
+                {
+                    "name": "Squawk",
+                    "assetId": "e140d7ff07de8fa35c3d1595bba835ac",
+                    "dataFormat": "wav",
+                    "rate": 48000,
+                    "sampleCount": 17868,
+                    "md5ext": "e140d7ff07de8fa35c3d1595bba835ac.wav"
+                }
+            ],
+            "id": "5I9nI;7P)jdiR-_X;/%l",
+            "volume": 100,
+            "layerOrder": 1,
+            "visible": true,
+            "x": 0,
+            "y": 0,
+            "size": 100,
+            "direction": 90,
+            "draggable": false,
+            "rotationStyle": "all around"
+        }
+    ],
+    "monitors": [],
+    "extensionData": {},
+    "extensions": [],
+    "meta": {
+        "semver": "3.0.0",
+        "vm": "0.2.0",
+        "agent": "",
+        "platform": {
+            "name": "PenguinMod",
+            "url": "https://penguinmod.com/",
+            "version": "stable"
+        }
+    }
+}

@@ -50,8 +50,9 @@ class FRProject(PypenguinClass):
             target.step(config=config, info_api=info_api)
         
 #file_path = "../assets/from_online/my 1st platformer.pmp"
-file_path = "../assets/from_online/dumb example.pmp"
+#file_path = "../assets/from_online/dumb example.pmp"
 #file_path = "../assets/from_online/color.pmp"
+file_path = "../assets/input_modes.pmp"
 
 project = FRProject.from_pmp_file(file_path)
 gprint(project)

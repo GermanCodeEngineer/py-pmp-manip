@@ -2,7 +2,7 @@ from typing import Any
 import copy
 
 from utility    import gprint, PypenguinClass
-from block      import FRBlock, TRBlock, SRScript, TRBlockReference
+from block      import FRBlock, T1RBlock, T2RScript, TRBlockReference
 from comment    import FRComment, SRFloatingComment, SRAttachedComment
 from asset      import FRCostume, FRSound
 from config     import FRtoTRApi, SpecialCaseHandler
@@ -77,7 +77,7 @@ class FRTarget(PypenguinClass):
                 blocks[block_reference] = FRBlock.from_tuple(block, parent_id=None)
 
         block_api = FRtoTRApi(blocks=blocks, block_comments=attached_comments)
-        new_blocks: dict["TRBlockReference", "TRBlock"] = {}
+        new_blocks: dict["TRBlockReference", "T1RBlock"] = {}
         for block_reference, block in blocks.items():
             new_block = block.step(
                 config    = config,
@@ -97,11 +97,14 @@ class FRTarget(PypenguinClass):
             gprint(block_reference, block)
             gprint(new_blocks.get(TRBlockReference(id=block_reference)))
         
+        
+        
         # Get all top level block ids
         top_level_block_refs: list[TRBlockReference] = []
         [top_level_block_refs.append(block_reference) if block.is_top_level else None for block_reference, block in new_blocks.items()]
         
         # Account for that one bug(not my fault), where a block is falsely independent
+        gprint(new_blocks)
         for block_reference, block in new_blocks.items():
             for input_value in block.inputs.values():
                 for sub_reference in input_value.references:
@@ -115,14 +118,16 @@ class FRTarget(PypenguinClass):
         new_scripts = []
         for top_level_block_ref in top_level_block_refs:
             block = new_blocks[top_level_block_ref]
-            position, script_blocks = block.nest_recursively(
+            position, script_blocks = block.step(
                 all_blocks    = new_blocks,
                 own_reference = top_level_block_ref,
+                info_api      = info_api,
             )
-            new_scripts.append(SRScript(
+            new_scripts.append(T2RScript(
                 position = position,
                 blocks   = script_blocks,
             ))
+        gprint(new_scripts)
 
         new_costumes = [costume.step() for costume in self.costumes]
         new_sounds   = [sound  .step() for sound   in self.sounds  ]
