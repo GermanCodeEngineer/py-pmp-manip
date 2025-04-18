@@ -7,24 +7,23 @@ class SRDropdownKind(Enum):
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}.{self.name}"
     
-    STANDARD = 0
-    VARIABLE = 1
-    LIST     = 2
+    STANDARD       =  0
+    VARIABLE       =  1
+    LIST           =  2
+    
+    STAGE          =  3
+    SPRITE         =  4
+    MYSELF         =  5
+    OBJECT         =  6
 
-    STAGE = 3
-    SPRITE = 4
+    COSTUME        =  7
+    BACKDROP       =  8
+    SOUND          =  9
 
-    MYSELF = 10
-    OBJECT = 11
+    FONT           = 10
+    SUGGESTED_FONT = 11
 
-    COSTUME = 20
-    BACKDROP = 21
-    SOUND   = 22
-
-    FONT = 30
-    SUGGESTED_FONT = 31
-
-    FALLBACK = 40
+    FALLBACK       = 12
 
 class SRDropdownValue(PypenguinClass):
     _grepr = True

@@ -513,7 +513,7 @@ class SRBlock(PypenguinClass):
 
 class SRInputValue(PypenguinClass):
     _grepr = True
-    _grepr_fields = ["mode", "blocks", "block", "text", "dropdown"]
+    _grepr_fields = ["mode"]
 
     mode: InputMode
     blocks: list[SRBlock]
@@ -523,12 +523,29 @@ class SRInputValue(PypenguinClass):
     
     def __init__(self,
         mode: InputMode,
-        blocks: list[SRBlock] | None,
-        block: SRBlock | None,
-        text: str | None,
-        dropdown: Any | None,
+        blocks: list[SRBlock]     | None = None,
+        block: SRBlock            | None = None,
+        text: str                 | None = None,
+        dropdown: SRDropdownValue | None = None,
     ):
         self.mode     = mode
+        match mode:
+            case InputMode.BLOCK_AND_TEXT | InputMode.BLOCK_AND_MENU_TEXT:
+                self.block    = block
+                self.text     = text
+                self._grepr_fields = SRInputValue._grepr_fields + ["block", "text"]
+            case InputMode.BLOCK_AND_DROPDOWN | InputMode.BLOCK_AND_BROADCAST_DROPDOWN:
+                self.block    = block
+                self.dropdown = dropdown
+                self._grepr_fields = SRInputValue._grepr_fields + ["block", "dropdown"]
+            case InputMode.BLOCK_ONLY:
+                self.block    = block
+                self._grepr_fields = SRInputValue._grepr_fields + ["block"]
+            case InputMode.SCRIPT:
+                self.blocks   = blocks or []
+                self._grepr_fields = SRInputValue._grepr_fields + ["blocks"]
+
+
         self.blocks   = blocks
         self.block    = block
         self.text     = text
