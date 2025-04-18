@@ -6,7 +6,7 @@ from block_info import InputType, InputMode
 from block_opcodes import *
 
 if TYPE_CHECKING:
-    from block import FRBlock, T1RBlock
+    from block import FRBlock, TRBlock
     from comment import SRAttachedComment
     from block_mutation import FRCustomBlockMutation
 
@@ -101,10 +101,10 @@ config.add_event(
     ),
 )
 
-def INSTEAD__CB_PROTOTYPE(block: "FRBlock", block_api: FRtoTRApi) -> "T1RBlock":
+def INSTEAD__CB_PROTOTYPE(block: "FRBlock", block_api: FRtoTRApi) -> "TRBlock":
     # Return an empty, temporary block
-    from block import T1RBlock
-    return T1RBlock(
+    from block import TRBlock
+    return TRBlock(
         opcode       = block.opcode,
         inputs       = {},
         dropdowns    = {},

@@ -1,4 +1,6 @@
 from enum import Enum
+from dropdown import SRDropdownValue, SRDropdownKind
+from utility import remove_duplicates
 
 class BlockInfoSet:
     _grepr = True
@@ -70,9 +72,15 @@ class BlockInfo:
     def get_input_info(self, input_id: str) -> "InputInfo":
         return self.inputs[input_id]
     
+    def get_dropdown_info(self, dropdown_id: str) -> "DropdownInfo":
+        return self.dropdowns[dropdown_id]
+    
     def get_input_type(self, input_id: str) -> "InputType":
         return self.get_input_info(input_id).type
     
+    def get_dropdown_type(self, dropdown_id: str) -> "DropdownType":
+        return self.get_dropdown_info(dropdown_id).type
+
     def get_input_mode(self, input_id: str) -> "InputMode":
         return self.get_input_type(input_id).get_mode()
 
@@ -131,6 +139,14 @@ class InputType(Enum):
     def get_mode(self) -> InputMode:
         return self.value[0]
     
+    def get_corresponding_dropdown_type(self) -> "DropdownType":
+        assert self.get_mode() in {
+            InputMode.BLOCK_AND_MENU_TEXT, 
+            InputMode.BLOCK_AND_BROADCAST_DROPDOWN,
+            InputMode.BLOCK_AND_DROPDOWN,
+        }
+        return DropdownType._member_map_[self.name]
+
     @staticmethod
     def get_by_cb_default(default: str) -> "InputType":
         match default:
@@ -205,26 +221,65 @@ class DropdownInfo:
         self.type = type
         self.new  = new
 
+class DropdownBehaviour(Enum):
+    def __repr__(self):
+        return f"{self.__class__.__name__}.{self.name}"
+
+    def get_default_kind(self) -> SRDropdownKind | None:
+        return {
+            DropdownBehaviour.OTHER_SPRITE             : SRDropdownKind.SPRITE,
+            DropdownBehaviour.OTHER_SPRITE_EXCEPT_STAGE: SRDropdownKind.SPRITE,
+            DropdownBehaviour.MUTABLE_SPRITE_PROPERTY  : SRDropdownKind.VARIABLE,
+            DropdownBehaviour.READABLE_SPRITE_PROPERTY : SRDropdownKind.VARIABLE,
+            DropdownBehaviour.COSTUME                  : SRDropdownKind.COSTUME,
+            DropdownBehaviour.BACKDROP                 : SRDropdownKind.BACKDROP,
+            DropdownBehaviour.SOUND                    : SRDropdownKind.SOUND,
+            DropdownBehaviour.FONT                     : SRDropdownKind.FONT,
+        }.get(self, None)
+
+    STAGE                     =  0
+    OTHER_SPRITE              =  1
+    OTHER_SPRITE_EXCEPT_STAGE =  2
+    MYSELF                    =  3
+    MYSELF_IF_SPRITE          =  4
+
+    MOUSE_POINTER             =  5
+    EDGE                      =  6
+
+    RANDOM_POSITION           =  7
+
+    MUTABLE_SPRITE_PROPERTY   =  8
+    READABLE_SPRITE_PROPERTY  =  9
+
+    COSTUME                   = 10
+    BACKDROP                  = 11
+    SOUND                     = 12
+
+    FONT                      = 13
+
+DDB = DropdownBehaviour    
 
 class DropdownTypeInfo:
     _grepr = True
-    _grepr_fields = ["direct_values", "value_segments", "old_direct_values", "fallback"]
+    _grepr_fields = ["direct_values", "behaviours", "old_direct_values", "fallback"]
 
-    direct_values:     list[str | int | bool] | None = None
-    value_segments:    list[str]              | None = None
-    old_direct_values: list[str | int | bool] | None = None
-    fallback:          list[str]              | None = None
+    direct_values:     list[str | int | bool]          
+    behaviours:        list[DropdownBehaviour]
+    old_direct_values: list[str | int | bool]          
+    fallback:          SRDropdownValue | None              
 
     def __init__(self,
-        direct_values:     list[str | int | bool] | None = None,
-        value_segments:    list[str]              | None = None,
-        old_direct_values: list[str | int | bool] | None = None,
-        fallback:          list[str]              | None = None,
+        direct_values:     list[str | int | bool]  | None = None,
+        behaviours:        list[DropdownBehaviour] | None = None,
+        old_direct_values: list[str | int | bool]  | None = None,
+        fallback:          SRDropdownValue         | None = None,
     ) -> None:
-        self.direct_values     = direct_values     or []
-        self.value_segments    = value_segments    or []
-        self.old_direct_values = old_direct_values or []
-        self.fallback          = fallback          or []
+        self.direct_values        = direct_values     or []
+        self.behaviours           = behaviours        or []
+        self.old_direct_values    = old_direct_values or self.direct_values
+        self.fallback             = fallback
+    
+
 
 class DropdownType(Enum):    
     def __repr__(self):
@@ -233,6 +288,150 @@ class DropdownType(Enum):
     def get_type_info(self) -> DropdownTypeInfo:
         return self.value
     
+    def get_default_kind(self) -> SRDropdownKind | None:
+        default_kind = None
+        for behaviour in self.get_type_info().behaviours:
+            behaviour_default_kind = behaviour.get_default_kind()
+            if behaviour_default_kind is not None:
+                if default_kind is None:
+                    default_kind = behaviour_default_kind
+                else:
+                    raise ValueError(f"Multiple default kinds for {self}: {default_kind} and {behaviour_default_kind}")
+        return default_kind
+
+    def get_possible_new_dropdown_values(self, include_behaviours: bool) -> list[SRDropdownValue]:
+        dropdown_type_info = self.get_type_info()
+        values             = []
+        for value in dropdown_type_info.direct_values:
+            if   isinstance(value, SRDropdownValue):
+                values.append(value)
+            else:
+                values.append(SRDropdownValue(SRDropdownKind.STANDARD, value))
+        
+        if include_behaviours:
+            for behaviour in dropdown_type_info.behaviours:
+                match behaviour:
+                    case DDB.STAGE:
+                        values.append(SRDropdownValue(SRDropdownKind.STAGE, "stage"))
+                    case DDB.OTHER_SPRITE:
+                        values.append(SRDropdownValue(SRDropdownKind.STAGE, "stage"))
+                    case DDB.OTHER_SPRITE_EXCEPT_STAGE:
+                        pass # Can't be guessed, but don't include stage
+                    case DDB.MYSELF:
+                        values.append(SRDropdownValue(SRDropdownKind.MYSELF, "myself"))
+                    case DDB.MYSELF_IF_SPRITE:
+                        values.append(SRDropdownValue(SRDropdownKind.MYSELF, "myself"))
+                    
+                    case DDB.MOUSE_POINTER:
+                        values.append(SRDropdownValue(SRDropdownKind.OBJECT, "mouse-pointer"))
+                    case DDB.EDGE:
+                        values.append(SRDropdownValue(SRDropdownKind.OBJECT, "edge"))
+                    
+                    case DDB.RANDOM_POSITION:
+                        values.append(SRDropdownValue(SRDropdownKind.OBJECT, "random position"))
+                    
+                    case DDB.MUTABLE_SPRITE_PROPERTY:
+                        values.extend([
+                            SRDropdownValue(SRDropdownKind.STANDARD, "backdrop"), 
+                            SRDropdownValue(SRDropdownKind.STANDARD, "volume"),
+                        ])
+                        values.extend([
+                            SRDropdownValue(SRDropdownKind.STANDARD, "x position"), 
+                            SRDropdownValue(SRDropdownKind.STANDARD, "y position"), 
+                            SRDropdownValue(SRDropdownKind.STANDARD, "direction"), 
+                            SRDropdownValue(SRDropdownKind.STANDARD, "costume"), 
+                            SRDropdownValue(SRDropdownKind.STANDARD, "size"),
+                        ])
+                    case DDB.READABLE_SPRITE_PROPERTY:
+                        values.extend([
+                            SRDropdownValue(SRDropdownKind.STANDARD, "backdrop #"), 
+                            SRDropdownValue(SRDropdownKind.STANDARD, "backdrop name"), 
+                            SRDropdownValue(SRDropdownKind.STANDARD, "volume"),
+                        ])
+                        values.extend([
+                            SRDropdownValue(SRDropdownKind.STANDARD, "x position"), 
+                            SRDropdownValue(SRDropdownKind.STANDARD, "y position"), 
+                            SRDropdownValue(SRDropdownKind.STANDARD, "direction"), 
+                            SRDropdownValue(SRDropdownKind.STANDARD, "costume #"), 
+                            SRDropdownValue(SRDropdownKind.STANDARD, "costume name"), 
+                            SRDropdownValue(SRDropdownKind.STANDARD, "layer"), 
+                            SRDropdownValue(SRDropdownKind.STANDARD, "size"),
+                        ])
+                    
+                    case DDB.COSTUME | DDB.BACKDROP | DDB.SOUND | DDB.FONT:
+                        pass # Can't be guessed
+
+                    case _: raise ValueError()
+        if dropdown_type_info.fallback is not None:
+            values.append(dropdown_type_info.fallback)
+        return remove_duplicates(values)
+
+    def get_possible_old_dropdown_values(self) -> list[str]:
+        dropdown_type_info = self.get_type_info()
+        values = []
+        for value in dropdown_type_info.old_direct_values:
+            if isinstance(value, SRDropdownValue):
+                values.append(value[0])
+            else:
+                values.append(value)
+        for behaviour in dropdown_type_info.behaviours:
+            match behaviour:
+                case DDB.STAGE:
+                    values.append("_stage_")
+                case DDB.OTHER_SPRITE:
+                    values.append("_stage_")
+                case DDB.OTHER_SPRITE_EXCEPT_STAGE:
+                    pass
+                case DDB.MYSELF:
+                    values.append("_myself_")
+                case DDB.MYSELF_IF_SPRITE:
+                    values.append("_myself_")
+                
+                case DDB.MOUSE_POINTER:
+                    values.append("_mouse_")
+                case DDB.EDGE:
+                    values.append("_edge_")
+                
+                case DDB.RANDOM_POSITION:
+                    values.append("_random_")
+                
+                
+                case DDB.MUTABLE_SPRITE_PROPERTY:
+                    values.extend(["backdrop", "volume"])
+                    values.extend(["x position", "y position", "direction", "costume", "size"])
+                case DDB.READABLE_SPRITE_PROPERTY:
+                    values.extend(["backdrop #", "backdrop name", "volume"])
+                    values.extend(["x position", "y position", "direction", "costume #", "costume name", "layer", "size"])
+                
+                case DDB.COSTUME | DDB.BACKDROP | DDB.SOUND | DDB.FONT:
+                    pass # Can't be guessed
+                case _: raise ValueError()
+        if dropdown_type_info.fallback is not None:
+            values.append(dropdown_type_info.fallback.value)
+        return remove_duplicates(values)
+
+    def translate_old_to_new_value(self, old_value: str) -> SRDropdownValue:
+        if   self == DropdownType.BROADCAST:
+            return SRDropdownValue(SRDropdownKind.STANDARD, old_value)
+        elif self == DropdownType.VARIABLE:
+            return SRDropdownValue(SRDropdownKind.VARIABLE, old_value)
+        elif self ==  DropdownType.LIST:
+            return SRDropdownValue(SRDropdownKind.LIST, old_value)
+
+        if self == "expanded|minimized" and old_value == "FALSE": # To patch a mistake of the pen extension dev
+            old_value = False
+        new_values = self.get_possible_new_dropdown_values(include_behaviours=True)
+        old_values = self.get_possible_old_dropdown_values()
+        default_kind = self.get_default_kind()
+
+        assert len(new_values) == len(old_values)
+        
+        if old_value in old_values:
+            return new_values[old_values.index(old_value)]
+        else:
+            assert default_kind is not None
+            return SRDropdownValue(default_kind, old_value)
+
     KEY = DropdownTypeInfo(
         direct_values=[
             "space", "up arrow", "down arrow", "right arrow", "left arrow", 
@@ -259,29 +458,29 @@ class DropdownType(Enum):
     STOP_SCRIPT_TARGET = DropdownTypeInfo(
         direct_values=["all", "this script", "other scripts in sprite"]
     )
-    STAGE_OR_OTHER_SPRITE = DropdownTypeInfo(value_segments=["stage", "other sprite"])
+    STAGE_OR_OTHER_SPRITE = DropdownTypeInfo(behaviours=[DDB.STAGE, DDB.OTHER_SPRITE])
     CLONING_TARGET = DropdownTypeInfo(
-        value_segments=["myself if not stage", "other sprite not stage"],
-        fallback=["fallback", " "]
+        behaviours=[DDB.MYSELF_IF_SPRITE, DDB.OTHER_SPRITE_EXCEPT_STAGE],
+        fallback=SRDropdownValue(SRDropdownKind.FALLBACK, " "),
     )
     UP_DOWN = DropdownTypeInfo(direct_values=["up", "down"])
     LOUDNESS_TIMER = DropdownTypeInfo(
         direct_values=["loudness", "timer"],
         old_direct_values=["LOUDNESS", "TIMER"],
     )
-    MOUSE_OR_OTHER_SPRITE = DropdownTypeInfo(value_segments=["mouse-pointer", "other sprite"])
-    MOUSE_EDGE_OR_OTHER_SPRITE = DropdownTypeInfo(value_segments=["mouse-pointer", "edge", "other sprite"])
-    MOUSE_EDGE_MYSELF_OR_OTHER_SPRITE = DropdownTypeInfo(value_segments=["mouse-pointer", "edge", "myself", "other sprite"])
+    MOUSE_OR_OTHER_SPRITE = DropdownTypeInfo(behaviours=[DDB.MOUSE_POINTER, DDB.OTHER_SPRITE])
+    MOUSE_EDGE_OR_OTHER_SPRITE = DropdownTypeInfo(behaviours=[DDB.MOUSE_POINTER, DDB.EDGE, DDB.OTHER_SPRITE])
+    MOUSE_EDGE_MYSELF_OR_OTHER_SPRITE = DropdownTypeInfo(behaviours=[DDB.MOUSE_POINTER, DDB.EDGE, DDB.MYSELF, DDB.OTHER_SPRITE])
     X_OR_Y = DropdownTypeInfo(direct_values=["x", "y"])
     DRAG_MODE = DropdownTypeInfo(direct_values=["draggable", "not draggable"])
-    MUTABLE_SPRITE_PROPERTY = DropdownTypeInfo(value_segments=["mutable sprite property"])
-    READABLE_SPRITE_PROPERTY = DropdownTypeInfo(value_segments=["readable sprite property"])
+    MUTABLE_SPRITE_PROPERTY = DropdownTypeInfo(behaviours=[DDB.MUTABLE_SPRITE_PROPERTY])
+    READABLE_SPRITE_PROPERTY = DropdownTypeInfo(behaviours=[DDB.READABLE_SPRITE_PROPERTY])
     TIME_PROPERTY = DropdownTypeInfo(
         direct_values=["year", "month", "date", "day of week", "hour", "minute", "second", "js timestamp"],
         old_direct_values=["YEAR", "MONTH", "DATE", "DAYOFWEEK", "HOUR", "MINUTE", "SECOND", "TIMESTAMP"],
     )
     FINGER_INDEX = DropdownTypeInfo(direct_values=["1", "2", "3", "4", "5"])
-    RANDOM_MOUSE_OR_OTHER_SPRITE = DropdownTypeInfo(value_segments=["random_position", "mouse-pointer", "other sprite"])
+    RANDOM_MOUSE_OR_OTHER_SPRITE = DropdownTypeInfo(behaviours=[DDB.RANDOM_POSITION, DDB.MOUSE_POINTER, DDB.OTHER_SPRITE])
     ROTATION_STYLE = DropdownTypeInfo(direct_values=["left-right", "up-down", "don't rotate", "look at", "all around"])
     STAGE_ZONE = DropdownTypeInfo(direct_values=["bottom-left", "bottom", "bottom-right", "top-left", "top", "top-right", "left", "right"])
     TEXT_BUBBLE_COLOR_PROPERTY = DropdownTypeInfo(
@@ -296,17 +495,17 @@ class DropdownType(Enum):
         direct_values=["color", "fisheye", "whirl", "pixelate", "mosaic", "brightness", "ghost", "saturation", "red", "green", "blue", "opaque"],
         old_direct_values=["COLOR", "FISHEYE", "WHIRL", "PIXELATE", "MOSAIC", "BRIGHTNESS", "GHOST", "SATURATION", "RED", "GREEN", "BLUE", "OPAQUE"],
     )
-    COSTUME = DropdownTypeInfo(value_segments=["costume"])
-    BACKDROP = DropdownTypeInfo(value_segments=["backdrop"])
+    COSTUME = DropdownTypeInfo(behaviours=[DDB.COSTUME])
+    BACKDROP = DropdownTypeInfo(behaviours=[DDB.BACKDROP])
     COSTUME_PROPERTY = DropdownTypeInfo(direct_values=["width", "height", "rotation center x", "rotation center y", "drawing mode"])
-    MYSELF_OR_OTHER_SPRITE = DropdownTypeInfo(value_segments=["myself", "other sprite"])
+    MYSELF_OR_OTHER_SPRITE = DropdownTypeInfo(behaviours=[DDB.MYSELF, DDB.OTHER_SPRITE])
     FRONT_BACK = DropdownTypeInfo(direct_values=["front", "back"])
     FORWARD_BACKWARD = DropdownTypeInfo(direct_values=["forward", "backward"])
     INFRONT_BEHIND = DropdownTypeInfo(direct_values=["infront", "behind"])
     NUMBER_NAME = DropdownTypeInfo(direct_values=["number", "name"])
     SOUND = DropdownTypeInfo(
-        value_segments=["sound"], 
-        fallback=["fallback", " "]
+        behaviours=[DDB.SOUND], 
+        fallback=SRDropdownValue(SRDropdownKind.FALLBACK, " "),
     )
     SOUND_EFFECT = DropdownTypeInfo(
         direct_values=["pitch", "pan"],
@@ -323,8 +522,9 @@ class DropdownType(Enum):
     )
     NOTE = DropdownTypeInfo(direct_values=["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59", "60", "61", "62", "63", "64", "65", "66", "67", "68", "69", "70", "71", "72", "73", "74", "75", "76", "77", "78", "79", "80", "81", "82", "83", "84", "85", "86", "87", "88", "89", "90", "91", "92", "93", "94", "95", "96", "97", "98", "99", "100", "101", "102", "103", "104", "105", "106", "107", "108", "109", "110", "111", "112", "113", "114", "115", "116", "117", "118", "119", "120", "121", "122", "123", "124", "125", "126", "127", "128", "129", "130"])
     FONT = DropdownTypeInfo(
-        direct_values=[["suggested", "Sans Serif"], ["suggested", "Serif"], ["suggested", "Handwriting"], ["suggested", "Marker"], ["suggested", "Curly"], ["suggested", "Pixel"], ["suggested", "Playful"], ["suggested", "Bubbly"], ["suggested", "Arcade"], ["suggested", "Bits and Bytes"], ["suggested", "Technological"], ["suggested", "Scratch"], ["suggested", "Archivo"], ["suggested", "Archivo Black"], ["suggested", "random font"]],
+        direct_values=[SRDropdownValue(SRDropdownKind.SUGGESTED_FONT, name) for name in ["Sans Serif", "Serif", "Handwriting", "Marker", "Curly", "Pixel", "Playful", "Bubbly", "Arcade", "Bits and Bytes", "Technological", "Scratch", "Archivo", "Archivo Black", "Random"]],
         old_direct_values=["Sans Serif", "Serif", "Handwriting", "Marker", "Curly", "Pixel", "Playful", "Bubbly", "Arcade", "Bits and Bytes", "Technological", "Scratch", "Archivo", "Archivo Black", "Random"],
+        behaviours=[DDB.FONT],
     )
     ON_OFF = DropdownTypeInfo(direct_values=["on", "off"])
     EXPANDED_MINIMIZED = DropdownTypeInfo(
@@ -379,9 +579,7 @@ class DropdownType(Enum):
     LIST = DropdownTypeInfo()
     
     # Temporary, will be removed
-    ENABLE_DISABLE_SCREEN_REFRESH = DropdownTypeInfo()
-    CUSTOM_OPCODE = DropdownTypeInfo()
-    REPORTER_NAME = DropdownTypeInfo()
+    ENABLE_SCREEN_REFRESH = DropdownTypeInfo()
 
 class MenuInfo:
     _grepr = True

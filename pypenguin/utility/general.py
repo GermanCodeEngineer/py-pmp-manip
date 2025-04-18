@@ -73,7 +73,6 @@ def gprint(*objects, sep=" ", end="\n"):
 
 
 # Files
-import json
 import zipfile
 import os
 from .errors import PathError
@@ -84,11 +83,6 @@ def read_file_of_zip(zip_path, file_path):
         with zip_ref.open(file_path) as file_ref:
             content = file_ref.read().decode("utf-8")
     return content
-
-#def read_json_file(file_path):
-#    with open(file_path, 'r') as file:
-#        data = json.load(file)
-#    return data
 
 def ensure_correct_path(_path, target_folder_name="pypenguin"):
     if target_folder_name is not None:
@@ -109,8 +103,9 @@ def ensure_correct_path(_path, target_folder_name="pypenguin"):
             current_path = parent_path
 
         final_path = os.path.join(current_path, _path)
-        return final_path    
+        return final_path
 
+# Utility Classes
 
 class PypenguinClass:
     def __eq__(self, other) -> bool:
@@ -123,3 +118,14 @@ class PypenguinClass:
             if getattr(self, field) != getattr(other, field):
                 return False 
         return True
+
+# Data Functions
+
+def remove_duplicates(items: list):
+    seen = []
+    result = []
+    for item in items:
+        if item not in seen:
+            seen.append(item)
+            result.append(item)
+    return result

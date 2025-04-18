@@ -2,7 +2,7 @@ from typing import Any
 import copy
 
 from utility    import gprint, PypenguinClass
-from block      import FRBlock, T1RBlock, T2RScript, TRBlockReference
+from block      import FRBlock, TRBlock, SRScript, TRBlockReference
 from comment    import FRComment, SRFloatingComment, SRAttachedComment
 from asset      import FRCostume, FRSound
 from config     import FRtoTRApi, SpecialCaseHandler
@@ -77,7 +77,7 @@ class FRTarget(PypenguinClass):
                 blocks[block_reference] = FRBlock.from_tuple(block, parent_id=None)
 
         block_api = FRtoTRApi(blocks=blocks, block_comments=attached_comments)
-        new_blocks: dict["TRBlockReference", "T1RBlock"] = {}
+        new_blocks: dict["TRBlockReference", "TRBlock"] = {}
         for block_reference, block in blocks.items():
             new_block = block.step(
                 config    = config,
@@ -123,7 +123,7 @@ class FRTarget(PypenguinClass):
                 own_reference = top_level_block_ref,
                 info_api      = info_api,
             )
-            new_scripts.append(T2RScript(
+            new_scripts.append(SRScript(
                 position = position,
                 blocks   = script_blocks,
             ))
