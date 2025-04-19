@@ -10,20 +10,21 @@ class SRDropdownKind(Enum):
     STANDARD       =  0
     VARIABLE       =  1
     LIST           =  2
+    BROADCAST_MSG  =  3
     
-    STAGE          =  3
-    SPRITE         =  4
-    MYSELF         =  5
-    OBJECT         =  6
+    STAGE          =  4
+    SPRITE         =  5
+    MYSELF         =  6
+    OBJECT         =  7
 
-    COSTUME        =  7
-    BACKDROP       =  8
-    SOUND          =  9
+    COSTUME        =  8
+    BACKDROP       =  9
+    SOUND          = 10
+    
+    FONT           = 11
+    SUGGESTED_FONT = 12
 
-    FONT           = 10
-    SUGGESTED_FONT = 11
-
-    FALLBACK       = 12
+    FALLBACK       = 13
 
 class SRDropdownValue(PypenguinClass):
     _grepr = True

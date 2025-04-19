@@ -234,6 +234,9 @@ class DropdownBehaviour(Enum):
             DropdownBehaviour.COSTUME                  : SRDropdownKind.COSTUME,
             DropdownBehaviour.BACKDROP                 : SRDropdownKind.BACKDROP,
             DropdownBehaviour.SOUND                    : SRDropdownKind.SOUND,
+            DropdownBehaviour.VARIABLE                 : SRDropdownKind.VARIABLE,
+            DropdownBehaviour.LIST                     : SRDropdownKind.LIST,
+            DropdownBehaviour.BROADCAST                : SRDropdownKind.BROADCAST_MSG,
             DropdownBehaviour.FONT                     : SRDropdownKind.FONT,
         }.get(self, None)
 
@@ -255,7 +258,11 @@ class DropdownBehaviour(Enum):
     BACKDROP                  = 11
     SOUND                     = 12
 
-    FONT                      = 13
+    VARIABLE                  = 13
+    LIST                      = 14
+    BROADCAST                 = 15
+    
+    FONT                      = 16
 
 DDB = DropdownBehaviour    
 
@@ -358,7 +365,8 @@ class DropdownType(Enum):
                             SRDropdownValue(SRDropdownKind.STANDARD, "size"),
                         ])
                     
-                    case DDB.COSTUME | DDB.BACKDROP | DDB.SOUND | DDB.FONT:
+                    case (DDB.COSTUME  | DDB.BACKDROP | DDB.SOUND 
+                        | DDB.VARIABLE | DDB.LIST     | DDB.BROADCAST | DDB.FONT):
                         pass # Can't be guessed
 
                     case _: raise ValueError()
@@ -403,21 +411,16 @@ class DropdownType(Enum):
                     values.extend(["backdrop #", "backdrop name", "volume"])
                     values.extend(["x position", "y position", "direction", "costume #", "costume name", "layer", "size"])
                 
-                case DDB.COSTUME | DDB.BACKDROP | DDB.SOUND | DDB.FONT:
-                    pass # Can't be guessed
+                case (DDB.COSTUME  | DDB.BACKDROP | DDB.SOUND 
+                    | DDB.VARIABLE | DDB.LIST     | DDB.BROADCAST | DDB.FONT):
+                        pass # Can't be guessed
                 case _: raise ValueError()
         if dropdown_type_info.fallback is not None:
             values.append(dropdown_type_info.fallback.value)
         return remove_duplicates(values)
 
     def translate_old_to_new_value(self, old_value: str) -> SRDropdownValue:
-        if   self == DropdownType.BROADCAST:
-            return SRDropdownValue(SRDropdownKind.STANDARD, old_value)
-        elif self == DropdownType.VARIABLE:
-            return SRDropdownValue(SRDropdownKind.VARIABLE, old_value)
-        elif self ==  DropdownType.LIST:
-            return SRDropdownValue(SRDropdownKind.LIST, old_value)
-
+        # TODO: add special case for this
         if self == "expanded|minimized" and old_value == "FALSE": # To patch a mistake of the pen extension dev
             old_value = False
         new_values = self.get_possible_new_dropdown_values(include_behaviours=True)
@@ -574,9 +577,9 @@ class DropdownType(Enum):
     )
 
     
-    BROADCAST = DropdownTypeInfo()
-    VARIABLE = DropdownTypeInfo()
-    LIST = DropdownTypeInfo()
+    BROADCAST = DropdownTypeInfo(behaviours=[DDB.BROADCAST])
+    VARIABLE = DropdownTypeInfo(behaviours=[DDB.VARIABLE])
+    LIST = DropdownTypeInfo(behaviours=[DDB.LIST])
     
     # Temporary, will be removed
     ENABLE_SCREEN_REFRESH = DropdownTypeInfo()

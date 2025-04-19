@@ -1,6 +1,6 @@
-# Variables
-OPCODE_VAR_VALUE      = "data_variableValue"
-OPCODE_LIST_VALUE     = "data_listValue"
+# Variables & Lists
+OPCODE_VAR_VALUE      = "data_variable"
+OPCODE_LIST_VALUE     = "data_listcontents"
 OPCODE_VAR_VALUE_NUM  = 12
 OPCODE_LIST_VALUE_NUM = 13
 
