@@ -158,6 +158,9 @@ sensing = BlockInfoSet(name="sensing", opcode_prefix="sensing", block_infos={
     "setdragmode": BlockInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="set drag mode [MODE]",
+        dropdowns={
+            "DRAG_MODE": DropdownInfo(DropdownType.DRAG_MODE, new="MODE"),
+        },
     ),
     "getdragmode": BlockInfo(
         block_type=BlockType.STRING_REPORTER,
@@ -208,6 +211,9 @@ sensing = BlockInfoSet(name="sensing", opcode_prefix="sensing", block_infos={
         block_type=BlockType.STRING_REPORTER,
         new_opcode="current [PROPERTY]",
         can_have_monitor="True",
+        dropdowns={
+            "CURRENTMENU": DropdownInfo(DropdownType.TIME_PROPERTY, new="PROPERTY"),
+        },
     ),
     "dayssince2000": BlockInfo(
         block_type=BlockType.STRING_REPORTER,

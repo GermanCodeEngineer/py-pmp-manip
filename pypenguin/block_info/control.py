@@ -183,6 +183,9 @@ control = BlockInfoSet(name="control", opcode_prefix="control", block_infos={
     "stop": BlockInfo(
         block_type=BlockType.DYNAMIC,
         new_opcode="stop script [TARGET]",
+        dropdowns={
+            "STOP_OPTION": DropdownInfo(DropdownType.STOP_SCRIPT_TARGET, new="TARGET"),
+        },
     ),
     "start_as_clone": BlockInfo(
         block_type=BlockType.HAT,

@@ -147,10 +147,16 @@ motion = BlockInfoSet(name="motion", opcode_prefix="motion", block_infos={
     "setrotationstyle": BlockInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="set rotation style [STYLE]",
+        dropdowns={
+            "STYLE": DropdownInfo(DropdownType.ROTATION_STYLE, new="STYLE"),
+        },
     ),
     "move_sprite_to_scene_side": BlockInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="move to stage [ZONE]",
+        dropdowns={
+            "ALIGNMENT": DropdownInfo(DropdownType.STAGE_ZONE, new="ZONE"),
+        },
     ),
     "xposition": BlockInfo(
         block_type=BlockType.STRING_REPORTER,

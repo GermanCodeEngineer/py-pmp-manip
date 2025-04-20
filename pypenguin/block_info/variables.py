@@ -24,9 +24,15 @@ variables = BlockInfoSet(name="variables", opcode_prefix="data", block_infos={
     "showvariable": BlockInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="show variable [VARIABLE]",
+        dropdowns={
+            "VARIABLE": DropdownInfo(DropdownType.VARIABLE, new="VARIABLE"),
+        },
     ),
     "hidevariable": BlockInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="hide variable [VARIABLE]",
+        dropdowns={
+            "VARIABLE": DropdownInfo(DropdownType.VARIABLE, new="VARIABLE"),
+        },
     ),
 })

@@ -1,6 +1,11 @@
 from enum import Enum
+from typing import Callable, TYPE_CHECKING
+
 from dropdown import SRDropdownValue, SRDropdownKind
 from utility import remove_duplicates
+
+if TYPE_CHECKING:
+    from block import SRBlock
 
 class BlockInfoSet:
     _grepr = True
@@ -10,17 +15,21 @@ class BlockInfoSet:
     opcode_prefix: str
     alt_opcode_prefixes: list[str]
     block_infos: dict[str, "BlockInfo"]
+    get_old_opcode_handler: Callable[[str, "SRBlock"], str | None] | None
     
     def __init__(self, 
         name: str, 
         opcode_prefix: str, 
         alt_opcode_prefixes: list[str] | None = None,
         block_infos: dict[str, "BlockInfo"] | None = None,
+        get_old_opcode_handler: Callable[[str, "SRBlock"], str | None] | None = None,
     ):
-        self.name                = name
-        self.opcode_prefix       = opcode_prefix
-        self.alt_opcode_prefixes = alt_opcode_prefixes or []
-        self.block_infos         = {}
+        self.name                   = name
+        self.opcode_prefix          = opcode_prefix
+        self.alt_opcode_prefixes    = alt_opcode_prefixes or []
+        self.block_infos            = {}
+        self.get_old_opcode_handler = get_old_opcode_handler
+        
         for opcode, block_info in (block_infos or {}).items():
             self.add_block(opcode, block_info)
     
@@ -42,6 +51,20 @@ class BlockInfoSet:
         if default_none:
             return None
         raise ValueError(f"Couldn't find Block {repr(opcode)}")
+
+    def get_old_opcode(self, new_opcode: str, block: "SRBlock") -> str:
+        if self.get_old_opcode_handler is not None:
+            result = self.get_old_opcode_handler(new_opcode, block)
+            if isinstance(result, str):
+                return result
+            elif result is None:
+                pass
+            else: raise ValueError()
+        
+        for old_opcode, block_info in self.block_infos.items():
+            if block_info.new_opcode == new_opcode:
+                return old_opcode
+        raise ValueError(f"Old opcode for {repr(new_opcode)} couln't be found.")
 
 class BlockInfo:
     _grepr = True
@@ -73,6 +96,8 @@ class BlockInfo:
         return self.inputs[input_id]
     
     def get_dropdown_info(self, dropdown_id: str) -> "DropdownInfo":
+        #from utility import gprint
+        #gprint(self)
         return self.dropdowns[dropdown_id]
     
     def get_input_type(self, input_id: str) -> "InputType":

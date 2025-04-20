@@ -24,6 +24,9 @@ lists = BlockInfoSet(name="lists", opcode_prefix="data", block_infos={
     "deletealloflist": BlockInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="delete all of [LIST]",
+        dropdowns={
+            "LIST": DropdownInfo(DropdownType.LIST, new="LIST"),
+        },
     ),
     "shiftlist": BlockInfo(
         block_type=BlockType.STATEMENT,
@@ -112,6 +115,9 @@ lists = BlockInfoSet(name="lists", opcode_prefix="data", block_infos={
     "lengthoflist": BlockInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="length of [LIST]",
+        dropdowns={
+            "LIST": DropdownInfo(DropdownType.LIST, new="LIST"),
+        },
     ),
     "listcontainsitem": BlockInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
@@ -136,10 +142,16 @@ lists = BlockInfoSet(name="lists", opcode_prefix="data", block_infos={
     "listisempty": BlockInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="is [LIST] empty?",
+        dropdowns={
+            "LIST": DropdownInfo(DropdownType.LIST, new="LIST"),
+        },
     ),
     "reverselist": BlockInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="reverse [LIST]",
+        dropdowns={
+            "LIST": DropdownInfo(DropdownType.LIST, new="LIST"),
+        },
     ),
     "arraylist": BlockInfo(
         block_type=BlockType.STATEMENT,
@@ -154,13 +166,22 @@ lists = BlockInfoSet(name="lists", opcode_prefix="data", block_infos={
     "listarray": BlockInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="get list [LIST] as an array",
+        dropdowns={
+            "LIST": DropdownInfo(DropdownType.LIST, new="LIST"),
+        },
     ),
     "showlist": BlockInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="show list [LIST]",
+        dropdowns={
+            "LIST": DropdownInfo(DropdownType.LIST, new="LIST"),
+        },
     ),
     "hidelist": BlockInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="hide list [LIST]",
+        dropdowns={
+            "LIST": DropdownInfo(DropdownType.LIST, new="LIST"),
+        },
     ),
 })

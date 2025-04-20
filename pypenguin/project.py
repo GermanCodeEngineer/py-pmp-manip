@@ -61,7 +61,7 @@ class FRProject(PypenguinClass):
         
         new_monitors = []
         for monitor in self.monitors:
-            new_monitor = monitor.step(info_api=info_api)
+            new_monitor = monitor.step(info_api=info_api, sprites=new_sprites)
             if new_monitor is not None:
                 new_monitors.append(new_monitor)
        
@@ -136,10 +136,10 @@ class SRProject(PypenguinClass):
         self.extensions              = extensions
         
 
-#file_path = "../assets/from_online/my 1st platformer.pmp"
+file_path = "../assets/from_online/my 1st platformer.pmp"
 #file_path = "../assets/from_online/dumb example.pmp"
 #file_path = "../assets/from_online/color.pmp"
-file_path = "../assets/input_modes.pmp"
+#file_path = "../assets/input_modes.pmp"
 
 project = FRProject.from_pmp_file(file_path)
 gprint(project)

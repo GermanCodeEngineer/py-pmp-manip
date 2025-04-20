@@ -170,6 +170,9 @@ looks = BlockInfoSet(name="looks", opcode_prefix="looks", block_infos={
         block_type=BlockType.STRING_REPORTER,
         new_opcode="[EFFECT] sprite effect",
         can_have_monitor="True",
+        dropdowns={
+            "EFFECT": DropdownInfo(DropdownType.SPRITE_EFFECT, new="EFFECT"),
+        },
     ),
     "tintColor": BlockInfo(
         block_type=BlockType.STRING_REPORTER,
@@ -213,6 +216,9 @@ looks = BlockInfoSet(name="looks", opcode_prefix="looks", block_infos={
     "gotofrontback": BlockInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="go to [LAYER] layer",
+        dropdowns={
+            "FRONT_BACK": DropdownInfo(DropdownType.FRONT_BACK, new="LAYER"),
+        },
     ),
     "goforwardbackwardlayers": BlockInfo(
         block_type=BlockType.STATEMENT,
@@ -250,11 +256,17 @@ looks = BlockInfoSet(name="looks", opcode_prefix="looks", block_infos={
         block_type=BlockType.STRING_REPORTER,
         new_opcode="costume [PROPERTY]",
         can_have_monitor="True",
+        dropdowns={
+            "NUMBER_NAME": DropdownInfo(DropdownType.NUMBER_NAME, new="PROPERTY"),
+        },
     ),
     "backdropnumbername": BlockInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="backdrop [PROPERTY]",
         can_have_monitor="True",
+        dropdowns={
+            "NUMBER_NAME": DropdownInfo(DropdownType.NUMBER_NAME, new="PROPERTY"),
+        },
     ),
     "size": BlockInfo(
         block_type=BlockType.STRING_REPORTER,

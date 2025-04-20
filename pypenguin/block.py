@@ -221,7 +221,6 @@ class FRBlock(PypenguinClass):
             else: raise ValueError()
             
         # Also translate old input ids to new input ids
-        #new_inputs = {block_info.get_new_input_id(input_id): input_value for input_id, input_value in new_inputs.items()}
         return new_inputs
 
     def step(self, 
@@ -252,7 +251,6 @@ class FRBlock(PypenguinClass):
             )
             new_dropdowns = {}
             for dropdown_id, dropdown_value in self.fields.items():
-                #new_dropdown_id = block_info.get_new_dropdown_id(dropdown_id)
                 new_dropdowns[dropdown_id] = dropdown_value[0]
             
             new_block = TRBlock(
@@ -418,7 +416,7 @@ class TRBlock(PypenguinClass):
             )
 
         new_block = SRBlock(
-            opcode    = self.opcode,
+            opcode    = block_info.new_opcode,
             inputs    = new_inputs,
             dropdowns = new_dropdowns,
             comment   = self.comment,

@@ -1,4 +1,5 @@
 from typing import Any
+from enum import Enum
 import copy
 
 from utility    import gprint, PypenguinClass
@@ -265,7 +266,7 @@ class FRSprite(FRTarget):
              size                  = self.size,
              direction             = self.direction,
              is_draggable          = self.draggable,
-             rotation_style        = self.rotation_style
+             rotation_style        = SRSpriteRotationStyle.from_string(self.rotation_style),
              
          ), None, None)
     
@@ -314,7 +315,7 @@ class SRSprite(SRTarget):
     size: int | float
     direction: int | float
     is_draggable: bool
-    rotation_style: str # TODO: make enum
+    rotation_style: "SRSpriteRotationStyle" # TODO: make enum
     
     def __init__(self, 
         name: str,
@@ -332,7 +333,7 @@ class SRSprite(SRTarget):
         size: int | float,
         direction: int | float,
         is_draggable: bool,
-        rotation_style: str,
+        rotation_style: "SRSpriteRotationStyle",
     ):
         super().__init__(
             name          = name,
@@ -352,3 +353,18 @@ class SRSprite(SRTarget):
         self.is_draggable          = is_draggable
         self.rotation_style        = rotation_style
 
+class SRSpriteRotationStyle(Enum):
+    ALL_AROUND  = 0
+    LEFT_RIGHT  = 1
+    DONT_ROTATE = 2
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}.{self.name}"
+
+    @staticmethod
+    def from_string(string: str):
+        match string:
+            case "all around"  : return SRSpriteRotationStyle.ALL_AROUND
+            case "left-right"  : return SRSpriteRotationStyle.LEFT_RIGHT
+            case "don't rotate": return SRSpriteRotationStyle.DONT_ROTATE
+            case _: raise ValueError()

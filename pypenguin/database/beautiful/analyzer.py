@@ -165,7 +165,7 @@ for cat in ["motion", "looks", "sounds", "events", "control", "sensing", "operat
         block["dropdowns"] = {}
         ot = block.get("optionTranslation", {})
         for new_input_id, input_type in block["optionTypes"].items():
-            print(opcode)
+            #print(opcode)
             new_input_type = old_option_type_name_to_enum[input_type]
             if new_input_id in list(ot.values()):
                 old_input_id = list(ot.keys())[list(ot.values()).index(new_input_id)]
@@ -175,8 +175,12 @@ for cat in ["motion", "looks", "sounds", "events", "control", "sensing", "operat
         del block["optionTypes"]
         if "optionTranslation" in block: del block["optionTranslation"]
         
+        if opcode == "event_whenkeypressed":
+            print(block)
+        
         #print(block)
         for attr, value in block.items():
+            if opcode == "event_whenkeypressed": print("HERE", attr)
             match attr:
                 case "type": 
                     block_string += '        block_type=BlockType.' + bt_translation[value] + ',\n'
@@ -184,7 +188,7 @@ for cat in ["motion", "looks", "sounds", "events", "control", "sensing", "operat
                 case "newOpcode": 
                     block_string += '        new_opcode="' + value + '",\n'
                 case "inputs": 
-                    if value == {}: break
+                    if value == {}: continue
                     block_string += '        inputs={\n'
                     for old_input_id, input_data in value.items():
                         block_string += f'            "{input_data["old"]}": InputInfo(InputType.{input_data["type"]}'
@@ -197,7 +201,8 @@ for cat in ["motion", "looks", "sounds", "events", "control", "sensing", "operat
                     #raise Exception()
                     block_string += "        },\n"
                 case "dropdowns":
-                    if value == {}: break
+                    if value == {}: continue
+                    if opcode == "event_whenkeypressed": print("HERE")
                     block_string += '        dropdowns={\n'
                     for old_input_id, input_data in value.items():
                         block_string += f'            "{input_data["old"]}": DropdownInfo(DropdownType.{input_data["type"]}'
@@ -215,6 +220,9 @@ for cat in ["motion", "looks", "sounds", "events", "control", "sensing", "operat
                 case "fromPenguinMod": pass
                 case _: raise AttributeError(attr)
         block_string += "    ),\n"
+        if opcode == "event_whenkeypressed":
+            print(block_string)
+        
         string += block_string
     
     string += "})"

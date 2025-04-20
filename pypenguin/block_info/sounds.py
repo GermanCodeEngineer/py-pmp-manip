@@ -81,6 +81,9 @@ sounds = BlockInfoSet(name="sounds", opcode_prefix="sound", block_infos={
         block_type=BlockType.STRING_REPORTER,
         new_opcode="[EFFECT] sound effect",
         can_have_monitor="True",
+        dropdowns={
+            "EFFECT": DropdownInfo(DropdownType.SOUND_EFFECT, new="EFFECT"),
+        },
     ),
     "changevolumeby": BlockInfo(
         block_type=BlockType.STATEMENT,

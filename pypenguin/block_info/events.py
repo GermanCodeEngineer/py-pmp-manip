@@ -23,14 +23,23 @@ events = BlockInfoSet(name="events", opcode_prefix="event", block_infos={
     "whenkeypressed": BlockInfo(
         block_type=BlockType.HAT,
         new_opcode="when [KEY] key pressed",
+        dropdowns={
+            "KEY_OPTION": DropdownInfo(DropdownType.KEY, new="KEY"),
+        },
     ),
     "whenkeyhit": BlockInfo(
         block_type=BlockType.HAT,
         new_opcode="when [KEY] key hit",
+        dropdowns={
+            "KEY_OPTION": DropdownInfo(DropdownType.KEY, new="KEY"),
+        },
     ),
     "whenmousescrolled": BlockInfo(
         block_type=BlockType.HAT,
         new_opcode="when mouse is scrolled [DIRECTION]",
+        dropdowns={
+            "KEY_OPTION": DropdownInfo(DropdownType.UP_DOWN, new="DIRECTION"),
+        },
     ),
     "whenthisspriteclicked": BlockInfo(
         block_type=BlockType.HAT,
@@ -43,6 +52,9 @@ events = BlockInfoSet(name="events", opcode_prefix="event", block_infos={
     "whenbackdropswitchesto": BlockInfo(
         block_type=BlockType.HAT,
         new_opcode="when backdrop switches to [BACKDROP]",
+        dropdowns={
+            "BACKDROP": DropdownInfo(DropdownType.BACKDROP, new="BACKDROP"),
+        },
     ),
     "whengreaterthan": BlockInfo(
         block_type=BlockType.HAT,
@@ -57,6 +69,9 @@ events = BlockInfoSet(name="events", opcode_prefix="event", block_infos={
     "whenbroadcastreceived": BlockInfo(
         block_type=BlockType.HAT,
         new_opcode="when I receive [MESSAGE]",
+        dropdowns={
+            "BROADCAST_OPTION": DropdownInfo(DropdownType.BROADCAST, new="MESSAGE"),
+        },
     ),
     "broadcast": BlockInfo(
         block_type=BlockType.STATEMENT,

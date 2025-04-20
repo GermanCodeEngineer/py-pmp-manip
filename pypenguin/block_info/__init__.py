@@ -120,32 +120,41 @@ sensing.add_block("distancetomenu", BlockInfo(
     block_type=BlockType.MENU,
     new_opcode="#DISTANCE TO MENU",
 ))
-sensing.add_block("sensing_keyoptions", BlockInfo(
+sensing.add_block("keyoptions", BlockInfo(
     block_type=BlockType.MENU,
     new_opcode="#KEY MENU",
 ))
-sensing.add_block("sensing_scrolldirections", BlockInfo(
+sensing.add_block("scrolldirections", BlockInfo(
     block_type=BlockType.MENU,
     new_opcode="#SCROLL DIRECTION MENU",
 ))
-sensing.add_block("sensing_of_object_menu", BlockInfo(
+sensing.add_block("of_object_menu", BlockInfo(
     block_type=BlockType.MENU,
     new_opcode="#OJBECT PROPERTY MENU",
 ))
-sensing.add_block("sensing_fingeroptions", BlockInfo(
+sensing.add_block("fingeroptions", BlockInfo(
     block_type=BlockType.MENU,
     new_opcode="#FINGER INDEX MENU",
 ))
 variables.add_block(OPCODE_VAR_VALUE.removeprefix("data_"), BlockInfo(
     block_type=BlockType.STRING_REPORTER,
     new_opcode="value of [VARIABLE]",
+    dropdowns={
+        "VARIABLE": DropdownInfo(DropdownType.VARIABLE, new="VARIABLE"),
+    },
     can_have_monitor="True",
 ))
 lists.add_block(OPCODE_LIST_VALUE.removeprefix("data_"), BlockInfo(
     block_type=BlockType.STRING_REPORTER,
     new_opcode="value of [LIST]",
+    dropdowns={
+        "LIST": DropdownInfo(DropdownType.LIST, new="LIST"),
+    },
     can_have_monitor="True",
 ))
+
+def CB_OLD_OPCODE_HANDLER(new_opcode, block):
+    raise NotImplementedError("TODO: implement this")
 
 custom_blocks = BlockInfoSet(
     name="Custom Blocks",
@@ -158,7 +167,7 @@ custom_blocks = BlockInfoSet(
         ),
         "definition_return": BlockInfo(
             block_type=BlockType.HAT,
-            new_opcode="define custom block reporter",
+            new_opcode="define custom block",
         ),
         "prototype": BlockInfo( # only temporary
             block_type=BlockType.NOT_RELEVANT,
@@ -194,6 +203,7 @@ custom_blocks = BlockInfoSet(
             alt_opcode_prefix="argument",
         ),
     },
+    get_old_opcode_handler=CB_OLD_OPCODE_HANDLER,
 )
 
 

@@ -28,7 +28,7 @@ class SRList(PypenguinClass):
     
     current_value: list[Any]
     
-    def __init__(self, name: str, current_value: list[Any]):
+    def __init__(self, current_value: list[Any]):
         self.current_value = current_value
 
 class SRSpriteOnlyList(SRList):
