@@ -4,11 +4,13 @@ from utility import PypenguinClass
 
 class SRVariable(PypenguinClass):
     _grepr = True
-    _grepr_fields = ["current_value"]
+    _grepr_fields = ["name", "current_value"]
     
+    name: str
     current_value: Any
     
-    def __init__(self, current_value: Any):
+    def __init__(self, name: str, current_value: Any):
+        self.name          = name
         self.current_value = current_value
 
 
@@ -24,11 +26,13 @@ class SRCloudVariable(SRAllSpriteVariable):
 
 class SRList(PypenguinClass):
     _grepr = True
-    _grepr_fields = ["current_value"]
+    _grepr_fields = ["name", "current_value"]
     
-    current_value: list[Any]
+    name: str
+    current_value: Any
     
-    def __init__(self, current_value: list[Any]):
+    def __init__(self, name: str, current_value: Any):
+        self.name          = name
         self.current_value = current_value
 
 class SRSpriteOnlyList(SRList):

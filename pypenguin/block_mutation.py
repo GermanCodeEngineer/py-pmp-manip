@@ -150,7 +150,6 @@ class SRCustomArgumentMutation(SRMutation):
         self.color2        = color2
         self.color3        = color3
 
-# TODO: implement this correctly, dont just copy everything from FR
 class SRCustomBlockMutation(SRMutation):
     _grepr_fields = SRMutation._grepr_fields + ["custom_opcode", "no_screen_refresh", "optype", "color1", "color2", "color3"]
     
@@ -159,7 +158,7 @@ class SRCustomBlockMutation(SRMutation):
     argument_names: list[str]
     argument_defaults: list[str]
     no_screen_refresh: bool
-    optype: str
+    optype: SRCustomBlockOptype
     
     # hex format
     # what each color does, is unknown (for now)
@@ -170,7 +169,7 @@ class SRCustomBlockMutation(SRMutation):
     def __init__(self,
         custom_opcode: "SRCustomOpcode",
         no_screen_refresh: bool,
-        optype: str,
+        optype: SRCustomBlockOptype,
         color1: str,
         color2: str,
         color3: str,

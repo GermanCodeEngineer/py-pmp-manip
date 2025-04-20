@@ -10,6 +10,7 @@ from config     import FRtoTRApi, SpecialCaseHandler
 from block_info import BlockInfoApi
 from vars_lists import SRVariable, SRSpriteOnlyVariable, SRAllSpriteVariable, SRCloudVariable
 from vars_lists import SRList, SRSpriteOnlyList, SRAllSpriteList
+from monitor    import SRMonitor
 
 class FRTarget(PypenguinClass):
     _grepr = True
@@ -102,16 +103,13 @@ class FRTarget(PypenguinClass):
         #    print("\n"*2)
         #    print(100*"=")
         #    gprint(block_reference, block)
-        #    gprint(new_blocks.get(TRBlockReference(id=block_reference)))
-        
-        
+        #    gprint(new_blocks.get(TRBlockReference(id=block_reference)))        
         
         # Get all top level block ids
         top_level_block_refs: list[TRBlockReference] = []
         [top_level_block_refs.append(block_reference) if block.is_top_level else None for block_reference, block in new_blocks.items()]
         
         # Account for that one bug(not my fault), where a block is falsely independent
-        #gprint(new_blocks)
         for block_reference, block in new_blocks.items():
             for input_value in block.inputs.values():
                 for sub_reference in input_value.references:
@@ -138,16 +136,16 @@ class FRTarget(PypenguinClass):
 
         new_variables, new_lists = self.step_variables_lists()
         return (
-             new_scripts,
-             floating_comments,
-             [costume.step() for costume in self.costumes],
-             [sound  .step() for sound   in self.sounds  ],
-             new_variables,
-             new_lists,
+            new_scripts,
+            floating_comments,
+            [costume.step() for costume in self.costumes],
+            [sound  .step() for sound   in self.sounds  ],
+            new_variables,
+            new_lists,
         )
     
-    def step_variables_lists(self) -> tuple[dict[str, SRVariable], dict[str, SRList]]:
-        new_variables = {}
+    def step_variables_lists(self) -> tuple[list[SRVariable], list[SRList]]:
+        new_variables = []
         for variable in self.variables.values():
             name = variable[0]
             current_value = variable[1]
@@ -158,9 +156,9 @@ class FRTarget(PypenguinClass):
                     cls = SRAllSpriteVariable
             else:
                 cls = SRSpriteOnlyVariable
-            new_variables[name] = cls(current_value=current_value)
+            new_variables.append(cls(name=name, current_value=current_value))
         
-        new_lists = {}
+        new_lists = []
         for list_ in self.lists.values():
             name = list_[0]
             current_value = list_[1]
@@ -168,7 +166,7 @@ class FRTarget(PypenguinClass):
                 cls = SRAllSpriteList
             else:
                 cls = SRSpriteOnlyList
-            new_lists[name] = cls(current_value=current_value)
+            new_lists.append(cls(name=name, current_value=current_value))
         
         return new_variables, new_lists
                 
@@ -191,27 +189,27 @@ class FRStage(FRTarget):
         return self
     
     def step(self, config: SpecialCaseHandler, info_api: BlockInfoApi
-    ) -> tuple["SRStage", dict[str, SRAllSpriteVariable],  dict[str, SRAllSpriteList]]:
-         (
-             scripts,
-             comments,
-             costumes,
-             sounds,
-             all_sprite_variables,
-             all_sprite_lists,
-         ) = super().step(
-             config   = config,
-             info_api = info_api,
-         )
-         return (SRStage(
-             name          = self.name,
-             scripts       = scripts,
-             comments      = comments,
-             costume_index = self.current_costume,
-             costumes      = costumes,
-             sounds        = sounds,
-             volume        = self.volume,
-         ), all_sprite_variables, all_sprite_lists)
+    ) -> tuple["SRStage", list[SRAllSpriteVariable],  list[SRAllSpriteList]]:
+        (
+            scripts,
+            comments,
+            costumes,
+            sounds,
+            all_sprite_variables,
+            all_sprite_lists,
+        ) = super().step(
+            config   = config,
+            info_api = info_api,
+        )
+        return (SRStage(
+            name          = self.name,
+            scripts       = scripts,
+            comments      = comments,
+            costume_index = self.current_costume,
+            costumes      = costumes,
+            sounds        = sounds,
+            volume        = self.volume,
+        ), all_sprite_variables, all_sprite_lists)
 
 class FRSprite(FRTarget):
     _grepr_fields = FRTarget._grepr_fields + ["visible", "x", "y", "size", "direction", "draggable", "rotation_style"]
@@ -239,36 +237,36 @@ class FRSprite(FRTarget):
 
     def step(self, config: SpecialCaseHandler, info_api: BlockInfoApi
     ) -> tuple["SRSprite", None, None]:
-         (
-             scripts,
-             comments,
-             costumes,
-             sounds,
-             sprite_only_variables,
-             sprite_only_lists,
-         ) = super().step(
-             config   = config,
-             info_api = info_api,
-         )
-         return (SRSprite(
-             name                  = self.name,
-             scripts               = scripts,
-             comments              = comments,
-             costume_index         = self.current_costume,
-             costumes              = costumes,
-             sounds                = sounds,
-             volume                = self.volume,
-             sprite_only_variables = sprite_only_variables,
-             sprite_only_lists     = sprite_only_lists,
-             layer_order           = self.layer_order,
-             is_visible            = self.visible,
-             position              = (self.x, self.y),
-             size                  = self.size,
-             direction             = self.direction,
-             is_draggable          = self.draggable,
-             rotation_style        = SRSpriteRotationStyle.from_string(self.rotation_style),
-             
-         ), None, None)
+        (
+            scripts,
+            comments,
+            costumes,
+            sounds,
+            sprite_only_variables,
+            sprite_only_lists,
+        ) = super().step(
+            config   = config,
+            info_api = info_api,
+        )
+        return (SRSprite(
+            name                  = self.name,
+            scripts               = scripts,
+            comments              = comments,
+            costume_index         = self.current_costume,
+            costumes              = costumes,
+            sounds                = sounds,
+            volume                = self.volume,
+            sprite_only_variables = sprite_only_variables,
+            sprite_only_lists     = sprite_only_lists,
+            local_monitors        = [], # will be filled later
+            layer_order           = self.layer_order,
+            is_visible            = self.visible,
+            position              = (self.x, self.y),
+            size                  = self.size,
+            direction             = self.direction,
+            is_draggable          = self.draggable,
+            rotation_style        = SRSpriteRotationStyle.from_string(self.rotation_style),
+        ), None, None)
     
 
 
@@ -305,10 +303,11 @@ class SRStage(SRTarget):
     pass # The stage has no additional properties
      
 class SRSprite(SRTarget):
-    _grepr_fields = SRTarget._grepr_fields + ["sprite_only_variables", "sprite_only_lists", "layer_order", "is_visible", "position", "size", "direction", "is_draggable", "rotation_style"]
+    _grepr_fields = SRTarget._grepr_fields + ["sprite_only_variables", "sprite_only_lists", "local_monitors", "layer_order", "is_visible", "position", "size", "direction", "is_draggable", "rotation_style"]
     
-    sprite_only_variables: dict[str, SRSpriteOnlyVariable]
-    sprite_only_lists    : dict[str, SRSpriteOnlyList]
+    sprite_only_variables: list[SRSpriteOnlyVariable]
+    sprite_only_lists    : list[SRSpriteOnlyList]
+    local_monitors: list[SRMonitor]
     layer_order: int
     is_visible: bool
     position: tuple[int | float, int | float]
@@ -325,8 +324,9 @@ class SRSprite(SRTarget):
         costumes: list[SRCostume],
         sounds: list[SRSound],
         volume: int | float,
-        sprite_only_variables: dict[str, SRSpriteOnlyVariable],
-        sprite_only_lists    : dict[str, SRSpriteOnlyList],
+        sprite_only_variables: list[SRSpriteOnlyVariable],
+        sprite_only_lists    : list[SRSpriteOnlyList],
+        local_monitors: list[SRMonitor],
         layer_order: int,
         is_visible: bool,
         position: tuple[int | float, int | float],
@@ -346,12 +346,15 @@ class SRSprite(SRTarget):
         )
         self.sprite_only_variables = sprite_only_variables
         self.sprite_only_lists     = sprite_only_lists
+        self.local_monitors        = local_monitors
         self.layer_order           = layer_order
+        self.is_visible            = is_visible
         self.position              = position
         self.size                  = size
         self.direction             = direction
         self.is_draggable          = is_draggable
         self.rotation_style        = rotation_style
+        self.local_monitors        = []
 
 class SRSpriteRotationStyle(Enum):
     ALL_AROUND  = 0

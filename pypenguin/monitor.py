@@ -4,7 +4,6 @@ from utility import PypenguinClass
 from block_info import BlockInfoApi, DropdownType
 from dropdown import SRDropdownValue, SRDropdownKind
 from block_opcodes import *
-from target import SRSprite
 
 class FRMonitor(PypenguinClass):
     _grepr = True
@@ -48,13 +47,8 @@ class FRMonitor(PypenguinClass):
         self.is_discrete = data.get("isDiscrete", None)
         return self
     
-    def step(self, info_api: BlockInfoApi, sprites: list[SRSprite]) -> "SRMonitor | None":
-        monitor_sprite = None
-        for sprite in sprites:
-            if sprite.name == self.sprite_name:
-                monitor_sprite = sprite
-                break
-        if ((monitor_sprite is None) 
+    def step(self, info_api: BlockInfoApi, sprite_names: list[str]) -> tuple[str | None, "SRMonitor | None"]:
+        if ((self.sprite_name not in sprite_names) 
         and (self.sprite_name is not None) 
         and not(self.visible)):
             return None # Delete monitors of non-existing sprites
@@ -75,33 +69,30 @@ class FRMonitor(PypenguinClass):
             new_dropdowns[new_dropdown_id] = dropdown_type.translate_old_to_new_value(dropdown_value)
         
         if   self.opcode == OPCODE_VAR_VALUE:
-            return SRVariableMonitor(
+            return (self.sprite_name, SRVariableMonitor(
                 opcode              = block_info.new_opcode,
                 dropdowns           = new_dropdowns,
-                sprite              = monitor_sprite,
                 position            = (self.x, self.y),
                 is_visible          = self.visible,
                 slider_min          = self.slider_min,
                 slider_max          = self.slider_max,
                 allow_only_integers = self.is_discrete,
-            )
+            ))
         elif self.opcode == OPCODE_LIST_VALUE:
-            return SRListMonitor(
+            return (self.sprite_name, SRListMonitor(
                 opcode      = block_info.new_opcode,
                 dropdowns   = new_dropdowns,
-                sprite      = monitor_sprite,
                 position    = (self.x, self.y),
                 is_visible  = self.visible,
                 size        = (self.width, self.height)
-            )
+            ))
         else:
-            return SRMonitor(
+            return (self.sprite_name, SRMonitor(
                 opcode      = block_info.new_opcode,
                 dropdowns   = new_dropdowns,
-                sprite      = monitor_sprite,
                 position    = (self.x, self.y),
                 is_visible  = self.visible,
-            )
+            ))
 
 
 class SRMonitor(PypenguinClass):
@@ -110,20 +101,17 @@ class SRMonitor(PypenguinClass):
     
     opcode: str
     dropdowns: dict[str, SRDropdownValue]
-    sprite: SRSprite | None
     position: tuple[int | float, int | float]
     is_visible: bool
     
     def __init__(self, 
         opcode: str,
         dropdowns: dict[str, SRDropdownValue],
-        sprite: SRSprite | None,
         position: tuple[int | float, int | float],
         is_visible: bool,
     ):
         self.opcode     = opcode
         self.dropdowns  = dropdowns
-        self.sprite     = sprite
         self.position   = position
         self.is_visible = is_visible
     
@@ -137,7 +125,6 @@ class SRVariableMonitor(SRMonitor):
     def __init__(self, 
         opcode: str,
         dropdowns: dict[str, SRDropdownValue],
-        sprite: SRSprite | None,
         position: tuple[int | float, int | float],
         is_visible: bool,
         slider_min: int | float,
@@ -147,7 +134,6 @@ class SRVariableMonitor(SRMonitor):
         super().__init__(
             opcode     = opcode,
             dropdowns  = dropdowns,
-            sprite     = sprite,
             position   = position,
             is_visible = is_visible,
         )
@@ -163,7 +149,6 @@ class SRListMonitor(SRMonitor):
     def __init__(self, 
         opcode: str,
         dropdowns: dict[str, SRDropdownValue],
-        sprite: SRSprite | None,
         position: tuple[int | float, int | float],
         is_visible: bool,
         size: tuple[int | float, int | float],
@@ -171,7 +156,6 @@ class SRListMonitor(SRMonitor):
         super().__init__(
             opcode     = opcode,
             dropdowns  = dropdowns,
-            sprite     = sprite,
             position   = position,
             is_visible = is_visible,
         )
