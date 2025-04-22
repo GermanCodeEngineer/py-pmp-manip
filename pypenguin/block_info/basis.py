@@ -96,8 +96,6 @@ class BlockInfo:
         return self.inputs[input_id]
     
     def get_dropdown_info(self, dropdown_id: str) -> "DropdownInfo":
-        #from utility import gprint
-        #gprint(self)
         return self.dropdowns[dropdown_id]
     
     def get_input_type(self, input_id: str) -> "InputType":
@@ -446,7 +444,7 @@ class DropdownType(Enum):
 
     def translate_old_to_new_value(self, old_value: str) -> SRDropdownValue:
         # TODO: add special case for this
-        if self == "expanded|minimized" and old_value == "FALSE": # To patch a mistake of the pen extension dev
+        if self == DropdownType.EXPANDED_MINIMIZED and old_value == "FALSE": # To patch a mistake of the pen extension dev
             old_value = False
         new_values = self.get_possible_new_dropdown_values(include_behaviours=True)
         old_values = self.get_possible_old_dropdown_values()

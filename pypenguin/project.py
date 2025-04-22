@@ -26,8 +26,45 @@ class FRProject(PypenguinClass):
 
     @classmethod
     def from_pmp_file(cls, file_path: str) -> "FRProject":
-        self = cls()
+        assert file_path.endswith(".pmp")
         project_data = json.loads(read_file_of_zip(file_path, "project.json"))
+        return cls.from_data(project_data)
+    
+    @classmethod
+    def from_sb3_file(cls, file_path: str):
+        # TODO: test this method + test sprite id
+        assert file_path.endswith(".sb3")
+        project_data = json.loads(read_file_of_zip(file_path, "project.json"))
+        for i, sprite_data in enumerate(project_data["targets"]):
+            sprite_data["customVars"] = []
+            #if i == 0:
+            #    token = stringToToken("_stage_")
+            #else:
+            #    token = stringToToken(sprite_data["name"])
+            #sprite_data["id"        ] = token
+    
+            for block_data in sprite_data["blocks"].values():
+                if isinstance(block_data, list): continue # skip list blocks
+                if block_data["opcode"] == "procedures_prototype":
+                    block_data["mutation"]["optype"] = json.dumps("statement") # Scratch custom blocks are always "instruction" blocks
+        
+        data["extensionData"] = {}
+    
+        data["meta"] = {
+            "semver": "3.0.0",
+            "vm"    : "0.2.0",
+            "agent" : "",
+            "platform": {
+                "name"   : "PenguinMod",
+                "url"    : "https://penguinmod.com/",
+                "version": "stable",
+            },
+        }
+        return cls.from_data(project_data)
+    
+    @classmethod
+    def from_data(cls, project_data: dict):
+        self = cls()
         with open("extracted.json", "w") as file:
             json.dump(project_data, file, indent=4)
         
@@ -45,7 +82,7 @@ class FRProject(PypenguinClass):
         self.extension_urls = project_data.get("extensionURLs", {})
         self.meta           = FRMeta.from_data(project_data["meta"])
         return self
-        
+    
     def step(self, config: SpecialCaseHandler, info_api: BlockInfoApi):
         #TODO: Scratch to PenguinMod Conversion
         new_sprites: list[SRSprite] = []
@@ -122,7 +159,7 @@ class SRVideoState(Enum):
 
 class SRProject(PypenguinClass):
     _grepr = True
-    _grepr_fields = ["stage", "sprites", "all_sprite_variables", "all_sprite_lists", "tempo", "video_transparency", "video_state", "text_to_speech_language", "global_monitors", "extension_data", "extensions", "extension_urls"]
+    _grepr_fields = ["stage", "sprites", "all_sprite_variables", "all_sprite_lists", "tempo", "video_transparency", "video_state", "text_to_speech_language", "global_monitors", "extensions"]
     
     stage: SRStage
     sprites: list[SRSprite]

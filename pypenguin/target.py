@@ -314,7 +314,7 @@ class SRSprite(SRTarget):
     size: int | float
     direction: int | float
     is_draggable: bool
-    rotation_style: "SRSpriteRotationStyle" # TODO: make enum
+    rotation_style: "SRSpriteRotationStyle"
     
     def __init__(self, 
         name: str,
