@@ -1,0 +1,214 @@
+block_info/__init__:
+    BlockInfoApi:
+        - (BlockInfoSet)
+    var info_api: instance of BlockInfoApi:
+        - BlockInfoApi
+        - some of block_opcodes
+
+block_info/basis:
+    BlockInfoSet:
+        - (BlockInfo)
+        - (SRBlock) !
+    BlockInfo:
+        - (BlockType)
+        - (InputInfo + DropdownInfo)
+        - (InputType + DropdownType + InputMode)
+    BlockType: /
+    InputInfo:
+        - (InputType)
+        - (MenuInfo)
+    InputMode: /
+    InputType:
+        - InputMode
+        - DropdownType
+    DropdownInfo:
+        - (DropdownType)
+    DropdownBehaviour:
+        - (SRDropdownKind) !
+    DropdownTypeInfo:
+        - (DropdownBehaviour)
+        - (SRDropdownValue) !
+    DropdownType:
+        - DropdownTypeInfo
+        - SRDropdownKind !
+        - SRDropdownValue !
+        - DropdownBehaviour
+    MenuInfo: /
+
+config/__init__:
+    FRtoTRApi:
+        - (FRBlock)
+        - (SRAttachedComment) !
+        - (FRCustomBlockMutation)
+    
+    var config instance of SpecialCaseHandler:
+        - (FRtoTRApi)
+        - (InputMode)
+        - SpecialCaseHandler
+        - SpecialCase
+        - SpecialCaseType
+        - [TRBlock] # CONFLICT: needed fully and is imported on first use of functions/methods
+        - InputType
+        - some of block_opcodes
+
+config/basis:
+    SpecialCaseType: /
+    SpecialCase:
+        - (SpecialCaseType)
+    SpecialCaseHandler:
+        - (SpecialCaseType)
+        - (SpecialCase)
+
+# utility/ ain't that deep
+
+asset:
+    FRCostume: /
+    FRCostume.step:
+        - (SRCostume)
+    FRSound: /
+    FRSound.step:
+        - (SRSound)
+    SRCostume: /
+    SRSound: /
+
+block_mutation:
+    FRMutation: /
+    FRCustomArgumentMutation(FRMutation): /
+    FRCustomArgumentMutation.step:
+        - SRCustomBlockArgumentMutation
+    FRCustomBlockMutation(FRMutation): /
+    FRCustomBlockMutation.step:
+        - SRCustomBlockMutation
+        - SRCustomBlockOpcode
+        - SRCustomBlockOptype
+    FRCustomCallMutation(FRMutation): /
+    FRCustomCallMutation.step:
+        - SRCustomBlockCallMutation
+        - SRCustomBlockOpcode
+    
+    SRMutation: /
+    SRCustomBlockArgumentMutation: /
+    SRCustomBlockMutation:
+        - (SRCustomBlockOpcode)
+        - (SRCustomBlockOptype)
+    SRCustomBlockCallMutation:
+        - (SRCustomBlockOpcode)
+
+# block_opcodes ain't that deep
+
+block:
+    FRBlock:
+        - (FRMutation)
+        - some of block_opcodes
+        - FRCustomBlockMutation
+        - FRCustomArgumentMutation
+        - FRCustomCallMutation
+    FRBlock.step:
+        - (SpecialCaseHandler)
+        - (FRtoTRApi)
+        - (BlockInfoApi)
+        - TRBlock
+        - TRBlockReference
+    FRBlock.step_inputs:
+        - (SpecialCaseHandler)
+        - (FRtoTRApi)
+        - (BlockInfoApi)
+        - TRInputValue
+        - SpecialCaseType
+        - TRBlockReference
+        - InputMode
+    
+    TRBlock:
+        - (TRInputValue)
+        - (SRAttachedComment)
+        - (SRMutation)
+        - (TRBlockReference)
+    TRBlock.step:
+        - (BlockInfoApi)
+        - InputMode
+        - SRInputValue
+        - SRBlock
+    TRInputValue:
+        - (InputMode)
+        - (TRBlockReference)
+        - (TRBlock)
+    TRBlockReference: /
+
+    SRScript:
+        - (SRBlock)
+    
+    SRBlock:
+        - (SRInputValue)
+        - (SRDropdownValue)
+        - (SRAttachedComment)
+        - (SRMutation)
+    
+    SRInputValue:
+    
+
+
+
+
+project:
+    FRProject:
+        - (FRTarget)
+        - FRStage + FRSprite
+        - FRMonitor
+        - FRMeta
+    FRProject.step:
+        - (SpecialCaseHandler)
+        - (BlockInfoApi)
+        - (SRSprite)
+        - DropdownType
+        - SRCustomExtension + SRBuiltinExtension
+        - SRProject
+        - SRVideoState
+    SRVideoState: /
+
+target:
+    FRTarget:
+        - FRBlock
+        - FRComment
+        - FRCostume + FRSound
+    FRTarget.basis_step:
+        - (SpecialCaseHandler)
+        - (BlockInfoApi)
+        - (SRCostume + SRSound)
+        - (SRVariable + SRList)
+        - (TRBlock)
+        - SRScript
+        - SRFloatingComment + SRAttachedComment
+        - FRBlock
+        - FRtoTRApi
+        - TRBlockReference
+    FRTarget.step_variables_lists:
+        - (SRVariable + SRList)
+        - SRCloudVariable + SRAllSpriteVariable + SRSpriteOnlyVariable
+        - SRAllSpriteList + SRSpriteOnlyList
+
+    FRStage(FRTarget): /
+    FRStage.step:
+        - (SpecialCaseHandler)
+        - (BlockInfoApi)
+        - (SRAllSpriteVariable + SRAllSpriteList)
+        - SRStage
+
+    FRSprite(FRTarget): /
+    FRSprite.step:
+        - (SpecialCaseHandler)
+        - (BlockInfoApi)
+        - SRSprite
+        - SRSpriteRotationStyle
+
+
+monitor:
+    FRMonitor: /
+
+meta:
+    FRMeta:
+        - FRPlatform
+    FRPlatform: /
+
+
+
+    

@@ -28,9 +28,6 @@ class FRBlock(PypenguinClass):
     comment: str | None # a comment id
     mutation: "FRMutation | None"
 
-    # Temporary
-    block_info: BlockInfo | None
-
     @classmethod
     def from_data(cls, data: dict[str, Any]):
         self = cls()
@@ -49,6 +46,7 @@ class FRBlock(PypenguinClass):
         self.x         = data.get("x", None)
         self.y         = data.get("y", None)
         self.comment   = data.get("comment", None)
+        # TODO: add special case for this
         if self.opcode == OPCODE_CB_PROTOTYPE:
             self.mutation = FRCustomBlockMutation.from_data(data["mutation"])
         elif self.opcode in ANY_OPCODE_CB_ARG:
@@ -62,8 +60,11 @@ class FRBlock(PypenguinClass):
         return self
     
     @classmethod
-    def from_tuple(cls, obj: tuple, parent_id: str|None) -> "FRBlock":
-        if obj[0] == OPCODE_VAR_VALUE_NUM: # A magic value
+    def from_tuple(cls, 
+            obj: tuple[str, str, str] | tuple[str, str, str, int|float, int|float],
+            parent_id: str | None,
+        ) -> "FRBlock":
+        if obj[0] == OPCODE_VAR_VALUE_NUM:
             block_data = {
                 "opcode": OPCODE_VAR_VALUE,
                 "next"  : None,
@@ -73,7 +74,7 @@ class FRBlock(PypenguinClass):
                 "shadow": False,
                 "topLevel": parent_id is None,
             }
-        elif obj[0] == OPCODE_LIST_VALUE_NUM: # A magic value
+        elif obj[0] == OPCODE_LIST_VALUE_NUM:
             block_data = {
                 "opcode": OPCODE_LIST_VALUE,
                 "next"  : None,
@@ -92,6 +93,53 @@ class FRBlock(PypenguinClass):
         else: raise ValueError()
         return cls.from_data(block_data)
 
+    def step(self, 
+        config: SpecialCaseHandler, 
+        block_api: FRtoTRApi, 
+        info_api: BlockInfoApi, 
+        own_id: str
+    ) -> "TRBlock":
+        block_info = info_api.get_info_by_opcode(self.opcode)
+        pre_event = config.get_event(
+            event_type = SpecialCaseType.PRE_FR_STEP,
+            opcode     = self.opcode,
+        )
+        if pre_event is not None:
+            self = pre_event.call(block_api=block_api, block=self)
+        
+        instead_event = config.get_event(
+            event_type = SpecialCaseType.INSTEAD_FR_STEP,
+            opcode     = self.opcode,
+        )
+        if instead_event is None:
+            new_inputs = self.step_inputs(
+                config     = config,
+                block_api  = block_api,
+                info_api   = info_api,
+                block_info = block_info,
+                own_id     = own_id,
+            )
+            new_dropdowns = {}
+            for dropdown_id, dropdown_value in self.fields.items():
+                new_dropdowns[dropdown_id] = dropdown_value[0]
+            
+            new_block = TRBlock(
+                opcode       = self.opcode,
+                inputs       = new_inputs,
+                dropdowns    = new_dropdowns,
+                position     = (self.x, self.y) if self.top_level else None,
+                comment      = None if self.comment  is None else block_api.get_comment(self.comment),
+                mutation     = None if self.mutation is None else self.mutation.step(
+                    block_api = block_api,
+                ),
+                next         = None if self.next     is None else TRBlockReference(self.next),
+                is_top_level = self.top_level,
+            )
+        else:
+            new_block = instead_event.call(block_api=block_api, block=self)
+        
+        #TODO: add custom handler system here for e.g. draw polygon block
+        return new_block
 
     def step_inputs(self, 
         config: SpecialCaseHandler, 
@@ -192,7 +240,7 @@ class FRBlock(PypenguinClass):
                 "text"           : text,
             }
             
-            
+            # Im temporarily keeping both systems to ensure the new system produces the same output
             if new_input_data_1 != new_input_data_2:
                 gprint("nid1", new_input_data_1)
                 gprint("nid2", new_input_data_2)
@@ -223,53 +271,6 @@ class FRBlock(PypenguinClass):
         # Also translate old input ids to new input ids
         return new_inputs
 
-    def step(self, 
-        config: SpecialCaseHandler, 
-        block_api: FRtoTRApi, 
-        info_api: BlockInfoApi, 
-        own_id: str
-    ) -> "TRBlock":
-        block_info = info_api.get_info_by_opcode(self.opcode)
-        pre_event = config.get_event(
-            event_type = SpecialCaseType.PRE_FR_STEP,
-            opcode     = self.opcode,
-        )
-        if pre_event is not None:
-            self = pre_event.call(block_api=block_api, block=self)
-        
-        instead_event = config.get_event(
-            event_type = SpecialCaseType.INSTEAD_FR_STEP,
-            opcode     = self.opcode,
-        )
-        if instead_event is None:
-            new_inputs = self.step_inputs(
-                config     = config,
-                block_api  = block_api,
-                info_api   = info_api,
-                block_info = block_info,
-                own_id     = own_id,
-            )
-            new_dropdowns = {}
-            for dropdown_id, dropdown_value in self.fields.items():
-                new_dropdowns[dropdown_id] = dropdown_value[0]
-            
-            new_block = TRBlock(
-                opcode       = self.opcode,
-                inputs       = new_inputs,
-                dropdowns    = new_dropdowns,
-                position     = (self.x, self.y) if self.top_level else None,
-                comment      = None if self.comment  is None else block_api.get_comment(self.comment),
-                mutation     = None if self.mutation is None else self.mutation.step(
-                    block_api = block_api,
-                ),
-                next         = None if self.next     is None else TRBlockReference(self.next),
-                is_top_level = self.top_level,
-            )
-        else:
-            new_block = instead_event.call(block_api=block_api, block=self)
-        
-        #TODO: add custom handler system here for e.g. draw polygon block
-        return new_block
 
 
 class TRBlock(PypenguinClass):
@@ -307,7 +308,7 @@ class TRBlock(PypenguinClass):
     
     def step(self, 
             all_blocks: dict[str, "TRBlock"],
-            own_reference: "TRBlockReference",
+        #    own_reference: "TRBlockReference",
             info_api: BlockInfoApi,
         ) -> tuple[tuple[int|float,int|float] | None, list["SRBlock | str"]]:
         
@@ -329,7 +330,7 @@ class TRBlock(PypenguinClass):
                 sub_block = all_blocks[sub_reference]
                 _, more_sub_blocks = sub_block.step(
                     all_blocks    = all_blocks,
-                    own_reference = sub_reference,
+                #    own_reference = sub_reference,
                     info_api      = info_api,
                 )
                 sub_blocks.append(more_sub_blocks)
@@ -427,7 +428,7 @@ class TRBlock(PypenguinClass):
             next_block = all_blocks[self.next]
             _, next_blocks = next_block.step(
                 all_blocks    = all_blocks,
-                own_reference = self.next,
+            #    own_reference = self.next,
                 info_api      = info_api,
             )
             new_blocks.extend(next_blocks)

@@ -1,22 +1,22 @@
 from enum import Enum
 from utility import PypenguinClass
 
-class SRCustomOpcode(PypenguinClass):
+class SRCustomBlockOpcode(PypenguinClass):
     _grepr = True
     _grepr_fields = ["proccode", "arguments"]
 
     proccode: str
-    arguments: dict[str, "SRCustomArgumentType"]
+    arguments: dict[str, "SRCustomBlockArgumentType"]
 
     def __init__(self, proccode: str, argument_names: list[str], argument_defaults: list[str]):
         self.proccode = proccode
         self.arguments = {
-            name: SRCustomArgumentType.get_by_default(default)
+            name: SRCustomBlockArgumentType.get_by_default(default)
             for name, default in zip(argument_names, argument_defaults)
         }
         
 
-class SRCustomArgumentType(Enum):
+class SRCustomBlockArgumentType(Enum):
     STRING_NUMBER = 0
     BOOLEAN       = 1
 
@@ -24,12 +24,12 @@ class SRCustomArgumentType(Enum):
         return self.__class__.__name__ + "." + self.name
      
     @staticmethod
-    def get_by_default(default) -> "SRCustomArgumentType":
+    def get_by_default(default) -> "SRCustomBlockArgumentType":
         match default:
             case "":
-                return SRCustomArgumentType.STRING_NUMBER
+                return SRCustomBlockArgumentType.STRING_NUMBER
             case "false":
-                return SRCustomArgumentType.BOOLEAN
+                return SRCustomBlockArgumentType.BOOLEAN
             case _:
                 raise ValueError()
 

@@ -2,7 +2,7 @@ from typing import Any
 
 from utility import PypenguinClass
 from block_info import BlockInfoApi, DropdownType
-from dropdown import SRDropdownValue, SRDropdownKind
+from dropdown import SRDropdownValue
 from block_opcodes import *
 
 class FRMonitor(PypenguinClass):

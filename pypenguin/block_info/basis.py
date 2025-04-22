@@ -309,8 +309,6 @@ class DropdownTypeInfo:
         self.old_direct_values    = old_direct_values or self.direct_values
         self.fallback             = fallback
     
-
-
 class DropdownType(Enum):    
     def __repr__(self):
         return f"{self.__class__.__name__}.{self.name}"

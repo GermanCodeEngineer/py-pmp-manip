@@ -71,7 +71,7 @@ config.add_opcodes_event(
 def PRE__CB_ARG(block: "FRBlock", block_api: FRtoTRApi) -> "FRBlock":
     # Transfer argument name from a field into the mutation
     # because only real dropdowns should be listed in "fields"
-    block.mutation.set_argument_name(block.fields["VALUE"][0])
+    block.mutation.store_argument_name(block.fields["VALUE"][0])
     del block.fields["VALUE"]
     return block
 

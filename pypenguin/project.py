@@ -2,7 +2,7 @@ import json
 from enum import Enum
 
 from utility               import read_file_of_zip, ThanksError, PypenguinClass
-from target                import FRTarget, FRStage, FRSprite, SRTarget, SRStage, SRSprite
+from target                import FRTarget, FRStage, FRSprite, SRStage, SRSprite
 from monitor               import FRMonitor, SRMonitor
 from meta                  import FRMeta
 from config                import SpecialCaseHandler
@@ -32,7 +32,9 @@ class FRProject(PypenguinClass):
     
     @classmethod
     def from_sb3_file(cls, file_path: str):
-        # TODO: test this method + test sprite id
+        # TODO: 
+        # - test this method + test sprite id 
+        # - test custom block type of sb3's defaulting to "statement"
         assert file_path.endswith(".sb3")
         project_data = json.loads(read_file_of_zip(file_path, "project.json"))
         for i, sprite_data in enumerate(project_data["targets"]):
@@ -43,23 +45,23 @@ class FRProject(PypenguinClass):
             #    token = stringToToken(sprite_data["name"])
             #sprite_data["id"        ] = token
     
-            for block_data in sprite_data["blocks"].values():
-                if isinstance(block_data, list): continue # skip list blocks
-                if block_data["opcode"] == "procedures_prototype":
-                    block_data["mutation"]["optype"] = json.dumps("statement") # Scratch custom blocks are always "instruction" blocks
+            #for block_data in sprite_data["blocks"].values():
+            #    if isinstance(block_data, list): continue # skip list blocks
+            #    if block_data["opcode"] == "procedures_prototype":
+            #        block_data["mutation"]["optype"] = json.dumps("statement") # Scratch custom blocks are always "instruction" blocks
         
-        data["extensionData"] = {}
+        project_data["extensionData"] = {}
     
-        data["meta"] = {
-            "semver": "3.0.0",
-            "vm"    : "0.2.0",
-            "agent" : "",
-            "platform": {
-                "name"   : "PenguinMod",
-                "url"    : "https://penguinmod.com/",
-                "version": "stable",
-            },
-        }
+        #project_data["meta"] = {
+        #    "semver": "3.0.0",
+        #    "vm"    : "0.2.0",
+        #    "agent" : "",
+        #    "platform": {
+        #        "name"   : "PenguinMod",
+        #        "url"    : "https://penguinmod.com/",
+        #        "version": "stable",
+        #    },
+        #}
         return cls.from_data(project_data)
     
     @classmethod
@@ -84,7 +86,6 @@ class FRProject(PypenguinClass):
         return self
     
     def step(self, config: SpecialCaseHandler, info_api: BlockInfoApi):
-        #TODO: Scratch to PenguinMod Conversion
         new_sprites: list[SRSprite] = []
         for target in self.targets:
             if  target.is_stage:
@@ -118,7 +119,7 @@ class FRProject(PypenguinClass):
         
         new_extensions = []
         for extension_id in self.extensions:
-            if extension_id in self.extension_urls:
+            if extension_id in self.extension_urls.keys():
                 new_extensions.append(SRCustomExtension(
                     id  = extension_id,
                     url = self.extension_urls[extension_id],
@@ -141,7 +142,6 @@ class FRProject(PypenguinClass):
             extensions              = new_extensions,
         )
 
-["on", "on flipped", "off"]
 class SRVideoState(Enum):
     ON         = 0
     ON_FLIPPED = 1

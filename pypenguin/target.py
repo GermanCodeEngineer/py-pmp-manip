@@ -63,7 +63,7 @@ class FRTarget(PypenguinClass):
         self.layer_order     = data["layerOrder"]
         return self
 
-    def step(self, config: SpecialCaseHandler, info_api: BlockInfoApi
+    def basis_step(self, config: SpecialCaseHandler, info_api: BlockInfoApi
     ) -> tuple[list[SRScript], list[SRFloatingComment], list[SRCostume], list[SRSound], 
     list[SRVariable], list[SRList]]:
         floating_comments = []
@@ -74,10 +74,6 @@ class FRTarget(PypenguinClass):
                 floating_comments.append(new_comment)
             elif isinstance(new_comment, SRAttachedComment):
                 attached_comments[comment_id] = new_comment
-        
-        
-        #gprint(floating_comments)
-        #gprint(attached_comments)
 
         blocks = copy.deepcopy(self.blocks)
         for block_reference, block in blocks.items():
@@ -197,7 +193,7 @@ class FRStage(FRTarget):
             sounds,
             all_sprite_variables,
             all_sprite_lists,
-        ) = super().step(
+        ) = super().basis_step(
             config   = config,
             info_api = info_api,
         )
@@ -244,7 +240,7 @@ class FRSprite(FRTarget):
             sounds,
             sprite_only_variables,
             sprite_only_lists,
-        ) = super().step(
+        ) = super().basis_step(
             config   = config,
             info_api = info_api,
         )
