@@ -14,17 +14,34 @@ class FRComment(PypenguinClass):
     minimized: bool
     text: str
     
+    def __init__(self, 
+        block_id: str | None,
+        x: int | float,
+        y: int | float,
+        width: int | float,
+        height: int | float,
+        minimized: bool,
+        text: str,
+    ):
+        self.block_id  = block_id
+        self.x         = x
+        self.y         = y
+        self.width     = width
+        self.height    = height
+        self.minimized = minimized
+        self.text      = text
+
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRComment":
-        self = cls()
-        self.block_id  = data["blockId"  ]
-        self.x         = data["x"        ]
-        self.y         = data["y"        ]
-        self.width     = data["width"    ]
-        self.height    = data["height"   ]
-        self.minimized = data["minimized"]
-        self.text      = data["text"     ]
-        return self
+        return cls(
+            block_id  = data["blockId"  ],
+            x         = data["x"        ],
+            y         = data["y"        ],
+            width     = data["width"    ],
+            height    = data["height"   ],
+            minimized = data["minimized"],
+            text      = data["text"     ],
+        )
     
     def step(self) -> "SRComment":
         position = (self.x, self.y)

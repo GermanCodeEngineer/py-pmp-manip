@@ -13,12 +13,16 @@ class FRMutation(PypenguinClass, ABC):
     tag_name: str # always "mutation"
     children: list # always []
     
+    def __init__(self, tag_name: str, children: list):
+        self.tag_name = tag_name
+        self.children = children
+
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRMutation":
-        self = cls()
-        self.tag_name = data["tagName" ]
-        self.children = data["children"]
-        return self
+        return cls(
+            tag_name = data["tagName" ],
+            children = data["children"],
+        )
 
     @abstractmethod
     def step(self, block_api: FRtoTRApi) -> "SRMutation": pass
@@ -28,11 +32,20 @@ class FRCustomArgumentMutation(FRMutation):
     
     color: tuple[str, str, str]
     
+    def __init__(self, tag_name: str, children: list, color: tuple[str, str, str]):
+        super().__init__(
+            tag_name = tag_name,
+            children = children,
+        )
+        self.color = color
+
     @classmethod
     def from_data(cls, data: dict[str, str]) -> "FRCustomArgumentMutation":
-        self: FRCustomArgumentMutation = super().from_data(data)
-        self.color = tuple(json.loads(data["color"]))
-        return self
+        return cls(
+            tag_name = data["tagName" ],
+            children = data["children"],
+            color = tuple(json.loads(data["color"])),
+        )
     
     def store_argument_name(self, name: str) -> None:
         self._argument_name = name
@@ -60,23 +73,45 @@ class FRCustomBlockMutation(FRMutation):
     optype: str
     color: tuple[str, str, str]
     
+    def __init__(self, 
+        proccode: str,
+        argument_ids: list[str],
+        argument_names: list[str],
+        argument_defaults: list[str],
+        warp: bool,
+        returns: bool | None,
+        edited: bool, # seems to always be true
+        optype: str,
+        color: tuple[str, str, str],
+    ):
+        self.proccode          = proccode
+        self.argument_ids      = argument_ids
+        self.argument_names    = argument_names
+        self.argument_defaults = argument_defaults
+        self.warp              = warp
+        self.returns           = returns
+        self.edited            = edited
+        self.optype            = optype
+        self.color             = color
+
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRCustomBlockMutation":
-        self: FRCustomBlockMutation = super().from_data(data)
-        self.proccode          = data["proccode"]
-        self.argument_ids      = json.loads(data["argumentids"     ])
-        self.argument_names    = json.loads(data["argumentnames"   ])
-        self.argument_defaults = json.loads(data["argumentdefaults"])
         if isinstance(data["warp"], bool):
-            self.warp = data["warp"]
+            warp = data["warp"]
         elif isinstance(data["warp"], str):
-            self.warp = json.loads(data["warp"])
+            warp = json.loads(data["warp"])
         else: raise ValueError()
-        self.returns           = json.loads(data["returns"])
-        self.edited            = json.loads(data["edited" ])
-        self.optype            = json.loads(data["optype" ]) if "optype" in data else "statement"
-        self.color       = tuple(json.loads(data["color"  ]))
-        return self
+        return cls(
+            proccode          = data["proccode"],
+            argument_ids      = json.loads(data["argumentids"     ]),
+            argument_names    = json.loads(data["argumentnames"   ]),
+            argument_defaults = json.loads(data["argumentdefaults"]),
+            warp              = warp,
+            returns           = json.loads(data["returns"]),
+            edited            = json.loads(data["edited" ]),
+            optype            = json.loads(data["optype" ]) if "optype" in data else "statement",
+            color       = tuple(json.loads(data["color"  ])),
+        )
     
     def step(self, block_api: FRtoTRApi) -> "SRCustomBlockMutation":
         return SRCustomBlockMutation(
@@ -103,21 +138,39 @@ class FRCustomCallMutation(FRMutation):
     optype: str
     color: tuple[str, str, str]
     
+    def __init__(self, 
+        proccode: str,
+        argument_ids: list[str],
+        warp: bool,
+        returns: bool | None,
+        edited: bool, # seems to always be true
+        optype: str,
+        color: tuple[str, str, str],
+    ):
+        self.proccode     = proccode
+        self.argument_ids = argument_ids
+        self.warp         = warp
+        self.returns      = returns
+        self.edited       = edited
+        self.optype       = optype
+        self.color        = color
+
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRCustomCallMutation":
-        self: FRCustomCallMutation = super().from_data(data)
-        self.proccode     = data["proccode"]
-        self.argument_ids = json.loads(data["argumentids"     ])
         if isinstance(data["warp"], bool):
-            self.warp = data["warp"]
+            warp = data["warp"]
         elif isinstance(data["warp"], str):
-            self.warp = json.loads(data["warp"])
+            warp = json.loads(data["warp"])
         else: raise ValueError()
-        self.returns     = json.loads(data["returns"])
-        self.edited      = json.loads(data["edited" ])
-        self.optype      = json.loads(data["optype" ])
-        self.color = tuple(json.loads(data["color"  ]))
-        return self
+        return cls(
+            proccode     = data["proccode"],
+            argument_ids = json.loads(data["argumentids"     ]),
+            warp         = warp,
+            returns      = json.loads(data["returns"]),
+            edited       = json.loads(data["edited" ]),
+            optype       = json.loads(data["optype" ]) if "optype" in data else "statement",
+            color  = tuple(json.loads(data["color"  ])),
+        )
     
     def step(self, block_api: FRtoTRApi) -> "SRCustomBlockCallMutation":
         complete_mutation = block_api.get_cb_mutation(self.proccode) # Get complete mutation

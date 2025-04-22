@@ -11,14 +11,25 @@ class FRMeta(PypenguinClass):
     agent: str
     platform: "FRPlatform"
     
+    def __init__(self, 
+        semver: str,
+        vm: str,
+        agent: str,
+        platform: "FRPlatform",
+    ):
+        self.semver   = semver
+        self.vm       = vm
+        self.agent    = agent
+        self.platform = platform
+
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRMeta":
-        self = cls()
-        self.semver = data["semver"]
-        self.vm     = data["vm"    ]
-        self.agent  = data["agent" ]
-        self.platform = FRPlatform.from_data(data["platform"])
-        return self
+        return cls(
+            semver = data["semver"],
+            vm     = data["vm"    ],
+            agent  = data["agent" ],
+            platform = FRPlatform.from_data(data["platform"]),
+        )
 
 
 class FRPlatform(PypenguinClass):
@@ -29,10 +40,19 @@ class FRPlatform(PypenguinClass):
     url: str
     version: str
     
+    def __init__(self, 
+        name: str,
+        url: str,
+        version: str,
+    ):
+        self.name    = name
+        self.url     = url
+        self.version = version
+
     @classmethod
     def from_data(cls, data: dict[str, str]) -> "FRPlatform":
-        self = cls()
-        self.name    = data["name"   ]
-        self.url     = data["url"    ]
-        self.version = data["version"]
-        return self
+        return cls(
+            name    = data["name"   ],
+            url     = data["url"    ],
+            version = data["version"],
+        )

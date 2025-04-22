@@ -28,36 +28,66 @@ class FRBlock(PypenguinClass):
     comment: str | None # a comment id
     mutation: "FRMutation | None"
 
+    def __init__(self, 
+        opcode: str,
+        next: str | None,
+        parent: str,
+        inputs: dict[str, (
+        tuple[int, str | tuple] 
+        | tuple[int, str | tuple, str | tuple]
+        )],
+        fields: dict[str, tuple[str, str] | tuple[str, str, str]],
+        shadow: bool,
+        top_level: bool,
+        x: int | float | None,
+        y: int | float | None,
+        comment: str | None, # a comment id
+        mutation: "FRMutation | None",
+    ):
+        self.opcode    = opcode
+        self.next      = next
+        self.parent    = parent
+        self.inputs    = inputs
+        self.fields    = fields
+        self.shadow    = shadow
+        self.top_level = top_level
+        self.x         = x
+        self.y         = y
+        self.comment   = comment
+        self.mutation  = mutation
+
     @classmethod
     def from_data(cls, data: dict[str, Any]):
-        self = cls()
-        self.opcode    = data["opcode"  ]
-        self.next      = data["next"    ]
-        self.parent    = data["parent"  ]
-        self.inputs    = {}
-        for input_id, input_data in data["inputs"].items():
-            input_data = [tuple(item) if isinstance(item, list) else item for item in input_data]
-            self.inputs[input_id] = tuple(input_data)
-        self.fields    = {
-            field_id: tuple(field_data) for field_id, field_data in data["fields"].items()
-        }
-        self.shadow    = data["shadow"  ]
-        self.top_level = data["topLevel"]
-        self.x         = data.get("x", None)
-        self.y         = data.get("y", None)
-        self.comment   = data.get("comment", None)
         # TODO: add special case for this
-        if self.opcode == OPCODE_CB_PROTOTYPE:
-            self.mutation = FRCustomBlockMutation.from_data(data["mutation"])
-        elif self.opcode in ANY_OPCODE_CB_ARG:
-            self.mutation = FRCustomArgumentMutation.from_data(data["mutation"])
-        elif self.opcode == OPCODE_CB_CALL:
-            self.mutation = FRCustomCallMutation.from_data(data["mutation"])
+        if   data["opcode"] == OPCODE_CB_PROTOTYPE:
+            mutation = FRCustomBlockMutation.from_data(data["mutation"])
+        elif data["opcode"] in ANY_OPCODE_CB_ARG:
+            mutation = FRCustomArgumentMutation.from_data(data["mutation"])
+        elif data["opcode"] == OPCODE_CB_CALL:
+            mutation = FRCustomCallMutation.from_data(data["mutation"])
         elif "mutation" in data:
             raise ValueError(data)
         else:
-            self.mutation = None
-        return self
+            mutation = None
+        return cls(
+            opcode    = data["opcode"  ],
+            next      = data["next"    ],
+            parent    = data["parent"  ],
+            inputs    = {
+                input_id: tuple(
+                    [tuple(item) if isinstance(item, list) else item for item in input_data]
+                ) for input_id, input_data in data["inputs"].items()
+            },
+            fields    = {
+                field_id: tuple(field_data) for field_id, field_data in data["fields"].items()
+            },
+            shadow    = data["shadow"  ],
+            top_level = data["topLevel"],
+            x         = data.get("x", None),
+            y         = data.get("y", None),
+            comment   = data.get("comment", None),
+            mutation  = mutation,
+        )
     
     @classmethod
     def from_tuple(cls, 
@@ -518,7 +548,7 @@ class SRInputValue(PypenguinClass):
     blocks: list[SRBlock]
     block: SRBlock | None
     text: str | None
-    dropdown: Any | None
+    dropdown: SRDropdownValue | None
     
     def __init__(self,
         mode: InputMode,

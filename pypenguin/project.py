@@ -24,6 +24,42 @@ class FRProject(PypenguinClass):
     extension_urls: dict[str, str]
     meta: FRMeta
 
+    def __init__(self, 
+        targets: list[FRTarget],
+        monitors: list[FRMonitor],
+        extension_data: dict,
+        extensions: list[str],
+        extension_urls: dict[str, str],
+        meta: FRMeta,
+    ):
+        self.targets        = targets
+        self.monitors       = monitors
+        self.extension_data = extension_data
+        if self.extension_data != {}: raise ThanksError()
+        self.extensions     = extensions
+        self.extension_urls = extension_urls
+        self.meta           = meta
+
+    @classmethod
+    def from_data(cls, project_data: dict):
+        with open("extracted.json", "w") as file:
+            json.dump(project_data, file, indent=4)
+        
+        return cls(
+            targets = [
+                FRStage.from_data(target_data) if i==0 else FRSprite.from_data(target_data)
+                for i, target_data in enumerate(project_data["targets"])
+            ],
+            monitors = [
+                FRMonitor.from_data(monitor_data) 
+                for monitor_data in project_data["monitors"]
+            ],
+            extension_data = project_data["extensionData"],
+            extensions     = project_data["extensions"   ],
+            extension_urls = project_data.get("extensionURLs", {}),
+            meta           = FRMeta.from_data(project_data["meta"]),
+        )
+
     @classmethod
     def from_pmp_file(cls, file_path: str) -> "FRProject":
         assert file_path.endswith(".pmp")
@@ -63,28 +99,7 @@ class FRProject(PypenguinClass):
         #    },
         #}
         return cls.from_data(project_data)
-    
-    @classmethod
-    def from_data(cls, project_data: dict):
-        self = cls()
-        with open("extracted.json", "w") as file:
-            json.dump(project_data, file, indent=4)
-        
-        self.targets = [
-            FRStage.from_data(target_data) if i==0 else FRSprite.from_data(target_data)
-            for i, target_data in enumerate(project_data["targets"])
-        ]
-        self.monitors = [
-            FRMonitor.from_data(monitor_data) 
-            for monitor_data in project_data["monitors"]
-        ]
-        if project_data["extensionData"] != {}: raise ThanksError()
-        self.extension_data = project_data["extensionData"]
-        self.extensions     = project_data["extensions"   ]
-        self.extension_urls = project_data.get("extensionURLs", {})
-        self.meta           = FRMeta.from_data(project_data["meta"])
-        return self
-    
+
     def step(self, config: SpecialCaseHandler, info_api: BlockInfoApi):
         new_sprites: list[SRSprite] = []
         for target in self.targets:

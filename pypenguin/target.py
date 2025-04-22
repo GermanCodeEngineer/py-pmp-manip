@@ -2,7 +2,7 @@ from typing import Any
 from enum import Enum
 import copy
 
-from utility    import gprint, PypenguinClass
+from utility    import gprint, PypenguinClass, ThanksError
 from block      import FRBlock, TRBlock, SRScript, TRBlockReference
 from comment    import FRComment, SRFloatingComment, SRAttachedComment
 from asset      import FRCostume, FRSound, SRCostume, SRSound
@@ -31,39 +31,69 @@ class FRTarget(PypenguinClass):
     volume: int | float
     layer_order: int
 
+    def __init__(self, 
+        is_stage: bool,
+        name: str,
+        variables: dict[str, tuple[str, Any]],
+        lists: dict[str, tuple[str, Any]],
+        broadcasts: dict[str, str],
+        custom_vars: list | None,
+        blocks: dict[str, tuple | FRBlock],
+        comments: dict[str, FRComment],
+        current_costume: int,
+        costumes: list[FRCostume],
+        sounds: list[FRSound] ,
+        id: str,
+        volume: int | float,
+        layer_order: int,
+    ):
+        self.is_stage        = is_stage
+        self.name            = name
+        self.variables       = variables
+        self.lists           = lists
+        self.broadcasts      = broadcasts
+        self.custom_vars     = custom_vars
+        if self.custom_vars != []: raise ThanksError()
+        self.blocks          = blocks
+        self.comments        = comments
+        self.current_costume = current_costume
+        self.costumes        = costumes
+        self.sounds          = sounds
+        self.id              = id
+        self.volume          = volume
+        self.layer_order     = layer_order
+
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRTarget":
-        self = cls()
-        self.is_stage        = data["isStage"   ]
-        self.name            = data["name"      ]
-        self.variables       = {key: tuple(value) for key, value in data["variables"].items()}
-        self.lists           = {key: tuple(value) for key, value in data["lists"    ].items()}
-        self.broadcasts      = data["broadcasts"]
-        self.custom_vars     = data["customVars"]
-        if data["customVars"] != []:
-            raise Exception("Wow! I have been trying to find out what 'customVars' is used for. Can you explain how you did that? Please contact me on GitHub.")
-        self.blocks          = {
-            block_id: (
-                tuple(block_data) if isinstance(block_data, list) else FRBlock.from_data(block_data)
-            ) for block_id, block_data in data["blocks"].items()
-        }
-        self.comments        = {
-          comment_id: FRComment.from_data(comment_data)
-          for comment_id, comment_data in data["comments"].items()
-        }
-        self.current_costume = data["currentCostume"]
-        self.costumes        = [
-          FRCostume.from_data(costume_data) for costume_data in data["costumes"]
-        ]
-        self.sounds          = [
-          FRSound.  from_data(sound_data  ) for sound_data   in data["sounds"  ]
-        ]
-        self.id              = data["id"        ]
-        self.volume          = data["volume"    ] # Yep. I like order.
-        self.layer_order     = data["layerOrder"]
-        return self
+        return cls(
+            is_stage        = data["isStage"   ],
+            name            = data["name"      ],
+            variables       = {key: tuple(value) for key, value in data["variables"].items()},
+            lists           = {key: tuple(value) for key, value in data["lists"    ].items()},
+            broadcasts      = data["broadcasts"],
+            custom_vars     = data["customVars"],
+            blocks          = {
+                block_id: (
+                    tuple(block_data) if isinstance(block_data, list) else FRBlock.from_data(block_data)
+                ) for block_id, block_data in data["blocks"].items()
+            },
+            comments        = {
+                comment_id: FRComment.from_data(comment_data)
+                for comment_id, comment_data in data["comments"].items()
+            },
+            current_costume = data["currentCostume"],
+            costumes        = [
+                FRCostume.from_data(costume_data) for costume_data in data["costumes"]
+            ],
+            sounds          = [
+                FRSound.  from_data(sound_data  ) for sound_data   in data["sounds"  ]
+            ],
+            id              = data["id"        ],
+            volume          = data["volume"    ],
+            layer_order     = data["layerOrder"],
+        )
 
-    def basis_step(self, config: SpecialCaseHandler, info_api: BlockInfoApi
+    def proto_step(self, config: SpecialCaseHandler, info_api: BlockInfoApi
     ) -> tuple[list[SRScript], list[SRFloatingComment], list[SRCostume], list[SRSound], 
     list[SRVariable], list[SRList]]:
         floating_comments = []
@@ -121,7 +151,7 @@ class FRTarget(PypenguinClass):
             block = new_blocks[top_level_block_ref]
             position, script_blocks = block.step(
                 all_blocks    = new_blocks,
-                own_reference = top_level_block_ref,
+            #    own_reference = top_level_block_ref,
                 info_api      = info_api,
             )
             new_scripts.append(SRScript(
@@ -174,15 +204,82 @@ class FRStage(FRTarget):
     video_state: str
     text_to_speech_language: str | None
     
+    def __init__(self, 
+        is_stage: bool,
+        name: str,
+        variables: dict[str, tuple[str, Any]],
+        lists: dict[str, tuple[str, Any]],
+        broadcasts: dict[str, str],
+        custom_vars: list | None,
+        blocks: dict[str, tuple | FRBlock],
+        comments: dict[str, FRComment],
+        current_costume: int,
+        costumes: list[FRCostume],
+        sounds: list[FRSound] ,
+        id: str,
+        volume: int | float,
+        layer_order: int,
+
+        tempo: int,
+        video_transparency: int | float,
+        video_state: str,
+        text_to_speech_language: str | None,
+    ):
+        super().__init__(
+            is_stage        = is_stage,
+            name            = name,
+            variables       = variables,
+            lists           = lists,
+            broadcasts      = broadcasts,
+            custom_vars     = custom_vars,
+            blocks          = blocks,
+            comments        = comments,
+            current_costume = current_costume,
+            costumes        = costumes,
+            sounds          = sounds,
+            id              = id,
+            volume          = volume,
+            layer_order     = layer_order,
+        )
+        self.tempo                   = tempo
+        self.video_transparency      = video_transparency
+        self.video_state             = video_state
+        self.text_to_speech_language = text_to_speech_language
+
     @classmethod
-    def from_data(cls, data: dict[str, Any]) -> "FRStage":
-        self = super().from_data(data)
-        assert self.is_stage
-        self.tempo                   = data["tempo"               ]
-        self.video_transparency      = data["videoTransparency"   ]
-        self.video_state             = data["videoState"          ]
-        self.text_to_speech_language = data["textToSpeechLanguage"]
-        return self
+    def from_data(cls, data: dict[str, Any]) -> "FRTarget":
+        return cls(
+            is_stage                = data["isStage"   ],
+            name                    = data["name"      ],
+            variables               = {key: tuple(value) for key, value in data["variables"].items()},
+            lists                   = {key: tuple(value) for key, value in data["lists"    ].items()},
+            broadcasts              = data["broadcasts"],
+            custom_vars             = data["customVars"],
+            blocks                  = {
+                block_id: (
+                    tuple(block_data) if isinstance(block_data, list) else FRBlock.from_data(block_data)
+                ) for block_id, block_data in data["blocks"].items()
+            },
+            comments                = {
+                comment_id: FRComment.from_data(comment_data)
+                for comment_id, comment_data in data["comments"].items()
+            },
+            current_costume         = data["currentCostume"],
+            costumes                = [
+                FRCostume.from_data(costume_data) for costume_data in data["costumes"]
+            ],
+            sounds                  = [
+                FRSound.  from_data(sound_data  ) for sound_data   in data["sounds"  ]
+            ],
+            id                      = data["id"                  ],
+            volume                  = data["volume"              ],
+            layer_order             = data["layerOrder"          ],
+
+            tempo                   = data["tempo"               ],
+            video_transparency      = data["videoTransparency"   ],
+            video_state             = data["videoState"          ],
+            text_to_speech_language = data["textToSpeechLanguage"],
+        )
     
     def step(self, config: SpecialCaseHandler, info_api: BlockInfoApi
     ) -> tuple["SRStage", list[SRAllSpriteVariable],  list[SRAllSpriteList]]:
@@ -193,7 +290,7 @@ class FRStage(FRTarget):
             sounds,
             all_sprite_variables,
             all_sprite_lists,
-        ) = super().basis_step(
+        ) = super().proto_step(
             config   = config,
             info_api = info_api,
         )
@@ -218,18 +315,91 @@ class FRSprite(FRTarget):
     draggable: bool
     rotation_style: str
 
+    def __init__(self, 
+        is_stage: bool,
+        name: str,
+        variables: dict[str, tuple[str, Any]],
+        lists: dict[str, tuple[str, Any]],
+        broadcasts: dict[str, str],
+        custom_vars: list | None,
+        blocks: dict[str, tuple | FRBlock],
+        comments: dict[str, FRComment],
+        current_costume: int,
+        costumes: list[FRCostume],
+        sounds: list[FRSound] ,
+        id: str,
+        volume: int | float,
+        layer_order: int,
+
+        visible: bool,
+        x: int | float,
+        y: int | float,
+        size: int | float,
+        direction: int | float,
+        draggable: bool,
+        rotation_style: str,
+    ):
+        super().__init__(
+            is_stage        = is_stage,
+            name            = name,
+            variables       = variables,
+            lists           = lists,
+            broadcasts      = broadcasts,
+            custom_vars     = custom_vars,
+            blocks          = blocks,
+            comments        = comments,
+            current_costume = current_costume,
+            costumes        = costumes,
+            sounds          = sounds,
+            id              = id,
+            volume          = volume,
+            layer_order     = layer_order,
+        )
+        self.visible        = visible
+        self.x              = x
+        self.y              = y
+        self.size           = size
+        self.direction      = direction
+        self.draggable      = draggable
+        self.rotation_style = rotation_style
+
     @classmethod
-    def from_data(cls, data: dict[str, Any]) -> "FRSprite":
-        self = super().from_data(data)
-        assert not self.is_stage
-        self.visible        = data["visible"      ]
-        self.x              = data["x"            ]
-        self.y              = data["y"            ]
-        self.size           = data["size"         ]
-        self.direction      = data["direction"    ]
-        self.draggable      = data["draggable"    ]
-        self.rotation_style = data["rotationStyle"]
-        return self
+    def from_data(cls, data: dict[str, Any]) -> "FRTarget":
+        return cls(
+            is_stage        = data["isStage"   ],
+            name            = data["name"      ],
+            variables       = {key: tuple(value) for key, value in data["variables"].items()},
+            lists           = {key: tuple(value) for key, value in data["lists"    ].items()},
+            broadcasts      = data["broadcasts"],
+            custom_vars     = data["customVars"],
+            blocks          = {
+                block_id: (
+                    tuple(block_data) if isinstance(block_data, list) else FRBlock.from_data(block_data)
+                ) for block_id, block_data in data["blocks"].items()
+            },
+            comments        = {
+                comment_id: FRComment.from_data(comment_data)
+                for comment_id, comment_data in data["comments"].items()
+            },
+            current_costume = data["currentCostume"],
+            costumes        = [
+                FRCostume.from_data(costume_data) for costume_data in data["costumes"]
+            ],
+            sounds          = [
+                FRSound.  from_data(sound_data  ) for sound_data   in data["sounds"  ]
+            ],
+            id              = data["id"           ],
+            volume          = data["volume"       ],
+            layer_order     = data["layerOrder"   ],
+
+            visible         = data["visible"      ],
+            x               = data["x"            ],
+            y               = data["y"            ],
+            size            = data["size"         ],
+            direction       = data["direction"    ],
+            draggable       = data["draggable"    ],
+            rotation_style  = data["rotationStyle"],
+        )
 
     def step(self, config: SpecialCaseHandler, info_api: BlockInfoApi
     ) -> tuple["SRSprite", None, None]:
@@ -240,7 +410,7 @@ class FRSprite(FRTarget):
             sounds,
             sprite_only_variables,
             sprite_only_lists,
-        ) = super().basis_step(
+        ) = super().proto_step(
             config   = config,
             info_api = info_api,
         )
@@ -302,7 +472,7 @@ class SRSprite(SRTarget):
     _grepr_fields = SRTarget._grepr_fields + ["sprite_only_variables", "sprite_only_lists", "local_monitors", "layer_order", "is_visible", "position", "size", "direction", "is_draggable", "rotation_style"]
     
     sprite_only_variables: list[SRSpriteOnlyVariable]
-    sprite_only_lists    : list[SRSpriteOnlyList]
+    sprite_only_lists: list[SRSpriteOnlyList]
     local_monitors: list[SRMonitor]
     layer_order: int
     is_visible: bool
@@ -321,7 +491,7 @@ class SRSprite(SRTarget):
         sounds: list[SRSound],
         volume: int | float,
         sprite_only_variables: list[SRSpriteOnlyVariable],
-        sprite_only_lists    : list[SRSpriteOnlyList],
+        sprite_only_lists: list[SRSpriteOnlyList],
         local_monitors: list[SRMonitor],
         layer_order: int,
         is_visible: bool,

@@ -24,28 +24,63 @@ class FRMonitor(PypenguinClass):
     slider_max: int | float | None
     is_discrete: bool | None
 
+    def __init__(self, 
+        id: str,
+        mode: str,
+        opcode: str,
+        params: dict[str, Any],
+        sprite_name: str | None,
+        value: Any,
+        x: int | float,
+        y: int | float,
+        visible: bool,
+
+        width: int | float,
+        height: int | float,
+        slider_min: int | float | None,
+        slider_max: int | float | None,
+        is_discrete: bool | None,
+    ):
+        # Core Properties
+        self.id          = id
+        self.mode        = mode
+        self.opcode      = opcode
+        self.params      = params
+        assert isinstance(self.params, dict)
+        self.sprite_name = sprite_name
+        self.value       = value
+        self.x           = x
+        self.y           = y
+        self.visible     = visible
+
+        # Properties for some opcodes
+        self.width       = width
+        self.height      = height
+        self.slider_min  = slider_min
+        self.slider_max  = slider_max
+        self.is_discrete = is_discrete
+
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRMonitor":
-        self = cls()
-        # Core Properties
-        self.id          = data["id"        ] 
-        self.mode        = data["mode"      ] 
-        self.opcode      = data["opcode"    ] 
-        self.params      = data["params"    ] 
-        assert isinstance(self.params, dict)
-        self.sprite_name = data["spriteName"] 
-        self.value       = data["value"     ]
-        self.x           = data["x"         ]
-        self.y           = data["y"         ]
-        self.visible     = data["visible"   ]
-        
-        # Properties for some opcodes
-        self.width       = data["width"     ]
-        self.height      = data["height"    ]
-        self.slider_min  = data.get("sliderMin" , None)
-        self.slider_max  = data.get("sliderMax" , None)
-        self.is_discrete = data.get("isDiscrete", None)
-        return self
+        return cls(
+            # Core Properties
+            id          = data["id"        ], 
+            mode        = data["mode"      ], 
+            opcode      = data["opcode"    ], 
+            params      = data["params"    ], 
+            sprite_name = data["spriteName"], 
+            value       = data["value"     ],
+            x           = data["x"         ],
+            y           = data["y"         ],
+            visible     = data["visible"   ],
+            
+            # Properties for some opcodes
+            width       = data["width"     ],
+            height      = data["height"    ],
+            slider_min  = data.get("sliderMin" , None),
+            slider_max  = data.get("sliderMax" , None),
+            is_discrete = data.get("isDiscrete", None),
+        )
     
     def step(self, info_api: BlockInfoApi, sprite_names: list[str]) -> tuple[str | None, "SRMonitor | None"]:
         if ((self.sprite_name not in sprite_names) 

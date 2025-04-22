@@ -45,7 +45,7 @@ class SRCustomBlockOptype(Enum):
         return self.__class__.__name__ + "." + self.name
 
     @staticmethod
-    def from_string(string) -> "SRCustomBlockOptype":
+    def from_string(string: str | None) -> "SRCustomBlockOptype":
         match string:
             case None       : return SRCustomBlockOptype.STATEMENT
             case "statement": return SRCustomBlockOptype.STATEMENT

@@ -8,7 +8,7 @@ block_info/__init__:
 block_info/basis:
     BlockInfoSet:
         - (BlockInfo)
-        - (SRBlock) !
+        - (SRBlock)
     BlockInfo:
         - (BlockType)
         - (InputInfo + DropdownInfo)
@@ -24,21 +24,21 @@ block_info/basis:
     DropdownInfo:
         - (DropdownType)
     DropdownBehaviour:
-        - (SRDropdownKind) !
+        - (SRDropdownKind)
     DropdownTypeInfo:
         - (DropdownBehaviour)
-        - (SRDropdownValue) !
+        - (SRDropdownValue)
     DropdownType:
         - DropdownTypeInfo
-        - SRDropdownKind !
-        - SRDropdownValue !
+        - SRDropdownKind
+        - SRDropdownValue
         - DropdownBehaviour
     MenuInfo: /
 
 config/__init__:
     FRtoTRApi:
         - (FRBlock)
-        - (SRAttachedComment) !
+        - (SRAttachedComment)
         - (FRCustomBlockMutation)
     
     var config instance of SpecialCaseHandler:
@@ -136,41 +136,84 @@ block:
 
     SRScript:
         - (SRBlock)
-    
     SRBlock:
         - (SRInputValue)
         - (SRDropdownValue)
         - (SRAttachedComment)
         - (SRMutation)
-    
     SRInputValue:
+        - (SRBlock)
+        - (SRDropdownValue)
+        - InputMode
+
+comment:
+    FRComment: /
+    FRComment.step:
+        - (SRComment)
+        - SRFloatingComment + SRAttachedComment
     
+    SRComment: /
+    SRFloatingComment(SRComment): /
+    SRAttachedComment(SRComment): /
 
+custom_block:
+    SRCustomBlockOpcode:
+        - SRCustomBlockArgumentType
+    SRCustomBlockArgumentType: /
+    SRCustomBlockOptype: /
 
+dropdown:
+    SRDropdownKind: /
+    SRDropdownValue:
+        - (SRDropdownKind)
 
+extension:
+    SRExtension: /
+    SRBuiltinExtension(SRExtension): /
+    SRCustomExtension(SRExtension): /
+
+meta:
+    FRMeta:
+        - FRPlatform
+    FRPlatform: /
+
+monitor:
+    FRMonitor: /
+    SRMonitor:
+        - (SRDropdownValue)
+    SRVariableMonitor(SRMonitor)
+    SRListMonitor(SRMonitor)
 
 project:
     FRProject:
         - (FRTarget)
-        - FRStage + FRSprite
         - FRMonitor
         - FRMeta
+        - FRStage + FRSprite
     FRProject.step:
         - (SpecialCaseHandler)
         - (BlockInfoApi)
-        - (SRSprite)
+        - (FRStage)
+        - (SRStage, SRSprite)
         - DropdownType
         - SRCustomExtension + SRBuiltinExtension
         - SRProject
         - SRVideoState
+    
     SRVideoState: /
+    SRProject:
+        - (SRStage, SRSprite)
+        - (SRAllSpriteVariable, SRAllSpriteList)
+        - (SRVideoState)
+        - (SRMonitor)
+        - (SRExtension)
 
 target:
     FRTarget:
         - FRBlock
         - FRComment
         - FRCostume + FRSound
-    FRTarget.basis_step:
+    FRTarget.proto_step:
         - (SpecialCaseHandler)
         - (BlockInfoApi)
         - (SRCostume + SRSound)
@@ -185,30 +228,36 @@ target:
         - (SRVariable + SRList)
         - SRCloudVariable + SRAllSpriteVariable + SRSpriteOnlyVariable
         - SRAllSpriteList + SRSpriteOnlyList
-
     FRStage(FRTarget): /
     FRStage.step:
         - (SpecialCaseHandler)
         - (BlockInfoApi)
         - (SRAllSpriteVariable + SRAllSpriteList)
         - SRStage
-
     FRSprite(FRTarget): /
     FRSprite.step:
         - (SpecialCaseHandler)
         - (BlockInfoApi)
         - SRSprite
         - SRSpriteRotationStyle
-
-
-monitor:
-    FRMonitor: /
-
-meta:
-    FRMeta:
-        - FRPlatform
-    FRPlatform: /
-
-
-
     
+    SRTarget:
+        - (SRScript)
+        - (SRFloatingComment)
+        - (SRCostume, SRSound)
+    SRStage(SRTarget): /
+    SRSprite(SRTarget):
+        - (SRSpriteOnlyVariable, SRSpriteOnlyList)
+        - (SRMonitor)
+        - (SRSpriteRotationStyle)
+    SRSpriteRotationStyle: /
+    
+vars_lists:
+    SRVariable: /
+    SRSpriteOnlyVariable(SRVariable): /
+    SRAllSpriteVariable(SRVariable): /
+    SRCloudVariable(SRVariable): /
+    SRList: /
+    SRSpriteOnlyList(SRList): /
+    SRAllSpriteList(SRList): /
+
