@@ -1,87 +1,100 @@
 import json
+from typing import Any
 
-from utility.errors import TypeValidationError, RangeValidationError
+from utility.errors import TypeValidationError, RangeValidationError, InvalidValueValidationError
 
-def ASSERT_TYPE(obj, path, descr, t) -> None:
-    if not isinstance(obj, t):
-        raise TypeValidationError(path, f"{descr} must be of type {t.__name__} not {obj.__class__.__name__}")
+def value_and_descr(obj, attr) -> tuple[Any, str]:
+    return getattr(obj, attr), f"{attr} of a {obj.__class__.__name__}"
 
-def ASSERT_TYPES(obj, path, descr, *ts) -> None:
-    if not isinstance(obj, ts):
+def AA_TYPE(obj, path, attr, t, condition=None) -> None:
+    attr_value, descr = value_and_descr(obj, attr)
+    if not isinstance(attr_value, t):
+        raise TypeValidationError(path, f"{descr} must be of type {t.__name__} not {attr_value.__class__.__name__}", condition)
+
+def AA_TYPES(obj, path, attr, ts, condition=None) -> None:
+    attr_value, descr = value_and_descr(obj, attr)
+    if not isinstance(attr_value, ts):
         types_str = "|".join([t.__name__ for t in ts])
-        raise TypeValidationError(path, f"{descr} must be one of types {types_str} not {obj.__class__.__name__}")
+        raise TypeValidationError(path, f"{descr} must be one of types {types_str} not {attr_value.__class__.__name__}", condition)
 
-def ASSERT_LIST_OF_TYPE(obj, path, descr, t) -> None:
+def AA_LIST_OF_TYPE(obj, path, attr, t, condition=None) -> None:
+    attr_value, descr = value_and_descr(obj, attr)
     msg = f"{descr} must be a list of {t.__name__}"
-    if not isinstance(obj, list):
-        raise TypeValidationError(path, f"{msg} not a {obj.__class__.__name__}")
-    for item in obj:
+    if not isinstance(attr_value, list):
+        raise TypeValidationError(path, f"{msg} not a {attr_value.__class__.__name__}", condition)
+    for item in attr_value:
         if not isinstance(item, t):
-            raise TypeValidationError(path, f"{msg} not of {item.__class__.__name__}")
+            raise TypeValidationError(path, f"{msg} not of {item.__class__.__name__}", condition)
 
-def ASSERT_DICT_OF_TYPE(obj, path, descr, key_t, value_t):
-    if not isinstance(obj, dict):
-        raise TypeValidationError(path, f"{descr} must be a dict. Each key must be of type {key_t.__name__}. Each value must be of type {value_t.__name__}")
-    for key, value in obj.items():
+def AA_DICT_OF_TYPE(obj, path, attr, key_t, value_t, condition=None):
+    attr_value, descr = value_and_descr(obj, attr)
+    if not isinstance(attr_value, dict):
+        raise TypeValidationError(path, f"{descr} must be a dict. Each key must be of type {key_t.__name__}. Each value must be of type {value_t.__name__}", condition)
+    for key, value in attr_value.items():
         if not isinstance(key, key_t):
-            raise TypeValidationError(path, f"{descr} must be a dict. Each key must be of type {key_t.__name__} NOT {key.__class__.__name__}. Each value must be of type {value_t.__name__}")
+            raise TypeValidationError(path, f"{descr} must be a dict. Each key must be of type {key_t.__name__} NOT {key.__class__.__name__}. Each value must be of type {value_t.__name__}", condition)
         if not isinstance(value, value_t):
-            raise TypeValidationError(path, f"{descr} must be a dict. Each key must be of type {key_t.__name__}. Each value must be of type {value_t.__name__} NOT {value.__class__.__name__}")
+            raise TypeValidationError(path, f"{descr} must be a dict. Each key must be of type {key_t.__name__}. Each value must be of type {value_t.__name__} NOT {value.__class__.__name__}", condition)
 
-def ASSERT_MIN(obj, path, descr, min):
-    if obj < min:
-        raise RangeValidationError(path, f"{descr} must be at least {min}")
+def AA_MIN(obj, path, attr, min, condition=None):
+    attr_value, descr = value_and_descr(obj, attr)
+    if attr_value < min:
+        raise RangeValidationError(path, f"{descr} must be at least {min}", condition)
 
-def ASSERT_MAX(obj, path, descr, max):
-    if obj > max:
-        raise RangeValidationError(path, f"{descr} must be at most {max}")
-
-def ASSERT_RANGE(obj, path, descr, min, max):
-    ASSERT_MIN(obj, path, descr, min)
-    ASSERT_MAX(obj, path, descr, max)
-
-def ASSERT_COORD_PAIR(obj, path, descr):
-    if (
-           (not isinstance(obj, tuple)) or (len(obj) != 2) 
-        or (not isinstance(obj[0], (int, float))) 
-        or (not isinstance(obj[1], (int, float)))
-    ):
-        raise TypeValidationError(path, f"{descr} must be a coordinate pair. It must be a tuple of length 2. Each item must be an int or float")
-
-def ASSERT_JSON_COMPATIBLE(obj, path, descr):
-    try:
-        json.dumps(obj)
-        error = None
-    except (TypeError, OverflowError):
-        error = TypeValidationError(path, f"{descr} must be JSON-compatible")
-    if error is not None:
-        raise error
-
-
-def AA_TYPE(obj, path, attr, t) -> None:
-    ASSERT_TYPE(getattr(obj, attr), path, f"{attr} of a {obj.__class__.__name__}", t)
-
-def AA_TYPES(obj, path, attr, *ts) -> None:
-    ASSERT_TYPES(getattr(obj, attr), path, f"{attr} of a {obj.__class__.__name__}", *ts)
-
-def AA_LIST_OF_TYPE(obj, path, attr, t) -> None:
-    ASSERT_LIST_OF_TYPE(getattr(obj, attr), path, f"{attr} of a {obj.__class__.__name__}", t)
-
-def AA_DICT_OF_TYPE(obj, path, attr, key_t, value_t) -> None:
-    ASSERT_DICT_OF_TYPE(getattr(obj, attr), path, f"{attr} of a {obj.__class__.__name__}", key_t, value_t)
-
-def AA_MIN(obj, path, attr, min):
-    ASSERT_MIN(getattr(obj, attr), path, f"{attr} of a {obj.__class__.__name__}", min)
-
-def AA_MAX(obj, path, attr, max):
-    ASSERT_MAX(getattr(obj, attr), path, f"{attr} of a {obj.__class__.__name__}", max)
+def AA_MAX(obj, path, attr, max, condition=None):
+    attr_value, descr = value_and_descr(obj, attr)
+    if attr_value > max:
+        raise RangeValidationError(path, f"{descr} must be at most {max}", condition)
 
 def AA_RANGE(obj, path, attr, min, max):
-    ASSERT_RANGE(getattr(obj, attr), path, f"{attr} of a {obj.__class__.__name__}", min, max)
+    AA_MIN(obj, path, attr, min)
+    AA_MAX(obj, path, attr, max)
 
-def AA_COORD_PAIR(obj, path, attr):
-    ASSERT_COORD_PAIR(getattr(obj, attr), path, f"{attr} of a {obj.__class__.__name__}")
+def AA_BIGGER_OR_EQUAL(obj, path, attr1, attr2, condition=None):
+    attr1_value, attr1_descr = value_and_descr(obj, attr1)
+    attr2_value, attr2_descr = value_and_descr(obj, attr2)
+    if not(attr1_value >= attr2_value):
+        raise RangeValidationError(path, f"{attr1_descr} must be bigger then or equal to {attr2}", condition)
 
-def AA_JSON_COMPATIBLE(obj, path, attr):
-    ASSERT_JSON_COMPATIBLE(getattr(obj, attr), path, f"{attr} of a {obj.__class__.__name__}")
+def AA_COORD_PAIR(obj, path, attr, condition=None):
+    attr_value, descr = value_and_descr(obj, attr)
+    if (
+           (not isinstance(attr_value, tuple)) or (len(attr_value) != 2) 
+        or (not isinstance(attr_value[0], (int, float))) 
+        or (not isinstance(attr_value[1], (int, float)))
+    ):
+        raise TypeValidationError(path, f"{descr} must be a coordinate pair. It must be a tuple of length 2. Each item must be an int or float", condition)
+
+def AA_JSON_COMPATIBLE(obj, path, attr, condition=None):
+    attr_value, descr = value_and_descr(obj, attr)
+    try:
+        json.dumps(attr_value)
+        error = None
+    except (TypeError, OverflowError):
+        error = TypeValidationError(path, f"{descr} must be JSON-compatible", condition)
+    if error is not None: # Trick to avoid "during handling of above exception"
+        raise error
+
+def AA_EQUAL(obj, path, attr, value, condition=None):
+    attr_value, descr = value_and_descr(obj, attr)
+    if attr_value != value:
+        raise InvalidValueValidationError(path, f"{descr} must be {value}", condition)
+
+import re
+from urllib.parse import urlparse
+
+def is_valid_js_data_uri(s) -> bool:
+    pattern = r"^data:application/javascript(;charset=[^,]+)?,.*"
+    return re.match(pattern, s) is not None
+
+def is_valid_url(url: str) -> bool:
+    try:
+        result = urlparse(url)
+        return (
+            result.scheme in {"https", "http"} and
+            bool(result.netloc) and
+            "." in result.netloc  # rudimentary domain check
+        )
+    except Exception:
+        return False
 

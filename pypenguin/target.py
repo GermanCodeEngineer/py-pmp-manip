@@ -94,8 +94,14 @@ class FRTarget(PypenguinClass):
         )
 
     def proto_step(self, config: SpecialCaseHandler, info_api: BlockInfoApi
-    ) -> tuple[list[SRScript], list[SRFloatingComment], list[SRCostume], list[SRSound], 
-    list[SRVariable], list[SRList]]:
+    ) -> tuple[
+        list[SRScript], 
+        list[SRFloatingComment], 
+        list[SRCostume], 
+        list[SRSound], 
+        list[SRVariable], 
+        list[SRList]
+    ]:
         floating_comments = []
         attached_comments = {}
         for comment_id, comment in self.comments.items():
@@ -152,6 +158,7 @@ class FRTarget(PypenguinClass):
             position, script_blocks = block.step(
                 all_blocks    = new_blocks,
             #    own_reference = top_level_block_ref,
+                config        = config,
                 info_api      = info_api,
             )
             new_scripts.append(SRScript(
@@ -459,15 +466,14 @@ class SRTarget(PypenguinClass):
         self.sounds        = sounds
         self.volume        = volume
 
-    def validate(self, path: list|None = None):
-        path = [] if path is None else path
+    def validate(self, path: list):
         AA_LIST_OF_TYPE(self, path, "scripts", SRScript)
         AA_LIST_OF_TYPE(self, path, "comments", SRFloatingComment)
         AA_TYPE(self, path, "costume_index", int)
         AA_MIN(self, path, "costume_index", 0)
         AA_LIST_OF_TYPE(self, path, "costumes", SRCostume)
         AA_LIST_OF_TYPE(self, path, "sounds", SRSound)
-        AA_TYPES(self, path, "volume", int, float)
+        AA_TYPES(self, path, "volume", (int, float))
         AA_RANGE(self, path, "volume", min=0, max=100)
         
         # TODO: complete this
@@ -530,8 +536,7 @@ class SRSprite(SRTarget):
         self.rotation_style        = rotation_style
         self.local_monitors        = []
 
-    def validate(self, path: list|None = None):
-        path = [] if path is None else path
+    def validate(self, path: list):
         super().validate(path)
         
         AA_TYPE(self, path, "name", str)
@@ -542,9 +547,9 @@ class SRSprite(SRTarget):
         AA_MIN(self, path, "layer_order", min=1) # TODO: reform and check
         AA_TYPE(self, path, "is_visible", bool)
         AA_COORD_PAIR(self, path, "position")
-        AA_TYPES(self, path, "size", int, float)
+        AA_TYPES(self, path, "size", (int, float))
         AA_MIN(self, path, "size", min=0)
-        AA_TYPES(self, path, "direction", int, float)
+        AA_TYPES(self, path, "direction", (int, float))
         AA_TYPE(self, path, "is_draggable", bool)
         AA_TYPE(self, path, "rotation_style", SRSpriteRotationStyle)
         

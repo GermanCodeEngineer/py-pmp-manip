@@ -1,7 +1,7 @@
 from typing import Any
 
 from utility import PypenguinClass
-from utility import AA_TYPE, AA_TYPES, AA_DICT_OF_TYPE, AA_COORD_PAIR
+from utility import AA_TYPE, AA_DICT_OF_TYPE, AA_COORD_PAIR, AA_EQUAL, AA_BIGGER_OR_EQUAL, InvalidValueValidationError, MissingDropdownError, UnnecessaryDropdownError
 from block_info import BlockInfoApi, DropdownType
 from dropdown import SRDropdownValue
 from block_opcodes import *
@@ -147,22 +147,32 @@ class SRMonitor(PypenguinClass):
         is_visible: bool,
     ):
         self.opcode     = opcode
+        if   opcode == NEW_OPCODE_VAR_VALUE:
+            assert isinstance(self, SRVariableMonitor), f"Must be a SRVariableMonitor instance if opcode is {repr(NEW_OPCODE_VAR_VALUE)}"
+        elif opcode == NEW_OPCODE_LIST_VALUE:
+            assert isinstance(self, SRListMonitor), f"Must be a SRListMonitor instance if opcode is {repr(NEW_OPCODE_LIST_VALUE)}"
         self.dropdowns  = dropdowns
         self.position   = position
         self.is_visible = is_visible
     
-    def validate(self, path: list|None = None):
-        path = [] if path is None else path
-        
-        AA_TYPE(self, path, "opcode", str) # TODO: ensure opcode exists
+    def validate(self, path: list, info_api: BlockInfoApi):
+        AA_TYPE(self, path, "opcode", str)
         AA_DICT_OF_TYPE(self, path, "dropdowns", key_t=str, value_t=SRDropdownValue)
-        AA_COORD_PAIR(self, path, "position")
+        AA_COORD_PAIR(self, path, "position") # TODO: possibly ensure position is on stage
         AA_TYPE(self, path, "is_visible", bool)
         
-        # TODO: complete this
-        #for dropdown_id, dropdown_value in self.dropdowns.items():
-        #    dropdown_value.validate(path+["dropdowns", dropdown_id])
-        # TODO: possibly assert no dropdown is missing
+        block_info = info_api.get_info_by_new_opcode(self.opcode, default_none=True)
+        if (block_info is None) or (not block_info.can_have_monitor):
+            raise InvalidValueValidationError(path, f"opcode of {self.__class__.__name__} must be a defined opcode. That block must be able to have monitors")
+        
+        new_dropdown_ids = block_info.get_new_dropdown_ids()
+        for new_dropdown_id, dropdown_value in self.dropdowns.items():
+            dropdown_value.validate(path+["dropdowns", new_dropdown_id])
+            if new_dropdown_id not in new_dropdown_ids:
+                raise UnnecessaryDropdownError(path, f"dropdowns of {self.__class__.__name__} with opcode {repr(self.opcode)} includes unnecessary dropdown {new_dropdown_id}")
+        for new_dropdown_id in new_dropdown_ids:
+            if new_dropdown_id not in self.dropdowns:
+                raise MissingDropdownError(path, f"dropdowns of {self.__class__.__name__} with opcode {repr(self.opcode)} is missing dropdown {new_dropdown_id}")
     
 class SRVariableMonitor(SRMonitor):
     _grepr_fields = SRMonitor._grepr_fields + ["slider_min", "slider_max", "allow_only_integers"]
@@ -190,18 +200,25 @@ class SRVariableMonitor(SRMonitor):
         self.slider_max          = slider_max
         self.allow_only_integers = allow_only_integers
     
-    def validate(self, path: list|None = None):
-        path = [] if path is None else path
-        super().validate(path)
+    def validate(self, path: list, info_api: BlockInfoApi):
+        super().validate(path, info_api)
+        AA_EQUAL(self, path, "opcode", NEW_OPCODE_VAR_VALUE)
         
-        AA_TYPES(self, path, "slider_min", int, float)
-        AA_TYPES(self, path, "slider_max", int, float)
         AA_TYPE(self, path, "allow_only_integers", bool)
-        # TODO: complete this
-   
+        if self.allow_only_integers:
+            condition = "When allow_only_integers is True"
+            AA_TYPE(self, path, "slider_min", int, condition=condition)
+            AA_TYPE(self, path, "slider_max", int, condition=condition)
+        else:
+            condition = "When allow_only_integers is False"
+            AA_TYPE(self, path, "slider_min", float, condition=condition)
+            AA_TYPE(self, path, "slider_max", float, condition=condition)
+
+        AA_BIGGER_OR_EQUAL(self, path, "slider_max", "slider_min")
+
 class SRListMonitor(SRMonitor):
     _grepr_fields = SRMonitor._grepr_fields + ["size"]
-    
+
     size: tuple[int | float, int | float]
     
     def __init__(self, 
@@ -219,10 +236,9 @@ class SRListMonitor(SRMonitor):
         )
         self.size = size
     
-    def validate(self, path: list|None = None):
-        path = [] if path is None else path
-        super().validate(path)
+    def validate(self, path: list, info_api: BlockInfoApi):
+        super().validate(path, info_api)
+        AA_EQUAL(self, path, "opcode", NEW_OPCODE_LIST_VALUE)
         
-        AA_COORD_PAIR(self, path, "size")
-        # TODO: complete this
+        AA_COORD_PAIR(self, path, "size") # TODO: possibly check maximum width and height
 

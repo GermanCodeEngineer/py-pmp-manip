@@ -10,7 +10,7 @@ class PathError(PyPenguinError): pass
 
 
 class ValidationError(PyPenguinError):
-    def __init__(self, path: list[str], msg: str):
+    def __init__(self, path: list[str], msg: str, condition: str|None = None):
         path_string = ""
         for item in path:
             if   isinstance(item, str):
@@ -18,7 +18,17 @@ class ValidationError(PyPenguinError):
             elif isinstance(item, int):
                 path_string += "[" + str(item) + "]"
             else: raise ValueError()
-        super().__init__(msg if path_string == "" else f"At {path_string}: {msg}")
+        
+        full_message = ""
+        if path_string != "":
+            full_message += f"At {path_string}: "
+        if condition is not None:
+            full_message += f"{condition}: "
+        full_message += msg
+        super().__init__(full_message)
         
 class TypeValidationError(ValidationError): pass
+class InvalidValueValidationError(ValidationError): pass
 class RangeValidationError(ValidationError): pass
+class MissingDropdownError(ValidationError): pass
+class UnnecessaryDropdownError(ValidationError): pass

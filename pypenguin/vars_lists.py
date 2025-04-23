@@ -14,8 +14,7 @@ class SRVariable(PypenguinClass):
         self.name          = name
         self.current_value = current_value
 
-    def validate(self, path: list|None = None):
-        path = [] if path is None else path
+    def validate(self, path: list):
         AA_TYPE(self, path, "name", str)
         AA_JSON_COMPATIBLE(self, path, "current_value")
         # TODO: check wether these are all possible to use in Scratch       
@@ -41,8 +40,7 @@ class SRList(PypenguinClass):
         self.name          = name
         self.current_value = current_value
 
-    def validate(self, path: list|None = None):
-        path = [] if path is None else path
+    def validate(self, path: list):
         AA_TYPE(self, path, "name", str)
         AA_JSON_COMPATIBLE(self, path, "current_value")
         # TODO: check wether these are all possible to use in Scratch       

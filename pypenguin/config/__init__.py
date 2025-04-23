@@ -45,6 +45,7 @@ class FRtoTRApi(PypenguinClass):
 
 
 config = SpecialCaseHandler()
+
 def PRE__CB_DEF(block: "FRBlock", block_api: FRtoTRApi) -> "FRBlock":
     # Transfer mutation from prototype block to definition block
     # Order deletion of the prototype block and its argument blocks
@@ -146,4 +147,14 @@ config.add_event(
     ),
 )
 
+def INSTEAD_GET_NEW_INPUT_ID__CB_CALL(block: "TRBlock", input_id: str) -> str:
+    return input_id
+
+config.add_event(
+    opcode=OPCODE_CB_CALL,
+    event=SpecialCase(
+        type=SpecialCaseType.INSTEAD_GET_NEW_INPUT_ID, 
+        function=INSTEAD_GET_NEW_INPUT_ID__CB_CALL,
+    ),
+)
 

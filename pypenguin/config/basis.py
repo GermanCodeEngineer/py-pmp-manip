@@ -7,10 +7,13 @@ class SpecialCaseType(PypenguinEnum):
         return f"{self.__class__.__name__}.{self.name}"
     
     # FRBlock.step:
-    PRE_FR_STEP     = 10
-    INSTEAD_FR_STEP = 11
+    PRE_FR_STEP     = 0
+    INSTEAD_FR_STEP = 1
     # FRBlock.step_inputs:
-    INSTEAD_FR_STEP_INPUTS_GET_MODES = 20
+    INSTEAD_FR_STEP_INPUTS_GET_MODES = 2
+
+    # TRBlock.step:
+    INSTEAD_GET_NEW_INPUT_ID = 3
 
 class SpecialCase(PypenguinClass):
     type: SpecialCaseType

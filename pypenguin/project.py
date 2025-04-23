@@ -210,7 +210,7 @@ class SRProject(PypenguinClass):
         self.global_monitors         = global_monitors
         self.extensions              = extensions
 
-    def validate(self) -> None:
+    def validate(self, info_api: BlockInfoApi) -> None:
         """
         Checks wether a SRProject is valid and raises if not.
         """
@@ -221,9 +221,9 @@ class SRProject(PypenguinClass):
         AA_LIST_OF_TYPE(self, path, "all_sprite_lists", SRAllSpriteList)
         AA_TYPE(self, path, "tempo", int)
         AA_RANGE(self, path, "tempo", min=20, max=500)
-        AA_TYPES(self, path, "video_transparency", int, float) # TODO: research min/max
+        AA_TYPES(self, path, "video_transparency", (int, float)) # TODO: research min/max
         AA_TYPE(self, path, "video_state", SRVideoState)
-        AA_TYPES(self, path, "text_to_speech_language", TextToSpeechLanguage, type(None))
+        AA_TYPES(self, path, "text_to_speech_language", (TextToSpeechLanguage, type(None)))
         AA_LIST_OF_TYPE(self, path, "global_monitors", SRMonitor)
         AA_LIST_OF_TYPE(self, path, "extensions", SRExtension)
         
@@ -236,9 +236,11 @@ class SRProject(PypenguinClass):
         for i, list_ in enumerate(self.all_sprite_lists):
             list_.validate(path+["all_sprite_lists", i])
         for i, monitor in enumerate(self.global_monitors):
-            monitor.validate(path+["global_monitors", i])
+            monitor.validate(path+["global_monitors", i], info_api)
         for i, extension in enumerate(self.extensions):
             extension.validate(path+["extensions", i])
+        
+        # TODO: ensure no double used names anywhere
 
 file_path = "../assets/from_online/my 1st platformer.pmp"
 #file_path = "../assets/from_online/dumb example.pmp"
@@ -252,7 +254,7 @@ from config import config
 from block_info import info_api
 #gprint(config)
 new_project = project.step(config=config, info_api=info_api)
-new_project.global_monitors[0].dropdowns = {}
+
 gprint(new_project)
-new_project.validate()
+new_project.validate(info_api=info_api)
 

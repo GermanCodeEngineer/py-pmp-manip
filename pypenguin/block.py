@@ -339,6 +339,7 @@ class TRBlock(PypenguinClass):
     def step(self, 
             all_blocks: dict[str, "TRBlock"],
         #    own_reference: "TRBlockReference",
+            config: SpecialCaseHandler,
             info_api: BlockInfoApi,
         ) -> tuple[tuple[int|float,int|float] | None, list["SRBlock | str"]]:
         
@@ -361,6 +362,7 @@ class TRBlock(PypenguinClass):
                 _, more_sub_blocks = sub_block.step(
                     all_blocks    = all_blocks,
                 #    own_reference = sub_reference,
+                    config        = config,
                     info_api      = info_api,
                 )
                 sub_blocks.append(more_sub_blocks)
@@ -427,9 +429,17 @@ class TRBlock(PypenguinClass):
                 dropdown_type = input_type.get_corresponding_dropdown_type()
                 input_dropdown = dropdown_type.translate_old_to_new_value(old_value=input_dropdown)
 
+            
+            instead_event = config.get_event(
+                event_type = SpecialCaseType.INSTEAD_GET_NEW_INPUT_ID,
+                opcode     = self.opcode,
+            )
+            if instead_event is None:
+                new_input_id = block_info.get_new_input_id(input_id=input_id)
+            else:
+                new_input_id = instead_event.call(block=self, input_id=input_id)
+            
             # TODO: add special case for handler for polygon block(x4, y4 inputs)
-
-            new_input_id = block_info.get_new_input_id(input_id=input_id)
             new_inputs[new_input_id] = SRInputValue(
                 mode     = input_value.mode,
                 blocks   = input_blocks,
@@ -459,6 +469,7 @@ class TRBlock(PypenguinClass):
             _, next_blocks = next_block.step(
                 all_blocks    = all_blocks,
             #    own_reference = self.next,
+                config        = config,
                 info_api      = info_api,
             )
             new_blocks.extend(next_blocks)

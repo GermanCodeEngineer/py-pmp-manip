@@ -28,18 +28,29 @@ class BlockInfoApi:
             if block_info_set.uses_prefix(prefix):
                 yield block_info_set
         
-    def get_info_by_opcode(self, opcode: str) -> BlockInfo:
+    def get_info_by_opcode(self, opcode: str, default_none: bool = False) -> BlockInfo | None:
         opcode_prefix = opcode[:opcode.index("_")]
         main_opcode = opcode[opcode.index("_")+1:]
         generator = self.get_sets_by_prefix(opcode_prefix)
         for block_info_set in generator:
-            from utility import gprint
-            block_info = block_info_set.get_block_info(main_opcode, default_none=True)
+            block_info = block_info_set.get_info_by_opcode(main_opcode, default_none=True)
             if block_info is not None:
                 return block_info
+        if default_none:
+            return None
         raise ValueError(f"Couldn't find BlockInfo by opcode {repr(opcode)}")
     
+    def get_info_by_new_opcode(self, new_opcode: str, default_none: bool = False) -> BlockInfo | None:
+        for block_info_set in self.block_info_sets:
+            block_info = block_info_set.get_info_by_new_opcode(new_opcode, default_none=True)
+            if block_info is not None:
+                return block_info
+        if default_none:
+            return None
+        raise ValueError(f"Couldn't find BlockInfo by new opcode {repr(new_opcode)}")
 
+    def info_exists_for_new_opcode(self, opcode: str) -> bool:
+        return self.get_info_by_new_opcode(opcode, default_none=True) is not None
 
 from block_info.motion    import motion
 from block_info.looks     import looks
@@ -138,7 +149,7 @@ sensing.add_block("fingeroptions", BlockInfo(
 ))
 variables.add_block(OPCODE_VAR_VALUE.removeprefix("data_"), BlockInfo(
     block_type=BlockType.STRING_REPORTER,
-    new_opcode="value of [VARIABLE]",
+    new_opcode=NEW_OPCODE_VAR_VALUE,
     dropdowns={
         "VARIABLE": DropdownInfo(DropdownType.VARIABLE, new="VARIABLE"),
     },
@@ -146,15 +157,17 @@ variables.add_block(OPCODE_VAR_VALUE.removeprefix("data_"), BlockInfo(
 ))
 lists.add_block(OPCODE_LIST_VALUE.removeprefix("data_"), BlockInfo(
     block_type=BlockType.STRING_REPORTER,
-    new_opcode="value of [LIST]",
+    new_opcode=NEW_OPCODE_LIST_VALUE,
     dropdowns={
         "LIST": DropdownInfo(DropdownType.LIST, new="LIST"),
     },
     can_have_monitor="True",
 ))
 
-def CB_OLD_OPCODE_HANDLER(new_opcode, block):
-    raise NotImplementedError("TODO: implement this")
+def CB_OLD_OPCODE_HANDLER(new_opcode: str, block) -> str | None:
+    if new_opcode == "define custom block":
+        raise NotImplementedError("TODO: implement this")
+    return None
 
 custom_blocks = BlockInfoSet(
     name="Custom Blocks",

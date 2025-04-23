@@ -44,14 +44,26 @@ class BlockInfoSet:
                 raise ValueError(f"Alternate opcode prefix {repr(block_info.alt_opcode_prefix)} was never added.")
         self.block_infos[opcode] = block_info
     
-    def get_block_info(self, opcode: str, default_none: bool = False) -> "BlockInfo":
+    def get_info_by_opcode(self, opcode: str, default_none: bool = False) -> "BlockInfo | None":
         if opcode in self.block_infos:
             return self.block_infos[opcode]
         if default_none:
             return None
-        raise ValueError(f"Couldn't find Block {repr(opcode)}")
+        raise ValueError(f"Couldn't find Block Info for opcode {repr(opcode)}")
 
-    def get_old_opcode(self, new_opcode: str, block: "SRBlock") -> str:
+    def get_info_by_new_opcode(self, new_opcode: str, default_none: bool = False) -> "BlockInfo":
+        opcode = self.get_old_opcode(new_opcode=new_opcode, block=None, default_none=True)
+        if (opcode is None) and default_none:
+            return None
+        if opcode is not None:
+            block_info = self.get_info_by_opcode(opcode=opcode, default_none=default_none)
+            if block_info is not None:
+                return block_info
+            if default_none:
+                return None
+        raise ValueError(f"Couldn't find Block Info for new opcode {repr(new_opcode)}")
+
+    def get_old_opcode(self, new_opcode: str, block: "SRBlock | None", default_none: bool = False) -> str | None:
         if self.get_old_opcode_handler is not None:
             result = self.get_old_opcode_handler(new_opcode, block)
             if isinstance(result, str):
@@ -63,6 +75,8 @@ class BlockInfoSet:
         for old_opcode, block_info in self.block_infos.items():
             if block_info.new_opcode == new_opcode:
                 return old_opcode
+        if default_none:
+            return None
         raise ValueError(f"Old opcode for {repr(new_opcode)} couln't be found.")
 
 class BlockInfo:
@@ -111,6 +125,9 @@ class BlockInfo:
 
     def get_new_dropdown_id(self, dropdown_id: str) -> str:
         return self.dropdowns[dropdown_id].new
+    
+    def get_new_dropdown_ids(self) -> list[str]:
+        return [self.get_new_dropdown_id(dropdown_id) for dropdown_id in self.dropdowns.keys()]
 
 class BlockType(PypenguinEnum):
     STATEMENT         = 0
