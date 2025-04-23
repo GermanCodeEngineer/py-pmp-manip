@@ -1,6 +1,7 @@
 from typing import Any
 
 from utility import PypenguinClass
+from utility import AA_TYPE, AA_TYPES, AA_DICT_OF_TYPE, AA_COORD_PAIR
 from block_info import BlockInfoApi, DropdownType
 from dropdown import SRDropdownValue
 from block_opcodes import *
@@ -150,6 +151,19 @@ class SRMonitor(PypenguinClass):
         self.position   = position
         self.is_visible = is_visible
     
+    def validate(self, path: list|None = None):
+        path = [] if path is None else path
+        
+        AA_TYPE(self, path, "opcode", str) # TODO: ensure opcode exists
+        AA_DICT_OF_TYPE(self, path, "dropdowns", key_t=str, value_t=SRDropdownValue)
+        AA_COORD_PAIR(self, path, "position")
+        AA_TYPE(self, path, "is_visible", bool)
+        
+        # TODO: complete this
+        #for dropdown_id, dropdown_value in self.dropdowns.items():
+        #    dropdown_value.validate(path+["dropdowns", dropdown_id])
+        # TODO: possibly assert no dropdown is missing
+    
 class SRVariableMonitor(SRMonitor):
     _grepr_fields = SRMonitor._grepr_fields + ["slider_min", "slider_max", "allow_only_integers"]
     
@@ -176,6 +190,15 @@ class SRVariableMonitor(SRMonitor):
         self.slider_max          = slider_max
         self.allow_only_integers = allow_only_integers
     
+    def validate(self, path: list|None = None):
+        path = [] if path is None else path
+        super().validate(path)
+        
+        AA_TYPES(self, path, "slider_min", int, float)
+        AA_TYPES(self, path, "slider_max", int, float)
+        AA_TYPE(self, path, "allow_only_integers", bool)
+        # TODO: complete this
+   
 class SRListMonitor(SRMonitor):
     _grepr_fields = SRMonitor._grepr_fields + ["size"]
     
@@ -196,4 +219,10 @@ class SRListMonitor(SRMonitor):
         )
         self.size = size
     
+    def validate(self, path: list|None = None):
+        path = [] if path is None else path
+        super().validate(path)
+        
+        AA_COORD_PAIR(self, path, "size")
+        # TODO: complete this
 

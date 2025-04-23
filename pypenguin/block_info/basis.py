@@ -1,8 +1,7 @@
-from enum import Enum
 from typing import Callable, TYPE_CHECKING
 
 from dropdown import SRDropdownValue, SRDropdownKind
-from utility import remove_duplicates
+from utility import remove_duplicates, PypenguinEnum
 
 if TYPE_CHECKING:
     from block import SRBlock
@@ -113,10 +112,7 @@ class BlockInfo:
     def get_new_dropdown_id(self, dropdown_id: str) -> str:
         return self.dropdowns[dropdown_id].new
 
-class BlockType(Enum):
-    def __repr__(self):
-        return f"{self.__class__.__name__}.{self.name}"
-    
+class BlockType(PypenguinEnum):
     STATEMENT         = 0
     ENDING_STATEMENT  = 1
     HAT               = 2
@@ -144,10 +140,7 @@ class InputInfo:
         self.new  = new
         self.menu = menu
 
-class InputMode(Enum):
-    def __repr__(self):
-        return f"{self.__class__.__name__}.{self.name}"
-    
+class InputMode(PypenguinEnum):
     BLOCK_AND_TEXT               = 0
     BLOCK_AND_MENU_TEXT          = 1
     BLOCK_ONLY                   = 2
@@ -155,10 +148,7 @@ class InputMode(Enum):
     BLOCK_AND_BROADCAST_DROPDOWN = 4
     BLOCK_AND_DROPDOWN           = 5
 
-class InputType(Enum):
-    def __repr__(self):
-        return f"{self.__class__.__name__}.{self.name}"
-    
+class InputType(PypenguinEnum):
     def get_mode(self) -> InputMode:
         return self.value[0]
     
@@ -244,10 +234,7 @@ class DropdownInfo:
         self.type = type
         self.new  = new
 
-class DropdownBehaviour(Enum):
-    def __repr__(self):
-        return f"{self.__class__.__name__}.{self.name}"
-
+class DropdownBehaviour(PypenguinEnum):
     def get_default_kind(self) -> SRDropdownKind | None:
         return {
             DropdownBehaviour.OTHER_SPRITE             : SRDropdownKind.SPRITE,
@@ -309,10 +296,7 @@ class DropdownTypeInfo:
         self.old_direct_values    = old_direct_values or self.direct_values
         self.fallback             = fallback
     
-class DropdownType(Enum):    
-    def __repr__(self):
-        return f"{self.__class__.__name__}.{self.name}"
-    
+class DropdownType(PypenguinEnum):    
     def get_type_info(self) -> DropdownTypeInfo:
         return self.value
     

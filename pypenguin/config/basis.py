@@ -1,9 +1,8 @@
 from typing import Callable, Iterable
-from enum import Enum
 
-from utility import PypenguinClass
+from utility import PypenguinClass, PypenguinEnum
 
-class SpecialCaseType(Enum):
+class SpecialCaseType(PypenguinEnum):
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}.{self.name}"
     

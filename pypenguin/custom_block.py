@@ -1,5 +1,4 @@
-from enum import Enum
-from utility import PypenguinClass
+from utility import PypenguinClass, PypenguinEnum
 
 class SRCustomBlockOpcode(PypenguinClass):
     _grepr = True
@@ -16,13 +15,7 @@ class SRCustomBlockOpcode(PypenguinClass):
         }
         
 
-class SRCustomBlockArgumentType(Enum):
-    STRING_NUMBER = 0
-    BOOLEAN       = 1
-
-    def __repr__(self) -> str:
-        return self.__class__.__name__ + "." + self.name
-     
+class SRCustomBlockArgumentType(PypenguinEnum):
     @staticmethod
     def get_by_default(default) -> "SRCustomBlockArgumentType":
         match default:
@@ -33,17 +26,10 @@ class SRCustomBlockArgumentType(Enum):
             case _:
                 raise ValueError()
 
-class SRCustomBlockOptype(Enum):
-    STATEMENT         = 0
-    ENDING_STATEMENT  = 1
-    
-    STRING_REPORTER   = 2
-    NUMBER_REPORTER   = 3
-    BOOLEAN_REPORTER  = 4
-    
-    def __repr__(self) -> str:
-        return self.__class__.__name__ + "." + self.name
+    STRING_NUMBER = 0
+    BOOLEAN       = 1
 
+class SRCustomBlockOptype(PypenguinEnum):
     @staticmethod
     def from_string(string: str | None) -> "SRCustomBlockOptype":
         match string:
@@ -54,3 +40,10 @@ class SRCustomBlockOptype(Enum):
             case "number"   : return SRCustomBlockOptype.NUMBER_REPORTER
             case "boolean"  : return SRCustomBlockOptype.BOOLEAN_REPORTER
             case _: raise ValueError()
+
+    STATEMENT         = 0
+    ENDING_STATEMENT  = 1
+    
+    STRING_REPORTER   = 2
+    NUMBER_REPORTER   = 3
+    BOOLEAN_REPORTER  = 4

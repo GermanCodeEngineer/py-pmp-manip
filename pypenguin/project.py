@@ -1,7 +1,7 @@
 import json
-from enum import Enum
 
-from utility               import read_file_of_zip, ThanksError, PypenguinClass
+from utility               import read_file_of_zip, ThanksError, PypenguinClass, PypenguinEnum
+from utility               import AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_RANGE
 from target                import FRTarget, FRStage, FRSprite, SRStage, SRSprite
 from monitor               import FRMonitor, SRMonitor
 from meta                  import FRMeta
@@ -9,6 +9,7 @@ from config                import SpecialCaseHandler
 from block_info            import BlockInfoApi, DropdownType
 from vars_lists            import SRAllSpriteVariable, SRAllSpriteList
 from extension             import SRExtension, SRCustomExtension, SRBuiltinExtension
+from tts                   import TextToSpeechLanguage
 
 from utility import gprint
 
@@ -128,9 +129,7 @@ class FRProject(PypenguinClass):
         if old_stage.text_to_speech_language is None:
             new_tts_language = None
         else:
-            new_tts_language = DropdownType.TEXT_TO_SPEECH_LANGUAGE.translate_old_to_new_value(
-                old_value = old_stage.text_to_speech_language,
-            ).value # eg. "en" -> "English (en)"
+            new_tts_language = TextToSpeechLanguage.from_string(old_stage.text_to_speech_language)
         
         new_extensions = []
         for extension_id in self.extensions:
@@ -157,20 +156,18 @@ class FRProject(PypenguinClass):
             extensions              = new_extensions,
         )
 
-class SRVideoState(Enum):
-    ON         = 0
-    ON_FLIPPED = 1
-    OFF        = 2
 
-    def __repr__(self):
-        return f"{self.__class__.__name__}.{self.name}"
-    
+class SRVideoState(PypenguinEnum):
     @staticmethod
     def from_string(value: str) -> "SRVideoState":
         if   value == "on"        : return SRVideoState.ON
         elif value == "on flipped": return SRVideoState.ON_FLIPPED
         elif value == "off"       : return SRVideoState.OFF
         else: raise ValueError(f"Invalid video state: {value}")
+
+    ON         = 0
+    ON_FLIPPED = 1
+    OFF        = 2
 
 class SRProject(PypenguinClass):
     _grepr = True
@@ -179,11 +176,11 @@ class SRProject(PypenguinClass):
     stage: SRStage
     sprites: list[SRSprite]
     all_sprite_variables: list[SRAllSpriteVariable]
-    all_sprite_lists    : list[SRAllSpriteList]
+    all_sprite_lists: list[SRAllSpriteList]
     tempo: int
     video_transparency: int | float
     video_state: SRVideoState
-    text_to_speech_language: str | None
+    text_to_speech_language: TextToSpeechLanguage | None
     global_monitors: list[SRMonitor]
     extensions: list[SRExtension]
 
@@ -191,14 +188,17 @@ class SRProject(PypenguinClass):
         stage: SRStage,
         sprites: list[SRSprite],
         all_sprite_variables: list[SRAllSpriteVariable],
-        all_sprite_lists    : list[SRAllSpriteList],
+        all_sprite_lists: list[SRAllSpriteList],
         tempo: int,
         video_transparency: int | float,
         video_state: SRVideoState,
-        text_to_speech_language: str | None,
+        text_to_speech_language: TextToSpeechLanguage | None,
         global_monitors: list[SRMonitor],
         extensions: list[SRExtension],
     ):
+        """
+        Initialize the SR (Second Representation) of a Scratch/PenguinMod Project.
+        """
         self.stage                   = stage
         self.sprites                 = sprites
         self.all_sprite_variables    = all_sprite_variables
@@ -209,6 +209,36 @@ class SRProject(PypenguinClass):
         self.text_to_speech_language = text_to_speech_language
         self.global_monitors         = global_monitors
         self.extensions              = extensions
+
+    def validate(self) -> None:
+        """
+        Checks wether a SRProject is valid and raises if not.
+        """
+        path = []
+        AA_TYPE(self, path, "stage", SRStage)
+        AA_LIST_OF_TYPE(self, path, "sprites", SRSprite)
+        AA_LIST_OF_TYPE(self, path, "all_sprite_variables", SRAllSpriteVariable)
+        AA_LIST_OF_TYPE(self, path, "all_sprite_lists", SRAllSpriteList)
+        AA_TYPE(self, path, "tempo", int)
+        AA_RANGE(self, path, "tempo", min=20, max=500)
+        AA_TYPES(self, path, "video_transparency", int, float) # TODO: research min/max
+        AA_TYPE(self, path, "video_state", SRVideoState)
+        AA_TYPES(self, path, "text_to_speech_language", TextToSpeechLanguage, type(None))
+        AA_LIST_OF_TYPE(self, path, "global_monitors", SRMonitor)
+        AA_LIST_OF_TYPE(self, path, "extensions", SRExtension)
+        
+        # TODO: complete this
+        self.stage.validate(path+["stage"])
+        for i, sprite in enumerate(self.sprites):
+            sprite.validate(path+["sprites", i])
+        for i, variable in enumerate(self.all_sprite_variables):
+            variable.validate(path+["all_sprite_variables", i])
+        for i, list_ in enumerate(self.all_sprite_lists):
+            list_.validate(path+["all_sprite_lists", i])
+        for i, monitor in enumerate(self.global_monitors):
+            monitor.validate(path+["global_monitors", i])
+        for i, extension in enumerate(self.extensions):
+            extension.validate(path+["extensions", i])
 
 file_path = "../assets/from_online/my 1st platformer.pmp"
 #file_path = "../assets/from_online/dumb example.pmp"
@@ -222,4 +252,7 @@ from config import config
 from block_info import info_api
 #gprint(config)
 new_project = project.step(config=config, info_api=info_api)
+new_project.global_monitors[0].dropdowns = {}
 gprint(new_project)
+new_project.validate()
+

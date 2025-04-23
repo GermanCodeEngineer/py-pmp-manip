@@ -1,12 +1,8 @@
 from typing import Any
-from enum import Enum
 
-from utility import PypenguinClass
+from utility import PypenguinClass, PypenguinEnum
 
-class SRDropdownKind(Enum):
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__}.{self.name}"
-    
+class SRDropdownKind(PypenguinEnum):
     STANDARD       =  0
     VARIABLE       =  1
     LIST           =  2

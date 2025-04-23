@@ -1,8 +1,8 @@
 from typing import Any
-from enum import Enum
 import copy
 
-from utility    import gprint, PypenguinClass, ThanksError
+from utility    import gprint, PypenguinClass, PypenguinEnum, ThanksError
+from utility    import AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_MIN, AA_MAX, AA_RANGE, AA_COORD_PAIR
 from block      import FRBlock, TRBlock, SRScript, TRBlockReference
 from comment    import FRComment, SRFloatingComment, SRAttachedComment
 from asset      import FRCostume, FRSound, SRCostume, SRSound
@@ -295,7 +295,6 @@ class FRStage(FRTarget):
             info_api = info_api,
         )
         return (SRStage(
-            name          = self.name,
             scripts       = scripts,
             comments      = comments,
             costume_index = self.current_costume,
@@ -434,13 +433,10 @@ class FRSprite(FRTarget):
             rotation_style        = SRSpriteRotationStyle.from_string(self.rotation_style),
         ), None, None)
     
-
-
 class SRTarget(PypenguinClass):
     _grepr = True
-    _grepr_fields = ["name", "scripts", "comments", "costume_index", "costumes", "sounds", "volume"]
+    _grepr_fields = ["scripts", "comments", "costume_index", "costumes", "sounds", "volume"]
 
-    name: str
     scripts: list[SRScript]
     comments: list[SRFloatingComment]
     costume_index: int
@@ -449,7 +445,6 @@ class SRTarget(PypenguinClass):
     volume: int | float
     
     def __init__(self, 
-        name: str,
         scripts: list[SRScript],
         comments: list[SRFloatingComment],
         costume_index: int,
@@ -457,7 +452,6 @@ class SRTarget(PypenguinClass):
         sounds: list[SRSound],
         volume: int | float,
     ):
-        self.name          = name
         self.scripts       = scripts
         self.comments      = comments
         self.costume_index = costume_index
@@ -465,12 +459,26 @@ class SRTarget(PypenguinClass):
         self.sounds        = sounds
         self.volume        = volume
 
+    def validate(self, path: list|None = None):
+        path = [] if path is None else path
+        AA_LIST_OF_TYPE(self, path, "scripts", SRScript)
+        AA_LIST_OF_TYPE(self, path, "comments", SRFloatingComment)
+        AA_TYPE(self, path, "costume_index", int)
+        AA_MIN(self, path, "costume_index", 0)
+        AA_LIST_OF_TYPE(self, path, "costumes", SRCostume)
+        AA_LIST_OF_TYPE(self, path, "sounds", SRSound)
+        AA_TYPES(self, path, "volume", int, float)
+        AA_RANGE(self, path, "volume", min=0, max=100)
+        
+        # TODO: complete this
+
 class SRStage(SRTarget):
     pass # The stage has no additional properties
      
 class SRSprite(SRTarget):
-    _grepr_fields = SRTarget._grepr_fields + ["sprite_only_variables", "sprite_only_lists", "local_monitors", "layer_order", "is_visible", "position", "size", "direction", "is_draggable", "rotation_style"]
+    _grepr_fields = ["name"] + SRTarget._grepr_fields + ["sprite_only_variables", "sprite_only_lists", "local_monitors", "layer_order", "is_visible", "position", "size", "direction", "is_draggable", "rotation_style"]
     
+    name: str
     sprite_only_variables: list[SRSpriteOnlyVariable]
     sprite_only_lists: list[SRSpriteOnlyList]
     local_monitors: list[SRMonitor]
@@ -501,8 +509,8 @@ class SRSprite(SRTarget):
         is_draggable: bool,
         rotation_style: "SRSpriteRotationStyle",
     ):
+        self.name = name
         super().__init__(
-            name          = name,
             scripts       = scripts,
             comments      = comments,
             costume_index = costume_index,
@@ -522,14 +530,27 @@ class SRSprite(SRTarget):
         self.rotation_style        = rotation_style
         self.local_monitors        = []
 
-class SRSpriteRotationStyle(Enum):
-    ALL_AROUND  = 0
-    LEFT_RIGHT  = 1
-    DONT_ROTATE = 2
+    def validate(self, path: list|None = None):
+        path = [] if path is None else path
+        super().validate(path)
+        
+        AA_TYPE(self, path, "name", str)
+        AA_LIST_OF_TYPE(self, path, "sprite_only_variables", SRSpriteOnlyVariable)
+        AA_LIST_OF_TYPE(self, path, "sprite_only_lists", SRSpriteOnlyList)
+        AA_LIST_OF_TYPE(self, path, "local_monitors", SRMonitor)
+        AA_TYPE(self, path, "layer_order", int)
+        AA_MIN(self, path, "layer_order", min=1) # TODO: reform and check
+        AA_TYPE(self, path, "is_visible", bool)
+        AA_COORD_PAIR(self, path, "position")
+        AA_TYPES(self, path, "size", int, float)
+        AA_MIN(self, path, "size", min=0)
+        AA_TYPES(self, path, "direction", int, float)
+        AA_TYPE(self, path, "is_draggable", bool)
+        AA_TYPE(self, path, "rotation_style", SRSpriteRotationStyle)
+        
+        # TODO: complete this
 
-    def __repr__(self):
-        return f"{self.__class__.__name__}.{self.name}"
-
+class SRSpriteRotationStyle(PypenguinEnum):
     @staticmethod
     def from_string(string: str):
         match string:
@@ -537,3 +558,8 @@ class SRSpriteRotationStyle(Enum):
             case "left-right"  : return SRSpriteRotationStyle.LEFT_RIGHT
             case "don't rotate": return SRSpriteRotationStyle.DONT_ROTATE
             case _: raise ValueError()
+
+    ALL_AROUND  = 0
+    LEFT_RIGHT  = 1
+    DONT_ROTATE = 2
+

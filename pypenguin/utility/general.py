@@ -106,6 +106,7 @@ def ensure_correct_path(_path, target_folder_name="pypenguin"):
         return final_path
 
 # Utility Classes
+from enum import Enum
 
 class PypenguinClass:
     def __eq__(self, other) -> bool:
@@ -117,6 +118,10 @@ class PypenguinClass:
             if getattr(self, field) != getattr(other, field):
                 return False 
         return True
+
+class PypenguinEnum(Enum):
+    def __repr__(self):
+        return self.__class__.__name__ + "." + self.name
 
 # Data Functions
 
