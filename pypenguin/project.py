@@ -295,7 +295,7 @@ class SRProject(PypenguinClass):
             current_path = path+["sprites", i]
             if sprite.name in defined_sprites:
                 other_path = defined_sprites[sprite.name]
-                raise SameNameTwiceError(other_path, current_path, "Two sprites mustn't have the same name.")
+                raise SameNameTwiceError(other_path, current_path, "Two sprites mustn't have the same name")
             defined_sprites[sprite.name] = current_path
             sprite_only_variables[sprite.name] = [
                 SRDropdownValue(SRDropdownKind.VARIABLE, variable.name) for variable in sprite.sprite_only_variables]
@@ -306,7 +306,12 @@ class SRProject(PypenguinClass):
         all_sprite_lists     = [SRDropdownValue(SRDropdownKind.LIST    , list_   .name) for list_    in self.all_sprite_lists    ]
         backdrops            = [SRDropdownValue(SRDropdownKind.BACKDROP, backdrop.name) for backdrop in self.stage.costumes      ]
         for i, target in enumerate([self.stage]+self.sprites):
-            target_key = None if i==0 else target.name
+            if i == 0:
+                target_key = None
+                current_path = path+["stage"]
+            else:
+                target_key = target.name
+                current_path = path+["sprites", i-1]
             partial_context = PartialContext(
                 scope_variables       = all_sprite_variables + sprite_only_variables[target_key],
                 scope_lists           = all_sprite_lists     + sprite_only_lists    [target_key],
@@ -317,29 +322,35 @@ class SRProject(PypenguinClass):
                     SRDropdownValue(SRDropdownKind.SPRITE, sprite_name) for sprite_name in defined_sprites.keys()],
                 backdrops             = backdrops,
             )
+            target.validate_scripts(
+                path     = current_path, 
+                info_api = info_api, 
+                context  = partial_context,
+            )
+            if i == 0: global_context = partial_context
         
         for i, monitor in enumerate(self.global_monitors):
             monitor.validate_dropdowns_values(
                 path     = path+["global_monitors", i], 
                 info_api = info_api, 
-                context  = partial_context,
+                context  = global_context,
             )
         # TODO: ensure no double used names anywhere
 
 
-file_path = "../assets/from_online/my 1st platformer.pmp"
-#file_path = "../assets/from_online/dumb example.pmp"
+#file_path = "../assets/from_online/my 1st platformer.pmp"
+file_path = "../assets/from_online/dumb example.pmp"
 #file_path = "../assets/from_online/color.pmp"
 #file_path = "../assets/input_modes.pmp"
 #file_path = "../assets/monitors.pmp"
 
 project = FRProject.from_pmp_file(file_path)
-print(project)
+
 from config import config
 from block_info import info_api
 
 new_project = project.step(config=config, info_api=info_api)
-new_project.global_monitors[0].dropdowns["VARIABLE"].value = "r"
 print(new_project)
+
 new_project.validate(info_api=info_api)
 

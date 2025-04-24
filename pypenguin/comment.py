@@ -1,6 +1,7 @@
 from typing import Any
 
 from utility import PypenguinClass
+from utility import AA_COORD_PAIR, AA_TYPE, InvalidValueValidationError
 
 class FRComment(PypenguinClass):
     _grepr = True
@@ -55,7 +56,6 @@ class FRComment(PypenguinClass):
             )
         else:
             return SRAttachedComment(
-                block_id=self.block_id,
                 position=position,
                 size=size,
                 is_minimized=self.minimized,
@@ -72,36 +72,27 @@ class SRComment(PypenguinClass):
     text: str
     
     def __init__(self, 
-            position: tuple[int | float, int | float], 
-            size: tuple[int | float, int | float], 
-            is_minimized: bool, 
-            text: str,
-        ):
+        position: tuple[int | float, int | float], 
+        size: tuple[int | float, int | float], 
+        is_minimized: bool, 
+        text: str,
+    ):
         self.position     = position
         self.size         = size
         self.is_minimized = is_minimized
         self.text         = text
+    
+    def validate(self, path: list) -> None:
+        AA_COORD_PAIR(self, path, "position")
+        AA_COORD_PAIR(self, path, "size")
+        if (self.size[0] < 52) or (self.size[1] < 32):
+            raise InvalidValueValidationError(path, f"size of {self.__class__.__name__} must be at least 52 by 32")
+        AA_TYPE(self, path, "is_minimized", bool)
+        AA_TYPE(self, path, "text", str)
 
 class SRFloatingComment(SRComment):
     pass
 
 class SRAttachedComment(SRComment):
-    _grepr_fields = SRComment._grepr_fields + ["block_id"]
-
-    block_id = str
-
-    def __init__(self, 
-            position: tuple[int | float, int | float], 
-            size: tuple[int | float, int | float], 
-            is_minimized: bool, 
-            text: str,
-            block_id: str,
-        ):
-        super().__init__(
-            position=position, 
-            size=size, 
-            is_minimized=is_minimized, 
-            text=text
-        )
-        self.block_id = block_id
+    pass
 

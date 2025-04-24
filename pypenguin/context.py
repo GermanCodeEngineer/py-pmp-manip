@@ -36,7 +36,7 @@ class FullContext:
     is_stage: bool
 
     @classmethod
-    def from_partial(pc: PartialContext, costumes: list["SRDropdownValue"], sounds: list["SRDropdownValue"], is_stage: bool) -> "FullContext":
+    def from_partial(cls, pc: PartialContext, costumes: list["SRDropdownValue"], sounds: list["SRDropdownValue"], is_stage: bool) -> "FullContext":
         return FullContext(
             scope_variables       = pc.scope_variables,
             scope_lists           = pc.scope_lists,

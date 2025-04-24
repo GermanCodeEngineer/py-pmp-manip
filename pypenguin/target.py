@@ -2,7 +2,7 @@ from typing import Any
 import copy
 
 from utility    import PypenguinClass, PypenguinEnum, ThanksError
-from utility    import AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_MIN, AA_MAX, AA_RANGE, AA_COORD_PAIR, AA_NOT_ONE_OF, InvalidValueValidationError
+from utility    import AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_MIN, AA_MAX, AA_RANGE, AA_COORD_PAIR, AA_NOT_ONE_OF, SameNameTwiceError
 from block      import FRBlock, TRBlock, SRScript, TRBlockReference
 from comment    import FRComment, SRFloatingComment, SRAttachedComment
 from asset      import FRCostume, FRSound, SRCostume, SRSound
@@ -11,6 +11,8 @@ from block_info import BlockInfoApi
 from vars_lists import SRVariable, SRSpriteOnlyVariable, SRAllSpriteVariable, SRCloudVariable
 from vars_lists import SRList, SRSpriteOnlyList, SRAllSpriteList
 from monitor    import SRMonitor
+from context    import PartialContext, FullContext
+from dropdown   import SRDropdownValue, SRDropdownKind
 
 class FRTarget(PypenguinClass):
     _grepr = True
@@ -468,7 +470,35 @@ class SRTarget(PypenguinClass):
         AA_TYPES(self, path, "volume", (int, float))
         AA_RANGE(self, path, "volume", min=0, max=100)
         
+        for i, comment in enumerate(self.comments):
+            comment.validate(path+["comments", i])
+
+        defined_costumes = {}
+        for i, costume in enumerate(self.costumes):
+            current_path = path+["costumes", i]
+            costume.validate(path)
+            if costume.name in defined_costumes:
+                other_path = defined_costumes[costume.name]
+                raise SameNameTwiceError(other_path, current_path, "Two costumes mustn't have the same name")
+            defined_costumes[costume.name] = current_path
+        
+        defined_sounds = {}
+        for i, sound in enumerate(self.sounds):
+            current_path = path+["sounds", i]
+            sound.validate(path)
+            if sound.name in defined_sounds:
+                other_path = defined_sounds[sound.name]
+                raise SameNameTwiceError(other_path, current_path, "Two sounds mustn't have the same name")
+            defined_sounds[sound.name] = current_path
         # TODO: complete this
+    
+    def validate_scripts(self, path: list, info_api: BlockInfoApi, context: PartialContext):
+        context: FullContext = FullContext.from_partial(
+            pc       = context,
+            costumes = [SRDropdownValue(SRDropdownKind.COSTUME, costume.name) for costume in self.costumes],
+            sounds   = [SRDropdownValue(SRDropdownKind.SOUND  , sound  .name) for sound   in self.sounds  ],
+            is_stage = isinstance(self, SRStage),
+        )
         
 
 class SRStage(SRTarget):

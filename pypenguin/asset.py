@@ -1,7 +1,7 @@
 from typing import Any
-from abc import ABC, abstractmethod
 
 from utility import PypenguinClass
+from utility import AA_TYPE, AA_COORD_PAIR, AA_MIN
 
 class FRCostume(PypenguinClass):
     _grepr = True
@@ -117,6 +117,13 @@ class SRCostume(PypenguinClass):
         self.file_extension    = file_extension
         self.rotation_center   = rotation_center
         self.bitmap_resolution = bitmap_resolution
+    
+    def validate(self, path: list) -> None:
+        AA_TYPE(self, path, "name", str) # TODO: check if valid file name
+        AA_TYPE(self, path, "file_extension", str)
+        AA_COORD_PAIR(self, path, "rotation_center")
+        AA_TYPE(self, path, "bitmap_resolution")
+        AA_MIN(self, path, "bitmap_resolution", min=1)
 
 class SRSound(PypenguinClass):
     _grepr = True
@@ -128,4 +135,8 @@ class SRSound(PypenguinClass):
     def __init__(self, name: str, file_extension: str):
         self.name           = name
         self.file_extension = file_extension
+    
+    def validate(self, path: list) -> None:
+        AA_TYPE(self, path, "name", str) # TODO: check if valid file name
+        AA_TYPE(self, path, "file_extension", str)
 
