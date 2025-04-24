@@ -62,16 +62,6 @@ def grepr(obj, annotate_fields=True, include_attributes=False, *, indent=4):
         indent = ' ' * indent
     return _format(obj)[0]
 
-
-def gprint(*objects, sep=" ", end="\n"):
-    print(
-        *(grepr(obj) for obj in objects),
-        sep=sep,
-        end=end,
-    )
-
-
-
 # Files
 import zipfile
 import os
@@ -118,6 +108,9 @@ class PypenguinClass:
             if getattr(self, field) != getattr(other, field):
                 return False 
         return True
+    
+    def __repr__(self) -> str:
+        return grepr(self)
 
 class PypenguinEnum(Enum):
     def __repr__(self):

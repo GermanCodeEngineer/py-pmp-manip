@@ -2,9 +2,10 @@ from typing import Callable, TYPE_CHECKING
 
 from dropdown import SRDropdownValue, SRDropdownKind
 from utility import remove_duplicates, PypenguinEnum
+from context import PartialContext, FullContext
 
 if TYPE_CHECKING:
-    from block import SRBlock
+    from block import SRBlock, SRInputValue
 
 class BlockInfoSet:
     _grepr = True
@@ -120,6 +121,16 @@ class BlockInfo:
     def get_input_mode(self, input_id: str) -> "InputMode":
         return self.get_input_type(input_id).get_mode()
 
+
+    def get_input_type_by_new(self, new_input_id: str) -> "InputType":
+        input_id = self.get_old_input_id(new_input_id)
+        return self.get_input_type(input_id)
+    
+    def get_dropdown_type_by_new(self, new_dropdown_id: str) -> "DropdownType":
+        dropdown_id = self.get_old_dropdown_id(new_dropdown_id)
+        return self.get_dropdown_type(dropdown_id)
+    
+
     def get_new_input_id(self, input_id: str) -> str:
         return self.inputs[input_id].new
 
@@ -128,6 +139,17 @@ class BlockInfo:
     
     def get_new_dropdown_ids(self) -> list[str]:
         return [self.get_new_dropdown_id(dropdown_id) for dropdown_id in self.dropdowns.keys()]
+
+
+    def get_old_input_id(self, new_input_id: str) -> str:
+        for input_id, input_info in self.inputs.items():
+            if input_info.new == new_input_id:
+                return input_id
+
+    def get_old_dropdown_id(self, new_dropdown_id: str) -> str:
+        for dropdown_id, dropdown_info in self.dropdowns.items():
+            if dropdown_info.new == new_dropdown_id:
+                return dropdown_id
 
 class BlockType(PypenguinEnum):
     STATEMENT         = 0
@@ -328,7 +350,97 @@ class DropdownType(PypenguinEnum):
                     raise ValueError(f"Multiple default kinds for {self}: {default_kind} and {behaviour_default_kind}")
         return default_kind
 
-    def get_possible_new_dropdown_values(self, include_behaviours: bool) -> list[SRDropdownValue]:
+    def calculate_possible_new_dropdown_values(self, context: PartialContext|FullContext, inputs: dict[str, "SRInputValue"]) -> list[SRDropdownValue]:
+        dropdown_type_info = self.get_type_info()
+        values: list[SRDropdownValue] = []
+        for value in dropdown_type_info.direct_values:
+            if   isinstance(value, SRDropdownValue):
+                values.append(value)
+            else:
+                values.append(SRDropdownValue(SRDropdownKind.STANDARD, value))
+        
+        for segment in dropdown_type_info.behaviours:
+            match segment:
+                case DDB.STAGE:
+                    values.append(SRDropdownValue(SRDropdownKind.STAGE, "stage"))
+                case DDB.OTHER_SPRITE:
+                    values.append(SRDropdownValue(SRDropdownKind.STAGE, "stage"))
+                    values.extend(context.other_sprites)
+                case DDB.OTHER_SPRITE_EXCEPT_STAGE:
+                    values.extend(context.other_sprites)
+                case DDB.MYSELF:
+                    values.append(SRDropdownValue(SRDropdownKind.MYSELF, "myself"))
+                case DDB.MYSELF_IF_SPRITE:
+                    if not context.is_stage:
+                        values.append(SRDropdownValue(SRDropdownKind.MYSELF, "myself"))
+                
+                case DDB.MOUSE_POINTER:
+                    values.append(SRDropdownValue(SRDropdownKind.OBJECT, "mouse-pointer"))
+                case DDB.EDGE:
+                    values.append(SRDropdownValue(SRDropdownKind.OBJECT, "edge"))
+                
+                case DDB.RANDOM_POSITION:
+                    values.append(SRDropdownValue(SRDropdownKind.OBJECT, "random position"))
+                
+                case DDB.MUTABLE_SPRITE_PROPERTY:
+                    # works only for "set [PROPERTY] of ([TARGET]) to (VALUE)"; no other block uses this though
+                    # TODO: possibly add special case
+                    if inputs["TARGET"].dropdown == SRDropdownValue(SRDropdownKind.STAGE, "stage"):
+                        values.extend([
+                            SRDropdownValue(SRDropdownKind.STANDARD, "backdrop"), 
+                            SRDropdownValue(SRDropdownKind.STANDARD, "volume"),
+                        ])
+                    else:
+                        values.extend([
+                            SRDropdownValue(SRDropdownKind.STANDARD, "x position"), 
+                            SRDropdownValue(SRDropdownKind.STANDARD, "y position"), 
+                            SRDropdownValue(SRDropdownKind.STANDARD, "direction"), 
+                            SRDropdownValue(SRDropdownKind.STANDARD, "costume"), 
+                            SRDropdownValue(SRDropdownKind.STANDARD, "size"),
+                            SRDropdownValue(SRDropdownKind.STANDARD, "volume"),
+                        ])
+                        name_key = inputs["TARGET"].dropdown.value
+                        values.extend(context.sprite_only_variables[name_key])
+                    raise Exception("TODO: ensure this works")
+                
+                case DDB.READABLE_SPRITE_PROPERTY:
+                    # works only for "[PROPERTY] of ([TARGET])"; no other block uses this though
+                    if inputs["TARGET"].dropdown == SRDropdownValue(SRDropdownKind.STAGE, "stage"):
+                        values.extend([
+                            SRDropdownValue(SRDropdownKind.STANDARD, "backdrop #"), 
+                            SRDropdownValue(SRDropdownKind.STANDARD, "backdrop name"), 
+                            SRDropdownValue(SRDropdownKind.STANDARD, "volume"),
+                        ])
+                        values.extend(context.all_sprite_variables)
+                    else:
+                        values.extend([
+                            SRDropdownValue(SRDropdownKind.STANDARD, "x position"), 
+                            SRDropdownValue(SRDropdownKind.STANDARD, "y position"), 
+                            SRDropdownValue(SRDropdownKind.STANDARD, "direction"), 
+                            SRDropdownValue(SRDropdownKind.STANDARD, "costume #"), 
+                            SRDropdownValue(SRDropdownKind.STANDARD, "costume name"), 
+                            SRDropdownValue(SRDropdownKind.STANDARD, "layer"), 
+                            SRDropdownValue(SRDropdownKind.STANDARD, "size"),
+                            SRDropdownValue(SRDropdownKind.STANDARD, "volume"),
+                        ])
+                        name_key = inputs["TARGET"].dropdown.value
+                        values.extend(context.sprite_only_variables[name_key])
+
+                case DDB.COSTUME:
+                    values.extend(context.costumes)
+                    values.extend([SRDropdownValue(SRDropdownKind.COSTUME, i) for i in range(len(context.costumes))])
+                case DDB.BACKDROP:
+                    values.extend(context.backdrops)
+                    values.extend([SRDropdownValue(SRDropdownKind.COSTUME, i) for i in range(len(context.backdrops))])
+                case DDB.SOUND:
+                    values.extend(context.sounds)
+                case DDB.SOUND:
+                    pass
+        if (values == []) and (dropdown_type_info.fallback is not None):
+            values.append(dropdown_type_info.fallback.value)
+        return remove_duplicates(values)
+
+    def guess_possible_new_dropdown_values(self, include_behaviours: bool) -> list[SRDropdownValue]:
         dropdown_type_info = self.get_type_info()
         values             = []
         for value in dropdown_type_info.direct_values:
@@ -370,6 +482,7 @@ class DropdownType(PypenguinEnum):
                             SRDropdownValue(SRDropdownKind.STANDARD, "direction"), 
                             SRDropdownValue(SRDropdownKind.STANDARD, "costume"), 
                             SRDropdownValue(SRDropdownKind.STANDARD, "size"),
+                            SRDropdownValue(SRDropdownKind.STANDARD, "volume"),
                         ])
                     case DDB.READABLE_SPRITE_PROPERTY:
                         values.extend([
@@ -385,6 +498,7 @@ class DropdownType(PypenguinEnum):
                             SRDropdownValue(SRDropdownKind.STANDARD, "costume name"), 
                             SRDropdownValue(SRDropdownKind.STANDARD, "layer"), 
                             SRDropdownValue(SRDropdownKind.STANDARD, "size"),
+                            SRDropdownValue(SRDropdownKind.STANDARD, "volume"),
                         ])
                     
                     case (DDB.COSTUME  | DDB.BACKDROP | DDB.SOUND 
@@ -396,7 +510,7 @@ class DropdownType(PypenguinEnum):
             values.append(dropdown_type_info.fallback)
         return remove_duplicates(values)
 
-    def get_possible_old_dropdown_values(self) -> list[str]:
+    def guess_possible_old_dropdown_values(self) -> list[str]:
         dropdown_type_info = self.get_type_info()
         values = []
         for value in dropdown_type_info.old_direct_values:
@@ -428,10 +542,10 @@ class DropdownType(PypenguinEnum):
                 
                 case DDB.MUTABLE_SPRITE_PROPERTY:
                     values.extend(["backdrop", "volume"])
-                    values.extend(["x position", "y position", "direction", "costume", "size"])
+                    values.extend(["x position", "y position", "direction", "costume", "size", "volume"])
                 case DDB.READABLE_SPRITE_PROPERTY:
                     values.extend(["backdrop #", "backdrop name", "volume"])
-                    values.extend(["x position", "y position", "direction", "costume #", "costume name", "layer", "size"])
+                    values.extend(["x position", "y position", "direction", "costume #", "costume name", "layer", "size", "volume"])
                 
                 case (DDB.COSTUME  | DDB.BACKDROP | DDB.SOUND 
                     | DDB.VARIABLE | DDB.LIST     | DDB.BROADCAST | DDB.FONT):
@@ -445,8 +559,8 @@ class DropdownType(PypenguinEnum):
         # TODO: add special case for this
         if self == DropdownType.EXPANDED_MINIMIZED and old_value == "FALSE": # To patch a mistake of the pen extension dev
             old_value = False
-        new_values = self.get_possible_new_dropdown_values(include_behaviours=True)
-        old_values = self.get_possible_old_dropdown_values()
+        new_values = self.guess_possible_new_dropdown_values(include_behaviours=True)
+        old_values = self.guess_possible_old_dropdown_values()
         default_kind = self.get_default_kind()
 
         assert len(new_values) == len(old_values)

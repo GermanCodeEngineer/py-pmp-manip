@@ -1,7 +1,7 @@
 from typing import Any
 import copy
 
-from utility    import gprint, PypenguinClass, PypenguinEnum, ThanksError
+from utility    import PypenguinClass, PypenguinEnum, ThanksError
 from utility    import AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_MIN, AA_MAX, AA_RANGE, AA_COORD_PAIR, AA_NOT_ONE_OF, InvalidValueValidationError
 from block      import FRBlock, TRBlock, SRScript, TRBlockReference
 from comment    import FRComment, SRFloatingComment, SRAttachedComment
@@ -130,13 +130,6 @@ class FRTarget(PypenguinClass):
         for block_reference in block_api.scheduled_block_deletions:
             del new_blocks[TRBlockReference(id=block_reference)]
         
-        #for block_reference, block in self.blocks.items():
-        #    pass
-        #    print("\n"*2)
-        #    print(100*"=")
-        #    gprint(block_reference, block)
-        #    gprint(new_blocks.get(TRBlockReference(id=block_reference)))        
-        
         # Get all top level block ids
         top_level_block_refs: list[TRBlockReference] = []
         [top_level_block_refs.append(block_reference) if block.is_top_level else None for block_reference, block in new_blocks.items()]
@@ -165,8 +158,7 @@ class FRTarget(PypenguinClass):
                 position = position,
                 blocks   = script_blocks,
             ))
-        #gprint(new_scripts)
-
+        
         new_variables, new_lists = self.step_variables_lists()
         return (
             new_scripts,

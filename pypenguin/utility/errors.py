@@ -42,6 +42,8 @@ class UnnecessaryInputError(PathValidationError): pass
 class MissingDropdownError(PathValidationError): pass
 class UnnecessaryDropdownError(PathValidationError): pass
 
+class InvalidDropdownValueError(PathValidationError): pass # TODO
+
 class SameNameTwiceError(ValidationError):
     def __init__(self, path1: list, path2: list, msg: str, condition: str|None = None):
         path1_string = generate_path_string(path1)

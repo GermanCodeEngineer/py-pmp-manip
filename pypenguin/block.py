@@ -1,6 +1,6 @@
 from typing import Any
 
-from utility               import gprint, PypenguinClass
+from utility               import PypenguinClass
 from block_mutation        import FRMutation, FRCustomBlockMutation, FRCustomArgumentMutation, FRCustomCallMutation
 from block_mutation        import SRMutation
 from block_opcodes         import *
@@ -272,8 +272,8 @@ class FRBlock(PypenguinClass):
             
             # Im temporarily keeping both systems to ensure the new system produces the same output
             if new_input_data_1 != new_input_data_2:
-                gprint("nid1", new_input_data_1)
-                gprint("nid2", new_input_data_2)
+                print("nid1", new_input_data_1)
+                print("nid2", new_input_data_2)
                 raise Exception("Conflict!")
 
             #print("input", input_id, input_mode, input_value)
@@ -590,3 +590,4 @@ class SRInputValue(PypenguinClass):
         self.block    = block
         self.text     = text
         self.dropdown = dropdown
+

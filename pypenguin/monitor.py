@@ -5,6 +5,7 @@ from utility import AA_TYPE, AA_DICT_OF_TYPE, AA_COORD_PAIR, AA_EQUAL, AA_BIGGER
 from block_info import BlockInfoApi, DropdownType
 from dropdown import SRDropdownValue
 from block_opcodes import *
+from context import PartialContext
 
 class FRMonitor(PypenguinClass):
     _grepr = True
@@ -174,6 +175,18 @@ class SRMonitor(PypenguinClass):
             if new_dropdown_id not in self.dropdowns:
                 raise MissingDropdownError(path, f"dropdowns of {self.__class__.__name__} with opcode {repr(self.opcode)} is missing dropdown {new_dropdown_id}")
     
+    def validate_dropdowns_values(self, path: list, info_api: BlockInfoApi, context: PartialContext):
+        block_info = info_api.get_info_by_new_opcode(self.opcode, default_none=False)
+        for new_dropdown_id, dropdown_value in self.dropdowns.items():
+            dropdown_type = block_info.get_dropdown_type_by_new(new_dropdown_id)
+            dropdown_value.validate_value(
+                path          = path + ["dropdowns", (new_dropdown_id,)],
+                dropdown_type = dropdown_type, 
+                context       = context,
+                inputs        = {},
+            )
+
+
 class SRVariableMonitor(SRMonitor):
     _grepr_fields = SRMonitor._grepr_fields + ["slider_min", "slider_max", "allow_only_integers"]
     

@@ -6,12 +6,12 @@ from target                import FRTarget, FRStage, FRSprite, SRStage, SRSprite
 from monitor               import FRMonitor, SRMonitor
 from meta                  import FRMeta
 from config                import SpecialCaseHandler
-from block_info            import BlockInfoApi, DropdownType
+from block_info            import BlockInfoApi
 from vars_lists            import SRAllSpriteVariable, SRAllSpriteList
 from extension             import SRExtension, SRCustomExtension, SRBuiltinExtension
 from tts                   import TextToSpeechLanguage
-
-from utility import gprint
+from context               import PartialContext
+from dropdown              import SRDropdownValue, SRDropdownKind
 
 class FRProject(PypenguinClass): 
     """The first representation (FR) of the project data tree. Its data is equivalent to the data stored in a .pmp file."""
@@ -286,19 +286,44 @@ class SRProject(PypenguinClass):
         for i, extension in enumerate(self.extensions):
             extension.validate(path+["extensions", i])
         
-        defined_sprites = {}
-        backdrops = self.stage.costumes
-        sprite_only_variables = {}
-        sprite_only_lists = {}
+        # 1. Ensure no same sprite name
+        # 2. Validate Dropdown Values
+        defined_sprites      = {}
+        sprite_only_variables = {None: []}
+        sprite_only_lists     = {None: []}
         for i, sprite in enumerate(self.sprites):
             current_path = path+["sprites", i]
             if sprite.name in defined_sprites:
-                other_path = defined_sprite[sprite.name]
+                other_path = defined_sprites[sprite.name]
                 raise SameNameTwiceError(other_path, current_path, "Two sprites mustn't have the same name.")
             defined_sprites[sprite.name] = current_path
-            sprite_only_variables[sprite.name] = [variable.name for variable in sprite.sprite_only_variables]
-            sprite_only_lists[sprite.name] = [list_.name for list_ in sprite.sprite_only_lists]
+            sprite_only_variables[sprite.name] = [
+                SRDropdownValue(SRDropdownKind.VARIABLE, variable.name) for variable in sprite.sprite_only_variables]
+            sprite_only_lists    [sprite.name] = [
+                SRDropdownValue(SRDropdownKind.LIST    , list_   .name) for list_    in sprite.sprite_only_lists]
         
+        all_sprite_variables = [SRDropdownValue(SRDropdownKind.VARIABLE, variable.name) for variable in self.all_sprite_variables]
+        all_sprite_lists     = [SRDropdownValue(SRDropdownKind.LIST    , list_   .name) for list_    in self.all_sprite_lists    ]
+        backdrops            = [SRDropdownValue(SRDropdownKind.BACKDROP, backdrop.name) for backdrop in self.stage.costumes      ]
+        for i, target in enumerate([self.stage]+self.sprites):
+            target_key = None if i==0 else target.name
+            partial_context = PartialContext(
+                scope_variables       = all_sprite_variables + sprite_only_variables[target_key],
+                scope_lists           = all_sprite_lists     + sprite_only_lists    [target_key],
+                all_sprite_variables  = all_sprite_variables,
+                sprite_only_variables = sprite_only_variables,
+                sprite_only_lists     = sprite_only_lists,
+                other_sprites         = [
+                    SRDropdownValue(SRDropdownKind.SPRITE, sprite_name) for sprite_name in defined_sprites.keys()],
+                backdrops             = backdrops,
+            )
+        
+        for i, monitor in enumerate(self.global_monitors):
+            monitor.validate_dropdowns_values(
+                path     = path+["global_monitors", i], 
+                info_api = info_api, 
+                context  = partial_context,
+            )
         # TODO: ensure no double used names anywhere
 
 
@@ -309,12 +334,12 @@ file_path = "../assets/from_online/my 1st platformer.pmp"
 #file_path = "../assets/monitors.pmp"
 
 project = FRProject.from_pmp_file(file_path)
-gprint(project)
+print(project)
 from config import config
 from block_info import info_api
-#gprint(config)
-new_project = project.step(config=config, info_api=info_api)
 
-gprint(new_project)
+new_project = project.step(config=config, info_api=info_api)
+new_project.global_monitors[0].dropdowns["VARIABLE"].value = "r"
+print(new_project)
 new_project.validate(info_api=info_api)
 

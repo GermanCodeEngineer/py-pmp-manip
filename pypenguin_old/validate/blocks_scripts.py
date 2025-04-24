@@ -1,8 +1,8 @@
 from utility import parseCustomOpcode, getListOfClosestStrings
-from pypenguin.validate.constants import validateSchema, formatError, inputSchema, blockSchema, scriptSchema
-from pypenguin.validate.errors import blockTypeError, unknownOpcodeError, inputIdError, missingInputAttributeError, optionIdError, optionValueCategoryError, optionValueError, undefinedVariableError, undefinedListError, undefinedCustomOpcodeError, embeddedMenuError
-from pypenguin.validate.comments import validateComment
-from pypenguin.database import *
+from validate.constants import validateSchema, formatError, inputSchema, blockSchema, scriptSchema
+from validate.errors import blockTypeError, unknownOpcodeError, inputIdError, missingInputAttributeError, optionIdError, optionValueCategoryError, optionValueError, undefinedVariableError, undefinedListError, undefinedCustomOpcodeError, embeddedMenuError
+from validate.comments import validateComment
+from database import *
 
 allowedOpcodes = getAllOptimizedOpcodes()
 
