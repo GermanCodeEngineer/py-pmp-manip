@@ -46,15 +46,10 @@ def AA_MAX(obj, path, attr, max, condition=None):
     if attr_value > max:
         raise RangeValidationError(path, f"{descr} must be at most {max}", condition)
 
-def AA_RANGE(obj, path, attr, min, max):
-    AA_MIN(obj, path, attr, min)
-    AA_MAX(obj, path, attr, max)
-
-def AA_BIGGER_OR_EQUAL(obj, path, attr1, attr2, condition=None):
-    attr1_value, attr1_descr = value_and_descr(obj, attr1)
-    attr2_value, attr2_descr = value_and_descr(obj, attr2)
-    if not(attr1_value >= attr2_value):
-        raise RangeValidationError(path, f"{attr1_descr} must be bigger then or equal to {attr2}", condition)
+def AA_RANGE(obj, path, attr, min, max, condition=None):
+    attr_value, descr = value_and_descr(obj, attr)
+    if (attr_value < min) or (attr_value > max):
+        raise RangeValidationError(path, f"{descr} must be at least {min} and at most {max}", condition)
 
 def AA_COORD_PAIR(obj, path, attr, condition=None):
     attr_value, descr = value_and_descr(obj, attr)
@@ -79,6 +74,17 @@ def AA_EQUAL(obj, path, attr, value, condition=None):
     attr_value, descr = value_and_descr(obj, attr)
     if attr_value != value:
         raise InvalidValueValidationError(path, f"{descr} must be {value}", condition)
+
+def AA_BIGGER_OR_EQUAL(obj, path, attr1, attr2, condition=None):
+    attr1_value, attr1_descr = value_and_descr(obj, attr1)
+    attr2_value, attr2_descr = value_and_descr(obj, attr2)
+    if not(attr1_value >= attr2_value):
+        raise RangeValidationError(path, f"{attr1_descr} must be bigger then or equal to {attr2}", condition)
+
+def AA_NOT_ONE_OF(obj, path, attr, forbidden_values, condition=None):
+    attr_value, descr = value_and_descr(obj, attr)
+    if attr_value in forbidden_values:
+        raise InvalidValueValidationError(path, f"{descr} must not be one of {repr(forbidden_values)}")
 
 import re
 from urllib.parse import urlparse

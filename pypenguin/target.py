@@ -2,7 +2,7 @@ from typing import Any
 import copy
 
 from utility    import gprint, PypenguinClass, PypenguinEnum, ThanksError
-from utility    import AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_MIN, AA_MAX, AA_RANGE, AA_COORD_PAIR
+from utility    import AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_MIN, AA_MAX, AA_RANGE, AA_COORD_PAIR, AA_NOT_ONE_OF, InvalidValueValidationError
 from block      import FRBlock, TRBlock, SRScript, TRBlockReference
 from comment    import FRComment, SRFloatingComment, SRAttachedComment
 from asset      import FRCostume, FRSound, SRCostume, SRSound
@@ -466,17 +466,18 @@ class SRTarget(PypenguinClass):
         self.sounds        = sounds
         self.volume        = volume
 
-    def validate(self, path: list):
+    def validate(self, path: list, info_api: BlockInfoApi) -> None:
         AA_LIST_OF_TYPE(self, path, "scripts", SRScript)
         AA_LIST_OF_TYPE(self, path, "comments", SRFloatingComment)
-        AA_TYPE(self, path, "costume_index", int)
-        AA_MIN(self, path, "costume_index", 0)
         AA_LIST_OF_TYPE(self, path, "costumes", SRCostume)
+        AA_TYPE(self, path, "costume_index", int)
+        AA_RANGE(self, path, "costume_index", min=0, max=len(self.costumes)-1, condition=f"In this case the sprite has {len(self.costumes)} costume(s)")
         AA_LIST_OF_TYPE(self, path, "sounds", SRSound)
         AA_TYPES(self, path, "volume", (int, float))
         AA_RANGE(self, path, "volume", min=0, max=100)
         
         # TODO: complete this
+        
 
 class SRStage(SRTarget):
     pass # The stage has no additional properties
@@ -534,12 +535,12 @@ class SRSprite(SRTarget):
         self.direction             = direction
         self.is_draggable          = is_draggable
         self.rotation_style        = rotation_style
-        self.local_monitors        = []
-
-    def validate(self, path: list):
-        super().validate(path)
+        
+    def validate(self, path: list, info_api: BlockInfoApi):
+        super().validate(path, info_api)
         
         AA_TYPE(self, path, "name", str)
+        AA_NOT_ONE_OF(self, path, "name", ["_myself_", "_stage_", "_mouse_", "_edge_"])
         AA_LIST_OF_TYPE(self, path, "sprite_only_variables", SRSpriteOnlyVariable)
         AA_LIST_OF_TYPE(self, path, "sprite_only_lists", SRSpriteOnlyList)
         AA_LIST_OF_TYPE(self, path, "local_monitors", SRMonitor)
@@ -550,10 +551,19 @@ class SRSprite(SRTarget):
         AA_TYPES(self, path, "size", (int, float))
         AA_MIN(self, path, "size", min=0)
         AA_TYPES(self, path, "direction", (int, float))
+        AA_RANGE(self, path, "direction", min=-180, max=180)
         AA_TYPE(self, path, "is_draggable", bool)
         AA_TYPE(self, path, "rotation_style", SRSpriteRotationStyle)
         
-        # TODO: complete this
+        
+        for i, variable in enumerate(self.sprite_only_variables):
+            variable.validate(path+["sprite_only_variables", i])
+        for i, list_ in enumerate(self.sprite_only_lists):
+            list_.validate(path+["sprite_only_lists", i])
+        
+        for i, monitor in enumerate(self.local_monitors):
+            monitor.validate(path+["local_monitors", i], info_api)
+        
 
 class SRSpriteRotationStyle(PypenguinEnum):
     @staticmethod

@@ -167,7 +167,7 @@ class SRMonitor(PypenguinClass):
         
         new_dropdown_ids = block_info.get_new_dropdown_ids()
         for new_dropdown_id, dropdown_value in self.dropdowns.items():
-            dropdown_value.validate(path+["dropdowns", new_dropdown_id])
+            dropdown_value.validate(path+["dropdowns", (new_dropdown_id,)])
             if new_dropdown_id not in new_dropdown_ids:
                 raise UnnecessaryDropdownError(path, f"dropdowns of {self.__class__.__name__} with opcode {repr(self.opcode)} includes unnecessary dropdown {new_dropdown_id}")
         for new_dropdown_id in new_dropdown_ids:

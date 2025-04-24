@@ -16,8 +16,7 @@ class SRVariable(PypenguinClass):
 
     def validate(self, path: list):
         AA_TYPE(self, path, "name", str)
-        AA_JSON_COMPATIBLE(self, path, "current_value")
-        # TODO: check wether these are all possible to use in Scratch       
+        AA_JSON_COMPATIBLE(self, path, "current_value") # TODO: check wether these are all possible to use in Scratch
 
 class SRSpriteOnlyVariable(SRVariable):
     pass
@@ -42,9 +41,9 @@ class SRList(PypenguinClass):
 
     def validate(self, path: list):
         AA_TYPE(self, path, "name", str)
-        AA_JSON_COMPATIBLE(self, path, "current_value")
-        # TODO: check wether these are all possible to use in Scratch       
         AA_TYPE(self, path, "current_value", list) # still must be a list
+        AA_JSON_COMPATIBLE(self, path, "current_value") # TODO: check wether these are all possible to use in Scratch       
+
 
 class SRSpriteOnlyList(SRList):
     pass

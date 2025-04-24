@@ -1,7 +1,7 @@
 import json
 
 from utility               import read_file_of_zip, ThanksError, PypenguinClass, PypenguinEnum
-from utility               import AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_RANGE
+from utility               import AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_RANGE, SameNameTwiceError
 from target                import FRTarget, FRStage, FRSprite, SRStage, SRSprite
 from monitor               import FRMonitor, SRMonitor
 from meta                  import FRMeta
@@ -210,9 +210,49 @@ class SRProject(PypenguinClass):
         self.global_monitors         = global_monitors
         self.extensions              = extensions
 
+    def validate_var_names(self, path: list) -> None:
+        """
+        Ensures no variables with the same name exist.
+        """
+        defined_variables = {}
+        for i, variable in enumerate(self.all_sprite_variables):
+            current_path = path+["all_sprite_variables", i]
+            if variable.name in defined_variables:
+                other_path = defined_variables[variable.name]
+                raise SameNameTwiceError(other_path, current_path, "Two variables mustn't have the same name")
+            defined_variables[variable.name] = current_path
+        
+        for i, sprite in enumerate(self.sprites):
+            for j, variable in enumerate(sprite.sprite_only_variables):
+                current_path = path+["sprites", i, "sprite_only_variables", j]
+                if variable.name in defined_variables:
+                    other_path = defined_variables[variable.name]
+                    raise SameNameTwiceError(other_path, current_path, "Two variables mustn't have the same name")
+                defined_variables[variable.name] = current_path
+        
+    def validate_list_names(self, path: list) -> None:
+        """
+        Ensures no lists with the same name exist.
+        """
+        defined_lists = {}
+        for i, list_ in enumerate(self.all_sprite_lists):
+            current_path = path+["all_sprite_lists", i]
+            if list_.name in defined_lists:
+                other_path = defined_lists[list_.name]
+                raise SameNameTwiceError(other_path, current_path, "Two lists mustn't have the same name")
+            defined_lists[list_.name] = current_path
+        
+        for i, sprite in enumerate(self.sprites):
+            for j, list_ in enumerate(sprite.sprite_only_lists):
+                current_path = path+["sprites", i, "sprite_only_lists", j]
+                if list_.name in defined_lists:
+                    other_path = defined_lists[list_.name]
+                    raise SameNameTwiceError(other_path, current_path, "Two lists mustn't have the same name")
+                defined_lists[list_.name] = current_path
+
     def validate(self, info_api: BlockInfoApi) -> None:
         """
-        Checks wether a SRProject is valid and raises if not.
+        Checks wether a SRProject is valid and raises a subclass of ValidationError if not.
         """
         path = []
         AA_TYPE(self, path, "stage", SRStage)
@@ -228,19 +268,39 @@ class SRProject(PypenguinClass):
         AA_LIST_OF_TYPE(self, path, "extensions", SRExtension)
         
         # TODO: complete this
-        self.stage.validate(path+["stage"])
+        self.stage.validate(path+["stage"], info_api)
         for i, sprite in enumerate(self.sprites):
-            sprite.validate(path+["sprites", i])
+            sprite.validate(path+["sprites", i], info_api)
+        
         for i, variable in enumerate(self.all_sprite_variables):
             variable.validate(path+["all_sprite_variables", i])
         for i, list_ in enumerate(self.all_sprite_lists):
             list_.validate(path+["all_sprite_lists", i])
+        
+        self.validate_var_names(path)
+        self.validate_list_names(path)
+        
         for i, monitor in enumerate(self.global_monitors):
             monitor.validate(path+["global_monitors", i], info_api)
+        
         for i, extension in enumerate(self.extensions):
             extension.validate(path+["extensions", i])
         
+        defined_sprites = {}
+        backdrops = self.stage.costumes
+        sprite_only_variables = {}
+        sprite_only_lists = {}
+        for i, sprite in enumerate(self.sprites):
+            current_path = path+["sprites", i]
+            if sprite.name in defined_sprites:
+                other_path = defined_sprite[sprite.name]
+                raise SameNameTwiceError(other_path, current_path, "Two sprites mustn't have the same name.")
+            defined_sprites[sprite.name] = current_path
+            sprite_only_variables[sprite.name] = [variable.name for variable in sprite.sprite_only_variables]
+            sprite_only_lists[sprite.name] = [list_.name for list_ in sprite.sprite_only_lists]
+        
         # TODO: ensure no double used names anywhere
+
 
 file_path = "../assets/from_online/my 1st platformer.pmp"
 #file_path = "../assets/from_online/dumb example.pmp"
