@@ -3,14 +3,15 @@ from typing import Any
 from utility        import PypenguinClass
 from utility        import AA_TYPE, AA_TYPES, AA_COORD_PAIR, AA_LIST_OF_TYPE, AA_DICT_OF_TYPE
 from utility        import UnnecessaryInputError, MissingInputError, UnnecessaryDropdownError, MissingDropdownError, InvalidValueValidationError
-from block_mutation import FRMutation, FRCustomBlockMutation, FRCustomArgumentMutation, FRCustomCallMutation, SRCustomBlockMutation
-from block_mutation import SRMutation
-from block_opcodes  import *
+from opcode_info    import OpcodeInfoApi, OpcodeInfo, InputMode, OpcodeType
 from config         import FRtoTRApi, SpecialCaseHandler, SpecialCaseType
-from block_info     import OpcodeInfoApi, OpcodeInfo, InputMode, BlockType
-from comment        import SRAttachedComment
-from dropdown       import SRDropdownValue
-from context        import FullContext
+
+from core.block_mutation import FRMutation, FRCustomBlockMutation, FRCustomArgumentMutation, FRCustomCallMutation
+from core.block_mutation import SRMutation
+from block_opcodes  import *
+from core.comment        import SRAttachedComment
+from core.context        import FullContext
+from core.dropdown       import SRDropdownValue
 
 class FRBlock(PypenguinClass):
     _grepr = True
@@ -347,7 +348,7 @@ class TRBlock(PypenguinClass):
         ) -> tuple[tuple[int|float,int|float] | None, list["SRBlock | str"]]:
         
         block_info = info_api.get_info_by_opcode(self.opcode)
-        if block_info.block_type == BlockType.MENU:
+        if block_info.block_type == OpcodeType.MENU:
             return (None, [list(self.dropdowns.values())[0]])
             """ example:
             {

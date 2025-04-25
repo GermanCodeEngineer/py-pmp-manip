@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 from dataclasses import dataclass
 if TYPE_CHECKING:
-    from dropdown import SRDropdownValue
+    from core.dropdown import SRDropdownValue
 
 @dataclass
 class PartialContext:

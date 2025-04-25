@@ -140,9 +140,9 @@ for cat in ["motion", "looks", "sounds", "events", "control", "sensing", "operat
     elif cat == "lists": block_cat = "data"
     else:
         block_cat = cat
-    string = "from block_info.basis import *\n\n" + cat + ' = BlockInfoSet(name="' + cat + '", opcode_prefix="' + block_cat + '", block_infos={\n'
+    string = "from utility import DualKeyDict\n\nfrom opcode_info import OpcodeInfoGroup, OpcodeInfo, OpcodeType, InputInfo, InputType, DropdownInfo, DropdownType, MenuInfo\n\n" + cat + ' = OpcodeInfoGroup(name="' + cat + '", opcode_info=DualKeyDict({\n'
     for opcode, block in opcodes.items():
-        block_string = f'    "{opcode.removeprefix(block_cat+"_")}": BlockInfo(\n'
+        block_string = '    ("'+opcode+'", "'+block["newOpcode"]+'"): OpcodeInfo(\n'
         
         block["inputs"] = {}
         it = block.get("inputTranslation", {})
@@ -183,35 +183,30 @@ for cat in ["motion", "looks", "sounds", "events", "control", "sensing", "operat
             if opcode == "event_whenkeypressed": print("HERE", attr)
             match attr:
                 case "type": 
-                    block_string += '        block_type=BlockType.' + bt_translation[value] + ',\n'
+                    block_string += '        block_type=OpcodeType.' + bt_translation[value] + ',\n'
                 case "category": pass
-                case "newOpcode": 
-                    block_string += '        new_opcode="' + value + '",\n'
+                case "newOpcode": pass
                 case "inputs": 
                     if value == {}: continue
-                    block_string += '        inputs={\n'
+                    block_string += '        inputs=DualKeyDict({\n'
                     for old_input_id, input_data in value.items():
-                        block_string += f'            "{input_data["old"]}": InputInfo(InputType.{input_data["type"]}'
-                        if "old" in input_data:
-                            block_string += f', new="{old_input_id}"'
+                        block_string += f'            ("{input_data["old"]}", "{old_input_id}"): InputInfo(InputType.{input_data["type"]}'
                         if "menu" in input_data:
                             block_string += f', menu={input_data["menu"]}'
                         block_string += '),\n'
                         
                     #raise Exception()
-                    block_string += "        },\n"
+                    block_string += "        }),\n"
                 case "dropdowns":
                     if value == {}: continue
                     if opcode == "event_whenkeypressed": print("HERE")
-                    block_string += '        dropdowns={\n'
+                    block_string += '        dropdowns=DualKeyDict({\n'
                     for old_input_id, input_data in value.items():
-                        block_string += f'            "{input_data["old"]}": DropdownInfo(DropdownType.{input_data["type"]}'
-                        if "old" in input_data:
-                            block_string += f', new="{old_input_id}"'
+                        block_string += f'            ("{input_data["old"]}", "{old_input_id}"): DropdownInfo(DropdownType.{input_data["type"]}'
                         block_string += '),\n'
                         
                     #raise Exception()
-                    block_string += "        },\n"
+                    block_string += "        }),\n"
                 #case "inputTypes": block_string += '        "' + value + '",n'
                 #case "inputTranslation": block_string += '        blockType="' + value + '",n'
                 #case "optionTypes": block_string += '        blockType="' + value + '",n'
@@ -225,7 +220,7 @@ for cat in ["motion", "looks", "sounds", "events", "control", "sensing", "operat
         
         string += block_string
     
-    string += "})"
+    string += "}))"
     #print(string)
-    with open("../../block_info/"+cat+".py", "w") as file:
+    with open("pypenguin/opcode_info/groups/"+cat+".py", "w") as file:
         file.write(string)

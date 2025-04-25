@@ -1,273 +1,11 @@
-from typing import Callable, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
-from utility import remove_duplicates, PypenguinEnum
-
-from core.context  import PartialContext, FullContext
+from utility import PypenguinEnum, remove_duplicates
 
 if TYPE_CHECKING:
-    from core.block          import SRBlock, SRInputValue
-    from core.block_mutation import SRMutation
-    from core.dropdown import SRDropdownValue, SRDropdownKind
-
-class CategoryOpcodesInfo:
-    _grepr = True
-    _grepr_fields = ["name", "opcode_prefix", "alt_opcode_prefixes", "block_infos"]
-    
-    name: str
-    opcode_prefix: str
-    alt_opcode_prefixes: list[str]
-    block_infos: dict[str, "OpcodeInfo"]
-    get_old_opcode_handler: Callable[[str, "SRBlock"], str | None] | None
-    
-    def __init__(self, 
-        name: str, 
-        opcode_prefix: str, 
-        alt_opcode_prefixes: list[str] | None = None,
-        block_infos: dict[str, "OpcodeInfo"] | None = None,
-        get_old_opcode_handler: Callable[[str, "SRBlock"], str | None] | None = None,
-    ):
-        self.name                   = name
-        self.opcode_prefix          = opcode_prefix
-        self.alt_opcode_prefixes    = alt_opcode_prefixes or []
-        self.block_infos            = {}
-        self.get_old_opcode_handler = get_old_opcode_handler
-        
-        for opcode, block_info in (block_infos or {}).items():
-            self.add_block(opcode, block_info)
-    
-    def get_all_possible_prefixes(self) -> list[str]:
-        return [self.opcode_prefix] + self.alt_opcode_prefixes
-    
-    def uses_prefix(self, prefix: str) -> bool:
-        return prefix in self.get_all_possible_prefixes()
-    
-    def add_block(self, opcode: str, block_info: "OpcodeInfo"):
-        if block_info.alt_opcode_prefix is not None:
-            if block_info.alt_opcode_prefix not in self.alt_opcode_prefixes:
-                raise ValueError(f"Alternate opcode prefix {repr(block_info.alt_opcode_prefix)} was never added.")
-        self.block_infos[opcode] = block_info
-    
-    def get_info_by_opcode(self, opcode: str, default_none: bool = False) -> "OpcodeInfo | None":
-        print(self.name, "* gio", opcode, self.block_infos.keys())
-        if opcode in self.block_infos:
-            return self.block_infos[opcode]
-        if default_none:
-            return None
-        raise ValueError(f"Couldn't find Block Info for opcode {repr(opcode)}")
-
-    def get_info_by_new_opcode(self, new_opcode: str, mutation: "SRMutation | None", default_none: bool = False) -> "OpcodeInfo":
-        opcode = self.get_old_opcode(new_opcode=new_opcode, mutation=mutation, default_none=True)
-        if (opcode is None) and default_none:
-            return None
-        print(self.name, "#", opcode)
-        if opcode is not None:
-            block_info = self.get_info_by_opcode(opcode=opcode, default_none=default_none)
-            if block_info is not None:
-                return block_info
-            if default_none:
-                return None
-        raise ValueError(f"Couldn't find Block Info for new opcode {repr(new_opcode)}")
-
-    def get_old_opcode(self, new_opcode: str, mutation: "SRMutation | None", default_none: bool = False) -> str | None:
-        if self.get_old_opcode_handler is not None:
-            result = self.get_old_opcode_handler(new_opcode, mutation)
-            if isinstance(result, str):
-                return result
-            elif result is None:
-                pass
-            else: raise ValueError()
-        
-        for old_opcode, block_info in self.block_infos.items():
-            if block_info.new_opcode == new_opcode:
-                return old_opcode
-        if default_none:
-            return None
-        raise ValueError(f"Old opcode for {repr(new_opcode)} couln't be found.")
-
-class OpcodeInfo:
-    _grepr = True
-    _grepr_fields = ["block_type", "new_opcode", "inputs", "dropdowns", "can_have_monitor"]
-    
-    block_type: "BlockType"
-    new_opcode: str
-    inputs: dict[str, "InputInfo"]
-    dropdowns: dict[str, "DropdownInfo"]
-    can_have_monitor: bool
-    alt_opcode_prefix: str | None
-    
-    def __init__(self, 
-        block_type: "BlockType", 
-        new_opcode: str, 
-        inputs: dict[str, "InputInfo"] = {},
-        dropdowns: dict[str, "DropdownInfo"] = {},
-        can_have_monitor: bool = False,
-        alt_opcode_prefix: str | None = None,
-    ):
-        self.block_type        = block_type
-        self.new_opcode        = new_opcode
-        self.inputs            = inputs
-        self.dropdowns         = dropdowns
-        self.can_have_monitor  = can_have_monitor
-        self.alt_opcode_prefix = alt_opcode_prefix
-    
-    def get_input_info(self, input_id: str) -> "InputInfo":
-        return self.inputs[input_id]
-    
-    def get_dropdown_info(self, dropdown_id: str) -> "DropdownInfo":
-        return self.dropdowns[dropdown_id]
-    
-    def get_input_type(self, input_id: str) -> "InputType":
-        return self.get_input_info(input_id).type
-    
-    def get_dropdown_type(self, dropdown_id: str) -> "DropdownType":
-        return self.get_dropdown_info(dropdown_id).type
-
-    def get_input_mode(self, input_id: str) -> "InputMode":
-        return self.get_input_type(input_id).get_mode()
-
-
-    def get_input_type_by_new(self, new_input_id: str) -> "InputType":
-        input_id = self.get_old_input_id(new_input_id)
-        return self.get_input_type(input_id)
-    
-    def get_dropdown_type_by_new(self, new_dropdown_id: str) -> "DropdownType":
-        dropdown_id = self.get_old_dropdown_id(new_dropdown_id)
-        return self.get_dropdown_type(dropdown_id)
-    
-
-    def get_new_input_id(self, input_id: str) -> str:
-        return self.inputs[input_id].new
-
-    def get_new_dropdown_id(self, dropdown_id: str) -> str:
-        return self.dropdowns[dropdown_id].new
-    
-    def get_new_input_ids(self) -> list[str]:
-        return [self.get_new_input_id(input_id) for input_id in self.inputs.keys()]
-    
-    def get_new_dropdown_ids(self) -> list[str]:
-        return [self.get_new_dropdown_id(dropdown_id) for dropdown_id in self.dropdowns.keys()]
-
-
-    def get_old_input_id(self, new_input_id: str) -> str:
-        for input_id, input_info in self.inputs.items():
-            if input_info.new == new_input_id:
-                return input_id
-
-    def get_old_dropdown_id(self, new_dropdown_id: str) -> str:
-        for dropdown_id, dropdown_info in self.dropdowns.items():
-            if dropdown_info.new == new_dropdown_id:
-                return dropdown_id
-
-class BlockType(PypenguinEnum):
-    STATEMENT         = 0
-    ENDING_STATEMENT  = 1
-    HAT               = 2
-    
-    STRING_REPORTER   = 3
-    NUMBER_REPORTER   = 4
-    BOOLEAN_REPORTER  = 5
-    
-    # Pseudo Blocktypes
-    MENU              = 6
-    POLYGON_MENU      = 7 # Exclusively for the "polygon" block
-    NOT_RELEVANT      = 8
-    DYNAMIC           = 9
-    
-class InputInfo:
-    _grepr = True
-    _grepr_fields = ["type", "new", "menu"]
-    
-    type: "InputType"
-    new: str
-    menu: "MenuInfo | None"
-    
-    def __init__(self, type: "InputType", new: str, menu: "MenuInfo|None" = None):
-        self.type = type
-        self.new  = new
-        self.menu = menu
-
-class InputMode(PypenguinEnum):
-    BLOCK_AND_TEXT               = 0
-    BLOCK_AND_MENU_TEXT          = 1
-    BLOCK_ONLY                   = 2
-    SCRIPT                       = 3
-    BLOCK_AND_BROADCAST_DROPDOWN = 4
-    BLOCK_AND_DROPDOWN           = 5
-
-class InputType(PypenguinEnum):
-    def get_mode(self) -> InputMode:
-        return self.value[0]
-    
-    def get_corresponding_dropdown_type(self) -> "DropdownType":
-        assert self.get_mode() in {
-            InputMode.BLOCK_AND_MENU_TEXT, 
-            InputMode.BLOCK_AND_BROADCAST_DROPDOWN,
-            InputMode.BLOCK_AND_DROPDOWN,
-        }
-        return DropdownType._member_map_[self.name]
-
-    @staticmethod
-    def get_by_cb_default(default: str) -> "InputType":
-        match default:
-            case "":
-                return InputType.TEXT
-            case "false":
-                return InputType.BOOLEAN
-            case _: raise ValueError()
-    
-    # BLOCK_AND_TEXT
-    DIRECTION           = (InputMode.BLOCK_AND_TEXT, 0)
-    INTEGER             = (InputMode.BLOCK_AND_TEXT, 1)
-    POSITIVE_INTEGER    = (InputMode.BLOCK_AND_TEXT, 2)
-    POSITIVE_NUMBER     = (InputMode.BLOCK_AND_TEXT, 3)
-    NUMBER              = (InputMode.BLOCK_AND_TEXT, 4)
-    TEXT                = (InputMode.BLOCK_AND_TEXT, 5)
-    COLOR               = (InputMode.BLOCK_AND_TEXT, 6)
-
-    # BLOCK_AND_MENU_TEXT
-    NOTE                = (InputMode.BLOCK_AND_MENU_TEXT, 0)
-
-    # BLOCK_ONLY
-    BOOLEAN             = (InputMode.BLOCK_ONLY, 0)
-    ROUND               = (InputMode.BLOCK_ONLY, 1)
-    EMBEDDED_MENU       = (InputMode.BLOCK_ONLY, 2)
-
-    # SCRIPT
-    SCRIPT              = (InputMode.SCRIPT, 0)
-
-    # BLOCK_AND_BROADCAST_DROPDOWN
-    BROADCAST           = (InputMode.BLOCK_AND_BROADCAST_DROPDOWN, 0)
-
-    # BLOCK_AND_DROPDOWN
-    STAGE_OR_OTHER_SPRITE               = (InputMode.BLOCK_AND_DROPDOWN,  0)
-    CLONING_TARGET                      = (InputMode.BLOCK_AND_DROPDOWN,  1)
-    MOUSE_OR_OTHER_SPRITE               = (InputMode.BLOCK_AND_DROPDOWN,  2)
-    MOUSE_EDGE_OR_OTHER_SPRITE          = (InputMode.BLOCK_AND_DROPDOWN,  3)
-    MOUSE_EDGE_MYSELF_OR_OTHER_SPRITE   = (InputMode.BLOCK_AND_DROPDOWN,  4)
-    KEY                                 = (InputMode.BLOCK_AND_DROPDOWN,  5)
-    UP_DOWN                             = (InputMode.BLOCK_AND_DROPDOWN,  6)
-    FINGER_INDEX                        = (InputMode.BLOCK_AND_DROPDOWN,  7)
-    RANDOM_MOUSE_OR_OTHER_SPRITE        = (InputMode.BLOCK_AND_DROPDOWN,  8)
-    COSTUME                             = (InputMode.BLOCK_AND_DROPDOWN,  9)
-    COSTUME_PROPERTY                    = (InputMode.BLOCK_AND_DROPDOWN, 10)
-    BACKDROP                            = (InputMode.BLOCK_AND_DROPDOWN, 11)
-    BACKDROP_PROPERTY                   = (InputMode.BLOCK_AND_DROPDOWN, 12)
-    MYSELF_OR_OTHER_SPRITE              = (InputMode.BLOCK_AND_DROPDOWN, 13)
-    SOUND                               = (InputMode.BLOCK_AND_DROPDOWN, 14)
-    DRUM                                = (InputMode.BLOCK_AND_DROPDOWN, 15)
-    INSTRUMENT                          = (InputMode.BLOCK_AND_DROPDOWN, 16)
-    FONT                                = (InputMode.BLOCK_AND_DROPDOWN, 17)
-    PEN_PROPERTY                        = (InputMode.BLOCK_AND_DROPDOWN, 18)
-    VIDEO_SENSING_PROPERTY              = (InputMode.BLOCK_AND_DROPDOWN, 19)
-    VIDEO_SENSING_TARGET                = (InputMode.BLOCK_AND_DROPDOWN, 20)
-    VIDEO_STATE                         = (InputMode.BLOCK_AND_DROPDOWN, 21)
-    TEXT_TO_SPEECH_VOICE                = (InputMode.BLOCK_AND_DROPDOWN, 22)
-    TEXT_TO_SPEECH_LANGUAGE             = (InputMode.BLOCK_AND_DROPDOWN, 23)
-    TRANSLATE_LANGUAGE                  = (InputMode.BLOCK_AND_DROPDOWN, 24)
-    MAKEY_KEY                           = (InputMode.BLOCK_AND_DROPDOWN, 25)
-    MAKEY_SEQUENCE                      = (InputMode.BLOCK_AND_DROPDOWN, 26)
-    READ_FILE_MODE                      = (InputMode.BLOCK_AND_DROPDOWN, 27)
-    FILE_SELECTOR_MODE                  = (InputMode.BLOCK_AND_DROPDOWN, 28)
+    from core.block import SRInputValue
+from core.dropdown import SRDropdownKind, SRDropdownValue
+from core.context import PartialContext, FullContext
 
 class DropdownInfo:
     _grepr = True
@@ -282,6 +20,7 @@ class DropdownInfo:
 
 class DropdownBehaviour(PypenguinEnum):
     def get_default_kind(self) -> "SRDropdownKind | None":
+        from core.dropdown import SRDropdownKind
         return {
             DropdownBehaviour.OTHER_SPRITE             : SRDropdownKind.SPRITE,
             DropdownBehaviour.OTHER_SPRITE_EXCEPT_STAGE: SRDropdownKind.SPRITE,
@@ -328,14 +67,14 @@ class DropdownTypeInfo:
 
     direct_values:     list[str | int | bool]          
     behaviours:        list[DropdownBehaviour]
-    old_direct_values: list[str | int | bool]
-    fallback:          "SRDropdownValue | None"  
+    old_direct_values: list[str | int | bool]          
+    fallback:          SRDropdownValue | None              
 
     def __init__(self,
         direct_values:     list[str | int | bool]  | None = None,
         behaviours:        list[DropdownBehaviour] | None = None,
         old_direct_values: list[str | int | bool]  | None = None,
-        fallback:          "SRDropdownValue         | None" = None,
+        fallback:          SRDropdownValue         | None = None,
     ) -> None:
         self.direct_values        = direct_values     or []
         self.behaviours           = behaviours        or []
@@ -346,7 +85,7 @@ class DropdownType(PypenguinEnum):
     def get_type_info(self) -> DropdownTypeInfo:
         return self.value
     
-    def get_default_kind(self) -> "SRDropdownKind | None":
+    def get_default_kind(self) -> SRDropdownKind | None:
         default_kind = None
         for behaviour in self.get_type_info().behaviours:
             behaviour_default_kind = behaviour.get_default_kind()
@@ -357,8 +96,7 @@ class DropdownType(PypenguinEnum):
                     raise ValueError(f"Multiple default kinds for {self}: {default_kind} and {behaviour_default_kind}")
         return default_kind
 
-    def calculate_possible_new_dropdown_values(self, context: PartialContext|FullContext, inputs: dict[str, "SRInputValue"]) -> list["SRDropdownValue"]:
-        from core.dropdown import SRDropdownValue, SRDropdownKind
+    def calculate_possible_new_dropdown_values(self, context: PartialContext|FullContext, inputs: dict[str, "SRInputValue"]) -> list[SRDropdownValue]:
         dropdown_type_info = self.get_type_info()
         values: list[SRDropdownValue] = []
         for value in dropdown_type_info.direct_values:
@@ -448,8 +186,7 @@ class DropdownType(PypenguinEnum):
             values.append(dropdown_type_info.fallback.value)
         return remove_duplicates(values)
 
-    def guess_possible_new_dropdown_values(self, include_behaviours: bool) -> list["SRDropdownValue"]:
-        from core.dropdown import SRDropdownValue, SRDropdownKind
+    def guess_possible_new_dropdown_values(self, include_behaviours: bool) -> list[SRDropdownValue]:
         dropdown_type_info = self.get_type_info()
         values             = []
         for value in dropdown_type_info.direct_values:
@@ -520,7 +257,6 @@ class DropdownType(PypenguinEnum):
         return remove_duplicates(values)
 
     def guess_possible_old_dropdown_values(self) -> list[str]:
-        from core.dropdown import SRDropdownValue
         dropdown_type_info = self.get_type_info()
         values = []
         for value in dropdown_type_info.old_direct_values:
@@ -565,8 +301,7 @@ class DropdownType(PypenguinEnum):
             values.append(dropdown_type_info.fallback.value)
         return remove_duplicates(values)
 
-    def translate_old_to_new_value(self, old_value: str) -> "SRDropdownValue":
-        from core.dropdown import SRDropdownValue
+    def translate_old_to_new_value(self, old_value: str) -> SRDropdownValue:
         # TODO: add special case for this
         if self == DropdownType.EXPANDED_MINIMIZED and old_value == "FALSE": # To patch a mistake of the pen extension dev
             old_value = False
@@ -730,14 +465,3 @@ class DropdownType(PypenguinEnum):
     
     # Temporary, will be removed
     ENABLE_SCREEN_REFRESH = DropdownTypeInfo()
-
-class MenuInfo:
-    _grepr = True
-    _grepr_fields = ["opcode", "inner"]
-    
-    opcode: str
-    inner : str
-    
-    def __init__(self, opcode: str, inner: str):
-        self.opcode = opcode
-        self.inner  = inner

@@ -1,11 +1,12 @@
 from typing import Any
 
-from utility import PypenguinClass
-from utility import AA_TYPE, AA_DICT_OF_TYPE, AA_COORD_PAIR, AA_EQUAL, AA_BIGGER_OR_EQUAL, InvalidValueValidationError, MissingDropdownError, UnnecessaryDropdownError
-from block_info import OpcodeInfoApi, DropdownType
-from dropdown import SRDropdownValue
+from utility     import PypenguinClass
+from utility     import AA_TYPE, AA_DICT_OF_TYPE, AA_COORD_PAIR, AA_EQUAL, AA_BIGGER_OR_EQUAL, InvalidValueValidationError, MissingDropdownError, UnnecessaryDropdownError
+from opcode_info import OpcodeInfoApi, DropdownType
+
+from core.dropdown      import SRDropdownValue
 from block_opcodes import *
-from context import PartialContext
+from core.context       import PartialContext
 
 class FRMonitor(PypenguinClass):
     _grepr = True

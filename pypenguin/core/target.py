@@ -1,19 +1,20 @@
 from typing import Any
-import copy
+from copy   import deepcopy
 
-from utility    import PypenguinClass, PypenguinEnum, ThanksError
-from utility    import AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_MIN, AA_MAX, AA_RANGE, AA_COORD_PAIR, AA_NOT_ONE_OF, SameNameTwiceError
-from block      import FRBlock, TRBlock, SRScript, TRBlockReference
-from comment    import FRComment, SRFloatingComment, SRAttachedComment
-from asset      import FRCostume, FRSound, SRCostume, SRSound
-from config     import FRtoTRApi, SpecialCaseHandler
-from block_info import OpcodeInfoApi
+from utility     import PypenguinClass, PypenguinEnum, ThanksError
+from utility     import AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_MIN, AA_RANGE, AA_COORD_PAIR, AA_NOT_ONE_OF, SameNameTwiceError
+from opcode_info import OpcodeInfoApi
+from config      import FRtoTRApi, SpecialCaseHandler
+
+from asset          import FRCostume, FRSound, SRCostume, SRSound
+from block          import FRBlock, TRBlock, SRScript, TRBlockReference
 from block_mutation import SRCustomBlockMutation
-from vars_lists import SRVariable, SRSpriteOnlyVariable, SRAllSpriteVariable, SRCloudVariable
-from vars_lists import SRList, SRSpriteOnlyList, SRAllSpriteList
-from monitor    import SRMonitor
-from context    import PartialContext, FullContext
-from dropdown   import SRDropdownValue, SRDropdownKind
+from comment        import FRComment, SRFloatingComment, SRAttachedComment
+from context        import PartialContext, FullContext
+from dropdown       import SRDropdownValue, SRDropdownKind
+from monitor        import SRMonitor
+from vars_lists     import SRVariable, SRSpriteOnlyVariable, SRAllSpriteVariable, SRCloudVariable
+from vars_lists     import SRList, SRSpriteOnlyList, SRAllSpriteList
 
 class FRTarget(PypenguinClass):
     _grepr = True
@@ -114,7 +115,7 @@ class FRTarget(PypenguinClass):
             elif isinstance(new_comment, SRAttachedComment):
                 attached_comments[comment_id] = new_comment
 
-        blocks = copy.deepcopy(self.blocks)
+        blocks = deepcopy(self.blocks)
         for block_reference, block in blocks.items():
             if isinstance(block, tuple):
                 blocks[block_reference] = FRBlock.from_tuple(block, parent_id=None)

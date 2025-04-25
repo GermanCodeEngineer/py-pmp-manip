@@ -1,11 +1,13 @@
 from typing import Any, TYPE_CHECKING
 
-from utility import PypenguinClass, PypenguinEnum, grepr
-from utility import AA_TYPE, AA_JSON_COMPATIBLE, InvalidDropdownValueError
-from context import PartialContext
+from utility     import PypenguinClass, PypenguinEnum, grepr
+from utility     import AA_TYPE, AA_JSON_COMPATIBLE, InvalidDropdownValueError
+from opcode_info import DropdownType
+
+from core.context import PartialContext
+
 if TYPE_CHECKING:
-    from block import SRInputValue
-    from block_info import DropdownType
+    from core.block import SRInputValue
 
 class SRDropdownKind(PypenguinEnum):
     STANDARD       =  0
@@ -27,6 +29,7 @@ class SRDropdownKind(PypenguinEnum):
 
     FALLBACK       = 13
 
+
 class SRDropdownValue(PypenguinClass):
     _grepr = True
     _grepr_fields = ["kind", "value"]
@@ -37,6 +40,12 @@ class SRDropdownValue(PypenguinClass):
     def __init__(self, kind: SRDropdownKind, value: Any):
         self.kind  = kind
         self.value = value
+
+    def __eq__(self, other) -> bool:
+        if isinstance(other, tuple) and (len(other) == 2):
+            if (other[0] == self.kind.name) and (other[1] == self.value):
+                return True
+        return super().__eq__(other)
 
     def validate(self, path: list):
         AA_TYPE(self, path, "kind", SRDropdownKind)
@@ -56,7 +65,6 @@ class SRDropdownValue(PypenguinClass):
                 "".join(["\n- "+repr(value) for value in possible_values])
             )
         
-        from block_info import DropdownType
         # TODO: get rid of these special cases
         match dropdown_type:
             case DropdownType.BROADCAST:

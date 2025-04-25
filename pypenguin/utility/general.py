@@ -65,7 +65,7 @@ def grepr(obj, annotate_fields=True, include_attributes=False, *, indent=4):
 # Files
 import zipfile
 import os
-#from utility.errors import PathError
+from utility.errors import PathError
 from typing import Hashable
 
 def read_file_of_zip(zip_path, file_path):
@@ -137,9 +137,13 @@ class DualKeyDict(Generic[K1, K2, V]):
     _grepr = True
     _grepr_fields = ["_values", "_k2_to_k1"]
     
-    def __init__(self) -> None:
-        self._values: dict[K1, V] = {}
+    def __init__(self, data: dict[tuple[K1, K2], V] | None, /) -> None:
+        self._values  : dict[K1, V ] = {}
         self._k2_to_k1: dict[K2, K1] = {}
+        if data is not None:
+            for keys, value in data.items():
+                key1, key2 = keys
+                self.set(key1, key2, value)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, DualKeyDict):
@@ -199,8 +203,12 @@ class DualKeyDict(Generic[K1, K2, V]):
         return self._values.items()
 
     def items_key2(self) -> Iterator[tuple[K2, V]]:
-        for key2 in self._k2_to_k1:
+        for key2 in self._k2_to_k1.keys():
             yield (key2, self.get_by_key2(key2))
+    
+    def items_key1_key2(self) -> Iterator[tuple[K1, K2, V]]:
+        for key2, key1 in self._k2_to_k1.items():
+            yield (key1, key2, self.get_by_key1(key1))
 
 # Data Functions
 

@@ -1,17 +1,18 @@
 import json
 
-from utility               import read_file_of_zip, ThanksError, PypenguinClass, PypenguinEnum
-from utility               import AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_RANGE, SameNameTwiceError
-from target                import FRTarget, FRStage, FRSprite, SRStage, SRSprite
-from monitor               import FRMonitor, SRMonitor
-from meta                  import FRMeta
-from config                import SpecialCaseHandler
-from block_info            import OpcodeInfoApi
-from vars_lists            import SRAllSpriteVariable, SRAllSpriteList
-from extension             import SRExtension, SRCustomExtension, SRBuiltinExtension
-from tts                   import TextToSpeechLanguage
-from context               import PartialContext
-from dropdown              import SRDropdownValue, SRDropdownKind
+from utility     import read_file_of_zip, ThanksError, PypenguinClass, PypenguinEnum
+from utility     import AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_RANGE, SameNameTwiceError
+from opcode_info import OpcodeInfoApi
+from config      import SpecialCaseHandler
+
+from core.context    import PartialContext
+from core.dropdown   import SRDropdownValue, SRDropdownKind
+from core.extension  import SRExtension, SRCustomExtension, SRBuiltinExtension
+from core.meta       import FRMeta
+from core.monitor    import FRMonitor, SRMonitor
+from core.target     import FRTarget, FRStage, FRSprite, SRStage, SRSprite
+from core.tts        import TextToSpeechLanguage
+from core.vars_lists import SRAllSpriteVariable, SRAllSpriteList
 
 class FRProject(PypenguinClass): 
     """The first representation (FR) of the project data tree. Its data is equivalent to the data stored in a .pmp file."""
@@ -336,21 +337,3 @@ class SRProject(PypenguinClass):
                 context  = global_context,
             )
         # TODO: ensure no double used names anywhere
-
-
-#file_path = "../assets/from_online/my 1st platformer.pmp"
-file_path = "../assets/from_online/dumb example.pmp"
-#file_path = "../assets/from_online/color.pmp"
-#file_path = "../assets/input_modes.pmp"
-#file_path = "../assets/monitors.pmp"
-
-project = FRProject.from_pmp_file(file_path)
-
-from config import config
-from block_info import info_api
-
-new_project = project.step(config=config, info_api=info_api)
-print(new_project)
-
-new_project.validate(info_api=info_api)
-

@@ -1,10 +1,11 @@
-import json
-from abc import ABC, abstractmethod
+from json   import loads
+from abc    import ABC, abstractmethod
 from typing import Any
 
-from custom_block import SRCustomBlockOpcode, SRCustomBlockOptype
-from config import FRtoTRApi
+from config  import FRtoTRApi
 from utility import PypenguinClass
+
+from core.custom_block import SRCustomBlockOpcode, SRCustomBlockOptype
 
 class FRMutation(PypenguinClass, ABC):
     _grepr = True
@@ -44,7 +45,7 @@ class FRCustomArgumentMutation(FRMutation):
         return cls(
             tag_name = data["tagName" ],
             children = data["children"],
-            color = tuple(json.loads(data["color"])),
+            color = tuple(loads(data["color"])),
         )
     
     def store_argument_name(self, name: str) -> None:
@@ -99,18 +100,18 @@ class FRCustomBlockMutation(FRMutation):
         if isinstance(data["warp"], bool):
             warp = data["warp"]
         elif isinstance(data["warp"], str):
-            warp = json.loads(data["warp"])
+            warp = loads(data["warp"])
         else: raise ValueError()
         return cls(
             proccode          = data["proccode"],
-            argument_ids      = json.loads(data["argumentids"     ]),
-            argument_names    = json.loads(data["argumentnames"   ]),
-            argument_defaults = json.loads(data["argumentdefaults"]),
+            argument_ids      = loads(data["argumentids"     ]),
+            argument_names    = loads(data["argumentnames"   ]),
+            argument_defaults = loads(data["argumentdefaults"]),
             warp              = warp,
-            returns           = json.loads(data["returns"]),
-            edited            = json.loads(data["edited" ]),
-            optype            = json.loads(data["optype" ]) if "optype" in data else "statement",
-            color       = tuple(json.loads(data["color"  ])),
+            returns           = loads(data["returns"]),
+            edited            = loads(data["edited" ]),
+            optype            = loads(data["optype" ]) if "optype" in data else "statement",
+            color       = tuple(loads(data["color"  ])),
         )
     
     def step(self, block_api: FRtoTRApi) -> "SRCustomBlockMutation":
@@ -160,16 +161,16 @@ class FRCustomCallMutation(FRMutation):
         if isinstance(data["warp"], bool):
             warp = data["warp"]
         elif isinstance(data["warp"], str):
-            warp = json.loads(data["warp"])
+            warp = loads(data["warp"])
         else: raise ValueError()
         return cls(
             proccode     = data["proccode"],
-            argument_ids = json.loads(data["argumentids"     ]),
+            argument_ids = loads(data["argumentids"     ]),
             warp         = warp,
-            returns      = json.loads(data["returns"]),
-            edited       = json.loads(data["edited" ]),
-            optype       = json.loads(data["optype" ]) if "optype" in data else "statement",
-            color  = tuple(json.loads(data["color"  ])),
+            returns      = loads(data["returns"]),
+            edited       = loads(data["edited" ]),
+            optype       = loads(data["optype" ]) if "optype" in data else "statement",
+            color  = tuple(loads(data["color"  ])),
         )
     
     def step(self, block_api: FRtoTRApi) -> "SRCustomBlockCallMutation":

@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING
 
-from config.basis import SpecialCaseHandler, SpecialCase, SpecialCaseType
-from utility import PypenguinClass
-from block_info import InputType, InputMode
+from config.basis  import SpecialCaseHandler, SpecialCase, SpecialCaseType
+from utility       import PypenguinClass
+from block_info    import InputType, InputMode
 from block_opcodes import *
 
 if TYPE_CHECKING:
