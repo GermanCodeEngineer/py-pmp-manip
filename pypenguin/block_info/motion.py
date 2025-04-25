@@ -1,21 +1,21 @@
 from block_info.basis import *
 
-motion = BlockInfoSet(name="motion", opcode_prefix="motion", block_infos={
-    "movesteps": BlockInfo(
+motion = CategoryOpcodesInfo(name="motion", opcode_prefix="motion", block_infos={
+    "movesteps": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="move (STEPS) steps",
         inputs={
             "STEPS": InputInfo(InputType.NUMBER, new="STEPS"),
         },
     ),
-    "movebacksteps": BlockInfo(
+    "movebacksteps": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="move back (STEPS) steps",
         inputs={
             "STEPS": InputInfo(InputType.NUMBER, new="STEPS"),
         },
     ),
-    "moveupdownsteps": BlockInfo(
+    "moveupdownsteps": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="move [DIRECTION] (STEPS) steps",
         inputs={
@@ -25,28 +25,28 @@ motion = BlockInfoSet(name="motion", opcode_prefix="motion", block_infos={
             "DIRECTION": DropdownInfo(DropdownType.UP_DOWN, new="DIRECTION"),
         },
     ),
-    "turnright": BlockInfo(
+    "turnright": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="turn clockwise (DEGREES) degrees",
         inputs={
             "DEGREES": InputInfo(InputType.NUMBER, new="DEGREES"),
         },
     ),
-    "turnleft": BlockInfo(
+    "turnleft": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="turn counterclockwise (DEGREES) degrees",
         inputs={
             "DEGREES": InputInfo(InputType.NUMBER, new="DEGREES"),
         },
     ),
-    "goto": BlockInfo(
+    "goto": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="go to ([TARGET])",
         inputs={
             "TO": InputInfo(InputType.RANDOM_MOUSE_OR_OTHER_SPRITE, new="TARGET", menu=MenuInfo("motion_goto_menu", inner="TO")),
         },
     ),
-    "gotoxy": BlockInfo(
+    "gotoxy": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="go to x: (X) y: (Y)",
         inputs={
@@ -54,7 +54,7 @@ motion = BlockInfoSet(name="motion", opcode_prefix="motion", block_infos={
             "Y": InputInfo(InputType.NUMBER, new="Y"),
         },
     ),
-    "changebyxy": BlockInfo(
+    "changebyxy": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="change by x: (DX) y: (DY)",
         inputs={
@@ -62,7 +62,7 @@ motion = BlockInfoSet(name="motion", opcode_prefix="motion", block_infos={
             "DY": InputInfo(InputType.NUMBER, new="DY"),
         },
     ),
-    "glideto": BlockInfo(
+    "glideto": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="glide (SECONDS) secs to ([TARGET])",
         inputs={
@@ -70,7 +70,7 @@ motion = BlockInfoSet(name="motion", opcode_prefix="motion", block_infos={
             "TO": InputInfo(InputType.RANDOM_MOUSE_OR_OTHER_SPRITE, new="TARGET", menu=MenuInfo("motion_glideto_menu", inner="TO")),
         },
     ),
-    "glidesecstoxy": BlockInfo(
+    "glidesecstoxy": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="glide (SECONDS) secs to x: (X) y: (Y)",
         inputs={
@@ -79,21 +79,21 @@ motion = BlockInfoSet(name="motion", opcode_prefix="motion", block_infos={
             "Y": InputInfo(InputType.NUMBER, new="Y"),
         },
     ),
-    "pointindirection": BlockInfo(
+    "pointindirection": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="point in direction (DIRECTION)",
         inputs={
             "DIRECTION": InputInfo(InputType.DIRECTION, new="DIRECTION"),
         },
     ),
-    "pointtowards": BlockInfo(
+    "pointtowards": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="point towards ([TARGET])",
         inputs={
             "TOWARDS": InputInfo(InputType.RANDOM_MOUSE_OR_OTHER_SPRITE, new="TARGET", menu=MenuInfo("motion_glideto_menu", inner="TOWARDS")),
         },
     ),
-    "pointtowardsxy": BlockInfo(
+    "pointtowardsxy": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="point towards x: (X) y: (Y)",
         inputs={
@@ -101,74 +101,74 @@ motion = BlockInfoSet(name="motion", opcode_prefix="motion", block_infos={
             "Y": InputInfo(InputType.NUMBER, new="Y"),
         },
     ),
-    "turnaround": BlockInfo(
+    "turnaround": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="turn around",
     ),
-    "changexby": BlockInfo(
+    "changexby": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="change x by (DX)",
         inputs={
             "DX": InputInfo(InputType.NUMBER, new="DX"),
         },
     ),
-    "setx": BlockInfo(
+    "setx": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="set x to (X)",
         inputs={
             "X": InputInfo(InputType.NUMBER, new="X"),
         },
     ),
-    "changeyby": BlockInfo(
+    "changeyby": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="change y by (DY)",
         inputs={
             "DY": InputInfo(InputType.NUMBER, new="DY"),
         },
     ),
-    "sety": BlockInfo(
+    "sety": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="set y to (Y)",
         inputs={
             "Y": InputInfo(InputType.NUMBER, new="Y"),
         },
     ),
-    "ifonedgebounce": BlockInfo(
+    "ifonedgebounce": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="if on edge, bounce",
     ),
-    "ifonspritebounce": BlockInfo(
+    "ifonspritebounce": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="if touching ([TARGET]), bounce",
         inputs={
             "SPRITE": InputInfo(InputType.RANDOM_MOUSE_OR_OTHER_SPRITE, new="TARGET", menu=MenuInfo("motion_pointtowards_menu", inner="TOWARDS")),
         },
     ),
-    "setrotationstyle": BlockInfo(
+    "setrotationstyle": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="set rotation style [STYLE]",
         dropdowns={
             "STYLE": DropdownInfo(DropdownType.ROTATION_STYLE, new="STYLE"),
         },
     ),
-    "move_sprite_to_scene_side": BlockInfo(
+    "move_sprite_to_scene_side": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="move to stage [ZONE]",
         dropdowns={
             "ALIGNMENT": DropdownInfo(DropdownType.STAGE_ZONE, new="ZONE"),
         },
     ),
-    "xposition": BlockInfo(
+    "xposition": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="x position",
         can_have_monitor="True",
     ),
-    "yposition": BlockInfo(
+    "yposition": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="y position",
         can_have_monitor="True",
     ),
-    "direction": BlockInfo(
+    "direction": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="direction",
         can_have_monitor="True",

@@ -1,7 +1,7 @@
 from block_info.basis import *
 
-lists = BlockInfoSet(name="lists", opcode_prefix="data", block_infos={
-    "addtolist": BlockInfo(
+lists = CategoryOpcodesInfo(name="lists", opcode_prefix="data", block_infos={
+    "addtolist": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="add (ITEM) to [LIST]",
         inputs={
@@ -11,7 +11,7 @@ lists = BlockInfoSet(name="lists", opcode_prefix="data", block_infos={
             "LIST": DropdownInfo(DropdownType.LIST, new="LIST"),
         },
     ),
-    "deleteoflist": BlockInfo(
+    "deleteoflist": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="delete (INDEX) of [LIST]",
         inputs={
@@ -21,14 +21,14 @@ lists = BlockInfoSet(name="lists", opcode_prefix="data", block_infos={
             "LIST": DropdownInfo(DropdownType.LIST, new="LIST"),
         },
     ),
-    "deletealloflist": BlockInfo(
+    "deletealloflist": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="delete all of [LIST]",
         dropdowns={
             "LIST": DropdownInfo(DropdownType.LIST, new="LIST"),
         },
     ),
-    "shiftlist": BlockInfo(
+    "shiftlist": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="shift [LIST] by (INDEX)",
         inputs={
@@ -38,7 +38,7 @@ lists = BlockInfoSet(name="lists", opcode_prefix="data", block_infos={
             "LIST": DropdownInfo(DropdownType.LIST, new="LIST"),
         },
     ),
-    "insertatlist": BlockInfo(
+    "insertatlist": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="insert (ITEM) at (INDEX) of [LIST]",
         inputs={
@@ -49,7 +49,7 @@ lists = BlockInfoSet(name="lists", opcode_prefix="data", block_infos={
             "LIST": DropdownInfo(DropdownType.LIST, new="LIST"),
         },
     ),
-    "replaceitemoflist": BlockInfo(
+    "replaceitemoflist": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="replace item (INDEX) of [LIST] with (ITEM)",
         inputs={
@@ -60,7 +60,7 @@ lists = BlockInfoSet(name="lists", opcode_prefix="data", block_infos={
             "LIST": DropdownInfo(DropdownType.LIST, new="LIST"),
         },
     ),
-    "listforeachitem": BlockInfo(
+    "listforeachitem": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="For each item [VARIABLE] in [LIST] {BODY}",
         inputs={
@@ -71,7 +71,7 @@ lists = BlockInfoSet(name="lists", opcode_prefix="data", block_infos={
             "LIST": DropdownInfo(DropdownType.LIST, new="LIST"),
         },
     ),
-    "listforeachnum": BlockInfo(
+    "listforeachnum": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="For each item # [VARIABLE] in [LIST] {BODY}",
         inputs={
@@ -82,7 +82,7 @@ lists = BlockInfoSet(name="lists", opcode_prefix="data", block_infos={
             "LIST": DropdownInfo(DropdownType.LIST, new="LIST"),
         },
     ),
-    "itemoflist": BlockInfo(
+    "itemoflist": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="item (INDEX) of [LIST]",
         inputs={
@@ -92,7 +92,7 @@ lists = BlockInfoSet(name="lists", opcode_prefix="data", block_infos={
             "LIST": DropdownInfo(DropdownType.LIST, new="LIST"),
         },
     ),
-    "itemnumoflist": BlockInfo(
+    "itemnumoflist": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="item # of (ITEM) in [LIST]",
         inputs={
@@ -102,7 +102,7 @@ lists = BlockInfoSet(name="lists", opcode_prefix="data", block_infos={
             "LIST": DropdownInfo(DropdownType.LIST, new="LIST"),
         },
     ),
-    "amountinlist": BlockInfo(
+    "amountinlist": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="amount of (VALUE) of [LIST]",
         inputs={
@@ -112,14 +112,14 @@ lists = BlockInfoSet(name="lists", opcode_prefix="data", block_infos={
             "LIST": DropdownInfo(DropdownType.LIST, new="LIST"),
         },
     ),
-    "lengthoflist": BlockInfo(
+    "lengthoflist": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="length of [LIST]",
         dropdowns={
             "LIST": DropdownInfo(DropdownType.LIST, new="LIST"),
         },
     ),
-    "listcontainsitem": BlockInfo(
+    "listcontainsitem": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="[LIST] contains (ITEM) ?",
         inputs={
@@ -129,7 +129,7 @@ lists = BlockInfoSet(name="lists", opcode_prefix="data", block_infos={
             "LIST": DropdownInfo(DropdownType.LIST, new="LIST"),
         },
     ),
-    "itemexistslist": BlockInfo(
+    "itemexistslist": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="item (INDEX) exists in [LIST] ?",
         inputs={
@@ -139,21 +139,21 @@ lists = BlockInfoSet(name="lists", opcode_prefix="data", block_infos={
             "LIST": DropdownInfo(DropdownType.LIST, new="LIST"),
         },
     ),
-    "listisempty": BlockInfo(
+    "listisempty": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="is [LIST] empty?",
         dropdowns={
             "LIST": DropdownInfo(DropdownType.LIST, new="LIST"),
         },
     ),
-    "reverselist": BlockInfo(
+    "reverselist": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="reverse [LIST]",
         dropdowns={
             "LIST": DropdownInfo(DropdownType.LIST, new="LIST"),
         },
     ),
-    "arraylist": BlockInfo(
+    "arraylist": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="set [LIST] to array (VALUE)",
         inputs={
@@ -163,21 +163,21 @@ lists = BlockInfoSet(name="lists", opcode_prefix="data", block_infos={
             "LIST": DropdownInfo(DropdownType.LIST, new="LIST"),
         },
     ),
-    "listarray": BlockInfo(
+    "listarray": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="get list [LIST] as an array",
         dropdowns={
             "LIST": DropdownInfo(DropdownType.LIST, new="LIST"),
         },
     ),
-    "showlist": BlockInfo(
+    "showlist": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="show list [LIST]",
         dropdowns={
             "LIST": DropdownInfo(DropdownType.LIST, new="LIST"),
         },
     ),
-    "hidelist": BlockInfo(
+    "hidelist": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="hide list [LIST]",
         dropdowns={

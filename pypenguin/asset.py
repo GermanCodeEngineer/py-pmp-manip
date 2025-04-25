@@ -122,7 +122,7 @@ class SRCostume(PypenguinClass):
         AA_TYPE(self, path, "name", str) # TODO: check if valid file name
         AA_TYPE(self, path, "file_extension", str)
         AA_COORD_PAIR(self, path, "rotation_center")
-        AA_TYPE(self, path, "bitmap_resolution")
+        AA_TYPE(self, path, "bitmap_resolution", int)
         AA_MIN(self, path, "bitmap_resolution", min=1)
 
 class SRSound(PypenguinClass):

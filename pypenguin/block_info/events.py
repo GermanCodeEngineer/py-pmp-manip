@@ -1,62 +1,62 @@
 from block_info.basis import *
 
-events = BlockInfoSet(name="events", opcode_prefix="event", block_infos={
-    "whenflagclicked": BlockInfo(
+events = CategoryOpcodesInfo(name="events", opcode_prefix="event", block_infos={
+    "whenflagclicked": OpcodeInfo(
         block_type=BlockType.HAT,
         new_opcode="when green flag clicked",
     ),
-    "whenstopclicked": BlockInfo(
+    "whenstopclicked": OpcodeInfo(
         block_type=BlockType.HAT,
         new_opcode="when stop clicked",
     ),
-    "always": BlockInfo(
+    "always": OpcodeInfo(
         block_type=BlockType.HAT,
         new_opcode="always",
     ),
-    "whenanything": BlockInfo(
+    "whenanything": OpcodeInfo(
         block_type=BlockType.HAT,
         new_opcode="when <CONDITION>",
         inputs={
             "ANYTHING": InputInfo(InputType.BOOLEAN, new="CONDITION"),
         },
     ),
-    "whenkeypressed": BlockInfo(
+    "whenkeypressed": OpcodeInfo(
         block_type=BlockType.HAT,
         new_opcode="when [KEY] key pressed",
         dropdowns={
             "KEY_OPTION": DropdownInfo(DropdownType.KEY, new="KEY"),
         },
     ),
-    "whenkeyhit": BlockInfo(
+    "whenkeyhit": OpcodeInfo(
         block_type=BlockType.HAT,
         new_opcode="when [KEY] key hit",
         dropdowns={
             "KEY_OPTION": DropdownInfo(DropdownType.KEY, new="KEY"),
         },
     ),
-    "whenmousescrolled": BlockInfo(
+    "whenmousescrolled": OpcodeInfo(
         block_type=BlockType.HAT,
         new_opcode="when mouse is scrolled [DIRECTION]",
         dropdowns={
             "KEY_OPTION": DropdownInfo(DropdownType.UP_DOWN, new="DIRECTION"),
         },
     ),
-    "whenthisspriteclicked": BlockInfo(
+    "whenthisspriteclicked": OpcodeInfo(
         block_type=BlockType.HAT,
         new_opcode="when this sprite clicked",
     ),
-    "whenstageclicked": BlockInfo(
+    "whenstageclicked": OpcodeInfo(
         block_type=BlockType.HAT,
         new_opcode="when stage clicked",
     ),
-    "whenbackdropswitchesto": BlockInfo(
+    "whenbackdropswitchesto": OpcodeInfo(
         block_type=BlockType.HAT,
         new_opcode="when backdrop switches to [BACKDROP]",
         dropdowns={
             "BACKDROP": DropdownInfo(DropdownType.BACKDROP, new="BACKDROP"),
         },
     ),
-    "whengreaterthan": BlockInfo(
+    "whengreaterthan": OpcodeInfo(
         block_type=BlockType.HAT,
         new_opcode="when [OPTION] > (VALUE)",
         inputs={
@@ -66,21 +66,21 @@ events = BlockInfoSet(name="events", opcode_prefix="event", block_infos={
             "WHENGREATERTHANMENU": DropdownInfo(DropdownType.LOUDNESS_TIMER, new="OPTION"),
         },
     ),
-    "whenbroadcastreceived": BlockInfo(
+    "whenbroadcastreceived": OpcodeInfo(
         block_type=BlockType.HAT,
         new_opcode="when I receive [MESSAGE]",
         dropdowns={
             "BROADCAST_OPTION": DropdownInfo(DropdownType.BROADCAST, new="MESSAGE"),
         },
     ),
-    "broadcast": BlockInfo(
+    "broadcast": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="broadcast ([MESSAGE])",
         inputs={
             "BROADCAST_INPUT": InputInfo(InputType.BROADCAST, new="MESSAGE"),
         },
     ),
-    "broadcastandwait": BlockInfo(
+    "broadcastandwait": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="broadcast ([MESSAGE]) and wait",
         inputs={

@@ -13,7 +13,6 @@ class SRCustomBlockOpcode(PypenguinClass):
             name: SRCustomBlockArgumentType.get_by_default(default)
             for name, default in zip(argument_names, argument_defaults)
         }
-        
 
 class SRCustomBlockArgumentType(PypenguinEnum):
     @staticmethod
@@ -39,6 +38,17 @@ class SRCustomBlockOptype(PypenguinEnum):
             case "string"   : return SRCustomBlockOptype.STRING_REPORTER
             case "number"   : return SRCustomBlockOptype.NUMBER_REPORTER
             case "boolean"  : return SRCustomBlockOptype.BOOLEAN_REPORTER
+            case _: raise ValueError()
+
+    @property
+    def is_reporter(self):
+        match self:
+            case SRCustomBlockOptype.STATEMENT | SRCustomBlockOptype.ENDING_STATEMENT:
+                return False
+            case (SRCustomBlockOptype.STRING_REPORTER 
+                | SRCustomBlockOptype.NUMBER_REPORTER
+                | SRCustomBlockOptype.BOOLEAN_REPORTER):
+                return True
             case _: raise ValueError()
 
     STATEMENT         = 0

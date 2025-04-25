@@ -6,22 +6,23 @@ from context import PartialContext, FullContext
 
 if TYPE_CHECKING:
     from block import SRBlock, SRInputValue
+    from block_mutation import SRBlockMutation
 
-class BlockInfoSet:
+class CategoryOpcodesInfo:
     _grepr = True
     _grepr_fields = ["name", "opcode_prefix", "alt_opcode_prefixes", "block_infos"]
     
     name: str
     opcode_prefix: str
     alt_opcode_prefixes: list[str]
-    block_infos: dict[str, "BlockInfo"]
+    block_infos: dict[str, "OpcodeInfo"]
     get_old_opcode_handler: Callable[[str, "SRBlock"], str | None] | None
     
     def __init__(self, 
         name: str, 
         opcode_prefix: str, 
         alt_opcode_prefixes: list[str] | None = None,
-        block_infos: dict[str, "BlockInfo"] | None = None,
+        block_infos: dict[str, "OpcodeInfo"] | None = None,
         get_old_opcode_handler: Callable[[str, "SRBlock"], str | None] | None = None,
     ):
         self.name                   = name
@@ -39,23 +40,25 @@ class BlockInfoSet:
     def uses_prefix(self, prefix: str) -> bool:
         return prefix in self.get_all_possible_prefixes()
     
-    def add_block(self, opcode: str, block_info: "BlockInfo"):
+    def add_block(self, opcode: str, block_info: "OpcodeInfo"):
         if block_info.alt_opcode_prefix is not None:
             if block_info.alt_opcode_prefix not in self.alt_opcode_prefixes:
                 raise ValueError(f"Alternate opcode prefix {repr(block_info.alt_opcode_prefix)} was never added.")
         self.block_infos[opcode] = block_info
     
-    def get_info_by_opcode(self, opcode: str, default_none: bool = False) -> "BlockInfo | None":
+    def get_info_by_opcode(self, opcode: str, default_none: bool = False) -> "OpcodeInfo | None":
+        print(self.name, "* gio", opcode, self.block_infos.keys())
         if opcode in self.block_infos:
             return self.block_infos[opcode]
         if default_none:
             return None
         raise ValueError(f"Couldn't find Block Info for opcode {repr(opcode)}")
 
-    def get_info_by_new_opcode(self, new_opcode: str, default_none: bool = False) -> "BlockInfo":
-        opcode = self.get_old_opcode(new_opcode=new_opcode, block=None, default_none=True)
+    def get_info_by_new_opcode(self, new_opcode: str, mutation: "SRMutation | None", default_none: bool = False) -> "OpcodeInfo":
+        opcode = self.get_old_opcode(new_opcode=new_opcode, mutation=mutation, default_none=True)
         if (opcode is None) and default_none:
             return None
+        print(self.name, "#", opcode)
         if opcode is not None:
             block_info = self.get_info_by_opcode(opcode=opcode, default_none=default_none)
             if block_info is not None:
@@ -64,9 +67,9 @@ class BlockInfoSet:
                 return None
         raise ValueError(f"Couldn't find Block Info for new opcode {repr(new_opcode)}")
 
-    def get_old_opcode(self, new_opcode: str, block: "SRBlock | None", default_none: bool = False) -> str | None:
+    def get_old_opcode(self, new_opcode: str, mutation: "SRMutation | None", default_none: bool = False) -> str | None:
         if self.get_old_opcode_handler is not None:
-            result = self.get_old_opcode_handler(new_opcode, block)
+            result = self.get_old_opcode_handler(new_opcode, mutation)
             if isinstance(result, str):
                 return result
             elif result is None:
@@ -80,7 +83,7 @@ class BlockInfoSet:
             return None
         raise ValueError(f"Old opcode for {repr(new_opcode)} couln't be found.")
 
-class BlockInfo:
+class OpcodeInfo:
     _grepr = True
     _grepr_fields = ["block_type", "new_opcode", "inputs", "dropdowns", "can_have_monitor"]
     
@@ -136,6 +139,9 @@ class BlockInfo:
 
     def get_new_dropdown_id(self, dropdown_id: str) -> str:
         return self.dropdowns[dropdown_id].new
+    
+    def get_new_input_ids(self) -> list[str]:
+        return [self.get_new_input_id(input_id) for input_id in self.inputs.keys()]
     
     def get_new_dropdown_ids(self) -> list[str]:
         return [self.get_new_dropdown_id(dropdown_id) for dropdown_id in self.dropdowns.keys()]

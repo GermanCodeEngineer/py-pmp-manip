@@ -6,7 +6,7 @@ from target                import FRTarget, FRStage, FRSprite, SRStage, SRSprite
 from monitor               import FRMonitor, SRMonitor
 from meta                  import FRMeta
 from config                import SpecialCaseHandler
-from block_info            import BlockInfoApi
+from block_info            import OpcodeInfoApi
 from vars_lists            import SRAllSpriteVariable, SRAllSpriteList
 from extension             import SRExtension, SRCustomExtension, SRBuiltinExtension
 from tts                   import TextToSpeechLanguage
@@ -101,7 +101,7 @@ class FRProject(PypenguinClass):
         #}
         return cls.from_data(project_data)
 
-    def step(self, config: SpecialCaseHandler, info_api: BlockInfoApi):
+    def step(self, config: SpecialCaseHandler, info_api: OpcodeInfoApi):
         new_sprites: list[SRSprite] = []
         for target in self.targets:
             if  target.is_stage:
@@ -250,7 +250,7 @@ class SRProject(PypenguinClass):
                     raise SameNameTwiceError(other_path, current_path, "Two lists mustn't have the same name")
                 defined_lists[list_.name] = current_path
 
-    def validate(self, info_api: BlockInfoApi) -> None:
+    def validate(self, info_api: OpcodeInfoApi) -> None:
         """
         Checks wether a SRProject is valid and raises a subclass of ValidationError if not.
         """

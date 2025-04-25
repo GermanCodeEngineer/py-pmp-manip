@@ -1,14 +1,14 @@
 from block_info.basis import *
 
-sensing = BlockInfoSet(name="sensing", opcode_prefix="sensing", block_infos={
-    "touchingobject": BlockInfo(
+sensing = CategoryOpcodesInfo(name="sensing", opcode_prefix="sensing", block_infos={
+    "touchingobject": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="touching ([OBJECT]) ?",
         inputs={
             "TOUCHINGOBJECTMENU": InputInfo(InputType.MOUSE_EDGE_OR_OTHER_SPRITE, new="OBJECT", menu=MenuInfo("sensing_touchingobjectmenu", inner="TOUCHINGOBJECTMENU")),
         },
     ),
-    "objecttouchingobject": BlockInfo(
+    "objecttouchingobject": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="([OBJECT]) touching ([SPRITE]) ?",
         inputs={
@@ -16,7 +16,7 @@ sensing = BlockInfoSet(name="sensing", opcode_prefix="sensing", block_infos={
             "SPRITETOUCHINGOBJECTMENU": InputInfo(InputType.MYSELF_OR_OTHER_SPRITE, new="SPRITE", menu=MenuInfo("sensing_touchingobjectmenusprites", inner="SPRITETOUCHINGOBJECTMENU")),
         },
     ),
-    "objecttouchingclonesprite": BlockInfo(
+    "objecttouchingclonesprite": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="([OBJECT]) touching clone of ([SPRITE]) ?",
         inputs={
@@ -24,14 +24,14 @@ sensing = BlockInfoSet(name="sensing", opcode_prefix="sensing", block_infos={
             "SPRITETOUCHINGOBJECTMENU": InputInfo(InputType.MYSELF_OR_OTHER_SPRITE, new="SPRITE", menu=MenuInfo("sensing_touchingobjectmenusprites", inner="SPRITETOUCHINGOBJECTMENU")),
         },
     ),
-    "touchingcolor": BlockInfo(
+    "touchingcolor": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="touching color (COLOR) ?",
         inputs={
             "COLOR": InputInfo(InputType.COLOR, new="COLOR"),
         },
     ),
-    "coloristouchingcolor": BlockInfo(
+    "coloristouchingcolor": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="color (COLOR1) is touching color (COLOR2) ?",
         inputs={
@@ -39,7 +39,7 @@ sensing = BlockInfoSet(name="sensing", opcode_prefix="sensing", block_infos={
             "COLOR2": InputInfo(InputType.COLOR, new="COLOR2"),
         },
     ),
-    "getxyoftouchingsprite": BlockInfo(
+    "getxyoftouchingsprite": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="[COORDINATE] of touching ([OBJECT]) point",
         inputs={
@@ -49,14 +49,14 @@ sensing = BlockInfoSet(name="sensing", opcode_prefix="sensing", block_infos={
             "XY": DropdownInfo(DropdownType.X_OR_Y, new="COORDINATE"),
         },
     ),
-    "distanceto": BlockInfo(
+    "distanceto": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="distance to ([OBJECT])",
         inputs={
             "DISTANCETOMENU": InputInfo(InputType.MOUSE_OR_OTHER_SPRITE, new="OBJECT", menu=MenuInfo("sensing_distancetomenu", inner="DISTANCETOMENU")),
         },
     ),
-    "distanceTo": BlockInfo(
+    "distanceTo": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="distance from (X1) (Y1) to (X2) (Y2)",
         inputs={
@@ -66,7 +66,7 @@ sensing = BlockInfoSet(name="sensing", opcode_prefix="sensing", block_infos={
             "y2": InputInfo(InputType.TEXT, new="Y2"),
         },
     ),
-    "directionTo": BlockInfo(
+    "directionTo": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="direction to (X1) (Y1) from (X2) (Y2)",
         inputs={
@@ -76,117 +76,117 @@ sensing = BlockInfoSet(name="sensing", opcode_prefix="sensing", block_infos={
             "y1": InputInfo(InputType.TEXT, new="Y2"),
         },
     ),
-    "askandwait": BlockInfo(
+    "askandwait": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="ask (QUESTION) and wait",
         inputs={
             "QUESTION": InputInfo(InputType.TEXT, new="QUESTION"),
         },
     ),
-    "answer": BlockInfo(
+    "answer": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="answer",
         can_have_monitor="True",
     ),
-    "thing_is_text": BlockInfo(
+    "thing_is_text": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="(STRING) is text?",
         inputs={
             "TEXT1": InputInfo(InputType.TEXT, new="STRING"),
         },
     ),
-    "thing_is_number": BlockInfo(
+    "thing_is_number": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="(STRING) is number?",
         inputs={
             "TEXT1": InputInfo(InputType.TEXT, new="STRING"),
         },
     ),
-    "keypressed": BlockInfo(
+    "keypressed": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="key ([KEY]) pressed?",
         inputs={
             "KEY_OPTION": InputInfo(InputType.KEY, new="KEY", menu=MenuInfo("sensing_keyoptions", inner="KEY_OPTION")),
         },
     ),
-    "keyhit": BlockInfo(
+    "keyhit": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="key ([KEY]) hit?",
         inputs={
             "KEY_OPTION": InputInfo(InputType.KEY, new="KEY", menu=MenuInfo("sensing_keyoptions", inner="KEY_OPTION")),
         },
     ),
-    "mousescrolling": BlockInfo(
+    "mousescrolling": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="is mouse scrolling ([DIRECTION]) ?",
         inputs={
             "SCROLL_OPTION": InputInfo(InputType.UP_DOWN, new="DIRECTION", menu=MenuInfo("sensing_scrolldirections", inner="SCROLL_OPTION")),
         },
     ),
-    "mousedown": BlockInfo(
+    "mousedown": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="mouse down?",
         can_have_monitor="True",
     ),
-    "mouseclicked": BlockInfo(
+    "mouseclicked": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="mouse clicked?",
         can_have_monitor="True",
     ),
-    "mousex": BlockInfo(
+    "mousex": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="mouse x",
         can_have_monitor="True",
     ),
-    "mousey": BlockInfo(
+    "mousey": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="mouse y",
         can_have_monitor="True",
     ),
-    "setclipboard": BlockInfo(
+    "setclipboard": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="add (TEXT) to clipboard",
         inputs={
             "ITEM": InputInfo(InputType.TEXT, new="TEXT"),
         },
     ),
-    "getclipboard": BlockInfo(
+    "getclipboard": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="clipboard item",
         can_have_monitor="True",
     ),
-    "setdragmode": BlockInfo(
+    "setdragmode": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="set drag mode [MODE]",
         dropdowns={
             "DRAG_MODE": DropdownInfo(DropdownType.DRAG_MODE, new="MODE"),
         },
     ),
-    "getdragmode": BlockInfo(
+    "getdragmode": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="draggable?",
         can_have_monitor="True",
     ),
-    "loudness": BlockInfo(
+    "loudness": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="loudness",
         can_have_monitor="True",
     ),
-    "loud": BlockInfo(
+    "loud": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="loud?",
         can_have_monitor="True",
     ),
-    "resettimer": BlockInfo(
+    "resettimer": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="reset timer",
     ),
-    "timer": BlockInfo(
+    "timer": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="timer",
         can_have_monitor="True",
     ),
-    "set_of": BlockInfo(
+    "set_of": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="set [PROPERTY] of ([TARGET]) to (VALUE)",
         inputs={
@@ -197,7 +197,7 @@ sensing = BlockInfoSet(name="sensing", opcode_prefix="sensing", block_infos={
             "PROPERTY": DropdownInfo(DropdownType.MUTABLE_SPRITE_PROPERTY, new="PROPERTY"),
         },
     ),
-    "of": BlockInfo(
+    "of": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="[PROPERTY] of ([TARGET])",
         inputs={
@@ -207,7 +207,7 @@ sensing = BlockInfoSet(name="sensing", opcode_prefix="sensing", block_infos={
             "PROPERTY": DropdownInfo(DropdownType.READABLE_SPRITE_PROPERTY, new="PROPERTY"),
         },
     ),
-    "current": BlockInfo(
+    "current": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="current [PROPERTY]",
         can_have_monitor="True",
@@ -215,49 +215,49 @@ sensing = BlockInfoSet(name="sensing", opcode_prefix="sensing", block_infos={
             "CURRENTMENU": DropdownInfo(DropdownType.TIME_PROPERTY, new="PROPERTY"),
         },
     ),
-    "dayssince2000": BlockInfo(
+    "dayssince2000": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="days since 2000",
         can_have_monitor="True",
     ),
-    "mobile": BlockInfo(
+    "mobile": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="mobile?",
     ),
-    "fingerdown": BlockInfo(
+    "fingerdown": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="finger ([INDEX]) down?",
         inputs={
             "FINGER_OPTION": InputInfo(InputType.FINGER_INDEX, new="INDEX", menu=MenuInfo("sensing_fingeroptions", inner="FINGER_OPTION")),
         },
     ),
-    "fingertapped": BlockInfo(
+    "fingertapped": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="finger ([INDEX]) tapped?",
         inputs={
             "FINGER_OPTION": InputInfo(InputType.FINGER_INDEX, new="INDEX", menu=MenuInfo("sensing_fingeroptions", inner="FINGER_OPTION")),
         },
     ),
-    "fingerx": BlockInfo(
+    "fingerx": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="finger ([INDEX]) x",
         inputs={
             "FINGER_OPTION": InputInfo(InputType.FINGER_INDEX, new="INDEX", menu=MenuInfo("sensing_fingeroptions", inner="FINGER_OPTION")),
         },
     ),
-    "fingery": BlockInfo(
+    "fingery": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="finger ([INDEX]) y",
         inputs={
             "FINGER_OPTION": InputInfo(InputType.FINGER_INDEX, new="INDEX", menu=MenuInfo("sensing_fingeroptions", inner="FINGER_OPTION")),
         },
     ),
-    "username": BlockInfo(
+    "username": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="username",
         can_have_monitor="True",
     ),
-    "loggedin": BlockInfo(
+    "loggedin": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="logged in?",
         can_have_monitor="True",

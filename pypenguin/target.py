@@ -7,7 +7,8 @@ from block      import FRBlock, TRBlock, SRScript, TRBlockReference
 from comment    import FRComment, SRFloatingComment, SRAttachedComment
 from asset      import FRCostume, FRSound, SRCostume, SRSound
 from config     import FRtoTRApi, SpecialCaseHandler
-from block_info import BlockInfoApi
+from block_info import OpcodeInfoApi
+from block_mutation import SRCustomBlockMutation
 from vars_lists import SRVariable, SRSpriteOnlyVariable, SRAllSpriteVariable, SRCloudVariable
 from vars_lists import SRList, SRSpriteOnlyList, SRAllSpriteList
 from monitor    import SRMonitor
@@ -95,7 +96,7 @@ class FRTarget(PypenguinClass):
             layer_order     = data["layerOrder"],
         )
 
-    def proto_step(self, config: SpecialCaseHandler, info_api: BlockInfoApi
+    def proto_step(self, config: SpecialCaseHandler, info_api: OpcodeInfoApi
     ) -> tuple[
         list[SRScript], 
         list[SRFloatingComment], 
@@ -282,7 +283,7 @@ class FRStage(FRTarget):
             text_to_speech_language = data["textToSpeechLanguage"],
         )
     
-    def step(self, config: SpecialCaseHandler, info_api: BlockInfoApi
+    def step(self, config: SpecialCaseHandler, info_api: OpcodeInfoApi
     ) -> tuple["SRStage", list[SRAllSpriteVariable],  list[SRAllSpriteList]]:
         (
             scripts,
@@ -401,7 +402,7 @@ class FRSprite(FRTarget):
             rotation_style  = data["rotationStyle"],
         )
 
-    def step(self, config: SpecialCaseHandler, info_api: BlockInfoApi
+    def step(self, config: SpecialCaseHandler, info_api: OpcodeInfoApi
     ) -> tuple["SRSprite", None, None]:
         (
             scripts,
@@ -460,7 +461,7 @@ class SRTarget(PypenguinClass):
         self.sounds        = sounds
         self.volume        = volume
 
-    def validate(self, path: list, info_api: BlockInfoApi) -> None:
+    def validate(self, path: list, info_api: OpcodeInfoApi) -> None:
         AA_LIST_OF_TYPE(self, path, "scripts", SRScript)
         AA_LIST_OF_TYPE(self, path, "comments", SRFloatingComment)
         AA_LIST_OF_TYPE(self, path, "costumes", SRCostume)
@@ -492,13 +493,29 @@ class SRTarget(PypenguinClass):
             defined_sounds[sound.name] = current_path
         # TODO: complete this
     
-    def validate_scripts(self, path: list, info_api: BlockInfoApi, context: PartialContext):
+    def validate_scripts(self, path: list, info_api: OpcodeInfoApi, context: PartialContext) -> None:
         context: FullContext = FullContext.from_partial(
             pc       = context,
             costumes = [SRDropdownValue(SRDropdownKind.COSTUME, costume.name) for costume in self.costumes],
             sounds   = [SRDropdownValue(SRDropdownKind.SOUND  , sound  .name) for sound   in self.sounds  ],
             is_stage = isinstance(self, SRStage),
         )
+        cb_optypes = {}
+        for i, script in enumerate(self.scripts):
+            script.validate(
+                path     = path+["scripts", i],
+                info_api = info_api,
+                context  = context,
+            )
+            cb_mutation = None
+            for j, block in enumerate(script.blocks):
+                current_path = path+["scripts", i, "blocks", j]
+                if isinstance(block.mutation, SRCustomBlockMutation):
+                    proccode = block.mutation.custom_opcode.proccode
+                    if proccode in cb_optypes:
+                        other_path = cb_optypes[proccode]
+                        raise SameNameTwiceError(other_path, current_path, "Two custom blocks mustn't have the same name(see .mutation.custom_opcode.proccode)")
+                    cb_optypes[proccode] = block.mutation.optype
         
 
 class SRStage(SRTarget):
@@ -558,7 +575,7 @@ class SRSprite(SRTarget):
         self.is_draggable          = is_draggable
         self.rotation_style        = rotation_style
         
-    def validate(self, path: list, info_api: BlockInfoApi):
+    def validate(self, path: list, info_api: OpcodeInfoApi) -> None:
         super().validate(path, info_api)
         
         AA_TYPE(self, path, "name", str)

@@ -1,13 +1,16 @@
 from typing import Any
 
-from utility               import PypenguinClass
-from block_mutation        import FRMutation, FRCustomBlockMutation, FRCustomArgumentMutation, FRCustomCallMutation
-from block_mutation        import SRMutation
-from block_opcodes         import *
-from config                import FRtoTRApi, SpecialCaseHandler, SpecialCaseType
-from block_info            import BlockInfoApi, BlockInfo, InputMode, BlockType
-from comment               import SRAttachedComment
-from dropdown              import SRDropdownValue
+from utility        import PypenguinClass
+from utility        import AA_TYPE, AA_TYPES, AA_COORD_PAIR, AA_LIST_OF_TYPE, AA_DICT_OF_TYPE
+from utility        import UnnecessaryInputError, MissingInputError, UnnecessaryDropdownError, MissingDropdownError, InvalidValueValidationError
+from block_mutation import FRMutation, FRCustomBlockMutation, FRCustomArgumentMutation, FRCustomCallMutation, SRCustomBlockMutation
+from block_mutation import SRMutation
+from block_opcodes  import *
+from config         import FRtoTRApi, SpecialCaseHandler, SpecialCaseType
+from block_info     import OpcodeInfoApi, OpcodeInfo, InputMode, BlockType
+from comment        import SRAttachedComment
+from dropdown       import SRDropdownValue
+from context        import FullContext
 
 class FRBlock(PypenguinClass):
     _grepr = True
@@ -126,7 +129,7 @@ class FRBlock(PypenguinClass):
     def step(self, 
         config: SpecialCaseHandler, 
         block_api: FRtoTRApi, 
-        info_api: BlockInfoApi, 
+        info_api: OpcodeInfoApi, 
         own_id: str
     ) -> "TRBlock":
         block_info = info_api.get_info_by_opcode(self.opcode)
@@ -174,8 +177,8 @@ class FRBlock(PypenguinClass):
     def step_inputs(self, 
         config: SpecialCaseHandler, 
         block_api: FRtoTRApi, 
-        info_api: BlockInfoApi,
-        block_info: BlockInfo,
+        info_api: OpcodeInfoApi,
+        block_info: OpcodeInfo,
         own_id: str
     ) -> dict[str, "TRInputValue"]:        
         instead_event = config.get_event(
@@ -340,7 +343,7 @@ class TRBlock(PypenguinClass):
             all_blocks: dict[str, "TRBlock"],
         #    own_reference: "TRBlockReference",
             config: SpecialCaseHandler,
-            info_api: BlockInfoApi,
+            info_api: OpcodeInfoApi,
         ) -> tuple[tuple[int|float,int|float] | None, list["SRBlock | str"]]:
         
         block_info = info_api.get_info_by_opcode(self.opcode)
@@ -527,6 +530,18 @@ class SRScript(PypenguinClass):
         self.position = position
         self.blocks   = blocks
 
+    def validate(self, path: list, info_api: OpcodeInfoApi, context: FullContext) -> None:
+        AA_COORD_PAIR(self, path, "position")
+        AA_LIST_OF_TYPE(self, path, "blocks", SRBlock)
+        
+        for i, block in enumerate(self.blocks):
+            current_path = path+["blocks", i]
+            block.validate(
+                path     = current_path,
+                info_api = info_api,
+                context  = context,
+            )
+
 class SRBlock(PypenguinClass):
     _grepr = True
     _grepr_fields = ["opcode", "inputs", "dropdowns", "comment", "mutation"]
@@ -550,6 +565,42 @@ class SRBlock(PypenguinClass):
         self.comment      = comment
         self.mutation     = mutation
     
+    def validate(self, path: list, info_api: OpcodeInfoApi, context: FullContext) -> None:
+        AA_TYPE(self, path, "opcode", str)
+        AA_DICT_OF_TYPE(self, path, "inputs"   , key_t=str, value_t=SRInputValue   )
+        AA_DICT_OF_TYPE(self, path, "dropdowns", key_t=str, value_t=SRDropdownValue)
+        AA_TYPES(self, path, "comment", (SRAttachedComment, type(None)))
+        AA_TYPES(self, path, "mutation", (SRMutation, type(None)))
+        
+        block_info = info_api.get_info_by_new_opcode(
+            self.opcode, 
+            mutation=self.mutation,
+            default_none=False, #TODO: undo
+        )
+        if block_info is None:
+            raise InvalidValueValidationError(path, f"opcode of {self.__class__.__name__} must be a defined opcode")
+        
+        new_input_ids = block_info.get_new_input_ids()
+        for new_input_id, input_value in self.inputs.items():
+            input_value.validate(
+                path     = path+["inputs", (new_input_id,)],
+                info_api = info_api,
+                context  = context,
+            )
+            if new_input_id not in new_input_ids:
+                raise UnnecessaryInputError(path, f"inputs of {self.__class__.__name__} with opcode {repr(self.opcode)} includes unnecessary input {new_input_id}")
+        for new_input_id in new_input_ids:
+            if new_input_id not in self.inputs:
+                raise MissingInputError(path, f"inputs of {self.__class__.__name__} with opcode {repr(self.opcode)} is missing input {new_input_id}")
+        
+        new_dropdown_ids = block_info.get_new_dropdown_ids()
+        for new_dropdown_id, dropdown_value in self.dropdowns.items():
+            dropdown_value.validate(path+["dropdowns", (new_dropdown_id,)])
+            if new_dropdown_id not in new_dropdown_ids:
+                raise UnnecessaryDropdownError(path, f"dropdowns of {self.__class__.__name__} with opcode {repr(self.opcode)} includes unnecessary dropdown {new_dropdown_id}")
+        for new_dropdown_id in new_dropdown_ids:
+            if new_dropdown_id not in self.dropdowns:
+                raise MissingDropdownError(path, f"dropdowns of {self.__class__.__name__} with opcode {repr(self.opcode)} is missing dropdown {new_dropdown_id}")
 
 class SRInputValue(PypenguinClass):
     _grepr = True
@@ -590,4 +641,12 @@ class SRInputValue(PypenguinClass):
         self.block    = block
         self.text     = text
         self.dropdown = dropdown
-
+    
+    def validate(self, path: list, info_api: OpcodeInfoApi, context: FullContext) -> None:
+        AA_TYPE(self, path, "mode", InputMode)
+        AA_LIST_OF_TYPE(self, path, "blocks", SRBlock)
+        AA_TYPES(self, path, "block", (SRBlock, type(None)))
+        AA_TYPES(self, path, "text", (str, type(None)))
+        AA_TYPES(self, path, "dropdown", (SRDropdownValue, type(None)))
+        
+        # TODO: complete this

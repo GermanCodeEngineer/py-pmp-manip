@@ -1,7 +1,7 @@
 from block_info.basis import *
 
-operators = BlockInfoSet(name="operators", opcode_prefix="operator", block_infos={
-    "add": BlockInfo(
+operators = CategoryOpcodesInfo(name="operators", opcode_prefix="operator", block_infos={
+    "add": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="(OPERAND1) + (OPERAND2)",
         inputs={
@@ -9,7 +9,7 @@ operators = BlockInfoSet(name="operators", opcode_prefix="operator", block_infos
             "NUM2": InputInfo(InputType.NUMBER, new="OPERAND2"),
         },
     ),
-    "subtract": BlockInfo(
+    "subtract": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="(OPERAND1) - (OPERAND2)",
         inputs={
@@ -17,7 +17,7 @@ operators = BlockInfoSet(name="operators", opcode_prefix="operator", block_infos
             "NUM2": InputInfo(InputType.NUMBER, new="OPERAND2"),
         },
     ),
-    "multiply": BlockInfo(
+    "multiply": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="(OPERAND1) * (OPERAND2)",
         inputs={
@@ -25,7 +25,7 @@ operators = BlockInfoSet(name="operators", opcode_prefix="operator", block_infos
             "NUM2": InputInfo(InputType.NUMBER, new="OPERAND2"),
         },
     ),
-    "divide": BlockInfo(
+    "divide": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="(OPERAND1) / (OPERAND2)",
         inputs={
@@ -33,7 +33,7 @@ operators = BlockInfoSet(name="operators", opcode_prefix="operator", block_infos
             "NUM2": InputInfo(InputType.NUMBER, new="OPERAND2"),
         },
     ),
-    "power": BlockInfo(
+    "power": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="(OPERAND1) ^ (OPERAND2)",
         inputs={
@@ -41,7 +41,7 @@ operators = BlockInfoSet(name="operators", opcode_prefix="operator", block_infos
             "NUM2": InputInfo(InputType.NUMBER, new="OPERAND2"),
         },
     ),
-    "advMathExpanded": BlockInfo(
+    "advMathExpanded": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="(OPERAND1) * (OPERAND2) [OPERATION] (OPERAND3)",
         inputs={
@@ -53,7 +53,7 @@ operators = BlockInfoSet(name="operators", opcode_prefix="operator", block_infos
             "OPTION": DropdownInfo(DropdownType.ROOT_LOG, new="OPERATION"),
         },
     ),
-    "advMath": BlockInfo(
+    "advMath": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="(OPERAND1) [OPERATION] (OPERAND2)",
         inputs={
@@ -64,7 +64,7 @@ operators = BlockInfoSet(name="operators", opcode_prefix="operator", block_infos
             "OPTION": DropdownInfo(DropdownType.POWER_ROOT_LOG, new="OPERATION"),
         },
     ),
-    "random": BlockInfo(
+    "random": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="pick random (OPERAND1) to (OPERAND2)",
         inputs={
@@ -72,7 +72,7 @@ operators = BlockInfoSet(name="operators", opcode_prefix="operator", block_infos
             "TO": InputInfo(InputType.NUMBER, new="OPERAND2"),
         },
     ),
-    "constrainnumber": BlockInfo(
+    "constrainnumber": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="constrain (NUM) min (MIN) max (MAX)",
         inputs={
@@ -81,7 +81,7 @@ operators = BlockInfoSet(name="operators", opcode_prefix="operator", block_infos
             "max": InputInfo(InputType.NUMBER, new="MAX"),
         },
     ),
-    "lerpFunc": BlockInfo(
+    "lerpFunc": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="interpolate (OPERAND1) to (OPERAND2) by (WEIGHT)",
         inputs={
@@ -90,7 +90,7 @@ operators = BlockInfoSet(name="operators", opcode_prefix="operator", block_infos
             "AMOUNT": InputInfo(InputType.NUMBER, new="WEIGHT"),
         },
     ),
-    "gt": BlockInfo(
+    "gt": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="(OPERAND1) > (OPERAND2)",
         inputs={
@@ -98,7 +98,7 @@ operators = BlockInfoSet(name="operators", opcode_prefix="operator", block_infos
             "OPERAND2": InputInfo(InputType.TEXT, new="OPERAND2"),
         },
     ),
-    "gtorequal": BlockInfo(
+    "gtorequal": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="(OPERAND1) >= (OPERAND2)",
         inputs={
@@ -106,7 +106,7 @@ operators = BlockInfoSet(name="operators", opcode_prefix="operator", block_infos
             "OPERAND2": InputInfo(InputType.TEXT, new="OPERAND2"),
         },
     ),
-    "lt": BlockInfo(
+    "lt": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="(OPERAND1) < (OPERAND2)",
         inputs={
@@ -114,7 +114,7 @@ operators = BlockInfoSet(name="operators", opcode_prefix="operator", block_infos
             "OPERAND2": InputInfo(InputType.TEXT, new="OPERAND2"),
         },
     ),
-    "ltorequal": BlockInfo(
+    "ltorequal": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="(OPERAND1) <= (OPERAND2)",
         inputs={
@@ -122,7 +122,7 @@ operators = BlockInfoSet(name="operators", opcode_prefix="operator", block_infos
             "OPERAND2": InputInfo(InputType.TEXT, new="OPERAND2"),
         },
     ),
-    "equals": BlockInfo(
+    "equals": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="(OPERAND1) = (OPERAND2)",
         inputs={
@@ -130,7 +130,7 @@ operators = BlockInfoSet(name="operators", opcode_prefix="operator", block_infos
             "OPERAND2": InputInfo(InputType.TEXT, new="OPERAND2"),
         },
     ),
-    "notequal": BlockInfo(
+    "notequal": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="(OPERAND1) != (OPERAND2)",
         inputs={
@@ -138,15 +138,15 @@ operators = BlockInfoSet(name="operators", opcode_prefix="operator", block_infos
             "OPERAND2": InputInfo(InputType.TEXT, new="OPERAND2"),
         },
     ),
-    "trueBoolean": BlockInfo(
+    "trueBoolean": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="true",
     ),
-    "falseBoolean": BlockInfo(
+    "falseBoolean": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="false",
     ),
-    "and": BlockInfo(
+    "and": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="<OPERAND1> and <OPERAND2>",
         inputs={
@@ -154,7 +154,7 @@ operators = BlockInfoSet(name="operators", opcode_prefix="operator", block_infos
             "OPERAND2": InputInfo(InputType.BOOLEAN, new="OPERAND2"),
         },
     ),
-    "or": BlockInfo(
+    "or": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="<OPERAND1> or <OPERAND2>",
         inputs={
@@ -162,22 +162,22 @@ operators = BlockInfoSet(name="operators", opcode_prefix="operator", block_infos
             "OPERAND2": InputInfo(InputType.BOOLEAN, new="OPERAND2"),
         },
     ),
-    "not": BlockInfo(
+    "not": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="not <OPERAND>",
         inputs={
             "OPERAND": InputInfo(InputType.BOOLEAN, new="OPERAND"),
         },
     ),
-    "newLine": BlockInfo(
+    "newLine": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="new line",
     ),
-    "tabCharacter": BlockInfo(
+    "tabCharacter": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="tab character",
     ),
-    "join": BlockInfo(
+    "join": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="join (STRING1) (STRING2)",
         inputs={
@@ -185,7 +185,7 @@ operators = BlockInfoSet(name="operators", opcode_prefix="operator", block_infos
             "STRING2": InputInfo(InputType.TEXT, new="STRING2"),
         },
     ),
-    "join3": BlockInfo(
+    "join3": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="join (STRING1) (STRING2) (STRING3)",
         inputs={
@@ -194,7 +194,7 @@ operators = BlockInfoSet(name="operators", opcode_prefix="operator", block_infos
             "STRING3": InputInfo(InputType.TEXT, new="STRING3"),
         },
     ),
-    "indexOfTextInText": BlockInfo(
+    "indexOfTextInText": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="index of (SUBSTRING) in (TEXT)",
         inputs={
@@ -202,7 +202,7 @@ operators = BlockInfoSet(name="operators", opcode_prefix="operator", block_infos
             "TEXT2": InputInfo(InputType.TEXT, new="TEXT"),
         },
     ),
-    "lastIndexOfTextInText": BlockInfo(
+    "lastIndexOfTextInText": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="last index of (SUBSTRING) in (TEXT)",
         inputs={
@@ -210,7 +210,7 @@ operators = BlockInfoSet(name="operators", opcode_prefix="operator", block_infos
             "TEXT2": InputInfo(InputType.TEXT, new="TEXT"),
         },
     ),
-    "letter_of": BlockInfo(
+    "letter_of": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="letter (LETTER) of (STRING)",
         inputs={
@@ -218,7 +218,7 @@ operators = BlockInfoSet(name="operators", opcode_prefix="operator", block_infos
             "STRING": InputInfo(InputType.TEXT, new="STRING"),
         },
     ),
-    "getLettersFromIndexToIndexInText": BlockInfo(
+    "getLettersFromIndexToIndexInText": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="letters from (START) to (STOP) in (TEXT)",
         inputs={
@@ -227,14 +227,14 @@ operators = BlockInfoSet(name="operators", opcode_prefix="operator", block_infos
             "TEXT": InputInfo(InputType.TEXT, new="TEXT"),
         },
     ),
-    "length": BlockInfo(
+    "length": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="length of (TEXT)",
         inputs={
             "STRING": InputInfo(InputType.TEXT, new="TEXT"),
         },
     ),
-    "contains": BlockInfo(
+    "contains": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="(TEXT) contains (SUBSTRING) ?",
         inputs={
@@ -242,7 +242,7 @@ operators = BlockInfoSet(name="operators", opcode_prefix="operator", block_infos
             "STRING2": InputInfo(InputType.TEXT, new="SUBSTRING"),
         },
     ),
-    "textStartsOrEndsWith": BlockInfo(
+    "textStartsOrEndsWith": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="(TEXT) [OPERATION] with (SUBSTRING) ?",
         inputs={
@@ -253,7 +253,7 @@ operators = BlockInfoSet(name="operators", opcode_prefix="operator", block_infos
             "OPTION": DropdownInfo(DropdownType.TEXT_METHOD, new="OPERATION"),
         },
     ),
-    "replaceAll": BlockInfo(
+    "replaceAll": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="in (TEXT) replace all (OLDVALUE) with (NEWVALUE)",
         inputs={
@@ -262,7 +262,7 @@ operators = BlockInfoSet(name="operators", opcode_prefix="operator", block_infos
             "res": InputInfo(InputType.TEXT, new="NEWVALUE"),
         },
     ),
-    "replaceFirst": BlockInfo(
+    "replaceFirst": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="in (TEXT) replace first (OLDVALUE) with (NEWVALUE)",
         inputs={
@@ -271,7 +271,7 @@ operators = BlockInfoSet(name="operators", opcode_prefix="operator", block_infos
             "res": InputInfo(InputType.TEXT, new="NEWVALUE"),
         },
     ),
-    "regexmatch": BlockInfo(
+    "regexmatch": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="match (TEXT) with regex (REGEX) (MODIFIER)",
         inputs={
@@ -280,7 +280,7 @@ operators = BlockInfoSet(name="operators", opcode_prefix="operator", block_infos
             "regrule": InputInfo(InputType.TEXT, new="MODIFIER"),
         },
     ),
-    "toUpperLowerCase": BlockInfo(
+    "toUpperLowerCase": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="(TEXT) to [CASE]",
         inputs={
@@ -290,7 +290,7 @@ operators = BlockInfoSet(name="operators", opcode_prefix="operator", block_infos
             "OPTION": DropdownInfo(DropdownType.TEXT_CASE, new="CASE"),
         },
     ),
-    "mod": BlockInfo(
+    "mod": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="(OPERAND1) mod (OPERAND2)",
         inputs={
@@ -298,14 +298,14 @@ operators = BlockInfoSet(name="operators", opcode_prefix="operator", block_infos
             "NUM2": InputInfo(InputType.TEXT, new="OPERAND2"),
         },
     ),
-    "round": BlockInfo(
+    "round": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="round (NUM)",
         inputs={
             "NUM": InputInfo(InputType.NUMBER, new="NUM"),
         },
     ),
-    "mathop": BlockInfo(
+    "mathop": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="[OPERATION] of (NUM)",
         inputs={
@@ -315,14 +315,14 @@ operators = BlockInfoSet(name="operators", opcode_prefix="operator", block_infos
             "OPERATOR": DropdownInfo(DropdownType.UNARY_MATH_OPERATION, new="OPERATION"),
         },
     ),
-    "stringify": BlockInfo(
+    "stringify": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="(VALUE)",
         inputs={
             "ONE": InputInfo(InputType.TEXT, new="VALUE"),
         },
     ),
-    "boolify": BlockInfo(
+    "boolify": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="(VALUE) as a boolean",
         inputs={

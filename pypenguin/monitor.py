@@ -2,7 +2,7 @@ from typing import Any
 
 from utility import PypenguinClass
 from utility import AA_TYPE, AA_DICT_OF_TYPE, AA_COORD_PAIR, AA_EQUAL, AA_BIGGER_OR_EQUAL, InvalidValueValidationError, MissingDropdownError, UnnecessaryDropdownError
-from block_info import BlockInfoApi, DropdownType
+from block_info import OpcodeInfoApi, DropdownType
 from dropdown import SRDropdownValue
 from block_opcodes import *
 from context import PartialContext
@@ -84,7 +84,7 @@ class FRMonitor(PypenguinClass):
             is_discrete = data.get("isDiscrete", None),
         )
     
-    def step(self, info_api: BlockInfoApi, sprite_names: list[str]) -> tuple[str | None, "SRMonitor | None"]:
+    def step(self, info_api: OpcodeInfoApi, sprite_names: list[str]) -> tuple[str | None, "SRMonitor | None"]:
         if ((self.sprite_name not in sprite_names) 
         and (self.sprite_name is not None) 
         and not(self.visible)):
@@ -156,13 +156,17 @@ class SRMonitor(PypenguinClass):
         self.position   = position
         self.is_visible = is_visible
     
-    def validate(self, path: list, info_api: BlockInfoApi):
+    def validate(self, path: list, info_api: OpcodeInfoApi):
         AA_TYPE(self, path, "opcode", str)
         AA_DICT_OF_TYPE(self, path, "dropdowns", key_t=str, value_t=SRDropdownValue)
         AA_COORD_PAIR(self, path, "position") # TODO: possibly ensure position is on stage
         AA_TYPE(self, path, "is_visible", bool)
         
-        block_info = info_api.get_info_by_new_opcode(self.opcode, default_none=True)
+        block_info = info_api.get_info_by_new_opcode(
+            self.opcode, 
+            mutation=None, 
+            default_none=True,
+         )
         if (block_info is None) or (not block_info.can_have_monitor):
             raise InvalidValueValidationError(path, f"opcode of {self.__class__.__name__} must be a defined opcode. That block must be able to have monitors")
         
@@ -175,8 +179,12 @@ class SRMonitor(PypenguinClass):
             if new_dropdown_id not in self.dropdowns:
                 raise MissingDropdownError(path, f"dropdowns of {self.__class__.__name__} with opcode {repr(self.opcode)} is missing dropdown {new_dropdown_id}")
     
-    def validate_dropdowns_values(self, path: list, info_api: BlockInfoApi, context: PartialContext):
-        block_info = info_api.get_info_by_new_opcode(self.opcode, default_none=False)
+    def validate_dropdowns_values(self, path: list, info_api: OpcodeInfoApi, context: PartialContext):
+        block_info = info_api.get_info_by_new_opcode(
+            self.opcode, 
+            mutation=None,
+            default_none=False,
+        )
         for new_dropdown_id, dropdown_value in self.dropdowns.items():
             dropdown_type = block_info.get_dropdown_type_by_new(new_dropdown_id)
             dropdown_value.validate_value(
@@ -213,7 +221,7 @@ class SRVariableMonitor(SRMonitor):
         self.slider_max          = slider_max
         self.allow_only_integers = allow_only_integers
     
-    def validate(self, path: list, info_api: BlockInfoApi):
+    def validate(self, path: list, info_api: OpcodeInfoApi):
         super().validate(path, info_api)
         AA_EQUAL(self, path, "opcode", NEW_OPCODE_VAR_VALUE)
         
@@ -249,7 +257,7 @@ class SRListMonitor(SRMonitor):
         )
         self.size = size
     
-    def validate(self, path: list, info_api: BlockInfoApi):
+    def validate(self, path: list, info_api: OpcodeInfoApi):
         super().validate(path, info_api)
         AA_EQUAL(self, path, "opcode", NEW_OPCODE_LIST_VALUE)
         

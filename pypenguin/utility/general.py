@@ -65,7 +65,8 @@ def grepr(obj, annotate_fields=True, include_attributes=False, *, indent=4):
 # Files
 import zipfile
 import os
-from .errors import PathError
+#from utility.errors import PathError
+from typing import Hashable
 
 def read_file_of_zip(zip_path, file_path):
     zip_path = ensure_correct_path(zip_path)
@@ -104,10 +105,9 @@ class PypenguinClass:
             return NotImplemented
         if type(self) != type(other):
             return False
-        for field in self._grepr_fields:
-            if getattr(self, field) != getattr(other, field):
-                return False 
-        return True
+        if self._grepr_fields != other._grepr_fields:
+            return False
+        return all([getattr(self, field) == getattr(other, field) for field in self._grepr_fields])
     
     def __repr__(self) -> str:
         return grepr(self)
@@ -115,6 +115,92 @@ class PypenguinClass:
 class PypenguinEnum(Enum):
     def __repr__(self):
         return self.__class__.__name__ + "." + self.name
+
+from typing import TypeVar, Generic
+
+K1 = TypeVar("K1")
+K2 = TypeVar("K2")
+V = TypeVar("V")
+from typing import TypeVar, Generic, Optional, Iterator
+
+K1 = TypeVar("K1")
+K2 = TypeVar("K2")
+V = TypeVar("V")
+
+from typing import TypeVar, Generic, Iterator
+
+K1 = TypeVar("K1")
+K2 = TypeVar("K2")
+V = TypeVar("V")
+
+class DualKeyDict(Generic[K1, K2, V]):
+    _grepr = True
+    _grepr_fields = ["_values", "_k2_to_k1"]
+    
+    def __init__(self) -> None:
+        self._values: dict[K1, V] = {}
+        self._k2_to_k1: dict[K2, K1] = {}
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, DualKeyDict):
+            return NotImplemented
+        return self._values == other._values and self._k2_to_k1 == other._k2_to_k1
+
+    def __repr__(self) -> str:
+        return grepr(self)
+
+    def set(self, key1: K1, key2: K2, value: V) -> None:
+        self._values[key1] = value
+        self._k2_to_k1[key2] = key1
+
+    def get_by_key1(self, key1: K1) -> V:
+        return self._values[key1]
+
+    def get_by_key2(self, key2: K2) -> V:
+        key1 = self.get_key1_for_key2(key2)
+        return self._values[key1]
+
+    def get_key1_for_key2(self, key2: K2) -> K1:
+        return self._k2_to_k1[key2]
+
+    def get_key2_for_key1(self, key1: K1) -> K2:
+        for key2, key1_candidate in self._k2_to_k1.items():
+            if key1_candidate == key1:
+                return key2
+        raise KeyError(f"Couldn't find key2 for key1 {repr(key1)}")
+
+    def has_key1(self, key1: K1) -> bool:
+        return key1 in self._values
+    
+    def has_key2(self, key2: K2) -> bool:
+        return key2 in self._k2_to_k1
+
+    # Dict-like behavior (explicitly discouraged)
+    def __iter__(self):
+        raise NotImplementedError("Don't iterate DualKeyDict directly. Use keys_key1, keys_key2, values, items_key1, items_key2 etc.")
+
+    def __contains__(self, key: object) -> bool:
+        raise NotImplementedError("Don't check whether a DualKeyDict contains something like a normal dict. Use has_key1 or has_key2 instead.")
+
+    def __len__(self) -> int:
+        return len(self._values)
+
+    # Iteration methods
+    def keys_key1(self) -> Iterator[K1]:
+        return self._values.keys()
+    
+    def keys_key2(self) -> Iterator[K2]:
+        return self._k2_to_k1.keys()
+    
+    def values(self) -> Iterator[V]:
+        return self._values.values()
+    
+    def items_key1(self) -> Iterator[tuple[K1, V]]:
+        return self._values.items()
+
+    def items_key2(self) -> Iterator[tuple[K2, V]]:
+        for key2 in self._k2_to_k1:
+            yield (key2, self.get_by_key2(key2))
 
 # Data Functions
 
@@ -126,3 +212,5 @@ def remove_duplicates(items: list):
             seen.append(item)
             result.append(item)
     return result
+
+

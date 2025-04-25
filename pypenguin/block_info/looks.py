@@ -1,7 +1,7 @@
 from block_info.basis import *
 
-looks = BlockInfoSet(name="looks", opcode_prefix="looks", block_infos={
-    "sayforsecs": BlockInfo(
+looks = CategoryOpcodesInfo(name="looks", opcode_prefix="looks", block_infos={
+    "sayforsecs": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="say (MESSAGE) for (SECONDS) seconds",
         inputs={
@@ -9,14 +9,14 @@ looks = BlockInfoSet(name="looks", opcode_prefix="looks", block_infos={
             "SECS": InputInfo(InputType.NUMBER, new="SECONDS"),
         },
     ),
-    "say": BlockInfo(
+    "say": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="say (MESSAGE)",
         inputs={
             "MESSAGE": InputInfo(InputType.TEXT, new="MESSAGE"),
         },
     ),
-    "thinkforsecs": BlockInfo(
+    "thinkforsecs": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="think (MESSAGE) for (SECONDS) seconds",
         inputs={
@@ -24,18 +24,18 @@ looks = BlockInfoSet(name="looks", opcode_prefix="looks", block_infos={
             "SECS": InputInfo(InputType.NUMBER, new="SECONDS"),
         },
     ),
-    "think": BlockInfo(
+    "think": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="think (MESSAGE)",
         inputs={
             "MESSAGE": InputInfo(InputType.TEXT, new="MESSAGE"),
         },
     ),
-    "stoptalking": BlockInfo(
+    "stoptalking": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="stop speaking",
     ),
-    "setFont": BlockInfo(
+    "setFont": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="set font to (FONT) with font size (FONT-SIZE)",
         inputs={
@@ -43,7 +43,7 @@ looks = BlockInfoSet(name="looks", opcode_prefix="looks", block_infos={
             "size": InputInfo(InputType.NUMBER, new="FONT-SIZE"),
         },
     ),
-    "setColor": BlockInfo(
+    "setColor": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="set [PROPERTY] color to (COLOR)",
         inputs={
@@ -53,7 +53,7 @@ looks = BlockInfoSet(name="looks", opcode_prefix="looks", block_infos={
             "prop": DropdownInfo(DropdownType.TEXT_BUBBLE_COLOR_PROPERTY, new="PROPERTY"),
         },
     ),
-    "setShape": BlockInfo(
+    "setShape": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="set text bubble [PROPERTY] to (VALUE)",
         inputs={
@@ -63,28 +63,28 @@ looks = BlockInfoSet(name="looks", opcode_prefix="looks", block_infos={
             "prop": DropdownInfo(DropdownType.TEXT_BUBBLE_PROPERTY, new="PROPERTY"),
         },
     ),
-    "sayWidth": BlockInfo(
+    "sayWidth": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="bubble width",
         can_have_monitor="True",
     ),
-    "sayHeight": BlockInfo(
+    "sayHeight": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="bubble height",
         can_have_monitor="True",
     ),
-    "switchcostumeto": BlockInfo(
+    "switchcostumeto": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="switch costume to ([COSTUME])",
         inputs={
             "COSTUME": InputInfo(InputType.COSTUME, new="COSTUME", menu=MenuInfo("looks_costume", inner="COSTUME")),
         },
     ),
-    "nextcostume": BlockInfo(
+    "nextcostume": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="next costume",
     ),
-    "getinputofcostume": BlockInfo(
+    "getinputofcostume": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="([PROPERTY]) of ([COSTUME])",
         inputs={
@@ -92,32 +92,32 @@ looks = BlockInfoSet(name="looks", opcode_prefix="looks", block_infos={
             "COSTUME": InputInfo(InputType.COSTUME, new="COSTUME", menu=MenuInfo("looks_costume", inner="COSTUME")),
         },
     ),
-    "switchbackdropto": BlockInfo(
+    "switchbackdropto": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="switch backdrop to ([BACKDROP])",
         inputs={
             "BACKDROP": InputInfo(InputType.BACKDROP, new="BACKDROP", menu=MenuInfo("looks_backdrops", inner="BACKDROP")),
         },
     ),
-    "nextbackdrop": BlockInfo(
+    "nextbackdrop": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="next backdrop",
     ),
-    "changesizeby": BlockInfo(
+    "changesizeby": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="change size by (AMOUNT)",
         inputs={
             "CHANGE": InputInfo(InputType.NUMBER, new="AMOUNT"),
         },
     ),
-    "setsizeto": BlockInfo(
+    "setsizeto": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="set size to (SIZE)",
         inputs={
             "SIZE": InputInfo(InputType.NUMBER, new="SIZE"),
         },
     ),
-    "setStretch": BlockInfo(
+    "setStretch": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="set stretch to x: (X) y: (Y)",
         inputs={
@@ -125,17 +125,17 @@ looks = BlockInfoSet(name="looks", opcode_prefix="looks", block_infos={
             "Y": InputInfo(InputType.NUMBER, new="Y"),
         },
     ),
-    "stretchGetX": BlockInfo(
+    "stretchGetX": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="x stretch",
         can_have_monitor="True",
     ),
-    "stretchGetY": BlockInfo(
+    "stretchGetY": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="y stretch",
         can_have_monitor="True",
     ),
-    "changeeffectby": BlockInfo(
+    "changeeffectby": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="change [EFFECT] sprite effect by (AMOUNT)",
         inputs={
@@ -145,7 +145,7 @@ looks = BlockInfoSet(name="looks", opcode_prefix="looks", block_infos={
             "EFFECT": DropdownInfo(DropdownType.SPRITE_EFFECT, new="EFFECT"),
         },
     ),
-    "seteffectto": BlockInfo(
+    "seteffectto": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="set [EFFECT] sprite effect to (VALUE)",
         inputs={
@@ -155,18 +155,18 @@ looks = BlockInfoSet(name="looks", opcode_prefix="looks", block_infos={
             "EFFECT": DropdownInfo(DropdownType.SPRITE_EFFECT, new="EFFECT"),
         },
     ),
-    "setTintColor": BlockInfo(
+    "setTintColor": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="set tint color to (COLOR)",
         inputs={
             "color": InputInfo(InputType.COLOR, new="COLOR"),
         },
     ),
-    "cleargraphiceffects": BlockInfo(
+    "cleargraphiceffects": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="clear graphic effects",
     ),
-    "getEffectValue": BlockInfo(
+    "getEffectValue": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="[EFFECT] sprite effect",
         can_have_monitor="True",
@@ -174,53 +174,53 @@ looks = BlockInfoSet(name="looks", opcode_prefix="looks", block_infos={
             "EFFECT": DropdownInfo(DropdownType.SPRITE_EFFECT, new="EFFECT"),
         },
     ),
-    "tintColor": BlockInfo(
+    "tintColor": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="tint color",
         can_have_monitor="True",
     ),
-    "show": BlockInfo(
+    "show": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="show",
     ),
-    "hide": BlockInfo(
+    "hide": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="hide",
     ),
-    "getSpriteVisible": BlockInfo(
+    "getSpriteVisible": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="visible?",
         can_have_monitor="True",
     ),
-    "changeVisibilityOfSpriteShow": BlockInfo(
+    "changeVisibilityOfSpriteShow": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="show ([TARGET])",
         inputs={
             "VISIBLE_OPTION": InputInfo(InputType.MYSELF_OR_OTHER_SPRITE, new="TARGET", menu=MenuInfo("looks_changeVisibilityOfSprite_menu", inner="VISIBLE_OPTION")),
         },
     ),
-    "changeVisibilityOfSpriteHide": BlockInfo(
+    "changeVisibilityOfSpriteHide": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="hide ([TARGET])",
         inputs={
             "VISIBLE_OPTION": InputInfo(InputType.MYSELF_OR_OTHER_SPRITE, new="TARGET", menu=MenuInfo("looks_changeVisibilityOfSprite_menu", inner="VISIBLE_OPTION")),
         },
     ),
-    "getOtherSpriteVisible": BlockInfo(
+    "getOtherSpriteVisible": OpcodeInfo(
         block_type=BlockType.BOOLEAN_REPORTER,
         new_opcode="is ([TARGET]) visible?",
         inputs={
             "VISIBLE_OPTION": InputInfo(InputType.MYSELF_OR_OTHER_SPRITE, new="TARGET", menu=MenuInfo("looks_getOtherSpriteVisible_menu", inner="VISIBLE_OPTION")),
         },
     ),
-    "gotofrontback": BlockInfo(
+    "gotofrontback": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="go to [LAYER] layer",
         dropdowns={
             "FRONT_BACK": DropdownInfo(DropdownType.FRONT_BACK, new="LAYER"),
         },
     ),
-    "goforwardbackwardlayers": BlockInfo(
+    "goforwardbackwardlayers": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="go [DIRECTION] (LAYERS) layers",
         inputs={
@@ -230,14 +230,14 @@ looks = BlockInfoSet(name="looks", opcode_prefix="looks", block_infos={
             "FORWARD_BACKWARD": DropdownInfo(DropdownType.FORWARD_BACKWARD, new="DIRECTION"),
         },
     ),
-    "layersSetLayer": BlockInfo(
+    "layersSetLayer": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="go to layer (LAYER)",
         inputs={
             "NUM": InputInfo(InputType.INTEGER, new="LAYER"),
         },
     ),
-    "goTargetLayer": BlockInfo(
+    "goTargetLayer": OpcodeInfo(
         block_type=BlockType.STATEMENT,
         new_opcode="go [DIRECTION] ([TARGET])",
         inputs={
@@ -247,12 +247,12 @@ looks = BlockInfoSet(name="looks", opcode_prefix="looks", block_infos={
             "FORWARD_BACKWARD": DropdownInfo(DropdownType.INFRONT_BEHIND, new="DIRECTION"),
         },
     ),
-    "layersGetLayer": BlockInfo(
+    "layersGetLayer": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="layer",
         can_have_monitor="True",
     ),
-    "costumenumbername": BlockInfo(
+    "costumenumbername": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="costume [PROPERTY]",
         can_have_monitor="True",
@@ -260,7 +260,7 @@ looks = BlockInfoSet(name="looks", opcode_prefix="looks", block_infos={
             "NUMBER_NAME": DropdownInfo(DropdownType.NUMBER_NAME, new="PROPERTY"),
         },
     ),
-    "backdropnumbername": BlockInfo(
+    "backdropnumbername": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="backdrop [PROPERTY]",
         can_have_monitor="True",
@@ -268,7 +268,7 @@ looks = BlockInfoSet(name="looks", opcode_prefix="looks", block_infos={
             "NUMBER_NAME": DropdownInfo(DropdownType.NUMBER_NAME, new="PROPERTY"),
         },
     ),
-    "size": BlockInfo(
+    "size": OpcodeInfo(
         block_type=BlockType.STRING_REPORTER,
         new_opcode="size",
         can_have_monitor="True",
