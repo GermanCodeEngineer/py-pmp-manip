@@ -2,21 +2,18 @@ from json   import loads
 from abc    import ABC, abstractmethod
 from typing import Any
 
-from utility import PypenguinClass
+from utility import GreprClass
 
 from core.fr_to_tr_api import FRtoTRAPI
 from core.custom_block import SRCustomBlockOpcode, SRCustomBlockOptype
 
-class FRMutation(PypenguinClass, ABC):
+@dataclass
+class FRMutation(GreprClass):
     _grepr = True
     _grepr_fields = ["tag_name", "children"]
     
     tag_name: str # always "mutation"
     children: list # always []
-    
-    def __init__(self, tag_name: str, children: list):
-        self.tag_name = tag_name
-        self.children = children
 
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRMutation":
@@ -28,18 +25,12 @@ class FRMutation(PypenguinClass, ABC):
     @abstractmethod
     def step(self, block_api: FRtoTRAPI) -> "SRMutation": pass
 
+@dataclass
 class FRCustomArgumentMutation(FRMutation):
     _grepr_fields = FRMutation._grepr_fields + ["color"]
     
     color: tuple[str, str, str]
     
-    def __init__(self, tag_name: str, children: list, color: tuple[str, str, str]):
-        super().__init__(
-            tag_name = tag_name,
-            children = children,
-        )
-        self.color = color
-
     @classmethod
     def from_data(cls, data: dict[str, str]) -> "FRCustomArgumentMutation":
         return cls(
@@ -61,6 +52,7 @@ class FRCustomArgumentMutation(FRMutation):
             color3        = self.color[2],
         )
 
+@dataclass
 class FRCustomBlockMutation(FRMutation):
     _grepr_fields = FRMutation._grepr_fields + ["proccode", "argument_ids", "argument_names", "argument_defaults", "warp", "returns", "edited", "optype", "color"]
     
@@ -73,27 +65,6 @@ class FRCustomBlockMutation(FRMutation):
     edited: bool # seems to always be true
     optype: str
     color: tuple[str, str, str]
-    
-    def __init__(self, 
-        proccode: str,
-        argument_ids: list[str],
-        argument_names: list[str],
-        argument_defaults: list[str],
-        warp: bool,
-        returns: bool | None,
-        edited: bool, # seems to always be true
-        optype: str,
-        color: tuple[str, str, str],
-    ):
-        self.proccode          = proccode
-        self.argument_ids      = argument_ids
-        self.argument_names    = argument_names
-        self.argument_defaults = argument_defaults
-        self.warp              = warp
-        self.returns           = returns
-        self.edited            = edited
-        self.optype            = optype
-        self.color             = color
 
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRCustomBlockMutation":
@@ -116,7 +87,7 @@ class FRCustomBlockMutation(FRMutation):
     
     def step(self, block_api: FRtoTRAPI) -> "SRCustomBlockMutation":
         return SRCustomBlockMutation(
-            custom_opcode     = SRCustomBlockOpcode(
+            custom_opcode     = SRCustomBlockOpcode.from_prococde_names_defaults(
                 proccode          = self.proccode,
                 argument_names    = self.argument_names,
                 argument_defaults = self.argument_defaults,
@@ -128,6 +99,7 @@ class FRCustomBlockMutation(FRMutation):
             color3            = self.color[2],
         )
 
+@dataclass
 class FRCustomCallMutation(FRMutation):
     _grepr_fields = FRMutation._grepr_fields + ["proccode", "argument_ids", "warp", "returns", "edited", "optype", "color"]
     
@@ -139,23 +111,6 @@ class FRCustomCallMutation(FRMutation):
     optype: str
     color: tuple[str, str, str]
     
-    def __init__(self, 
-        proccode: str,
-        argument_ids: list[str],
-        warp: bool,
-        returns: bool | None,
-        edited: bool, # seems to always be true
-        optype: str,
-        color: tuple[str, str, str],
-    ):
-        self.proccode     = proccode
-        self.argument_ids = argument_ids
-        self.warp         = warp
-        self.returns      = returns
-        self.edited       = edited
-        self.optype       = optype
-        self.color        = color
-
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRCustomCallMutation":
         if isinstance(data["warp"], bool):
@@ -183,11 +138,12 @@ class FRCustomCallMutation(FRMutation):
             ),
         )
 
-
-class SRMutation(PypenguinClass):
+@dataclass
+class SRMutation(GreprClass):
     _grepr = True
     _grepr_fields = []
 
+@dataclass
 class SRCustomBlockArgumentMutation(SRMutation):
     _grepr_fields = FRMutation._grepr_fields + ["argument_name", "color1", "color2", "color3"]
     
@@ -198,12 +154,7 @@ class SRCustomBlockArgumentMutation(SRMutation):
     color2: str
     color3: str
     
-    def __init__(self, argument_name: str, color1: str, color2: str, color3: str):
-        self.argument_name = argument_name
-        self.color1        = color1
-        self.color2        = color2
-        self.color3        = color3
-
+@dataclass
 class SRCustomBlockMutation(SRMutation):
     _grepr_fields = SRMutation._grepr_fields + ["custom_opcode", "no_screen_refresh", "optype", "color1", "color2", "color3"]
     
@@ -219,27 +170,9 @@ class SRCustomBlockMutation(SRMutation):
     color1: str
     color2: str
     color3: str
-    
-    def __init__(self,
-        custom_opcode: "SRCustomBlockOpcode",
-        no_screen_refresh: bool,
-        optype: SRCustomBlockOptype,
-        color1: str,
-        color2: str,
-        color3: str,
-    ):
-        self.custom_opcode     = custom_opcode
-        self.no_screen_refresh = no_screen_refresh
-        self.optype            = optype
-        self.color1            = color1
-        self.color2            = color2
-        self.color3            = color3
 
+@dataclass    
 class SRCustomBlockCallMutation(SRMutation):
     _grepr_fields = SRMutation._grepr_fields + ["custom_opcode"]
     
     custom_opcode: "SRCustomBlockOpcode"
-    
-    def __init__(self, custom_opcode: "SRCustomBlockOpcode"):
-        self.custom_opcode     = custom_opcode
-    

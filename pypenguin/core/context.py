@@ -1,11 +1,13 @@
-from typing import TYPE_CHECKING
-
+from typing      import TYPE_CHECKING
 from dataclasses import dataclass
+
+from utility import GreprClass
+
 if TYPE_CHECKING:
     from core.dropdown import SRDropdownValue
 
 @dataclass
-class PartialContext:
+class PartialContext(GreprClass):
     _grepr = True
     _grepr_fields = ["scope_variables", "scope_lists", "all_sprite_variables", "sprite_only_variables", "sprite_only_lists", "other_sprites", "backdrops"]
 
@@ -19,7 +21,7 @@ class PartialContext:
     backdrops: list["SRDropdownValue"]
 
 @dataclass
-class FullContext:
+class FullContext(GreprClass):
     _grepr = True
     _grepr_fields = ["scope_variables", "scope_lists", "all_sprite_variables", "sprite_only_variables", "sprite_only_lists", "other_sprites", "backdrops", "costumes", "sounds", "is_stage"]
 

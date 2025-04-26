@@ -1,9 +1,11 @@
-from typing import Any
+from typing      import Any
+from dataclasses import dataclass
 
-from utility import PypenguinClass
+from utility import GreprClass
 from utility import AA_COORD_PAIR, AA_TYPE, InvalidValueValidationError
 
-class FRComment(PypenguinClass):
+@dataclass
+class FRComment(GreprClass):
     _grepr = True
     _grepr_fields = ["block_id", "x", "y", "width", "height", "minimized", "text"]
     
@@ -14,23 +16,6 @@ class FRComment(PypenguinClass):
     height: int | float
     minimized: bool
     text: str
-    
-    def __init__(self, 
-        block_id: str | None,
-        x: int | float,
-        y: int | float,
-        width: int | float,
-        height: int | float,
-        minimized: bool,
-        text: str,
-    ):
-        self.block_id  = block_id
-        self.x         = x
-        self.y         = y
-        self.width     = width
-        self.height    = height
-        self.minimized = minimized
-        self.text      = text
 
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRComment":
@@ -62,7 +47,8 @@ class FRComment(PypenguinClass):
                 text=self.text,
             )
 
-class SRComment(PypenguinClass):
+@dataclass
+class SRComment(GreprClass):
     _grepr = True
     _grepr_fields = ["position", "size", "is_minimized", "text"]
     
@@ -70,17 +56,6 @@ class SRComment(PypenguinClass):
     size: tuple[int | float, int | float]
     is_minimized: bool
     text: str
-    
-    def __init__(self, 
-        position: tuple[int | float, int | float], 
-        size: tuple[int | float, int | float], 
-        is_minimized: bool, 
-        text: str,
-    ):
-        self.position     = position
-        self.size         = size
-        self.is_minimized = is_minimized
-        self.text         = text
     
     def validate(self, path: list) -> None:
         AA_COORD_PAIR(self, path, "position")

@@ -126,6 +126,10 @@ class PypenguinEnum(Enum):
     def __repr__(self):
         return self.__class__.__name__ + "." + self.name
 
+class GreprClass:
+    def __repr__(self) -> str:
+        return grepr(self)
+
 from typing import TypeVar, Generic, Iterator
 
 K1 = TypeVar("K1")

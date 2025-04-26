@@ -1,7 +1,7 @@
 from typing import Any, TYPE_CHECKING
 
-from utility     import PypenguinClass, PypenguinEnum, grepr
-from utility     import AA_TYPE, AA_JSON_COMPATIBLE, InvalidDropdownValueError
+from utility import GreprClass, PypenguinEnum
+from utility import AA_TYPE, AA_JSON_COMPATIBLE, InvalidDropdownValueError
 
 from core.context import PartialContext
 
@@ -29,36 +29,31 @@ class SRDropdownKind(PypenguinEnum):
 
     FALLBACK       = 13
 
-
-class SRDropdownValue(PypenguinClass):
+@dataclass
+class SRDropdownValue(GreprClass):
     _grepr = True
     _grepr_fields = ["kind", "value"]
 
     kind: SRDropdownKind
     value: Any
     
-    def __init__(self, kind: SRDropdownKind, value: Any):
-        self.kind  = kind
-        self.value = value
-
     def __eq__(self, other) -> bool:
         if isinstance(other, tuple) and (len(other) == 2):
             if (other[0] == self.kind.name) and (other[1] == self.value):
                 return True
         return super().__eq__(other)
 
-    def validate(self, path: list):
+    def validate(self, path: list) -> None:
         AA_TYPE(self, path, "kind", SRDropdownKind)
         AA_JSON_COMPATIBLE(self, path, "value")
-        # TODO: check if value is allowed
     
-    def validate_kind(self, path, kind, message=None):
+    def validate_kind(self, path, kind, message=None) -> None:
         if self.kind != kind:
             if message == None:
                 message = f"In this case kind of {self.__class__.__name__} must be {repr(kind)}"
             raise InvalidDropdownValueError(path, message)
     
-    def validate_value(self, path: list, dropdown_type: "DropdownType", context: PartialContext, inputs: dict[str, "SRInputValue"]):
+    def validate_value(self, path: list, dropdown_type: "DropdownType", context: PartialContext, inputs: dict[str, "SRInputValue"]) -> None:
         def make_string(possible_values):
             return (
                 "No possible values." if possible_values == [] else

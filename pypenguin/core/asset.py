@@ -1,9 +1,11 @@
-from typing import Any
+from typing      import Any
+from dataclasses import dataclass
 
-from utility import PypenguinClass
+from utility import GreprClass
 from utility import AA_TYPE, AA_COORD_PAIR, AA_MIN
 
-class FRCostume(PypenguinClass):
+@dataclass
+class FRCostume(GreprClass):
     _grepr = True
     _grepr_fields = ["name", "asset_id", "data_format", "md5ext", "rotation_center_x", "rotation_center_y", "bitmap_resolution"]
     
@@ -14,27 +16,10 @@ class FRCostume(PypenguinClass):
     rotation_center_x: int | float
     rotation_center_y: int | float
     bitmap_resolution: int | None
-    
-    def __init__(self, 
-        name: str,
-        asset_id: str,
-        data_format: str,
-        md5ext: str,
-        rotation_center_x: int | float,
-        rotation_center_y: int | float,
-        bitmap_resolution: int | None,
-    ):
-        self.name              = name
-        self.asset_id          = asset_id
-        self.data_format       = data_format
-        self.md5ext            = md5ext
-        self.rotation_center_x = rotation_center_x
-        self.rotation_center_y = rotation_center_y
-        self.bitmap_resolution = bitmap_resolution
 
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRCostume":
-        self = cls(
+        return cls(
             name              = data["name"           ],
             asset_id          = data["assetId"        ],
             data_format       = data["dataFormat"     ],
@@ -43,7 +28,6 @@ class FRCostume(PypenguinClass):
             rotation_center_y = data["rotationCenterY"],
             bitmap_resolution = data.get("bitmapResolution", None),
         )
-        return self
 
     def step(self) -> "SRCostume":
         return SRCostume(
@@ -53,7 +37,8 @@ class FRCostume(PypenguinClass):
             bitmap_resolution = 1 if self.bitmap_resolution is None else self.bitmap_resolution,
         )
 
-class FRSound(PypenguinClass):
+@dataclass
+class FRSound(GreprClass):
     _grepr = True
     _grepr_fields = ["name", "asset_id", "data_format", "md5ext", "rate", "sample_count"]
     
@@ -64,21 +49,6 @@ class FRSound(PypenguinClass):
     rate: int
     sample_count: int
     
-    def __init__(self, 
-        name: str,
-        asset_id: str,
-        data_format: str,
-        md5ext: str,
-        rate: int,
-        sample_count: int,
-    ):
-        self.name         = name
-        self.asset_id     = asset_id
-        self.data_format  = data_format
-        self.md5ext       = md5ext
-        self.rate         = rate
-        self.sample_count = sample_count
-
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRSound":
         self = cls(
@@ -98,7 +68,8 @@ class FRSound(PypenguinClass):
             # Other attributes can be derived from the sound files.
         )
 
-class SRCostume(PypenguinClass):
+@dataclass
+class SRCostume(GreprClass):
     _grepr = True
     _grepr_fields = ["name", "file_extension", "rotation_center", "bitmap_resolution"]
 
@@ -106,18 +77,7 @@ class SRCostume(PypenguinClass):
     file_extension: str
     rotation_center: tuple[int | float, int | float]
     bitmap_resolution: int
-
-    def __init__(self, 
-        name: str, 
-        file_extension: str,
-        rotation_center: tuple[int | float, int | float],
-        bitmap_resolution: int,
-    ):
-        self.name              = name
-        self.file_extension    = file_extension
-        self.rotation_center   = rotation_center
-        self.bitmap_resolution = bitmap_resolution
-    
+  
     def validate(self, path: list) -> None:
         AA_TYPE(self, path, "name", str) # TODO: check if valid file name
         AA_TYPE(self, path, "file_extension", str)
@@ -125,16 +85,13 @@ class SRCostume(PypenguinClass):
         AA_TYPE(self, path, "bitmap_resolution", int)
         AA_MIN(self, path, "bitmap_resolution", min=1)
 
-class SRSound(PypenguinClass):
+@dataclass
+class SRSound(GreprClass):
     _grepr = True
     _grepr_fields = ["name", "file_extension"]
 
     name: str
     file_extension: str
-
-    def __init__(self, name: str, file_extension: str):
-        self.name           = name
-        self.file_extension = file_extension
     
     def validate(self, path: list) -> None:
         AA_TYPE(self, path, "name", str) # TODO: check if valid file name

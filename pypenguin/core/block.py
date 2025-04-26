@@ -1,19 +1,21 @@
-from typing import Any
+from typing      import Any
+from dataclasses import dataclass, field
 
-from utility        import PypenguinClass
+from utility        import GreprClass
 from utility        import AA_TYPE, AA_TYPES, AA_COORD_PAIR, AA_LIST_OF_TYPE, AA_DICT_OF_TYPE
 from utility        import UnnecessaryInputError, MissingInputError, UnnecessaryDropdownError, MissingDropdownError, InvalidValueValidationError
 from opcode_info    import OpcodeInfoAPI, OpcodeInfo, InputMode, OpcodeType, SpecialCaseType
+from block_opcodes  import *
 
 from core.block_mutation import FRMutation, FRCustomBlockMutation, FRCustomArgumentMutation, FRCustomCallMutation
 from core.block_mutation import SRMutation
-from block_opcodes  import *
 from core.comment        import SRAttachedComment
 from core.context        import FullContext
 from core.dropdown       import SRDropdownValue
 from core.fr_to_tr_api   import FRtoTRAPI
 
-class FRBlock(PypenguinClass):
+@dataclass
+class FRBlock(GreprClass):
     _grepr = True
     _grepr_fields = ["opcode", "next", "parent", "inputs", "fields", "shadow", "top_level", "x", "y", "comment", "mutation"]
 
@@ -31,34 +33,6 @@ class FRBlock(PypenguinClass):
     y: int | float | None
     comment: str | None # a comment id
     mutation: "FRMutation | None"
-
-    def __init__(self, 
-        opcode: str,
-        next: str | None,
-        parent: str,
-        inputs: dict[str, (
-        tuple[int, str | tuple] 
-        | tuple[int, str | tuple, str | tuple]
-        )],
-        fields: dict[str, tuple[str, str] | tuple[str, str, str]],
-        shadow: bool,
-        top_level: bool,
-        x: int | float | None,
-        y: int | float | None,
-        comment: str | None, # a comment id
-        mutation: "FRMutation | None",
-    ):
-        self.opcode    = opcode
-        self.next      = next
-        self.parent    = parent
-        self.inputs    = inputs
-        self.fields    = fields
-        self.shadow    = shadow
-        self.top_level = top_level
-        self.x         = x
-        self.y         = y
-        self.comment   = comment
-        self.mutation  = mutation
 
     @classmethod
     def from_data(cls, data: dict[str, Any]):
@@ -292,7 +266,8 @@ class FRBlock(PypenguinClass):
 
 
 
-class TRBlock(PypenguinClass):
+@dataclass
+class TRBlock(GreprClass):
     """Temporary Block Representation."""
     _grepr = True
     _grepr_fields = ["opcode", "inputs", "dropdowns", "comment", "mutation", "position", "next", "is_top_level"]
@@ -303,28 +278,9 @@ class TRBlock(PypenguinClass):
     comment: SRAttachedComment | None
     mutation: "SRMutation | None"
     position: tuple[int | float, int | float] | None
-    next: str | None
+    next: "TRBlockReference | None"
     is_top_level: bool
 
-    def __init__(self, 
-        opcode: str,
-        inputs: dict[str, "TRInputValue"],
-        dropdowns: dict[str, Any],
-        comment: SRAttachedComment | None,
-        mutation: "SRMutation | None",
-        position: tuple[int | float, int | float] | None,
-        next: "TRBlockReference | None",
-        is_top_level: bool,
-    ):
-        self.opcode       = opcode
-        self.inputs       = inputs
-        self.dropdowns    = dropdowns
-        self.comment      = comment
-        self.mutation     = mutation
-        self.position     = position
-        self.next         = next
-        self.is_top_level = is_top_level
-    
     def step(self, 
             all_blocks: dict[str, "TRBlock"],
             info_api: OpcodeInfoAPI,
@@ -455,8 +411,9 @@ class TRBlock(PypenguinClass):
             new_blocks.extend(next_blocks)
         
         return (self.position, new_blocks) 
-    
-class TRInputValue(PypenguinClass):
+ 
+@dataclass
+class TRInputValue(GreprClass):
     _grepr = True
     _grepr_fields = ["mode", "references", "immediate_block", "text"]
     
@@ -464,48 +421,24 @@ class TRInputValue(PypenguinClass):
     references: list["TRBlockReference"]
     immediate_block: TRBlock | None
     text: str | None
-    
-    def __init__(self,
-        mode: InputMode,
-        references: list["TRBlockReference"],
-        immediate_block: TRBlock | None,
-        text: str | None,
-    ):
-        self.mode            = mode
-        self.references      = references
-        self.immediate_block = immediate_block
-        self.text            = text
 
-class TRBlockReference(PypenguinClass):    
+@dataclass
+class TRBlockReference(GreprClass):    
     id: str
     
-    def __init__(self, id):
-        self.id = id
-    
-    def __eq__(self, other):
-        if type(other) != TRBlockReference:
-            return NotImplemented
-        if self.id != other.id:
-            return False
-        return True
-    
     def __repr__(self):
-        return f"trbr({self.id})"
+        return f"TRBR({self.id})"
     
     def __hash__(self):
         return hash(self.id)
 
-
-class SRScript(PypenguinClass):
+@dataclass
+class SRScript(GreprClass):
     _grepr = True
     _grepr_fields = ["position", "blocks"]
 
     position: tuple[int | float, int | float]
     blocks: list["SRBlock"]
-
-    def __init__(self, position: tuple[int | float, int | float], blocks: list["SRBlock"]):
-        self.position = position
-        self.blocks   = blocks
 
     def validate(self, 
         path: list, 
@@ -523,7 +456,8 @@ class SRScript(PypenguinClass):
                 context  = context,
             )
 
-class SRBlock(PypenguinClass):
+@dataclass
+class SRBlock(GreprClass):
     _grepr = True
     _grepr_fields = ["opcode", "inputs", "dropdowns", "comment", "mutation"]
     
@@ -532,19 +466,6 @@ class SRBlock(PypenguinClass):
     dropdowns: dict[str, SRDropdownValue]
     comment: SRAttachedComment | None
     mutation: "SRMutation | None"
-
-    def __init__(self, 
-        opcode: str,
-        inputs: dict[str, "SRInputValue"],
-        dropdowns: dict[str, SRDropdownValue],
-        comment: SRAttachedComment | None,
-        mutation: "SRMutation | None",
-    ):
-        self.opcode       = opcode
-        self.inputs       = inputs
-        self.dropdowns    = dropdowns
-        self.comment      = comment
-        self.mutation     = mutation
     
     def validate(self, 
         path: list, 
@@ -588,25 +509,19 @@ class SRBlock(PypenguinClass):
             if new_dropdown_id not in self.dropdowns:
                 raise MissingDropdownError(path, f"dropdowns of {self.__class__.__name__} with opcode {repr(self.opcode)} is missing dropdown {repr(new_dropdown_id)}")
 
-class SRInputValue(PypenguinClass):
+@dataclass
+class SRInputValue(GreprClass):
     _grepr = True
     _grepr_fields = ["mode"]
 
     mode: InputMode
-    blocks: list[SRBlock]
-    block: SRBlock | None
-    text: str | None
-    dropdown: SRDropdownValue | None
+    blocks: list[SRBlock] = field(default_factory=list)
+    block: SRBlock            | None = None
+    text: str                 | None = None
+    dropdown: SRDropdownValue | None = None
     
-    def __init__(self,
-        mode: InputMode,
-        blocks: list[SRBlock]     | None = None,
-        block: SRBlock            | None = None,
-        text: str                 | None = None,
-        dropdown: SRDropdownValue | None = None,
-    ):
-        self.mode = mode
-        match mode:
+    def __post_init__(self):
+        match self.mode:
             case InputMode.BLOCK_AND_TEXT | InputMode.BLOCK_AND_MENU_TEXT:
                 self.block    = block
                 self.text     = text
@@ -621,12 +536,6 @@ class SRInputValue(PypenguinClass):
             case InputMode.SCRIPT:
                 self.blocks   = blocks or []
                 self._grepr_fields = SRInputValue._grepr_fields + ["blocks"]
-
-
-        self.blocks   = blocks
-        self.block    = block
-        self.text     = text
-        self.dropdown = dropdown
     
     def validate(self, path: list, info_api: OpcodeInfoAPI, context: FullContext) -> None:
         AA_TYPE(self, path, "mode", InputMode)

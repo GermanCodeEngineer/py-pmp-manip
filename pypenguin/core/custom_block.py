@@ -1,18 +1,24 @@
-from utility import PypenguinClass, PypenguinEnum
+from dataclasses import dataclass
 
-class SRCustomBlockOpcode(PypenguinClass):
+from utility import GreprClass, PypenguinEnum
+
+@dataclass
+class SRCustomBlockOpcode(GreprClass):
     _grepr = True
     _grepr_fields = ["proccode", "arguments"]
 
     proccode: str
     arguments: dict[str, "SRCustomBlockArgumentType"]
-
-    def __init__(self, proccode: str, argument_names: list[str], argument_defaults: list[str]):
-        self.proccode = proccode
-        self.arguments = {
-            name: SRCustomBlockArgumentType.get_by_default(default)
-            for name, default in zip(argument_names, argument_defaults)
-        }
+    
+    @classmethod
+    def from_prococde_names_defaults(cls, proccode: str, argument_names: list[str], argument_defaults: list[str]) -> "SRCustomBlockOpcode":
+        return cls(
+            proccode  = proccode,
+            arguments = {
+                name: SRCustomBlockArgumentType.get_by_default(default)
+                for name, default in zip(argument_names, argument_defaults)
+            },
+        )
 
 class SRCustomBlockArgumentType(PypenguinEnum):
     @staticmethod
