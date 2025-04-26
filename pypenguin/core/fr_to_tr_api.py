@@ -1,25 +1,22 @@
-from typing import TYPE_CHECKING
+from typing      import TYPE_CHECKING
+from dataclasses import dataclass, field
 
-from utility import PypenguinClass
+from utility import GreprClass
 
 if TYPE_CHECKING:
     from core.block          import FRBlock, TRBlock, SRBlock
     from core.comment        import SRAttachedComment
     from core.block_mutation import FRCustomBlockMutation
 
-class FRtoTRAPI(PypenguinClass):
+@dataclass
+class FRtoTRAPI(GreprClass):
     _grepr = True
     _grepr_fields = ["blocks", "scheduled_block_deletions"]
 
     blocks: dict[str, "FRBlock"]
     block_comments: dict[str, "SRAttachedComment"]
-    scheduled_block_deletions: list[str]    
+    scheduled_block_deletions: list[str] = field(default_factory=list)
 
-    def __init__(self, blocks: dict[str, "FRBlock"], block_comments: dict[str, "SRAttachedComment"]):
-        self.blocks                    = blocks
-        self.block_comments            = block_comments
-        self.scheduled_block_deletions = []
-    
     def get_all_blocks(self) -> dict[str, "FRBlock"]:
         return self.blocks
     

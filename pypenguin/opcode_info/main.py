@@ -1,7 +1,5 @@
-from typing import Callable
-
 from dataclasses import dataclass, field
-from utility     import DualKeyDict, PypenguinClass, PypenguinEnum
+from utility     import DualKeyDict, GreprClass, PypenguinEnum
 
 from opcode_info.input        import InputInfo
 from opcode_info.dropdown     import DropdownInfo
@@ -84,14 +82,12 @@ class OpcodeInfoGroup:
             value = opcode_info,
         )
 
-class OpcodeInfoAPI(PypenguinClass):
+@dataclass
+class OpcodeInfoAPI(GreprClass):
     _grepr = True
-    _grepr_fields = ["opcode_info", "old_conversion_listeners"]
+    _grepr_fields = ["opcode_info"]
 
-    opcode_info: DualKeyDict[str, str, OpcodeInfo]
-
-    def __init__(self):
-        self.opcode_info = DualKeyDict()
+    opcode_info: DualKeyDict[str, str, OpcodeInfo] = field(default_factory=DualKeyDict)
 
     # Add Special Cases
     def add_opcode_case(self, opcode: str, special_case: SpecialCase) -> None:
@@ -139,22 +135,22 @@ class OpcodeInfoAPI(PypenguinClass):
         raise ValueError(f"Didn't find old opcode for new opcode {repr(new)}")
     
     # Fetching info by old opcode
-    def get_info_by_old_safe(self, old: str) -> InputInfo | None:
+    def get_info_by_old_safe(self, old: str) -> OpcodeInfo | None:
         if self.opcode_info.has_key1(old):
             return self.opcode_info.get_by_key1(old)
         return None
-    def get_info_by_old(self, old: str) -> InputInfo:
+    def get_info_by_old(self, old: str) -> OpcodeInfo:
         info = self.get_info_by_old_safe(old)
         if info is not None:
             return info
         raise ValueError(f"Didn't find OpcodeInfo by old opcode {repr(old)}")
     
     # Fetching info by new opcode
-    def get_info_by_new_safe(self, new: str) -> InputInfo | None:
+    def get_info_by_new_safe(self, new: str) -> OpcodeInfo | None:
         if self.opcode_info.has_key2(new):
             return self.opcode_info.get_by_key2(new)
         return None 
-    def get_info_by_new(self, new: str) -> InputInfo:
+    def get_info_by_new(self, new: str) -> OpcodeInfo:
         info = self.get_info_by_new_safe(new)
         if info is not None:
             return info

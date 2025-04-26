@@ -1,6 +1,7 @@
-import json
+from json        import dump, loads
+from dataclasses import dataclass
 
-from utility     import read_file_of_zip, ThanksError, PypenguinClass, PypenguinEnum
+from utility     import read_file_of_zip, ThanksError, GreprClass, PypenguinEnum
 from utility     import AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_RANGE, SameNameTwiceError
 from opcode_info import OpcodeInfoAPI
 
@@ -13,7 +14,8 @@ from core.target     import FRTarget, FRStage, FRSprite, SRStage, SRSprite
 from core.tts        import TextToSpeechLanguage
 from core.vars_lists import SRAllSpriteVariable, SRAllSpriteList
 
-class FRProject(PypenguinClass): 
+@dataclass
+class FRProject(GreprClass): 
     """The first representation (FR) of the project data tree. Its data is equivalent to the data stored in a .pmp file."""
     _grepr = True
     _grepr_fields = ["targets", "monitors", "extension_data", "extensions", "extension_urls", "meta"]
@@ -25,26 +27,13 @@ class FRProject(PypenguinClass):
     extension_urls: dict[str, str]
     meta: FRMeta
 
-    def __init__(self, 
-        targets: list[FRTarget],
-        monitors: list[FRMonitor],
-        extension_data: dict,
-        extensions: list[str],
-        extension_urls: dict[str, str],
-        meta: FRMeta,
-    ):
-        self.targets        = targets
-        self.monitors       = monitors
-        self.extension_data = extension_data
+    def __post_init__(self) -> None:
         if self.extension_data != {}: raise ThanksError()
-        self.extensions     = extensions
-        self.extension_urls = extension_urls
-        self.meta           = meta
 
     @classmethod
     def from_data(cls, project_data: dict):
         with open("extracted.json", "w") as file:
-            json.dump(project_data, file, indent=4)
+            dump(project_data, file, indent=4)
         
         return cls(
             targets = [
@@ -64,7 +53,7 @@ class FRProject(PypenguinClass):
     @classmethod
     def from_pmp_file(cls, file_path: str) -> "FRProject":
         assert file_path.endswith(".pmp")
-        project_data = json.loads(read_file_of_zip(file_path, "project.json"))
+        project_data = loads(read_file_of_zip(file_path, "project.json"))
         return cls.from_data(project_data)
     
     @classmethod
@@ -73,7 +62,7 @@ class FRProject(PypenguinClass):
         # - test this method + test sprite id 
         # - test custom block type of sb3's defaulting to "statement"
         assert file_path.endswith(".sb3")
-        project_data = json.loads(read_file_of_zip(file_path, "project.json"))
+        project_data = loads(read_file_of_zip(file_path, "project.json"))
         for i, sprite_data in enumerate(project_data["targets"]):
             sprite_data["customVars"] = []
             #if i == 0:
@@ -169,7 +158,11 @@ class SRVideoState(PypenguinEnum):
     ON_FLIPPED = 1
     OFF        = 2
 
-class SRProject(PypenguinClass):
+@dataclass
+class SRProject(GreprClass):
+    """
+    The SR (Second Representation) of a Scratch/PenguinMod Project.
+    """
     _grepr = True
     _grepr_fields = ["stage", "sprites", "all_sprite_variables", "all_sprite_lists", "tempo", "video_transparency", "video_state", "text_to_speech_language", "global_monitors", "extensions"]
     
@@ -183,32 +176,6 @@ class SRProject(PypenguinClass):
     text_to_speech_language: TextToSpeechLanguage | None
     global_monitors: list[SRMonitor]
     extensions: list[SRExtension]
-
-    def __init__(self,
-        stage: SRStage,
-        sprites: list[SRSprite],
-        all_sprite_variables: list[SRAllSpriteVariable],
-        all_sprite_lists: list[SRAllSpriteList],
-        tempo: int,
-        video_transparency: int | float,
-        video_state: SRVideoState,
-        text_to_speech_language: TextToSpeechLanguage | None,
-        global_monitors: list[SRMonitor],
-        extensions: list[SRExtension],
-    ):
-        """
-        Initialize the SR (Second Representation) of a Scratch/PenguinMod Project.
-        """
-        self.stage                   = stage
-        self.sprites                 = sprites
-        self.all_sprite_variables    = all_sprite_variables
-        self.all_sprite_lists        = all_sprite_lists
-        self.tempo                   = tempo
-        self.video_transparency      = video_transparency
-        self.video_state             = video_state
-        self.text_to_speech_language = text_to_speech_language
-        self.global_monitors         = global_monitors
-        self.extensions              = extensions
 
     def validate_var_names(self, path: list) -> None:
         """

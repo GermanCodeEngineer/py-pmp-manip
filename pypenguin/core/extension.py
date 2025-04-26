@@ -1,14 +1,14 @@
-from utility import PypenguinClass
+from dataclasses import dataclass
+
+from utility import GreprClass
 from utility import AA_TYPE, is_valid_js_data_uri, is_valid_url, InvalidValueValidationError
 
-class SRExtension(PypenguinClass):
+@dataclass
+class SRExtension(GreprClass):
     _grepr = True
     _grepr_fields = ["id"]
     
     id: str
-    
-    def __init__(self, id: str):
-        self.id  = id
 
     def validate(self, path: list) -> None:
         AA_TYPE(self, path, "id", str)
@@ -18,14 +18,11 @@ class SRExtension(PypenguinClass):
 class SRBuiltinExtension(SRExtension):
     pass # Builtin Extensions don't specify a url.
 
+@dataclass
 class SRCustomExtension(SRExtension):
     _grepr_fields = SRExtension._grepr_fields + ["url"]
     
     url: str # either "https://..." or "data:application/javascript,..."
-    
-    def __init__(self, id: str, url: str):
-        super().__init__(id=id)
-        self.url = url
     
     def validate(self, path: list):
         super().validate(path)

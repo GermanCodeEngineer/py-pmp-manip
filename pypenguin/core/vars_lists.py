@@ -1,18 +1,16 @@
-from typing import Any
+from typing      import Any
+from dataclasses import dataclass
 
-from utility import PypenguinClass
+from utility import GreprClass
 from utility import AA_TYPE, AA_JSON_COMPATIBLE
 
-class SRVariable(PypenguinClass):
+@dataclass
+class SRVariable(GreprClass):
     _grepr = True
     _grepr_fields = ["name", "current_value"]
     
     name: str
     current_value: Any
-    
-    def __init__(self, name: str, current_value: Any):
-        self.name          = name
-        self.current_value = current_value
 
     def validate(self, path: list):
         AA_TYPE(self, path, "name", str)
@@ -27,17 +25,13 @@ class SRAllSpriteVariable(SRVariable):
 class SRCloudVariable(SRAllSpriteVariable):
     pass
 
-
-class SRList(PypenguinClass):
+@dataclass
+class SRList(GreprClass):
     _grepr = True
     _grepr_fields = ["name", "current_value"]
     
     name: str
     current_value: list[Any]
-    
-    def __init__(self, name: str, current_value: Any):
-        self.name          = name
-        self.current_value = current_value
 
     def validate(self, path: list):
         AA_TYPE(self, path, "name", str)

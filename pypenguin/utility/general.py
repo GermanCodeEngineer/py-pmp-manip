@@ -76,7 +76,6 @@ def grepr(obj, annotate_fields=True, include_attributes=False, *, indent=4):
 import zipfile
 import os
 from utility.errors import PathError
-from typing import Hashable
 
 def read_file_of_zip(zip_path, file_path):
     zip_path = ensure_correct_path(zip_path)
@@ -109,19 +108,6 @@ def ensure_correct_path(_path, target_folder_name="pypenguin"):
 # Utility Classes
 from enum import Enum
 
-class PypenguinClass:
-    def __eq__(self, other) -> bool:
-        if not getattr(self, "_grepr", False):
-            return NotImplemented
-        if type(self) != type(other):
-            return False
-        if self._grepr_fields != other._grepr_fields:
-            return False
-        return all([getattr(self, field) == getattr(other, field) for field in self._grepr_fields])
-    
-    def __repr__(self) -> str:
-        return grepr(self)
-
 class PypenguinEnum(Enum):
     def __repr__(self):
         return self.__class__.__name__ + "." + self.name
@@ -134,10 +120,9 @@ from typing import TypeVar, Generic, Iterator
 
 K1 = TypeVar("K1")
 K2 = TypeVar("K2")
-V = TypeVar("V")
+V  = TypeVar("V" )
 
 class DualKeyDict(Generic[K1, K2, V]):
-    _grepr = True
     def __init__(self, data: dict[tuple[K1, K2], V] | None = None, /) -> None:
         self._values  : dict[K1, V ] = {}
         self._k2_to_k1: dict[K2, K1] = {}

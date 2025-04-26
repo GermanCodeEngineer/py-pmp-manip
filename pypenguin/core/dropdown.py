@@ -1,4 +1,5 @@
-from typing import Any, TYPE_CHECKING
+from typing      import Any, TYPE_CHECKING
+from dataclasses import dataclass
 
 from utility import GreprClass, PypenguinEnum
 from utility import AA_TYPE, AA_JSON_COMPATIBLE, InvalidDropdownValueError

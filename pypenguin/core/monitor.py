@@ -1,6 +1,7 @@
-from typing import Any
+from typing      import Any
+from dataclasses import dataclass
 
-from utility       import PypenguinClass
+from utility       import GreprClass
 from utility       import AA_TYPE, AA_DICT_OF_TYPE, AA_COORD_PAIR, AA_EQUAL, AA_BIGGER_OR_EQUAL, InvalidValueValidationError, MissingDropdownError, UnnecessaryDropdownError
 from opcode_info   import OpcodeInfoAPI, DropdownType
 from block_opcodes import *
@@ -8,10 +9,12 @@ from block_opcodes import *
 from core.dropdown import SRDropdownValue
 from core.context  import PartialContext
 
-class FRMonitor(PypenguinClass):
+@dataclass
+class FRMonitor(GreprClass):
     _grepr = True
     _grepr_fields = ["id", "mode", "opcode", "params", "sprite_name", "value", "x", "y", "visible", "width", "height", "slider_min", "slider_max", "is_discrete"]
 
+    # Core Properties
     id: str
     mode: str
     opcode: str
@@ -21,47 +24,16 @@ class FRMonitor(PypenguinClass):
     x: int | float
     y: int | float
     visible: bool
+    
+    # Properties which matter for some opcodes
     width: int | float
     height: int | float
     slider_min: int | float | None
     slider_max: int | float | None
     is_discrete: bool | None
 
-    def __init__(self, 
-        id: str,
-        mode: str,
-        opcode: str,
-        params: dict[str, Any],
-        sprite_name: str | None,
-        value: Any,
-        x: int | float,
-        y: int | float,
-        visible: bool,
-
-        width: int | float,
-        height: int | float,
-        slider_min: int | float | None,
-        slider_max: int | float | None,
-        is_discrete: bool | None,
-    ):
-        # Core Properties
-        self.id          = id
-        self.mode        = mode
-        self.opcode      = opcode
-        self.params      = params
+    def __post_init__(self) -> None:
         assert isinstance(self.params, dict)
-        self.sprite_name = sprite_name
-        self.value       = value
-        self.x           = x
-        self.y           = y
-        self.visible     = visible
-
-        # Properties for some opcodes
-        self.width       = width
-        self.height      = height
-        self.slider_min  = slider_min
-        self.slider_max  = slider_max
-        self.is_discrete = is_discrete
 
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRMonitor":
@@ -133,8 +105,8 @@ class FRMonitor(PypenguinClass):
                 is_visible  = self.visible,
             ))
 
-
-class SRMonitor(PypenguinClass):
+@dataclass
+class SRMonitor(GreprClass):
     _grepr = True
     _grepr_fields = ["opcode", "dropdowns", "sprite", "position", "is_visible"]
     
@@ -143,20 +115,11 @@ class SRMonitor(PypenguinClass):
     position: tuple[int | float, int | float]
     is_visible: bool
     
-    def __init__(self, 
-        opcode: str,
-        dropdowns: dict[str, SRDropdownValue],
-        position: tuple[int | float, int | float],
-        is_visible: bool,
-    ):
-        self.opcode     = opcode
-        if   opcode == NEW_OPCODE_VAR_VALUE:
+    def __post_init__(self) -> None:
+        if   self.opcode == NEW_OPCODE_VAR_VALUE:
             assert isinstance(self, SRVariableMonitor), f"Must be a SRVariableMonitor instance if opcode is {repr(NEW_OPCODE_VAR_VALUE)}"
-        elif opcode == NEW_OPCODE_LIST_VALUE:
+        elif self.opcode == NEW_OPCODE_LIST_VALUE:
             assert isinstance(self, SRListMonitor), f"Must be a SRListMonitor instance if opcode is {repr(NEW_OPCODE_LIST_VALUE)}"
-        self.dropdowns  = dropdowns
-        self.position   = position
-        self.is_visible = is_visible
     
     def validate(self, path: list, info_api: OpcodeInfoAPI):
         AA_TYPE(self, path, "opcode", str)
@@ -188,32 +151,13 @@ class SRMonitor(PypenguinClass):
                 inputs        = {},
             )
 
-
+@dataclass
 class SRVariableMonitor(SRMonitor):
     _grepr_fields = SRMonitor._grepr_fields + ["slider_min", "slider_max", "allow_only_integers"]
     
     slider_min: int | float
     slider_max: int | float
     allow_only_integers: bool
-    
-    def __init__(self, 
-        opcode: str,
-        dropdowns: dict[str, SRDropdownValue],
-        position: tuple[int | float, int | float],
-        is_visible: bool,
-        slider_min: int | float,
-        slider_max: int | float,
-        allow_only_integers: bool,
-    ):
-        super().__init__(
-            opcode     = opcode,
-            dropdowns  = dropdowns,
-            position   = position,
-            is_visible = is_visible,
-        )
-        self.slider_min          = slider_min
-        self.slider_max          = slider_max
-        self.allow_only_integers = allow_only_integers
     
     def validate(self, path: list, info_api: OpcodeInfoAPI):
         super().validate(path, info_api)
@@ -231,25 +175,11 @@ class SRVariableMonitor(SRMonitor):
 
         AA_BIGGER_OR_EQUAL(self, path, "slider_max", "slider_min")
 
+@dataclass
 class SRListMonitor(SRMonitor):
     _grepr_fields = SRMonitor._grepr_fields + ["size"]
 
     size: tuple[int | float, int | float]
-    
-    def __init__(self, 
-        opcode: str,
-        dropdowns: dict[str, SRDropdownValue],
-        position: tuple[int | float, int | float],
-        is_visible: bool,
-        size: tuple[int | float, int | float],
-    ):
-        super().__init__(
-            opcode     = opcode,
-            dropdowns  = dropdowns,
-            position   = position,
-            is_visible = is_visible,
-        )
-        self.size = size
     
     def validate(self, path: list, info_api: OpcodeInfoAPI):
         super().validate(path, info_api)

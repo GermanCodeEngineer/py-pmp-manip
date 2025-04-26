@@ -1,7 +1,8 @@
-from typing import Any
-from copy   import deepcopy
+from typing      import Any
+from copy        import deepcopy
+from dataclasses import dataclass
 
-from utility     import PypenguinClass, PypenguinEnum, ThanksError
+from utility     import GreprClass, PypenguinEnum, ThanksError
 from utility     import AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_MIN, AA_RANGE, AA_COORD_PAIR, AA_NOT_ONE_OF, SameNameTwiceError
 from opcode_info import OpcodeInfoAPI
 
@@ -16,7 +17,8 @@ from core.monitor        import SRMonitor
 from core.vars_lists     import SRVariable, SRSpriteOnlyVariable, SRAllSpriteVariable, SRCloudVariable
 from core.vars_lists     import SRList, SRSpriteOnlyList, SRAllSpriteList
 
-class FRTarget(PypenguinClass):
+@dataclass
+class FRTarget(GreprClass):
     _grepr = True
     _grepr_fields = ["is_stage", "name", "variables", "lists", "broadcasts", "custom_vars", "blocks", "comments", "current_costume", "costumes", "sounds", "id", "volume", "layer_order"]
     
@@ -34,38 +36,9 @@ class FRTarget(PypenguinClass):
     id: str
     volume: int | float
     layer_order: int
-
-    def __init__(self, 
-        is_stage: bool,
-        name: str,
-        variables: dict[str, tuple[str, Any]],
-        lists: dict[str, tuple[str, Any]],
-        broadcasts: dict[str, str],
-        custom_vars: list | None,
-        blocks: dict[str, tuple | FRBlock],
-        comments: dict[str, FRComment],
-        current_costume: int,
-        costumes: list[FRCostume],
-        sounds: list[FRSound] ,
-        id: str,
-        volume: int | float,
-        layer_order: int,
-    ):
-        self.is_stage        = is_stage
-        self.name            = name
-        self.variables       = variables
-        self.lists           = lists
-        self.broadcasts      = broadcasts
-        self.custom_vars     = custom_vars
+    
+    def __post_init__(self) -> None:
         if self.custom_vars != []: raise ThanksError()
-        self.blocks          = blocks
-        self.comments        = comments
-        self.current_costume = current_costume
-        self.costumes        = costumes
-        self.sounds          = sounds
-        self.id              = id
-        self.volume          = volume
-        self.layer_order     = layer_order
 
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRTarget":
@@ -195,7 +168,8 @@ class FRTarget(PypenguinClass):
             new_lists.append(cls(name=name, current_value=current_value))
         
         return new_variables, new_lists
-                
+
+@dataclass          
 class FRStage(FRTarget):
     _grepr_fields = FRTarget._grepr_fields + ["tempo", "video_transparency", "video_state", "text_to_speech_language"]
     
@@ -203,48 +177,6 @@ class FRStage(FRTarget):
     video_transparency: int | float
     video_state: str
     text_to_speech_language: str | None
-    
-    def __init__(self, 
-        is_stage: bool,
-        name: str,
-        variables: dict[str, tuple[str, Any]],
-        lists: dict[str, tuple[str, Any]],
-        broadcasts: dict[str, str],
-        custom_vars: list | None,
-        blocks: dict[str, tuple | FRBlock],
-        comments: dict[str, FRComment],
-        current_costume: int,
-        costumes: list[FRCostume],
-        sounds: list[FRSound] ,
-        id: str,
-        volume: int | float,
-        layer_order: int,
-
-        tempo: int,
-        video_transparency: int | float,
-        video_state: str,
-        text_to_speech_language: str | None,
-    ):
-        super().__init__(
-            is_stage        = is_stage,
-            name            = name,
-            variables       = variables,
-            lists           = lists,
-            broadcasts      = broadcasts,
-            custom_vars     = custom_vars,
-            blocks          = blocks,
-            comments        = comments,
-            current_costume = current_costume,
-            costumes        = costumes,
-            sounds          = sounds,
-            id              = id,
-            volume          = volume,
-            layer_order     = layer_order,
-        )
-        self.tempo                   = tempo
-        self.video_transparency      = video_transparency
-        self.video_state             = video_state
-        self.text_to_speech_language = text_to_speech_language
 
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRTarget":
@@ -300,6 +232,7 @@ class FRStage(FRTarget):
             volume        = self.volume,
         ), all_sprite_variables, all_sprite_lists)
 
+@dataclass
 class FRSprite(FRTarget):
     _grepr_fields = FRTarget._grepr_fields + ["visible", "x", "y", "size", "direction", "draggable", "rotation_style"]
 
@@ -310,54 +243,6 @@ class FRSprite(FRTarget):
     direction: int | float
     draggable: bool
     rotation_style: str
-
-    def __init__(self, 
-        is_stage: bool,
-        name: str,
-        variables: dict[str, tuple[str, Any]],
-        lists: dict[str, tuple[str, Any]],
-        broadcasts: dict[str, str],
-        custom_vars: list | None,
-        blocks: dict[str, tuple | FRBlock],
-        comments: dict[str, FRComment],
-        current_costume: int,
-        costumes: list[FRCostume],
-        sounds: list[FRSound] ,
-        id: str,
-        volume: int | float,
-        layer_order: int,
-
-        visible: bool,
-        x: int | float,
-        y: int | float,
-        size: int | float,
-        direction: int | float,
-        draggable: bool,
-        rotation_style: str,
-    ):
-        super().__init__(
-            is_stage        = is_stage,
-            name            = name,
-            variables       = variables,
-            lists           = lists,
-            broadcasts      = broadcasts,
-            custom_vars     = custom_vars,
-            blocks          = blocks,
-            comments        = comments,
-            current_costume = current_costume,
-            costumes        = costumes,
-            sounds          = sounds,
-            id              = id,
-            volume          = volume,
-            layer_order     = layer_order,
-        )
-        self.visible        = visible
-        self.x              = x
-        self.y              = y
-        self.size           = size
-        self.direction      = direction
-        self.draggable      = draggable
-        self.rotation_style = rotation_style
 
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRTarget":
@@ -427,7 +312,8 @@ class FRSprite(FRTarget):
             rotation_style        = SRSpriteRotationStyle.from_string(self.rotation_style),
         ), None, None)
     
-class SRTarget(PypenguinClass):
+@dataclass
+class SRTarget(GreprClass):
     _grepr = True
     _grepr_fields = ["scripts", "comments", "costume_index", "costumes", "sounds", "volume"]
 
@@ -437,21 +323,6 @@ class SRTarget(PypenguinClass):
     costumes: list[SRCostume]
     sounds: list[SRSound]
     volume: int | float
-    
-    def __init__(self, 
-        scripts: list[SRScript],
-        comments: list[SRFloatingComment],
-        costume_index: int,
-        costumes: list[SRCostume],
-        sounds: list[SRSound],
-        volume: int | float,
-    ):
-        self.scripts       = scripts
-        self.comments      = comments
-        self.costume_index = costume_index
-        self.costumes      = costumes
-        self.sounds        = sounds
-        self.volume        = volume
 
     def validate(self, path: list, info_api: OpcodeInfoAPI) -> None:
         AA_LIST_OF_TYPE(self, path, "scripts", SRScript)
@@ -515,7 +386,8 @@ class SRTarget(PypenguinClass):
 
 class SRStage(SRTarget):
     pass # The stage has no additional properties
-     
+
+@dataclass
 class SRSprite(SRTarget):
     _grepr_fields = ["name"] + SRTarget._grepr_fields + ["sprite_only_variables", "sprite_only_lists", "local_monitors", "layer_order", "is_visible", "position", "size", "direction", "is_draggable", "rotation_style"]
     
@@ -531,45 +403,6 @@ class SRSprite(SRTarget):
     is_draggable: bool
     rotation_style: "SRSpriteRotationStyle"
     
-    def __init__(self, 
-        name: str,
-        scripts: list[SRScript],
-        comments: list[SRFloatingComment],
-        costume_index: int,
-        costumes: list[SRCostume],
-        sounds: list[SRSound],
-        volume: int | float,
-        sprite_only_variables: list[SRSpriteOnlyVariable],
-        sprite_only_lists: list[SRSpriteOnlyList],
-        local_monitors: list[SRMonitor],
-        layer_order: int,
-        is_visible: bool,
-        position: tuple[int | float, int | float],
-        size: int | float,
-        direction: int | float,
-        is_draggable: bool,
-        rotation_style: "SRSpriteRotationStyle",
-    ):
-        self.name = name
-        super().__init__(
-            scripts       = scripts,
-            comments      = comments,
-            costume_index = costume_index,
-            costumes      = costumes,
-            sounds        = sounds,
-            volume        = volume,
-        )
-        self.sprite_only_variables = sprite_only_variables
-        self.sprite_only_lists     = sprite_only_lists
-        self.local_monitors        = local_monitors
-        self.layer_order           = layer_order
-        self.is_visible            = is_visible
-        self.position              = position
-        self.size                  = size
-        self.direction             = direction
-        self.is_draggable          = is_draggable
-        self.rotation_style        = rotation_style
-        
     def validate(self, path: list, info_api: OpcodeInfoAPI) -> None:
         super().validate(path, info_api)
         

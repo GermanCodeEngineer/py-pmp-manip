@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-from typing      import Callable, Iterable
+from typing      import Callable
 
-from utility import PypenguinClass, PypenguinEnum
+from utility import PypenguinEnum, GreprClass
 
 class SpecialCaseType(PypenguinEnum):
     def __repr__(self) -> str:
@@ -20,13 +20,13 @@ class SpecialCaseType(PypenguinEnum):
     INSTEAD_GET_ALL_NEW_INPUT_IDS = 4
 
 @dataclass
-class SpecialCase:
+class SpecialCase(GreprClass):
+    _grepr = True
+    _grepr_fields = ["type", "function"]
+
     type: SpecialCaseType
     function: Callable
     
-    def __repr__(self):
-        return f"SpecialCase(type={repr(self.type)}, function={self.function.__name__})"
-
     def call(self, *args, **kwargs):
         return self.function(*args, **kwargs)
 

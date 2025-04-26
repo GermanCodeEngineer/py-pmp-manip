@@ -1,8 +1,10 @@
-from typing import Any
+from typing      import Any
+from dataclasses import dataclass
 
-from utility import PypenguinClass
+from utility import GreprClass
 
-class FRMeta(PypenguinClass):
+@dataclass
+class FRMeta(GreprClass):
     _grepr = True
     _grepr_fields = ["semver", "vm", "agent", "platform"]
     
@@ -10,17 +12,6 @@ class FRMeta(PypenguinClass):
     vm: str
     agent: str
     platform: "FRPlatform"
-    
-    def __init__(self, 
-        semver: str,
-        vm: str,
-        agent: str,
-        platform: "FRPlatform",
-    ):
-        self.semver   = semver
-        self.vm       = vm
-        self.agent    = agent
-        self.platform = platform
 
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRMeta":
@@ -31,23 +22,14 @@ class FRMeta(PypenguinClass):
             platform = FRPlatform.from_data(data["platform"]),
         )
 
-
-class FRPlatform(PypenguinClass):
+@dataclass
+class FRPlatform(GreprClass):
     _grepr = True
     _grepr_fields = ["name", "url", "version"]
     
     name: str
     url: str
     version: str
-    
-    def __init__(self, 
-        name: str,
-        url: str,
-        version: str,
-    ):
-        self.name    = name
-        self.url     = url
-        self.version = version
 
     @classmethod
     def from_data(cls, data: dict[str, str]) -> "FRPlatform":

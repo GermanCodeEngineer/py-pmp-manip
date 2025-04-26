@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from utility       import DualKeyDict, PypenguinClass
+from utility       import DualKeyDict
 from block_opcodes import *
 
 from opcode_info.main             import OpcodeInfo, OpcodeType, OpcodeInfoGroup, OpcodeInfoAPI
@@ -19,10 +19,8 @@ from opcode_info.groups.variables import variables
 from opcode_info.groups.lists     import lists
 
 if TYPE_CHECKING:
-    from core.block          import FRBlock, TRBlock, SRBlock
-    from core.comment        import SRAttachedComment
-    from core.block_mutation import FRCustomBlockMutation
-    from core.fr_to_sr_api   import FRtoSRAPI
+    from core.block          import FRBlock, TRBlock
+    from core.fr_to_tr_api   import FRtoTRAPI
 
 motion.add_opcode("motion_goto_menu", "#REACHABLE TARGET MENU (GO)", OpcodeInfo(
     opcode_type=OpcodeType.MENU,
