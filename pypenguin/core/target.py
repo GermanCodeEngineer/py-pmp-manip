@@ -3,18 +3,18 @@ from copy   import deepcopy
 
 from utility     import PypenguinClass, PypenguinEnum, ThanksError
 from utility     import AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_MIN, AA_RANGE, AA_COORD_PAIR, AA_NOT_ONE_OF, SameNameTwiceError
-from opcode_info import OpcodeInfoApi
-from config      import FRtoTRApi, SpecialCaseHandler
+from opcode_info import OpcodeInfoAPI
 
-from asset          import FRCostume, FRSound, SRCostume, SRSound
-from block          import FRBlock, TRBlock, SRScript, TRBlockReference
-from block_mutation import SRCustomBlockMutation
-from comment        import FRComment, SRFloatingComment, SRAttachedComment
-from context        import PartialContext, FullContext
-from dropdown       import SRDropdownValue, SRDropdownKind
-from monitor        import SRMonitor
-from vars_lists     import SRVariable, SRSpriteOnlyVariable, SRAllSpriteVariable, SRCloudVariable
-from vars_lists     import SRList, SRSpriteOnlyList, SRAllSpriteList
+from core.asset          import FRCostume, FRSound, SRCostume, SRSound
+from core.block          import FRBlock, TRBlock, SRScript, TRBlockReference
+from core.block_mutation import SRCustomBlockMutation
+from core.comment        import FRComment, SRFloatingComment, SRAttachedComment
+from core.context        import PartialContext, FullContext
+from core.dropdown       import SRDropdownValue, SRDropdownKind
+from core.fr_to_tr_api   import FRtoTRAPI
+from core.monitor        import SRMonitor
+from core.vars_lists     import SRVariable, SRSpriteOnlyVariable, SRAllSpriteVariable, SRCloudVariable
+from core.vars_lists     import SRList, SRSpriteOnlyList, SRAllSpriteList
 
 class FRTarget(PypenguinClass):
     _grepr = True
@@ -97,14 +97,14 @@ class FRTarget(PypenguinClass):
             layer_order     = data["layerOrder"],
         )
 
-    def proto_step(self, config: SpecialCaseHandler, info_api: OpcodeInfoApi
+    def proto_step(self, info_api: OpcodeInfoAPI
     ) -> tuple[
         list[SRScript], 
         list[SRFloatingComment], 
         list[SRCostume], 
         list[SRSound], 
         list[SRVariable], 
-        list[SRList]
+        list[SRList],
     ]:
         floating_comments = []
         attached_comments = {}
@@ -120,11 +120,10 @@ class FRTarget(PypenguinClass):
             if isinstance(block, tuple):
                 blocks[block_reference] = FRBlock.from_tuple(block, parent_id=None)
 
-        block_api = FRtoTRApi(blocks=blocks, block_comments=attached_comments)
+        block_api = FRtoTRAPI(blocks=blocks, block_comments=attached_comments)
         new_blocks: dict["TRBlockReference", "TRBlock"] = {}
         for block_reference, block in blocks.items():
             new_block = block.step(
-                config    = config,
                 block_api = block_api,
                 info_api  = info_api,
                 own_id    = block_reference,
@@ -154,8 +153,6 @@ class FRTarget(PypenguinClass):
             block = new_blocks[top_level_block_ref]
             position, script_blocks = block.step(
                 all_blocks    = new_blocks,
-            #    own_reference = top_level_block_ref,
-                config        = config,
                 info_api      = info_api,
             )
             new_scripts.append(SRScript(
@@ -284,7 +281,7 @@ class FRStage(FRTarget):
             text_to_speech_language = data["textToSpeechLanguage"],
         )
     
-    def step(self, config: SpecialCaseHandler, info_api: OpcodeInfoApi
+    def step(self, info_api: OpcodeInfoAPI
     ) -> tuple["SRStage", list[SRAllSpriteVariable],  list[SRAllSpriteList]]:
         (
             scripts,
@@ -293,10 +290,7 @@ class FRStage(FRTarget):
             sounds,
             all_sprite_variables,
             all_sprite_lists,
-        ) = super().proto_step(
-            config   = config,
-            info_api = info_api,
-        )
+        ) = super().proto_step(info_api)
         return (SRStage(
             scripts       = scripts,
             comments      = comments,
@@ -403,7 +397,7 @@ class FRSprite(FRTarget):
             rotation_style  = data["rotationStyle"],
         )
 
-    def step(self, config: SpecialCaseHandler, info_api: OpcodeInfoApi
+    def step(self, info_api: OpcodeInfoAPI
     ) -> tuple["SRSprite", None, None]:
         (
             scripts,
@@ -412,10 +406,7 @@ class FRSprite(FRTarget):
             sounds,
             sprite_only_variables,
             sprite_only_lists,
-        ) = super().proto_step(
-            config   = config,
-            info_api = info_api,
-        )
+        ) = super().proto_step(info_api)
         return (SRSprite(
             name                  = self.name,
             scripts               = scripts,
@@ -462,7 +453,7 @@ class SRTarget(PypenguinClass):
         self.sounds        = sounds
         self.volume        = volume
 
-    def validate(self, path: list, info_api: OpcodeInfoApi) -> None:
+    def validate(self, path: list, info_api: OpcodeInfoAPI) -> None:
         AA_LIST_OF_TYPE(self, path, "scripts", SRScript)
         AA_LIST_OF_TYPE(self, path, "comments", SRFloatingComment)
         AA_LIST_OF_TYPE(self, path, "costumes", SRCostume)
@@ -494,7 +485,11 @@ class SRTarget(PypenguinClass):
             defined_sounds[sound.name] = current_path
         # TODO: complete this
     
-    def validate_scripts(self, path: list, info_api: OpcodeInfoApi, context: PartialContext) -> None:
+    def validate_scripts(self, 
+        path: list, 
+        info_api: OpcodeInfoAPI,
+        context: PartialContext,
+    ) -> None:
         context: FullContext = FullContext.from_partial(
             pc       = context,
             costumes = [SRDropdownValue(SRDropdownKind.COSTUME, costume.name) for costume in self.costumes],
@@ -508,7 +503,6 @@ class SRTarget(PypenguinClass):
                 info_api = info_api,
                 context  = context,
             )
-            cb_mutation = None
             for j, block in enumerate(script.blocks):
                 current_path = path+["scripts", i, "blocks", j]
                 if isinstance(block.mutation, SRCustomBlockMutation):
@@ -576,7 +570,7 @@ class SRSprite(SRTarget):
         self.is_draggable          = is_draggable
         self.rotation_style        = rotation_style
         
-    def validate(self, path: list, info_api: OpcodeInfoApi) -> None:
+    def validate(self, path: list, info_api: OpcodeInfoAPI) -> None:
         super().validate(path, info_api)
         
         AA_TYPE(self, path, "name", str)

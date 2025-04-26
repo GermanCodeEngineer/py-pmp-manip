@@ -1,9 +1,12 @@
-from utility                      import DualKeyDict
-from block_opcodes                import *
+from typing import TYPE_CHECKING
 
-from opcode_info.opcode           import OpcodeInfo, OpcodeType, OpcodeInfoGroup
-from opcode_info.input            import InputInfo, InputType
+from utility       import DualKeyDict, PypenguinClass
+from block_opcodes import *
+
+from opcode_info.main             import OpcodeInfo, OpcodeType, OpcodeInfoGroup, OpcodeInfoAPI
+from opcode_info.input            import InputInfo, InputType, InputMode
 from opcode_info.dropdown         import DropdownInfo, DropdownType
+from opcode_info.special_case     import SpecialCase, SpecialCaseType
 
 from opcode_info.groups.motion    import motion
 from opcode_info.groups.looks     import looks
@@ -14,6 +17,12 @@ from opcode_info.groups.sensing   import sensing
 from opcode_info.groups.operators import operators
 from opcode_info.groups.variables import variables
 from opcode_info.groups.lists     import lists
+
+if TYPE_CHECKING:
+    from core.block          import FRBlock, TRBlock, SRBlock
+    from core.comment        import SRAttachedComment
+    from core.block_mutation import FRCustomBlockMutation
+    from core.fr_to_sr_api   import FRtoSRAPI
 
 motion.add_opcode("motion_goto_menu", "#REACHABLE TARGET MENU (GO)", OpcodeInfo(
     opcode_type=OpcodeType.MENU,
@@ -80,40 +89,28 @@ sensing.add_opcode("sensing_fingeroptions", "#FINGER INDEX MENU", OpcodeInfo(
     opcode_type=OpcodeType.MENU,
 ))
 
-variables.add_opcode(OPCODE_VAR_VALUE, OpcodeInfo(
+variables.add_opcode(OPCODE_VAR_VALUE, NEW_OPCODE_VAR_VALUE, OpcodeInfo(
     opcode_type=OpcodeType.STRING_REPORTER,
-    new_opcode=NEW_OPCODE_VAR_VALUE,
-    dropdowns={
-        "VARIABLE": DropdownInfo(DropdownType.VARIABLE, new="VARIABLE"),
-    },
+    dropdowns=DualKeyDict({
+        ("VARIABLE", "VARIABLE"): DropdownInfo(DropdownType.VARIABLE),
+    }),
     can_have_monitor="True",
 ))
-lists.add_opcode(OPCODE_LIST_VALUE, OpcodeInfo(
+lists.add_opcode(OPCODE_LIST_VALUE, NEW_OPCODE_LIST_VALUE, OpcodeInfo(
     opcode_type=OpcodeType.STRING_REPORTER,
-    new_opcode=NEW_OPCODE_LIST_VALUE,
-    dropdowns={
-        "LIST": DropdownInfo(DropdownType.LIST, new="LIST"),
-    },
+    dropdowns=DualKeyDict({
+        ("LIST", "LIST"): DropdownInfo(DropdownType.LIST),
+    }),
     can_have_monitor="True",
 ))
 
-def CB_OLD_OPCODE_HANDLER(new_opcode: str, mutation: "SRMutation | None") -> str | None:
-    from core.block_mutation import SRCustomOpcodeMutation
-    if new_opcode == NEW_OPCODE_CB_DEF:
-        assert isinstance(mutation, SRCustomOpcodeMutation)
-        if mutation.optype.is_reporter:
-            return OPCODE_CB_DEF_RET
-        else:
-            return OPCODE_CB_DEF
-    return None
-
-custom_opcodes = OpcodeInfoGroup(
+custom_blocks = OpcodeInfoGroup(
     name="Custom Opcodes",
-    opcode_infos=DualKeyDict({
+    opcode_info=DualKeyDict({
         (OPCODE_CB_DEF, NEW_OPCODE_CB_DEF): OpcodeInfo(
             opcode_type=OpcodeType.HAT,
         ),
-        (OPCODE_CB_DEF_RET, NEW_OPCODE_CB_DEF): OpcodeInfo(
+        (OPCODE_CB_DEF_RET, NEW_OPCODE_CB_DEF_REP): OpcodeInfo(
             opcode_type=OpcodeType.HAT,
         ),
         (OPCODE_CB_PROTOTYPE, "#CUSTOM BLOCK PROTOTYPE"): OpcodeInfo( # only temporary
@@ -130,35 +127,126 @@ custom_opcodes = OpcodeInfoGroup(
         ),
         ("procedures_set", "set (PARAM) to (VALUE)"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
-            inputs={
+            inputs=DualKeyDict({
                 ("PARAM", "PARAM"): InputInfo(InputType.ROUND),
                 ("VALUE", "VALUE"): InputInfo(InputType.TEXT),
-            },
+            }),
         ),
         (OPCODE_CB_ARG_TEXT, "value of text [ARGUMENT]"): OpcodeInfo(
             opcode_type=OpcodeType.STRING_REPORTER,
-            alt_opcode_prefix="argument",
         ),
         (OPCODE_CB_ARG_BOOL, "value of boolean [ARGUMENT]"): OpcodeInfo(
             opcode_type=OpcodeType.BOOLEAN_REPORTER,
-            alt_opcode_prefix="argument",
         ),
     }),
-    get_old_opcode_handler=CB_OLD_OPCODE_HANDLER,
 )
 
+info_api = OpcodeInfoAPI()
+info_api.add_group(motion       )
+info_api.add_group(looks        )
+info_api.add_group(sounds       )
+info_api.add_group(events       )
+info_api.add_group(control      )
+info_api.add_group(sensing      )
+info_api.add_group(operators    )
+info_api.add_group(variables    )
+info_api.add_group(lists        )
+info_api.add_group(custom_blocks)
 
 
+def PRE__CB_DEF(block: "FRBlock", block_api: "FRtoTRAPI") -> "FRBlock":
+    # Transfer mutation from prototype block to definition block
+    # Order deletion of the prototype block and its argument blocks
+    # Delete "custom_block" input, which references the prototype
+    prototype_id    = block.inputs["custom_block"][1]
+    prototype_block = block_api.get_block(prototype_id)
+    block.mutation  = prototype_block.mutation
+    block_api.schedule_block_deletion(prototype_id)
+    del block.inputs["custom_block"]
+     
+    for block_candidate_id, block_candidate in block_api.get_all_blocks().items():
+        if block_candidate.parent == prototype_id:
+            block_api.schedule_block_deletion(block_candidate_id)
+    return block
 
+info_api.add_opcodes_case(ANY_OPCODE_CB_DEF, SpecialCase(
+    type=SpecialCaseType.PRE_FR_STEP, 
+    function=PRE__CB_DEF,
+))
 
-info_api = OpcodeInfoApi()
-info_api.add_opcode_info_set(motion       )
-info_api.add_opcode_info_set(looks        )
-info_api.add_opcode_info_set(sounds       )
-info_api.add_opcode_info_set(events       )
-info_api.add_opcode_info_set(control      )
-info_api.add_opcode_info_set(sensing      )
-info_api.add_opcode_info_set(operators    )
-info_api.add_opcode_info_set(variables    )
-info_api.add_opcode_info_set(lists        )
-info_api.add_opcode_info_set(custom_opcodes)
+def PRE__CB_ARG(block: "FRBlock", block_api: "FRtoTRAPI") -> "FRBlock":
+    # Transfer argument name from a field into the mutation
+    # because only real dropdowns should be listed in "fields"
+    block.mutation.store_argument_name(block.fields["VALUE"][0])
+    del block.fields["VALUE"]
+    return block
+
+info_api.add_opcodes_case(ANY_OPCODE_CB_ARG, SpecialCase(
+    type=SpecialCaseType.PRE_FR_STEP, 
+    function=PRE__CB_ARG,
+))
+
+def PRE__CB_CALL(block: "FRBlock", block_api: "FRtoTRAPI") -> "FRBlock":
+    cb_mutation = block_api.get_cb_mutation(block.mutation.proccode)
+    new_inputs = {}
+    for input_id, input_value in block.inputs.items():
+        argument_index = cb_mutation.argument_ids.index(input_id)
+        argument_name  = cb_mutation.argument_names[argument_index]
+        new_inputs[argument_name] = input_value
+    block.inputs = new_inputs
+    return block
+
+info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
+    type=SpecialCaseType.PRE_FR_STEP, 
+    function=PRE__CB_CALL,
+))
+
+def INSTEAD__CB_PROTOTYPE(block: "FRBlock", block_api: "FRtoTRAPI") -> "TRBlock":
+    # Return an empty, temporary block
+    from core.block import TRBlock
+    return TRBlock(
+        opcode       = block.opcode,
+        inputs       = {},
+        dropdowns    = {},
+        position     = None,
+        comment      = None, # Can't possibly have a comment
+        mutation     = None,
+        next         = None,
+        is_top_level = False,
+    )
+
+info_api.add_opcode_case(OPCODE_CB_PROTOTYPE, SpecialCase(
+    type=SpecialCaseType.INSTEAD_FR_STEP,
+    function=INSTEAD__CB_PROTOTYPE,
+))
+
+def INSTEAD_GET_MODES__CB_CALL(block: "FRBlock", block_api: "FRtoTRAPI") -> dict[str, InputMode]:
+    # Get the complete mutation
+    # Then get the input's index in the triple list system
+    # Then get the default and derive the corresponding input mode
+    cb_mutation = block_api.get_cb_mutation(block.mutation.proccode)
+    input_modes = {}
+    #for input_id in block.inputs.keys():
+    #    argument_index = cb_mutation.argument_ids.index(input_id)
+    #    argument_default = cb_mutation.argument_defaults[argument_index]
+    #    input_modes[input_id] = InputType.get_by_cb_default(argument_default).get_mode()
+    for argument_index, argument_name in enumerate(cb_mutation.argument_names):
+        argument_default = cb_mutation.argument_defaults[argument_index]
+        input_modes[argument_name] = InputType.get_by_cb_default(argument_default).get_mode()
+    return input_modes
+
+info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
+    type=SpecialCaseType.INSTEAD_FR_STEP_INPUTS_GET_MODES, 
+    function=INSTEAD_GET_MODES__CB_CALL,
+))
+
+info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
+    type=SpecialCaseType.INSTEAD_GET_NEW_INPUT_ID, 
+    function=(lambda block, input_id: input_id),
+))
+
+info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
+    type=SpecialCaseType.INSTEAD_GET_ALL_NEW_INPUT_IDS,
+    function=(lambda block: list(block.mutation.custom_opcode.arguments.keys())),
+))
+

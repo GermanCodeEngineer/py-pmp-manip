@@ -183,7 +183,7 @@ for cat in ["motion", "looks", "sounds", "events", "control", "sensing", "operat
             if opcode == "event_whenkeypressed": print("HERE", attr)
             match attr:
                 case "type": 
-                    block_string += '        block_type=OpcodeType.' + bt_translation[value] + ',\n'
+                    block_string += '        opcode_type=OpcodeType.' + bt_translation[value] + ',\n'
                 case "category": pass
                 case "newOpcode": pass
                 case "inputs": 
@@ -222,5 +222,5 @@ for cat in ["motion", "looks", "sounds", "events", "control", "sensing", "operat
     
     string += "}))"
     #print(string)
-    with open("pypenguin/opcode_info/groups/"+cat+".py", "w") as file:
+    with open("../../../pypenguin/opcode_info/groups/"+cat+".py", "w") as file:
         file.write(string)

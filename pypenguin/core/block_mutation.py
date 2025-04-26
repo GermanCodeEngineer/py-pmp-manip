@@ -2,9 +2,9 @@ from json   import loads
 from abc    import ABC, abstractmethod
 from typing import Any
 
-from config  import FRtoTRApi
 from utility import PypenguinClass
 
+from core.fr_to_tr_api import FRtoTRAPI
 from core.custom_block import SRCustomBlockOpcode, SRCustomBlockOptype
 
 class FRMutation(PypenguinClass, ABC):
@@ -26,7 +26,7 @@ class FRMutation(PypenguinClass, ABC):
         )
 
     @abstractmethod
-    def step(self, block_api: FRtoTRApi) -> "SRMutation": pass
+    def step(self, block_api: FRtoTRAPI) -> "SRMutation": pass
 
 class FRCustomArgumentMutation(FRMutation):
     _grepr_fields = FRMutation._grepr_fields + ["color"]
@@ -51,7 +51,7 @@ class FRCustomArgumentMutation(FRMutation):
     def store_argument_name(self, name: str) -> None:
         self._argument_name = name
     
-    def step(self, block_api: FRtoTRApi) -> "SRCustomBlockArgumentMutation":
+    def step(self, block_api: FRtoTRAPI) -> "SRCustomBlockArgumentMutation":
         if getattr(self, "_argument_name", None) is None:
             raise Exception("Argument name must be set for stepping to be possible.")
         return SRCustomBlockArgumentMutation(
@@ -114,7 +114,7 @@ class FRCustomBlockMutation(FRMutation):
             color       = tuple(loads(data["color"  ])),
         )
     
-    def step(self, block_api: FRtoTRApi) -> "SRCustomBlockMutation":
+    def step(self, block_api: FRtoTRAPI) -> "SRCustomBlockMutation":
         return SRCustomBlockMutation(
             custom_opcode     = SRCustomBlockOpcode(
                 proccode          = self.proccode,
@@ -173,7 +173,7 @@ class FRCustomCallMutation(FRMutation):
             color  = tuple(loads(data["color"  ])),
         )
     
-    def step(self, block_api: FRtoTRApi) -> "SRCustomBlockCallMutation":
+    def step(self, block_api: FRtoTRAPI) -> "SRCustomBlockCallMutation":
         complete_mutation = block_api.get_cb_mutation(self.proccode) # Get complete mutation
         return SRCustomBlockCallMutation(
             custom_opcode      = SRCustomBlockOpcode(

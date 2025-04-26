@@ -3,8 +3,7 @@ from typing import Any
 from utility        import PypenguinClass
 from utility        import AA_TYPE, AA_TYPES, AA_COORD_PAIR, AA_LIST_OF_TYPE, AA_DICT_OF_TYPE
 from utility        import UnnecessaryInputError, MissingInputError, UnnecessaryDropdownError, MissingDropdownError, InvalidValueValidationError
-from opcode_info    import OpcodeInfoApi, OpcodeInfo, InputMode, OpcodeType
-from config         import FRtoTRApi, SpecialCaseHandler, SpecialCaseType
+from opcode_info    import OpcodeInfoAPI, OpcodeInfo, InputMode, OpcodeType, SpecialCaseType
 
 from core.block_mutation import FRMutation, FRCustomBlockMutation, FRCustomArgumentMutation, FRCustomCallMutation
 from core.block_mutation import SRMutation
@@ -12,6 +11,7 @@ from block_opcodes  import *
 from core.comment        import SRAttachedComment
 from core.context        import FullContext
 from core.dropdown       import SRDropdownValue
+from core.fr_to_tr_api   import FRtoTRAPI
 
 class FRBlock(PypenguinClass):
     _grepr = True
@@ -128,29 +128,21 @@ class FRBlock(PypenguinClass):
         return cls.from_data(block_data)
 
     def step(self, 
-        config: SpecialCaseHandler, 
-        block_api: FRtoTRApi, 
-        info_api: OpcodeInfoApi, 
+        block_api: FRtoTRAPI, 
+        info_api: OpcodeInfoAPI, 
         own_id: str
     ) -> "TRBlock":
-        block_info = info_api.get_info_by_opcode(self.opcode)
-        pre_event = config.get_event(
-            event_type = SpecialCaseType.PRE_FR_STEP,
-            opcode     = self.opcode,
-        )
-        if pre_event is not None:
-            self = pre_event.call(block_api=block_api, block=self)
+        opcode_info = info_api.get_info_by_old(self.opcode)
+        pre_case = opcode_info.get_special_case(SpecialCaseType.PRE_FR_STEP)
+        if pre_case is not None:
+            self = pre_case.call(block_api=block_api, block=self)
         
-        instead_event = config.get_event(
-            event_type = SpecialCaseType.INSTEAD_FR_STEP,
-            opcode     = self.opcode,
-        )
-        if instead_event is None:
+        instead_case = opcode_info.get_special_case(SpecialCaseType.INSTEAD_FR_STEP)
+        if instead_case is None:
             new_inputs = self.step_inputs(
-                config     = config,
                 block_api  = block_api,
                 info_api   = info_api,
-                block_info = block_info,
+                opcode_info = opcode_info,
                 own_id     = own_id,
             )
             new_dropdowns = {}
@@ -170,29 +162,25 @@ class FRBlock(PypenguinClass):
                 is_top_level = self.top_level,
             )
         else:
-            new_block = instead_event.call(block_api=block_api, block=self)
+            new_block = instead_case.call(block_api=block_api, block=self)
         
         #TODO: add custom handler system here for e.g. draw polygon block
         return new_block
 
     def step_inputs(self, 
-        config: SpecialCaseHandler, 
-        block_api: FRtoTRApi, 
-        info_api: OpcodeInfoApi,
-        block_info: OpcodeInfo,
+        block_api: FRtoTRAPI, 
+        info_api: OpcodeInfoAPI,
+        opcode_info: OpcodeInfo,
         own_id: str
-    ) -> dict[str, "TRInputValue"]:        
-        instead_event = config.get_event(
-            event_type = SpecialCaseType.INSTEAD_FR_STEP_INPUTS_GET_MODES,
-            opcode     = self.opcode
-        )
-        if instead_event is None:
+    ) -> dict[str, "TRInputValue"]:
+        instead_case = opcode_info.get_special_case(SpecialCaseType.INSTEAD_FR_STEP_INPUTS_GET_MODES)
+        if instead_case is None:
             input_modes = {
-                input_id: block_info.get_input_mode(input_id) 
+                input_id: opcode_info.get_input_info_by_old(input_id).type.get_mode()
                 for input_id in self.inputs.keys()
             }
         else:
-            input_modes = instead_event.call(block_api=block_api, block=self)                
+            input_modes = instead_case.call(block_api=block_api, block=self)                
         
         new_inputs = {}
         for input_id, input_value in self.inputs.items():
@@ -226,7 +214,6 @@ class FRBlock(PypenguinClass):
                 elif item_one_type == tuple and item_two_type == tuple: # e.g. 'VALUE': (3, (12, 'var', '=!vkqJLb6ODy(oqe-|ZN'), (10, '0'))
                     # one list block and text
                     immediate_block = FRBlock.from_tuple(input_value[1], parent_id=own_id).step(
-                        config=config,
                         block_api=block_api,
                         info_api=info_api,
                         own_id=None, # None is fine, because tuple blocks can't possibly contain more tuple blocks 
@@ -235,7 +222,6 @@ class FRBlock(PypenguinClass):
                 elif item_one_type == tuple and item_two_type == str: # "TOUCHINGOBJECTMENU": (3, (12, "my variable", "`jEk@4|i[#Fk?(8x)AV.-my variable"), "b")
                     # two blocks(a menu, and a list block) and no text
                     immediate_block = FRBlock.from_tuple(input_value[1], parent_id=own_id).step(
-                        config=config,
                         block_api=block_api,
                         info_api=info_api,
                         own_id=None, # None is fine, because tuple blocks can't possibly contain more tuple blocks 
@@ -261,7 +247,6 @@ class FRBlock(PypenguinClass):
                     text = item[1]
                 elif isinstance(item, tuple) and item[0] in {12, 13}:
                     immediate_block = FRBlock.from_tuple(item, parent_id=own_id).step(
-                        config=config,
                         block_api=block_api,
                         info_api=info_api,
                         own_id=None, # None is fine, because tuple blocks can't possibly contain more tuple blocks 
@@ -342,13 +327,11 @@ class TRBlock(PypenguinClass):
     
     def step(self, 
             all_blocks: dict[str, "TRBlock"],
-        #    own_reference: "TRBlockReference",
-            config: SpecialCaseHandler,
-            info_api: OpcodeInfoApi,
+            info_api: OpcodeInfoAPI,
         ) -> tuple[tuple[int|float,int|float] | None, list["SRBlock | str"]]:
         
-        block_info = info_api.get_info_by_opcode(self.opcode)
-        if block_info.block_type == OpcodeType.MENU:
+        opcode_info = info_api.get_info_by_old(self.opcode)
+        if opcode_info.opcode_type == OpcodeType.MENU:
             return (None, [list(self.dropdowns.values())[0]])
             """ example:
             {
@@ -365,8 +348,6 @@ class TRBlock(PypenguinClass):
                 sub_block = all_blocks[sub_reference]
                 _, more_sub_blocks = sub_block.step(
                     all_blocks    = all_blocks,
-                #    own_reference = sub_reference,
-                    config        = config,
                     info_api      = info_api,
                 )
                 sub_blocks.append(more_sub_blocks)
@@ -429,19 +410,16 @@ class TRBlock(PypenguinClass):
                 case _: raise ValueError()
 
             if input_dropdown is not None:
-                input_type = block_info.get_input_type(input_id=input_id)
+                input_type = opcode_info.get_input_info_by_old(input_id).type
                 dropdown_type = input_type.get_corresponding_dropdown_type()
-                input_dropdown = dropdown_type.translate_old_to_new_value(old_value=input_dropdown)
+                input_dropdown = dropdown_type.translate_old_to_new_value(input_dropdown)
 
             
-            instead_event = config.get_event(
-                event_type = SpecialCaseType.INSTEAD_GET_NEW_INPUT_ID,
-                opcode     = self.opcode,
-            )
-            if instead_event is None:
-                new_input_id = block_info.get_new_input_id(input_id=input_id)
+            instead_case = opcode_info.get_special_case(SpecialCaseType.INSTEAD_GET_NEW_INPUT_ID)
+            if instead_case is None:
+                new_input_id = opcode_info.get_new_input_id(input_id)
             else:
-                new_input_id = instead_event.call(block=self, input_id=input_id)
+                new_input_id = instead_case.call(block=self, input_id=input_id)
             
             # TODO: add special case for handler for polygon block(x4, y4 inputs)
             new_inputs[new_input_id] = SRInputValue(
@@ -454,14 +432,14 @@ class TRBlock(PypenguinClass):
         
         new_dropdowns = {}
         for dropdown_id, dropdown_value in self.dropdowns.items():
-            dropdown_type = block_info.get_dropdown_type(dropdown_id=dropdown_id)
-            new_dropdown_id = block_info.get_new_dropdown_id(dropdown_id=dropdown_id)
+            dropdown_type = opcode_info.get_dropdown_info_by_old(dropdown_id).type
+            new_dropdown_id = opcode_info.get_new_dropdown_id(dropdown_id)
             new_dropdowns[new_dropdown_id] = dropdown_type.translate_old_to_new_value(
                 old_value=dropdown_value
             )
 
         new_block = SRBlock(
-            opcode    = block_info.new_opcode,
+            opcode    = info_api.get_new_by_old(self.opcode),
             inputs    = new_inputs,
             dropdowns = new_dropdowns,
             comment   = self.comment,
@@ -472,8 +450,6 @@ class TRBlock(PypenguinClass):
             next_block = all_blocks[self.next]
             _, next_blocks = next_block.step(
                 all_blocks    = all_blocks,
-            #    own_reference = self.next,
-                config        = config,
                 info_api      = info_api,
             )
             new_blocks.extend(next_blocks)
@@ -531,7 +507,11 @@ class SRScript(PypenguinClass):
         self.position = position
         self.blocks   = blocks
 
-    def validate(self, path: list, info_api: OpcodeInfoApi, context: FullContext) -> None:
+    def validate(self, 
+        path: list, 
+        info_api: OpcodeInfoAPI,
+        context: FullContext,
+    ) -> None:
         AA_COORD_PAIR(self, path, "position")
         AA_LIST_OF_TYPE(self, path, "blocks", SRBlock)
         
@@ -566,22 +546,27 @@ class SRBlock(PypenguinClass):
         self.comment      = comment
         self.mutation     = mutation
     
-    def validate(self, path: list, info_api: OpcodeInfoApi, context: FullContext) -> None:
+    def validate(self, 
+        path: list, 
+        info_api: OpcodeInfoAPI, 
+        context: FullContext,
+    ) -> None:
         AA_TYPE(self, path, "opcode", str)
         AA_DICT_OF_TYPE(self, path, "inputs"   , key_t=str, value_t=SRInputValue   )
         AA_DICT_OF_TYPE(self, path, "dropdowns", key_t=str, value_t=SRDropdownValue)
         AA_TYPES(self, path, "comment", (SRAttachedComment, type(None)))
         AA_TYPES(self, path, "mutation", (SRMutation, type(None)))
         
-        block_info = info_api.get_info_by_new_opcode(
-            self.opcode, 
-            mutation=self.mutation,
-            default_none=False, #TODO: undo
-        )
-        if block_info is None:
+        opcode_info = info_api.get_info_by_new_safe(self.opcode)
+        if opcode_info is None:
             raise InvalidValueValidationError(path, f"opcode of {self.__class__.__name__} must be a defined opcode")
         
-        new_input_ids = block_info.get_new_input_ids()
+        instead_case = opcode_info.get_special_case(SpecialCaseType.INSTEAD_GET_ALL_NEW_INPUT_IDS)
+        if instead_case is None:
+            new_input_ids = opcode_info.get_all_new_input_ids()
+        else:
+            new_input_ids = instead_case.call(block=self)
+        
         for new_input_id, input_value in self.inputs.items():
             input_value.validate(
                 path     = path+["inputs", (new_input_id,)],
@@ -589,19 +574,19 @@ class SRBlock(PypenguinClass):
                 context  = context,
             )
             if new_input_id not in new_input_ids:
-                raise UnnecessaryInputError(path, f"inputs of {self.__class__.__name__} with opcode {repr(self.opcode)} includes unnecessary input {new_input_id}")
+                raise UnnecessaryInputError(path, f"inputs of {self.__class__.__name__} with opcode {repr(self.opcode)} includes unnecessary input {repr(new_input_id)}")
         for new_input_id in new_input_ids:
             if new_input_id not in self.inputs:
-                raise MissingInputError(path, f"inputs of {self.__class__.__name__} with opcode {repr(self.opcode)} is missing input {new_input_id}")
+                raise MissingInputError(path, f"inputs of {self.__class__.__name__} with opcode {repr(self.opcode)} is missing input {repr(new_input_id)}")
         
-        new_dropdown_ids = block_info.get_new_dropdown_ids()
+        new_dropdown_ids = opcode_info.get_all_new_dropdown_ids()
         for new_dropdown_id, dropdown_value in self.dropdowns.items():
             dropdown_value.validate(path+["dropdowns", (new_dropdown_id,)])
             if new_dropdown_id not in new_dropdown_ids:
-                raise UnnecessaryDropdownError(path, f"dropdowns of {self.__class__.__name__} with opcode {repr(self.opcode)} includes unnecessary dropdown {new_dropdown_id}")
+                raise UnnecessaryDropdownError(path, f"dropdowns of {self.__class__.__name__} with opcode {repr(self.opcode)} includes unnecessary dropdown {repr(new_dropdown_id)}")
         for new_dropdown_id in new_dropdown_ids:
             if new_dropdown_id not in self.dropdowns:
-                raise MissingDropdownError(path, f"dropdowns of {self.__class__.__name__} with opcode {repr(self.opcode)} is missing dropdown {new_dropdown_id}")
+                raise MissingDropdownError(path, f"dropdowns of {self.__class__.__name__} with opcode {repr(self.opcode)} is missing dropdown {repr(new_dropdown_id)}")
 
 class SRInputValue(PypenguinClass):
     _grepr = True
@@ -620,7 +605,7 @@ class SRInputValue(PypenguinClass):
         text: str                 | None = None,
         dropdown: SRDropdownValue | None = None,
     ):
-        self.mode     = mode
+        self.mode = mode
         match mode:
             case InputMode.BLOCK_AND_TEXT | InputMode.BLOCK_AND_MENU_TEXT:
                 self.block    = block
@@ -643,7 +628,7 @@ class SRInputValue(PypenguinClass):
         self.text     = text
         self.dropdown = dropdown
     
-    def validate(self, path: list, info_api: OpcodeInfoApi, context: FullContext) -> None:
+    def validate(self, path: list, info_api: OpcodeInfoAPI, context: FullContext) -> None:
         AA_TYPE(self, path, "mode", InputMode)
         AA_LIST_OF_TYPE(self, path, "blocks", SRBlock)
         AA_TYPES(self, path, "block", (SRBlock, type(None)))

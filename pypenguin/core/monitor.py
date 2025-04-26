@@ -1,12 +1,12 @@
 from typing import Any
 
-from utility     import PypenguinClass
-from utility     import AA_TYPE, AA_DICT_OF_TYPE, AA_COORD_PAIR, AA_EQUAL, AA_BIGGER_OR_EQUAL, InvalidValueValidationError, MissingDropdownError, UnnecessaryDropdownError
-from opcode_info import OpcodeInfoApi, DropdownType
-
-from core.dropdown      import SRDropdownValue
+from utility       import PypenguinClass
+from utility       import AA_TYPE, AA_DICT_OF_TYPE, AA_COORD_PAIR, AA_EQUAL, AA_BIGGER_OR_EQUAL, InvalidValueValidationError, MissingDropdownError, UnnecessaryDropdownError
+from opcode_info   import OpcodeInfoAPI, DropdownType
 from block_opcodes import *
-from core.context       import PartialContext
+
+from core.dropdown import SRDropdownValue
+from core.context  import PartialContext
 
 class FRMonitor(PypenguinClass):
     _grepr = True
@@ -85,13 +85,13 @@ class FRMonitor(PypenguinClass):
             is_discrete = data.get("isDiscrete", None),
         )
     
-    def step(self, info_api: OpcodeInfoApi, sprite_names: list[str]) -> tuple[str | None, "SRMonitor | None"]:
+    def step(self, info_api: OpcodeInfoAPI, sprite_names: list[str]) -> tuple[str | None, "SRMonitor | None"]:
         if ((self.sprite_name not in sprite_names) 
         and (self.sprite_name is not None) 
         and not(self.visible)):
             return None # Delete monitors of non-existing sprites
         
-        block_info = info_api.get_info_by_opcode(self.opcode)
+        opcode_info = info_api.get_info_by_old(self.opcode)
         
         new_dropdowns = {}
         for dropdown_id, dropdown_value in self.params.items():
@@ -102,13 +102,14 @@ class FRMonitor(PypenguinClass):
                 new_dropdown_id = "LIST"
                 dropdown_type   = DropdownType.LIST
             else:
-                new_dropdown_id = block_info.get_new_dropdown_id(dropdown_id)
-                dropdown_type   = block_info.get_dropdown_type  (dropdown_id)
+                new_dropdown_id = opcode_info.get_new_dropdown_id(dropdown_id)
+                dropdown_type   = opcode_info.get_dropdown_info  (dropdown_id).type
             new_dropdowns[new_dropdown_id] = dropdown_type.translate_old_to_new_value(dropdown_value)
         
+        new_opcode = info_api.get_new_by_old(self.opcode)
         if   self.opcode == OPCODE_VAR_VALUE:
             return (self.sprite_name, SRVariableMonitor(
-                opcode              = block_info.new_opcode,
+                opcode              = new_opcode,
                 dropdowns           = new_dropdowns,
                 position            = (self.x, self.y),
                 is_visible          = self.visible,
@@ -118,7 +119,7 @@ class FRMonitor(PypenguinClass):
             ))
         elif self.opcode == OPCODE_LIST_VALUE:
             return (self.sprite_name, SRListMonitor(
-                opcode      = block_info.new_opcode,
+                opcode      = new_opcode,
                 dropdowns   = new_dropdowns,
                 position    = (self.x, self.y),
                 is_visible  = self.visible,
@@ -126,7 +127,7 @@ class FRMonitor(PypenguinClass):
             ))
         else:
             return (self.sprite_name, SRMonitor(
-                opcode      = block_info.new_opcode,
+                opcode      = new_opcode,
                 dropdowns   = new_dropdowns,
                 position    = (self.x, self.y),
                 is_visible  = self.visible,
@@ -157,37 +158,29 @@ class SRMonitor(PypenguinClass):
         self.position   = position
         self.is_visible = is_visible
     
-    def validate(self, path: list, info_api: OpcodeInfoApi):
+    def validate(self, path: list, info_api: OpcodeInfoAPI):
         AA_TYPE(self, path, "opcode", str)
         AA_DICT_OF_TYPE(self, path, "dropdowns", key_t=str, value_t=SRDropdownValue)
         AA_COORD_PAIR(self, path, "position") # TODO: possibly ensure position is on stage
         AA_TYPE(self, path, "is_visible", bool)
         
-        block_info = info_api.get_info_by_new_opcode(
-            self.opcode, 
-            mutation=None, 
-            default_none=True,
-         )
-        if (block_info is None) or (not block_info.can_have_monitor):
+        opcode_info = info_api.get_info_by_new_safe(self.opcode)
+        if (opcode_info is None) or (not opcode_info.can_have_monitor):
             raise InvalidValueValidationError(path, f"opcode of {self.__class__.__name__} must be a defined opcode. That block must be able to have monitors")
         
-        new_dropdown_ids = block_info.get_new_dropdown_ids()
+        new_dropdown_ids = opcode_info.get_all_new_dropdown_ids()
         for new_dropdown_id, dropdown_value in self.dropdowns.items():
             dropdown_value.validate(path+["dropdowns", (new_dropdown_id,)])
             if new_dropdown_id not in new_dropdown_ids:
-                raise UnnecessaryDropdownError(path, f"dropdowns of {self.__class__.__name__} with opcode {repr(self.opcode)} includes unnecessary dropdown {new_dropdown_id}")
+                raise UnnecessaryDropdownError(path, f"dropdowns of {self.__class__.__name__} with opcode {repr(self.opcode)} includes unnecessary dropdown {repr(new_dropdown_id)}")
         for new_dropdown_id in new_dropdown_ids:
             if new_dropdown_id not in self.dropdowns:
-                raise MissingDropdownError(path, f"dropdowns of {self.__class__.__name__} with opcode {repr(self.opcode)} is missing dropdown {new_dropdown_id}")
+                raise MissingDropdownError(path, f"dropdowns of {self.__class__.__name__} with opcode {repr(self.opcode)} is missing dropdown {repr(new_dropdown_id)}")
     
-    def validate_dropdowns_values(self, path: list, info_api: OpcodeInfoApi, context: PartialContext):
-        block_info = info_api.get_info_by_new_opcode(
-            self.opcode, 
-            mutation=None,
-            default_none=False,
-        )
+    def validate_dropdowns_values(self, path: list, info_api: OpcodeInfoAPI, context: PartialContext):
+        opcode_info = info_api.get_info_by_new(self.opcode)
         for new_dropdown_id, dropdown_value in self.dropdowns.items():
-            dropdown_type = block_info.get_dropdown_type_by_new(new_dropdown_id)
+            dropdown_type = opcode_info.get_dropdown_info_by_new(new_dropdown_id).type
             dropdown_value.validate_value(
                 path          = path + ["dropdowns", (new_dropdown_id,)],
                 dropdown_type = dropdown_type, 
@@ -222,7 +215,7 @@ class SRVariableMonitor(SRMonitor):
         self.slider_max          = slider_max
         self.allow_only_integers = allow_only_integers
     
-    def validate(self, path: list, info_api: OpcodeInfoApi):
+    def validate(self, path: list, info_api: OpcodeInfoAPI):
         super().validate(path, info_api)
         AA_EQUAL(self, path, "opcode", NEW_OPCODE_VAR_VALUE)
         
@@ -258,7 +251,7 @@ class SRListMonitor(SRMonitor):
         )
         self.size = size
     
-    def validate(self, path: list, info_api: OpcodeInfoApi):
+    def validate(self, path: list, info_api: OpcodeInfoAPI):
         super().validate(path, info_api)
         AA_EQUAL(self, path, "opcode", NEW_OPCODE_LIST_VALUE)
         

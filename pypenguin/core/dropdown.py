@@ -2,12 +2,12 @@ from typing import Any, TYPE_CHECKING
 
 from utility     import PypenguinClass, PypenguinEnum, grepr
 from utility     import AA_TYPE, AA_JSON_COMPATIBLE, InvalidDropdownValueError
-from opcode_info import DropdownType
 
 from core.context import PartialContext
 
 if TYPE_CHECKING:
     from core.block import SRInputValue
+    from opcode_info import DropdownType
 
 class SRDropdownKind(PypenguinEnum):
     STANDARD       =  0
@@ -65,6 +65,7 @@ class SRDropdownValue(PypenguinClass):
                 "".join(["\n- "+repr(value) for value in possible_values])
             )
         
+        from opcode_info import DropdownType
         # TODO: get rid of these special cases
         match dropdown_type:
             case DropdownType.BROADCAST:
@@ -78,8 +79,6 @@ class SRDropdownValue(PypenguinClass):
                 if self not in context.scope_lists:
                     raise InvalidDropdownValueError(path, f"Must be a defined list. In this case one of these: {possible_values_string}")
             case _:
-
-                
                 possible_values = dropdown_type.calculate_possible_new_dropdown_values(
                     context = context,
                     inputs  = inputs,

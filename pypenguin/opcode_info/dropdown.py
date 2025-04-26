@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING
+from typing      import TYPE_CHECKING
+from dataclasses import dataclass, field
 
 from utility import PypenguinEnum, remove_duplicates
 
@@ -7,16 +8,12 @@ if TYPE_CHECKING:
 from core.dropdown import SRDropdownKind, SRDropdownValue
 from core.context import PartialContext, FullContext
 
+@dataclass
 class DropdownInfo:
     _grepr = True
-    _grepr_fields = ["type", "new"]
+    _grepr_fields = ["type"]
     
     type: "DropdownType"
-    new: str
-    
-    def __init__(self, type: "DropdownType", new: str):
-        self.type = type
-        self.new  = new
 
 class DropdownBehaviour(PypenguinEnum):
     def get_default_kind(self) -> "SRDropdownKind | None":
@@ -61,25 +58,19 @@ class DropdownBehaviour(PypenguinEnum):
 
 DDB = DropdownBehaviour    
 
+@dataclass
 class DropdownTypeInfo:
     _grepr = True
     _grepr_fields = ["direct_values", "behaviours", "old_direct_values", "fallback"]
 
-    direct_values:     list[str | int | bool]          
-    behaviours:        list[DropdownBehaviour]
-    old_direct_values: list[str | int | bool]          
-    fallback:          SRDropdownValue | None              
-
-    def __init__(self,
-        direct_values:     list[str | int | bool]  | None = None,
-        behaviours:        list[DropdownBehaviour] | None = None,
-        old_direct_values: list[str | int | bool]  | None = None,
-        fallback:          SRDropdownValue         | None = None,
-    ) -> None:
-        self.direct_values        = direct_values     or []
-        self.behaviours           = behaviours        or []
-        self.old_direct_values    = old_direct_values or self.direct_values
-        self.fallback             = fallback
+    direct_values:     list[str | int | bool]  = field(default_factory=list)
+    behaviours:        list[DropdownBehaviour] = field(default_factory=list)
+    old_direct_values: list[str | int | bool] | None = None  
+    fallback:          SRDropdownValue        | None = None
+    
+    def __post_init__(self):
+        if self.old_direct_values is None:
+            self.old_direct_values = self.direct_values        
     
 class DropdownType(PypenguinEnum):    
     def get_type_info(self) -> DropdownTypeInfo:
@@ -308,7 +299,7 @@ class DropdownType(PypenguinEnum):
         new_values = self.guess_possible_new_dropdown_values(include_behaviours=True)
         old_values = self.guess_possible_old_dropdown_values()
         default_kind = self.get_default_kind()
-
+        
         assert len(new_values) == len(old_values)
         
         if old_value in old_values:

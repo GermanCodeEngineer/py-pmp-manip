@@ -2,8 +2,7 @@ import json
 
 from utility     import read_file_of_zip, ThanksError, PypenguinClass, PypenguinEnum
 from utility     import AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_RANGE, SameNameTwiceError
-from opcode_info import OpcodeInfoApi
-from config      import SpecialCaseHandler
+from opcode_info import OpcodeInfoAPI
 
 from core.context    import PartialContext
 from core.dropdown   import SRDropdownValue, SRDropdownKind
@@ -102,17 +101,17 @@ class FRProject(PypenguinClass):
         #}
         return cls.from_data(project_data)
 
-    def step(self, config: SpecialCaseHandler, info_api: OpcodeInfoApi):
+    def step(self, info_api: OpcodeInfoAPI):
         new_sprites: list[SRSprite] = []
         for target in self.targets:
             if  target.is_stage:
                 old_stage: FRStage = target
                 (
                     new_stage, all_sprite_variables, all_sprite_lists,
-                ) = target.step(config=config, info_api=info_api)
+                ) = target.step(info_api)
                 new_stage: SRStage
             else:
-                new_sprite, _, _ = target.step(config=config, info_api=info_api)
+                new_sprite, _, _ = target.step(info_api)
                 new_sprite: SRSprite
                 new_sprites.append(new_sprite)
         
@@ -251,7 +250,7 @@ class SRProject(PypenguinClass):
                     raise SameNameTwiceError(other_path, current_path, "Two lists mustn't have the same name")
                 defined_lists[list_.name] = current_path
 
-    def validate(self, info_api: OpcodeInfoApi) -> None:
+    def validate(self, info_api: OpcodeInfoAPI) -> None:
         """
         Checks wether a SRProject is valid and raises a subclass of ValidationError if not.
         """

@@ -18,6 +18,16 @@ def grepr(obj, annotate_fields=True, include_attributes=False, *, indent=4):
             args = [f'{_format(key, level)[0]}: {_format(value, level)[0]}' for key,value in obj.copy().items()]    
             short = '{%s}' % (", ".join(args),)
             return '{%s%s}' % (prefix, sep.join(args)), False
+        elif isinstance(obj, DualKeyDict):
+            if not obj:
+                return 'DKD{}', True
+            args = []
+            for key1, key2, value in obj.items_key1_key2():
+                key1_str, _ = _format(key1, level)
+                key2_str, _ = _format(key2, level)
+                value_str, _ = _format(value, level)
+                args.append(f'{key1_str} / {key2_str}: {value_str}')
+            return 'DKD{%s%s}' % (prefix, sep.join(args)), False
         elif is_compatible:
             cls = type(obj)
             args = []
@@ -116,17 +126,6 @@ class PypenguinEnum(Enum):
     def __repr__(self):
         return self.__class__.__name__ + "." + self.name
 
-from typing import TypeVar, Generic
-
-K1 = TypeVar("K1")
-K2 = TypeVar("K2")
-V = TypeVar("V")
-from typing import TypeVar, Generic, Optional, Iterator
-
-K1 = TypeVar("K1")
-K2 = TypeVar("K2")
-V = TypeVar("V")
-
 from typing import TypeVar, Generic, Iterator
 
 K1 = TypeVar("K1")
@@ -135,11 +134,10 @@ V = TypeVar("V")
 
 class DualKeyDict(Generic[K1, K2, V]):
     _grepr = True
-    _grepr_fields = ["_values", "_k2_to_k1"]
-    
-    def __init__(self, data: dict[tuple[K1, K2], V] | None, /) -> None:
+    def __init__(self, data: dict[tuple[K1, K2], V] | None = None, /) -> None:
         self._values  : dict[K1, V ] = {}
         self._k2_to_k1: dict[K2, K1] = {}
+        self._k1_to_k2: dict[K1, K2] = {}
         if data is not None:
             for keys, value in data.items():
                 key1, key2 = keys
@@ -148,7 +146,7 @@ class DualKeyDict(Generic[K1, K2, V]):
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, DualKeyDict):
             return NotImplemented
-        return self._values == other._values and self._k2_to_k1 == other._k2_to_k1
+        return (self._values == other._values) and (self._k2_to_k1 == other._k2_to_k1) and (self._k1_to_k2 == other._k1_to_k2)
 
     def __repr__(self) -> str:
         return grepr(self)
@@ -156,6 +154,7 @@ class DualKeyDict(Generic[K1, K2, V]):
     def set(self, key1: K1, key2: K2, value: V) -> None:
         self._values[key1] = value
         self._k2_to_k1[key2] = key1
+        self._k1_to_k2[key1] = key2
 
     def get_by_key1(self, key1: K1) -> V:
         return self._values[key1]
@@ -168,10 +167,7 @@ class DualKeyDict(Generic[K1, K2, V]):
         return self._k2_to_k1[key2]
 
     def get_key2_for_key1(self, key1: K1) -> K2:
-        for key2, key1_candidate in self._k2_to_k1.items():
-            if key1_candidate == key1:
-                return key2
-        raise KeyError(f"Couldn't find key2 for key1 {repr(key1)}")
+        return self._k1_to_k2[key1]
 
     def has_key1(self, key1: K1) -> bool:
         return key1 in self._values

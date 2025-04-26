@@ -10,7 +10,7 @@ class InputInfo:
     _grepr_fields = ["type", "menu"]
     
     type: "InputType"
-    menu: MenuInfo
+    menu: MenuInfo | None = None
 
 class InputMode(PypenguinEnum):
     BLOCK_AND_TEXT               = 0
