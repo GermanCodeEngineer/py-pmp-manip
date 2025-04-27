@@ -17,7 +17,7 @@ class SpecialCaseType(PypenguinEnum):
     INSTEAD_GET_NEW_INPUT_ID = 3
     
     # SRBlock.validate:
-    INSTEAD_GET_ALL_NEW_INPUT_IDS = 4
+    INSTEAD_GET_ALL_NEW_INPUT_IDS_TYPES = 4
 
 @dataclass
 class SpecialCase(GreprClass):

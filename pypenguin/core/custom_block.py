@@ -2,6 +2,8 @@ from dataclasses import dataclass
 
 from utility import GreprClass, PypenguinEnum
 
+from opcode_info import InputType
+
 @dataclass(repr=False)
 class SRCustomBlockOpcode(GreprClass):
     _grepr = True
@@ -19,6 +21,9 @@ class SRCustomBlockOpcode(GreprClass):
                 for name, default in zip(argument_names, argument_defaults)
             },
         )
+    
+    def get_corresponding_input_types(self) -> dict[str, InputType]:
+        return {argument_id: arguemnt_type.get_corresponding_input_type() for argument_id, arguemnt_type in self.arguments.items()}
 
 class SRCustomBlockArgumentType(PypenguinEnum):
     @staticmethod
@@ -28,6 +33,15 @@ class SRCustomBlockArgumentType(PypenguinEnum):
                 return SRCustomBlockArgumentType.STRING_NUMBER
             case "false":
                 return SRCustomBlockArgumentType.BOOLEAN
+            case _:
+                raise ValueError()
+    
+    def get_corresponding_input_type(self) -> InputType:
+        match self:
+            case SRCustomBlockArgumentType.STRING_NUMBER:
+                return InputType.TEXT
+            case SRCustomBlockArgumentType.BOOLEAN:
+                return InputType.BOOLEAN,
             case _:
                 raise ValueError()
 

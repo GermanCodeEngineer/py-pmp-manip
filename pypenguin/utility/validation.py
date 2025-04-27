@@ -1,7 +1,7 @@
 import json
 from typing import Any
 
-from utility.errors import TypeValidationError, RangeValidationError, InvalidValueValidationError
+from utility.errors import TypeValidationError, RangeValidationError, InvalidValueError
 
 def value_and_descr(obj, attr) -> tuple[Any, str]:
     return getattr(obj, attr), f"{attr} of a {obj.__class__.__name__}"
@@ -16,6 +16,11 @@ def AA_TYPES(obj, path, attr, ts, condition=None) -> None:
     if not isinstance(attr_value, ts):
         types_str = "|".join([t.__name__ for t in ts])
         raise TypeValidationError(path, f"{descr} must be one of types {types_str} not {attr_value.__class__.__name__}", condition)
+
+def AA_NONE_OR_TYPE(obj, path, attr, t, condition=None) -> None:
+    attr_value, descr = value_and_descr(obj, attr)
+    if (attr_value is not None) and not(isinstance(attr_value, t)):
+        raise TypeValidationError(path, f"{descr} must be either None or of type {t.__name__} not of type {attr_value.__class__.__name__}", condition)
 
 def AA_LIST_OF_TYPE(obj, path, attr, t, condition=None) -> None:
     attr_value, descr = value_and_descr(obj, attr)
@@ -73,7 +78,7 @@ def AA_JSON_COMPATIBLE(obj, path, attr, condition=None):
 def AA_EQUAL(obj, path, attr, value, condition=None):
     attr_value, descr = value_and_descr(obj, attr)
     if attr_value != value:
-        raise InvalidValueValidationError(path, f"{descr} must be {value}", condition)
+        raise InvalidValueError(path, f"{descr} must be {value}", condition)
 
 def AA_BIGGER_OR_EQUAL(obj, path, attr1, attr2, condition=None):
     attr1_value, attr1_descr = value_and_descr(obj, attr1)
@@ -84,7 +89,7 @@ def AA_BIGGER_OR_EQUAL(obj, path, attr1, attr2, condition=None):
 def AA_NOT_ONE_OF(obj, path, attr, forbidden_values, condition=None):
     attr_value, descr = value_and_descr(obj, attr)
     if attr_value in forbidden_values:
-        raise InvalidValueValidationError(path, f"{descr} must not be one of {repr(forbidden_values)}")
+        raise InvalidValueError(path, f"{descr} must not be one of {repr(forbidden_values)}")
 
 import re
 from urllib.parse import urlparse

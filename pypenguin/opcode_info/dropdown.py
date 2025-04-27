@@ -87,7 +87,7 @@ class DropdownType(PypenguinEnum):
                     raise ValueError(f"Multiple default kinds for {self}: {default_kind} and {behaviour_default_kind}")
         return default_kind
 
-    def calculate_possible_new_dropdown_values(self, context: PartialContext|FullContext, inputs: dict[str, "SRInputValue"]) -> list[SRDropdownValue]:
+    def calculate_possible_new_dropdown_values(self, context: PartialContext|FullContext) -> list[SRDropdownValue]:
         dropdown_type_info = self.get_type_info()
         values: list[SRDropdownValue] = []
         for value in dropdown_type_info.direct_values:
@@ -122,46 +122,86 @@ class DropdownType(PypenguinEnum):
                 case DDB.MUTABLE_SPRITE_PROPERTY:
                     # works only for "set [PROPERTY] of ([TARGET]) to (VALUE)"; no other block uses this though
                     # TODO: possibly add special case
-                    if inputs["TARGET"].dropdown == SRDropdownValue(SRDropdownKind.STAGE, "stage"):
-                        values.extend([
-                            SRDropdownValue(SRDropdownKind.STANDARD, "backdrop"), 
-                            SRDropdownValue(SRDropdownKind.STANDARD, "volume"),
-                        ])
-                    else:
-                        values.extend([
-                            SRDropdownValue(SRDropdownKind.STANDARD, "x position"), 
-                            SRDropdownValue(SRDropdownKind.STANDARD, "y position"), 
-                            SRDropdownValue(SRDropdownKind.STANDARD, "direction"), 
-                            SRDropdownValue(SRDropdownKind.STANDARD, "costume"), 
-                            SRDropdownValue(SRDropdownKind.STANDARD, "size"),
-                            SRDropdownValue(SRDropdownKind.STANDARD, "volume"),
-                        ])
-                        name_key = inputs["TARGET"].dropdown.value
-                        values.extend(context.sprite_only_variables[name_key])
+                    #if inputs["TARGET"].dropdown == SRDropdownValue(SRDropdownKind.STAGE, "stage"):
+                    #    values.extend([
+                    #        SRDropdownValue(SRDropdownKind.STANDARD, "backdrop"), 
+                    #        SRDropdownValue(SRDropdownKind.STANDARD, "volume"),
+                    #    ])
+                    #else:
+                    #    values.extend([
+                    #        SRDropdownValue(SRDropdownKind.STANDARD, "x position"), 
+                    #        SRDropdownValue(SRDropdownKind.STANDARD, "y position"), 
+                    #        SRDropdownValue(SRDropdownKind.STANDARD, "direction"), 
+                    #        SRDropdownValue(SRDropdownKind.STANDARD, "costume"), 
+                    #        SRDropdownValue(SRDropdownKind.STANDARD, "size"),
+                    #        SRDropdownValue(SRDropdownKind.STANDARD, "volume"),
+                    #    ])
+                    #    name_key = inputs["TARGET"].dropdown.value
+                    #    values.extend(context.sprite_only_variables[name_key])
+                    
+                    # trying to validate here is so much additional work and makes everything a lot more complicated.
+                    # instead i will choose the lazy way here
+                    values.extend([
+                        SRDropdownValue(SRDropdownKind.STANDARD, "backdrop"), 
+                        SRDropdownValue(SRDropdownKind.STANDARD, "volume"),
+                    ])
+                    values.extend([
+                        SRDropdownValue(SRDropdownKind.STANDARD, "x position"), 
+                        SRDropdownValue(SRDropdownKind.STANDARD, "y position"), 
+                        SRDropdownValue(SRDropdownKind.STANDARD, "direction"), 
+                        SRDropdownValue(SRDropdownKind.STANDARD, "costume"), 
+                        SRDropdownValue(SRDropdownKind.STANDARD, "size"),
+                        SRDropdownValue(SRDropdownKind.STANDARD, "volume"),
+                    ])
+                    for sprite_only_variables in context.sprite_only_variables.values():
+                        values.extend(sprite_only_variables)
+
                     raise Exception("TODO: ensure this works")
                 
                 case DDB.READABLE_SPRITE_PROPERTY:
                     # works only for "[PROPERTY] of ([TARGET])"; no other block uses this though
-                    if inputs["TARGET"].dropdown == SRDropdownValue(SRDropdownKind.STAGE, "stage"):
-                        values.extend([
-                            SRDropdownValue(SRDropdownKind.STANDARD, "backdrop #"), 
-                            SRDropdownValue(SRDropdownKind.STANDARD, "backdrop name"), 
-                            SRDropdownValue(SRDropdownKind.STANDARD, "volume"),
-                        ])
-                        values.extend(context.all_sprite_variables)
-                    else:
-                        values.extend([
-                            SRDropdownValue(SRDropdownKind.STANDARD, "x position"), 
-                            SRDropdownValue(SRDropdownKind.STANDARD, "y position"), 
-                            SRDropdownValue(SRDropdownKind.STANDARD, "direction"), 
-                            SRDropdownValue(SRDropdownKind.STANDARD, "costume #"), 
-                            SRDropdownValue(SRDropdownKind.STANDARD, "costume name"), 
-                            SRDropdownValue(SRDropdownKind.STANDARD, "layer"), 
-                            SRDropdownValue(SRDropdownKind.STANDARD, "size"),
-                            SRDropdownValue(SRDropdownKind.STANDARD, "volume"),
-                        ])
-                        name_key = inputs["TARGET"].dropdown.value
-                        values.extend(context.sprite_only_variables[name_key])
+                    #if inputs["TARGET"].dropdown == SRDropdownValue(SRDropdownKind.STAGE, "stage"):
+                    #    values.extend([
+                    #        SRDropdownValue(SRDropdownKind.STANDARD, "backdrop #"), 
+                    #        SRDropdownValue(SRDropdownKind.STANDARD, "backdrop name"), 
+                    #        SRDropdownValue(SRDropdownKind.STANDARD, "volume"),
+                    #    ])
+                    #    values.extend(context.all_sprite_variables)
+                    #else:
+                    #    values.extend([
+                    #        SRDropdownValue(SRDropdownKind.STANDARD, "x position"), 
+                    #        SRDropdownValue(SRDropdownKind.STANDARD, "y position"), 
+                    #        SRDropdownValue(SRDropdownKind.STANDARD, "direction"), 
+                    #        SRDropdownValue(SRDropdownKind.STANDARD, "costume #"), 
+                    #        SRDropdownValue(SRDropdownKind.STANDARD, "costume name"), 
+                    #        SRDropdownValue(SRDropdownKind.STANDARD, "layer"), 
+                    #        SRDropdownValue(SRDropdownKind.STANDARD, "size"),
+                    #        SRDropdownValue(SRDropdownKind.STANDARD, "volume"),
+                    #    ])
+                    #    name_key = inputs["TARGET"].dropdown.value
+                    #    values.extend(context.sprite_only_variables[name_key])
+                    
+                    # trying to validate here is so much additional work and makes everything a lot more complicated.
+                    # instead i will choose the lazy way here
+
+                    values.extend([
+                        SRDropdownValue(SRDropdownKind.STANDARD, "backdrop #"), 
+                        SRDropdownValue(SRDropdownKind.STANDARD, "backdrop name"), 
+                        SRDropdownValue(SRDropdownKind.STANDARD, "volume"),
+                    ])
+                    values.extend(context.all_sprite_variables)
+                    values.extend([
+                        SRDropdownValue(SRDropdownKind.STANDARD, "x position"), 
+                        SRDropdownValue(SRDropdownKind.STANDARD, "y position"), 
+                        SRDropdownValue(SRDropdownKind.STANDARD, "direction"), 
+                        SRDropdownValue(SRDropdownKind.STANDARD, "costume #"), 
+                        SRDropdownValue(SRDropdownKind.STANDARD, "costume name"), 
+                        SRDropdownValue(SRDropdownKind.STANDARD, "layer"), 
+                        SRDropdownValue(SRDropdownKind.STANDARD, "size"),
+                        SRDropdownValue(SRDropdownKind.STANDARD, "volume"),
+                    ])
+                    for sprite_only_variables in context.sprite_only_variables.values():
+                        values.extend(sprite_only_variables)
 
                 case DDB.COSTUME:
                     values.extend(context.costumes)

@@ -244,7 +244,7 @@ info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
 ))
 
 info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
-    type=SpecialCaseType.INSTEAD_GET_ALL_NEW_INPUT_IDS,
-    function=(lambda block: list(block.mutation.custom_opcode.arguments.keys())),
+    type=SpecialCaseType.INSTEAD_GET_ALL_NEW_INPUT_IDS_TYPES,
+    function=(lambda block: block.mutation.custom_opcode.get_corresponding_input_types()),
 ))
 

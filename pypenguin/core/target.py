@@ -110,6 +110,9 @@ class FRTarget(GreprClass):
         top_level_block_refs: list[TRBlockReference] = []
         [top_level_block_refs.append(block_reference) if block.is_top_level else None for block_reference, block in new_blocks.items()]
         
+        from utility import grepr
+        print(grepr(new_blocks))
+
         # Account for that one bug(not my fault), where a block is falsely independent
         for block_reference, block in new_blocks.items():
             for input_value in block.inputs.values():

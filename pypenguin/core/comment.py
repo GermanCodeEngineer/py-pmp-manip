@@ -2,7 +2,7 @@ from typing      import Any
 from dataclasses import dataclass
 
 from utility import GreprClass
-from utility import AA_COORD_PAIR, AA_TYPE, InvalidValueValidationError
+from utility import AA_COORD_PAIR, AA_TYPE, InvalidValueError
 
 @dataclass(repr=False)
 class FRComment(GreprClass):
@@ -61,7 +61,7 @@ class SRComment(GreprClass):
         AA_COORD_PAIR(self, path, "position")
         AA_COORD_PAIR(self, path, "size")
         if (self.size[0] < 52) or (self.size[1] < 32):
-            raise InvalidValueValidationError(path, f"size of {self.__class__.__name__} must be at least 52 by 32")
+            raise InvalidValueError(path, f"size of {self.__class__.__name__} must be at least 52 by 32")
         AA_TYPE(self, path, "is_minimized", bool)
         AA_TYPE(self, path, "text", str)
 

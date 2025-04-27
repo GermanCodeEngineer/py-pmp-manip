@@ -2,7 +2,7 @@ from json        import dump, loads
 from dataclasses import dataclass
 
 from utility     import read_file_of_zip, ThanksError, GreprClass, PypenguinEnum
-from utility     import AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_RANGE, SameNameTwiceError
+from utility     import AA_TYPE, AA_NONE_OR_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_RANGE, SameNameTwiceError
 from opcode_info import OpcodeInfoAPI
 
 from core.context    import PartialContext
@@ -230,7 +230,7 @@ class SRProject(GreprClass):
         AA_RANGE(self, path, "tempo", min=20, max=500)
         AA_TYPES(self, path, "video_transparency", (int, float)) # TODO: research min/max
         AA_TYPE(self, path, "video_state", SRVideoState)
-        AA_TYPES(self, path, "text_to_speech_language", (TextToSpeechLanguage, type(None)))
+        AA_NONE_OR_TYPE(self, path, "text_to_speech_language", TextToSpeechLanguage)
         AA_LIST_OF_TYPE(self, path, "global_monitors", SRMonitor)
         AA_LIST_OF_TYPE(self, path, "extensions", SRExtension)
         

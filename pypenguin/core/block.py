@@ -2,9 +2,10 @@ from typing      import Any
 from dataclasses import dataclass, field
 
 from utility        import GreprClass, get_closest_matches
-from utility        import AA_TYPE, AA_TYPES, AA_COORD_PAIR, AA_LIST_OF_TYPE, AA_DICT_OF_TYPE
-from utility        import UnnecessaryInputError, MissingInputError, UnnecessaryDropdownError, MissingDropdownError, InvalidValueValidationError
-from opcode_info    import OpcodeInfoAPI, OpcodeInfo, InputMode, OpcodeType, SpecialCaseType
+from utility        import AA_TYPE, AA_NONE_OR_TYPE, AA_COORD_PAIR, AA_LIST_OF_TYPE, AA_DICT_OF_TYPE
+from utility        import UnnecessaryInputError, MissingInputError, UnnecessaryDropdownError, MissingDropdownError, InvalidOpcodeError, InvalidBlockShapeError
+
+from opcode_info    import OpcodeInfoAPI, OpcodeInfo, InputType, InputMode, OpcodeType, SpecialCaseType
 from block_opcodes  import *
 
 from core.block_mutation import FRMutation, FRCustomBlockMutation, FRCustomArgumentMutation, FRCustomCallMutation
@@ -309,7 +310,11 @@ class TRBlock(GreprClass):
                 sub_blocks.append(more_sub_blocks)
             
             if input_value.immediate_block is not None:
-                sub_blocks.insert(0, [input_value.immediate_block])
+                # HERE
+                sub_blocks.insert(0, [input_value.immediate_block.step(
+                    all_blocks = all_blocks,
+                    info_api   = info_api,
+                )])
             
             block_count = len(sub_blocks)
             
@@ -451,10 +456,12 @@ class SRScript(GreprClass):
         for i, block in enumerate(self.blocks):
             current_path = path+["blocks", i]
             block.validate(
-                path     = current_path,
-                info_api = info_api,
-                context  = context,
+                path             = current_path,
+                info_api         = info_api,
+                context          = context,
+                expects_reporter = False,
             )
+            # TODO: complete
 
 @dataclass(repr=False)
 class SRBlock(GreprClass):
@@ -471,48 +478,63 @@ class SRBlock(GreprClass):
         path: list, 
         info_api: OpcodeInfoAPI, 
         context: FullContext,
+        expects_reporter: bool,
     ) -> None:
         AA_TYPE(self, path, "opcode", str)
         AA_DICT_OF_TYPE(self, path, "inputs"   , key_t=str, value_t=SRInputValue   )
         AA_DICT_OF_TYPE(self, path, "dropdowns", key_t=str, value_t=SRDropdownValue)
-        AA_TYPES(self, path, "comment", (SRAttachedComment, type(None)))
-        AA_TYPES(self, path, "mutation", (SRMutation, type(None)))
+        AA_NONE_OR_TYPE(self, path, "comment", SRAttachedComment)
+        AA_NONE_OR_TYPE(self, path, "mutation", SRMutation)
         
         opcode_info = info_api.get_info_by_new_safe(self.opcode)
         if opcode_info is None:
             closest_matches = get_closest_matches(self.opcode, info_api.get_all_new(), n=10)
             msg = f"opcode of {self.__class__.__name__} must be a defined opcode not {repr(self.opcode)}. The closest matches are: \n  - "+"\n  - ".join([repr(m) for m in closest_matches])
-            raise InvalidValueValidationError(path, msg)
+            raise InvalidOpcodeError(path, msg)
         
-        if comment is not None:
-            comment.validate(path+["comment"])
+        if self.comment is not None:
+            self.comment.validate(path+["comment"])
         
-        instead_case = opcode_info.get_special_case(SpecialCaseType.INSTEAD_GET_ALL_NEW_INPUT_IDS)
+        instead_case = opcode_info.get_special_case(SpecialCaseType.INSTEAD_GET_ALL_NEW_INPUT_IDS_TYPES)
         if instead_case is None:
             new_input_ids = opcode_info.get_all_new_input_ids()
+            input_types = {
+                new_input_id: opcode_info.get_input_info_by_new(new_input_id).type
+                for new_input_id in new_input_ids
+            }
         else:
-            new_input_ids = instead_case.call(block=self)
+            input_types: dict[str, InputType] = instead_case.call(block=self)
+            new_input_ids = list(input_types.keys())
         
-        for new_input_id, input_value in self.inputs.items():
-            input_value.validate(
-                path     = path+["inputs", (new_input_id,)],
-                info_api = info_api,
-                context  = context,
-            )
+        for new_input_id, input in self.inputs.items():
             if new_input_id not in new_input_ids:
                 raise UnnecessaryInputError(path, f"inputs of {self.__class__.__name__} with opcode {repr(self.opcode)} includes unnecessary input {repr(new_input_id)}")
+            input.validate(
+                path       = path+["inputs", (new_input_id,)],
+                info_api   = info_api,
+                context    = context,
+                input_type = input_types[new_input_id],
+            )
         for new_input_id in new_input_ids:
             if new_input_id not in self.inputs:
                 raise MissingInputError(path, f"inputs of {self.__class__.__name__} with opcode {repr(self.opcode)} is missing input {repr(new_input_id)}")
         
         new_dropdown_ids = opcode_info.get_all_new_dropdown_ids()
-        for new_dropdown_id, dropdown_value in self.dropdowns.items():
-            dropdown_value.validate(path+["dropdowns", (new_dropdown_id,)])
+        for new_dropdown_id, dropdown in self.dropdowns.items():
             if new_dropdown_id not in new_dropdown_ids:
                 raise UnnecessaryDropdownError(path, f"dropdowns of {self.__class__.__name__} with opcode {repr(self.opcode)} includes unnecessary dropdown {repr(new_dropdown_id)}")
+            dropdown.validate(path+["dropdowns", (new_dropdown_id,)])
+            dropdown.validate_value(
+                path          = path+["dropdowns", (new_dropdown_id,)],
+                dropdown_type = opcode_info.get_dropdown_info_by_new(new_dropdown_id).type,
+                context       = context,
+            )
         for new_dropdown_id in new_dropdown_ids:
             if new_dropdown_id not in self.dropdowns:
                 raise MissingDropdownError(path, f"dropdowns of {self.__class__.__name__} with opcode {repr(self.opcode)} is missing dropdown {repr(new_dropdown_id)}")
+        
+        if expects_reporter and not(opcode_info.opcode_type.is_reporter()):
+            raise InvalidBlockShapeError(path, "Expected a reporter block here")
 
 @dataclass(repr=False)
 class SRInputValue(GreprClass):
@@ -536,11 +558,42 @@ class SRInputValue(GreprClass):
             case InputMode.SCRIPT:
                 self._grepr_fields = SRInputValue._grepr_fields + ["blocks"]
     
-    def validate(self, path: list, info_api: OpcodeInfoAPI, context: FullContext) -> None:
+    def validate(self, 
+            path: list, 
+            info_api: OpcodeInfoAPI, 
+            context: FullContext, 
+            input_type: InputType, 
+        ) -> None:
         AA_TYPE(self, path, "mode", InputMode)
         AA_LIST_OF_TYPE(self, path, "blocks", SRBlock)
-        AA_TYPES(self, path, "block", (SRBlock, type(None)))
-        AA_TYPES(self, path, "text", (str, type(None)))
-        AA_TYPES(self, path, "dropdown", (SRDropdownValue, type(None)))
+        AA_NONE_OR_TYPE(self, path, "block", SRBlock)
+        AA_NONE_OR_TYPE(self, path, "text", str)
+        AA_NONE_OR_TYPE(self, path, "dropdown", SRDropdownValue)
+
+        if self.block is not None:
+            self.block.validate(
+                path             = path+["block"],
+                info_api         = info_api,
+                context          = context,
+                expects_reporter = True,
+            )
         
+        for i, block in enumerate(self.blocks):
+            block.validate(
+                path             = path+["blocks", i],
+                info_api         = info_api,
+                context          = context,
+                expects_reporter = False,
+            )
+            # TODO: complete this
+        
+        if self.dropdown is not None:
+            current_path = path+["dropdown"]
+            self.dropdown.validate(current_path)
+            self.dropdown.validate_value(
+                path          = current_path,
+                dropdown_type = input_type.get_corresponding_dropdown_type(),
+                context       = context,
+            )
+
         # TODO: complete this

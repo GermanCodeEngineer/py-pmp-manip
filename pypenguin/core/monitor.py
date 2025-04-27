@@ -2,7 +2,7 @@ from typing      import Any
 from dataclasses import dataclass
 
 from utility       import GreprClass
-from utility       import AA_TYPE, AA_DICT_OF_TYPE, AA_COORD_PAIR, AA_EQUAL, AA_BIGGER_OR_EQUAL, InvalidValueValidationError, MissingDropdownError, UnnecessaryDropdownError
+from utility       import AA_TYPE, AA_DICT_OF_TYPE, AA_COORD_PAIR, AA_EQUAL, AA_BIGGER_OR_EQUAL, InvalidOpcodeError, MissingDropdownError, UnnecessaryDropdownError
 from opcode_info   import OpcodeInfoAPI, DropdownType
 from block_opcodes import *
 
@@ -129,7 +129,7 @@ class SRMonitor(GreprClass):
         
         opcode_info = info_api.get_info_by_new_safe(self.opcode)
         if (opcode_info is None) or (not opcode_info.can_have_monitor):
-            raise InvalidValueValidationError(path, f"opcode of {self.__class__.__name__} must be a defined opcode. That block must be able to have monitors")
+            raise InvalidOpcodeError(path, f"opcode of {self.__class__.__name__} must be a defined opcode. That block must be able to have monitors")
         
         new_dropdown_ids = opcode_info.get_all_new_dropdown_ids()
         for new_dropdown_id, dropdown_value in self.dropdowns.items():
@@ -142,13 +142,12 @@ class SRMonitor(GreprClass):
     
     def validate_dropdowns_values(self, path: list, info_api: OpcodeInfoAPI, context: PartialContext):
         opcode_info = info_api.get_info_by_new(self.opcode)
-        for new_dropdown_id, dropdown_value in self.dropdowns.items():
+        for new_dropdown_id, dropdown in self.dropdowns.items():
             dropdown_type = opcode_info.get_dropdown_info_by_new(new_dropdown_id).type
-            dropdown_value.validate_value(
-                path          = path + ["dropdowns", (new_dropdown_id,)],
+            dropdown.validate_value(
+                path          = path+["dropdowns", (new_dropdown_id,)],
                 dropdown_type = dropdown_type, 
                 context       = context,
-                inputs        = {},
             )
 
 @dataclass(repr=False)

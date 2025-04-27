@@ -41,14 +41,8 @@ class SRDropdownValue(GreprClass):
     def validate(self, path: list) -> None:
         AA_TYPE(self, path, "kind", SRDropdownKind)
         AA_JSON_COMPATIBLE(self, path, "value")
-    
-    def validate_kind(self, path, kind, message=None) -> None:
-        if self.kind != kind:
-            if message == None:
-                message = f"In this case kind of {self.__class__.__name__} must be {repr(kind)}"
-            raise InvalidDropdownValueError(path, message)
-    
-    def validate_value(self, path: list, dropdown_type: "DropdownType", context: PartialContext, inputs: dict[str, "SRInputValue"]) -> None:
+
+    def validate_value(self, path: list, dropdown_type: "DropdownType", context: PartialContext) -> None:
         def make_string(possible_values):
             return (
                 "No possible values." if possible_values == [] else
@@ -69,10 +63,7 @@ class SRDropdownValue(GreprClass):
                 if self not in context.scope_lists:
                     raise InvalidDropdownValueError(path, f"Must be a defined list. In this case one of these: {possible_values_string}")
             case _:
-                possible_values = dropdown_type.calculate_possible_new_dropdown_values(
-                    context = context,
-                    inputs  = inputs,
-                )
+                possible_values = dropdown_type.calculate_possible_new_dropdown_values(context = context)
                 default_kind = dropdown_type.get_default_kind()
                 possible_values_string = make_string(possible_values)
                 if self not in possible_values:
@@ -80,6 +71,12 @@ class SRDropdownValue(GreprClass):
                         raise InvalidDropdownValueError(path, f"In this case must be one of these: {possible_values_string}")
                     else:
                         self.validate_kind(path, default_kind, message=f"If kind is not {default_kind} must be on of these: {possible_values_string}")
-
+    
+    def validate_kind(self, path, kind, message=None) -> None:
+        if self.kind != kind:
+            if message == None:
+                message = f"In this case kind of {self.__class__.__name__} must be {repr(kind)}"
+            raise InvalidDropdownValueError(path, message)
+    
 
 

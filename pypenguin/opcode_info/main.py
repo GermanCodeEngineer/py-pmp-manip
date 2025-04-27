@@ -6,19 +6,22 @@ from opcode_info.dropdown     import DropdownInfo
 from opcode_info.special_case import SpecialCase, SpecialCaseType
 
 class OpcodeType(PypenguinEnum):
-    STATEMENT         = 0
-    ENDING_STATEMENT  = 1
-    HAT               = 2
+    def is_reporter(self) -> bool:
+        return self.value[0]
+
+    STATEMENT         = (False, 0)
+    ENDING_STATEMENT  = (False, 1)
+    HAT               = (False, 2)
     
-    STRING_REPORTER   = 3
-    NUMBER_REPORTER   = 4
-    BOOLEAN_REPORTER  = 5
+    STRING_REPORTER   = (True , 3)
+    NUMBER_REPORTER   = (True , 4)
+    BOOLEAN_REPORTER  = (True , 5)
     
     # Pseudo Blocktypes
-    MENU              = 6
-    POLYGON_MENU      = 7 # Exclusively for the "polygon" block
-    NOT_RELEVANT      = 8
-    DYNAMIC           = 9
+    MENU              = (False, 6)
+    POLYGON_MENU      = (False, 7) # Exclusively for the "polygon" block
+    NOT_RELEVANT      = (False, 8)
+    DYNAMIC           = (False, 9)
 
 @dataclass
 class OpcodeInfo:

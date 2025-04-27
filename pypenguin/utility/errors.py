@@ -34,7 +34,7 @@ class PathValidationError(ValidationError):
         super().__init__(full_message)
     
 class TypeValidationError(PathValidationError): pass
-class InvalidValueValidationError(PathValidationError): pass
+class InvalidValueError(PathValidationError): pass
 class RangeValidationError(PathValidationError): pass
 
 class MissingInputError(PathValidationError): pass
@@ -43,6 +43,9 @@ class MissingDropdownError(PathValidationError): pass
 class UnnecessaryDropdownError(PathValidationError): pass
 
 class InvalidDropdownValueError(PathValidationError): pass # TODO
+
+class InvalidOpcodeError(PathValidationError): pass
+class InvalidBlockShapeError(PathValidationError): pass
 
 class SameNameTwiceError(ValidationError):
     def __init__(self, path1: list, path2: list, msg: str, condition: str|None = None):
