@@ -6,7 +6,7 @@ from utility import GreprClass
 if TYPE_CHECKING:
     from core.dropdown import SRDropdownValue
 
-@dataclass
+@dataclass(repr=False)
 class PartialContext(GreprClass):
     _grepr = True
     _grepr_fields = ["scope_variables", "scope_lists", "all_sprite_variables", "sprite_only_variables", "sprite_only_lists", "other_sprites", "backdrops"]
@@ -20,7 +20,7 @@ class PartialContext(GreprClass):
     other_sprites: list["SRDropdownValue"]
     backdrops: list["SRDropdownValue"]
 
-@dataclass
+@dataclass(repr=False)
 class FullContext(GreprClass):
     _grepr = True
     _grepr_fields = ["scope_variables", "scope_lists", "all_sprite_variables", "sprite_only_variables", "sprite_only_lists", "other_sprites", "backdrops", "costumes", "sounds", "is_stage"]

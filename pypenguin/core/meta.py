@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from utility import GreprClass
 
-@dataclass
+@dataclass(repr=False)
 class FRMeta(GreprClass):
     _grepr = True
     _grepr_fields = ["semver", "vm", "agent", "platform"]
@@ -22,7 +22,7 @@ class FRMeta(GreprClass):
             platform = FRPlatform.from_data(data["platform"]),
         )
 
-@dataclass
+@dataclass(repr=False)
 class FRPlatform(GreprClass):
     _grepr = True
     _grepr_fields = ["name", "url", "version"]

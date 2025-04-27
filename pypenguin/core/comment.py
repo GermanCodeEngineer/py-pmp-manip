@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from utility import GreprClass
 from utility import AA_COORD_PAIR, AA_TYPE, InvalidValueValidationError
 
-@dataclass
+@dataclass(repr=False)
 class FRComment(GreprClass):
     _grepr = True
     _grepr_fields = ["block_id", "x", "y", "width", "height", "minimized", "text"]
@@ -47,7 +47,7 @@ class FRComment(GreprClass):
                 text=self.text,
             )
 
-@dataclass
+@dataclass(repr=False)
 class SRComment(GreprClass):
     _grepr = True
     _grepr_fields = ["position", "size", "is_minimized", "text"]

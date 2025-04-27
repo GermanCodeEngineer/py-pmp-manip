@@ -196,6 +196,7 @@ class DualKeyDict(Generic[K1, K2, V]):
             yield (key1, key2, self.get_by_key1(key1))
 
 # Data Functions
+import difflib
 
 def remove_duplicates(items: list):
     seen = []
@@ -205,5 +206,10 @@ def remove_duplicates(items: list):
             seen.append(item)
             result.append(item)
     return result
+
+def get_closest_matches(string, possible_values: list[str], n: int) -> list[str]:
+    similarity_scores = [(item, difflib.SequenceMatcher(None, string, item).ratio()) for item in possible_values]
+    sorted_matches = sorted(similarity_scores, key=lambda x: x[1], reverse=True)
+    return [i[0] for i in sorted_matches[:n]]   
 
 

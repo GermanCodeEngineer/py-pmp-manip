@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from utility import GreprClass, PypenguinEnum
 
-@dataclass
+@dataclass(repr=False)
 class SRCustomBlockOpcode(GreprClass):
     _grepr = True
     _grepr_fields = ["proccode", "arguments"]

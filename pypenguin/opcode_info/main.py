@@ -111,6 +111,12 @@ class OpcodeInfoAPI(GreprClass):
                 value = opcode_info,
             )
     
+    # Get all opcodes
+    def get_all_new(self) -> list[str]:
+        return list(self.opcode_info.keys_key2())
+    #def get_all_old(self) -> list[str]:
+    #    return list(self.opcode_info.keys_key1())
+    
     # Get new opcode for old opcode
     def get_new_by_old_safe(self, old: str) -> str | None:
         # add listener for this conversion too, when needed

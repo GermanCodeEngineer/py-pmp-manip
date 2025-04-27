@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from core.comment        import SRAttachedComment
     from core.block_mutation import FRCustomBlockMutation
 
-@dataclass
+@dataclass(repr=False)
 class FRtoTRAPI(GreprClass):
     _grepr = True
     _grepr_fields = ["blocks", "scheduled_block_deletions"]

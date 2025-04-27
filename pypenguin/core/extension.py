@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from utility import GreprClass
 from utility import AA_TYPE, is_valid_js_data_uri, is_valid_url, InvalidValueValidationError
 
-@dataclass
+@dataclass(repr=False)
 class SRExtension(GreprClass):
     _grepr = True
     _grepr_fields = ["id"]
@@ -18,7 +18,7 @@ class SRExtension(GreprClass):
 class SRBuiltinExtension(SRExtension):
     pass # Builtin Extensions don't specify a url.
 
-@dataclass
+@dataclass(repr=False)
 class SRCustomExtension(SRExtension):
     _grepr_fields = SRExtension._grepr_fields + ["url"]
     

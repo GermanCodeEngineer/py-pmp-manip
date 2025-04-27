@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from utility import GreprClass
 from utility import AA_TYPE, AA_JSON_COMPATIBLE
 
-@dataclass
+@dataclass(repr=False)
 class SRVariable(GreprClass):
     _grepr = True
     _grepr_fields = ["name", "current_value"]
@@ -25,7 +25,7 @@ class SRAllSpriteVariable(SRVariable):
 class SRCloudVariable(SRAllSpriteVariable):
     pass
 
-@dataclass
+@dataclass(repr=False)
 class SRList(GreprClass):
     _grepr = True
     _grepr_fields = ["name", "current_value"]

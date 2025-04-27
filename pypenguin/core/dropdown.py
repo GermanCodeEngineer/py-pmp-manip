@@ -30,7 +30,7 @@ class SRDropdownKind(PypenguinEnum):
 
     FALLBACK       = 13
 
-@dataclass
+@dataclass(repr=False)
 class SRDropdownValue(GreprClass):
     _grepr = True
     _grepr_fields = ["kind", "value"]
@@ -38,12 +38,6 @@ class SRDropdownValue(GreprClass):
     kind: SRDropdownKind
     value: Any
     
-    def __eq__(self, other) -> bool:
-        if isinstance(other, tuple) and (len(other) == 2):
-            if (other[0] == self.kind.name) and (other[1] == self.value):
-                return True
-        return super().__eq__(other)
-
     def validate(self, path: list) -> None:
         AA_TYPE(self, path, "kind", SRDropdownKind)
         AA_JSON_COMPATIBLE(self, path, "value")

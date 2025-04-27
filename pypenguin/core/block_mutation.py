@@ -1,14 +1,15 @@
-from json   import loads
-from abc    import ABC, abstractmethod
-from typing import Any
+from json        import loads
+from abc         import ABC, abstractmethod
+from typing      import Any
+from dataclasses import dataclass
 
 from utility import GreprClass
 
 from core.fr_to_tr_api import FRtoTRAPI
 from core.custom_block import SRCustomBlockOpcode, SRCustomBlockOptype
 
-@dataclass
-class FRMutation(GreprClass):
+@dataclass(repr=False)
+class FRMutation(GreprClass, ABC):
     _grepr = True
     _grepr_fields = ["tag_name", "children"]
     
@@ -25,7 +26,7 @@ class FRMutation(GreprClass):
     @abstractmethod
     def step(self, block_api: FRtoTRAPI) -> "SRMutation": pass
 
-@dataclass
+@dataclass(repr=False)
 class FRCustomArgumentMutation(FRMutation):
     _grepr_fields = FRMutation._grepr_fields + ["color"]
     
@@ -52,7 +53,7 @@ class FRCustomArgumentMutation(FRMutation):
             color3        = self.color[2],
         )
 
-@dataclass
+@dataclass(repr=False)
 class FRCustomBlockMutation(FRMutation):
     _grepr_fields = FRMutation._grepr_fields + ["proccode", "argument_ids", "argument_names", "argument_defaults", "warp", "returns", "edited", "optype", "color"]
     
@@ -74,6 +75,8 @@ class FRCustomBlockMutation(FRMutation):
             warp = loads(data["warp"])
         else: raise ValueError()
         return cls(
+            tag_name          = "mutation",
+            children          = [],
             proccode          = data["proccode"],
             argument_ids      = loads(data["argumentids"     ]),
             argument_names    = loads(data["argumentnames"   ]),
@@ -99,7 +102,7 @@ class FRCustomBlockMutation(FRMutation):
             color3            = self.color[2],
         )
 
-@dataclass
+@dataclass(repr=False)
 class FRCustomCallMutation(FRMutation):
     _grepr_fields = FRMutation._grepr_fields + ["proccode", "argument_ids", "warp", "returns", "edited", "optype", "color"]
     
@@ -119,6 +122,8 @@ class FRCustomCallMutation(FRMutation):
             warp = loads(data["warp"])
         else: raise ValueError()
         return cls(
+            tag_name     = "mutation",
+            children     = [],
             proccode     = data["proccode"],
             argument_ids = loads(data["argumentids"     ]),
             warp         = warp,
@@ -131,19 +136,19 @@ class FRCustomCallMutation(FRMutation):
     def step(self, block_api: FRtoTRAPI) -> "SRCustomBlockCallMutation":
         complete_mutation = block_api.get_cb_mutation(self.proccode) # Get complete mutation
         return SRCustomBlockCallMutation(
-            custom_opcode      = SRCustomBlockOpcode(
+            custom_opcode      = SRCustomBlockOpcode.from_prococde_names_defaults(
                 proccode          = self.proccode,
                 argument_names    = complete_mutation.argument_names,
                 argument_defaults = complete_mutation.argument_defaults,
             ),
         )
 
-@dataclass
+@dataclass(repr=False)
 class SRMutation(GreprClass):
     _grepr = True
     _grepr_fields = []
 
-@dataclass
+@dataclass(repr=False)
 class SRCustomBlockArgumentMutation(SRMutation):
     _grepr_fields = FRMutation._grepr_fields + ["argument_name", "color1", "color2", "color3"]
     
@@ -154,14 +159,11 @@ class SRCustomBlockArgumentMutation(SRMutation):
     color2: str
     color3: str
     
-@dataclass
+@dataclass(repr=False)
 class SRCustomBlockMutation(SRMutation):
     _grepr_fields = SRMutation._grepr_fields + ["custom_opcode", "no_screen_refresh", "optype", "color1", "color2", "color3"]
     
     custom_opcode: "SRCustomBlockOpcode"
-    argument_ids: list[str]
-    argument_names: list[str]
-    argument_defaults: list[str]
     no_screen_refresh: bool
     optype: SRCustomBlockOptype
     
@@ -171,7 +173,7 @@ class SRCustomBlockMutation(SRMutation):
     color2: str
     color3: str
 
-@dataclass    
+@dataclass(repr=False)    
 class SRCustomBlockCallMutation(SRMutation):
     _grepr_fields = SRMutation._grepr_fields + ["custom_opcode"]
     

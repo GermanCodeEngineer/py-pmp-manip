@@ -9,7 +9,7 @@ from block_opcodes import *
 from core.dropdown import SRDropdownValue
 from core.context  import PartialContext
 
-@dataclass
+@dataclass(repr=False)
 class FRMonitor(GreprClass):
     _grepr = True
     _grepr_fields = ["id", "mode", "opcode", "params", "sprite_name", "value", "x", "y", "visible", "width", "height", "slider_min", "slider_max", "is_discrete"]
@@ -105,7 +105,7 @@ class FRMonitor(GreprClass):
                 is_visible  = self.visible,
             ))
 
-@dataclass
+@dataclass(repr=False)
 class SRMonitor(GreprClass):
     _grepr = True
     _grepr_fields = ["opcode", "dropdowns", "sprite", "position", "is_visible"]
@@ -151,7 +151,7 @@ class SRMonitor(GreprClass):
                 inputs        = {},
             )
 
-@dataclass
+@dataclass(repr=False)
 class SRVariableMonitor(SRMonitor):
     _grepr_fields = SRMonitor._grepr_fields + ["slider_min", "slider_max", "allow_only_integers"]
     
@@ -175,7 +175,7 @@ class SRVariableMonitor(SRMonitor):
 
         AA_BIGGER_OR_EQUAL(self, path, "slider_max", "slider_min")
 
-@dataclass
+@dataclass(repr=False)
 class SRListMonitor(SRMonitor):
     _grepr_fields = SRMonitor._grepr_fields + ["size"]
 

@@ -11,7 +11,8 @@ project = FRProject.from_pmp_file(file_path)
 from opcode_info.groups import info_api
 
 new_project = project.step(info_api=info_api)
+from utility import grepr
+
 print(new_project)
 new_project.validate(info_api=info_api)
-
 

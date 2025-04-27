@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from utility import GreprClass
 from utility import AA_TYPE, AA_COORD_PAIR, AA_MIN
 
-@dataclass
+@dataclass(repr=False)
 class FRCostume(GreprClass):
     _grepr = True
     _grepr_fields = ["name", "asset_id", "data_format", "md5ext", "rotation_center_x", "rotation_center_y", "bitmap_resolution"]
@@ -37,7 +37,7 @@ class FRCostume(GreprClass):
             bitmap_resolution = 1 if self.bitmap_resolution is None else self.bitmap_resolution,
         )
 
-@dataclass
+@dataclass(repr=False)
 class FRSound(GreprClass):
     _grepr = True
     _grepr_fields = ["name", "asset_id", "data_format", "md5ext", "rate", "sample_count"]
@@ -68,7 +68,7 @@ class FRSound(GreprClass):
             # Other attributes can be derived from the sound files.
         )
 
-@dataclass
+@dataclass(repr=False)
 class SRCostume(GreprClass):
     _grepr = True
     _grepr_fields = ["name", "file_extension", "rotation_center", "bitmap_resolution"]
@@ -79,13 +79,13 @@ class SRCostume(GreprClass):
     bitmap_resolution: int
   
     def validate(self, path: list) -> None:
-        AA_TYPE(self, path, "name", str) # TODO: check if valid file name
+        AA_TYPE(self, path, "name", str)
         AA_TYPE(self, path, "file_extension", str)
         AA_COORD_PAIR(self, path, "rotation_center")
         AA_TYPE(self, path, "bitmap_resolution", int)
         AA_MIN(self, path, "bitmap_resolution", min=1)
 
-@dataclass
+@dataclass(repr=False)
 class SRSound(GreprClass):
     _grepr = True
     _grepr_fields = ["name", "file_extension"]
@@ -94,6 +94,6 @@ class SRSound(GreprClass):
     file_extension: str
     
     def validate(self, path: list) -> None:
-        AA_TYPE(self, path, "name", str) # TODO: check if valid file name
+        AA_TYPE(self, path, "name", str)
         AA_TYPE(self, path, "file_extension", str)
 

@@ -1,7 +1,7 @@
 from typing      import Any
 from dataclasses import dataclass, field
 
-from utility        import GreprClass
+from utility        import GreprClass, get_closest_matches
 from utility        import AA_TYPE, AA_TYPES, AA_COORD_PAIR, AA_LIST_OF_TYPE, AA_DICT_OF_TYPE
 from utility        import UnnecessaryInputError, MissingInputError, UnnecessaryDropdownError, MissingDropdownError, InvalidValueValidationError
 from opcode_info    import OpcodeInfoAPI, OpcodeInfo, InputMode, OpcodeType, SpecialCaseType
@@ -14,7 +14,7 @@ from core.context        import FullContext
 from core.dropdown       import SRDropdownValue
 from core.fr_to_tr_api   import FRtoTRAPI
 
-@dataclass
+@dataclass(repr=False)
 class FRBlock(GreprClass):
     _grepr = True
     _grepr_fields = ["opcode", "next", "parent", "inputs", "fields", "shadow", "top_level", "x", "y", "comment", "mutation"]
@@ -266,7 +266,7 @@ class FRBlock(GreprClass):
 
 
 
-@dataclass
+@dataclass(repr=False)
 class TRBlock(GreprClass):
     """Temporary Block Representation."""
     _grepr = True
@@ -412,7 +412,7 @@ class TRBlock(GreprClass):
         
         return (self.position, new_blocks) 
  
-@dataclass
+@dataclass(repr=False)
 class TRInputValue(GreprClass):
     _grepr = True
     _grepr_fields = ["mode", "references", "immediate_block", "text"]
@@ -422,7 +422,7 @@ class TRInputValue(GreprClass):
     immediate_block: TRBlock | None
     text: str | None
 
-@dataclass
+@dataclass(repr=False)
 class TRBlockReference(GreprClass):    
     id: str
     
@@ -432,7 +432,7 @@ class TRBlockReference(GreprClass):
     def __hash__(self):
         return hash(self.id)
 
-@dataclass
+@dataclass(repr=False)
 class SRScript(GreprClass):
     _grepr = True
     _grepr_fields = ["position", "blocks"]
@@ -456,7 +456,7 @@ class SRScript(GreprClass):
                 context  = context,
             )
 
-@dataclass
+@dataclass(repr=False)
 class SRBlock(GreprClass):
     _grepr = True
     _grepr_fields = ["opcode", "inputs", "dropdowns", "comment", "mutation"]
@@ -480,7 +480,12 @@ class SRBlock(GreprClass):
         
         opcode_info = info_api.get_info_by_new_safe(self.opcode)
         if opcode_info is None:
-            raise InvalidValueValidationError(path, f"opcode of {self.__class__.__name__} must be a defined opcode")
+            closest_matches = get_closest_matches(self.opcode, info_api.get_all_new(), n=10)
+            msg = f"opcode of {self.__class__.__name__} must be a defined opcode not {repr(self.opcode)}. The closest matches are: \n  - "+"\n  - ".join([repr(m) for m in closest_matches])
+            raise InvalidValueValidationError(path, msg)
+        
+        if comment is not None:
+            comment.validate(path+["comment"])
         
         instead_case = opcode_info.get_special_case(SpecialCaseType.INSTEAD_GET_ALL_NEW_INPUT_IDS)
         if instead_case is None:
@@ -509,7 +514,7 @@ class SRBlock(GreprClass):
             if new_dropdown_id not in self.dropdowns:
                 raise MissingDropdownError(path, f"dropdowns of {self.__class__.__name__} with opcode {repr(self.opcode)} is missing dropdown {repr(new_dropdown_id)}")
 
-@dataclass
+@dataclass(repr=False)
 class SRInputValue(GreprClass):
     _grepr = True
     _grepr_fields = ["mode"]
@@ -523,18 +528,12 @@ class SRInputValue(GreprClass):
     def __post_init__(self):
         match self.mode:
             case InputMode.BLOCK_AND_TEXT | InputMode.BLOCK_AND_MENU_TEXT:
-                self.block    = block
-                self.text     = text
                 self._grepr_fields = SRInputValue._grepr_fields + ["block", "text"]
             case InputMode.BLOCK_AND_DROPDOWN | InputMode.BLOCK_AND_BROADCAST_DROPDOWN:
-                self.block    = block
-                self.dropdown = dropdown
                 self._grepr_fields = SRInputValue._grepr_fields + ["block", "dropdown"]
             case InputMode.BLOCK_ONLY:
-                self.block    = block
                 self._grepr_fields = SRInputValue._grepr_fields + ["block"]
             case InputMode.SCRIPT:
-                self.blocks   = blocks or []
                 self._grepr_fields = SRInputValue._grepr_fields + ["blocks"]
     
     def validate(self, path: list, info_api: OpcodeInfoAPI, context: FullContext) -> None:

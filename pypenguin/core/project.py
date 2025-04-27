@@ -14,7 +14,7 @@ from core.target     import FRTarget, FRStage, FRSprite, SRStage, SRSprite
 from core.tts        import TextToSpeechLanguage
 from core.vars_lists import SRAllSpriteVariable, SRAllSpriteList
 
-@dataclass
+@dataclass(repr=False)
 class FRProject(GreprClass): 
     """The first representation (FR) of the project data tree. Its data is equivalent to the data stored in a .pmp file."""
     _grepr = True
@@ -158,7 +158,7 @@ class SRVideoState(PypenguinEnum):
     ON_FLIPPED = 1
     OFF        = 2
 
-@dataclass
+@dataclass(repr=False)
 class SRProject(GreprClass):
     """
     The SR (Second Representation) of a Scratch/PenguinMod Project.

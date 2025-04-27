@@ -17,7 +17,7 @@ from core.monitor        import SRMonitor
 from core.vars_lists     import SRVariable, SRSpriteOnlyVariable, SRAllSpriteVariable, SRCloudVariable
 from core.vars_lists     import SRList, SRSpriteOnlyList, SRAllSpriteList
 
-@dataclass
+@dataclass(repr=False)
 class FRTarget(GreprClass):
     _grepr = True
     _grepr_fields = ["is_stage", "name", "variables", "lists", "broadcasts", "custom_vars", "blocks", "comments", "current_costume", "costumes", "sounds", "id", "volume", "layer_order"]
@@ -169,7 +169,7 @@ class FRTarget(GreprClass):
         
         return new_variables, new_lists
 
-@dataclass          
+@dataclass(repr=False)          
 class FRStage(FRTarget):
     _grepr_fields = FRTarget._grepr_fields + ["tempo", "video_transparency", "video_state", "text_to_speech_language"]
     
@@ -232,7 +232,7 @@ class FRStage(FRTarget):
             volume        = self.volume,
         ), all_sprite_variables, all_sprite_lists)
 
-@dataclass
+@dataclass(repr=False)
 class FRSprite(FRTarget):
     _grepr_fields = FRTarget._grepr_fields + ["visible", "x", "y", "size", "direction", "draggable", "rotation_style"]
 
@@ -312,7 +312,7 @@ class FRSprite(FRTarget):
             rotation_style        = SRSpriteRotationStyle.from_string(self.rotation_style),
         ), None, None)
     
-@dataclass
+@dataclass(repr=False)
 class SRTarget(GreprClass):
     _grepr = True
     _grepr_fields = ["scripts", "comments", "costume_index", "costumes", "sounds", "volume"]
@@ -387,7 +387,7 @@ class SRTarget(GreprClass):
 class SRStage(SRTarget):
     pass # The stage has no additional properties
 
-@dataclass
+@dataclass(repr=False)
 class SRSprite(SRTarget):
     _grepr_fields = ["name"] + SRTarget._grepr_fields + ["sprite_only_variables", "sprite_only_lists", "local_monitors", "layer_order", "is_visible", "position", "size", "direction", "is_draggable", "rotation_style"]
     
