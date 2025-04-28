@@ -380,11 +380,11 @@ class SRTarget(GreprClass):
             for j, block in enumerate(script.blocks):
                 current_path = path+["scripts", i, "blocks", j]
                 if isinstance(block.mutation, SRCustomBlockMutation):
-                    proccode = block.mutation.custom_opcode.proccode
-                    if proccode in cb_optypes:
-                        other_path = cb_optypes[proccode]
+                    custom_opcode = block.mutation.custom_opcode
+                    if custom_opcode in cb_optypes:
+                        other_path = cb_optypes[custom_opcode]
                         raise SameNameTwiceError(other_path, current_path, "Two custom blocks mustn't have the same name(see .mutation.custom_opcode.proccode)")
-                    cb_optypes[proccode] = block.mutation.optype
+                    cb_optypes[custom_opcode] = block.mutation.optype
         
 
 class SRStage(SRTarget):

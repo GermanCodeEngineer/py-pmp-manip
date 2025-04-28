@@ -45,7 +45,7 @@ class OpcodeInfo:
         return self.special_cases.get(case_type, None)
 
     # Get the opcode type. Avoid OpcodeType.DYNAMIC
-    def get_opcode_type(self, block: "TRBlock|SRBlock") -> None:
+    def get_opcode_type(self, block: "TRBlock|SRBlock") -> OpcodeType:
         instead_case = self.get_special_case(SpecialCaseType.GET_OPCODE_TYPE)
         if self.opcode_type == OpcodeType.DYNAMIC:
             assert instead_case is not None, "If opcode_type is DYNAMIC, a special case with type GET_OPCODE_TYPE must be defined"

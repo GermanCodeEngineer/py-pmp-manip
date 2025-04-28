@@ -31,13 +31,13 @@ class FRMutation(GreprClass, ABC):
     def step(self, block_api: FRtoTRAPI) -> "SRMutation": pass
 
 @dataclass(repr=False)
-class FRCustomArgumentMutation(FRMutation):
+class FRCustomBlockArgumentMutation(FRMutation):
     _grepr_fields = FRMutation._grepr_fields + ["color"]
     
     color: tuple[str, str, str]
     
     @classmethod
-    def from_data(cls, data: dict[str, str]) -> "FRCustomArgumentMutation":
+    def from_data(cls, data: dict[str, str]) -> "FRCustomBlockArgumentMutation":
         return cls(
             tag_name = data["tagName" ],
             children = data["children"],
@@ -94,7 +94,7 @@ class FRCustomBlockMutation(FRMutation):
     
     def step(self, block_api: FRtoTRAPI) -> "SRCustomBlockMutation":
         return SRCustomBlockMutation(
-            custom_opcode     = SRCustomBlockOpcode.from_prococde_names_defaults(
+            custom_opcode     = SRCustomBlockOpcode.from_proccode_names_defaults(
                 proccode          = self.proccode,
                 argument_names    = self.argument_names,
                 argument_defaults = self.argument_defaults,
@@ -140,7 +140,7 @@ class FRCustomCallMutation(FRMutation):
     def step(self, block_api: FRtoTRAPI) -> "SRCustomBlockCallMutation":
         complete_mutation = block_api.get_cb_mutation(self.proccode) # Get complete mutation
         return SRCustomBlockCallMutation(
-            custom_opcode      = SRCustomBlockOpcode.from_prococde_names_defaults(
+            custom_opcode      = SRCustomBlockOpcode.from_proccode_names_defaults(
                 proccode          = self.proccode,
                 argument_names    = complete_mutation.argument_names,
                 argument_defaults = complete_mutation.argument_defaults,

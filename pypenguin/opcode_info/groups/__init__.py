@@ -19,7 +19,7 @@ from opcode_info.groups.variables import variables
 from opcode_info.groups.lists     import lists
 
 if TYPE_CHECKING:
-    from core.block          import FRBlock, TRBlock
+    from core.block          import FRBlock, TRBlock, SRBlock
     from core.fr_to_tr_api   import FRtoTRAPI
 
 motion.add_opcode("motion_goto_menu", "#REACHABLE TARGET MENU (GO)", OpcodeInfo(
@@ -114,7 +114,7 @@ custom_blocks = OpcodeInfoGroup(
         (OPCODE_CB_PROTOTYPE, "#CUSTOM BLOCK PROTOTYPE"): OpcodeInfo( # only temporary
             opcode_type=OpcodeType.NOT_RELEVANT,
         ),
-        (OPCODE_CB_CALL, "call custom opcode"): OpcodeInfo(
+        (OPCODE_CB_CALL, NEW_OPCODE_CB_CALL): OpcodeInfo(
             opcode_type=OpcodeType.DYNAMIC,
         ),
         ("procedures_return", "return (VALUE)"): OpcodeInfo(
@@ -152,6 +152,8 @@ info_api.add_group(lists        )
 info_api.add_group(custom_blocks)
 
 def GET_OPCODE_TYPE__STOP_SCRIPT(block: "SRBlock|TRBlock") -> OpcodeType:
+    from core.block_mutation import SRStopScriptMutation
+    assert isinstance(block.mutation, SRStopScriptMutation)
     return OpcodeType.ENDING_STATEMENT if block.mutation.is_ending_statement else OpcodeType.STATEMENT
 
 info_api.add_opcode_case(OPCODE_STOP_SCRIPT, SpecialCase(
@@ -160,7 +162,13 @@ info_api.add_opcode_case(OPCODE_STOP_SCRIPT, SpecialCase(
 ))
 
 def GET_OPCODE_TYPE__CB_CALL(block: "SRBlock|TRBlock") -> OpcodeType:
-    block.mutation
+    #block.mutation # TODO
+    return OpcodeType.STATEMENT
+
+info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
+    type=SpecialCaseType.GET_OPCODE_TYPE,
+    function=GET_OPCODE_TYPE__CB_CALL,
+))
 
 def PRE__CB_DEF(block: "FRBlock", block_api: "FRtoTRAPI") -> "FRBlock":
     # Transfer mutation from prototype block to definition block
@@ -185,7 +193,9 @@ info_api.add_opcodes_case(ANY_OPCODE_CB_DEF, SpecialCase(
 def PRE__CB_ARG(block: "FRBlock", block_api: "FRtoTRAPI") -> "FRBlock":
     # Transfer argument name from a field into the mutation
     # because only real dropdowns should be listed in "fields"
-    block.mutation.store_argument_name(block.fields["VALUE"][0])
+    from core.block_mutation import FRCustomBlockArgumentMutation
+    mutation: FRCustomBlockArgumentMutation = block.mutation
+    mutation.store_argument_name(block.fields["VALUE"][0])
     del block.fields["VALUE"]
     return block
 
@@ -195,11 +205,13 @@ info_api.add_opcodes_case(ANY_OPCODE_CB_ARG, SpecialCase(
 ))
 
 def PRE__CB_CALL(block: "FRBlock", block_api: "FRtoTRAPI") -> "FRBlock":
-    cb_mutation = block_api.get_cb_mutation(block.mutation.proccode)
+    from core.block_mutation import FRCustomCallMutation
+    partial_mutation: FRCustomCallMutation = block.mutation
+    complete_mutation = block_api.get_cb_mutation(partial_mutation.proccode)
     new_inputs = {}
     for input_id, input_value in block.inputs.items():
-        argument_index = cb_mutation.argument_ids.index(input_id)
-        argument_name  = cb_mutation.argument_names[argument_index]
+        argument_index = complete_mutation.argument_ids.index(input_id)
+        argument_name  = complete_mutation.argument_names[argument_index]
         new_inputs[argument_name] = input_value
     block.inputs = new_inputs
     return block
@@ -232,14 +244,12 @@ def INSTEAD_GET_MODES__CB_CALL(block: "FRBlock", block_api: "FRtoTRAPI") -> dict
     # Get the complete mutation
     # Then get the input's index in the triple list system
     # Then get the default and derive the corresponding input mode
-    cb_mutation = block_api.get_cb_mutation(block.mutation.proccode)
+    from core.block_mutation import FRCustomCallMutation
+    partial_mutation: FRCustomCallMutation = block.mutation
+    complete_mutation = block_api.get_cb_mutation(partial_mutation.proccode)
     input_modes = {}
-    #for input_id in block.inputs.keys():
-    #    argument_index = cb_mutation.argument_ids.index(input_id)
-    #    argument_default = cb_mutation.argument_defaults[argument_index]
-    #    input_modes[input_id] = InputType.get_by_cb_default(argument_default).get_mode()
-    for argument_index, argument_name in enumerate(cb_mutation.argument_names):
-        argument_default = cb_mutation.argument_defaults[argument_index]
+    for argument_index, argument_name in enumerate(complete_mutation.argument_names):
+        argument_default = complete_mutation.argument_defaults[argument_index]
         input_modes[argument_name] = InputType.get_by_cb_default(argument_default).get_mode()
     return input_modes
 
@@ -253,8 +263,13 @@ info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
     function=(lambda block, input_id: input_id),
 ))
 
+def INSTEAD_GET_ALL_NEW_INPUT_TYPES__CB_CALL(block: "SRBlock") -> dict[str, InputType]:
+    from core.block_mutation import SRCustomBlockCallMutation
+    mutation: SRCustomBlockCallMutation = block.mutation
+    return mutation.custom_opcode.get_corresponding_input_types()
+
 info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
     type=SpecialCaseType.INSTEAD_GET_ALL_NEW_INPUT_IDS_TYPES,
-    function=(lambda block: block.mutation.custom_opcode.get_corresponding_input_types()),
+    function=INSTEAD_GET_ALL_NEW_INPUT_TYPES__CB_CALL,
 ))
 

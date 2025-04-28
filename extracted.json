@@ -55,7 +55,7 @@
             "broadcasts": {},
             "customVars": [],
             "blocks": {
-                "v": {
+                "x": {
                     "opcode": "motion_movesteps",
                     "next": null,
                     "parent": null,
@@ -242,7 +242,7 @@
                         "color": "[\"#FF6680\",\"#FF4D6A\",\"#FF3355\"]"
                     }
                 },
-                "w": {
+                "y": {
                     "opcode": "argument_reporter_boolean",
                     "next": null,
                     "parent": "a",
@@ -261,7 +261,7 @@
                         "color": "[\"#FF6680\",\"#FF4D6A\",\"#FF3355\"]"
                     }
                 },
-                "x": {
+                "z": {
                     "opcode": "argument_reporter_boolean",
                     "next": null,
                     "parent": "a",
@@ -280,7 +280,7 @@
                         "color": "[\"#FF6680\",\"#FF4D6A\",\"#FF3355\"]"
                     }
                 },
-                "y": {
+                "A": {
                     "opcode": "event_broadcast",
                     "next": null,
                     "parent": null,
@@ -300,7 +300,7 @@
                     "x": 227,
                     "y": 188
                 },
-                "z": {
+                "B": {
                     "opcode": "event_broadcast",
                     "next": null,
                     "parent": null,
@@ -320,7 +320,7 @@
                     "x": 107,
                     "y": 313
                 },
-                "A": {
+                "C": {
                     "opcode": "argument_reporter_boolean",
                     "next": null,
                     "parent": "a",
@@ -339,7 +339,7 @@
                         "color": "[\"#FF6680\",\"#FF4D6A\",\"#FF3355\"]"
                     }
                 },
-                "B": {
+                "D": {
                     "opcode": "argument_reporter_boolean",
                     "next": null,
                     "parent": "a",
@@ -358,7 +358,7 @@
                         "color": "[\"#FF6680\",\"#FF4D6A\",\"#FF3355\"]"
                     }
                 },
-                "C": {
+                "E": {
                     "opcode": "argument_reporter_boolean",
                     "next": null,
                     "parent": "a",
@@ -377,7 +377,7 @@
                         "color": "[\"#FF6680\",\"#FF4D6A\",\"#FF3355\"]"
                     }
                 },
-                "D": {
+                "F": {
                     "opcode": "data_changevariableby",
                     "next": null,
                     "parent": null,
@@ -402,20 +402,6 @@
                     "x": 234,
                     "y": 1109
                 },
-                "E": [
-                    12,
-                    "my variable",
-                    "`jEk@4|i[#Fk?(8x)AV.-my variable",
-                    321,
-                    481
-                ],
-                "F": [
-                    13,
-                    "my list",
-                    "FAp;aT9l%(^4R:g]NHc7",
-                    460,
-                    628
-                ],
                 "G": {
                     "opcode": "argument_reporter_boolean",
                     "next": null,
@@ -724,10 +710,142 @@
                     "fields": {},
                     "shadow": false,
                     "topLevel": false
+                },
+                "I": [
+                    12,
+                    "my variable",
+                    "`jEk@4|i[#Fk?(8x)AV.-my variable",
+                    321,
+                    481
+                ],
+                "J": [
+                    13,
+                    "my list",
+                    "FAp;aT9l%(^4R:g]NHc7",
+                    460,
+                    628
+                ],
+                "K": {
+                    "opcode": "argument_reporter_boolean",
+                    "next": null,
+                    "parent": "a",
+                    "inputs": {},
+                    "fields": {
+                        "VALUE": [
+                            "boolean",
+                            "[|?G`(n,xA*MVs@vQFGE"
+                        ]
+                    },
+                    "shadow": true,
+                    "topLevel": false,
+                    "mutation": {
+                        "tagName": "mutation",
+                        "children": [],
+                        "color": "[\"#FF6680\",\"#FF4D6A\",\"#FF3355\"]"
+                    }
+                },
+                "L": {
+                    "opcode": "argument_reporter_boolean",
+                    "next": null,
+                    "parent": "b",
+                    "inputs": {},
+                    "fields": {
+                        "VALUE": [
+                            "booleano",
+                            ",{~U8vpu**60_S|V+=-l"
+                        ]
+                    },
+                    "shadow": true,
+                    "topLevel": false,
+                    "mutation": {
+                        "tagName": "mutation",
+                        "children": [],
+                        "color": "[\"#FF6680\",\"#FF4D6A\",\"#FF3355\"]"
+                    }
+                },
+                "M": {
+                    "opcode": "argument_reporter_string_number",
+                    "next": null,
+                    "parent": "b",
+                    "inputs": {},
+                    "fields": {
+                        "VALUE": [
+                            "number in",
+                            "Bp~,;.0V-T^+z~fROlo{"
+                        ]
+                    },
+                    "shadow": true,
+                    "topLevel": false,
+                    "mutation": {
+                        "tagName": "mutation",
+                        "children": [],
+                        "color": "[\"#FF6680\",\"#FF4D6A\",\"#FF3355\"]"
+                    }
+                },
+                "N": {
+                    "opcode": "control_stop",
+                    "next": null,
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {
+                        "STOP_OPTION": [
+                            "all",
+                            "!}qcg|Ax|x`[Fm=G_]lm"
+                        ]
+                    },
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 822,
+                    "y": 1315,
+                    "mutation": {
+                        "tagName": "mutation",
+                        "children": [],
+                        "hasnext": "false"
+                    }
+                },
+                "v": {
+                    "opcode": "control_stop",
+                    "next": null,
+                    "parent": "w",
+                    "inputs": {},
+                    "fields": {
+                        "STOP_OPTION": [
+                            "this script",
+                            "*yy1!(sgA9FYTt:SvMg@"
+                        ]
+                    },
+                    "shadow": false,
+                    "topLevel": false,
+                    "mutation": {
+                        "tagName": "mutation",
+                        "children": [],
+                        "hasnext": "false"
+                    }
+                },
+                "w": {
+                    "opcode": "control_stop",
+                    "next": "v",
+                    "parent": null,
+                    "inputs": {},
+                    "fields": {
+                        "STOP_OPTION": [
+                            "other scripts in sprite",
+                            "GL~}/CXB)qPgup`G##J3"
+                        ]
+                    },
+                    "shadow": false,
+                    "topLevel": true,
+                    "x": 821,
+                    "y": 1589,
+                    "mutation": {
+                        "tagName": "mutation",
+                        "children": [],
+                        "hasnext": "true"
+                    }
                 }
             },
             "comments": {
-                "I": {
+                "O": {
                     "blockId": null,
                     "x": 158.51851851851856,
                     "y": 591.8518518518517,

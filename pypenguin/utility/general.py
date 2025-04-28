@@ -12,6 +12,13 @@ def grepr(obj, annotate_fields=True, include_attributes=False, *, indent=4):
             if not obj:
                 return '[]', True
             return '[%s%s]' % (prefix, sep.join(_format(x, level)[0] for x in obj)), False
+        if isinstance(obj, tuple):
+            if not obj:
+                return '()', True
+            if len(obj) <= 2:
+                return '(%s)' % (", ".join(_format(x, level)[0] for x in obj)), False
+            else:
+                return '(%s%s)' % (prefix, sep.join(_format(x, level)[0] for x in obj)), False
         elif isinstance(obj, dict):
             if not obj:
                 return '{}', True

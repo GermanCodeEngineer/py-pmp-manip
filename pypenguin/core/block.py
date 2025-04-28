@@ -8,7 +8,7 @@ from utility        import UnnecessaryInputError, MissingInputError, Unnecessary
 from opcode_info    import OpcodeInfoAPI, OpcodeInfo, InputType, InputMode, OpcodeType, SpecialCaseType
 from block_opcodes  import *
 
-from core.block_mutation import FRMutation, FRCustomBlockMutation, FRCustomArgumentMutation, FRCustomCallMutation, FRStopScriptMutation
+from core.block_mutation import FRMutation, FRCustomBlockMutation, FRCustomBlockArgumentMutation, FRCustomCallMutation, FRStopScriptMutation
 from core.block_mutation import SRMutation
 from core.comment        import SRAttachedComment
 from core.context        import FullContext
@@ -41,7 +41,7 @@ class FRBlock(GreprClass):
         if   data["opcode"] == OPCODE_CB_PROTOTYPE:
             mutation = FRCustomBlockMutation.from_data(data["mutation"])
         elif data["opcode"] in ANY_OPCODE_CB_ARG:
-            mutation = FRCustomArgumentMutation.from_data(data["mutation"])
+            mutation = FRCustomBlockArgumentMutation.from_data(data["mutation"])
         elif data["opcode"] == OPCODE_CB_CALL:
             mutation = FRCustomCallMutation.from_data(data["mutation"])
         elif data["opcode"] == OPCODE_STOP_SCRIPT:
@@ -312,7 +312,6 @@ class TRBlock(GreprClass):
                 sub_blocks.append(more_sub_blocks)
             
             if input_value.immediate_block is not None:
-                # HERE
                 sub_blocks.insert(0, input_value.immediate_block.step(
                     all_blocks = all_blocks,
                     info_api   = info_api,
@@ -481,6 +480,8 @@ class SRScript(GreprClass):
                 context          = context,
                 expects_reporter = False,
             )
+            opcode_info = info_api.get_info_by_new(block.opcode)
+            opocde_type = opcode_info.get_opcode_type()
             # TODO: complete
 
 @dataclass(repr=False)
