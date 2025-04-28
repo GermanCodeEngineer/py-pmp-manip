@@ -3,7 +3,7 @@ from abc         import ABC, abstractmethod
 from typing      import Any
 from dataclasses import dataclass
 
-from utility import GreprClass
+from utility import GreprClass, ThanksError
 
 from core.fr_to_tr_api import FRtoTRAPI
 from core.custom_block import SRCustomBlockOpcode, SRCustomBlockOptype
@@ -15,6 +15,10 @@ class FRMutation(GreprClass, ABC):
     
     tag_name: str # always "mutation"
     children: list # always []
+
+    def __post_init__(self):
+        if (self.tag_name != "mutation") or (self.children != []):
+            raise ThanksError()
 
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRMutation":
@@ -75,8 +79,8 @@ class FRCustomBlockMutation(FRMutation):
             warp = loads(data["warp"])
         else: raise ValueError()
         return cls(
-            tag_name          = "mutation",
-            children          = [],
+            tag_name          = data["tagName" ],
+            children          = data["children"],
             proccode          = data["proccode"],
             argument_ids      = loads(data["argumentids"     ]),
             argument_names    = loads(data["argumentnames"   ]),
@@ -122,8 +126,8 @@ class FRCustomCallMutation(FRMutation):
             warp = loads(data["warp"])
         else: raise ValueError()
         return cls(
-            tag_name     = "mutation",
-            children     = [],
+            tag_name     = data["tagName" ],
+            children     = data["children"],
             proccode     = data["proccode"],
             argument_ids = loads(data["argumentids"     ]),
             warp         = warp,
@@ -141,6 +145,25 @@ class FRCustomCallMutation(FRMutation):
                 argument_names    = complete_mutation.argument_names,
                 argument_defaults = complete_mutation.argument_defaults,
             ),
+        )
+
+@dataclass(repr=False)
+class FRStopScriptMutation(FRMutation):
+    _grepr_fields = FRMutation._grepr_fields + ["has_next"]
+    
+    has_next: bool
+    
+    @classmethod
+    def from_data(cls, data: dict[str, bool]) -> "FRStopScriptMutation":
+        return cls(
+            tag_name = data["tagName" ],
+            children = data["children"],
+            has_next = loads(data["hasnext"]),
+        )
+    
+    def step(self, block_api: FRtoTRAPI) -> "SRStopScriptMutation":
+        return SRStopScriptMutation(
+            is_ending_statement = not(self.has_next),
         )
 
 @dataclass(repr=False)
@@ -178,3 +201,10 @@ class SRCustomBlockCallMutation(SRMutation):
     _grepr_fields = SRMutation._grepr_fields + ["custom_opcode"]
     
     custom_opcode: "SRCustomBlockOpcode"
+
+@dataclass(repr=False)
+class SRStopScriptMutation(SRMutation):
+    _grepr_fields = SRMutation._grepr_fields + ["is_ending_statement"]
+    
+    is_ending_statement: bool
+

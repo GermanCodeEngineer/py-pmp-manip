@@ -151,6 +151,16 @@ info_api.add_group(variables    )
 info_api.add_group(lists        )
 info_api.add_group(custom_blocks)
 
+def GET_OPCODE_TYPE__STOP_SCRIPT(block: "SRBlock|TRBlock") -> OpcodeType:
+    return OpcodeType.ENDING_STATEMENT if block.mutation.is_ending_statement else OpcodeType.STATEMENT
+
+info_api.add_opcode_case(OPCODE_STOP_SCRIPT, SpecialCase(
+    type=SpecialCaseType.GET_OPCODE_TYPE,
+    function=GET_OPCODE_TYPE__STOP_SCRIPT,
+))
+
+def GET_OPCODE_TYPE__CB_CALL(block: "SRBlock|TRBlock") -> OpcodeType:
+    block.mutation
 
 def PRE__CB_DEF(block: "FRBlock", block_api: "FRtoTRAPI") -> "FRBlock":
     # Transfer mutation from prototype block to definition block

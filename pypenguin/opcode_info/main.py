@@ -1,9 +1,13 @@
+from typing      import TYPE_CHECKING
 from dataclasses import dataclass, field
 from utility     import DualKeyDict, GreprClass, PypenguinEnum
 
 from opcode_info.input        import InputInfo
 from opcode_info.dropdown     import DropdownInfo
 from opcode_info.special_case import SpecialCase, SpecialCaseType
+
+if TYPE_CHECKING:
+    from core.block import TRBlock, SRBlock
 
 class OpcodeType(PypenguinEnum):
     def is_reporter(self) -> bool:
@@ -33,12 +37,22 @@ class OpcodeInfo:
     dropdowns: DualKeyDict[str, str, DropdownInfo] = field(default_factory=DualKeyDict)
     can_have_monitor: bool = False
     special_cases: dict[SpecialCaseType, SpecialCase] = field(default_factory=dict)
-
+    
     # Special Cases
     def add_special_case(self, special_case: SpecialCase) -> None:
         self.special_cases[special_case.type] = special_case
     def get_special_case(self, case_type: SpecialCaseType) -> SpecialCase | None:
         return self.special_cases.get(case_type, None)
+
+    # Get the opcode type. Avoid OpcodeType.DYNAMIC
+    def get_opcode_type(self, block: "TRBlock|SRBlock") -> None:
+        instead_case = self.get_special_case(SpecialCaseType.GET_OPCODE_TYPE)
+        if self.opcode_type == OpcodeType.DYNAMIC:
+            assert instead_case is not None, "If opcode_type is DYNAMIC, a special case with type GET_OPCODE_TYPE must be defined"
+            return instead_case.call(block)
+        else:
+            assert instead_case is None, "If opcode_type is not DYNAMIC, no special case with type GET_OPCODE_TYPE should be defined"
+            return self.opcode_type
 
     # Info by Old Id
     def get_input_info_by_old(self, old: str) -> InputInfo:

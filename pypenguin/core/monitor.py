@@ -2,7 +2,7 @@ from typing      import Any
 from dataclasses import dataclass
 
 from utility       import GreprClass
-from utility       import AA_TYPE, AA_DICT_OF_TYPE, AA_COORD_PAIR, AA_EQUAL, AA_BIGGER_OR_EQUAL, InvalidOpcodeError, MissingDropdownError, UnnecessaryDropdownError
+from utility       import AA_TYPE, AA_TYPES, AA_DICT_OF_TYPE, AA_COORD_PAIR, AA_EQUAL, AA_BIGGER_OR_EQUAL, InvalidOpcodeError, MissingDropdownError, UnnecessaryDropdownError
 from opcode_info   import OpcodeInfoAPI, DropdownType
 from block_opcodes import *
 
@@ -169,8 +169,8 @@ class SRVariableMonitor(SRMonitor):
             AA_TYPE(self, path, "slider_max", int, condition=condition)
         else:
             condition = "When allow_only_integers is False"
-            AA_TYPE(self, path, "slider_min", float, condition=condition)
-            AA_TYPE(self, path, "slider_max", float, condition=condition)
+            AA_TYPES(self, path, "slider_min", (int, float), condition=condition)
+            AA_TYPES(self, path, "slider_max", (int, float), condition=condition)
 
         AA_BIGGER_OR_EQUAL(self, path, "slider_max", "slider_min")
 

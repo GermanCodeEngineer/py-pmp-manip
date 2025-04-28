@@ -34,14 +34,9 @@ def grepr(obj, annotate_fields=True, include_attributes=False, *, indent=4):
             allsimple = True
             keywords = annotate_fields
             for name in obj._grepr_fields:
-                try:
-                    value = getattr(obj, name)
-                except AttributeError:
-                    keywords = True
+                if not hasattr(obj, name):
                     continue
-                if value is None and getattr(cls, name, ...) is None:
-                    keywords = True
-                    continue
+                value = getattr(obj, name)
                 value, simple = _format(value, level)
                 allsimple = allsimple and simple
                 if keywords:

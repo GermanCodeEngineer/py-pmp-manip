@@ -24,3 +24,7 @@ ANY_NEW_OPCODE_CB_DEF = {NEW_OPCODE_CB_DEF, NEW_OPCODE_CB_DEF_REP}
 # Custom Block Calls
 OPCODE_CB_CALL        = "procedures_call"
 NEW_OPCODE_CB_CALL    = "call custom block"
+
+# Other Special Blocks
+OPCODE_STOP_SCRIPT    = "control_stop"
+

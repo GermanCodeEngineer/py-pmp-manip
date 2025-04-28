@@ -8,7 +8,7 @@ from utility        import UnnecessaryInputError, MissingInputError, Unnecessary
 from opcode_info    import OpcodeInfoAPI, OpcodeInfo, InputType, InputMode, OpcodeType, SpecialCaseType
 from block_opcodes  import *
 
-from core.block_mutation import FRMutation, FRCustomBlockMutation, FRCustomArgumentMutation, FRCustomCallMutation
+from core.block_mutation import FRMutation, FRCustomBlockMutation, FRCustomArgumentMutation, FRCustomCallMutation, FRStopScriptMutation
 from core.block_mutation import SRMutation
 from core.comment        import SRAttachedComment
 from core.context        import FullContext
@@ -44,6 +44,8 @@ class FRBlock(GreprClass):
             mutation = FRCustomArgumentMutation.from_data(data["mutation"])
         elif data["opcode"] == OPCODE_CB_CALL:
             mutation = FRCustomCallMutation.from_data(data["mutation"])
+        elif data["opcode"] == OPCODE_STOP_SCRIPT:
+            mutation = FRStopScriptMutation.from_data(data["mutation"])
         elif "mutation" in data:
             raise ValueError(data)
         else:
@@ -288,7 +290,7 @@ class TRBlock(GreprClass):
         ) -> tuple[tuple[int|float,int|float] | None, list["SRBlock | str"]]:
         
         opcode_info = info_api.get_info_by_old(self.opcode)
-        if opcode_info.opcode_type == OpcodeType.MENU:
+        if opcode_info.get_opcode_type(block=self) == OpcodeType.MENU:
             return (None, [list(self.dropdowns.values())[0]])
             """ example:
             {
@@ -311,11 +313,10 @@ class TRBlock(GreprClass):
             
             if input_value.immediate_block is not None:
                 # HERE
-                sub_blocks.insert(0, [input_value.immediate_block.step(
+                sub_blocks.insert(0, input_value.immediate_block.step(
                     all_blocks = all_blocks,
                     info_api   = info_api,
-                )])
-            
+                )[1])
             block_count = len(sub_blocks)
             
             if block_count == 2:
@@ -390,6 +391,25 @@ class TRBlock(GreprClass):
                 text     = input_text,
                 dropdown = input_dropdown,
             )
+        
+        instead_case = opcode_info.get_special_case(SpecialCaseType.INSTEAD_GET_ALL_NEW_INPUT_IDS_TYPES)
+        if instead_case is None:
+            new_input_ids = opcode_info.get_all_new_input_ids()
+            input_types = {
+                new_input_id: opcode_info.get_input_info_by_new(new_input_id).type
+                for new_input_id in new_input_ids
+            }
+        else:
+            input_types: dict[str, InputType] = instead_case.call(block=self)
+            new_input_ids = list(input_types.keys())
+        for new_input_id in new_input_ids:
+            if new_input_id not in new_inputs:
+                input_mode = input_types[new_input_id].get_mode()
+                if input_mode.can_be_missing():
+                    new_inputs[new_input_id] = SRInputValue(mode=input_mode)
+                else:
+                    # This is done when an input is unexpectedly missing
+                    raise Exception("Didn't expect missing input")
         
         new_dropdowns = {}
         for dropdown_id, dropdown_value in self.dropdowns.items():
@@ -533,7 +553,7 @@ class SRBlock(GreprClass):
             if new_dropdown_id not in self.dropdowns:
                 raise MissingDropdownError(path, f"dropdowns of {self.__class__.__name__} with opcode {repr(self.opcode)} is missing dropdown {repr(new_dropdown_id)}")
         
-        if expects_reporter and not(opcode_info.opcode_type.is_reporter()):
+        if expects_reporter and not(opcode_info.get_opcode_type(block=self).is_reporter()):
             raise InvalidBlockShapeError(path, "Expected a reporter block here")
 
 @dataclass(repr=False)
@@ -557,6 +577,7 @@ class SRInputValue(GreprClass):
                 self._grepr_fields = SRInputValue._grepr_fields + ["block"]
             case InputMode.SCRIPT:
                 self._grepr_fields = SRInputValue._grepr_fields + ["blocks"]
+            case _: raise ValueError()
     
     def validate(self, 
             path: list, 

@@ -13,6 +13,9 @@ class InputInfo:
     menu: MenuInfo | None = None
 
 class InputMode(PypenguinEnum):
+    def can_be_missing(self) -> bool:
+        return self in {InputMode.BLOCK_ONLY, InputMode.SCRIPT}        
+    
     BLOCK_AND_TEXT               = 0
     BLOCK_AND_MENU_TEXT          = 1
     BLOCK_ONLY                   = 2
