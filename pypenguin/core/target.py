@@ -12,7 +12,7 @@ from core.block_mutation import SRCustomBlockMutation
 from core.comment        import FRComment, SRFloatingComment, SRAttachedComment
 from core.context        import PartialContext, FullContext
 from core.dropdown       import SRDropdownValue, SRDropdownKind
-from core.fr_to_tr_api   import FRtoTRAPI
+from core.fr_to_tr_api   import FRtoTRAPI, ValidationAPI
 from core.monitor        import SRMonitor
 from core.vars_lists     import SRVariable, SRSpriteOnlyVariable, SRAllSpriteVariable, SRCloudVariable
 from core.vars_lists     import SRList, SRSpriteOnlyList, SRAllSpriteList
@@ -111,8 +111,7 @@ class FRTarget(GreprClass):
         [top_level_block_refs.append(block_reference) if block.is_top_level else None for block_reference, block in new_blocks.items()]
         
         from utility import grepr
-        print(grepr(new_blocks))
-
+        
         # Account for that one bug(not my fault), where a block is falsely independent
         for block_reference, block in new_blocks.items():
             for input_value in block.inputs.values():
@@ -370,12 +369,14 @@ class SRTarget(GreprClass):
             sounds   = [SRDropdownValue(SRDropdownKind.SOUND  , sound  .name) for sound   in self.sounds  ],
             is_stage = isinstance(self, SRStage),
         )
+        validation_api = ValidationAPI(scripts=self.scripts)
         cb_optypes = {}
         for i, script in enumerate(self.scripts):
             script.validate(
-                path     = path+["scripts", i],
-                info_api = info_api,
-                context  = context,
+                path           = path+["scripts", i],
+                info_api       = info_api,
+                validation_api = validation_api,
+                context        = context,
             )
             for j, block in enumerate(script.blocks):
                 current_path = path+["scripts", i, "blocks", j]

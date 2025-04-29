@@ -8,6 +8,7 @@ from opcode_info.special_case import SpecialCase, SpecialCaseType
 
 if TYPE_CHECKING:
     from core.block import TRBlock, SRBlock
+    from core.fr_to_tr_api import ValidationAPI
 
 class OpcodeType(PypenguinEnum):
     def is_reporter(self) -> bool:
@@ -45,11 +46,11 @@ class OpcodeInfo:
         return self.special_cases.get(case_type, None)
 
     # Get the opcode type. Avoid OpcodeType.DYNAMIC
-    def get_opcode_type(self, block: "TRBlock|SRBlock") -> OpcodeType:
+    def get_opcode_type(self, block: "TRBlock|SRBlock", validation_api: "ValidationAPI") -> OpcodeType:
         instead_case = self.get_special_case(SpecialCaseType.GET_OPCODE_TYPE)
         if self.opcode_type == OpcodeType.DYNAMIC:
             assert instead_case is not None, "If opcode_type is DYNAMIC, a special case with type GET_OPCODE_TYPE must be defined"
-            return instead_case.call(block)
+            return instead_case.call(block, validation_api)
         else:
             assert instead_case is None, "If opcode_type is not DYNAMIC, no special case with type GET_OPCODE_TYPE should be defined"
             return self.opcode_type

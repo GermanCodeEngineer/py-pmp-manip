@@ -1,0 +1,7 @@
+TODOs:
+    - complete validation
+    - move (SR)DropdownKind into opcode_info
+        => dropdown validation: by conversion to tuple
+    - create subclasses of SRInputValue and remove .mode field
+    - move the fetching of input ids and types into opcode_info
+    - complete optimization

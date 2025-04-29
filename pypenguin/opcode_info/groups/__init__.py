@@ -20,7 +20,7 @@ from opcode_info.groups.lists     import lists
 
 if TYPE_CHECKING:
     from core.block          import FRBlock, TRBlock, SRBlock
-    from core.fr_to_tr_api   import FRtoTRAPI
+    from core.fr_to_tr_api   import FRtoTRAPI, ValidationAPI
 
 motion.add_opcode("motion_goto_menu", "#REACHABLE TARGET MENU (GO)", OpcodeInfo(
     opcode_type=OpcodeType.MENU,
@@ -151,20 +151,23 @@ info_api.add_group(variables    )
 info_api.add_group(lists        )
 info_api.add_group(custom_blocks)
 
-def GET_OPCODE_TYPE__STOP_SCRIPT(block: "SRBlock|TRBlock") -> OpcodeType:
+def GET_OPCODE_TYPE__STOP_SCRIPT(block: "SRBlock|TRBlock", validation_api: "ValidationAPI") -> OpcodeType:
     from core.block_mutation import SRStopScriptMutation
-    assert isinstance(block.mutation, SRStopScriptMutation)
-    return OpcodeType.ENDING_STATEMENT if block.mutation.is_ending_statement else OpcodeType.STATEMENT
+    mutation: SRStopScriptMutation = block.mutation
+    return OpcodeType.ENDING_STATEMENT if mutation.is_ending_statement else OpcodeType.STATEMENT
 
 info_api.add_opcode_case(OPCODE_STOP_SCRIPT, SpecialCase(
     type=SpecialCaseType.GET_OPCODE_TYPE,
     function=GET_OPCODE_TYPE__STOP_SCRIPT,
 ))
 
-def GET_OPCODE_TYPE__CB_CALL(block: "SRBlock|TRBlock") -> OpcodeType:
-    #block.mutation # TODO
-    return OpcodeType.STATEMENT
-
+def GET_OPCODE_TYPE__CB_CALL(block: "SRBlock|TRBlock", validation_api: "ValidationAPI") -> OpcodeType:
+    # Get the complete mutation and derive OpcodeType from optype
+    from core.block_mutation import SRCustomBlockCallMutation
+    partial_mutation: SRCustomBlockCallMutation = block.mutation
+    complete_mutation = validation_api.get_cb_mutation(partial_mutation.custom_opcode)
+    return complete_mutation.optype.get_corresponding_opcode_type()
+    
 info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
     type=SpecialCaseType.GET_OPCODE_TYPE,
     function=GET_OPCODE_TYPE__CB_CALL,

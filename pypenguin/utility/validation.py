@@ -56,6 +56,11 @@ def AA_RANGE(obj, path, attr, min, max, condition=None):
     if (attr_value < min) or (attr_value > max):
         raise RangeValidationError(path, f"{descr} must be at least {min} and at most {max}", condition)
 
+def AA_MIN_LEN(obj, path, attr, min_len: int, condition=None):
+    attr_value, descr = value_and_descr(obj, attr)
+    if len(attr_value) < min_len:
+        raise RangeValidationError(path, f"{descr} must contain at least {min_len} element(s)")
+
 def AA_COORD_PAIR(obj, path, attr, condition=None):
     attr_value, descr = value_and_descr(obj, attr)
     if (

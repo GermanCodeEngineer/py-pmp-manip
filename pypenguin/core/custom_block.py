@@ -3,7 +3,7 @@ from re          import split
 
 from utility import GreprClass, PypenguinEnum
 
-from opcode_info import InputType
+from opcode_info import InputType, OpcodeType
 
 @dataclass(repr=False, frozen=True, unsafe_hash=True)
 class SRCustomBlockOpcode(GreprClass):
@@ -80,8 +80,8 @@ class SRCustomBlockOptype(PypenguinEnum):
             case "boolean"  : return SRCustomBlockOptype.BOOLEAN_REPORTER
             case _: raise ValueError()
 
-    @property
-    def is_reporter(self):
+    @property # TODO: check wether used correctly
+    def is_reporter(self) -> bool:
         match self:
             case SRCustomBlockOptype.STATEMENT | SRCustomBlockOptype.ENDING_STATEMENT:
                 return False
@@ -90,6 +90,9 @@ class SRCustomBlockOptype(PypenguinEnum):
                 | SRCustomBlockOptype.BOOLEAN_REPORTER):
                 return True
             case _: raise ValueError()
+
+    def get_corresponding_opcode_type(self) -> OpcodeType:
+        return OpcodeType._member_map_[self.name]
 
     STATEMENT         = 0
     ENDING_STATEMENT  = 1
