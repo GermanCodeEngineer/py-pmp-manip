@@ -2,13 +2,13 @@ from typing      import Any
 from dataclasses import dataclass, field
 
 from utility        import GreprClass, get_closest_matches
-from utility        import AA_TYPE, AA_NONE_OR_TYPE, AA_COORD_PAIR, AA_LIST_OF_TYPE, AA_DICT_OF_TYPE, AA_MIN_LEN
+from utility        import AA_TYPE, AA_NONE, AA_NONE_OR_TYPE, AA_COORD_PAIR, AA_LIST_OF_TYPE, AA_DICT_OF_TYPE, AA_MIN_LEN
 from utility        import UnnecessaryInputError, MissingInputError, UnnecessaryDropdownError, MissingDropdownError, InvalidOpcodeError, InvalidBlockShapeError
 
 from opcode_info    import OpcodeInfoAPI, OpcodeInfo, InputType, InputMode, OpcodeType, SpecialCaseType
 from block_opcodes  import *
 
-from core.block_mutation import FRMutation, FRCustomBlockMutation, FRCustomBlockArgumentMutation, FRCustomCallMutation, FRStopScriptMutation
+from core.block_mutation import FRMutation, FRCustomBlockMutation, FRCustomBlockArgumentMutation, FRCustomBlockCallMutation, FRStopScriptMutation
 from core.block_mutation import SRMutation
 from core.comment        import SRAttachedComment
 from core.context        import FullContext
@@ -36,22 +36,18 @@ class FRBlock(GreprClass):
     mutation: "FRMutation | None"
 
     @classmethod
-    def from_data(cls, data: dict[str, Any]):
+    def from_data(cls, data: dict[str, Any], info_api: OpcodeInfoAPI):
         # TODO: add special case for this
-        if   data["opcode"] == OPCODE_CB_PROTOTYPE:
-            mutation = FRCustomBlockMutation.from_data(data["mutation"])
-        elif data["opcode"] in ANY_OPCODE_CB_ARG:
-            mutation = FRCustomBlockArgumentMutation.from_data(data["mutation"])
-        elif data["opcode"] == OPCODE_CB_CALL:
-            mutation = FRCustomCallMutation.from_data(data["mutation"])
-        elif data["opcode"] == OPCODE_STOP_SCRIPT:
-            mutation = FRStopScriptMutation.from_data(data["mutation"])
+        opcode = data["opcode"]
+        opcode_info = info_api.get_info_by_old(opcode)
+        if opcode_info.old_mutation_cls is not None:
+            mutation = opcode_info.old_mutation_cls.from_data(data["mutation"])
         elif "mutation" in data:
             raise ValueError(data)
         else:
             mutation = None
         return cls(
-            opcode    = data["opcode"  ],
+            opcode    = opcode,
             next      = data["next"    ],
             parent    = data["parent"  ],
             inputs    = {
@@ -74,6 +70,7 @@ class FRBlock(GreprClass):
     def from_tuple(cls, 
             obj: tuple[str, str, str] | tuple[str, str, str, int|float, int|float],
             parent_id: str | None,
+            info_api: OpcodeInfoAPI,
         ) -> "FRBlock":
         if obj[0] == OPCODE_VAR_VALUE_NUM:
             block_data = {
@@ -102,7 +99,7 @@ class FRBlock(GreprClass):
             block_data["x"] = obj[3]
             block_data["y"] = obj[4]
         else: raise ValueError()
-        return cls.from_data(block_data)
+        return cls.from_data(block_data, info_api=info_api)
 
     def step(self, 
         block_api: FRtoTRAPI, 
@@ -163,56 +160,6 @@ class FRBlock(GreprClass):
         for input_id, input_value in self.inputs.items():
             input_mode = input_modes[input_id]
 
-            item_one_type   = type(input_value[1])
-            references      = []
-            immediate_block = None
-            text            = None
-            # Account for list blocks; 
-            if   len(input_value) == 2:
-                if   item_one_type == str: # e.g. "CONDITION": (2, "b")
-                    # one block only, no text
-                    references.append(TRBlockReference(input_value[1]))
-                elif item_one_type == tuple: # e.g. "MESSAGE": (1, (10, "Bye!"))
-                    # one block(currently empty) and text
-                    text = input_value[1][1]
-            elif len(input_value) == 3:
-                item_two_type = type(input_value[2])
-                if   item_one_type == str  and item_two_type == str: # e.g. "TOUCHINGOBJECTMENU": (3, "d", "e")
-                    # two blocks(a menu, and a normal block) and no text
-                    references.append(TRBlockReference(input_value[1]))
-                    references.append(TRBlockReference(input_value[2]))
-                elif item_one_type == str  and item_two_type == tuple: # e.g. 'OPERAND1': (3, 'e', (10, ''))
-                    # one block and text
-                    references.append(TRBlockReference(input_value[1]))
-                    text = input_value[2][1]
-                elif item_one_type == str  and item_two_type == type(None): # e.g. 'custom input bool': (3, 'c', None)
-                    # one block
-                    references.append(TRBlockReference(input_value[1]))
-                elif item_one_type == tuple and item_two_type == tuple: # e.g. 'VALUE': (3, (12, 'var', '=!vkqJLb6ODy(oqe-|ZN'), (10, '0'))
-                    # one list block and text
-                    immediate_block = FRBlock.from_tuple(input_value[1], parent_id=own_id).step(
-                        block_api=block_api,
-                        info_api=info_api,
-                        own_id=None, # None is fine, because tuple blocks can't possibly contain more tuple blocks 
-                    )
-                    text      = input_value[2][1]
-                elif item_one_type == tuple and item_two_type == str: # "TOUCHINGOBJECTMENU": (3, (12, "my variable", "`jEk@4|i[#Fk?(8x)AV.-my variable"), "b")
-                    # two blocks(a menu, and a list block) and no text
-                    immediate_block = FRBlock.from_tuple(input_value[1], parent_id=own_id).step(
-                        block_api=block_api,
-                        info_api=info_api,
-                        own_id=None, # None is fine, because tuple blocks can't possibly contain more tuple blocks 
-                    )
-                    references.append(TRBlockReference(input_value[2]))
-                else: raise ValueError()
-            new_input_data_1 = {
-                "mode"           : input_mode,
-                "references"     : references,
-                "immediate_block": immediate_block,
-                "text"           : text,
-            }
-            
-            
             references      = []
             immediate_block = None
             text            = None
@@ -223,24 +170,11 @@ class FRBlock(GreprClass):
                 elif isinstance(item, tuple) and item[0] in {4, 5, 6, 7, 8, 9, 10, 11}:
                     text = item[1]
                 elif isinstance(item, tuple) and item[0] in {12, 13}:
-                    immediate_block = FRBlock.from_tuple(item, parent_id=own_id).step(
+                    immediate_block = FRBlock.from_tuple(item, parent_id=own_id, info_api=info_api).step(
                         block_api=block_api,
                         info_api=info_api,
                         own_id=None, # None is fine, because tuple blocks can't possibly contain more tuple blocks 
                     )
-                else: raise ValueError()
-            new_input_data_2 = {
-                "mode"           : input_mode,
-                "references"     : references,
-                "immediate_block": immediate_block,
-                "text"           : text,
-            }
-            
-            # Im temporarily keeping both systems to ensure the new system produces the same output
-            if new_input_data_1 != new_input_data_2:
-                print("nid1", new_input_data_1)
-                print("nid2", new_input_data_2)
-                raise Exception("Conflict!")
 
             #print("input", input_id, input_mode, input_value)
             new_inputs[input_id] = TRInputValue(
@@ -565,6 +499,12 @@ class SRBlock(GreprClass):
             if new_dropdown_id not in self.dropdowns:
                 raise MissingDropdownError(path, f"dropdowns of {self.__class__.__name__} with opcode {repr(self.opcode)} is missing dropdown {repr(new_dropdown_id)}")
         
+        if opcode_info.new_mutation_cls is None:
+            AA_NONE(self, path, "mutation", condition="For this opcode")
+        else:
+            AA_TYPE(self, path, "mutation", opcode_info.new_mutation_cls, condition="For this opcode")
+            self.mutation.validate(path+["mutation"])
+
         opcode_type = opcode_info.get_opcode_type(block=self, validation_api=validation_api)
         if expects_reporter and not(opcode_type.is_reporter()):
             raise InvalidBlockShapeError(path, "Expected a reporter block here")

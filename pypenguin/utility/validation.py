@@ -1,4 +1,5 @@
 import json
+import re
 from typing import Any
 
 from utility.errors import TypeValidationError, RangeValidationError, InvalidValueError
@@ -17,6 +18,11 @@ def AA_TYPES(obj, path, attr, ts, condition=None) -> None:
         types_str = "|".join([t.__name__ for t in ts])
         raise TypeValidationError(path, f"{descr} must be one of types {types_str} not {attr_value.__class__.__name__}", condition)
 
+def AA_NONE(obj, path, attr, condition=None) -> None:
+    attr_value, descr = value_and_descr(obj, attr)
+    if attr_value is not None:
+        raise TypeValidationError(path, f"{descr} must be None", condition)
+
 def AA_NONE_OR_TYPE(obj, path, attr, t, condition=None) -> None:
     attr_value, descr = value_and_descr(obj, attr)
     if (attr_value is not None) and not(isinstance(attr_value, t)):
@@ -31,7 +37,17 @@ def AA_LIST_OF_TYPE(obj, path, attr, t, condition=None) -> None:
         if not isinstance(item, t):
             raise TypeValidationError(path, f"{msg} not of {item.__class__.__name__}", condition)
 
-def AA_DICT_OF_TYPE(obj, path, attr, key_t, value_t, condition=None):
+def AA_TUPLE_OF_TYPES(obj, path, attr, ts, condition=None) -> None:
+    attr_value, descr = value_and_descr(obj, attr)
+    types_str = "|".join([t.__name__ for t in ts])
+    msg = f"{descr} must be a tuple. Each item must be one of types {types_str}"
+    if not isinstance(attr_value, tuple):
+        raise TypeValidationError(path, f"{msg} not a {attr_value.__class__.__name__}", condition)
+    for item in attr_value:
+        if not isinstance(item, ts):
+            raise TypeValidationError(path, f"{msg} not of {item.__class__.__name__}", condition)
+
+def AA_DICT_OF_TYPE(obj, path, attr, key_t, value_t, condition=None) -> None:
     attr_value, descr = value_and_descr(obj, attr)
     if not isinstance(attr_value, dict):
         raise TypeValidationError(path, f"{descr} must be a dict. Each key must be of type {key_t.__name__}. Each value must be of type {value_t.__name__}", condition)
@@ -96,7 +112,11 @@ def AA_NOT_ONE_OF(obj, path, attr, forbidden_values, condition=None):
     if attr_value in forbidden_values:
         raise InvalidValueError(path, f"{descr} must not be one of {repr(forbidden_values)}")
 
-import re
+def AA_HEX_COLOR(obj, path, attr, condition=None):
+    attr_value, descr = value_and_descr(obj, attr)
+    if (not isinstance(attr_value, str)) or (not bool(re.fullmatch(r'#([0-9a-fA-F]{6})', attr_value))):
+        raise InvalidValueError(path, f"{descr} must be a valid hex color eg. '#FF0956'")
+
 from urllib.parse import urlparse
 
 def is_valid_js_data_uri(s) -> bool:

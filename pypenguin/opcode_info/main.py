@@ -1,4 +1,4 @@
-from typing      import TYPE_CHECKING
+from typing      import TYPE_CHECKING, Type
 from dataclasses import dataclass, field
 from utility     import DualKeyDict, GreprClass, PypenguinEnum
 
@@ -9,6 +9,7 @@ from opcode_info.special_case import SpecialCase, SpecialCaseType
 if TYPE_CHECKING:
     from core.block import TRBlock, SRBlock
     from core.fr_to_tr_api import ValidationAPI
+    from core.block_mutation import FRMutation, SRMutation
 
 class OpcodeType(PypenguinEnum):
     def is_reporter(self) -> bool:
@@ -31,19 +32,26 @@ class OpcodeType(PypenguinEnum):
 @dataclass
 class OpcodeInfo:
     _grepr = True
-    _grepr_fields = ["opcode_type", "inputs", "dropdowns", "can_have_monitor"]
+    _grepr_fields = ["opcode_type", "inputs", "dropdowns", "can_have_monitor", "old_mutation_cls", "new_mutation_cls"]
     
     opcode_type: OpcodeType
     inputs: DualKeyDict[str, str, InputInfo] = field(default_factory=DualKeyDict)
     dropdowns: DualKeyDict[str, str, DropdownInfo] = field(default_factory=DualKeyDict)
     can_have_monitor: bool = False
     special_cases: dict[SpecialCaseType, SpecialCase] = field(default_factory=dict)
+    old_mutation_cls: Type["FRMutation"] | None = field(init=False, default_factory=type(None))
+    new_mutation_cls: Type["SRMutation"] | None = field(init=False, default_factory=type(None))
     
     # Special Cases
     def add_special_case(self, special_case: SpecialCase) -> None:
         self.special_cases[special_case.type] = special_case
     def get_special_case(self, case_type: SpecialCaseType) -> SpecialCase | None:
         return self.special_cases.get(case_type, None)
+
+    # Mutation Class
+    def set_mutation_classes(self, old_cls: Type["FRMutation"], new_cls: Type["SRMutation"]) -> None:
+        self.old_mutation_cls = old_cls
+        self.new_mutation_cls = new_cls
 
     # Get the opcode type. Avoid OpcodeType.DYNAMIC
     def get_opcode_type(self, block: "TRBlock|SRBlock", validation_api: "ValidationAPI") -> OpcodeType:
@@ -108,15 +116,26 @@ class OpcodeInfoAPI(GreprClass):
     opcode_info: DualKeyDict[str, str, OpcodeInfo] = field(default_factory=DualKeyDict)
 
     # Add Special Cases
-    def add_opcode_case(self, opcode: str, special_case: SpecialCase) -> None:
-        assert isinstance(opcode, str)
-        opcode_info = self.get_info_by_old(opcode)
+    def add_opcode_case(self, old_opcode: str, special_case: SpecialCase) -> None:
+        assert isinstance(old_opcode, str)
+        opcode_info = self.get_info_by_old(old_opcode)
         opcode_info.add_special_case(special_case)
     
-    def add_opcodes_case(self, opcodes: set[str], special_case: SpecialCase) -> None:
-        assert isinstance(opcodes, set)
-        for opcode in opcodes:
-            self.add_opcode_case(opcode, special_case)
+    def add_opcodes_case(self, old_opcodes: set[str], special_case: SpecialCase) -> None:
+        assert isinstance(old_opcodes, set)
+        for old_opcode in old_opcodes:
+            self.add_opcode_case(old_opcode, special_case)
+
+    # Set Mutation Classes
+    def set_opcode_mutation_classes(self, old_opcode: str, old_cls: Type["FRMutation"], new_cls: Type["SRMutation"]) -> None:
+        assert isinstance(old_opcode, str)
+        opcode_info = self.get_info_by_old(old_opcode)
+        opcode_info.set_mutation_classes(old_cls=old_cls, new_cls=new_cls)
+    
+    def set_opcodes_mutation_classes(self, old_opcodes: set[str], old_cls: Type["FRMutation"], new_cls: Type["SRMutation"]) -> None:
+        assert isinstance(old_opcodes, set)
+        for old_opcode in old_opcodes:
+            self.set_opcode_mutation_classes(old_opcode, old_cls=old_cls, new_cls=new_cls)
 
     # Add Categories/Extensions
     def add_group(self, group: OpcodeInfoGroup) -> None:

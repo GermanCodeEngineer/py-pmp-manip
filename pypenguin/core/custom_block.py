@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 from re          import split 
 
-from utility import GreprClass, PypenguinEnum
+from utility import GreprClass, PypenguinEnum, SameNameTwiceError
+from utility import AA_TYPE, AA_TUPLE_OF_TYPES, AA_MIN_LEN, AA_NOT_ONE_OF
 
 from opcode_info import InputType, OpcodeType
 
@@ -36,6 +37,20 @@ class SRCustomBlockOpcode(GreprClass):
             if isinstance(segment, SRCustomBlockArgument):
                 input_types[segment.name] = segment.type.get_corresponding_input_type()
         return input_types
+    
+    def validate(self, path: list) -> None:
+        AA_TUPLE_OF_TYPES(self, path, "segments", (str, SRCustomBlockArgument))
+        AA_MIN_LEN(self, path, "segments", min_len=1)
+
+        names = {}
+        for i, segment in enumerate(self.segments):
+            current_path = ["segments", i]
+            if isinstance(segment, SRCustomBlockArgument):
+                segment.validate(current_path)
+                if segment.name in names:
+                    other_path = names[segment.name]
+                    raise SameNameTwiceError(other_path, current_path, f"Two arguments of a {self.__class__.__name__} mustn't have the same name")
+                names[segment.name] = current_path
 
 @dataclass(repr=False, frozen=True)
 class SRCustomBlockArgument(GreprClass):
@@ -44,6 +59,10 @@ class SRCustomBlockArgument(GreprClass):
 
     type: "SRCustomBlockArgumentType"
     name: str
+
+    def validate(self, path: list) -> None:
+        AA_TYPE(self, path, "type", SRCustomBlockArgumentType)
+        AA_TYPE(self, path, "name", str)
 
 class SRCustomBlockArgumentType(PypenguinEnum):
     @staticmethod

@@ -31,13 +31,13 @@ class FRProject(GreprClass):
         if self.extension_data != {}: raise ThanksError()
 
     @classmethod
-    def from_data(cls, project_data: dict):
+    def from_data(cls, project_data: dict, info_api: OpcodeInfoAPI):
         with open("extracted.json", "w") as file:
             dump(project_data, file, indent=4)
         
         return cls(
             targets = [
-                FRStage.from_data(target_data) if i==0 else FRSprite.from_data(target_data)
+                (FRStage if i==0 else FRSprite).from_data(target_data, info_api=info_api)
                 for i, target_data in enumerate(project_data["targets"])
             ],
             monitors = [
@@ -51,13 +51,13 @@ class FRProject(GreprClass):
         )
 
     @classmethod
-    def from_pmp_file(cls, file_path: str) -> "FRProject":
+    def from_pmp_file(cls, file_path: str, info_api: OpcodeInfoAPI) -> "FRProject":
         assert file_path.endswith(".pmp")
         project_data = loads(read_file_of_zip(file_path, "project.json"))
-        return cls.from_data(project_data)
+        return cls.from_data(project_data, info_api=info_api)
     
     @classmethod
-    def from_sb3_file(cls, file_path: str):
+    def from_sb3_file(cls, file_path: str, info_api: OpcodeInfoAPI):
         # TODO: 
         # - test this method + test sprite id 
         # - test custom block type of sb3's defaulting to "statement"
@@ -88,7 +88,7 @@ class FRProject(GreprClass):
         #        "version": "stable",
         #    },
         #}
-        return cls.from_data(project_data)
+        return cls.from_data(project_data, info_api=info_api)
 
     def step(self, info_api: OpcodeInfoAPI):
         new_sprites: list[SRSprite] = []

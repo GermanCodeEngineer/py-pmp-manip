@@ -22,6 +22,8 @@ if TYPE_CHECKING:
     from core.block          import FRBlock, TRBlock, SRBlock
     from core.fr_to_tr_api   import FRtoTRAPI, ValidationAPI
 
+from core.block_mutation import FRCustomBlockMutation, FRCustomBlockArgumentMutation, FRCustomBlockCallMutation, FRStopScriptMutation, SRCustomBlockMutation, SRCustomBlockArgumentMutation, SRCustomBlockCallMutation, SRStopScriptMutation
+
 motion.add_opcode("motion_goto_menu", "#REACHABLE TARGET MENU (GO)", OpcodeInfo(
     opcode_type=OpcodeType.MENU,
 ))
@@ -151,6 +153,15 @@ info_api.add_group(variables    )
 info_api.add_group(lists        )
 info_api.add_group(custom_blocks)
 
+# Mutations
+info_api.set_opcode_mutation_classes(OPCODE_STOP_SCRIPT, old_cls=FRStopScriptMutation, new_cls=SRStopScriptMutation)
+info_api.set_opcode_mutation_classes(OPCODE_CB_PROTOTYPE, old_cls=FRCustomBlockMutation, new_cls=None)
+info_api.set_opcodes_mutation_classes(ANY_OPCODE_CB_DEF, old_cls=None, new_cls=SRCustomBlockMutation)
+info_api.set_opcodes_mutation_classes(ANY_OPCODE_CB_ARG, old_cls=FRCustomBlockArgumentMutation, new_cls=SRCustomBlockArgumentMutation)
+info_api.set_opcode_mutation_classes(OPCODE_CB_CALL, old_cls=FRCustomBlockCallMutation, new_cls=SRCustomBlockCallMutation)
+
+# Special Cases
+
 def GET_OPCODE_TYPE__STOP_SCRIPT(block: "SRBlock|TRBlock", validation_api: "ValidationAPI") -> OpcodeType:
     from core.block_mutation import SRStopScriptMutation
     mutation: SRStopScriptMutation = block.mutation
@@ -208,8 +219,8 @@ info_api.add_opcodes_case(ANY_OPCODE_CB_ARG, SpecialCase(
 ))
 
 def PRE__CB_CALL(block: "FRBlock", block_api: "FRtoTRAPI") -> "FRBlock":
-    from core.block_mutation import FRCustomCallMutation
-    partial_mutation: FRCustomCallMutation = block.mutation
+    from core.block_mutation import FRCustomBlockCallMutation
+    partial_mutation: FRCustomBlockCallMutation = block.mutation
     complete_mutation = block_api.get_cb_mutation(partial_mutation.proccode)
     new_inputs = {}
     for input_id, input_value in block.inputs.items():
@@ -247,8 +258,8 @@ def INSTEAD_GET_MODES__CB_CALL(block: "FRBlock", block_api: "FRtoTRAPI") -> dict
     # Get the complete mutation
     # Then get the input's index in the triple list system
     # Then get the default and derive the corresponding input mode
-    from core.block_mutation import FRCustomCallMutation
-    partial_mutation: FRCustomCallMutation = block.mutation
+    from core.block_mutation import FRCustomBlockCallMutation
+    partial_mutation: FRCustomBlockCallMutation = block.mutation
     complete_mutation = block_api.get_cb_mutation(partial_mutation.proccode)
     input_modes = {}
     for argument_index, argument_name in enumerate(complete_mutation.argument_names):

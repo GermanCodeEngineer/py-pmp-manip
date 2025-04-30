@@ -41,7 +41,7 @@ class FRTarget(GreprClass):
         if self.custom_vars != []: raise ThanksError()
 
     @classmethod
-    def from_data(cls, data: dict[str, Any]) -> "FRTarget":
+    def from_data(cls, data: dict[str, Any], info_api: OpcodeInfoAPI) -> "FRTarget":
         return cls(
             is_stage        = data["isStage"   ],
             name            = data["name"      ],
@@ -51,7 +51,7 @@ class FRTarget(GreprClass):
             custom_vars     = data["customVars"],
             blocks          = {
                 block_id: (
-                    tuple(block_data) if isinstance(block_data, list) else FRBlock.from_data(block_data)
+                    tuple(block_data) if isinstance(block_data, list) else FRBlock.from_data(block_data, info_api=info_api)
                 ) for block_id, block_data in data["blocks"].items()
             },
             comments        = {
@@ -91,7 +91,7 @@ class FRTarget(GreprClass):
         blocks = deepcopy(self.blocks)
         for block_reference, block in blocks.items():
             if isinstance(block, tuple):
-                blocks[block_reference] = FRBlock.from_tuple(block, parent_id=None)
+                blocks[block_reference] = FRBlock.from_tuple(block, parent_id=None, info_api=info_api)
 
         block_api = FRtoTRAPI(blocks=blocks, block_comments=attached_comments)
         new_blocks: dict["TRBlockReference", "TRBlock"] = {}
@@ -181,7 +181,7 @@ class FRStage(FRTarget):
     text_to_speech_language: str | None
 
     @classmethod
-    def from_data(cls, data: dict[str, Any]) -> "FRTarget":
+    def from_data(cls, data: dict[str, Any], info_api: OpcodeInfoAPI) -> "FRTarget":
         return cls(
             is_stage                = data["isStage"   ],
             name                    = data["name"      ],
@@ -191,7 +191,7 @@ class FRStage(FRTarget):
             custom_vars             = data["customVars"],
             blocks                  = {
                 block_id: (
-                    tuple(block_data) if isinstance(block_data, list) else FRBlock.from_data(block_data)
+                    tuple(block_data) if isinstance(block_data, list) else FRBlock.from_data(block_data, info_api=info_api)
                 ) for block_id, block_data in data["blocks"].items()
             },
             comments                = {
@@ -247,7 +247,7 @@ class FRSprite(FRTarget):
     rotation_style: str
 
     @classmethod
-    def from_data(cls, data: dict[str, Any]) -> "FRTarget":
+    def from_data(cls, data: dict[str, Any], info_api: OpcodeInfoAPI) -> "FRTarget": # TODO: remove repeated code
         return cls(
             is_stage        = data["isStage"   ],
             name            = data["name"      ],
@@ -257,7 +257,7 @@ class FRSprite(FRTarget):
             custom_vars     = data["customVars"],
             blocks          = {
                 block_id: (
-                    tuple(block_data) if isinstance(block_data, list) else FRBlock.from_data(block_data)
+                    tuple(block_data) if isinstance(block_data, list) else FRBlock.from_data(block_data, info_api=info_api)
                 ) for block_id, block_data in data["blocks"].items()
             },
             comments        = {
