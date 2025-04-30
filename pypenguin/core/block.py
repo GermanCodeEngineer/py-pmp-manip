@@ -1,7 +1,8 @@
 from typing      import Any
 from dataclasses import dataclass, field
+from abc         import ABC, abstractmethod
 
-from utility        import GreprClass, get_closest_matches
+from utility        import GreprClass, get_closest_matches, ValidationConfig
 from utility        import AA_TYPE, AA_NONE, AA_NONE_OR_TYPE, AA_COORD_PAIR, AA_LIST_OF_TYPE, AA_DICT_OF_TYPE, AA_MIN_LEN, AA_EQUAL
 from utility        import UnnecessaryInputError, MissingInputError, UnnecessaryDropdownError, MissingDropdownError, InvalidOpcodeError, InvalidBlockShapeError
 
@@ -13,7 +14,7 @@ from core.block_mutation import SRMutation
 from core.comment        import SRAttachedComment
 from core.context        import FullContext
 from core.dropdown       import SRDropdownValue
-from core.fr_to_tr_api   import FRtoTRAPI, ValidationAPI
+from core.block_api   import FRtoTRAPI, ValidationAPI
 
 @dataclass(repr=False)
 class FRBlock(GreprClass):
@@ -37,7 +38,6 @@ class FRBlock(GreprClass):
 
     @classmethod
     def from_data(cls, data: dict[str, Any], info_api: OpcodeInfoAPI):
-        # TODO: add special case for this
         opcode = data["opcode"]
         opcode_info = info_api.get_info_by_old(opcode)
         if opcode_info.old_mutation_cls is not None:
@@ -107,12 +107,12 @@ class FRBlock(GreprClass):
         own_id: str
     ) -> "TRBlock":
         opcode_info = info_api.get_info_by_old(self.opcode)
-        pre_case = opcode_info.get_special_case(SpecialCaseType.PRE_FR_STEP)
-        if pre_case is not None:
-            self = pre_case.call(block_api=block_api, block=self)
+        pre_handler = opcode_info.get_special_case(SpecialCaseType.PRE_FR_STEP)
+        if pre_handler is not None:
+            self = pre_handler.call(block_api=block_api, block=self)
         
-        instead_case = opcode_info.get_special_case(SpecialCaseType.INSTEAD_FR_STEP)
-        if instead_case is None:
+        instead_handler = opcode_info.get_special_case(SpecialCaseType.INSTEAD_FR_STEP)
+        if instead_handler is None:
             new_inputs = self.step_inputs(
                 block_api  = block_api,
                 info_api   = info_api,
@@ -136,9 +136,7 @@ class FRBlock(GreprClass):
                 is_top_level = self.top_level,
             )
         else:
-            new_block = instead_case.call(block_api=block_api, block=self)
-        
-        #TODO: add custom handler system here for e.g. draw polygon block
+            new_block = instead_handler.call(block_api=block_api, block=self)
         return new_block
 
     def step_inputs(self, 
@@ -147,14 +145,14 @@ class FRBlock(GreprClass):
         opcode_info: OpcodeInfo,
         own_id: str
     ) -> dict[str, "TRInputValue"]:
-        instead_case = opcode_info.get_special_case(SpecialCaseType.INSTEAD_FR_STEP_INPUTS_GET_MODES)
-        if instead_case is None:
+        instead_handler = opcode_info.get_special_case(SpecialCaseType.INSTEAD_FR_STEP_INPUTS_GET_MODES)
+        if instead_handler is None:
             input_modes = {
                 input_id: opcode_info.get_input_info_by_old(input_id).type.get_mode()
                 for input_id in self.inputs.keys()
             }
         else:
-            input_modes = instead_case.call(block_api=block_api, block=self)                
+            input_modes = instead_handler.call(block_api=block_api, block=self)                
         
         new_inputs = {}
         for input_id, input_value in self.inputs.items():
@@ -195,7 +193,6 @@ class FRBlock(GreprClass):
                     immediate_block = None,
                     text            = None,
                 )
-            # TODO: special handler case for e.g. polygon block (x4, y4)
             else: raise ValueError()
             
         # Also translate old input ids to new input ids
@@ -307,7 +304,7 @@ class TRBlock(GreprClass):
             if input_dropdown is not None:
                 input_type = opcode_info.get_input_info_by_old(input_id).type
                 dropdown_type = input_type.get_corresponding_dropdown_type()
-                input_dropdown = dropdown_type.translate_old_to_new_value(input_dropdown)
+                input_dropdown = SRDropdownValue.from_tuple(dropdown_type.translate_old_to_new_value(input_dropdown))
 
             
             instead_case = opcode_info.get_special_case(SpecialCaseType.INSTEAD_GET_NEW_INPUT_ID)
@@ -316,8 +313,7 @@ class TRBlock(GreprClass):
             else:
                 new_input_id = instead_case.call(block=self, input_id=input_id)
             
-            # TODO: add special case for handler for polygon block(x4, y4 inputs)
-            new_inputs[new_input_id] = SRInputValue(
+            new_inputs[new_input_id] = SRInputValue.from_mode(
                 mode     = input_value.mode,
                 blocks   = input_blocks,
                 block    = input_block,
@@ -339,7 +335,7 @@ class TRBlock(GreprClass):
             if new_input_id not in new_inputs:
                 input_mode = input_types[new_input_id].get_mode()
                 if input_mode.can_be_missing():
-                    new_inputs[new_input_id] = SRInputValue(mode=input_mode)
+                    new_inputs[new_input_id] = SRInputValue.from_mode(mode=input_mode)
                 else:
                     # This is done when an input is unexpectedly missing
                     raise Exception("Didn't expect missing input")
@@ -348,9 +344,7 @@ class TRBlock(GreprClass):
         for dropdown_id, dropdown_value in self.dropdowns.items():
             dropdown_type = opcode_info.get_dropdown_info_by_old(dropdown_id).type
             new_dropdown_id = opcode_info.get_new_dropdown_id(dropdown_id)
-            new_dropdowns[new_dropdown_id] = dropdown_type.translate_old_to_new_value(
-                old_value=dropdown_value
-            )
+            new_dropdowns[new_dropdown_id] = SRDropdownValue.from_tuple(dropdown_type.translate_old_to_new_value(dropdown_value))
 
         new_block = SRBlock(
             opcode    = info_api.get_new_by_old(self.opcode),
@@ -400,6 +394,7 @@ class SRScript(GreprClass):
 
     def validate(self, 
         path: list, 
+        config: ValidationConfig,
         info_api: OpcodeInfoAPI,
         validation_api: ValidationAPI,
         context: FullContext,
@@ -412,6 +407,7 @@ class SRScript(GreprClass):
             current_path = path+["blocks", i]
             block.validate(
                 path             = current_path,
+                config           = config,
                 info_api         = info_api,
                 validation_api   = validation_api,
                 context          = context,
@@ -440,6 +436,7 @@ class SRBlock(GreprClass):
     
     def validate(self, 
         path: list, 
+        config: ValidationConfig,
         info_api: OpcodeInfoAPI,
         validation_api: ValidationAPI, 
         context: FullContext,
@@ -458,8 +455,14 @@ class SRBlock(GreprClass):
             raise InvalidOpcodeError(path, msg)
         
         if self.comment is not None:
-            self.comment.validate(path+["comment"])
+            self.comment.validate(path+["comment"], config)
         
+        if opcode_info.new_mutation_cls is None:
+            AA_NONE(self, path, "mutation", condition="For this opcode")
+        else:
+            AA_TYPE(self, path, "mutation", opcode_info.new_mutation_cls, condition="For this opcode")
+            self.mutation.validate(path+["mutation"], config)
+
         instead_case = opcode_info.get_special_case(SpecialCaseType.INSTEAD_GET_ALL_NEW_INPUT_IDS_TYPES)
         if instead_case is None:
             new_input_ids = opcode_info.get_all_new_input_ids()
@@ -476,6 +479,7 @@ class SRBlock(GreprClass):
                 raise UnnecessaryInputError(path, f"inputs of {self.__class__.__name__} with opcode {repr(self.opcode)} includes unnecessary input {repr(new_input_id)}")
             input.validate(
                 path           = path+["inputs", (new_input_id,)],
+                config         = config,
                 info_api       = info_api,
                 validation_api = validation_api,
                 context        = context,
@@ -489,7 +493,7 @@ class SRBlock(GreprClass):
         for new_dropdown_id, dropdown in self.dropdowns.items():
             if new_dropdown_id not in new_dropdown_ids:
                 raise UnnecessaryDropdownError(path, f"dropdowns of {self.__class__.__name__} with opcode {repr(self.opcode)} includes unnecessary dropdown {repr(new_dropdown_id)}")
-            dropdown.validate(path+["dropdowns", (new_dropdown_id,)])
+            dropdown.validate(path+["dropdowns", (new_dropdown_id,)], config)
             dropdown.validate_value(
                 path          = path+["dropdowns", (new_dropdown_id,)],
                 dropdown_type = opcode_info.get_dropdown_info_by_new(new_dropdown_id).type,
@@ -499,12 +503,6 @@ class SRBlock(GreprClass):
             if new_dropdown_id not in self.dropdowns:
                 raise MissingDropdownError(path, f"dropdowns of {self.__class__.__name__} with opcode {repr(self.opcode)} is missing dropdown {repr(new_dropdown_id)}")
         
-        if opcode_info.new_mutation_cls is None:
-            AA_NONE(self, path, "mutation", condition="For this opcode")
-        else:
-            AA_TYPE(self, path, "mutation", opcode_info.new_mutation_cls, condition="For this opcode")
-            self.mutation.validate(path+["mutation"])
-
         opcode_type = opcode_info.get_opcode_type(block=self, validation_api=validation_api)
         if expects_reporter and not(opcode_type.is_reporter()):
             raise InvalidBlockShapeError(path, "Expected a reporter block here")
@@ -537,56 +535,151 @@ class SRBlock(GreprClass):
         else: raise ValueError(opcode_type)
 
 @dataclass(repr=False)
-class SRInputValue(GreprClass):
+class SRInputValue(GreprClass, ABC):
     _grepr = True
-    _grepr_fields = ["mode"]
+    _grepr_fields = []
 
-    mode: InputMode
-    blocks: list[SRBlock] = field(default_factory=list)
-    block: SRBlock            | None = None
-    text: str                 | None = None
-    dropdown: SRDropdownValue | None = None
-    
-    def __post_init__(self):
-        match self.mode:
-            case InputMode.BLOCK_AND_TEXT | InputMode.BLOCK_AND_MENU_TEXT:
-                self._grepr_fields = SRInputValue._grepr_fields + ["block", "text"]
-            case InputMode.BLOCK_AND_DROPDOWN | InputMode.BLOCK_AND_BROADCAST_DROPDOWN:
-                self._grepr_fields = SRInputValue._grepr_fields + ["block", "dropdown"]
-            case InputMode.BLOCK_ONLY:
-                self._grepr_fields = SRInputValue._grepr_fields + ["block"]
-            case InputMode.SCRIPT:
-                self._grepr_fields = SRInputValue._grepr_fields + ["blocks"]
-            case _: 
-                if isinstance(self.mode, InputMode): raise ValueError()
-    
+    @abstractmethod
     def validate(self, 
-            path: list, 
-            info_api: OpcodeInfoAPI,
-            validation_api: ValidationAPI, 
-            context: FullContext, 
-            input_type: InputType, 
-        ) -> None:
-        
-        AA_TYPE(self, path, "mode", InputMode)
-        AA_EQUAL(self, path, "mode", input_type.get_mode(), condition="For this input")
-        AA_LIST_OF_TYPE(self, path, "blocks", SRBlock)
+        path: list, 
+        config: ValidationConfig,
+        info_api: OpcodeInfoAPI,
+        validation_api: ValidationAPI, 
+        context: FullContext, 
+        input_type: InputType, 
+    ) -> None: pass
+
+    def validate_block(self, 
+        path: list, 
+        config: ValidationConfig,
+        info_api: OpcodeInfoAPI,
+        validation_api: ValidationAPI, 
+        context: FullContext, 
+    ) -> None:
+        self: SRBlockAndTextInputValue | SRBlockAndDropdownInputValue | SRBlockOnlyInputValue = self
         AA_NONE_OR_TYPE(self, path, "block", SRBlock)
-        AA_NONE_OR_TYPE(self, path, "text", str)
-        AA_NONE_OR_TYPE(self, path, "dropdown", SRDropdownValue)
-            
         if self.block is not None:
             self.block.validate(
                 path             = path+["block"],
+                config           = config,
                 info_api         = info_api,
                 validation_api   = validation_api,
                 context          = context,
                 expects_reporter = True,
             )
-        
+    
+    @classmethod
+    def from_mode(cls,
+        mode: InputMode,
+        blocks: list[SRBlock]     | None = None,
+        block: SRBlock            | None = None,
+        text: str                 | None = None,
+        dropdown: SRDropdownValue | None = None,
+    ) -> "SRInputValue":
+        match mode:
+            case InputMode.BLOCK_AND_TEXT | InputMode.BLOCK_AND_MENU_TEXT:
+                return SRBlockAndTextInputValue(block=block, text=text)
+            case InputMode.BLOCK_AND_DROPDOWN | InputMode.BLOCK_AND_BROADCAST_DROPDOWN:
+                return SRBlockAndDropdownInputValue(block=block, dropdown=dropdown)
+            case InputMode.BLOCK_ONLY:
+                return SRBlockOnlyInputValue(block=block)
+            case InputMode.SCRIPT:
+                return SRScriptInputValue(blocks=[] if blocks is None else blocks)
+
+@dataclass(repr=False)
+class SRBlockAndTextInputValue(SRInputValue):
+    _grepr_fields = SRInputValue._grepr_fields + ["block", "text"]
+    block: SRBlock | None
+    text : str     | None
+
+    def validate(self, 
+        path: list, 
+        config: ValidationConfig,
+        info_api: OpcodeInfoAPI,
+        validation_api: ValidationAPI, 
+        context: FullContext, 
+        input_type: InputType, 
+    ) -> None:
+        self.validate_block(
+            path           = path,
+            config         = config,
+            info_api       = info_api,
+            validation_api = validation_api,
+            context        = context,
+        )
+        AA_NONE_OR_TYPE(self, path, "text", str)
+
+@dataclass(repr=False)
+class SRBlockAndDropdownInputValue(SRInputValue):
+    _grepr_fields = SRInputValue._grepr_fields + ["block", "text"]
+    block   : SRBlock         | None
+    dropdown: SRDropdownValue | None
+
+    def validate(self, 
+        path: list, 
+        config: ValidationConfig,
+        info_api: OpcodeInfoAPI,
+        validation_api: ValidationAPI, 
+        context: FullContext, 
+        input_type: InputType, 
+    ) -> None:
+        self.validate_block(
+            path           = path,
+            config         = config,
+            info_api       = info_api,
+            validation_api = validation_api,
+            context        = context,
+        )
+        AA_NONE_OR_TYPE(self, path, "dropdown", SRDropdownValue)
+        if self.dropdown is not None:
+            current_path = path+["dropdown"]
+            self.dropdown.validate(current_path, config)
+            self.dropdown.validate_value(
+                path          = current_path,
+                dropdown_type = input_type.get_corresponding_dropdown_type(),
+                context       = context,
+            )
+
+@dataclass(repr=False)
+class SRBlockOnlyInputValue(SRInputValue):
+    _grepr_fields = SRInputValue._grepr_fields + ["block"]
+    block: SRBlock | None
+
+    def validate(self, 
+        path: list, 
+        config: ValidationConfig,
+        info_api: OpcodeInfoAPI,
+        validation_api: ValidationAPI, 
+        context: FullContext, 
+        input_type: InputType, 
+    ) -> None:
+        self.validate_block(
+            path           = path,
+            config         = config,
+            info_api       = info_api,
+            validation_api = validation_api,
+            context        = context,
+        )
+
+@dataclass(repr=False)
+class SRScriptInputValue(SRInputValue):
+    _grepr_fields = SRInputValue._grepr_fields + ["blocks"]
+    blocks: list[SRBlock]
+
+    def validate_blocks(self, 
+        path: list, 
+        config: ValidationConfig,
+        info_api: OpcodeInfoAPI,
+        validation_api: ValidationAPI, 
+        context: FullContext, 
+        input_type: InputType, 
+    ) -> None:
+        AA_LIST_OF_TYPE(self, path, "blocks", SRBlock)
         for i, block in enumerate(self.blocks):
+            current_path = path+["blocks", i]
             block.validate(
-                path             = path+["blocks", i],
+                path             = current_path,
+                config           = config,
                 info_api         = info_api,
                 validation_api   = validation_api,
                 context          = context,
@@ -601,13 +694,3 @@ class SRInputValue(GreprClass):
                 is_first     = (i == 0),
                 is_last      = ((i+1) == len(self.blocks)),
             )
-        
-        if self.dropdown is not None:
-            current_path = path+["dropdown"]
-            self.dropdown.validate(current_path)
-            self.dropdown.validate_value(
-                path          = current_path,
-                dropdown_type = input_type.get_corresponding_dropdown_type(),
-                context       = context,
-            )
-

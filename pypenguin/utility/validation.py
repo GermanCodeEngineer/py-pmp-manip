@@ -1,6 +1,7 @@
 import json
 import re
-from typing import Any
+from typing      import Any
+from dataclasses import dataclass
 
 from utility.errors import TypeValidationError, RangeValidationError, InvalidValueError
 
@@ -35,6 +36,16 @@ def AA_LIST_OF_TYPE(obj, path, attr, t, condition=None) -> None:
         raise TypeValidationError(path, f"{msg} not a {attr_value.__class__.__name__}", condition)
     for item in attr_value:
         if not isinstance(item, t):
+            raise TypeValidationError(path, f"{msg} not of {item.__class__.__name__}", condition)
+
+def AA_LIST_OF_TYPES(obj, path, attr, ts, condition=None) -> None:
+    attr_value, descr = value_and_descr(obj, attr)
+    types_str = "|".join([t.__name__ for t in ts])
+    msg = f"{descr} must be a list. Each item must be one of types {types_str}"
+    if not isinstance(attr_value, list):
+        raise TypeValidationError(path, f"{msg} not a {attr_value.__class__.__name__}", condition)
+    for item in attr_value:
+        if not isinstance(item, ts):
             raise TypeValidationError(path, f"{msg} not of {item.__class__.__name__}", condition)
 
 def AA_TUPLE_OF_TYPES(obj, path, attr, ts, condition=None) -> None:
@@ -86,6 +97,19 @@ def AA_COORD_PAIR(obj, path, attr, condition=None):
     ):
         raise TypeValidationError(path, f"{descr} must be a coordinate pair. It must be a tuple of length 2. Each item must be an int or float", condition)
 
+def AA_BOXED_COORD_PAIR(obj, path, attr, 
+        min_x: int|float, max_x: int|float, min_y:int|float, max_y: int|float, 
+    condition=None):
+    attr_value, descr = value_and_descr(obj, attr)
+    if (
+           (not isinstance(attr_value, tuple)) or (len(attr_value) != 2) 
+        or (not isinstance(attr_value[0], (int, float))) 
+        or (not isinstance(attr_value[1], (int, float)))
+        or (attr_value[0] < min_x) or (attr_value[0] > max_x)
+        or (attr_value[1] < min_y) or (attr_value[1] > max_y)
+    ):
+        raise TypeValidationError(path, f"{descr} must be a coordinate pair. It must be a tuple of length 2. Each item must be an int or float. The first coordinate must be in range from {min_x} to {max_x}. The second coordinate must be in range from {min_y} to {max_y}", condition)
+
 def AA_JSON_COMPATIBLE(obj, path, attr, condition=None):
     attr_value, descr = value_and_descr(obj, attr)
     try:
@@ -133,4 +157,9 @@ def is_valid_url(url: str) -> bool:
         )
     except Exception:
         return False
+
+@dataclass
+class ValidationConfig:
+    raise_when_monitor_position_outside_stage: bool = True
+    raise_when_monitor_bigger_then_stage: bool = True
 

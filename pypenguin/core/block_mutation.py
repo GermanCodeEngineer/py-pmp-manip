@@ -3,10 +3,10 @@ from abc         import ABC, abstractmethod
 from typing      import Any
 from dataclasses import dataclass
 
-from utility import GreprClass, ThanksError
+from utility import GreprClass, ThanksError, ValidationConfig
 from utility import AA_TYPE, AA_HEX_COLOR
 
-from core.fr_to_tr_api import FRtoTRAPI
+from core.block_api import FRtoTRAPI
 from core.custom_block import SRCustomBlockOpcode, SRCustomBlockOptype
 
 @dataclass(repr=False)
@@ -173,7 +173,7 @@ class SRMutation(GreprClass, ABC):
     _grepr_fields = []
 
     @abstractmethod
-    def validate(self, path: list) -> None: pass
+    def validate(self, path: list, config: ValidationConfig) -> None: pass
 
 @dataclass(repr=False)
 class SRCustomBlockArgumentMutation(SRMutation):
@@ -186,7 +186,7 @@ class SRCustomBlockArgumentMutation(SRMutation):
     color2: str
     color3: str
 
-    def validate(self, path: list) -> None:
+    def validate(self, path: list, config: ValidationConfig) -> None:
         AA_TYPE(self, path, "argument_name", str)
         AA_HEX_COLOR(self, path, "color1")
         AA_HEX_COLOR(self, path, "color2")
@@ -206,7 +206,7 @@ class SRCustomBlockMutation(SRMutation):
     color2: str
     color3: str
     
-    def validate(self, path: list) -> None:
+    def validate(self, path: list, config: ValidationConfig) -> None:
         AA_TYPE(self, path, "custom_opcode", SRCustomBlockOpcode)
         AA_TYPE(self, path, "no_screen_refresh", bool)
         AA_TYPE(self, path, "optype", SRCustomBlockOptype)
@@ -214,7 +214,7 @@ class SRCustomBlockMutation(SRMutation):
         AA_HEX_COLOR(self, path, "color2")
         AA_HEX_COLOR(self, path, "color3")
 
-        self.custom_opcode.validate(path+["custom_opcode"])
+        self.custom_opcode.validate(path+["custom_opcode"], config)
 
 @dataclass(repr=False)    
 class SRCustomBlockCallMutation(SRMutation):
@@ -222,10 +222,10 @@ class SRCustomBlockCallMutation(SRMutation):
     
     custom_opcode: "SRCustomBlockOpcode"
     
-    def validate(self, path: list) -> None:
+    def validate(self, path: list, config: ValidationConfig) -> None:
         AA_TYPE(self, path, "custom_opcode", SRCustomBlockOpcode)
 
-        self.custom_opcode.validate(path+["custom_opcode"]) # TODO: make sure the custom opcode is defined
+        self.custom_opcode.validate(path+["custom_opcode"], config)
 
 @dataclass(repr=False)
 class SRStopScriptMutation(SRMutation):
@@ -233,6 +233,6 @@ class SRStopScriptMutation(SRMutation):
     
     is_ending_statement: bool
 
-    def validate(self, path: list) -> None:
+    def validate(self, path: list, config: ValidationConfig) -> None:
         AA_TYPE(self, path, "is_ending_statement", bool)
 

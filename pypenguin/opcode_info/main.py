@@ -8,7 +8,7 @@ from opcode_info.special_case import SpecialCase, SpecialCaseType
 
 if TYPE_CHECKING:
     from core.block import TRBlock, SRBlock
-    from core.fr_to_tr_api import ValidationAPI
+    from core.block_api import ValidationAPI
     from core.block_mutation import FRMutation, SRMutation
 
 class OpcodeType(PypenguinEnum):

@@ -11,7 +11,7 @@ class FRMeta(GreprClass):
     semver: str
     vm: str
     agent: str
-    platform: "FRPlatform"
+    platform: "FRPlatformMeta"
 
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRMeta":
@@ -19,11 +19,11 @@ class FRMeta(GreprClass):
             semver = data["semver"],
             vm     = data["vm"    ],
             agent  = data["agent" ],
-            platform = FRPlatform.from_data(data["platform"]),
+            platform = FRPlatformMeta.from_data(data["platform"]),
         )
 
 @dataclass(repr=False)
-class FRPlatform(GreprClass):
+class FRPlatformMeta(GreprClass):
     _grepr = True
     _grepr_fields = ["name", "url", "version"]
     
@@ -32,7 +32,7 @@ class FRPlatform(GreprClass):
     version: str
 
     @classmethod
-    def from_data(cls, data: dict[str, str]) -> "FRPlatform":
+    def from_data(cls, data: dict[str, str]) -> "FRPlatformMeta":
         return cls(
             name    = data["name"   ],
             url     = data["url"    ],

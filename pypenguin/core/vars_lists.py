@@ -1,8 +1,8 @@
 from typing      import Any
 from dataclasses import dataclass
 
-from utility import GreprClass
-from utility import AA_TYPE, AA_JSON_COMPATIBLE
+from utility import GreprClass, ValidationConfig
+from utility import AA_TYPE, AA_TYPES, AA_LIST_OF_TYPES
 
 @dataclass(repr=False)
 class SRVariable(GreprClass):
@@ -12,17 +12,12 @@ class SRVariable(GreprClass):
     name: str
     current_value: Any
 
-    def validate(self, path: list):
+    def validate(self, path: list, config: ValidationConfig):
         AA_TYPE(self, path, "name", str)
-        AA_JSON_COMPATIBLE(self, path, "current_value") # TODO: check wether these are all possible to use in Scratch
+        AA_TYPES(self, path, "current_value", (int, float, str, bool)) # Only these can be saved in Scratch Projects
+        #AA_JSON_COMPATIBLE(self, path, "current_value")
 
-class SRSpriteOnlyVariable(SRVariable):
-    pass
-
-class SRAllSpriteVariable(SRVariable):
-    pass
-
-class SRCloudVariable(SRAllSpriteVariable):
+class SRCloudVariable(SRVariable):
     pass
 
 @dataclass(repr=False)
@@ -33,16 +28,10 @@ class SRList(GreprClass):
     name: str
     current_value: list[Any]
 
-    def validate(self, path: list):
+    def validate(self, path: list, config: ValidationConfig):
         AA_TYPE(self, path, "name", str)
         AA_TYPE(self, path, "current_value", list) # still must be a list
-        AA_JSON_COMPATIBLE(self, path, "current_value") # TODO: check wether these are all possible to use in Scratch       
-
-
-class SRSpriteOnlyList(SRList):
-    pass
-
-class SRAllSpriteList(SRList):
-    pass
+        AA_LIST_OF_TYPES(self, path, "current_value", (int, float, str, bool)) # Only these can be saved in Scratch Projects
+        #AA_JSON_COMPATIBLE(self, path, "current_value")
 
 

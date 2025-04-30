@@ -1,8 +1,9 @@
 from typing      import Any
 from dataclasses import dataclass
+from math        import inf
 
-from utility       import GreprClass
-from utility       import AA_TYPE, AA_TYPES, AA_DICT_OF_TYPE, AA_COORD_PAIR, AA_EQUAL, AA_BIGGER_OR_EQUAL, InvalidOpcodeError, MissingDropdownError, UnnecessaryDropdownError
+from utility       import GreprClass, ValidationConfig
+from utility       import AA_TYPE, AA_TYPES, AA_DICT_OF_TYPE, AA_COORD_PAIR, AA_BOXED_COORD_PAIR, AA_EQUAL, AA_BIGGER_OR_EQUAL, InvalidOpcodeError, MissingDropdownError, UnnecessaryDropdownError
 from opcode_info   import OpcodeInfoAPI, DropdownType
 from block_opcodes import *
 
@@ -76,14 +77,14 @@ class FRMonitor(GreprClass):
             else:
                 new_dropdown_id = opcode_info.get_new_dropdown_id(dropdown_id)
                 dropdown_type   = opcode_info.get_dropdown_info  (dropdown_id).type
-            new_dropdowns[new_dropdown_id] = dropdown_type.translate_old_to_new_value(dropdown_value)
+            new_dropdowns[new_dropdown_id] = SRDropdownValue.from_tuple(dropdown_type.translate_old_to_new_value(dropdown_value))
         
         new_opcode = info_api.get_new_by_old(self.opcode)
         if   self.opcode == OPCODE_VAR_VALUE:
             return (self.sprite_name, SRVariableMonitor(
                 opcode              = new_opcode,
                 dropdowns           = new_dropdowns,
-                position            = (self.x, self.y),
+                position            = (self.x-240, self.y-180), # this lets the center of stage be the origin
                 is_visible          = self.visible,
                 slider_min          = self.slider_min,
                 slider_max          = self.slider_max,
@@ -112,7 +113,7 @@ class SRMonitor(GreprClass):
     
     opcode: str
     dropdowns: dict[str, SRDropdownValue]
-    position: tuple[int | float, int | float]
+    position: tuple[int | float, int | float] # Center of the Stage is the origin
     is_visible: bool
     
     def __post_init__(self) -> None:
@@ -121,10 +122,13 @@ class SRMonitor(GreprClass):
         elif self.opcode == NEW_OPCODE_LIST_VALUE:
             assert isinstance(self, SRListMonitor), f"Must be a SRListMonitor instance if opcode is {repr(NEW_OPCODE_LIST_VALUE)}"
     
-    def validate(self, path: list, info_api: OpcodeInfoAPI):
+    def validate(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI):
         AA_TYPE(self, path, "opcode", str)
         AA_DICT_OF_TYPE(self, path, "dropdowns", key_t=str, value_t=SRDropdownValue)
-        AA_COORD_PAIR(self, path, "position") # TODO: possibly ensure position is on stage
+        if config.raise_when_monitor_position_outside_stage:
+            AA_BOXED_COORD_PAIR(self, path, "position", min_x=-240, max_x=240, min_y=-180, max_y=180)
+        else:
+            AA_COORD_PAIR(self, path, "position")
         AA_TYPE(self, path, "is_visible", bool)
         
         opcode_info = info_api.get_info_by_new_safe(self.opcode)
@@ -133,7 +137,7 @@ class SRMonitor(GreprClass):
         
         new_dropdown_ids = opcode_info.get_all_new_dropdown_ids()
         for new_dropdown_id, dropdown_value in self.dropdowns.items():
-            dropdown_value.validate(path+["dropdowns", (new_dropdown_id,)])
+            dropdown_value.validate(path+["dropdowns", (new_dropdown_id,)], config)
             if new_dropdown_id not in new_dropdown_ids:
                 raise UnnecessaryDropdownError(path, f"dropdowns of {self.__class__.__name__} with opcode {repr(self.opcode)} includes unnecessary dropdown {repr(new_dropdown_id)}")
         for new_dropdown_id in new_dropdown_ids:
@@ -158,8 +162,8 @@ class SRVariableMonitor(SRMonitor):
     slider_max: int | float
     allow_only_integers: bool
     
-    def validate(self, path: list, info_api: OpcodeInfoAPI):
-        super().validate(path, info_api)
+    def validate(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI):
+        super().validate(path, config, info_api)
         AA_EQUAL(self, path, "opcode", NEW_OPCODE_VAR_VALUE)
         
         AA_TYPE(self, path, "allow_only_integers", bool)
@@ -180,9 +184,12 @@ class SRListMonitor(SRMonitor):
 
     size: tuple[int | float, int | float]
     
-    def validate(self, path: list, info_api: OpcodeInfoAPI):
-        super().validate(path, info_api)
+    def validate(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI):
+        super().validate(path, config, info_api)
         AA_EQUAL(self, path, "opcode", NEW_OPCODE_LIST_VALUE)
         
-        AA_COORD_PAIR(self, path, "size") # TODO: possibly check maximum width and height
+        if config.raise_when_monitor_bigger_then_stage:
+            AA_BOXED_COORD_PAIR(self, path, "size", min_x=100, max_x=480, min_y=60, max_y=360)
+        else:
+            AA_BOXED_COORD_PAIR(self, path, "size", min_x=100, max_x=inf, min_y=60, max_y=inf)
 

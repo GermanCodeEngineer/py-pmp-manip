@@ -20,7 +20,7 @@ from opcode_info.groups.lists     import lists
 
 if TYPE_CHECKING:
     from core.block          import FRBlock, TRBlock, SRBlock
-    from core.fr_to_tr_api   import FRtoTRAPI, ValidationAPI
+    from core.block_api   import FRtoTRAPI, ValidationAPI
 
 from core.block_mutation import FRCustomBlockMutation, FRCustomBlockArgumentMutation, FRCustomBlockCallMutation, FRStopScriptMutation, SRCustomBlockMutation, SRCustomBlockArgumentMutation, SRCustomBlockCallMutation, SRStopScriptMutation
 
@@ -293,10 +293,10 @@ def POST_VALIDATION__CB_DEF(path:list, block: "SRBlock") -> None:
     mutation: SRCustomBlockMutation = block.mutation
     if block.opcode == NEW_OPCODE_CB_DEF:
         if mutation.optype.is_reporter():
-            raise InvalidValueError(path, f"If .mutation.optype of a {block.__class__.__name__} is ...REPORTER, .opcode should be {repr(NEW_OPCODE_CB_DEF_REP)}")
+            raise InvalidValueError(path, f"If mutation.optype of a {block.__class__.__name__} is ...REPORTER, opcode should be {repr(NEW_OPCODE_CB_DEF_REP)}")
     elif block.opcode == NEW_OPCODE_CB_DEF_REP:
         if not mutation.optype.is_reporter():
-            raise InvalidValueError(path, f"If .mutation.optype of a {block.__class__.__name__} is NOT ...REPORTER, .opcode should be {repr(NEW_OPCODE_CB_DEF)}")
+            raise InvalidValueError(path, f"If mutation.optype of a {block.__class__.__name__} is NOT ...REPORTER, opcode should be {repr(NEW_OPCODE_CB_DEF)}")
     else: raise ValueError()
 
 info_api.add_opcodes_case(ANY_OPCODE_CB_DEF, SpecialCase(

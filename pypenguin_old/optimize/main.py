@@ -1,12 +1,12 @@
 from utility import Platform
 
-from pypenguin.optimize.costumes_sounds  import translateCostumes, translateSounds
-from pypenguin.optimize.variables_lists  import translateVariables, translateLists
-from pypenguin.optimize.blocks_scripts   import getCustomBlockMutations, prepareBlocks, nestScripts, finishScripts
-from pypenguin.optimize.comments         import translateComment
-from pypenguin.optimize.monitors         import translateMonitors
-from pypenguin.optimize.scratch_adaption import adaptProject
-from pypenguin.database                  import optimizeOptionValue
+from optimize.costumes_sounds  import translateCostumes, translateSounds
+from optimize.variables_lists  import translateVariables, translateLists
+from optimize.blocks_scripts   import getCustomBlockMutations, prepareBlocks, nestScripts, finishScripts
+from optimize.comments         import translateComment
+from optimize.monitors         import translateMonitors
+from optimize.scratch_adaption import adaptProject
+from database                  import optimizeOptionValue
 
 def optimizeProjectJSON(projectData, sourcePlatform):
     if sourcePlatform == Platform.SCRATCH:

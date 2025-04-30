@@ -130,7 +130,7 @@ bt_translation = {
     "embeddedMenu": "POLYGON_MENU"
 }
 
-for cat in ["motion", "looks", "sounds", "events", "control", "sensing", "operators", "variables", "lists"]:
+for cat in ["motion", "looks", "sounds", "events", "control", "sensing", "operators", "variables", "lists", "extension_video_sensing"]:
     exec(f"from {cat} import opcodes")
     
     if   cat == "sounds": block_cat = "sound"
@@ -222,5 +222,5 @@ for cat in ["motion", "looks", "sounds", "events", "control", "sensing", "operat
     
     string += "}))"
     #print(string)
-    with open("../../../pypenguin/opcode_info/groups/"+cat+".py", "w") as file:
+    with open("pypenguin/opcode_info/groups/"+cat+".py", "w") as file:
         file.write(string)

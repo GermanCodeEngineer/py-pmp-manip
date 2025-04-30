@@ -1,7 +1,7 @@
 from typing      import Any
 from dataclasses import dataclass
 
-from utility import GreprClass
+from utility import GreprClass, ValidationConfig
 from utility import AA_COORD_PAIR, AA_TYPE, InvalidValueError
 
 @dataclass(repr=False)
@@ -57,7 +57,7 @@ class SRComment(GreprClass):
     is_minimized: bool
     text: str
     
-    def validate(self, path: list) -> None:
+    def validate(self, path: list, config: ValidationConfig) -> None:
         AA_COORD_PAIR(self, path, "position")
         AA_COORD_PAIR(self, path, "size")
         if (self.size[0] < 52) or (self.size[1] < 32):

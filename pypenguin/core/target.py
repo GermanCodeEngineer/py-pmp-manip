@@ -2,20 +2,21 @@ from typing      import Any
 from copy        import deepcopy
 from dataclasses import dataclass
 
-from utility     import GreprClass, PypenguinEnum, ThanksError
+from utility     import GreprClass, ThanksError, ValidationConfig
 from utility     import AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_MIN, AA_RANGE, AA_COORD_PAIR, AA_NOT_ONE_OF, SameNameTwiceError
-from opcode_info import OpcodeInfoAPI
+from opcode_info import OpcodeInfoAPI, DropdownValueKind
 
 from core.asset          import FRCostume, FRSound, SRCostume, SRSound
 from core.block          import FRBlock, TRBlock, SRScript, TRBlockReference
 from core.block_mutation import SRCustomBlockMutation
 from core.comment        import FRComment, SRFloatingComment, SRAttachedComment
 from core.context        import PartialContext, FullContext
-from core.dropdown       import SRDropdownValue, SRDropdownKind
-from core.fr_to_tr_api   import FRtoTRAPI, ValidationAPI
+from core.dropdown       import SRDropdownValue
+from core.enums          import SRSpriteRotationStyle
+from core.block_api      import FRtoTRAPI, ValidationAPI
 from core.monitor        import SRMonitor
-from core.vars_lists     import SRVariable, SRSpriteOnlyVariable, SRAllSpriteVariable, SRCloudVariable
-from core.vars_lists     import SRList, SRSpriteOnlyList, SRAllSpriteList
+from core.vars_lists     import SRVariable, SRVariable, SRVariable, SRCloudVariable
+from core.vars_lists     import SRList, SRList, SRList
 
 @dataclass(repr=False)
 class FRTarget(GreprClass):
@@ -40,35 +41,40 @@ class FRTarget(GreprClass):
     def __post_init__(self) -> None:
         if self.custom_vars != []: raise ThanksError()
 
-    @classmethod
-    def from_data(cls, data: dict[str, Any], info_api: OpcodeInfoAPI) -> "FRTarget":
-        return cls(
-            is_stage        = data["isStage"   ],
-            name            = data["name"      ],
-            variables       = {key: tuple(value) for key, value in data["variables"].items()},
-            lists           = {key: tuple(value) for key, value in data["lists"    ].items()},
-            broadcasts      = data["broadcasts"],
-            custom_vars     = data["customVars"],
-            blocks          = {
+    @staticmethod
+    def _parse_common_data(data: dict[str, Any], info_api: OpcodeInfoAPI) -> dict:
+        """Helper method to parse common fields for FRTarget and its subclasses."""
+        return {
+            "is_stage": data["isStage"],
+            "name": data["name"],
+            "variables": {key: tuple(value) for key, value in data["variables"].items()},
+            "lists": {key: tuple(value) for key, value in data["lists"].items()},
+            "broadcasts": data["broadcasts"],
+            "custom_vars": data["customVars"],
+            "blocks": {
                 block_id: (
-                    tuple(block_data) if isinstance(block_data, list) else FRBlock.from_data(block_data, info_api=info_api)
-                ) for block_id, block_data in data["blocks"].items()
+                    tuple(block_data)
+                    if isinstance(block_data, list)
+                    else FRBlock.from_data(block_data, info_api=info_api)
+                )
+                for block_id, block_data in data["blocks"].items()
             },
-            comments        = {
+            "comments": {
                 comment_id: FRComment.from_data(comment_data)
                 for comment_id, comment_data in data["comments"].items()
             },
-            current_costume = data["currentCostume"],
-            costumes        = [
-                FRCostume.from_data(costume_data) for costume_data in data["costumes"]
-            ],
-            sounds          = [
-                FRSound.  from_data(sound_data  ) for sound_data   in data["sounds"  ]
-            ],
-            id              = data["id"        ],
-            volume          = data["volume"    ],
-            layer_order     = data["layerOrder"],
-        )
+            "current_costume": data["currentCostume"],
+            "costumes": [FRCostume.from_data(costume_data) for costume_data in data["costumes"]],
+            "sounds": [FRSound.from_data(sound_data) for sound_data in data["sounds"]],
+            "id": data["id"],
+            "volume": data["volume"],
+            "layer_order": data["layerOrder"],
+        }
+
+    @classmethod
+    def from_data(cls, data: dict[str, Any], info_api: OpcodeInfoAPI) -> "FRTarget":
+        common_data = cls._parse_common_data(data, info_api)
+        return cls(**common_data)
 
     def proto_step(self, info_api: OpcodeInfoAPI
     ) -> tuple[
@@ -154,9 +160,9 @@ class FRTarget(GreprClass):
                 if (len(variable) == 3) and (variable[2] == True):
                     cls = SRCloudVariable
                 else:
-                    cls = SRAllSpriteVariable
+                    cls = SRVariable
             else:
-                cls = SRSpriteOnlyVariable
+                cls = SRVariable
             new_variables.append(cls(name=name, current_value=current_value))
         
         new_lists = []
@@ -164,9 +170,9 @@ class FRTarget(GreprClass):
             name = list_[0]
             current_value = list_[1]
             if self.is_stage:
-                cls = SRAllSpriteList
+                cls = SRList
             else:
-                cls = SRSpriteOnlyList
+                cls = SRList
             new_lists.append(cls(name=name, current_value=current_value))
         
         return new_variables, new_lists
@@ -181,42 +187,18 @@ class FRStage(FRTarget):
     text_to_speech_language: str | None
 
     @classmethod
-    def from_data(cls, data: dict[str, Any], info_api: OpcodeInfoAPI) -> "FRTarget":
+    def from_data(cls, data: dict[str, Any], info_api: OpcodeInfoAPI) -> "FRStage":
+        common_data = cls._parse_common_data(data, info_api)
         return cls(
-            is_stage                = data["isStage"   ],
-            name                    = data["name"      ],
-            variables               = {key: tuple(value) for key, value in data["variables"].items()},
-            lists                   = {key: tuple(value) for key, value in data["lists"    ].items()},
-            broadcasts              = data["broadcasts"],
-            custom_vars             = data["customVars"],
-            blocks                  = {
-                block_id: (
-                    tuple(block_data) if isinstance(block_data, list) else FRBlock.from_data(block_data, info_api=info_api)
-                ) for block_id, block_data in data["blocks"].items()
-            },
-            comments                = {
-                comment_id: FRComment.from_data(comment_data)
-                for comment_id, comment_data in data["comments"].items()
-            },
-            current_costume         = data["currentCostume"],
-            costumes                = [
-                FRCostume.from_data(costume_data) for costume_data in data["costumes"]
-            ],
-            sounds                  = [
-                FRSound.  from_data(sound_data  ) for sound_data   in data["sounds"  ]
-            ],
-            id                      = data["id"                  ],
-            volume                  = data["volume"              ],
-            layer_order             = data["layerOrder"          ],
-
-            tempo                   = data["tempo"               ],
-            video_transparency      = data["videoTransparency"   ],
-            video_state             = data["videoState"          ],
-            text_to_speech_language = data["textToSpeechLanguage"],
+            **common_data,
+            tempo=data["tempo"],
+            video_transparency=data["videoTransparency"],
+            video_state=data["videoState"],
+            text_to_speech_language=data["textToSpeechLanguage"],
         )
     
     def step(self, info_api: OpcodeInfoAPI
-    ) -> tuple["SRStage", list[SRAllSpriteVariable],  list[SRAllSpriteList]]:
+    ) -> tuple["SRStage", list[SRVariable],  list[SRList]]:
         (
             scripts,
             comments,
@@ -247,41 +229,17 @@ class FRSprite(FRTarget):
     rotation_style: str
 
     @classmethod
-    def from_data(cls, data: dict[str, Any], info_api: OpcodeInfoAPI) -> "FRTarget": # TODO: remove repeated code
+    def from_data(cls, data: dict[str, Any], info_api: OpcodeInfoAPI) -> "FRSprite":
+        common_data = cls._parse_common_data(data, info_api)
         return cls(
-            is_stage        = data["isStage"   ],
-            name            = data["name"      ],
-            variables       = {key: tuple(value) for key, value in data["variables"].items()},
-            lists           = {key: tuple(value) for key, value in data["lists"    ].items()},
-            broadcasts      = data["broadcasts"],
-            custom_vars     = data["customVars"],
-            blocks          = {
-                block_id: (
-                    tuple(block_data) if isinstance(block_data, list) else FRBlock.from_data(block_data, info_api=info_api)
-                ) for block_id, block_data in data["blocks"].items()
-            },
-            comments        = {
-                comment_id: FRComment.from_data(comment_data)
-                for comment_id, comment_data in data["comments"].items()
-            },
-            current_costume = data["currentCostume"],
-            costumes        = [
-                FRCostume.from_data(costume_data) for costume_data in data["costumes"]
-            ],
-            sounds          = [
-                FRSound.  from_data(sound_data  ) for sound_data   in data["sounds"  ]
-            ],
-            id              = data["id"           ],
-            volume          = data["volume"       ],
-            layer_order     = data["layerOrder"   ],
-
-            visible         = data["visible"      ],
-            x               = data["x"            ],
-            y               = data["y"            ],
-            size            = data["size"         ],
-            direction       = data["direction"    ],
-            draggable       = data["draggable"    ],
-            rotation_style  = data["rotationStyle"],
+            **common_data,
+            visible=data["visible"],
+            x=data["x"],
+            y=data["y"],
+            size=data["size"],
+            direction=data["direction"],
+            draggable=data["draggable"],
+            rotation_style=data["rotationStyle"],
         )
 
     def step(self, info_api: OpcodeInfoAPI
@@ -313,7 +271,8 @@ class FRSprite(FRTarget):
             is_draggable          = self.draggable,
             rotation_style        = SRSpriteRotationStyle.from_string(self.rotation_style),
         ), None, None)
-    
+
+
 @dataclass(repr=False)
 class SRTarget(GreprClass):
     _grepr = True
@@ -326,7 +285,7 @@ class SRTarget(GreprClass):
     sounds: list[SRSound]
     volume: int | float
 
-    def validate(self, path: list, info_api: OpcodeInfoAPI) -> None:
+    def validate(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
         AA_LIST_OF_TYPE(self, path, "scripts", SRScript)
         AA_LIST_OF_TYPE(self, path, "comments", SRFloatingComment)
         AA_LIST_OF_TYPE(self, path, "costumes", SRCostume)
@@ -337,12 +296,12 @@ class SRTarget(GreprClass):
         AA_RANGE(self, path, "volume", min=0, max=100)
         
         for i, comment in enumerate(self.comments):
-            comment.validate(path+["comments", i])
+            comment.validate(path+["comments", i], config)
 
         defined_costumes = {}
         for i, costume in enumerate(self.costumes):
             current_path = path+["costumes", i]
-            costume.validate(path)
+            costume.validate(path, config)
             if costume.name in defined_costumes:
                 other_path = defined_costumes[costume.name]
                 raise SameNameTwiceError(other_path, current_path, "Two costumes mustn't have the same name")
@@ -351,23 +310,23 @@ class SRTarget(GreprClass):
         defined_sounds = {}
         for i, sound in enumerate(self.sounds):
             current_path = path+["sounds", i]
-            sound.validate(path)
+            sound.validate(path, config)
             if sound.name in defined_sounds:
                 other_path = defined_sounds[sound.name]
                 raise SameNameTwiceError(other_path, current_path, "Two sounds mustn't have the same name")
             defined_sounds[sound.name] = current_path
-        # TODO: complete this
     
     def get_full_context(self, partial_context: PartialContext) -> FullContext:
         return FullContext.from_partial(
             pc       = partial_context,
-            costumes = [SRDropdownValue(SRDropdownKind.COSTUME, costume.name) for costume in self.costumes],
-            sounds   = [SRDropdownValue(SRDropdownKind.SOUND  , sound  .name) for sound   in self.sounds  ],
+            costumes = [SRDropdownValue(DropdownValueKind.COSTUME, costume.name) for costume in self.costumes],
+            sounds   = [SRDropdownValue(DropdownValueKind.SOUND  , sound  .name) for sound   in self.sounds  ],
             is_stage = isinstance(self, SRStage),
         )
     
     def validate_scripts(self, 
         path: list, 
+        config: ValidationConfig,
         info_api: OpcodeInfoAPI,
         context: PartialContext,
     ) -> None:
@@ -377,6 +336,7 @@ class SRTarget(GreprClass):
         for i, script in enumerate(self.scripts):
             script.validate(
                 path           = path+["scripts", i],
+                config         = config,
                 info_api       = info_api,
                 validation_api = validation_api,
                 context        = context,
@@ -389,7 +349,6 @@ class SRTarget(GreprClass):
                         other_path = cb_optypes[custom_opcode]
                         raise SameNameTwiceError(other_path, current_path, "Two custom blocks mustn't have the same name(see .mutation.custom_opcode.proccode)")
                     cb_optypes[custom_opcode] = block.mutation.optype
-        
 
 class SRStage(SRTarget):
     pass # The stage has no additional properties
@@ -399,10 +358,14 @@ class SRSprite(SRTarget):
     _grepr_fields = ["name"] + SRTarget._grepr_fields + ["sprite_only_variables", "sprite_only_lists", "local_monitors", "layer_order", "is_visible", "position", "size", "direction", "is_draggable", "rotation_style"]
     
     name: str
-    sprite_only_variables: list[SRSpriteOnlyVariable]
-    sprite_only_lists: list[SRSpriteOnlyList]
+    sprite_only_variables: list[SRVariable]
+    sprite_only_lists: list[SRList]
     local_monitors: list[SRMonitor]
-    layer_order: int
+    layer_order: int 
+    # layer_order:
+    #   - must be at least 1
+    #   - no two sprites can have the same value for it
+    #   - the values should go from 1 up to the number of sprites in the project, no value can be skipped
     is_visible: bool
     position: tuple[int | float, int | float]
     size: int | float
@@ -410,16 +373,16 @@ class SRSprite(SRTarget):
     is_draggable: bool
     rotation_style: "SRSpriteRotationStyle"
     
-    def validate(self, path: list, info_api: OpcodeInfoAPI) -> None:
-        super().validate(path, info_api)
+    def validate(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
+        super().validate(path, config, info_api)
         
         AA_TYPE(self, path, "name", str)
         AA_NOT_ONE_OF(self, path, "name", ["_myself_", "_stage_", "_mouse_", "_edge_"])
-        AA_LIST_OF_TYPE(self, path, "sprite_only_variables", SRSpriteOnlyVariable)
-        AA_LIST_OF_TYPE(self, path, "sprite_only_lists", SRSpriteOnlyList)
+        AA_LIST_OF_TYPE(self, path, "sprite_only_variables", SRVariable)
+        AA_LIST_OF_TYPE(self, path, "sprite_only_lists", SRList)
         AA_LIST_OF_TYPE(self, path, "local_monitors", SRMonitor)
         AA_TYPE(self, path, "layer_order", int)
-        AA_MIN(self, path, "layer_order", min=1) # TODO: reform and check
+        AA_MIN(self, path, "layer_order", min=1)
         AA_TYPE(self, path, "is_visible", bool)
         AA_COORD_PAIR(self, path, "position")
         AA_TYPES(self, path, "size", (int, float))
@@ -431,12 +394,12 @@ class SRSprite(SRTarget):
         
         
         for i, variable in enumerate(self.sprite_only_variables):
-            variable.validate(path+["sprite_only_variables", i])
+            variable.validate(path+["sprite_only_variables", i], config)
         for i, list_ in enumerate(self.sprite_only_lists):
-            list_.validate(path+["sprite_only_lists", i])
+            list_.validate(path+["sprite_only_lists", i], config)
         
         for i, monitor in enumerate(self.local_monitors):
-            monitor.validate(path+["local_monitors", i], info_api)
+            monitor.validate(path+["local_monitors", i], config, info_api)
     
     def validate_monitors(self, 
         path: list, 
@@ -450,18 +413,5 @@ class SRSprite(SRTarget):
                 info_api = info_api, 
                 context  = context,
             )
-        
 
-class SRSpriteRotationStyle(PypenguinEnum):
-    @staticmethod
-    def from_string(string: str):
-        match string:
-            case "all around"  : return SRSpriteRotationStyle.ALL_AROUND
-            case "left-right"  : return SRSpriteRotationStyle.LEFT_RIGHT
-            case "don't rotate": return SRSpriteRotationStyle.DONT_ROTATE
-            case _: raise ValueError()
-
-    ALL_AROUND  = 0
-    LEFT_RIGHT  = 1
-    DONT_ROTATE = 2
 

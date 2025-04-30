@@ -47,7 +47,9 @@ class InvalidDropdownValueError(PathValidationError): pass # TODO
 class InvalidOpcodeError(PathValidationError): pass
 class InvalidBlockShapeError(PathValidationError): pass
 
-class SameNameTwiceError(ValidationError):
+class LayerOrderError(PathValidationError): pass
+
+class SameValueTwiceError(ValidationError):
     def __init__(self, path1: list, path2: list, msg: str, condition: str|None = None):
         path1_string = generate_path_string(path1)
         path2_string = generate_path_string(path2)
@@ -56,4 +58,7 @@ class SameNameTwiceError(ValidationError):
             full_message += f"{condition}: "
         full_message += msg
         super().__init__(full_message)
+
+class SameNameTwiceError(SameValueTwiceError): pass
+class SameNumberTwiceError(SameValueTwiceError): pass
 

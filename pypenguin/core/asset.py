@@ -1,7 +1,7 @@
 from typing      import Any
 from dataclasses import dataclass
 
-from utility import GreprClass
+from utility import GreprClass, ValidationConfig
 from utility import AA_TYPE, AA_COORD_PAIR, AA_MIN
 
 @dataclass(repr=False)
@@ -78,7 +78,7 @@ class SRCostume(GreprClass):
     rotation_center: tuple[int | float, int | float]
     bitmap_resolution: int
   
-    def validate(self, path: list) -> None:
+    def validate(self, path: list, config: ValidationConfig) -> None:
         AA_TYPE(self, path, "name", str)
         AA_TYPE(self, path, "file_extension", str)
         AA_COORD_PAIR(self, path, "rotation_center")
@@ -93,7 +93,7 @@ class SRSound(GreprClass):
     name: str
     file_extension: str
     
-    def validate(self, path: list) -> None:
+    def validate(self, path: list, config: ValidationConfig) -> None:
         AA_TYPE(self, path, "name", str)
         AA_TYPE(self, path, "file_extension", str)
 

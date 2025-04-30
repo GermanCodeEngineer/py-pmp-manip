@@ -1,9 +1,3 @@
 TODOs:
-    - complete validation
-        - ensure the correct mutations
-        - ensure optypes match correctly with procedures_definition and procedures_definition_return
-    - move (SR)DropdownKind into opcode_info
-        => dropdown validation: by conversion to tuple
-    - create subclasses of SRInputValue and remove .mode field
     - move the fetching of input ids and types into opcode_info
     - complete optimization

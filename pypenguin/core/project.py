@@ -1,18 +1,18 @@
 from json        import dump, loads
 from dataclasses import dataclass
 
-from utility     import read_file_of_zip, ThanksError, GreprClass, PypenguinEnum
-from utility     import AA_TYPE, AA_NONE_OR_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_RANGE, SameNameTwiceError
-from opcode_info import OpcodeInfoAPI
+from utility     import read_file_of_zip, ThanksError, GreprClass, ValidationConfig
+from utility     import AA_TYPE, AA_NONE_OR_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_RANGE, SameNameTwiceError, SameNumberTwiceError, LayerOrderError
+from opcode_info import OpcodeInfoAPI, DropdownValueKind
 
-from core.context    import PartialContext
-from core.dropdown   import SRDropdownValue, SRDropdownKind
-from core.extension  import SRExtension, SRCustomExtension, SRBuiltinExtension
-from core.meta       import FRMeta
-from core.monitor    import FRMonitor, SRMonitor
-from core.target     import FRTarget, FRStage, FRSprite, SRStage, SRSprite
-from core.tts        import TextToSpeechLanguage
-from core.vars_lists import SRAllSpriteVariable, SRAllSpriteList
+from core.context       import PartialContext
+from core.dropdown      import SRDropdownValue
+from core.extension     import SRExtension, SRCustomExtension, SRBuiltinExtension
+from core.meta          import FRMeta
+from core.monitor       import FRMonitor, SRMonitor
+from core.enums import SRTTSLanguage, SRVideoState
+from core.target        import FRTarget, FRStage, FRSprite, SRStage, SRSprite
+from core.vars_lists    import SRVariable, SRList
 
 @dataclass(repr=False)
 class FRProject(GreprClass): 
@@ -118,7 +118,7 @@ class FRProject(GreprClass):
         if old_stage.text_to_speech_language is None:
             new_tts_language = None
         else:
-            new_tts_language = TextToSpeechLanguage.from_string(old_stage.text_to_speech_language)
+            new_tts_language = SRTTSLanguage.from_string(old_stage.text_to_speech_language)
         
         new_extensions = []
         for extension_id in self.extensions:
@@ -145,19 +145,6 @@ class FRProject(GreprClass):
             extensions              = new_extensions,
         )
 
-
-class SRVideoState(PypenguinEnum):
-    @staticmethod
-    def from_string(value: str) -> "SRVideoState":
-        if   value == "on"        : return SRVideoState.ON
-        elif value == "on flipped": return SRVideoState.ON_FLIPPED
-        elif value == "off"       : return SRVideoState.OFF
-        else: raise ValueError(f"Invalid video state: {value}")
-
-    ON         = 0
-    ON_FLIPPED = 1
-    OFF        = 2
-
 @dataclass(repr=False)
 class SRProject(GreprClass):
     """
@@ -168,12 +155,12 @@ class SRProject(GreprClass):
     
     stage: SRStage
     sprites: list[SRSprite]
-    all_sprite_variables: list[SRAllSpriteVariable]
-    all_sprite_lists: list[SRAllSpriteList]
+    all_sprite_variables: list[SRVariable]
+    all_sprite_lists: list[SRList]
     tempo: int
-    video_transparency: int | float
+    video_transparency: int | float # There seems to be no limit
     video_state: SRVideoState
-    text_to_speech_language: TextToSpeechLanguage | None
+    text_to_speech_language: SRTTSLanguage | None
     global_monitors: list[SRMonitor]
     extensions: list[SRExtension]
 
@@ -217,41 +204,63 @@ class SRProject(GreprClass):
                     raise SameNameTwiceError(other_path, current_path, "Two lists mustn't have the same name")
                 defined_lists[list_.name] = current_path
 
-    def validate(self, info_api: OpcodeInfoAPI) -> None:
+    def validate_sprites(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
+        # Validate sprites and their layer orders
+        layer_orders: dict[int, list] = {}
+        for i, sprite in enumerate(self.sprites):
+            current_path = path+["sprites", i]
+            sprite.validate(current_path, config, info_api)
+            if sprite.layer_order in layer_orders:
+                other_path = layer_orders[sprite.layer_order]
+                raise SameNumberTwiceError(other_path, current_path, "Two sprites mustn't have the same layer order")
+            layer_orders[sprite.layer_order] = current_path
+        
+        min_layer_order = min(layer_orders.keys())
+        if min_layer_order != 1:
+            raise LayerOrderError(layer_orders[min_layer_order], "layer_order must start at 1")
+        
+        next_layer_order = 1
+        for layer_order, current_path in dict(sorted(layer_orders.items())).items():
+            if layer_order > next_layer_order: # Can't be lower because minimum of 1 was alredy ensured + sorting
+                raise LayerOrderError(current_path, f"layer_order should start at 1 and then increase for each sprite in order from back to front. It should be {next_layer_order} here")
+            next_layer_order += 1
+
+        
+
+    def validate(self, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
         """
         Checks wether a SRProject is valid and raises a subclass of ValidationError if not.
         """
         path = []
         AA_TYPE(self, path, "stage", SRStage)
         AA_LIST_OF_TYPE(self, path, "sprites", SRSprite)
-        AA_LIST_OF_TYPE(self, path, "all_sprite_variables", SRAllSpriteVariable)
-        AA_LIST_OF_TYPE(self, path, "all_sprite_lists", SRAllSpriteList)
+        AA_LIST_OF_TYPE(self, path, "all_sprite_variables", SRVariable)
+        AA_LIST_OF_TYPE(self, path, "all_sprite_lists", SRList)
         AA_TYPE(self, path, "tempo", int)
         AA_RANGE(self, path, "tempo", min=20, max=500)
-        AA_TYPES(self, path, "video_transparency", (int, float)) # TODO: research min/max
+        AA_TYPES(self, path, "video_transparency", (int, float))
         AA_TYPE(self, path, "video_state", SRVideoState)
-        AA_NONE_OR_TYPE(self, path, "text_to_speech_language", TextToSpeechLanguage)
+        AA_NONE_OR_TYPE(self, path, "text_to_speech_language", SRTTSLanguage)
         AA_LIST_OF_TYPE(self, path, "global_monitors", SRMonitor)
         AA_LIST_OF_TYPE(self, path, "extensions", SRExtension)
         
-        # TODO: complete this
-        self.stage.validate(path+["stage"], info_api)
-        for i, sprite in enumerate(self.sprites):
-            sprite.validate(path+["sprites", i], info_api)
+        self.stage.validate(path+["stage"], config, info_api)
+
+        self.validate_sprites(path, config, info_api)    
         
         for i, variable in enumerate(self.all_sprite_variables):
-            variable.validate(path+["all_sprite_variables", i])
+            variable.validate(path+["all_sprite_variables", i], config)
         for i, list_ in enumerate(self.all_sprite_lists):
-            list_.validate(path+["all_sprite_lists", i])
+            list_.validate(path+["all_sprite_lists", i], config)
         
         self.validate_var_names(path)
         self.validate_list_names(path)
         
         for i, monitor in enumerate(self.global_monitors):
-            monitor.validate(path+["global_monitors", i], info_api)
+            monitor.validate(path+["global_monitors", i], config, info_api)
         
         for i, extension in enumerate(self.extensions):
-            extension.validate(path+["extensions", i])
+            extension.validate(path+["extensions", i], config)
         
         # 1. Ensure no same sprite name
         # 2. Validate Dropdown Values
@@ -265,13 +274,13 @@ class SRProject(GreprClass):
                 raise SameNameTwiceError(other_path, current_path, "Two sprites mustn't have the same name")
             defined_sprites[sprite.name] = current_path
             sprite_only_variables[sprite.name] = [
-                SRDropdownValue(SRDropdownKind.VARIABLE, variable.name) for variable in sprite.sprite_only_variables]
+                SRDropdownValue(DropdownValueKind.VARIABLE, variable.name) for variable in sprite.sprite_only_variables]
             sprite_only_lists    [sprite.name] = [
-                SRDropdownValue(SRDropdownKind.LIST    , list_   .name) for list_    in sprite.sprite_only_lists]
+                SRDropdownValue(DropdownValueKind.LIST    , list_   .name) for list_    in sprite.sprite_only_lists]
         
-        all_sprite_variables = [SRDropdownValue(SRDropdownKind.VARIABLE, variable.name) for variable in self.all_sprite_variables]
-        all_sprite_lists     = [SRDropdownValue(SRDropdownKind.LIST    , list_   .name) for list_    in self.all_sprite_lists    ]
-        backdrops            = [SRDropdownValue(SRDropdownKind.BACKDROP, backdrop.name) for backdrop in self.stage.costumes      ]
+        all_sprite_variables = [SRDropdownValue(DropdownValueKind.VARIABLE, variable.name) for variable in self.all_sprite_variables]
+        all_sprite_lists     = [SRDropdownValue(DropdownValueKind.LIST    , list_   .name) for list_    in self.all_sprite_lists    ]
+        backdrops            = [SRDropdownValue(DropdownValueKind.BACKDROP, backdrop.name) for backdrop in self.stage.costumes      ]
         for i, target in enumerate([self.stage]+self.sprites):
             if i == 0:
                 target_key = None
@@ -286,11 +295,12 @@ class SRProject(GreprClass):
                 sprite_only_variables = sprite_only_variables,
                 sprite_only_lists     = sprite_only_lists,
                 other_sprites         = [
-                    SRDropdownValue(SRDropdownKind.SPRITE, sprite_name) for sprite_name in defined_sprites.keys()],
+                    SRDropdownValue(DropdownValueKind.SPRITE, sprite_name) for sprite_name in defined_sprites.keys()],
                 backdrops             = backdrops,
             )
             target.validate_scripts(
                 path     = current_path, 
+                config   = config,
                 info_api = info_api, 
                 context  = partial_context,
             )

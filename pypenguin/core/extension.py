@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from utility import GreprClass
+from utility import GreprClass, ValidationConfig
 from utility import AA_TYPE, is_valid_js_data_uri, is_valid_url, InvalidValueError
 
 @dataclass(repr=False)
@@ -10,7 +10,7 @@ class SRExtension(GreprClass):
     
     id: str
 
-    def validate(self, path: list) -> None:
+    def validate(self, path: list, config: ValidationConfig) -> None:
         AA_TYPE(self, path, "id", str) # possibly verify its one of PenguinMod's extension if not custom
         if not self.id.isalnum():
             raise InvalidValueError(path, f"id of {self.__class__.__name__} may only contain alpha-numeric characters")
@@ -24,8 +24,8 @@ class SRCustomExtension(SRExtension):
     
     url: str # either "https://..." or "data:application/javascript,..."
     
-    def validate(self, path: list):
-        super().validate(path)
+    def validate(self, path: list, config: ValidationConfig):
+        super().validate(path, config)
 
         AA_TYPE(self, path, "url", str)
         if not (is_valid_url(self.url) or is_valid_js_data_uri(self.url)):
