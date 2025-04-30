@@ -80,7 +80,7 @@ class SRCustomBlockArgumentType(PypenguinEnum):
             case SRCustomBlockArgumentType.STRING_NUMBER:
                 return InputType.TEXT
             case SRCustomBlockArgumentType.BOOLEAN:
-                return InputType.BOOLEAN,
+                return InputType.BOOLEAN
             case _:
                 raise ValueError()
 
@@ -99,23 +99,15 @@ class SRCustomBlockOptype(PypenguinEnum):
             case "boolean"  : return SRCustomBlockOptype.BOOLEAN_REPORTER
             case _: raise ValueError()
 
-    @property # TODO: check wether used correctly
     def is_reporter(self) -> bool:
-        match self:
-            case SRCustomBlockOptype.STATEMENT | SRCustomBlockOptype.ENDING_STATEMENT:
-                return False
-            case (SRCustomBlockOptype.STRING_REPORTER 
-                | SRCustomBlockOptype.NUMBER_REPORTER
-                | SRCustomBlockOptype.BOOLEAN_REPORTER):
-                return True
-            case _: raise ValueError()
+        return self.value[0]
 
     def get_corresponding_opcode_type(self) -> OpcodeType:
         return OpcodeType._member_map_[self.name]
 
-    STATEMENT         = 0
-    ENDING_STATEMENT  = 1
+    STATEMENT         = (False, 0)
+    ENDING_STATEMENT  = (False, 1)
     
-    STRING_REPORTER   = 2
-    NUMBER_REPORTER   = 3
-    BOOLEAN_REPORTER  = 4
+    STRING_REPORTER   = (True , 2)
+    NUMBER_REPORTER   = (True , 3)
+    BOOLEAN_REPORTER  = (True , 4)

@@ -46,23 +46,29 @@ class ValidationAPI(GreprClass):
 
     scripts: dict[str, "SRScript"]
     cb_mutations: dict[SRCustomBlockOpcode, "SRCustomBlockMutation"] = field(init=False)
+    # Safe access is needed because blocks haven't actually been validated yet
     
     def __post_init__(self) -> None:
         from core.block_mutation import SRCustomBlockMutation
         all_blocks = self.get_all_blocks()
         self.cb_mutations = {}
         for block in all_blocks:
-            if isinstance(block.mutation, SRCustomBlockMutation):
-                self.cb_mutations[block.mutation.custom_opcode] = block.mutation
+            if isinstance(getattr(block, "mutation", None), SRCustomBlockMutation):
+                if hasattr(block.mutation, "custom_opcode"):
+                    self.cb_mutations[block.mutation.custom_opcode] = block.mutation
 
     def get_all_blocks(self) -> list["SRBlock"]:
+        from core.block import SRBlock
         def recursive_block_search(block: "SRBlock") -> None:
             blocks.append(block)
-            for input in block.inputs.values():
-                if input.block is not None:
+            if not isinstance(getattr(block, "inputs", None), dict):
+                return
+            for input in block.inputs.values(): 
+                if isinstance(getattr(input, "block", None), SRBlock):
                     recursive_block_search(input.block)
-                for sub_block in input.blocks:
-                    recursive_block_search(sub_block)
+                if isinstance(getattr(input, "blocks", None), list):
+                    (recursive_block_search(sub_block) for sub_block in input.blocks if isinstance(sub_block, SRBlock))
+                            
         blocks = []
         for script in self.scripts:
             for block in script.blocks:

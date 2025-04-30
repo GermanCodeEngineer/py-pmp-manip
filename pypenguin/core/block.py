@@ -2,7 +2,7 @@ from typing      import Any
 from dataclasses import dataclass, field
 
 from utility        import GreprClass, get_closest_matches
-from utility        import AA_TYPE, AA_NONE, AA_NONE_OR_TYPE, AA_COORD_PAIR, AA_LIST_OF_TYPE, AA_DICT_OF_TYPE, AA_MIN_LEN
+from utility        import AA_TYPE, AA_NONE, AA_NONE_OR_TYPE, AA_COORD_PAIR, AA_LIST_OF_TYPE, AA_DICT_OF_TYPE, AA_MIN_LEN, AA_EQUAL
 from utility        import UnnecessaryInputError, MissingInputError, UnnecessaryDropdownError, MissingDropdownError, InvalidOpcodeError, InvalidBlockShapeError
 
 from opcode_info    import OpcodeInfoAPI, OpcodeInfo, InputType, InputMode, OpcodeType, SpecialCaseType
@@ -509,6 +509,10 @@ class SRBlock(GreprClass):
         if expects_reporter and not(opcode_type.is_reporter()):
             raise InvalidBlockShapeError(path, "Expected a reporter block here")
 
+        post_case = opcode_info.get_special_case(SpecialCaseType.POST_VALIDATION)
+        if post_case is not None:
+            post_case.call(path=path, block=self)
+
     def validate_opcode_type(self, 
         path: list,
         opcode_type: OpcodeType,
@@ -553,7 +557,8 @@ class SRInputValue(GreprClass):
                 self._grepr_fields = SRInputValue._grepr_fields + ["block"]
             case InputMode.SCRIPT:
                 self._grepr_fields = SRInputValue._grepr_fields + ["blocks"]
-            case _: raise ValueError()
+            case _: 
+                if isinstance(self.mode, InputMode): raise ValueError()
     
     def validate(self, 
             path: list, 
@@ -562,12 +567,14 @@ class SRInputValue(GreprClass):
             context: FullContext, 
             input_type: InputType, 
         ) -> None:
+        
         AA_TYPE(self, path, "mode", InputMode)
+        AA_EQUAL(self, path, "mode", input_type.get_mode(), condition="For this input")
         AA_LIST_OF_TYPE(self, path, "blocks", SRBlock)
         AA_NONE_OR_TYPE(self, path, "block", SRBlock)
         AA_NONE_OR_TYPE(self, path, "text", str)
         AA_NONE_OR_TYPE(self, path, "dropdown", SRDropdownValue)
-
+            
         if self.block is not None:
             self.block.validate(
                 path             = path+["block"],
@@ -585,7 +592,15 @@ class SRInputValue(GreprClass):
                 context          = context,
                 expects_reporter = False,
             )
-            # TODO: complete this
+            opcode_info = info_api.get_info_by_new(block.opcode)
+            opcode_type = opcode_info.get_opcode_type(block=block, validation_api=validation_api)
+            block.validate_opcode_type(
+                opcode_type  = opcode_type,
+                path         = current_path,
+                is_top_level = False,
+                is_first     = (i == 0),
+                is_last      = ((i+1) == len(self.blocks)),
+            )
         
         if self.dropdown is not None:
             current_path = path+["dropdown"]
@@ -596,4 +611,3 @@ class SRInputValue(GreprClass):
                 context       = context,
             )
 
-        # TODO: complete this

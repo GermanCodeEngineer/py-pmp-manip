@@ -358,17 +358,20 @@ class SRTarget(GreprClass):
             defined_sounds[sound.name] = current_path
         # TODO: complete this
     
+    def get_full_context(self, partial_context: PartialContext) -> FullContext:
+        return FullContext.from_partial(
+            pc       = partial_context,
+            costumes = [SRDropdownValue(SRDropdownKind.COSTUME, costume.name) for costume in self.costumes],
+            sounds   = [SRDropdownValue(SRDropdownKind.SOUND  , sound  .name) for sound   in self.sounds  ],
+            is_stage = isinstance(self, SRStage),
+        )
+    
     def validate_scripts(self, 
         path: list, 
         info_api: OpcodeInfoAPI,
         context: PartialContext,
     ) -> None:
-        context: FullContext = FullContext.from_partial(
-            pc       = context,
-            costumes = [SRDropdownValue(SRDropdownKind.COSTUME, costume.name) for costume in self.costumes],
-            sounds   = [SRDropdownValue(SRDropdownKind.SOUND  , sound  .name) for sound   in self.sounds  ],
-            is_stage = isinstance(self, SRStage),
-        )
+        context = self.get_full_context(partial_context=context)
         validation_api = ValidationAPI(scripts=self.scripts)
         cb_optypes = {}
         for i, script in enumerate(self.scripts):
@@ -434,6 +437,19 @@ class SRSprite(SRTarget):
         
         for i, monitor in enumerate(self.local_monitors):
             monitor.validate(path+["local_monitors", i], info_api)
+    
+    def validate_monitors(self, 
+        path: list, 
+        info_api: OpcodeInfoAPI,
+        context: PartialContext,
+    ) -> None:
+        context = self.get_full_context(partial_context=context)
+        for i, monitor in enumerate(self.local_monitors):
+            monitor.validate_dropdowns_values(
+                path     = path+["global_monitors", i], 
+                info_api = info_api, 
+                context  = context,
+            )
         
 
 class SRSpriteRotationStyle(PypenguinEnum):

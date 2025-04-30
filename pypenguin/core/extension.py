@@ -11,7 +11,7 @@ class SRExtension(GreprClass):
     id: str
 
     def validate(self, path: list) -> None:
-        AA_TYPE(self, path, "id", str)
+        AA_TYPE(self, path, "id", str) # possibly verify its one of PenguinMod's extension if not custom
         if not self.id.isalnum():
             raise InvalidValueError(path, f"id of {self.__class__.__name__} may only contain alpha-numeric characters")
 

@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from utility       import DualKeyDict
+from utility       import DualKeyDict, InvalidValueError
 from block_opcodes import *
 
 from opcode_info.main             import OpcodeInfo, OpcodeType, OpcodeInfoGroup, OpcodeInfoAPI
@@ -285,5 +285,22 @@ def INSTEAD_GET_ALL_NEW_INPUT_TYPES__CB_CALL(block: "SRBlock") -> dict[str, Inpu
 info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
     type=SpecialCaseType.INSTEAD_GET_ALL_NEW_INPUT_IDS_TYPES,
     function=INSTEAD_GET_ALL_NEW_INPUT_TYPES__CB_CALL,
+))
+
+
+def POST_VALIDATION__CB_DEF(path:list, block: "SRBlock") -> None:
+    from core.block_mutation import SRCustomBlockMutation
+    mutation: SRCustomBlockMutation = block.mutation
+    if block.opcode == NEW_OPCODE_CB_DEF:
+        if mutation.optype.is_reporter():
+            raise InvalidValueError(path, f"If .mutation.optype of a {block.__class__.__name__} is ...REPORTER, .opcode should be {repr(NEW_OPCODE_CB_DEF_REP)}")
+    elif block.opcode == NEW_OPCODE_CB_DEF_REP:
+        if not mutation.optype.is_reporter():
+            raise InvalidValueError(path, f"If .mutation.optype of a {block.__class__.__name__} is NOT ...REPORTER, .opcode should be {repr(NEW_OPCODE_CB_DEF)}")
+    else: raise ValueError()
+
+info_api.add_opcodes_case(ANY_OPCODE_CB_DEF, SpecialCase(
+    type=SpecialCaseType.POST_VALIDATION,
+    function=POST_VALIDATION__CB_DEF,
 ))
 

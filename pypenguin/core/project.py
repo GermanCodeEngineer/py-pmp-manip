@@ -32,8 +32,8 @@ class FRProject(GreprClass):
 
     @classmethod
     def from_data(cls, project_data: dict, info_api: OpcodeInfoAPI):
-        with open("extracted.json", "w") as file:
-            dump(project_data, file, indent=4)
+        #with open("extracted.json", "w") as file:
+        #    dump(project_data, file, indent=4)
         
         return cls(
             targets = [
@@ -294,7 +294,15 @@ class SRProject(GreprClass):
                 info_api = info_api, 
                 context  = partial_context,
             )
-            if i == 0: global_context = partial_context
+            if i == 0: 
+                global_context = partial_context
+            else:
+                target: SRSprite
+                target.validate_monitors(
+                    path     = current_path, 
+                    info_api = info_api, 
+                    context  = partial_context,
+                )
         
         for i, monitor in enumerate(self.global_monitors):
             monitor.validate_dropdowns_values(
@@ -302,4 +310,3 @@ class SRProject(GreprClass):
                 info_api = info_api, 
                 context  = global_context,
             )
-        # TODO: ensure no double used names anywhere
