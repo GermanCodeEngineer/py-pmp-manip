@@ -8,6 +8,26 @@ class ThanksError(PyPenguinError):
 
 class PathError(PyPenguinError): pass
 
+###############################################################
+#                  ERRORS FOR DESERIALIZATION                 #
+###############################################################
+
+class DeserializationError(PyPenguinError):
+    def __init__(self, msg: str) -> None:
+        super().__init__(f"Issue during deserialization: {msg}")
+
+###############################################################
+#                ERRORS FOR FR TO SR CONVERSION               #
+###############################################################
+
+class FSCError(PyPenguinError): # First (Representation) -> Second (Representation) Conversion
+    def __init__(self, msg: str) -> None:
+        super().__init__(f"Issue during first to second representation conversion: {msg}")
+
+###############################################################
+#                    ERRORS FOR VALIDATION                    #
+###############################################################
+
 def generate_path_string(path: list) -> str:
     path_string = ""
     for item in path:
@@ -23,7 +43,7 @@ def generate_path_string(path: list) -> str:
 class ValidationError(PyPenguinError): pass
 
 class PathValidationError(ValidationError):
-    def __init__(self, path: list, msg: str, condition: str|None = None):
+    def __init__(self, path: list, msg: str, condition: str|None = None) -> None:
         path_string = generate_path_string(path)
         full_message = ""
         if path_string != "":
@@ -42,7 +62,7 @@ class UnnecessaryInputError(PathValidationError): pass
 class MissingDropdownError(PathValidationError): pass
 class UnnecessaryDropdownError(PathValidationError): pass
 
-class InvalidDropdownValueError(PathValidationError): pass # TODO
+class InvalidDropdownValueError(PathValidationError): pass
 
 class InvalidOpcodeError(PathValidationError): pass
 class InvalidBlockShapeError(PathValidationError): pass
@@ -50,7 +70,7 @@ class InvalidBlockShapeError(PathValidationError): pass
 class LayerOrderError(PathValidationError): pass
 
 class SameValueTwiceError(ValidationError):
-    def __init__(self, path1: list, path2: list, msg: str, condition: str|None = None):
+    def __init__(self, path1: list, path2: list, msg: str, condition: str|None = None) -> None:
         path1_string = generate_path_string(path1)
         path2_string = generate_path_string(path2)
         full_message = f"At {path1_string} and {path2_string}: "

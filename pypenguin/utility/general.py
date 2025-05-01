@@ -134,6 +134,12 @@ class DualKeyDict(Generic[K1, K2, V]):
                 key1, key2 = keys
                 self.set(key1, key2, value)
 
+    @classmethod
+    def from_same_keys(cls, data: dict[K1, V]) -> "DualKeyDict[K1, K1, V]":
+        return DualKeyDict({
+            (key, key): value for key, value in data.items()
+        })
+
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, DualKeyDict):
             return NotImplemented
@@ -182,6 +188,9 @@ class DualKeyDict(Generic[K1, K2, V]):
     
     def keys_key2(self) -> Iterator[K2]:
         return self._k2_to_k1.keys()
+    
+    def keys_key1_key2(self) -> Iterator[tuple[K1, K2]]:
+        return self._k1_to_k2.items()
     
     def values(self) -> Iterator[V]:
         return self._values.values()

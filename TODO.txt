@@ -1,3 +1,2 @@
 TODOs:
-    - move the fetching of input ids and types into opcode_info
     - complete optimization

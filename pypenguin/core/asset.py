@@ -6,6 +6,9 @@ from utility import AA_TYPE, AA_COORD_PAIR, AA_MIN
 
 @dataclass(repr=False)
 class FRCostume(GreprClass):
+    """
+    The first representation for a costume. It is very close to the raw data in a project
+    """
     _grepr = True
     _grepr_fields = ["name", "asset_id", "data_format", "md5ext", "rotation_center_x", "rotation_center_y", "bitmap_resolution"]
     
@@ -39,6 +42,9 @@ class FRCostume(GreprClass):
 
 @dataclass(repr=False)
 class FRSound(GreprClass):
+    """
+    The first representation for a sound. It is very close to the raw data in a project
+    """
     _grepr = True
     _grepr_fields = ["name", "asset_id", "data_format", "md5ext", "rate", "sample_count"]
     
@@ -70,6 +76,9 @@ class FRSound(GreprClass):
 
 @dataclass(repr=False)
 class SRCostume(GreprClass):
+    """
+    The second representation for a costume. It is more user friendly then the first representation.
+    """
     _grepr = True
     _grepr_fields = ["name", "file_extension", "rotation_center", "bitmap_resolution"]
 
@@ -87,6 +96,9 @@ class SRCostume(GreprClass):
 
 @dataclass(repr=False)
 class SRSound(GreprClass):
+    """
+    The second representation for a sound. It is more user friendly then the first representation.
+    """
     _grepr = True
     _grepr_fields = ["name", "file_extension"]
 

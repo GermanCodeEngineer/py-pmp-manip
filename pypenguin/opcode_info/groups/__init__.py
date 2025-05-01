@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
-from utility       import DualKeyDict, InvalidValueError
-from block_opcodes import *
+from utility           import DualKeyDict, InvalidValueError
+from important_opcodes import *
 
 from opcode_info.main             import OpcodeInfo, OpcodeType, OpcodeInfoGroup, OpcodeInfoAPI
 from opcode_info.input            import InputInfo, InputType, InputMode
@@ -235,7 +235,7 @@ info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
     function=PRE__CB_CALL,
 ))
 
-def INSTEAD__CB_PROTOTYPE(block: "FRBlock", block_api: "FRtoTRAPI") -> "TRBlock":
+def FR_STEP__CB_PROTOTYPE(block: "FRBlock", block_api: "FRtoTRAPI") -> "TRBlock":
     # Return an empty, temporary block
     from core.block import TRBlock
     return TRBlock(
@@ -250,41 +250,27 @@ def INSTEAD__CB_PROTOTYPE(block: "FRBlock", block_api: "FRtoTRAPI") -> "TRBlock"
     )
 
 info_api.add_opcode_case(OPCODE_CB_PROTOTYPE, SpecialCase(
-    type=SpecialCaseType.INSTEAD_FR_STEP,
-    function=INSTEAD__CB_PROTOTYPE,
+    type=SpecialCaseType.FR_STEP,
+    function=FR_STEP__CB_PROTOTYPE,
 ))
 
-def INSTEAD_GET_MODES__CB_CALL(block: "FRBlock", block_api: "FRtoTRAPI") -> dict[str, InputMode]:
-    # Get the complete mutation
-    # Then get the input's index in the triple list system
-    # Then get the default and derive the corresponding input mode
-    from core.block_mutation import FRCustomBlockCallMutation
-    partial_mutation: FRCustomBlockCallMutation = block.mutation
-    complete_mutation = block_api.get_cb_mutation(partial_mutation.proccode)
-    input_modes = {}
-    for argument_index, argument_name in enumerate(complete_mutation.argument_names):
-        argument_default = complete_mutation.argument_defaults[argument_index]
-        input_modes[argument_name] = InputType.get_by_cb_default(argument_default).get_mode()
-    return input_modes
+def GET_ALL_INPUT_TYPES__CB_CALL(
+    block: "FRBlock|TRBlock|SRBlock", block_api: "FRtoTRAPI|None"
+) -> DualKeyDict[str, str, InputType]:
+    from core.block_mutation import FRCustomBlockCallMutation, SRCustomBlockCallMutation
+    from core.block import FRBlock
+    if isinstance(block, FRBlock):
+        old_mutation: FRCustomBlockCallMutation = block.mutation
+        assert block_api is not None, "When a FRBlock is given, block_api mustn't be None"
+        mutation: SRCustomBlockCallMutation = old_mutation.step(block_api=block_api)
+    else:
+        mutation: SRCustomBlockCallMutation = block.mutation
+    
+    return DualKeyDict.from_same_keys(mutation.custom_opcode.get_corresponding_input_types())
 
 info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
-    type=SpecialCaseType.INSTEAD_FR_STEP_INPUTS_GET_MODES, 
-    function=INSTEAD_GET_MODES__CB_CALL,
-))
-
-info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
-    type=SpecialCaseType.INSTEAD_GET_NEW_INPUT_ID, 
-    function=(lambda block, input_id: input_id),
-))
-
-def INSTEAD_GET_ALL_NEW_INPUT_TYPES__CB_CALL(block: "SRBlock") -> dict[str, InputType]:
-    from core.block_mutation import SRCustomBlockCallMutation
-    mutation: SRCustomBlockCallMutation = block.mutation
-    return mutation.custom_opcode.get_corresponding_input_types()
-
-info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
-    type=SpecialCaseType.INSTEAD_GET_ALL_NEW_INPUT_IDS_TYPES,
-    function=INSTEAD_GET_ALL_NEW_INPUT_TYPES__CB_CALL,
+    type=SpecialCaseType.GET_ALL_INPUT_IDS_TYPES,
+    function=GET_ALL_INPUT_TYPES__CB_CALL,
 ))
 
 

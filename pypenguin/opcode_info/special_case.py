@@ -7,23 +7,49 @@ class SpecialCaseType(PypenguinEnum):
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}.{self.name}"
     
-    # FRBlock.step:
-    PRE_FR_STEP     = 0
-    INSTEAD_FR_STEP = 1
-    # FRBlock.step_inputs:
-    INSTEAD_FR_STEP_INPUTS_GET_MODES = 2
+    ######################################################
+    #                    Data Handlers                   # 
+    ######################################################
     
-    # TRBlock.step:
-    INSTEAD_GET_NEW_INPUT_ID = 3
+    GET_OPCODE_TYPE = 0
+    # evaluate opcode type
+    # is called when opcode_info.opcode_type is DYNAMIC
+    # should NEVER return MENU (or any other pseudo opcode type)
+    """
+    def example(
+        block: "SRBlock|TRBlock", validation_api: "ValidationAPI"
+    ) -> OpcodeType:
+        ...
+    """
+
+    GET_ALL_INPUT_IDS_TYPES = 1
+    # map new and old input id to input type
+    # -> DualKeyDict[old, new, InpuType]
+    """
+    def example(
+        block: "FRBlock|TRBlock|SRBlock", block_api: "FRtoTRAPI|None"
+    ) -> DualKeyDict[str, str, InputType]:
+        ...
+    """
     
-    # TRBlock.step + SRBlock.validate:
-    INSTEAD_GET_ALL_NEW_INPUT_IDS_TYPES = 4
-
-    # SRBlock.validte:
-    POST_VALIDATION = 5
-
-    # BlockInfo
-    GET_OPCODE_TYPE = 6
+    # Behaviour Handlers
+    PRE_FR_STEP = 2 # execure before FRBlock.step
+    """
+    def example(block: "FRBlock", block_api: "FRtoTRAPI") -> "FRBlock":
+        ...
+    """
+     
+    FR_STEP = 3 # execute instead of FRBlock.step
+    """
+    def example(block: "FRBlock", block_api: "FRtoTRAPI") -> "TRBlock":
+        ...
+    """
+    
+    POST_VALIDATION = 4 # execute after SRBlock.validate
+    """
+    def example(path:list, block: "SRBlock") -> None:
+        ...
+    """    
 
 @dataclass
 class SpecialCase(GreprClass):

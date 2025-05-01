@@ -2,13 +2,13 @@ from typing      import TYPE_CHECKING, Type
 from dataclasses import dataclass, field
 from utility     import DualKeyDict, GreprClass, PypenguinEnum
 
-from opcode_info.input        import InputInfo
+from opcode_info.input        import InputInfo, InputType, InputMode
 from opcode_info.dropdown     import DropdownInfo
 from opcode_info.special_case import SpecialCase, SpecialCaseType
 
 if TYPE_CHECKING:
-    from core.block import TRBlock, SRBlock
-    from core.block_api import ValidationAPI
+    from core.block import FRBlock, TRBlock, SRBlock
+    from core.block_api import FRtoTRAPI, ValidationAPI
     from core.block_mutation import FRMutation, SRMutation
 
 class OpcodeType(PypenguinEnum):
@@ -53,16 +53,6 @@ class OpcodeInfo:
         self.old_mutation_cls = old_cls
         self.new_mutation_cls = new_cls
 
-    # Get the opcode type. Avoid OpcodeType.DYNAMIC
-    def get_opcode_type(self, block: "TRBlock|SRBlock", validation_api: "ValidationAPI") -> OpcodeType:
-        instead_case = self.get_special_case(SpecialCaseType.GET_OPCODE_TYPE)
-        if self.opcode_type == OpcodeType.DYNAMIC:
-            assert instead_case is not None, "If opcode_type is DYNAMIC, a special case with type GET_OPCODE_TYPE must be defined"
-            return instead_case.call(block, validation_api)
-        else:
-            assert instead_case is None, "If opcode_type is not DYNAMIC, no special case with type GET_OPCODE_TYPE should be defined"
-            return self.opcode_type
-
     # Info by Old Id
     def get_input_info_by_old(self, old: str) -> InputInfo:
         return self.inputs.get_by_key1(old)
@@ -87,11 +77,77 @@ class OpcodeInfo:
     def get_old_dropdown_id(self, new: str) -> str:
         return self.dropdowns.get_key1_for_key2(new)
     
-    # Fetching all new ids
+    # Fetching all ids
     def get_all_new_input_ids(self) -> list[str]:
         return list(self.inputs.keys_key2())
     def get_all_new_dropdown_ids(self) -> list[str]:
         return list(self.dropdowns.keys_key2())
+
+    ##############################################################
+    #               Methods based on Special Cases               #
+    ##############################################################
+    
+    # Get the opcode type. Avoid OpcodeType.DYNAMIC
+    def get_opcode_type(self, block: "TRBlock|SRBlock", validation_api: "ValidationAPI") -> OpcodeType:
+        instead_case = self.get_special_case(SpecialCaseType.GET_OPCODE_TYPE)
+        if self.opcode_type == OpcodeType.DYNAMIC:
+            assert instead_case is not None, "If opcode_type is DYNAMIC, a special case with type GET_OPCODE_TYPE must be defined"
+            return instead_case.call(block, validation_api)
+        else:
+            assert instead_case is None, "If opcode_type is not DYNAMIC, no special case with type GET_OPCODE_TYPE should be defined"
+            return self.opcode_type
+    
+    # Get input ids, types, modes
+    def get_input_ids_types(self, 
+        block: "FRBlock|TRBlock|SRBlock", block_api: "FRtoTRAPI|None",
+    ) -> DualKeyDict[str, str, InputType]:
+        """
+        :param block: To determine the ids and types e.g. Custom Blocks need the block as context
+        :param block_api: only necessary if block is a FRBlock
+        :return: DualKeyDict mapping old input id and new input id to input type
+        """
+        instead_case = self.get_special_case(SpecialCaseType.GET_ALL_INPUT_IDS_TYPES)
+        if instead_case is None:
+            return DualKeyDict({
+                (old_id, new_id): input_info.type
+                for old_id, new_id, input_info in self.inputs.items_key1_key2()
+            })
+        else:
+            return instead_case.call(block=block, block_api=block_api)
+    
+    def get_new_input_ids_types(self, 
+        block: "FRBlock|TRBlock|SRBlock", block_api: "FRtoTRAPI|None",
+    ) -> dict[str, InputType]:
+        """
+        :param block: To determine the ids and types e.g. Custom Blocks need the block as context
+        :param block_api: only necessary if block is a FRBlock
+        :return: dict mapping new input id to input type
+        """
+        return dict(self.get_input_ids_types(block, block_api).items_key2())
+    
+    def get_old_input_ids_modes(self, 
+        block: "FRBlock|TRBlock|SRBlock", block_api: "FRtoTRAPI|None",
+    ) -> dict[str, InputMode]:
+        """
+        :param block: To determine the ids and types e.g. Custom Blocks need the block as context
+        :param block_api: only necessary if block is a FRBlock
+        :return: dict mapping old input id to input mode
+        """
+        return {
+            old_id: input_type.get_mode() 
+            for old_id, input_type in self.get_input_ids_types(block, block_api).items_key1()
+        }
+    
+    # Get new input id
+    def get_old_new_input_ids(self, 
+        block: "FRBlock|TRBlock|SRBlock", block_api: "FRtoTRAPI|None",
+    ) -> dict[str, str]:
+        """
+        :param block: To determine the ids e.g. Custom Blocks need the block as context
+        :param block_api: only necessary if block is a FRBlock
+        :return: dict mapping old input id to new input id
+        """
+        return dict(self.get_input_ids_types(block, block_api).keys_key1_key2())
 
 @dataclass
 class OpcodeInfoGroup:

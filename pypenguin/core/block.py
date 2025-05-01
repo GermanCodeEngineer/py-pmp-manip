@@ -2,22 +2,24 @@ from typing      import Any
 from dataclasses import dataclass, field
 from abc         import ABC, abstractmethod
 
-from utility        import GreprClass, get_closest_matches, ValidationConfig
-from utility        import AA_TYPE, AA_NONE, AA_NONE_OR_TYPE, AA_COORD_PAIR, AA_LIST_OF_TYPE, AA_DICT_OF_TYPE, AA_MIN_LEN, AA_EQUAL
-from utility        import UnnecessaryInputError, MissingInputError, UnnecessaryDropdownError, MissingDropdownError, InvalidOpcodeError, InvalidBlockShapeError
-
-from opcode_info    import OpcodeInfoAPI, OpcodeInfo, InputType, InputMode, OpcodeType, SpecialCaseType
-from block_opcodes  import *
+from utility           import GreprClass, get_closest_matches, ValidationConfig, DeserializationError, FSCError
+from utility           import AA_TYPE, AA_NONE, AA_NONE_OR_TYPE, AA_COORD_PAIR, AA_LIST_OF_TYPE, AA_DICT_OF_TYPE, AA_MIN_LEN, AA_EQUAL
+from utility           import UnnecessaryInputError, MissingInputError, UnnecessaryDropdownError, MissingDropdownError, InvalidOpcodeError, InvalidBlockShapeError
+from opcode_info       import OpcodeInfoAPI, OpcodeInfo, InputType, InputMode, OpcodeType, SpecialCaseType
+from important_opcodes import *
 
 from core.block_mutation import FRMutation, FRCustomBlockMutation, FRCustomBlockArgumentMutation, FRCustomBlockCallMutation, FRStopScriptMutation
 from core.block_mutation import SRMutation
 from core.comment        import SRAttachedComment
 from core.context        import FullContext
 from core.dropdown       import SRDropdownValue
-from core.block_api   import FRtoTRAPI, ValidationAPI
+from core.block_api      import FRtoTRAPI, ValidationAPI
 
 @dataclass(repr=False)
 class FRBlock(GreprClass):
+    """
+    The first representation for a block. It is very close to the raw data in a project
+    """
     _grepr = True
     _grepr_fields = ["opcode", "next", "parent", "inputs", "fields", "shadow", "top_level", "x", "y", "comment", "mutation"]
 
@@ -37,13 +39,19 @@ class FRBlock(GreprClass):
     mutation: "FRMutation | None"
 
     @classmethod
-    def from_data(cls, data: dict[str, Any], info_api: OpcodeInfoAPI):
+    def from_data(cls, data: dict[str, Any], info_api: OpcodeInfoAPI) -> "FRBlock":
+        """
+        Deserializes raw data into a FRBlock
+        :param data: The raw data(dict)
+        :param info_api: The opcode info api used to fetch information about opcodes
+        :return: The FRBlock
+        """
         opcode = data["opcode"]
         opcode_info = info_api.get_info_by_old(opcode)
         if opcode_info.old_mutation_cls is not None:
             mutation = opcode_info.old_mutation_cls.from_data(data["mutation"])
         elif "mutation" in data:
-            raise ValueError(data)
+            raise DeserializationError(f"Invalid mutation for FRBlock with opcode {repr(opcode)}: {data['mutation']}")
         else:
             mutation = None
         return cls(
@@ -68,50 +76,73 @@ class FRBlock(GreprClass):
     
     @classmethod
     def from_tuple(cls, 
-            obj: tuple[str, str, str] | tuple[str, str, str, int|float, int|float],
+            data: tuple[str, str, str] | tuple[str, str, str, int|float, int|float],
             parent_id: str | None,
             info_api: OpcodeInfoAPI,
         ) -> "FRBlock":
-        if obj[0] == OPCODE_VAR_VALUE_NUM:
-            block_data = {
-                "opcode": OPCODE_VAR_VALUE,
-                "next"  : None,
-                "parent": parent_id,
-                "inputs": {},
-                "fields": {"VARIABLE": (obj[1], obj[2], '')},
-                "shadow": False,
-                "topLevel": parent_id is None,
-            }
-        elif obj[0] == OPCODE_LIST_VALUE_NUM:
-            block_data = {
-                "opcode": OPCODE_LIST_VALUE,
-                "next"  : None,
-                "parent": parent_id,
-                "inputs": {},
-                "fields": {"LIST": (obj[1], obj[2], '')},
-                "shadow": False,
-                "topLevel": parent_id is None,
-            }
-        else: raise ValueError(obj)
-        if   (len(obj) == 3) and (parent_id is not None): 
-            pass
-        elif (len(obj) == 5) and (parent_id is None):
-            block_data["x"] = obj[3]
-            block_data["y"] = obj[4]
-        else: raise ValueError()
-        return cls.from_data(block_data, info_api=info_api)
+        """
+        Deserializes a tuple into a FRBlock
+        :param data: The raw data(tuple)
+        :param info_api: The opcode info api used to fetch information about opcodes
+        :return: The FRBlock
+        """
+        if   (len(data) == 3):
+            assert parent_id is not None 
+            x = None
+            y = None
+        elif (len(data) == 5): 
+            assert parent_id is None
+            x = data[3]
+            y = data[4]
+        else: raise DeserializationError(f"Invalid data for FRBlock conversion: {data}")
+        
+        if data[0] == OPCODE_VAR_VALUE_NUM:
+            return FRBlock(
+                opcode    = OPCODE_VAR_VALUE,
+                next      = None,
+                parent    = parent_id,
+                inputs    = {},
+                fields    = {"VARIABLE": (data[1], data[2], "")},
+                shadow    = False,
+                top_level = x is None,
+                x         = x,
+                y         = y,
+                comment   = None,
+                mutation  = None,
+            )
+        elif data[0] == OPCODE_LIST_VALUE_NUM:
+           return FRBlock(
+                opcode    = OPCODE_LIST_VALUE,
+                next      = None,
+                parent    = parent_id,
+                inputs    = {},
+                fields    = {"LIST": (data[1], data[2], "")},
+                shadow    = False,
+                top_level = x is None,
+                x         = x,
+                y         = y,
+                comment   = None,
+                mutation  = None,
+            )
+        else: raise DeserializationError(f"Invalid constant(first element) for FRBlock conversion: {data[0]}")
 
     def step(self, 
         block_api: FRtoTRAPI, 
         info_api: OpcodeInfoAPI, 
         own_id: str
     ) -> "TRBlock":
+        """
+        Converts a FRBlock into a TRBlock
+        :param block_api: API used to fetch information about other blocks
+        :param info_api: The opcode info api used to fetch information about opcodes
+        :return: The TRBlock
+        """
         opcode_info = info_api.get_info_by_old(self.opcode)
         pre_handler = opcode_info.get_special_case(SpecialCaseType.PRE_FR_STEP)
         if pre_handler is not None:
             self = pre_handler.call(block_api=block_api, block=self)
         
-        instead_handler = opcode_info.get_special_case(SpecialCaseType.INSTEAD_FR_STEP)
+        instead_handler = opcode_info.get_special_case(SpecialCaseType.FR_STEP)
         if instead_handler is None:
             new_inputs = self.step_inputs(
                 block_api  = block_api,
@@ -145,14 +176,14 @@ class FRBlock(GreprClass):
         opcode_info: OpcodeInfo,
         own_id: str
     ) -> dict[str, "TRInputValue"]:
-        instead_handler = opcode_info.get_special_case(SpecialCaseType.INSTEAD_FR_STEP_INPUTS_GET_MODES)
-        if instead_handler is None:
-            input_modes = {
-                input_id: opcode_info.get_input_info_by_old(input_id).type.get_mode()
-                for input_id in self.inputs.keys()
-            }
-        else:
-            input_modes = instead_handler.call(block_api=block_api, block=self)                
+        """
+        Converts the inputs of a FRBlock into the TR Fromat
+        :param block_api: API used to fetch information about other blocks
+        :param info_api: The opcode info api used to fetch information about opcodes
+        :param opcode_info: The Information about the block's opcode
+        :return: The inputs in TR Format
+        """
+        input_modes = opcode_info.get_old_input_ids_modes(block=self, block_api=block_api)
         
         new_inputs = {}
         for input_id, input_value in self.inputs.items():
@@ -168,13 +199,13 @@ class FRBlock(GreprClass):
                 elif isinstance(item, tuple) and item[0] in {4, 5, 6, 7, 8, 9, 10, 11}:
                     text = item[1]
                 elif isinstance(item, tuple) and item[0] in {12, 13}:
-                    immediate_block = FRBlock.from_tuple(item, parent_id=own_id, info_api=info_api).step(
-                        block_api=block_api,
-                        info_api=info_api,
-                        own_id=None, # None is fine, because tuple blocks can't possibly contain more tuple blocks 
+                    immediate_fr_block = FRBlock.from_tuple(item, parent_id=own_id, info_api=info_api)
+                    immediate_block = immediate_fr_block.step(
+                        block_api = block_api,
+                        info_api  = info_api,
+                        own_id    = None, # None is fine, because tuple blocks can't possibly contain more tuple blocks 
                     )
 
-            #print("input", input_id, input_mode, input_value)
             new_inputs[input_id] = TRInputValue(
                 mode            = input_mode,
                 references      = references,
@@ -186,23 +217,23 @@ class FRBlock(GreprClass):
         for input_id, input_mode in input_modes.items():
             if input_id in new_inputs:
                 continue
-            if input_mode in {InputMode.BLOCK_ONLY, InputMode.SCRIPT}:
+            if input_mode.can_be_missing():
                 new_inputs[input_id] = TRInputValue(
                     mode            = input_mode,
                     references      = [],
                     immediate_block = None,
                     text            = None,
                 )
-            else: raise ValueError()
-            
-        # Also translate old input ids to new input ids
+            else: raise FSCError(f"Didn't expect input {repr(input_id)} missing")
+        
         return new_inputs
-
 
 
 @dataclass(repr=False)
 class TRBlock(GreprClass):
-    """Temporary Block Representation."""
+    """
+    The temporary representation for a block. It has similarities with SRBlock but uses an id system
+    """
     _grepr = True
     _grepr_fields = ["opcode", "inputs", "dropdowns", "comment", "mutation", "position", "next", "is_top_level"]
     
@@ -216,10 +247,15 @@ class TRBlock(GreprClass):
     is_top_level: bool
 
     def step(self, 
-            all_blocks: dict[str, "TRBlock"],
-            info_api: OpcodeInfoAPI,
-        ) -> tuple[tuple[int|float,int|float] | None, list["SRBlock | str"]]:
-        
+        all_blocks: dict[str, "TRBlock"],
+        info_api: OpcodeInfoAPI,
+    ) -> tuple[tuple[int|float,int|float] | None, list["SRBlock | str"]]:
+        """
+        Converts a TRBlock into a SRBlock
+        :param all_blocks: a dictionary of all blocks
+        :param info_api: The opcode info api used to fetch information about opcodes
+        :return: The SRBlock
+        """
         opcode_info = info_api.get_info_by_old(self.opcode)
         if opcode_info.opcode_type == OpcodeType.MENU: # The attribute is fine because DYNAMIC should never generate MENU
             return (None, [list(self.dropdowns.values())[0]])
@@ -231,37 +267,41 @@ class TRBlock(GreprClass):
             }
             --> "_mouse_" """
         
+        old_new_input_ids = opcode_info.get_old_new_input_ids(block=self, block_api=None)
+        # maps old input ids to new input ids # block_api isn't necessary for a TRBlock 
+        
         new_inputs = {}
         for input_id, input_value in self.inputs.items():
-            sub_blocks = []
+            sub_scripts = []
             for sub_reference in input_value.references: 
                 sub_block = all_blocks[sub_reference]
-                _, more_sub_blocks = sub_block.step(
+                _, sub_blocks = sub_block.step(
                     all_blocks    = all_blocks,
                     info_api      = info_api,
                 )
-                sub_blocks.append(more_sub_blocks)
+                sub_scripts.append(sub_blocks)
             
             if input_value.immediate_block is not None:
-                sub_blocks.insert(0, input_value.immediate_block.step(
+                _, sub_blocks = input_value.immediate_block.step(
                     all_blocks = all_blocks,
                     info_api   = info_api,
-                )[1])
-            block_count = len(sub_blocks)
+                )
+                sub_scripts.insert(0, sub_blocks)
             
-            if block_count == 2:
-                sub_script  = sub_blocks[0]
-                sub_block_a = sub_blocks[0][0]
-                sub_block_b = sub_blocks[1][0]
-            elif block_count == 1:
-                sub_script  = sub_blocks[0]
-                sub_block_a = sub_blocks[0][0]
+            script_count = len(sub_scripts)
+            if script_count == 2:
+                sub_script  = sub_scripts[0] # blocks of first script
+                sub_block_a = sub_scripts[0][0] # first block of first script
+                sub_block_b = sub_scripts[1][0] # second block of first script
+            elif script_count == 1:
+                sub_script  = sub_scripts[0] # blocks of first script
+                sub_block_a = sub_scripts[0][0] # first block of frist script
                 sub_block_b = None
-            elif block_count == 0:
+            elif script_count == 0:
                 sub_script  = []
                 sub_block_a = None
                 sub_block_b = None
-            else: raise ValueError()
+            else: raise FSCError(f"Invalid script count {script_count}")
             
             input_blocks   = []
             input_block    = None
@@ -270,49 +310,43 @@ class TRBlock(GreprClass):
             
             match input_value.mode:
                 case InputMode.BLOCK_AND_TEXT:
-                    assert block_count in {0, 1}
+                    assert script_count in {0, 1}
                     input_block = sub_block_a
                     input_text  = input_value.text
                 case InputMode.BLOCK_AND_BROADCAST_DROPDOWN:
-                    assert block_count in {0, 1}
+                    assert script_count in {0, 1}
                     input_block     = sub_block_a
                     input_dropdown  = input_value.text
                 case InputMode.BLOCK_ONLY:
-                    assert block_count in {0, 1}
+                    assert script_count in {0, 1}
                     input_block = sub_block_a
                 case InputMode.SCRIPT:
-                    assert block_count in {0, 1}
+                    assert script_count in {0, 1}
                     input_blocks = sub_script
                 case InputMode.BLOCK_AND_DROPDOWN:
-                    assert block_count in {1, 2}
-                    if   block_count == 1:
+                    assert script_count in {1, 2}
+                    if   script_count == 1:
                         input_block    = None
                         input_dropdown = sub_block_a
-                    elif block_count == 2:
+                    elif script_count == 2:
                         input_block    = sub_block_a
                         input_dropdown = sub_block_b
                 case InputMode.BLOCK_AND_MENU_TEXT:
-                    assert block_count in {1, 2}
-                    if   block_count == 1:
+                    assert script_count in {1, 2}
+                    if   script_count == 1:
                         input_block  = None
                         input_text   = sub_block_a
-                    elif block_count == 2:
+                    elif script_count == 2:
                         input_block  = sub_block_a
                         input_text   = sub_block_b
-                case _: raise ValueError()
+                case _: raise FSCError(f"Unknown input mode: {input_value.mode}")
 
             if input_dropdown is not None:
                 input_type = opcode_info.get_input_info_by_old(input_id).type
                 dropdown_type = input_type.get_corresponding_dropdown_type()
                 input_dropdown = SRDropdownValue.from_tuple(dropdown_type.translate_old_to_new_value(input_dropdown))
 
-            
-            instead_case = opcode_info.get_special_case(SpecialCaseType.INSTEAD_GET_NEW_INPUT_ID)
-            if instead_case is None:
-                new_input_id = opcode_info.get_new_input_id(input_id)
-            else:
-                new_input_id = instead_case.call(block=self, input_id=input_id)
-            
+            new_input_id = old_new_input_ids[input_id]
             new_inputs[new_input_id] = SRInputValue.from_mode(
                 mode     = input_value.mode,
                 blocks   = input_blocks,
@@ -321,24 +355,15 @@ class TRBlock(GreprClass):
                 dropdown = input_dropdown,
             )
         
-        instead_case = opcode_info.get_special_case(SpecialCaseType.INSTEAD_GET_ALL_NEW_INPUT_IDS_TYPES)
-        if instead_case is None:
-            new_input_ids = opcode_info.get_all_new_input_ids()
-            input_types = {
-                new_input_id: opcode_info.get_input_info_by_new(new_input_id).type
-                for new_input_id in new_input_ids
-            }
-        else:
-            input_types: dict[str, InputType] = instead_case.call(block=self)
-            new_input_ids = list(input_types.keys())
-        for new_input_id in new_input_ids:
+        input_types = opcode_info.get_new_input_ids_types(block=self, block_api=None) 
+        # maps input ids to their types # block_api isn't necessary for a TRBlock
+        for new_input_id in input_types.keys():
             if new_input_id not in new_inputs:
                 input_mode = input_types[new_input_id].get_mode()
                 if input_mode.can_be_missing():
                     new_inputs[new_input_id] = SRInputValue.from_mode(mode=input_mode)
                 else:
-                    # This is done when an input is unexpectedly missing
-                    raise Exception("Didn't expect missing input")
+                    raise FSCError(f"For a block with opcode {repr(self.opcode)}, input {repr(new_input_id)} is missing")
         
         new_dropdowns = {}
         for dropdown_id, dropdown_value in self.dropdowns.items():
@@ -366,6 +391,9 @@ class TRBlock(GreprClass):
  
 @dataclass(repr=False)
 class TRInputValue(GreprClass):
+    """
+    The temporary representation for the value of a block's input
+    """
     _grepr = True
     _grepr_fields = ["mode", "references", "immediate_block", "text"]
     
@@ -374,18 +402,23 @@ class TRInputValue(GreprClass):
     immediate_block: TRBlock | None
     text: str | None
 
-@dataclass(repr=False)
-class TRBlockReference(GreprClass):    
+@dataclass(repr=False, unsafe_hash=True)
+class TRBlockReference(GreprClass):
+    """
+    A block reference in  temporary representation. Basis for the temporary id system
+    """
+    _grepr = True
+    _grepr_fields = ["id"]
+    
     id: str
-    
-    def __repr__(self):
-        return f"TRBR({self.id})"
-    
-    def __hash__(self):
-        return hash(self.id)
+
 
 @dataclass(repr=False)
 class SRScript(GreprClass):
+    """
+    The second representation for a script. 
+    It uses a nested block structure and is much more user friendly then the first representation.
+    """
     _grepr = True
     _grepr_fields = ["position", "blocks"]
 
@@ -399,6 +432,15 @@ class SRScript(GreprClass):
         validation_api: ValidationAPI,
         context: FullContext,
     ) -> None:
+        """
+        Ensure a SRScript is valid, raises if not.
+        :param path: The path from the project to itself. Used for better errors
+        :param config: Configuration for Validation Behaviour
+        :param info_api: The opcode info api used to fetch information about opcodes
+        :param validation_api: API used to fetch information about other blocks 
+        :param context: Context about parts of the project. Used to validate dropdowns
+        :return: None
+        """
         AA_COORD_PAIR(self, path, "position")
         AA_LIST_OF_TYPE(self, path, "blocks", SRBlock)
         AA_MIN_LEN(self, path, "blocks", min_len=1)
@@ -425,6 +467,10 @@ class SRScript(GreprClass):
 
 @dataclass(repr=False)
 class SRBlock(GreprClass):
+    """
+    The second representation for a block. 
+    It uses a nested block structure and is much more user friendly then the first representation.
+    """
     _grepr = True
     _grepr_fields = ["opcode", "inputs", "dropdowns", "comment", "mutation"]
     
@@ -442,6 +488,16 @@ class SRBlock(GreprClass):
         context: FullContext,
         expects_reporter: bool,
     ) -> None:
+        """
+        Ensure a SRBlock is valid, raises if not.
+        :param path: The path from the project to itself. Used for better errors
+        :param config: Configuration for Validation Behaviour
+        :param info_api: The opcode info api used to fetch information about opcodes
+        :param validation_api: API used to fetch information about other blocks 
+        :param context: Context about parts of the project. Used to validate dropdowns
+        :param expects_reporter: Wether this block should be a reporter
+        :return: None
+        """
         AA_TYPE(self, path, "opcode", str)
         AA_DICT_OF_TYPE(self, path, "inputs"   , key_t=str, value_t=SRInputValue   )
         AA_DICT_OF_TYPE(self, path, "dropdowns", key_t=str, value_t=SRDropdownValue)
@@ -463,19 +519,11 @@ class SRBlock(GreprClass):
             AA_TYPE(self, path, "mutation", opcode_info.new_mutation_cls, condition="For this opcode")
             self.mutation.validate(path+["mutation"], config)
 
-        instead_case = opcode_info.get_special_case(SpecialCaseType.INSTEAD_GET_ALL_NEW_INPUT_IDS_TYPES)
-        if instead_case is None:
-            new_input_ids = opcode_info.get_all_new_input_ids()
-            input_types = {
-                new_input_id: opcode_info.get_input_info_by_new(new_input_id).type
-                for new_input_id in new_input_ids
-            }
-        else:
-            input_types: dict[str, InputType] = instead_case.call(block=self)
-            new_input_ids = list(input_types.keys())
+        input_types = opcode_info.get_new_input_ids_types(block=self, block_api=None) 
+        # maps input ids to their types # block_api isn't necessary for a TRBlock
         
         for new_input_id, input in self.inputs.items():
-            if new_input_id not in new_input_ids:
+            if new_input_id not in input_types.keys():
                 raise UnnecessaryInputError(path, f"inputs of {self.__class__.__name__} with opcode {repr(self.opcode)} includes unnecessary input {repr(new_input_id)}")
             input.validate(
                 path           = path+["inputs", (new_input_id,)],
@@ -485,7 +533,7 @@ class SRBlock(GreprClass):
                 context        = context,
                 input_type     = input_types[new_input_id],
             )
-        for new_input_id in new_input_ids:
+        for new_input_id in input_types.keys():
             if new_input_id not in self.inputs:
                 raise MissingInputError(path, f"inputs of {self.__class__.__name__} with opcode {repr(self.opcode)} is missing input {repr(new_input_id)}")
         
@@ -493,9 +541,10 @@ class SRBlock(GreprClass):
         for new_dropdown_id, dropdown in self.dropdowns.items():
             if new_dropdown_id not in new_dropdown_ids:
                 raise UnnecessaryDropdownError(path, f"dropdowns of {self.__class__.__name__} with opcode {repr(self.opcode)} includes unnecessary dropdown {repr(new_dropdown_id)}")
-            dropdown.validate(path+["dropdowns", (new_dropdown_id,)], config)
+            current_path = path+["dropdowns", (new_dropdown_id,)]
+            dropdown.validate(current_path, config)
             dropdown.validate_value(
-                path          = path+["dropdowns", (new_dropdown_id,)],
+                path          = current_path,
                 dropdown_type = opcode_info.get_dropdown_info_by_new(new_dropdown_id).type,
                 context       = context,
             )
@@ -518,6 +567,15 @@ class SRBlock(GreprClass):
         is_first: bool,
         is_last: bool,
     ) -> None:
+        """
+        Ensure this shape of block is allowed at a specific location.  
+        :param path: The path from the project to itself. Used for better errors
+        :param opcode_type: The opcode type of this block.
+        :param is_top_level: Wether this block is in a script(True) or in a substack(False)
+        :param is_fist: Wether this block is the first in it's script/substack
+        :param is_last: Wether this block is the last in it's script/substack
+        :return: None
+        """
         if   opcode_type == OpcodeType.STATEMENT: pass
         elif opcode_type == OpcodeType.ENDING_STATEMENT:
             if not is_last: # when there is a next block
@@ -536,8 +594,47 @@ class SRBlock(GreprClass):
 
 @dataclass(repr=False)
 class SRInputValue(GreprClass, ABC):
+    """
+    The second representation for a block input. 
+    It can contain a substack of blocks, a block, a text field and a dropdown.
+    Please use the subclasses instead.
+    """
     _grepr = True
     _grepr_fields = []
+    
+    blocks: list[SRBlock]     | None = field(init=False)
+    block: SRBlock            | None = field(init=False)
+    text: str                 | None = field(init=False)
+    dropdown: SRDropdownValue | None = field(init=False)
+
+    def __init__(self) -> None:
+        raise NotImplementedError("Please use the subclasses or the from_mode method for concrete data")
+
+    @classmethod
+    def from_mode(cls,
+        mode: InputMode,
+        blocks: list[SRBlock]     | None = None,
+        block: SRBlock            | None = None,
+        text: str                 | None = None,
+        dropdown: SRDropdownValue | None = None,
+    ) -> "SRInputValue":
+        """
+        Creates an input, given its mode and data.
+        :param mode: The input mode
+        :param blocks: The substack blocks
+        :param block: The block of the input
+        :param text: The text field of the input
+        :param dropdown: The dropdown of the input
+        """
+        match mode:
+            case InputMode.BLOCK_AND_TEXT | InputMode.BLOCK_AND_MENU_TEXT:
+                return SRBlockAndTextInputValue(block=block, text=text)
+            case InputMode.BLOCK_AND_DROPDOWN | InputMode.BLOCK_AND_BROADCAST_DROPDOWN:
+                return SRBlockAndDropdownInputValue(block=block, dropdown=dropdown)
+            case InputMode.BLOCK_ONLY:
+                return SRBlockOnlyInputValue(block=block)
+            case InputMode.SCRIPT:
+                return SRScriptInputValue(blocks=[] if blocks is None else blocks)
 
     @abstractmethod
     def validate(self, 
@@ -547,7 +644,18 @@ class SRInputValue(GreprClass, ABC):
         validation_api: ValidationAPI, 
         context: FullContext, 
         input_type: InputType, 
-    ) -> None: pass
+    ) -> None:
+        """
+        Ensures this input is valid, raises if not.
+        :param path: The path from the project to itself. Used for better errors
+        :param config: Configuration for Validation Behaviour
+        :param info_api: The opcode info api used to fetch information about opcodes
+        :param validation_api: API used to fetch information about other blocks 
+        :param context: Context about parts of the project. Used to validate dropdowns
+        :param input_type: The type of this input. Used to valdiate dropdowns
+        :return: None
+        """
+        pass
 
     def validate_block(self, 
         path: list, 
@@ -556,6 +664,15 @@ class SRInputValue(GreprClass, ABC):
         validation_api: ValidationAPI, 
         context: FullContext, 
     ) -> None:
+        """
+        Ensures the block of this input is valid, raises if not.
+        :param path: The path from the project to itself. Used for better errors
+        :param config: Configuration for Validation Behaviour
+        :param info_api: The opcode info api used to fetch information about opcodes
+        :param validation_api: API used to fetch information about other blocks 
+        :param context: Context about parts of the project. Used to validate dropdowns
+        :return: None
+        """
         self: SRBlockAndTextInputValue | SRBlockAndDropdownInputValue | SRBlockOnlyInputValue = self
         AA_NONE_OR_TYPE(self, path, "block", SRBlock)
         if self.block is not None:
@@ -568,30 +685,17 @@ class SRInputValue(GreprClass, ABC):
                 expects_reporter = True,
             )
     
-    @classmethod
-    def from_mode(cls,
-        mode: InputMode,
-        blocks: list[SRBlock]     | None = None,
-        block: SRBlock            | None = None,
-        text: str                 | None = None,
-        dropdown: SRDropdownValue | None = None,
-    ) -> "SRInputValue":
-        match mode:
-            case InputMode.BLOCK_AND_TEXT | InputMode.BLOCK_AND_MENU_TEXT:
-                return SRBlockAndTextInputValue(block=block, text=text)
-            case InputMode.BLOCK_AND_DROPDOWN | InputMode.BLOCK_AND_BROADCAST_DROPDOWN:
-                return SRBlockAndDropdownInputValue(block=block, dropdown=dropdown)
-            case InputMode.BLOCK_ONLY:
-                return SRBlockOnlyInputValue(block=block)
-            case InputMode.SCRIPT:
-                return SRScriptInputValue(blocks=[] if blocks is None else blocks)
 
 @dataclass(repr=False)
 class SRBlockAndTextInputValue(SRInputValue):
+    """
+    The second representation for a block input, which has a text field and might contain a block.
+    """
     _grepr_fields = SRInputValue._grepr_fields + ["block", "text"]
+    
     block: SRBlock | None
-    text : str     | None
-
+    text : str
+    
     def validate(self, 
         path: list, 
         config: ValidationConfig,
@@ -600,6 +704,16 @@ class SRBlockAndTextInputValue(SRInputValue):
         context: FullContext, 
         input_type: InputType, 
     ) -> None:
+        """
+        Ensures this input is valid, raises if not.
+        :param path: The path from the project to itself. Used for better errors
+        :param config: Configuration for Validation Behaviour
+        :param info_api: The opcode info api used to fetch information about opcodes
+        :param validation_api: API used to fetch information about other blocks 
+        :param context: Context about parts of the project. Used to validate dropdowns
+        :param input_type: The type of this input. Used to valdiate dropdowns
+        :return: None
+        """
         self.validate_block(
             path           = path,
             config         = config,
@@ -607,11 +721,15 @@ class SRBlockAndTextInputValue(SRInputValue):
             validation_api = validation_api,
             context        = context,
         )
-        AA_NONE_OR_TYPE(self, path, "text", str)
+        AA_TYPE(self, path, "text", str)
 
 @dataclass(repr=False)
 class SRBlockAndDropdownInputValue(SRInputValue):
+    """
+    The second representation for a block input, which has a dropdown and might contain a block.
+    """
     _grepr_fields = SRInputValue._grepr_fields + ["block", "text"]
+    
     block   : SRBlock         | None
     dropdown: SRDropdownValue | None
 
@@ -623,6 +741,16 @@ class SRBlockAndDropdownInputValue(SRInputValue):
         context: FullContext, 
         input_type: InputType, 
     ) -> None:
+        """
+        Ensures this input is valid, raises if not.
+        :param path: The path from the project to itself. Used for better errors
+        :param config: Configuration for Validation Behaviour
+        :param info_api: The opcode info api used to fetch information about opcodes
+        :param validation_api: API used to fetch information about other blocks 
+        :param context: Context about parts of the project. Used to validate dropdowns
+        :param input_type: The type of this input. Used to valdiate dropdowns
+        :return: None
+        """
         self.validate_block(
             path           = path,
             config         = config,
@@ -642,7 +770,11 @@ class SRBlockAndDropdownInputValue(SRInputValue):
 
 @dataclass(repr=False)
 class SRBlockOnlyInputValue(SRInputValue):
+    """
+    The second representation for a block input, which might contain a block.
+    """
     _grepr_fields = SRInputValue._grepr_fields + ["block"]
+    
     block: SRBlock | None
 
     def validate(self, 
@@ -653,6 +785,16 @@ class SRBlockOnlyInputValue(SRInputValue):
         context: FullContext, 
         input_type: InputType, 
     ) -> None:
+        """
+        Ensures this input is valid, raises if not.
+        :param path: The path from the project to itself. Used for better errors
+        :param config: Configuration for Validation Behaviour
+        :param info_api: The opcode info api used to fetch information about opcodes
+        :param validation_api: API used to fetch information about other blocks 
+        :param context: Context about parts of the project. Used to validate dropdowns
+        :param input_type: The type of this input. Used to valdiate dropdowns
+        :return: None
+        """
         self.validate_block(
             path           = path,
             config         = config,
@@ -663,10 +805,15 @@ class SRBlockOnlyInputValue(SRInputValue):
 
 @dataclass(repr=False)
 class SRScriptInputValue(SRInputValue):
+    """
+    The second representation for a block input, which contains a substack of blocks.
+    """
+    
     _grepr_fields = SRInputValue._grepr_fields + ["blocks"]
+    
     blocks: list[SRBlock]
 
-    def validate_blocks(self, 
+    def validate(self, 
         path: list, 
         config: ValidationConfig,
         info_api: OpcodeInfoAPI,
@@ -674,6 +821,16 @@ class SRScriptInputValue(SRInputValue):
         context: FullContext, 
         input_type: InputType, 
     ) -> None:
+        """
+        Ensures this input is valid, raises if not.
+        :param path: The path from the project to itself. Used for better errors
+        :param config: Configuration for Validation Behaviour
+        :param info_api: The opcode info api used to fetch information about opcodes
+        :param validation_api: API used to fetch information about other blocks 
+        :param context: Context about parts of the project. Used to validate dropdowns
+        :param input_type: The type of this input. Used to valdiate dropdowns
+        :return: None
+        """
         AA_LIST_OF_TYPE(self, path, "blocks", SRBlock)
         for i, block in enumerate(self.blocks):
             current_path = path+["blocks", i]

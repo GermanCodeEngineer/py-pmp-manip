@@ -2,10 +2,10 @@ from typing      import Any
 from dataclasses import dataclass
 from math        import inf
 
-from utility       import GreprClass, ValidationConfig
-from utility       import AA_TYPE, AA_TYPES, AA_DICT_OF_TYPE, AA_COORD_PAIR, AA_BOXED_COORD_PAIR, AA_EQUAL, AA_BIGGER_OR_EQUAL, InvalidOpcodeError, MissingDropdownError, UnnecessaryDropdownError
-from opcode_info   import OpcodeInfoAPI, DropdownType
-from block_opcodes import *
+from utility           import GreprClass, ValidationConfig
+from utility           import AA_TYPE, AA_TYPES, AA_DICT_OF_TYPE, AA_COORD_PAIR, AA_BOXED_COORD_PAIR, AA_EQUAL, AA_BIGGER_OR_EQUAL, InvalidOpcodeError, MissingDropdownError, UnnecessaryDropdownError
+from opcode_info       import OpcodeInfoAPI, DropdownType
+from important_opcodes import *
 
 from core.dropdown import SRDropdownValue
 from core.context  import PartialContext
@@ -80,11 +80,12 @@ class FRMonitor(GreprClass):
             new_dropdowns[new_dropdown_id] = SRDropdownValue.from_tuple(dropdown_type.translate_old_to_new_value(dropdown_value))
         
         new_opcode = info_api.get_new_by_old(self.opcode)
+        position   = (self.x-240, self.y-180) # this lets the center of stage be the origin        
         if   self.opcode == OPCODE_VAR_VALUE:
             return (self.sprite_name, SRVariableMonitor(
                 opcode              = new_opcode,
                 dropdowns           = new_dropdowns,
-                position            = (self.x-240, self.y-180), # this lets the center of stage be the origin
+                position            = position,
                 is_visible          = self.visible,
                 slider_min          = self.slider_min,
                 slider_max          = self.slider_max,
@@ -94,7 +95,7 @@ class FRMonitor(GreprClass):
             return (self.sprite_name, SRListMonitor(
                 opcode      = new_opcode,
                 dropdowns   = new_dropdowns,
-                position    = (self.x, self.y),
+                position    = position,
                 is_visible  = self.visible,
                 size        = (self.width, self.height)
             ))
@@ -102,7 +103,7 @@ class FRMonitor(GreprClass):
             return (self.sprite_name, SRMonitor(
                 opcode      = new_opcode,
                 dropdowns   = new_dropdowns,
-                position    = (self.x, self.y),
+                position    = position,
                 is_visible  = self.visible,
             ))
 
