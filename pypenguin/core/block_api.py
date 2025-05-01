@@ -1,13 +1,13 @@
 from typing      import TYPE_CHECKING
 from dataclasses import dataclass, field
 
-from utility import GreprClass
+from utility import GreprClass, FSCError, ValidationError
 
 from core.custom_block import SRCustomBlockOpcode
 
 if TYPE_CHECKING:
     from core.block          import FRBlock, TRBlock, SRBlock, SRScript
-    from core.comment        import SRAttachedComment
+    from core.comment        import SRComment
     from core.block_mutation import FRCustomBlockMutation, SRCustomBlockMutation
 
 @dataclass(repr=False)
@@ -19,7 +19,7 @@ class FRtoTRAPI(GreprClass):
     _grepr_fields = ["blocks", "scheduled_block_deletions"]
 
     blocks: dict[str, "FRBlock"]
-    block_comments: dict[str, "SRAttachedComment"]
+    block_comments: dict[str, "SRComment"]
     scheduled_block_deletions: list[str] = field(default_factory=list)
 
     def get_all_blocks(self) -> dict[str, "FRBlock"]:
@@ -56,9 +56,9 @@ class FRtoTRAPI(GreprClass):
             if not isinstance(block.mutation, FRCustomBlockMutation): continue
             if block.mutation.proccode == proccode:
                 return block.mutation
-        raise ValueError(f"Mutation of proccode {repr(proccode)} not found.")
+        raise FSCError(f"Mutation of proccode {repr(proccode)} not found.")
 
-    def get_comment(self, comment_id: str) -> "SRAttachedComment":
+    def get_comment(self, comment_id: str) -> "SRComment":
         """
         Get a comment by id
         :param comment_id: the id of the desired comment
@@ -121,5 +121,5 @@ class ValidationAPI(GreprClass):
         """
         if custom_opcode in self.cb_mutations:
             return self.cb_mutations[custom_opcode]
-        raise ValueError(f"Mutation of custom_opcode {custom_opcode} not found.")
+        raise ValidationError(f"Mutation of custom_opcode {custom_opcode} not found.")
 

@@ -1,45 +1,63 @@
-from typing      import TYPE_CHECKING
+from typing      import TYPE_CHECKING, Any
 from dataclasses import dataclass
 
-from utility import GreprClass
+from utility     import GreprClass
 
 if TYPE_CHECKING:
-    from core.dropdown import SRDropdownValue
+    from opcode_info import DropdownValueKind
+
 
 @dataclass(repr=False)
 class PartialContext(GreprClass):
+    """
+    A temporary dataclass which stores the context for dropdown validation excluding sprite context.
+    """
     _grepr = True
     _grepr_fields = ["scope_variables", "scope_lists", "all_sprite_variables", "sprite_only_variables", "sprite_only_lists", "other_sprites", "backdrops"]
 
-    scope_variables: list["SRDropdownValue"]
-    scope_lists: list["SRDropdownValue"]
-    all_sprite_variables: list["SRDropdownValue"]
-    sprite_only_variables: dict[str|None, list["SRDropdownValue"]]
-    list["SRDropdownValue"]
-    sprite_only_lists: dict[str|None, list["SRDropdownValue"]]
-    other_sprites: list["SRDropdownValue"]
-    backdrops: list["SRDropdownValue"]
+    scope_variables: list[tuple["DropdownValueKind", Any]]
+    scope_lists: list[tuple["DropdownValueKind", Any]]
+    all_sprite_variables: list[tuple["DropdownValueKind", Any]]
+    sprite_only_variables: dict[str|None, list[tuple["DropdownValueKind", Any]]]
+    sprite_only_lists: dict[str|None, list[tuple["DropdownValueKind", Any]]]
+    other_sprites: list[tuple["DropdownValueKind", Any]]
+    backdrops: list[tuple["DropdownValueKind", Any]]
 
 @dataclass(repr=False)
-class FullContext(GreprClass):
+class CompleteContext(GreprClass):
+    """
+    A temporary dataclass which stores the context for dropdown validation including sprite context.
+    """
     _grepr = True
     _grepr_fields = ["scope_variables", "scope_lists", "all_sprite_variables", "sprite_only_variables", "sprite_only_lists", "other_sprites", "backdrops", "costumes", "sounds", "is_stage"]
 
-    scope_variables: list["SRDropdownValue"]
-    scope_lists: list["SRDropdownValue"]
-    all_sprite_variables: list["SRDropdownValue"]
-    sprite_only_variables: dict[str|None, list["SRDropdownValue"]]
-    sprite_only_lists: dict[str|None, list["SRDropdownValue"]]
-    other_sprites: list["SRDropdownValue"]
-    backdrops: list["SRDropdownValue"]
+    scope_variables: list[tuple["DropdownValueKind", Any]]
+    scope_lists: list[tuple["DropdownValueKind", Any]]
+    all_sprite_variables: list[tuple["DropdownValueKind", Any]]
+    sprite_only_variables: dict[str|None, list[tuple["DropdownValueKind", Any]]]
+    sprite_only_lists: dict[str|None, list[tuple["DropdownValueKind", Any]]]
+    other_sprites: list[tuple["DropdownValueKind", Any]]
+    backdrops: list[tuple["DropdownValueKind", Any]]
 
-    costumes: list["SRDropdownValue"]
-    sounds: list["SRDropdownValue"]
+    costumes: list[tuple["DropdownValueKind", Any]]
+    sounds: list[tuple["DropdownValueKind", Any]]
     is_stage: bool
 
     @classmethod
-    def from_partial(cls, pc: PartialContext, costumes: list["SRDropdownValue"], sounds: list["SRDropdownValue"], is_stage: bool) -> "FullContext":
-        return FullContext(
+    def from_partial(cls, 
+            pc: PartialContext, 
+            costumes: list[tuple["DropdownValueKind", Any]], 
+            sounds: list[tuple["DropdownValueKind", Any]], 
+            is_stage: bool
+        ) -> "CompleteContext":
+        """
+        Generates a complete context from a PartialContext and the target context.
+        :param pc: the partial context (project context)  
+        :param costumes: a list of valid values for a costume dropdown
+        :param sounds: a list of valid values for a sound dropdown
+        :param is_stage: wether the target is the stage
+        """
+        return CompleteContext(
             scope_variables       = pc.scope_variables,
             scope_lists           = pc.scope_lists,
             all_sprite_variables  = pc.all_sprite_variables,

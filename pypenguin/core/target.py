@@ -9,8 +9,8 @@ from opcode_info import OpcodeInfoAPI, DropdownValueKind
 from core.asset          import FRCostume, FRSound, SRCostume, SRSound
 from core.block          import FRBlock, TRBlock, SRScript, TRBlockReference
 from core.block_mutation import SRCustomBlockMutation
-from core.comment        import FRComment, SRFloatingComment, SRAttachedComment
-from core.context        import PartialContext, FullContext
+from core.comment        import FRComment, SRComment
+from core.context        import PartialContext, CompleteContext
 from core.dropdown       import SRDropdownValue
 from core.enums          import SRSpriteRotationStyle
 from core.block_api      import FRtoTRAPI, ValidationAPI
@@ -79,7 +79,7 @@ class FRTarget(GreprClass):
     def proto_step(self, info_api: OpcodeInfoAPI
     ) -> tuple[
         list[SRScript], 
-        list[SRFloatingComment], 
+        list[SRComment], 
         list[SRCostume], 
         list[SRSound], 
         list[SRVariable], 
@@ -88,16 +88,16 @@ class FRTarget(GreprClass):
         floating_comments = []
         attached_comments = {}
         for comment_id, comment in self.comments.items():
-            new_comment = comment.step()
-            if isinstance(new_comment, SRFloatingComment):
-                floating_comments.append(new_comment)
-            elif isinstance(new_comment, SRAttachedComment):
+            is_attached, new_comment = comment.step()
+            if is_attached:
                 attached_comments[comment_id] = new_comment
+            else:
+                floating_comments.append(new_comment)
 
         blocks = deepcopy(self.blocks)
         for block_reference, block in blocks.items():
             if isinstance(block, tuple):
-                blocks[block_reference] = FRBlock.from_tuple(block, parent_id=None, info_api=info_api)
+                blocks[block_reference] = FRBlock.from_tuple(block, parent_id=None)
 
         block_api = FRtoTRAPI(blocks=blocks, block_comments=attached_comments)
         new_blocks: dict["TRBlockReference", "TRBlock"] = {}
@@ -279,7 +279,7 @@ class SRTarget(GreprClass):
     _grepr_fields = ["scripts", "comments", "costume_index", "costumes", "sounds", "volume"]
 
     scripts: list[SRScript]
-    comments: list[SRFloatingComment]
+    comments: list[SRComment]
     costume_index: int
     costumes: list[SRCostume]
     sounds: list[SRSound]
@@ -287,7 +287,7 @@ class SRTarget(GreprClass):
 
     def validate(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
         AA_LIST_OF_TYPE(self, path, "scripts", SRScript)
-        AA_LIST_OF_TYPE(self, path, "comments", SRFloatingComment)
+        AA_LIST_OF_TYPE(self, path, "comments", SRComment)
         AA_LIST_OF_TYPE(self, path, "costumes", SRCostume)
         AA_TYPE(self, path, "costume_index", int)
         AA_RANGE(self, path, "costume_index", min=0, max=len(self.costumes)-1, condition=f"In this case the sprite has {len(self.costumes)} costume(s)")
@@ -316,8 +316,8 @@ class SRTarget(GreprClass):
                 raise SameNameTwiceError(other_path, current_path, "Two sounds mustn't have the same name")
             defined_sounds[sound.name] = current_path
     
-    def get_full_context(self, partial_context: PartialContext) -> FullContext:
-        return FullContext.from_partial(
+    def get_complete_context(self, partial_context: PartialContext) -> CompleteContext:
+        return CompleteContext.from_partial(
             pc       = partial_context,
             costumes = [SRDropdownValue(DropdownValueKind.COSTUME, costume.name) for costume in self.costumes],
             sounds   = [SRDropdownValue(DropdownValueKind.SOUND  , sound  .name) for sound   in self.sounds  ],
@@ -330,7 +330,7 @@ class SRTarget(GreprClass):
         info_api: OpcodeInfoAPI,
         context: PartialContext,
     ) -> None:
-        context = self.get_full_context(partial_context=context)
+        context = self.get_complete_context(partial_context=context)
         validation_api = ValidationAPI(scripts=self.scripts)
         cb_optypes = {}
         for i, script in enumerate(self.scripts):
@@ -406,7 +406,7 @@ class SRSprite(SRTarget):
         info_api: OpcodeInfoAPI,
         context: PartialContext,
     ) -> None:
-        context = self.get_full_context(partial_context=context)
+        context = self.get_complete_context(partial_context=context)
         for i, monitor in enumerate(self.local_monitors):
             monitor.validate_dropdowns_values(
                 path     = path+["global_monitors", i], 

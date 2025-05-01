@@ -6,6 +6,9 @@ from utility import AA_COORD_PAIR, AA_TYPE, InvalidValueError
 
 @dataclass(repr=False)
 class FRComment(GreprClass):
+    """
+    The first representation for a block. It is very close to the raw data in a project
+    """
     _grepr = True
     _grepr_fields = ["block_id", "x", "y", "width", "height", "minimized", "text"]
     
@@ -19,6 +22,12 @@ class FRComment(GreprClass):
 
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRComment":
+        """
+        Deserializes raw data into a FRBlock
+        :param data: the raw data(dict)
+        :param info_api: the opcode info api used to fetch information about opcodes
+        :return: the FRBlock
+        """
         return cls(
             block_id  = data["blockId"  ],
             x         = data["x"        ],
@@ -29,26 +38,26 @@ class FRComment(GreprClass):
             text      = data["text"     ],
         )
     
-    def step(self) -> "SRComment":
+    def step(self) -> tuple[bool, "SRComment"]:
+        """
+        Converts a FRComment into a SRComment
+        :return: wether it is an attached comment and the SRComment
+        """
         position = (self.x, self.y)
         size = (self.width, self.height)
-        if self.block_id is None: 
-            return SRFloatingComment(
-                position=position,
-                size=size,
-                is_minimized=self.minimized,
-                text=self.text,
-            )
-        else:
-            return SRAttachedComment(
-                position=position,
-                size=size,
-                is_minimized=self.minimized,
-                text=self.text,
-            )
+        comment = SRComment(
+            position=position,
+            size=size,
+            is_minimized=self.minimized,
+            text=self.text,
+        )
+        return (self.block_id is not None, comment)
 
 @dataclass(repr=False)
 class SRComment(GreprClass):
+    """
+    The second representation for a comment
+    """
     _grepr = True
     _grepr_fields = ["position", "size", "is_minimized", "text"]
     
@@ -58,16 +67,15 @@ class SRComment(GreprClass):
     text: str
     
     def validate(self, path: list, config: ValidationConfig) -> None:
+        """
+        Ensure a SRComment is valid, raises if not.
+        :param config: Configuration for Validation Behaviour
+        :return: None
+        """
         AA_COORD_PAIR(self, path, "position")
         AA_COORD_PAIR(self, path, "size")
         if (self.size[0] < 52) or (self.size[1] < 32):
             raise InvalidValueError(path, f"size of {self.__class__.__name__} must be at least 52 by 32")
         AA_TYPE(self, path, "is_minimized", bool)
         AA_TYPE(self, path, "text", str)
-
-class SRFloatingComment(SRComment):
-    pass
-
-class SRAttachedComment(SRComment):
-    pass
 

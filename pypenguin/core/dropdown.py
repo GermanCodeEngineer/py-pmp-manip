@@ -34,7 +34,7 @@ class SRDropdownValue(GreprClass):
                 "".join(["\n- "+repr(value) for value in possible_values])
             )
         
-        possible_values = dropdown_type.calculate_possible_new_dropdown_values(context = context)
+        possible_values = dropdown_type.calculate_possible_new_dropdown_values(context=context)
         default_kind = dropdown_type.get_default_kind()
         possible_values_string = make_string(possible_values)
         if (self.kind, self.value) not in possible_values:

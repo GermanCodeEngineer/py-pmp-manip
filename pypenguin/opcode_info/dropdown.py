@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 
 from utility import PypenguinEnum, remove_duplicates
 
-from core.context import PartialContext, FullContext
+from core.context import PartialContext, CompleteContext
 
 class DropdownValueKind(PypenguinEnum):
     STANDARD       =  0
@@ -252,7 +252,7 @@ class DropdownType(PypenguinEnum):
     ENABLE_SCREEN_REFRESH = DropdownTypeInfo()
 
 
-    def calculate_possible_new_dropdown_values(self, context: PartialContext|FullContext) -> list[tuple]:
+    def calculate_possible_new_dropdown_values(self, context: PartialContext|CompleteContext) -> list[tuple]:
         dropdown_type_info = self.get_type_info()
         values: list = []
         for value in dropdown_type_info.direct_values:

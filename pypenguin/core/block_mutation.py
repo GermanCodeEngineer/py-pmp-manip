@@ -3,7 +3,7 @@ from abc         import ABC, abstractmethod
 from typing      import Any
 from dataclasses import dataclass
 
-from utility import GreprClass, ThanksError, ValidationConfig
+from utility import GreprClass, ThanksError, ValidationConfig, FSCError, DeserializationError
 from utility import AA_TYPE, AA_HEX_COLOR
 
 from core.block_api import FRtoTRAPI
@@ -45,7 +45,7 @@ class FRMutation(GreprClass, ABC):
         """
         Convert a mutation from first into second representation.
         :param block_api: API used to fetch information about other blocks
-        :return: The second representation of the mutation
+        :return: the second representation of the mutation
         """
         pass
 
@@ -83,10 +83,10 @@ class FRCustomBlockArgumentMutation(FRMutation):
         """
         Convert a custom block argument mutation from first into second representation.
         :param block_api: API used to fetch information about other blocks
-        :return: The second representation of the mutation
+        :return: the second representation of the mutation
         """
         if getattr(self, "_argument_name", None) is None:
-            raise Exception("Argument name must be set for stepping to be possible.")
+            raise FSCError("Argument name must be set for stepping to be possible.")
         return SRCustomBlockArgumentMutation(
             argument_name = self._argument_name,
             color1        = self.color[0],
@@ -122,7 +122,7 @@ class FRCustomBlockMutation(FRMutation):
             warp = data["warp"]
         elif isinstance(data["warp"], str):
             warp = loads(data["warp"])
-        else: raise ValueError()
+        else: raise DeserializationError(f"Invalid value for warp: {data['warp']}")
         return cls(
             tag_name          = data["tagName" ],
             children          = data["children"],
@@ -141,13 +141,12 @@ class FRCustomBlockMutation(FRMutation):
         """
         Convert a custom block definition mutation from first into second representation.
         :param block_api: API used to fetch information about other blocks
-        :return: The second representation of the mutation
+        :return: the second representation of the mutation
         """
         return SRCustomBlockMutation(
-            custom_opcode     = SRCustomBlockOpcode.from_proccode_names_defaults(
+            custom_opcode     = SRCustomBlockOpcode.from_proccode_argument_names(
                 proccode          = self.proccode,
                 argument_names    = self.argument_names,
-                argument_defaults = self.argument_defaults,
             ),
             no_screen_refresh = self.warp,
             optype            = SRCustomBlockOptype.from_string(self.optype),
@@ -182,7 +181,7 @@ class FRCustomBlockCallMutation(FRMutation):
             warp = data["warp"]
         elif isinstance(data["warp"], str):
             warp = loads(data["warp"])
-        else: raise ValueError()
+        else: raise DeserializationError(f"Invalid value for warp: {data['warp']}")
         return cls(
             tag_name     = data["tagName" ],
             children     = data["children"],
@@ -199,14 +198,13 @@ class FRCustomBlockCallMutation(FRMutation):
         """
         Convert a custom block call mutation from first into second representation.
         :param block_api: API used to fetch information about other blocks
-        :return: The second representation of the mutation
+        :return: the second representation of the mutation
         """
         complete_mutation = block_api.get_cb_mutation(self.proccode) # Get complete mutation
         return SRCustomBlockCallMutation(
-            custom_opcode      = SRCustomBlockOpcode.from_proccode_names_defaults(
+            custom_opcode      = SRCustomBlockOpcode.from_proccode_argument_names(
                 proccode          = self.proccode,
                 argument_names    = complete_mutation.argument_names,
-                argument_defaults = complete_mutation.argument_defaults,
             ),
         )
 
@@ -236,7 +234,7 @@ class FRStopScriptMutation(FRMutation):
         """
         Convert a stop script mutation from first into second representation.
         :param block_api: API used to fetch information about other blocks
-        :return: The second representation of the mutation
+        :return: the second representation of the mutation
         """
         return SRStopScriptMutation(
             is_ending_statement = not(self.has_next),
@@ -255,7 +253,7 @@ class SRMutation(GreprClass, ABC):
     def validate(self, path: list, config: ValidationConfig) -> None:
         """
         Ensure the mutation is valid, raise if not.
-        :param path: The path from the project to itself. Used for better errors
+        :param path: the path from the project to itself. Used for better errors
         :param config: Configuration for Validation Behaviour
         """
         pass
@@ -277,7 +275,7 @@ class SRCustomBlockArgumentMutation(SRMutation):
     def validate(self, path: list, config: ValidationConfig) -> None:
         """
         Ensure the custom block argument mutation is valid, raise if not.
-        :param path: The path from the project to itself. Used for better errors
+        :param path: the path from the project to itself. Used for better errors
         :param config: Configuration for Validation Behaviour
         """
         AA_TYPE(self, path, "argument_name", str)
@@ -305,7 +303,7 @@ class SRCustomBlockMutation(SRMutation):
     def validate(self, path: list, config: ValidationConfig) -> None:
         """
         Ensure the custom block definition mutation is valid, raise if not.
-        :param path: The path from the project to itself. Used for better errors
+        :param path: the path from the project to itself. Used for better errors
         :param config: Configuration for Validation Behaviour
         """
         AA_TYPE(self, path, "custom_opcode", SRCustomBlockOpcode)
@@ -329,7 +327,7 @@ class SRCustomBlockCallMutation(SRMutation):
     def validate(self, path: list, config: ValidationConfig) -> None:
         """
         Ensure the custom block call mutation is valid, raise if not.
-        :param path: The path from the project to itself. Used for better errors
+        :param path: the path from the project to itself. Used for better errors
         :param config: Configuration for Validation Behaviour
         """
         AA_TYPE(self, path, "custom_opcode", SRCustomBlockOpcode)
@@ -348,7 +346,7 @@ class SRStopScriptMutation(SRMutation):
     def validate(self, path: list, config: ValidationConfig) -> None:
         """
         Ensure the stop script mutation is valid, raise if not.
-        :param path: The path from the project to itself. Used for better errors
+        :param path: the path from the project to itself. Used for better errors
         :param config: Configuration for Validation Behaviour
         """
         AA_TYPE(self, path, "is_ending_statement", bool)

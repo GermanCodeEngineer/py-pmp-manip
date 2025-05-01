@@ -12,7 +12,7 @@ from core.target         import FRTarget, FRStage, FRSprite
 from core.asset          import SRCostume, SRSound
 from core.block_mutation import SRMutation, SRCustomBlockArgumentMutation, SRCustomBlockMutation, SRCustomBlockCallMutation, SRStopScriptMutation
 from core.block          import SRScript, SRBlock, SRInputValue
-from core.comment        import SRComment, SRFloatingComment, SRAttachedComment
+from core.comment        import SRComment
 from core.custom_block   import SRCustomBlockOpcode, SRCustomBlockArgument, SRCustomBlockArgumentType, SRCustomBlockOptype
 from core.dropdown       import SRDropdownValue
 from core.enums          import SRTTSLanguage, SRVideoState, SRSpriteRotationStyle
