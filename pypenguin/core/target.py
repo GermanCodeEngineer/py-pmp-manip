@@ -20,6 +20,9 @@ from core.vars_lists     import SRList, SRList, SRList
 
 @dataclass(repr=False)
 class FRTarget(GreprClass):
+    """
+    The first representation (FR) of a target. A target can be either a sprite or the stage.
+    """
     _grepr = True
     _grepr_fields = ["is_stage", "name", "variables", "lists", "broadcasts", "custom_vars", "blocks", "comments", "current_costume", "costumes", "sounds", "id", "volume", "layer_order"]
     
@@ -39,18 +42,33 @@ class FRTarget(GreprClass):
     layer_order: int
     
     def __post_init__(self) -> None:
+        """
+        Ensure my assumption about custom_vars was correct.
+        
+        Returns:
+            None
+        """
         if self.custom_vars != []: raise ThanksError()
 
     @staticmethod
-    def _parse_common_data(data: dict[str, Any], info_api: OpcodeInfoAPI) -> dict:
-        """Helper method to parse common fields for FRTarget and its subclasses."""
+    def _parse_common_fields(data: dict[str, Any], info_api: OpcodeInfoAPI) -> dict:
+        """
+        [Helper Method] Prepare common fields for FRTarget and its subclasses.
+
+        Args:
+            data: the raw data
+            info_api: the opcode info api used to fetch information about opcodes
+
+        Returns:
+            a dict containing the prepared values for common fields
+        """
         return {
             "is_stage": data["isStage"],
             "name": data["name"],
             "variables": {key: tuple(value) for key, value in data["variables"].items()},
             "lists": {key: tuple(value) for key, value in data["lists"].items()},
             "broadcasts": data["broadcasts"],
-            "custom_vars": data["customVars"],
+            "custom_vars": data.get("customVars", []),
             "blocks": {
                 block_id: (
                     tuple(block_data)
@@ -73,10 +91,20 @@ class FRTarget(GreprClass):
 
     @classmethod
     def from_data(cls, data: dict[str, Any], info_api: OpcodeInfoAPI) -> "FRTarget":
-        common_data = cls._parse_common_data(data, info_api)
-        return cls(**common_data)
+        """
+        Deserializes raw data into a FRTarget.
+        
+        Args:
+            data: the raw data
+            info_api: the opcode info api used to fetch information about opcodes
+        
+        Returns:
+            the FRTarget
+        """
+        common_fields = cls._parse_common_fields(data, info_api)
+        return cls(**common_fields)
 
-    def proto_step(self, info_api: OpcodeInfoAPI
+    def _step_common(self, info_api: OpcodeInfoAPI
     ) -> tuple[
         list[SRScript], 
         list[SRComment], 
@@ -85,6 +113,15 @@ class FRTarget(GreprClass):
         list[SRVariable], 
         list[SRList],
     ]:
+        """
+        [Helper Method] Convert common fields into second representation.
+
+        Args:
+            info_api: the opcode info api used to fetch information about opcodes
+        
+        Returns:
+            lists of: scripts, floating comments, costumes, sounds, variables and lists
+        """
         floating_comments = []
         attached_comments = {}
         for comment_id, comment in self.comments.items():
@@ -116,8 +153,6 @@ class FRTarget(GreprClass):
         top_level_block_refs: list[TRBlockReference] = []
         [top_level_block_refs.append(block_reference) if block.is_top_level else None for block_reference, block in new_blocks.items()]
         
-        from utility import grepr
-        
         # Account for that one bug(not my fault), where a block is falsely independent
         for block_reference, block in new_blocks.items():
             for input_value in block.inputs.values():
@@ -141,7 +176,7 @@ class FRTarget(GreprClass):
                 blocks   = script_blocks,
             ))
         
-        new_variables, new_lists = self.step_variables_lists()
+        new_variables, new_lists = self._step_variables_lists()
         return (
             new_scripts,
             floating_comments,
@@ -151,7 +186,13 @@ class FRTarget(GreprClass):
             new_lists,
         )
     
-    def step_variables_lists(self) -> tuple[list[SRVariable], list[SRList]]:
+    def _step_variables_lists(self) -> tuple[list[SRVariable], list[SRList]]:
+        """
+        [Helper Method] Converts the variables and lists of a FRProject into second representation and returns them.
+        
+        Returns:
+            the variables and lists in second representation
+        """
         new_variables = []
         for variable in self.variables.values():
             name = variable[0]
@@ -179,6 +220,9 @@ class FRTarget(GreprClass):
 
 @dataclass(repr=False)          
 class FRStage(FRTarget):
+    """
+    The first representation (FR) of the stage
+    """
     _grepr_fields = FRTarget._grepr_fields + ["tempo", "video_transparency", "video_state", "text_to_speech_language"]
     
     tempo: int
@@ -188,17 +232,35 @@ class FRStage(FRTarget):
 
     @classmethod
     def from_data(cls, data: dict[str, Any], info_api: OpcodeInfoAPI) -> "FRStage":
-        common_data = cls._parse_common_data(data, info_api)
+        """
+        Deserializes raw data into a FRStage.
+        
+        Args:
+            data: the raw data
+            info_api: the opcode info api used to fetch information about opcodes
+        
+        Returns:
+            the FRStage
+        """
+        common_fields = cls._parse_common_fields(data, info_api)
         return cls(
-            **common_data,
+            **common_fields,
             tempo=data["tempo"],
             video_transparency=data["videoTransparency"],
             video_state=data["videoState"],
             text_to_speech_language=data["textToSpeechLanguage"],
         )
     
-    def step(self, info_api: OpcodeInfoAPI
-    ) -> tuple["SRStage", list[SRVariable],  list[SRList]]:
+    def step(self, info_api: OpcodeInfoAPI) -> tuple["SRStage", list[SRVariable],  list[SRList]]:
+        """
+        Converts a FRStage into a SRStage
+        
+        Args:
+            info_api: the opcode info api used to fetch information about opcodes
+        
+        Returns:
+            the SRStage, a list of the global variables, a list of the global lists
+        """
         (
             scripts,
             comments,
@@ -206,7 +268,7 @@ class FRStage(FRTarget):
             sounds,
             all_sprite_variables,
             all_sprite_lists,
-        ) = super().proto_step(info_api)
+        ) = super()._step_common(info_api)
         return (SRStage(
             scripts       = scripts,
             comments      = comments,
@@ -218,6 +280,9 @@ class FRStage(FRTarget):
 
 @dataclass(repr=False)
 class FRSprite(FRTarget):
+    """
+    The first representation (FR) of a sprite
+    """
     _grepr_fields = FRTarget._grepr_fields + ["visible", "x", "y", "size", "direction", "draggable", "rotation_style"]
 
     visible: bool
@@ -230,9 +295,19 @@ class FRSprite(FRTarget):
 
     @classmethod
     def from_data(cls, data: dict[str, Any], info_api: OpcodeInfoAPI) -> "FRSprite":
-        common_data = cls._parse_common_data(data, info_api)
+        """
+        Deserializes raw data into a FRSprite.
+        
+        Args:
+            data: the raw data
+            info_api: the opcode info api used to fetch information about opcodes
+        
+        Returns:
+            the FRSprite
+        """
+        common_fields = cls._parse_common_fields(data, info_api)
         return cls(
-            **common_data,
+            **common_fields,
             visible=data["visible"],
             x=data["x"],
             y=data["y"],
@@ -242,8 +317,16 @@ class FRSprite(FRTarget):
             rotation_style=data["rotationStyle"],
         )
 
-    def step(self, info_api: OpcodeInfoAPI
-    ) -> tuple["SRSprite", None, None]:
+    def step(self, info_api: OpcodeInfoAPI) -> tuple["SRSprite", None, None]:
+        """
+        Converts a FRSprite into a SRSprite.
+        
+        Args:
+            info_api: the opcode info api used to fetch information about opcodes
+        
+        Returns:
+            the SRSprite, None, None
+        """
         (
             scripts,
             comments,
@@ -251,7 +334,7 @@ class FRSprite(FRTarget):
             sounds,
             sprite_only_variables,
             sprite_only_lists,
-        ) = super().proto_step(info_api)
+        ) = super()._step_common(info_api)
         return (SRSprite(
             name                  = self.name,
             scripts               = scripts,
@@ -275,6 +358,9 @@ class FRSprite(FRTarget):
 
 @dataclass(repr=False)
 class SRTarget(GreprClass):
+    """
+    The second representation (SR) of a target, which is much more user friendly. A target can be either a sprite or the stage.
+    """
     _grepr = True
     _grepr_fields = ["scripts", "comments", "costume_index", "costumes", "sounds", "volume"]
 
@@ -351,10 +437,16 @@ class SRTarget(GreprClass):
                     cb_optypes[custom_opcode] = block.mutation.optype
 
 class SRStage(SRTarget):
+    """
+    The second representation (SR) of the stage, which is much more user friendly
+    """
     pass # The stage has no additional properties
 
 @dataclass(repr=False)
 class SRSprite(SRTarget):
+    """
+    The second representation (SR) of a sprite, which is much more user friendly
+    """
     _grepr_fields = ["name"] + SRTarget._grepr_fields + ["sprite_only_variables", "sprite_only_lists", "local_monitors", "layer_order", "is_visible", "position", "size", "direction", "is_draggable", "rotation_style"]
     
     name: str
@@ -408,7 +500,7 @@ class SRSprite(SRTarget):
     ) -> None:
         context = self.get_complete_context(partial_context=context)
         for i, monitor in enumerate(self.local_monitors):
-            monitor.validate_dropdowns_values(
+            monitor.validate_dropdown_values(
                 path     = path+["global_monitors", i], 
                 info_api = info_api, 
                 context  = context,

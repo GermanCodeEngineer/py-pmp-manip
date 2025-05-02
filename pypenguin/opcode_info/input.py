@@ -6,6 +6,9 @@ from opcode_info.dropdown import DropdownType
 
 @dataclass
 class InputInfo:
+    """
+    The information about a input of a certain opcode.
+    """
     _grepr = True
     _grepr_fields = ["type", "menu"]
     
@@ -13,7 +16,18 @@ class InputInfo:
     menu: MenuInfo | None = None
 
 class InputMode(PypenguinEnum):
+    """
+    Mostly determines the behaviour of inputs.
+    """
+
     def can_be_missing(self) -> bool:
+        """
+        Return wether an input of this mode is allowed to be missing. 
+        (I didn't come up with some inputs just disappearing when empty; go ask the Scratch Team)
+
+        Returns:
+            wether an input of this mode is allowed to be missing
+        """
         return self in {InputMode.BLOCK_ONLY, InputMode.SCRIPT}        
     
     BLOCK_AND_TEXT               = 0
@@ -24,10 +38,28 @@ class InputMode(PypenguinEnum):
     BLOCK_AND_DROPDOWN           = 5
 
 class InputType(PypenguinEnum):
+    """
+    A input type, which can be used for one or many opcodes.
+    The input type has only little influence, except those which can contain a dropdown. Then it will be used for dropdown validation.
+    Its superior input mode mostly determines its behaviour.
+    """
+
     def get_mode(self) -> InputMode:
+        """
+        Get the superior input mode.
+
+        Returns:
+            the input mode
+        """
         return self.value[0]
     
     def get_corresponding_dropdown_type(self) -> "DropdownType":
+        """
+        Get the corresponding dropdown type.
+
+        Returns:
+            the corresponding dropdown type
+        """
         assert self.get_mode() in {
             InputMode.BLOCK_AND_MENU_TEXT, 
             InputMode.BLOCK_AND_BROADCAST_DROPDOWN,
@@ -35,13 +67,19 @@ class InputType(PypenguinEnum):
         }
         return DropdownType._member_map_[self.name]
 
-    @staticmethod
-    def get_by_cb_default(default: str) -> "InputType":
+    @classmethod
+    def get_by_cb_default(cls, default: str) -> "InputType":
+        """
+        Get the input type by its corresponding default in custom blocks.
+
+        Returns:
+            the input type
+        """
         match default:
             case "":
-                return InputType.TEXT
+                return cls.TEXT
             case "false":
-                return InputType.BOOLEAN
+                return cls.BOOLEAN
             case _: raise ValueError()
     
     # BLOCK_AND_TEXT

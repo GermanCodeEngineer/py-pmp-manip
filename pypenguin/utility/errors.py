@@ -1,18 +1,20 @@
-class PyPenguinError(Exception):
+class PypenguinError(Exception):
     pass
 
 
-class ThanksError(PyPenguinError):
+class BlameDevsError(PypenguinError): pass
+
+class ThanksError(PypenguinError):
     def __init__(self):
         super().__init__("Your project is unique! It could help me with my research! Please create an issue with your project attached! https://github.com/Fritzforcode/PyPenguinOO/issues/new")
 
-class PathError(PyPenguinError): pass
+class PathError(PypenguinError): pass
 
 ###############################################################
 #                  ERRORS FOR DESERIALIZATION                 #
 ###############################################################
 
-class DeserializationError(PyPenguinError):
+class DeserializationError(PypenguinError):
     def __init__(self, msg: str) -> None:
         super().__init__(f"Issue during deserialization: {msg}")
 
@@ -20,7 +22,7 @@ class DeserializationError(PyPenguinError):
 #                ERRORS FOR FR TO SR CONVERSION               #
 ###############################################################
 
-class FSCError(PyPenguinError): # First (Representation) -> Second (Representation) Conversion
+class FSCError(PypenguinError): # First (Representation) -> Second (Representation) Conversion
     def __init__(self, msg: str) -> None:
         super().__init__(f"Issue during first to second representation conversion: {msg}")
 
@@ -40,7 +42,7 @@ def generate_path_string(path: list) -> str:
         else: raise ValueError()
     return path_string
 
-class ValidationError(PyPenguinError): pass
+class ValidationError(PypenguinError): pass
 
 class PathValidationError(ValidationError):
     def __init__(self, path: list, msg: str, condition: str|None = None) -> None:

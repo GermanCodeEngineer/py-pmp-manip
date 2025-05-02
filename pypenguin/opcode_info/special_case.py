@@ -4,9 +4,9 @@ from typing      import Callable
 from utility import PypenguinEnum, GreprClass
 
 class SpecialCaseType(PypenguinEnum):
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__}.{self.name}"
-    
+    """
+    Documentation for the currently implemented Special Cases
+    """
     ######################################################
     #                    Data Handlers                   # 
     ######################################################
@@ -25,6 +25,7 @@ class SpecialCaseType(PypenguinEnum):
     GET_ALL_INPUT_IDS_TYPES = 1
     # map new and old input id to input type
     # -> DualKeyDict[old, new, InpuType]
+    # block_api will be None for a TRBlock or SRBlock and the block api for a FRBlock
     """
     def example(
         block: "FRBlock|TRBlock|SRBlock", block_api: "FRtoTRAPI|None"
@@ -53,6 +54,9 @@ class SpecialCaseType(PypenguinEnum):
 
 @dataclass
 class SpecialCase(GreprClass):
+    """
+    Special Cases allows for custom behaviour for special blocks.
+    """
     _grepr = True
     _grepr_fields = ["type", "function"]
 
@@ -60,5 +64,14 @@ class SpecialCase(GreprClass):
     function: Callable
     
     def call(self, *args, **kwargs):
+        """
+        Call a special case and get its return value. Arguments depend on SpecialCaseType.
+        Parameters:
+            *args: positional arguments forwarded to the function
+            **kwargs: keyword arguments forwarded to the function
+
+        Returns:
+            the return value of the function
+        """
         return self.function(*args, **kwargs)
 

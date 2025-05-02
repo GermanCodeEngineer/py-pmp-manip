@@ -190,7 +190,7 @@ class FRCustomBlockMutation(FRMutation):
                 argument_names    = self.argument_names,
             ),
             no_screen_refresh = self.warp,
-            optype            = SRCustomBlockOptype.from_string(self.optype),
+            optype            = SRCustomBlockOptype.from_code(self.optype),
             color1            = self.color[0],
             color2            = self.color[1],
             color3            = self.color[2],

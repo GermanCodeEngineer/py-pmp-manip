@@ -12,6 +12,9 @@ from core.context  import PartialContext
 
 @dataclass(repr=False)
 class FRMonitor(GreprClass):
+    """
+    The first representation for a monitor
+    """
     _grepr = True
     _grepr_fields = ["id", "mode", "opcode", "params", "sprite_name", "value", "x", "y", "visible", "width", "height", "slider_min", "slider_max", "is_discrete"]
 
@@ -34,10 +37,25 @@ class FRMonitor(GreprClass):
     is_discrete: bool | None
 
     def __post_init__(self) -> None:
+        """
+        Ensure my assumptions about monitors were correct.
+        
+        Returns:
+            None
+        """
         assert isinstance(self.params, dict)
 
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRMonitor":
+        """
+        Deserializes raw data into a FRMonitor.
+        
+        Args:
+            data: the raw data
+        
+        Returns:
+            the FRMonitor
+        """
         return cls(
             # Core Properties
             id          = data["id"        ], 
@@ -59,6 +77,16 @@ class FRMonitor(GreprClass):
         )
     
     def step(self, info_api: OpcodeInfoAPI, sprite_names: list[str]) -> tuple[str | None, "SRMonitor | None"]:
+        """
+        Converts a FRMonitor into a SRMonitor
+        
+        Args:
+            info_api: the opcode info api used to fetch information about opcodes
+            sprite_names: a list of sprite names in the project, used to delete monitors of deleted sprites
+        
+        Returns:
+            the SRMonitor
+        """
         if ((self.sprite_name not in sprite_names) 
         and (self.sprite_name is not None) 
         and not(self.visible)):
@@ -68,7 +96,7 @@ class FRMonitor(GreprClass):
         
         new_dropdowns = {}
         for dropdown_id, dropdown_value in self.params.items():
-            if   self.opcode == OPCODE_VAR_VALUE:
+            if   self.opcode == OPCODE_VAR_VALUE: # TODO: move dropdown id translation into opcode_info
                 new_dropdown_id = "VARIABLE"
                 dropdown_type   = DropdownType.VARIABLE
             elif self.opcode == OPCODE_LIST_VALUE:
@@ -76,7 +104,7 @@ class FRMonitor(GreprClass):
                 dropdown_type   = DropdownType.LIST
             else:
                 new_dropdown_id = opcode_info.get_new_dropdown_id(dropdown_id)
-                dropdown_type   = opcode_info.get_dropdown_info  (dropdown_id).type
+                dropdown_type   = opcode_info.get_dropdown_info_by_old(dropdown_id).type
             new_dropdowns[new_dropdown_id] = SRDropdownValue.from_tuple(dropdown_type.translate_old_to_new_value(dropdown_value))
         
         new_opcode = info_api.get_new_by_old(self.opcode)
@@ -109,6 +137,9 @@ class FRMonitor(GreprClass):
 
 @dataclass(repr=False)
 class SRMonitor(GreprClass):
+    """
+    The second representation for a monitor. It is much more user friendly.
+    """
     _grepr = True
     _grepr_fields = ["opcode", "dropdowns", "sprite", "position", "is_visible"]
     
@@ -118,12 +149,30 @@ class SRMonitor(GreprClass):
     is_visible: bool
     
     def __post_init__(self) -> None:
+        """
+        Ensure that it is impossible to create a variable/list monitor without using the correct subclass.
+
+        Returns:
+            None
+        """
         if   self.opcode == NEW_OPCODE_VAR_VALUE:
             assert isinstance(self, SRVariableMonitor), f"Must be a SRVariableMonitor instance if opcode is {repr(NEW_OPCODE_VAR_VALUE)}"
         elif self.opcode == NEW_OPCODE_LIST_VALUE:
             assert isinstance(self, SRListMonitor), f"Must be a SRListMonitor instance if opcode is {repr(NEW_OPCODE_LIST_VALUE)}"
     
-    def validate(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI):
+    def validate(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
+        """
+        Ensure a SRMonitor is valid, raise ValidationError if not.
+        To validate the exact dropdown values you should additionally call the validate_dropdown_values method.
+        
+        Args:
+            path: the path from the project to itself. Used for better errors
+            config: Configuration for Validation Behaviour
+            info_api: the opcode info api used to fetch information about opcodes
+        
+        Returns:
+            None
+        """
         AA_TYPE(self, path, "opcode", str)
         AA_DICT_OF_TYPE(self, path, "dropdowns", key_t=str, value_t=SRDropdownValue)
         if config.raise_when_monitor_position_outside_stage:
@@ -145,7 +194,19 @@ class SRMonitor(GreprClass):
             if new_dropdown_id not in self.dropdowns:
                 raise MissingDropdownError(path, f"dropdowns of {self.__class__.__name__} with opcode {repr(self.opcode)} is missing dropdown {repr(new_dropdown_id)}")
     
-    def validate_dropdowns_values(self, path: list, info_api: OpcodeInfoAPI, context: PartialContext):
+    def validate_dropdown_values(self, path: list, info_api: OpcodeInfoAPI, context: PartialContext) -> None:
+        """
+        Ensure the dropdown values of a SRMonitor are valid, raise ValidationError if not.
+        For validation of the monitor itself, call the validate method.
+        
+        Args:
+            path: the path from the project to itself. Used for better errors
+            info_api: the opcode info api used to fetch information about opcodes
+            context: Context about parts of the project. Used to validate dropdowns
+        
+        Returns:
+            None
+        """
         opcode_info = info_api.get_info_by_new(self.opcode)
         for new_dropdown_id, dropdown in self.dropdowns.items():
             dropdown_type = opcode_info.get_dropdown_info_by_new(new_dropdown_id).type
@@ -157,6 +218,9 @@ class SRMonitor(GreprClass):
 
 @dataclass(repr=False)
 class SRVariableMonitor(SRMonitor):
+    """
+    The second representation exclusively for variable monitors
+    """
     _grepr_fields = SRMonitor._grepr_fields + ["slider_min", "slider_max", "allow_only_integers"]
     
     slider_min: int | float
@@ -164,6 +228,18 @@ class SRVariableMonitor(SRMonitor):
     allow_only_integers: bool
     
     def validate(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI):
+        """
+        Ensure a SRVariableMonitor is valid, raise ValidationError if not.
+        To validate the exact dropdown values you should additionally call the validate_dropdown_values method.
+        
+        Args:
+            path: the path from the project to itself. Used for better errors
+            config: Configuration for Validation Behaviour
+            info_api: the opcode info api used to fetch information about opcodes
+        
+        Returns:
+            None
+        """
         super().validate(path, config, info_api)
         AA_EQUAL(self, path, "opcode", NEW_OPCODE_VAR_VALUE)
         
@@ -181,11 +257,26 @@ class SRVariableMonitor(SRMonitor):
 
 @dataclass(repr=False)
 class SRListMonitor(SRMonitor):
+    """
+    The second representation exclusively for list monitors
+    """
     _grepr_fields = SRMonitor._grepr_fields + ["size"]
 
     size: tuple[int | float, int | float]
     
     def validate(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI):
+        """
+        Ensure a SRListMonitor is valid, raise ValidationError if not.
+        To validate the exact dropdown values you should additionally call the validate_dropdown_values method.
+        
+        Args:
+            path: the path from the project to itself. Used for better errors
+            config: Configuration for Validation Behaviour
+            info_api: the opcode info api used to fetch information about opcodes
+        
+        Returns:
+            None
+        """
         super().validate(path, config, info_api)
         AA_EQUAL(self, path, "opcode", NEW_OPCODE_LIST_VALUE)
         

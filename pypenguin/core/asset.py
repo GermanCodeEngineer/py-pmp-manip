@@ -23,7 +23,7 @@ class FRCostume(GreprClass):
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRCostume":
         """
-        Deserializes raw data into a FRSound
+        Deserializes raw data into a FRSound.
         
         Args:
             data: the raw data
@@ -43,7 +43,7 @@ class FRCostume(GreprClass):
 
     def step(self) -> "SRCostume":
         """
-        Converts a FRComment into a SRComment
+        Converts a FRComment into a SRComment.
         
         Returns:
             the SRComment

@@ -1,11 +1,14 @@
 from typing      import Any
 from dataclasses import dataclass, field
 
-from utility import PypenguinEnum, remove_duplicates
+from utility import PypenguinEnum, remove_duplicates, BlameDevsError
 
 from core.context import PartialContext, CompleteContext
 
 class DropdownValueKind(PypenguinEnum):
+    """
+    The kind of a dropdown value clarifies what it references. Eg. VARIABLE shows that the dropdown value is referencing a variable.
+    """
     STANDARD       =  0
     SUGGESTION     =  1
     FALLBACK       =  2
@@ -25,81 +28,103 @@ class DropdownValueKind(PypenguinEnum):
 
 @dataclass
 class DropdownInfo:
+    """
+    The information about a dropdown of a certain opcode.
+    """
     _grepr = True
     _grepr_fields = ["type"]
     
     type: "DropdownType"
 
-class DropdownBehaviour(PypenguinEnum):
+class DropdownValueRule(PypenguinEnum):
+    """
+    A rule which determines which values are allowed for dropdowns under given circumstances(context)
+    """
     def get_default_kind(self) -> "DropdownValueKind | None":
-        from core.dropdown import DropdownValueKind
-        return {
-            DropdownBehaviour.OTHER_SPRITE             : DropdownValueKind.SPRITE,
-            DropdownBehaviour.OTHER_SPRITE_EXCEPT_STAGE: DropdownValueKind.SPRITE,
-            DropdownBehaviour.MUTABLE_SPRITE_PROPERTY  : DropdownValueKind.VARIABLE,
-            DropdownBehaviour.READABLE_SPRITE_PROPERTY : DropdownValueKind.VARIABLE,
-            DropdownBehaviour.COSTUME                  : DropdownValueKind.COSTUME,
-            DropdownBehaviour.BACKDROP                 : DropdownValueKind.BACKDROP,
-            DropdownBehaviour.SOUND                    : DropdownValueKind.SOUND,
-            DropdownBehaviour.VARIABLE                 : DropdownValueKind.VARIABLE,
-            DropdownBehaviour.LIST                     : DropdownValueKind.LIST,
-            DropdownBehaviour.BROADCAST                : DropdownValueKind.BROADCAST_MSG,
-            DropdownBehaviour.FONT                     : DropdownValueKind.STANDARD,
-        }.get(self, None)
+        """
+        Gets the dropdown value kind, which is used as a default(optional).
 
-    STAGE                     =  0
-    OTHER_SPRITE              =  1
-    OTHER_SPRITE_EXCEPT_STAGE =  2
-    MYSELF                    =  3
-    MYSELF_IF_SPRITE          =  4
+        Returns:
+            the default dropdown value kind
+        """
+        return self.value[0]
 
-    MOUSE_POINTER             =  5
-    EDGE                      =  6
+    STAGE                     = (None                           ,  0)
+    OTHER_SPRITE              = (DropdownValueKind.SPRITE       ,  1)
+    OTHER_SPRITE_EXCEPT_STAGE = (DropdownValueKind.SPRITE       ,  2)
+    MYSELF                    = (None                           ,  3)
+    MYSELF_IF_SPRITE          = (None                           ,  4)
 
-    RANDOM_POSITION           =  7
+    MOUSE_POINTER             = (None                           ,  5)
+    EDGE                      = (None                           ,  6)
 
-    MUTABLE_SPRITE_PROPERTY   =  8
-    READABLE_SPRITE_PROPERTY  =  9
+    RANDOM_POSITION           = (None                           ,  7)
 
-    COSTUME                   = 10
-    BACKDROP                  = 11
-    SOUND                     = 12
+    MUTABLE_SPRITE_PROPERTY   = (DropdownValueKind.VARIABLE     ,  8)
+    READABLE_SPRITE_PROPERTY  = (DropdownValueKind.VARIABLE     ,  9)
 
-    VARIABLE                  = 13
-    LIST                      = 14
-    BROADCAST                 = 15
+    COSTUME                   = (DropdownValueKind.COSTUME      , 10)
+    BACKDROP                  = (DropdownValueKind.BACKDROP     , 11)
+    SOUND                     = (DropdownValueKind.SOUND        , 12)
+
+    VARIABLE                  = (DropdownValueKind.VARIABLE     , 13)
+    LIST                      = (DropdownValueKind.LIST         , 14)
+    BROADCAST_MSG             = (DropdownValueKind.BROADCAST_MSG, 15)
     
-    FONT                      = 16
+    FONT                      = (DropdownValueKind.STANDARD     , 16)
 
-DDB = DropdownBehaviour    
 
 @dataclass
 class DropdownTypeInfo:
+    """
+    The information about a dropdown type, which can be used for one or many opcodes.
+    """
     _grepr = True
     _grepr_fields = ["direct_values", "behaviours", "old_direct_values", "fallback"]
 
     direct_values:     list[str | int | bool]  = field(default_factory=list)
-    behaviours:        list[DropdownBehaviour] = field(default_factory=list)
+    rules:             list[DropdownValueRule] = field(default_factory=list)
     old_direct_values: list[str | int | bool] | None = None  
     fallback:          Any                    | None = None
     
-    def __post_init__(self):
+    def __post_init__(self) -> None:
+        """
+        Ensure the old_direct_values default to the direct_values.
+
+        Returns:
+            None
+        """
         if self.old_direct_values is None:
             self.old_direct_values = self.direct_values        
     
-class DropdownType(PypenguinEnum):    
+class DropdownType(PypenguinEnum):
+    """
+    A dropdown type, which can be used for one or many opcodes.
+    """
     def get_type_info(self) -> DropdownTypeInfo:
+        """
+        Get the dropdown type info of a dropdown type.
+
+        Returns:
+            the dropdown type
+        """
         return self.value
     
     def get_default_kind(self) -> DropdownValueKind | None:
+        """
+        Gets the default dropdown value kind of a dropdown type.
+
+        Returns:
+            the default dropdown kind
+        """
         default_kind = None
-        for behaviour in self.get_type_info().behaviours:
+        for behaviour in self.get_type_info().rules:
             behaviour_default_kind = behaviour.get_default_kind()
             if behaviour_default_kind is not None:
                 if default_kind is None:
                     default_kind = behaviour_default_kind
                 else:
-                    raise ValueError(f"Multiple default kinds for {self}: {default_kind} and {behaviour_default_kind}")
+                    raise BlameDevsError(f"Got multiple default dropdown value kinds for {self}: {default_kind} and {behaviour_default_kind}")
         return default_kind
 
     KEY = DropdownTypeInfo(
@@ -128,9 +153,9 @@ class DropdownType(PypenguinEnum):
     STOP_SCRIPT_TARGET = DropdownTypeInfo(
         direct_values=["all", "this script", "other scripts in sprite"]
     )
-    STAGE_OR_OTHER_SPRITE = DropdownTypeInfo(behaviours=[DDB.STAGE, DDB.OTHER_SPRITE])
+    STAGE_OR_OTHER_SPRITE = DropdownTypeInfo(rules=[DropdownValueRule.STAGE, DropdownValueRule.OTHER_SPRITE])
     CLONING_TARGET = DropdownTypeInfo(
-        behaviours=[DDB.MYSELF_IF_SPRITE, DDB.OTHER_SPRITE_EXCEPT_STAGE],
+        rules=[DropdownValueRule.MYSELF_IF_SPRITE, DropdownValueRule.OTHER_SPRITE_EXCEPT_STAGE],
         fallback=" ",
     )
     UP_DOWN = DropdownTypeInfo(direct_values=["up", "down"])
@@ -138,19 +163,19 @@ class DropdownType(PypenguinEnum):
         direct_values=["loudness", "timer"],
         old_direct_values=["LOUDNESS", "TIMER"],
     )
-    MOUSE_OR_OTHER_SPRITE = DropdownTypeInfo(behaviours=[DDB.MOUSE_POINTER, DDB.OTHER_SPRITE])
-    MOUSE_EDGE_OR_OTHER_SPRITE = DropdownTypeInfo(behaviours=[DDB.MOUSE_POINTER, DDB.EDGE, DDB.OTHER_SPRITE])
-    MOUSE_EDGE_MYSELF_OR_OTHER_SPRITE = DropdownTypeInfo(behaviours=[DDB.MOUSE_POINTER, DDB.EDGE, DDB.MYSELF, DDB.OTHER_SPRITE])
+    MOUSE_OR_OTHER_SPRITE = DropdownTypeInfo(rules=[DropdownValueRule.MOUSE_POINTER, DropdownValueRule.OTHER_SPRITE])
+    MOUSE_EDGE_OR_OTHER_SPRITE = DropdownTypeInfo(rules=[DropdownValueRule.MOUSE_POINTER, DropdownValueRule.EDGE, DropdownValueRule.OTHER_SPRITE])
+    MOUSE_EDGE_MYSELF_OR_OTHER_SPRITE = DropdownTypeInfo(rules=[DropdownValueRule.MOUSE_POINTER, DropdownValueRule.EDGE, DropdownValueRule.MYSELF, DropdownValueRule.OTHER_SPRITE])
     X_OR_Y = DropdownTypeInfo(direct_values=["x", "y"])
     DRAG_MODE = DropdownTypeInfo(direct_values=["draggable", "not draggable"])
-    MUTABLE_SPRITE_PROPERTY = DropdownTypeInfo(behaviours=[DDB.MUTABLE_SPRITE_PROPERTY])
-    READABLE_SPRITE_PROPERTY = DropdownTypeInfo(behaviours=[DDB.READABLE_SPRITE_PROPERTY])
+    MUTABLE_SPRITE_PROPERTY = DropdownTypeInfo(rules=[DropdownValueRule.MUTABLE_SPRITE_PROPERTY])
+    READABLE_SPRITE_PROPERTY = DropdownTypeInfo(rules=[DropdownValueRule.READABLE_SPRITE_PROPERTY])
     TIME_PROPERTY = DropdownTypeInfo(
         direct_values=["year", "month", "date", "day of week", "hour", "minute", "second", "js timestamp"],
         old_direct_values=["YEAR", "MONTH", "DATE", "DAYOFWEEK", "HOUR", "MINUTE", "SECOND", "TIMESTAMP"],
     )
     FINGER_INDEX = DropdownTypeInfo(direct_values=["1", "2", "3", "4", "5"])
-    RANDOM_MOUSE_OR_OTHER_SPRITE = DropdownTypeInfo(behaviours=[DDB.RANDOM_POSITION, DDB.MOUSE_POINTER, DDB.OTHER_SPRITE])
+    RANDOM_MOUSE_OR_OTHER_SPRITE = DropdownTypeInfo(rules=[DropdownValueRule.RANDOM_POSITION, DropdownValueRule.MOUSE_POINTER, DropdownValueRule.OTHER_SPRITE])
     ROTATION_STYLE = DropdownTypeInfo(direct_values=["left-right", "up-down", "don't rotate", "look at", "all around"])
     STAGE_ZONE = DropdownTypeInfo(direct_values=["bottom-left", "bottom", "bottom-right", "top-left", "top", "top-right", "left", "right"])
     TEXT_BUBBLE_COLOR_PROPERTY = DropdownTypeInfo(
@@ -165,16 +190,16 @@ class DropdownType(PypenguinEnum):
         direct_values=["color", "fisheye", "whirl", "pixelate", "mosaic", "brightness", "ghost", "saturation", "red", "green", "blue", "opaque"],
         old_direct_values=["COLOR", "FISHEYE", "WHIRL", "PIXELATE", "MOSAIC", "BRIGHTNESS", "GHOST", "SATURATION", "RED", "GREEN", "BLUE", "OPAQUE"],
     )
-    COSTUME = DropdownTypeInfo(behaviours=[DDB.COSTUME])
-    BACKDROP = DropdownTypeInfo(behaviours=[DDB.BACKDROP])
+    COSTUME = DropdownTypeInfo(rules=[DropdownValueRule.COSTUME])
+    BACKDROP = DropdownTypeInfo(rules=[DropdownValueRule.BACKDROP])
     COSTUME_PROPERTY = DropdownTypeInfo(direct_values=["width", "height", "rotation center x", "rotation center y", "drawing mode"])
-    MYSELF_OR_OTHER_SPRITE = DropdownTypeInfo(behaviours=[DDB.MYSELF, DDB.OTHER_SPRITE])
+    MYSELF_OR_OTHER_SPRITE = DropdownTypeInfo(rules=[DropdownValueRule.MYSELF, DropdownValueRule.OTHER_SPRITE])
     FRONT_BACK = DropdownTypeInfo(direct_values=["front", "back"])
     FORWARD_BACKWARD = DropdownTypeInfo(direct_values=["forward", "backward"])
     INFRONT_BEHIND = DropdownTypeInfo(direct_values=["infront", "behind"])
     NUMBER_NAME = DropdownTypeInfo(direct_values=["number", "name"])
     SOUND = DropdownTypeInfo(
-        behaviours=[DDB.SOUND], 
+        rules=[DropdownValueRule.SOUND], 
         fallback=" ",
     )
     SOUND_EFFECT = DropdownTypeInfo(
@@ -194,7 +219,7 @@ class DropdownType(PypenguinEnum):
     FONT = DropdownTypeInfo(
         direct_values=[(DropdownValueKind.SUGGESTION, name) for name in ["Sans Serif", "Serif", "Handwriting", "Marker", "Curly", "Pixel", "Playful", "Bubbly", "Arcade", "Bits and Bytes", "Technological", "Scratch", "Archivo", "Archivo Black", "Random"]],
         old_direct_values=["Sans Serif", "Serif", "Handwriting", "Marker", "Curly", "Pixel", "Playful", "Bubbly", "Arcade", "Bits and Bytes", "Technological", "Scratch", "Archivo", "Archivo Black", "Random"],
-        behaviours=[DDB.FONT],
+        rules=[DropdownValueRule.FONT],
     )
     ON_OFF = DropdownTypeInfo(direct_values=["on", "off"])
     EXPANDED_MINIMIZED = DropdownTypeInfo(
@@ -243,16 +268,20 @@ class DropdownType(PypenguinEnum):
         old_direct_values=["modal", "selector"],
     )
 
-    
-    BROADCAST = DropdownTypeInfo(behaviours=[DDB.BROADCAST])
-    VARIABLE = DropdownTypeInfo(behaviours=[DDB.VARIABLE])
-    LIST = DropdownTypeInfo(behaviours=[DDB.LIST])
-    
-    # Temporary, will be removed
-    ENABLE_SCREEN_REFRESH = DropdownTypeInfo()
+    VARIABLE = DropdownTypeInfo(rules=[DropdownValueRule.VARIABLE])
+    LIST = DropdownTypeInfo(rules=[DropdownValueRule.LIST])
+    BROADCAST = DropdownTypeInfo(rules=[DropdownValueRule.BROADCAST_MSG])
 
+    def calculate_possible_new_dropdown_values(self, context: PartialContext|CompleteContext) -> list[tuple[DropdownValueKind, Any]]:
+        """
+        Calulate all the possible values for a SRDropdownValue in certain circumstances(given context).
 
-    def calculate_possible_new_dropdown_values(self, context: PartialContext|CompleteContext) -> list[tuple]:
+        Args:
+            context: Context about parts of the project. Eg. costumes are important to know what values can be selected for a costume dropdown.
+
+        Returns:
+            a list of possible values as tuples => (kind, value)
+        """
         dropdown_type_info = self.get_type_info()
         values: list = []
         for value in dropdown_type_info.direct_values:
@@ -261,30 +290,30 @@ class DropdownType(PypenguinEnum):
             else:
                 values.append((DropdownValueKind.STANDARD, value))
         
-        for segment in dropdown_type_info.behaviours:
+        for segment in dropdown_type_info.rules:
             match segment:
-                case DDB.STAGE:
+                case DropdownValueRule.STAGE:
                     values.append((DropdownValueKind.STAGE, "stage"))
-                case DDB.OTHER_SPRITE:
+                case DropdownValueRule.OTHER_SPRITE:
                     values.append((DropdownValueKind.STAGE, "stage"))
                     values.extend(context.other_sprites)
-                case DDB.OTHER_SPRITE_EXCEPT_STAGE:
+                case DropdownValueRule.OTHER_SPRITE_EXCEPT_STAGE:
                     values.extend(context.other_sprites)
-                case DDB.MYSELF:
+                case DropdownValueRule.MYSELF:
                     values.append((DropdownValueKind.MYSELF, "myself"))
-                case DDB.MYSELF_IF_SPRITE:
+                case DropdownValueRule.MYSELF_IF_SPRITE:
                     if not context.is_stage:
                         values.append((DropdownValueKind.MYSELF, "myself"))
                 
-                case DDB.MOUSE_POINTER:
+                case DropdownValueRule.MOUSE_POINTER:
                     values.append((DropdownValueKind.OBJECT, "mouse-pointer"))
-                case DDB.EDGE:
+                case DropdownValueRule.EDGE:
                     values.append((DropdownValueKind.OBJECT, "edge"))
                 
-                case DDB.RANDOM_POSITION:
+                case DropdownValueRule.RANDOM_POSITION:
                     values.append((DropdownValueKind.OBJECT, "random position"))
                 
-                case DDB.MUTABLE_SPRITE_PROPERTY:
+                case DropdownValueRule.MUTABLE_SPRITE_PROPERTY:
                     # trying to validate here is so much additional work and makes everything a lot more complicated.
                     # instead i will choose the lazy way here
                     values.extend([
@@ -304,7 +333,7 @@ class DropdownType(PypenguinEnum):
 
                     raise Exception("TODO: ensure this works")
                 
-                case DDB.READABLE_SPRITE_PROPERTY:
+                case DropdownValueRule.READABLE_SPRITE_PROPERTY:
                     # trying to validate here is so much additional work and makes everything a lot more complicated.
                     # instead i will choose the lazy way here
 
@@ -327,21 +356,27 @@ class DropdownType(PypenguinEnum):
                     for sprite_only_variables in context.sprite_only_variables.values():
                         values.extend(sprite_only_variables)
 
-                case DDB.COSTUME:
+                case DropdownValueRule.COSTUME:
                     values.extend(context.costumes)
                     values.extend([(DropdownValueKind.COSTUME, i) for i in range(len(context.costumes))])
-                case DDB.BACKDROP:
+                case DropdownValueRule.BACKDROP:
                     values.extend(context.backdrops)
                     values.extend([(DropdownValueKind.COSTUME, i) for i in range(len(context.backdrops))])
-                case DDB.SOUND:
+                case DropdownValueRule.SOUND:
                     values.extend(context.sounds)
-                case DDB.SOUND:
+                case DropdownValueRule.SOUND:
                     pass
         if (values == []) and (dropdown_type_info.fallback is not None):
             values.append(dropdown_type_info.fallback)
         return remove_duplicates(values)
 
-    def guess_possible_new_dropdown_values(self, include_behaviours: bool) -> list[tuple]:
+    def guess_possible_new_dropdown_values(self, include_behaviours: bool) -> list[tuple[DropdownValueKind, Any]]:
+        """
+        Guess all the possible values for a SRDropdownValue without context.
+
+        Returns:
+            a list of possible values as tuples => (kind, value)
+        """
         dropdown_type_info = self.get_type_info()
         values             = []
         for value in dropdown_type_info.direct_values:
@@ -351,28 +386,28 @@ class DropdownType(PypenguinEnum):
                 values.append((DropdownValueKind.STANDARD, value))
         
         if include_behaviours:
-            for behaviour in dropdown_type_info.behaviours:
+            for behaviour in dropdown_type_info.rules:
                 match behaviour:
-                    case DDB.STAGE:
+                    case DropdownValueRule.STAGE:
                         values.append((DropdownValueKind.STAGE, "stage"))
-                    case DDB.OTHER_SPRITE:
+                    case DropdownValueRule.OTHER_SPRITE:
                         values.append((DropdownValueKind.STAGE, "stage"))
-                    case DDB.OTHER_SPRITE_EXCEPT_STAGE:
+                    case DropdownValueRule.OTHER_SPRITE_EXCEPT_STAGE:
                         pass # Can't be guessed, but don't include stage
-                    case DDB.MYSELF:
+                    case DropdownValueRule.MYSELF:
                         values.append((DropdownValueKind.MYSELF, "myself"))
-                    case DDB.MYSELF_IF_SPRITE:
+                    case DropdownValueRule.MYSELF_IF_SPRITE:
                         values.append((DropdownValueKind.MYSELF, "myself"))
                     
-                    case DDB.MOUSE_POINTER:
+                    case DropdownValueRule.MOUSE_POINTER:
                         values.append((DropdownValueKind.OBJECT, "mouse-pointer"))
-                    case DDB.EDGE:
+                    case DropdownValueRule.EDGE:
                         values.append((DropdownValueKind.OBJECT, "edge"))
                     
-                    case DDB.RANDOM_POSITION:
+                    case DropdownValueRule.RANDOM_POSITION:
                         values.append((DropdownValueKind.OBJECT, "random position"))
                     
-                    case DDB.MUTABLE_SPRITE_PROPERTY:
+                    case DropdownValueRule.MUTABLE_SPRITE_PROPERTY:
                         values.extend([
                             (DropdownValueKind.STANDARD, "backdrop"), 
                             (DropdownValueKind.STANDARD, "volume"),
@@ -385,7 +420,7 @@ class DropdownType(PypenguinEnum):
                             (DropdownValueKind.STANDARD, "size"),
                             (DropdownValueKind.STANDARD, "volume"),
                         ])
-                    case DDB.READABLE_SPRITE_PROPERTY:
+                    case DropdownValueRule.READABLE_SPRITE_PROPERTY:
                         values.extend([
                             (DropdownValueKind.STANDARD, "backdrop #"), 
                             (DropdownValueKind.STANDARD, "backdrop name"), 
@@ -402,16 +437,20 @@ class DropdownType(PypenguinEnum):
                             (DropdownValueKind.STANDARD, "volume"),
                         ])
                     
-                    case (DDB.COSTUME  | DDB.BACKDROP | DDB.SOUND 
-                        | DDB.VARIABLE | DDB.LIST     | DDB.BROADCAST | DDB.FONT):
+                    case (DropdownValueRule.COSTUME  | DropdownValueRule.BACKDROP | DropdownValueRule.SOUND 
+                        | DropdownValueRule.VARIABLE | DropdownValueRule.LIST     | DropdownValueRule.BROADCAST_MSG | DropdownValueRule.FONT):
                         pass # Can't be guessed
-
-                    case _: raise ValueError()
         if dropdown_type_info.fallback is not None:
             values.append((DropdownValueKind.FALLBACK, dropdown_type_info.fallback))
         return remove_duplicates(values)
 
-    def guess_possible_old_dropdown_values(self) -> list[str]:
+    def guess_possible_old_dropdown_values(self) -> list[Any]:
+        """
+        Guess all the possible values for a dropdown value in first representation without context.
+
+        Returns:
+            a list of possible values
+        """
         dropdown_type_info = self.get_type_info()
         values = []
         for value in dropdown_type_info.old_direct_values:
@@ -419,44 +458,52 @@ class DropdownType(PypenguinEnum):
                 values.append(value[0])
             else:
                 values.append(value)
-        for behaviour in dropdown_type_info.behaviours:
+        for behaviour in dropdown_type_info.rules:
             match behaviour:
-                case DDB.STAGE:
+                case DropdownValueRule.STAGE:
                     values.append("_stage_")
-                case DDB.OTHER_SPRITE:
+                case DropdownValueRule.OTHER_SPRITE:
                     values.append("_stage_")
-                case DDB.OTHER_SPRITE_EXCEPT_STAGE:
+                case DropdownValueRule.OTHER_SPRITE_EXCEPT_STAGE:
                     pass
-                case DDB.MYSELF:
+                case DropdownValueRule.MYSELF:
                     values.append("_myself_")
-                case DDB.MYSELF_IF_SPRITE:
+                case DropdownValueRule.MYSELF_IF_SPRITE:
                     values.append("_myself_")
                 
-                case DDB.MOUSE_POINTER:
+                case DropdownValueRule.MOUSE_POINTER:
                     values.append("_mouse_")
-                case DDB.EDGE:
+                case DropdownValueRule.EDGE:
                     values.append("_edge_")
                 
-                case DDB.RANDOM_POSITION:
+                case DropdownValueRule.RANDOM_POSITION:
                     values.append("_random_")
                 
                 
-                case DDB.MUTABLE_SPRITE_PROPERTY:
+                case DropdownValueRule.MUTABLE_SPRITE_PROPERTY:
                     values.extend(["backdrop", "volume"])
                     values.extend(["x position", "y position", "direction", "costume", "size", "volume"])
-                case DDB.READABLE_SPRITE_PROPERTY:
+                case DropdownValueRule.READABLE_SPRITE_PROPERTY:
                     values.extend(["backdrop #", "backdrop name", "volume"])
                     values.extend(["x position", "y position", "direction", "costume #", "costume name", "layer", "size", "volume"])
                 
-                case (DDB.COSTUME  | DDB.BACKDROP | DDB.SOUND 
-                    | DDB.VARIABLE | DDB.LIST     | DDB.BROADCAST | DDB.FONT):
+                case (DropdownValueRule.COSTUME  | DropdownValueRule.BACKDROP | DropdownValueRule.SOUND 
+                    | DropdownValueRule.VARIABLE | DropdownValueRule.LIST     | DropdownValueRule.BROADCAST_MSG | DropdownValueRule.FONT):
                         pass # Can't be guessed
-                case _: raise ValueError()
         if dropdown_type_info.fallback is not None:
             values.append((DropdownValueKind.FALLBACK, dropdown_type_info.fallback))
         return remove_duplicates(values)
 
-    def translate_old_to_new_value(self, old_value: str) -> tuple:
+    def translate_old_to_new_value(self, old_value: Any) -> tuple[DropdownValueKind, Any]:
+        """
+        Translate a dropdown value from first representation into a SRDropdownValue expressed as a tuple.
+
+        Args:
+            old_value: dropdown value in first representation
+        
+        Returns:
+            the SRDropdownValue as a tuple => (kind, value)
+        """
         # TODO: add special case for this
         if self == DropdownType.EXPANDED_MINIMIZED and old_value == "FALSE": # To patch a mistake of the pen extension dev
             old_value = False

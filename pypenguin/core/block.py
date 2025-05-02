@@ -41,10 +41,10 @@ class FRBlock(GreprClass):
     @classmethod
     def from_data(cls, data: dict[str, Any], info_api: OpcodeInfoAPI) -> "FRBlock":
         """
-        Deserializes raw data into a FRBlock
+        Deserializes raw data into a FRBlock.
         
         Args:
-            data: the raw data(dict)
+            data: the raw data
             info_api: the opcode info api used to fetch information about opcodes
         
         Returns:

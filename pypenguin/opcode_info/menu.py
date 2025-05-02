@@ -1,4 +1,7 @@
 class MenuInfo:
+    """
+    The information about a menu in an input.
+    """
     _grepr = True
     _grepr_fields = ["opcode", "inner"]
     

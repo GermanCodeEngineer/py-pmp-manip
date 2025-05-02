@@ -5,6 +5,9 @@ from utility import GreprClass
 
 @dataclass(repr=False)
 class FRMeta(GreprClass):
+    """
+    The first representation for the metadata of a project
+    """
     _grepr = True
     _grepr_fields = ["semver", "vm", "agent", "platform"]
     
@@ -15,6 +18,15 @@ class FRMeta(GreprClass):
 
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRMeta":
+        """
+        Deserializes raw data into a FRMeta.
+        
+        Args:
+            data: the raw data
+        
+        Returns:
+            the FRMeta
+        """
         return cls(
             semver = data["semver"],
             vm     = data["vm"    ],
@@ -24,6 +36,9 @@ class FRMeta(GreprClass):
 
 @dataclass(repr=False)
 class FRPlatformMeta(GreprClass):
+    """
+    The first representation for the metadata of the platform, which is specified in the meta of the project
+    """
     _grepr = True
     _grepr_fields = ["name", "url", "version"]
     
@@ -33,6 +48,15 @@ class FRPlatformMeta(GreprClass):
 
     @classmethod
     def from_data(cls, data: dict[str, str]) -> "FRPlatformMeta":
+        """
+        Deserializes raw data into a FRPlatformMeta.
+        
+        Args:
+            data: the raw data
+        
+        Returns:
+            the FRPlatformMeta
+        """
         return cls(
             name    = data["name"   ],
             url     = data["url"    ],

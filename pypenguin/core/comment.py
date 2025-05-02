@@ -23,7 +23,7 @@ class FRComment(GreprClass):
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRComment":
         """
-        Deserializes raw data into a FRComment
+        Deserializes raw data into a FRComment.
         
         Args:
             data: the raw data

@@ -10,13 +10,15 @@ from core.dropdown      import SRDropdownValue
 from core.extension     import SRExtension, SRCustomExtension, SRBuiltinExtension
 from core.meta          import FRMeta
 from core.monitor       import FRMonitor, SRMonitor
-from core.enums import SRTTSLanguage, SRVideoState
+from core.enums         import SRTTSLanguage, SRVideoState
 from core.target        import FRTarget, FRStage, FRSprite, SRStage, SRSprite
 from core.vars_lists    import SRVariable, SRList
 
 @dataclass(repr=False)
 class FRProject(GreprClass): 
-    """The first representation (FR) of the project data tree. Its data is equivalent to the data stored in a .pmp file."""
+    """
+    The first representation (FR) of the project data tree. Its data is equivalent to the data stored in a .pmp file.
+    """
     _grepr = True
     _grepr_fields = ["targets", "monitors", "extension_data", "extensions", "extension_urls", "meta"]
 
@@ -28,43 +30,77 @@ class FRProject(GreprClass):
     meta: FRMeta
 
     def __post_init__(self) -> None:
+        """
+        Ensure my assumption about extension_data was correct.
+        
+        Returns:
+            None
+        """
         if self.extension_data != {}: raise ThanksError()
 
     @classmethod
-    def from_data(cls, project_data: dict, info_api: OpcodeInfoAPI):
-        #with open("extracted.json", "w") as file:
-        #    dump(project_data, file, indent=4)
+    def from_data(cls, data: dict, info_api: OpcodeInfoAPI):
+        """
+        Deserializes raw data into a FRProject.
         
+        Args:
+            data: the raw data
+            info_api: the opcode info api used to fetch information about opcodes
+        
+        Returns:
+            the FRProject
+        """
         return cls(
             targets = [
                 (FRStage if i==0 else FRSprite).from_data(target_data, info_api=info_api)
-                for i, target_data in enumerate(project_data["targets"])
+                for i, target_data in enumerate(data["targets"])
             ],
             monitors = [
                 FRMonitor.from_data(monitor_data) 
-                for monitor_data in project_data["monitors"]
+                for monitor_data in data["monitors"]
             ],
-            extension_data = project_data["extensionData"],
-            extensions     = project_data["extensions"   ],
-            extension_urls = project_data.get("extensionURLs", {}),
-            meta           = FRMeta.from_data(project_data["meta"]),
+            extension_data = data.get("extensionData", {}),
+            extensions     = data["extensions"   ],
+            extension_urls = data.get("extensionURLs", {}),
+            meta           = FRMeta.from_data(data["meta"]),
         )
 
     @classmethod
     def from_pmp_file(cls, file_path: str, info_api: OpcodeInfoAPI) -> "FRProject":
+        """
+        Reads project data from a PenguinMod Project file(.pmp) and creates a FRProject from it.
+
+        Args:
+            file_path: file path to the .pmp file
+            info_api: the opcode info api used to fetch information about opcodes
+        
+        Returns:
+            None
+        """
         assert file_path.endswith(".pmp")
         project_data = loads(read_file_of_zip(file_path, "project.json"))
         return cls.from_data(project_data, info_api=info_api)
     
     @classmethod
     def from_sb3_file(cls, file_path: str, info_api: OpcodeInfoAPI):
+        """
+        Reads project data from a Scratch Project file(.sb3) and creates a FRProject from it.
+
+        Args:
+            file_path: file path to the .sb3 file
+            info_api: the opcode info api used to fetch information about opcodes
+        
+        Returns:
+            None
+        """
+        assert file_path.endswith(".sb3")
+        project_data = loads(read_file_of_zip(file_path, "project.json"))
         # TODO: 
         # - test this method + test sprite id 
         # - test custom block type of sb3's defaulting to "statement"
-        assert file_path.endswith(".sb3")
-        project_data = loads(read_file_of_zip(file_path, "project.json"))
-        for i, sprite_data in enumerate(project_data["targets"]):
-            sprite_data["customVars"] = []
+
+        #for i, sprite_data in enumerate(project_data["targets"]):
+            #sprite_data["customVars"] = []
             #if i == 0:
             #    token = stringToToken("_stage_")
             #else:
@@ -76,7 +112,7 @@ class FRProject(GreprClass):
             #    if block_data["opcode"] == "procedures_prototype":
             #        block_data["mutation"]["optype"] = json.dumps("statement") # Scratch custom blocks are always "instruction" blocks
         
-        project_data["extensionData"] = {}
+        #project_data["extensionData"] = {}
     
         #project_data["meta"] = {
         #    "semver": "3.0.0",
@@ -91,15 +127,24 @@ class FRProject(GreprClass):
         return cls.from_data(project_data, info_api=info_api)
 
     def step(self, info_api: OpcodeInfoAPI):
+        """
+        Converts a FRProject into a SRProject.
+        
+        Args:
+            info_api: the opcode info api used to fetch information about opcodes
+        
+        Returns:
+            the SRProject
+        """
         new_sprites: list[SRSprite] = []
         for target in self.targets:
             if  target.is_stage:
                 old_stage: FRStage = target
                 (
                     new_stage, all_sprite_variables, all_sprite_lists,
-                ) = target.step(info_api)
-                new_stage: SRStage
+                ) = old_stage.step(info_api)
             else:
+                target: FRSprite
                 new_sprite, _, _ = target.step(info_api)
                 new_sprite: SRSprite
                 new_sprites.append(new_sprite)
@@ -145,10 +190,11 @@ class FRProject(GreprClass):
             extensions              = new_extensions,
         )
 
+
 @dataclass(repr=False)
 class SRProject(GreprClass):
     """
-    The SR (Second Representation) of a Scratch/PenguinMod Project.
+    The second representation (SR) of a Scratch/PenguinMod Project.
     """
     _grepr = True
     _grepr_fields = ["stage", "sprites", "all_sprite_variables", "all_sprite_lists", "tempo", "video_transparency", "video_state", "text_to_speech_language", "global_monitors", "extensions"]
@@ -167,6 +213,12 @@ class SRProject(GreprClass):
     def validate_var_names(self, path: list) -> None:
         """
         Ensures no variables with the same name exist.
+
+        Args:
+            path: the path from the project to itself. Used for better errors
+        
+        Returns:
+            None
         """
         defined_variables = {}
         for i, variable in enumerate(self.all_sprite_variables):
@@ -187,6 +239,12 @@ class SRProject(GreprClass):
     def validate_list_names(self, path: list) -> None:
         """
         Ensures no lists with the same name exist.
+
+        Args:
+            path: the path from the project to itself. Used for better errors
+        
+        Returns:
+            None
         """
         defined_lists = {}
         for i, list_ in enumerate(self.all_sprite_lists):
@@ -205,6 +263,17 @@ class SRProject(GreprClass):
                 defined_lists[list_.name] = current_path
 
     def validate_sprites(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
+        """
+        Ensure the sprites of a SRProject are valid, raise ValidationError if not.
+        
+        Args:
+            path: the path from the project to itself. Used for better errors
+            config: Configuration for Validation Behaviour
+            info_api: the opcode info api used to fetch information about opcodes
+        
+        Returns:
+            None
+        """
         # Validate sprites and their layer orders
         layer_orders: dict[int, list] = {}
         for i, sprite in enumerate(self.sprites):
@@ -225,11 +294,16 @@ class SRProject(GreprClass):
                 raise LayerOrderError(current_path, f"layer_order should start at 1 and then increase for each sprite in order from back to front. It should be {next_layer_order} here")
             next_layer_order += 1
 
-        
-
     def validate(self, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
         """
-        Checks wether a SRProject is valid and raises a subclass of ValidationError if not.
+        Ensure a SRProject is valid, raise ValidationError if not.
+        
+        Args:
+            config: Configuration for Validation Behaviour
+            info_api: the opcode info api used to fetch information about opcodes
+        
+        Returns:
+            None
         """
         path = []
         AA_TYPE(self, path, "stage", SRStage)
@@ -315,7 +389,7 @@ class SRProject(GreprClass):
                 )
         
         for i, monitor in enumerate(self.global_monitors):
-            monitor.validate_dropdowns_values(
+            monitor.validate_dropdown_values(
                 path     = path+["global_monitors", i], 
                 info_api = info_api, 
                 context  = global_context,

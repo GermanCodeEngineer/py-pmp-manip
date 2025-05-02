@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from re          import split 
 
-from utility import GreprClass, PypenguinEnum, SameNameTwiceError, ValidationConfig
-from utility import AA_TYPE, AA_TUPLE_OF_TYPES, AA_MIN_LEN, AA_NOT_ONE_OF
+from utility import GreprClass, PypenguinEnum, SameNameTwiceError, ValidationConfig, FSCError
+from utility import AA_TYPE, AA_TUPLE_OF_TYPES, AA_MIN_LEN
 
 from opcode_info import InputType, OpcodeType
 
@@ -108,8 +108,8 @@ class SRCustomBlockArgumentType(PypenguinEnum):
     """
     The second representation for a argument type of a custom opcode argument
     """
-    @staticmethod
-    def get_by_default(default) -> "SRCustomBlockArgumentType":
+    @classmethod
+    def get_by_default(cls, default: str) -> "SRCustomBlockArgumentType":
         """
         Gets the argument type based on its default value.
         
@@ -121,9 +121,9 @@ class SRCustomBlockArgumentType(PypenguinEnum):
         """
         match default:
             case "":
-                return SRCustomBlockArgumentType.STRING_NUMBER
+                return cls.STRING_NUMBER
             case "false":
-                return SRCustomBlockArgumentType.BOOLEAN
+                return cls.BOOLEAN
     
     def get_corresponding_input_type(self) -> InputType:
         """
@@ -145,25 +145,23 @@ class SRCustomBlockOptype(PypenguinEnum):
     """
     The second representation for the operation type of a custom block
     """
-    @staticmethod
-    def from_string(string: str | None) -> "SRCustomBlockOptype":
+    @classmethod
+    def from_code(cls, code: str | None) -> "SRCustomBlockOptype":
         """
-        Gets the argument type based on its equivalent string.
+        Gets the argument type based on its equivalent code.
         
         Args:
-            string: the equivalent string
+            code: the equivalent code
         
         Returns:
             the optype
         """
-        match string:
-            case None       : return SRCustomBlockOptype.STATEMENT
-            case "statement": return SRCustomBlockOptype.STATEMENT
-            case "end"      : return SRCustomBlockOptype.ENDING_STATEMENT
-            case "string"   : return SRCustomBlockOptype.STRING_REPORTER
-            case "number"   : return SRCustomBlockOptype.NUMBER_REPORTER
-            case "boolean"  : return SRCustomBlockOptype.BOOLEAN_REPORTER
-            case _: raise ValueError()
+        if code == None:
+            return cls.STATEMENT
+        for value, optype_candidate in cls._value2member_map_.items():
+            if value[1] == code:
+                return optype_candidate
+        raise FSCError(f"Couldn't find video state enum for video state code: {repr(code)}")
 
     def is_reporter(self) -> bool:
         """
@@ -183,9 +181,9 @@ class SRCustomBlockOptype(PypenguinEnum):
         """
         return OpcodeType._member_map_[self.name]
 
-    STATEMENT         = (False, 0)
-    ENDING_STATEMENT  = (False, 1)
+    STATEMENT         = (False, "statement")
+    ENDING_STATEMENT  = (False, "end"      )
     
-    STRING_REPORTER   = (True , 2)
-    NUMBER_REPORTER   = (True , 3)
-    BOOLEAN_REPORTER  = (True , 4)
+    STRING_REPORTER   = (True , "string"   )
+    NUMBER_REPORTER   = (True , "number"   )
+    BOOLEAN_REPORTER  = (True , "boolean"  )
