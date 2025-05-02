@@ -23,10 +23,13 @@ class FRComment(GreprClass):
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRComment":
         """
-        Deserializes raw data into a FRBlock
-        :param data: the raw data(dict)
-        :param info_api: the opcode info api used to fetch information about opcodes
-        :return: the FRBlock
+        Deserializes raw data into a FRComment
+        
+        Args:
+            data: the raw data
+        
+        Returns:
+            the FRComment
         """
         return cls(
             block_id  = data["blockId"  ],
@@ -41,7 +44,9 @@ class FRComment(GreprClass):
     def step(self) -> tuple[bool, "SRComment"]:
         """
         Converts a FRComment into a SRComment
-        :return: wether it is an attached comment and the SRComment
+        
+        Returns:
+            wether it is an attached comment(True) or a floating comment(False) and the SRComment
         """
         position = (self.x, self.y)
         size = (self.width, self.height)
@@ -68,9 +73,13 @@ class SRComment(GreprClass):
     
     def validate(self, path: list, config: ValidationConfig) -> None:
         """
-        Ensure a SRComment is valid, raises if not.
-        :param config: Configuration for Validation Behaviour
-        :return: None
+        Ensure a SRComment is valid, raise ValidationError if not.
+        
+        Args:
+            config: Configuration for Validation Behaviour
+        
+        Returns:
+            None
         """
         AA_COORD_PAIR(self, path, "position")
         AA_COORD_PAIR(self, path, "size")

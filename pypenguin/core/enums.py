@@ -1,80 +1,94 @@
-from utility import PypenguinEnum
+from utility import PypenguinEnum, FSCError
 
 class SRTTSLanguage(PypenguinEnum):    
-    @staticmethod
-    def from_string(string: str):
-        match string:
-            case "ar"    : return SRTTSLanguage.ARABIC
-            case "zh-cn" : return SRTTSLanguage.CHINESE_MANDARIN
-            case "da"    : return SRTTSLanguage.DANISH
-            case "nl"    : return SRTTSLanguage.DUTCH
-            case "en"    : return SRTTSLanguage.ENGLISH
-            case "fr"    : return SRTTSLanguage.FRENCH
-            case "de"    : return SRTTSLanguage.GERMAN
-            case "hi"    : return SRTTSLanguage.HINDI
-            case "is"    : return SRTTSLanguage.ICELANDIC
-            case "it"    : return SRTTSLanguage.ITALIAN
-            case "ja"    : return SRTTSLanguage.JAPANESE
-            case "ko"    : return SRTTSLanguage.KOREAN
-            case "nb"    : return SRTTSLanguage.NORWEGIAN
-            case "pl"    : return SRTTSLanguage.POLISH
-            case "pt-br" : return SRTTSLanguage.PORTUGUESE_BRAZILIAN
-            case "pt"    : return SRTTSLanguage.PORTUGUESE
-            case "ro"    : return SRTTSLanguage.ROMANIAN
-            case "ru"    : return SRTTSLanguage.RUSSIAN
-            case "es"    : return SRTTSLanguage.SPANISH
-            case "es-419": return SRTTSLanguage.SPANISH_LATIN_AMERICAN
-            case "sv"    : return SRTTSLanguage.SWEDISH
-            case "tr"    : return SRTTSLanguage.TURKISH
-            case "cy"    : return SRTTSLanguage.WELSH
-            case _: raise ValueError()
+    """
+    The second representation for a text to speech language
+    """
 
-    ARABIC                 =  0
-    CHINESE_MANDARIN       =  1
-    DANISH                 =  2
-    DUTCH                  =  3
-    ENGLISH                =  4
-    FRENCH                 =  5
-    GERMAN                 =  6
-    HINDI                  =  7
-    ICELANDIC              =  8
-    ITALIAN                =  9
-    JAPANESE               = 10
-    KOREAN                 = 11
-    NORWEGIAN              = 12
-    POLISH                 = 13
-    PORTUGUESE_BRAZILIAN   = 14
-    PORTUGUESE             = 15
-    ROMANIAN               = 16
-    RUSSIAN                = 17
-    SPANISH                = 18
-    SPANISH_LATIN_AMERICAN = 19
-    SWEDISH                = 20
-    TURKISH                = 21
-    WELSH                  = 22
+    @classmethod
+    def from_code(cls, code: str) -> "SRTTSLanguage":
+        """
+        Gets the equivalent language enum by its scratch language code.
+        
+        Args:
+            code: the language code
+        
+        Returns:
+            the language enum
+        """
+        if code in cls._value2member_map_:
+            return cls._value2member_map_[code]
+        raise FSCError(f"Couldn't find language enum for language code: {repr(code)}")
+        
+    ARABIC                 = "ar"
+    CHINESE_MANDARIN       = "zh-cn"
+    DANISH                 = "da"
+    DUTCH                  = "nl"
+    ENGLISH                = "en"
+    FRENCH                 = "fr"
+    GERMAN                 = "de"
+    HINDI                  = "hi"
+    ICELANDIC              = "is"
+    ITALIAN                = "it"
+    JAPANESE               = "ja"
+    KOREAN                 = "ko"
+    NORWEGIAN              = "nb"
+    POLISH                 = "pl"
+    PORTUGUESE_BRAZILIAN   = "pt-br"
+    PORTUGUESE             = "pt"
+    ROMANIAN               = "ro"
+    RUSSIAN                = "ru"
+    SPANISH                = "es"
+    SPANISH_LATIN_AMERICAN = "es-419"
+    SWEDISH                = "sv"
+    TURKISH                = "tr"
+    WELSH                  = "cy"
     
 class SRVideoState(PypenguinEnum):
-    @staticmethod
-    def from_string(value: str) -> "SRVideoState":
-        if   value == "on"        : return SRVideoState.ON
-        elif value == "on flipped": return SRVideoState.ON_FLIPPED
-        elif value == "off"       : return SRVideoState.OFF
-        else: raise ValueError(f"Invalid video state: {value}")
+    """
+    The second representation for the video state of a project
+    """
 
-    ON         = 0
-    ON_FLIPPED = 1
-    OFF        = 2
+    @classmethod
+    def from_code(cls, code: str) -> "SRVideoState":
+        """
+        Gets the equivalent video state enum by its video state code.
+        
+        Args:
+            code: the video state code
+        
+        Returns:
+            the video state enum
+        """
+        if code in cls._value2member_map_:
+            return cls._value2member_map_[code]
+        raise FSCError(f"Couldn't find video state enum for video state code: {repr(code)}")
+    
+    ON         = "on"
+    ON_FLIPPED = "on flipped"
+    OFF        = "off"
 
 class SRSpriteRotationStyle(PypenguinEnum):
-    @staticmethod
-    def from_string(string: str):
-        match string:
-            case "all around"  : return SRSpriteRotationStyle.ALL_AROUND
-            case "left-right"  : return SRSpriteRotationStyle.LEFT_RIGHT
-            case "don't rotate": return SRSpriteRotationStyle.DONT_ROTATE
-            case _: raise ValueError()
+    """
+    The second representation for the rotation style of a sprite
+    """
 
-    ALL_AROUND  = 0
-    LEFT_RIGHT  = 1
-    DONT_ROTATE = 2
+    @classmethod
+    def from_code(cls, code: str) -> "SRSpriteRotationStyle":
+        """
+        Gets the equivalent rotation style enum by its rotation style code.
+        
+        Args:
+            code: the rotation style code
+        
+        Returns:
+            the rotation style enum
+        """
+        if code in cls._value2member_map_:
+            return cls._value2member_map_[code]
+        raise FSCError(f"Couldn't find rotation style enum for rotation style code: {repr(code)}")
+
+    ALL_AROUND  = "all around"
+    LEFT_RIGHT  = "left-right"
+    DONT_ROTATE = "don't rotate"
 

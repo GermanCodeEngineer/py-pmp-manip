@@ -118,7 +118,7 @@ class FRProject(GreprClass):
         if old_stage.text_to_speech_language is None:
             new_tts_language = None
         else:
-            new_tts_language = SRTTSLanguage.from_string(old_stage.text_to_speech_language)
+            new_tts_language = SRTTSLanguage.from_code(old_stage.text_to_speech_language)
         
         new_extensions = []
         for extension_id in self.extensions:
@@ -139,7 +139,7 @@ class FRProject(GreprClass):
             all_sprite_lists        = all_sprite_lists,
             tempo                   = old_stage.tempo,
             video_transparency      = old_stage.video_transparency,
-            video_state             = SRVideoState.from_string(old_stage.video_state),
+            video_state             = SRVideoState.from_code(old_stage.video_state),
             text_to_speech_language = new_tts_language,
             global_monitors         = global_monitors,
             extensions              = new_extensions,

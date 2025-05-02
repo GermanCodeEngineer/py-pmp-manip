@@ -12,7 +12,6 @@ class SRCustomBlockOpcode(GreprClass):
     The second representation for the "custom opcode" of a custom block. 
     It stores the segments, which can be either a string(=> a label) or a SRCustomBlockArgument with name and type
     """
-
     _grepr = True
     _grepr_fields = ["segments"]
 
@@ -22,9 +21,13 @@ class SRCustomBlockOpcode(GreprClass):
     def from_proccode_argument_names(cls, proccode: str, argument_names: list[str]) -> "SRCustomBlockOpcode":
         """
         Creates a custom block opcode given the procedure code and the argument names.
-        :param proccode: the procedure core
-        :param argument_names: the names of the arguments
-        :return: the custom block opcode
+        
+        Args:
+            proccode: the procedure core
+            argument_names: the names of the arguments
+        
+        Returns:
+            the custom block opcode
         """
         parts = split(r'(%s|%n|%b)', proccode)
         segments = []
@@ -45,7 +48,9 @@ class SRCustomBlockOpcode(GreprClass):
     def get_corresponding_input_types(self) -> dict[str, InputType]:
         """
         Fetches the argument ids and types.
-        :return: a dict mapping the argument ids to their types
+        
+        Returns:
+            a dict mapping the argument ids to their types
         """
         return {
             segment.name: segment.type.get_corresponding_input_type() 
@@ -54,9 +59,13 @@ class SRCustomBlockOpcode(GreprClass):
     
     def validate(self, path: list, config: ValidationConfig) -> None:
         """
-        Ensures the custom block opcode is valid, raises if not.
-        :param config: Configuration for Validation Behaviour
-        :return: None
+        Ensures the custom block opcode is valid, raise if not.
+        
+        Args:
+            config: Configuration for Validation Behaviour
+        
+        Returns:
+            None
         """
         AA_TUPLE_OF_TYPES(self, path, "segments", (str, SRCustomBlockArgument))
         AA_MIN_LEN(self, path, "segments", min_len=1)
@@ -84,9 +93,13 @@ class SRCustomBlockArgument(GreprClass):
 
     def validate(self, path: list, config: ValidationConfig) -> None:
         """
-        Ensures the custom block argument is valid, raises if not.
-        :param config: Configuration for Validation Behaviour
-        :return: None
+        Ensures the custom block argument is valid, raise if not.
+        
+        Args:
+            config: Configuration for Validation Behaviour
+        
+        Returns:
+            None
         """
         AA_TYPE(self, path, "name", str)
         AA_TYPE(self, path, "type", SRCustomBlockArgumentType)
@@ -99,8 +112,12 @@ class SRCustomBlockArgumentType(PypenguinEnum):
     def get_by_default(default) -> "SRCustomBlockArgumentType":
         """
         Gets the argument type based on its default value.
-        :param default: the default value
-        :return: the argument type
+        
+        Args:
+            default: the default value
+        
+        Returns:
+            the argument type
         """
         match default:
             case "":
@@ -111,7 +128,9 @@ class SRCustomBlockArgumentType(PypenguinEnum):
     def get_corresponding_input_type(self) -> InputType:
         """
         Gets the equivalent input type.
-        :return: the input type
+        
+        Returns:
+            the input type
         """
         match self:
             case SRCustomBlockArgumentType.STRING_NUMBER:
@@ -130,8 +149,12 @@ class SRCustomBlockOptype(PypenguinEnum):
     def from_string(string: str | None) -> "SRCustomBlockOptype":
         """
         Gets the argument type based on its equivalent string.
-        :param string: the equivalent string
-        :return: the optype
+        
+        Args:
+            string: the equivalent string
+        
+        Returns:
+            the optype
         """
         match string:
             case None       : return SRCustomBlockOptype.STATEMENT
@@ -145,14 +168,18 @@ class SRCustomBlockOptype(PypenguinEnum):
     def is_reporter(self) -> bool:
         """
         Returns wether the optype is a reporter optype
-        :return: wether the optype is a reporter optype
+        
+        Returns:
+            wether the optype is a reporter optype
         """
         return self.value[0]
 
     def get_corresponding_opcode_type(self) -> OpcodeType:
         """
         Returns the corresponding opcode type
-        :return: the corresponding opcode type
+        
+        Returns:
+            the corresponding opcode type
         """
         return OpcodeType._member_map_[self.name]
 

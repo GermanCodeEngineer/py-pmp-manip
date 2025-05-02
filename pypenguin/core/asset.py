@@ -22,6 +22,15 @@ class FRCostume(GreprClass):
 
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRCostume":
+        """
+        Deserializes raw data into a FRSound
+        
+        Args:
+            data: the raw data
+        
+        Returns:
+            the FRSound
+        """
         return cls(
             name              = data["name"           ],
             asset_id          = data["assetId"        ],
@@ -33,6 +42,12 @@ class FRCostume(GreprClass):
         )
 
     def step(self) -> "SRCostume":
+        """
+        Converts a FRComment into a SRComment
+        
+        Returns:
+            the SRComment
+        """
         return SRCostume(
             name              = self.name,
             file_extension    = self.data_format,
@@ -57,6 +72,15 @@ class FRSound(GreprClass):
     
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRSound":
+        """
+        Deserializes raw data into a FRSound
+        
+        Args:
+            data: the raw data
+        
+        Returns:
+            the FRSound
+        """
         self = cls(
             name         = data["name"       ],
             asset_id     = data["assetId"    ],
@@ -68,6 +92,12 @@ class FRSound(GreprClass):
         return self
 
     def step(self) -> "SRSound":
+        """
+        Converts a FRSound into a SRSound
+        
+        Returns:
+            the SRSound
+        """
         return SRSound(
             name           = self.name,
             file_extension = self.data_format,
@@ -88,6 +118,16 @@ class SRCostume(GreprClass):
     bitmap_resolution: int
   
     def validate(self, path: list, config: ValidationConfig) -> None:
+        """
+        Ensure a SRCostume is valid, raise ValidationError if not.
+        
+        Args:
+            path: the path from the project to itself. Used for better errors
+            config: Configuration for Validation Behaviour
+        
+        Returns:
+            None
+        """
         AA_TYPE(self, path, "name", str)
         AA_TYPE(self, path, "file_extension", str)
         AA_COORD_PAIR(self, path, "rotation_center")
@@ -106,6 +146,16 @@ class SRSound(GreprClass):
     file_extension: str
     
     def validate(self, path: list, config: ValidationConfig) -> None:
+        """
+        Ensure a SRSound is valid, raise ValidationError if not.
+        
+        Args:
+            path: the path from the project to itself. Used for better errors
+            config: Configuration for Validation Behaviour
+        
+        Returns:
+            None
+        """
         AA_TYPE(self, path, "name", str)
         AA_TYPE(self, path, "file_extension", str)
 

@@ -10,6 +10,9 @@ from core.context import PartialContext
 
 @dataclass(repr=False)
 class SRDropdownValue(GreprClass):
+    """
+    The second representation for a block dropdown, containing a kind and a value
+    """
     _grepr = True
     _grepr_fields = ["kind", "value"]
 
@@ -18,36 +21,61 @@ class SRDropdownValue(GreprClass):
     
     @classmethod
     def from_tuple(cls, data: tuple[DropdownValueKind, Any]) -> "SRDropdownValue":
+        """
+        Deserializes a tuple into a SRDropdownValue
+        
+        Args:
+            data: the raw data
+        
+        Returns:
+            the SRDropdownValue
+        """
         return cls(
             kind=data[0],
             value=data[1],
         )
 
     def validate(self, path: list, config: ValidationConfig) -> None:
+        """
+        Ensure a SRDropdownValue is structurally valid, raise ValidationError if not.
+        For exact validation, you should additionally call the validate_value method.
+        
+        Args:
+            path: the path from the project to itself. Used for better errors
+            config: Configuration for Validation Behaviour
+        
+        Returns:
+            None
+        """
         AA_TYPE(self, path, "kind", DropdownValueKind)
         AA_JSON_COMPATIBLE(self, path, "value")
 
     def validate_value(self, path: list, dropdown_type: "DropdownType", context: PartialContext) -> None:
-        def make_string(possible_values):
-            return (
-                "No possible values." if possible_values == [] else
-                "".join(["\n- "+repr(value) for value in possible_values])
-            )
+        """
+        Ensures the value of a SRDropdownValue is allowed under given circumstances(context),
+        raise ValidationError if not. 
+        For example, it ensures that only variables are referenced, which actually exist.     
+        For structural validation call the validate method.
         
+        Args:
+            path: the path from the project to itself. Used for better errors
+            config: Configuration for Validation Behaviour
+            context: Context about parts of the project. Used to validate the values of dropdowns.
+        
+        Returns:
+            None
+        """
         possible_values = dropdown_type.calculate_possible_new_dropdown_values(context=context)
         default_kind = dropdown_type.get_default_kind()
-        possible_values_string = make_string(possible_values)
+        possible_values_string = (
+            "No possible values." if possible_values == [] else
+            "".join(["\n- "+repr(value) for value in possible_values])
+        )
         if (self.kind, self.value) not in possible_values:
             if default_kind is None:
                 raise InvalidDropdownValueError(path, f"In this case must be one of these: {possible_values_string}")
             else:
-                self.validate_kind(path, default_kind, message=f"If kind is not {default_kind} must be one of these: {possible_values_string}")
-    
-    def validate_kind(self, path, kind, message=None) -> None:
-        if self.kind != kind:
-            if message == None:
-                message = f"In this case, kind of {self.__class__.__name__} must be {repr(kind)}"
-            raise InvalidDropdownValueError(path, message)
-    
+                if self.kind != default_kind:
+                    raise InvalidDropdownValueError(path, f"If kind is not {default_kind} must be one of these: {possible_values_string}")
 
 

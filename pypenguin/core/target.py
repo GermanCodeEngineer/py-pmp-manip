@@ -269,7 +269,7 @@ class FRSprite(FRTarget):
             size                  = self.size,
             direction             = self.direction,
             is_draggable          = self.draggable,
-            rotation_style        = SRSpriteRotationStyle.from_string(self.rotation_style),
+            rotation_style        = SRSpriteRotationStyle.from_code(self.rotation_style),
         ), None, None)
 
 

@@ -42,9 +42,13 @@ class FRBlock(GreprClass):
     def from_data(cls, data: dict[str, Any], info_api: OpcodeInfoAPI) -> "FRBlock":
         """
         Deserializes raw data into a FRBlock
-        :param data: the raw data(dict)
-        :param info_api: the opcode info api used to fetch information about opcodes
-        :return: the FRBlock
+        
+        Args:
+            data: the raw data(dict)
+            info_api: the opcode info api used to fetch information about opcodes
+        
+        Returns:
+            the FRBlock
         """
         opcode = data["opcode"]
         opcode_info = info_api.get_info_by_old(opcode)
@@ -81,8 +85,12 @@ class FRBlock(GreprClass):
         ) -> "FRBlock":
         """
         Deserializes a tuple into a FRBlock
-        :param data: the raw data(tuple)
-        :return: the FRBlock
+        
+        Args:
+            data: the raw data
+        
+        Returns:
+            the FRBlock
         """
         if   (len(data) == 3):
             assert parent_id is not None 
@@ -131,9 +139,13 @@ class FRBlock(GreprClass):
     ) -> "TRBlock":
         """
         Converts a FRBlock into a TRBlock
-        :param block_api: API used to fetch information about other blocks
-        :param info_api: the opcode info api used to fetch information about opcodes
-        :return: the TRBlock
+        
+        Args:
+            block_api: API used to fetch information about other blocks
+            info_api: the opcode info api used to fetch information about opcodes
+        
+        Returns:
+            the TRBlock
         """
         opcode_info = info_api.get_info_by_old(self.opcode)
         pre_handler = opcode_info.get_special_case(SpecialCaseType.PRE_FR_STEP)
@@ -176,10 +188,14 @@ class FRBlock(GreprClass):
     ) -> dict[str, "TRInputValue"]:
         """
         Converts the inputs of a FRBlock into the TR Fromat
-        :param block_api: API used to fetch information about other blocks
-        :param info_api: the opcode info api used to fetch information about opcodes
-        :param opcode_info: the Information about the block's opcode
-        :return: the inputs in TR Format
+        
+        Args:
+            block_api: API used to fetch information about other blocks
+            info_api: the opcode info api used to fetch information about opcodes
+            opcode_info: the Information about the block's opcode
+        
+        Returns:
+            the inputs in TR Format
         """
         input_modes = opcode_info.get_old_input_ids_modes(block=self, block_api=block_api)
         
@@ -250,9 +266,13 @@ class TRBlock(GreprClass):
     ) -> tuple[tuple[int|float,int|float] | None, list["SRBlock | str"]]:
         """
         Converts a TRBlock into a SRBlock
-        :param all_blocks: a dictionary of all blocks
-        :param info_api: the opcode info api used to fetch information about opcodes
-        :return: the SRBlock
+        
+        Args:
+            all_blocks: a dictionary of all blocks
+            info_api: the opcode info api used to fetch information about opcodes
+        
+        Returns:
+            the SRBlock
         """
         opcode_info = info_api.get_info_by_old(self.opcode)
         if opcode_info.opcode_type == OpcodeType.MENU: # The attribute is fine because DYNAMIC should never generate MENU
@@ -430,13 +450,17 @@ class SRScript(GreprClass):
         context: CompleteContext,
     ) -> None:
         """
-        Ensure a SRScript is valid, raises if not.
-        :param path: the path from the project to itself. Used for better errors
-        :param config: Configuration for Validation Behaviour
-        :param info_api: the opcode info api used to fetch information about opcodes
-        :param validation_api: API used to fetch information about other blocks 
-        :param context: Context about parts of the project. Used to validate dropdowns
-        :return: None
+        Ensure a SRScript is valid, raise ValidationError if not.
+        
+        Args:
+            path: the path from the project to itself. Used for better errors
+            config: Configuration for Validation Behaviour
+            info_api: the opcode info api used to fetch information about opcodes
+            validation_api: API used to fetch information about other blocks 
+            context: Context about parts of the project. Used to validate the values of dropdowns
+        
+        Returns:
+            None
         """
         AA_COORD_PAIR(self, path, "position")
         AA_LIST_OF_TYPE(self, path, "blocks", SRBlock)
@@ -486,14 +510,18 @@ class SRBlock(GreprClass):
         expects_reporter: bool,
     ) -> None:
         """
-        Ensure a SRBlock is valid, raises if not.
-        :param path: the path from the project to itself. Used for better errors
-        :param config: Configuration for Validation Behaviour
-        :param info_api: the opcode info api used to fetch information about opcodes
-        :param validation_api: API used to fetch information about other blocks 
-        :param context: Context about parts of the project. Used to validate dropdowns
-        :param expects_reporter: Wether this block should be a reporter
-        :return: None
+        Ensure a SRBlock is valid, raise ValidationError if not.
+        
+        Args:
+            path: the path from the project to itself. Used for better errors
+            config: Configuration for Validation Behaviour
+            info_api: the opcode info api used to fetch information about opcodes
+            validation_api: API used to fetch information about other blocks 
+            context: Context about parts of the project. Used to validate dropdowns
+            expects_reporter: Wether this block should be a reporter
+        
+        Returns:
+            None
         """
         AA_TYPE(self, path, "opcode", str)
         AA_DICT_OF_TYPE(self, path, "inputs"   , key_t=str, value_t=SRInputValue   )
@@ -566,12 +594,16 @@ class SRBlock(GreprClass):
     ) -> None:
         """
         Ensure this shape of block is allowed at a specific location.  
-        :param path: the path from the project to itself. Used for better errors
-        :param opcode_type: the opcode type of this block.
-        :param is_top_level: Wether this block is in a script(True) or in a substack(False)
-        :param is_fist: Wether this block is the first in it's script/substack
-        :param is_last: Wether this block is the last in it's script/substack
-        :return: None
+        
+        Args:
+            path: the path from the project to itself. Used for better errors
+            opcode_type: the opcode type of this block.
+            is_top_level: Wether this block is in a script(True) or in a substack(False)
+            is_fist: Wether this block is the first in it's script/substack
+            is_last: Wether this block is the last in it's script/substack
+        
+        Returns:
+            None
         """
         if   opcode_type == OpcodeType.STATEMENT: pass
         elif opcode_type == OpcodeType.ENDING_STATEMENT:
@@ -615,12 +647,17 @@ class SRInputValue(GreprClass, ABC):
         dropdown: SRDropdownValue | None = None,
     ) -> "SRInputValue":
         """
-        Creates an input, given its mode and data.
-        :param mode: the input mode
-        :param blocks: the substack blocks
-        :param block: the block of the input
-        :param text: the text field of the input
-        :param dropdown: the dropdown of the input
+        Creates a SRInputValue, given its mode and data.
+        
+        Args:
+            mode: the input mode
+            blocks: the substack blocks
+            block: the block of the input
+            text: the text field of the input
+            dropdown: the dropdown of the input
+        
+        Returns:
+            the input value
         """
         match mode:
             case InputMode.BLOCK_AND_TEXT | InputMode.BLOCK_AND_MENU_TEXT:
@@ -642,14 +679,18 @@ class SRInputValue(GreprClass, ABC):
         input_type: InputType, 
     ) -> None:
         """
-        Ensures this input is valid, raises if not.
-        :param path: the path from the project to itself. Used for better errors
-        :param config: Configuration for Validation Behaviour
-        :param info_api: the opcode info api used to fetch information about opcodes
-        :param validation_api: API used to fetch information about other blocks 
-        :param context: Context about parts of the project. Used to validate dropdowns
-        :param input_type: the type of this input. Used to valdiate dropdowns
-        :return: None
+        Ensures this input is valid, raise ValidationError if not.
+        
+        Args:
+            path: the path from the project to itself. Used for better errors
+            config: Configuration for Validation Behaviour
+            info_api: the opcode info api used to fetch information about opcodes
+            validation_api: API used to fetch information about other blocks 
+            context: Context about parts of the project. Used to validate dropdowns
+            input_type: the type of this input. Used to valdiate dropdowns
+        
+        Returns:
+            None
         """
         pass
 
@@ -661,13 +702,18 @@ class SRInputValue(GreprClass, ABC):
         context: CompleteContext, 
     ) -> None:
         """
-        Ensures the block of this input is valid, raises if not.
-        :param path: the path from the project to itself. Used for better errors
-        :param config: Configuration for Validation Behaviour
-        :param info_api: the opcode info api used to fetch information about opcodes
-        :param validation_api: API used to fetch information about other blocks 
-        :param context: Context about parts of the project. Used to validate dropdowns
-        :return: None
+        Ensures this input is valid, raise ValidationError if not.
+        
+        Args:
+            path: the path from the project to itself. Used for better errors
+            config: Configuration for Validation Behaviour
+            info_api: the opcode info api used to fetch information about opcodes
+            validation_api: API used to fetch information about other blocks 
+            context: Context about parts of the project. Used to validate dropdowns
+            input_type: the type of this input. Used to valdiate dropdowns
+        
+        Returns:
+            None
         """
         self: SRBlockAndTextInputValue | SRBlockAndDropdownInputValue | SRBlockOnlyInputValue = self
         AA_NONE_OR_TYPE(self, path, "block", SRBlock)
@@ -701,14 +747,18 @@ class SRBlockAndTextInputValue(SRInputValue):
         input_type: InputType, 
     ) -> None:
         """
-        Ensures this input is valid, raises if not.
-        :param path: the path from the project to itself. Used for better errors
-        :param config: Configuration for Validation Behaviour
-        :param info_api: the opcode info api used to fetch information about opcodes
-        :param validation_api: API used to fetch information about other blocks 
-        :param context: Context about parts of the project. Used to validate dropdowns
-        :param input_type: the type of this input. Used to valdiate dropdowns
-        :return: None
+        Ensures this input is valid, raise ValidationError if not.
+        
+        Args:
+            path: the path from the project to itself. Used for better errors
+            config: Configuration for Validation Behaviour
+            info_api: the opcode info api used to fetch information about opcodes
+            validation_api: API used to fetch information about other blocks 
+            context: Context about parts of the project. Used to validate dropdowns
+            input_type: the type of this input. Used to valdiate dropdowns
+        
+        Returns:
+            None
         """
         self.validate_block(
             path           = path,
@@ -738,14 +788,18 @@ class SRBlockAndDropdownInputValue(SRInputValue):
         input_type: InputType, 
     ) -> None:
         """
-        Ensures this input is valid, raises if not.
-        :param path: the path from the project to itself. Used for better errors
-        :param config: Configuration for Validation Behaviour
-        :param info_api: the opcode info api used to fetch information about opcodes
-        :param validation_api: API used to fetch information about other blocks 
-        :param context: Context about parts of the project. Used to validate dropdowns
-        :param input_type: the type of this input. Used to valdiate dropdowns
-        :return: None
+        Ensures this input is valid, raise ValidationError if not.
+        
+        Args:
+            path: the path from the project to itself. Used for better errors
+            config: Configuration for Validation Behaviour
+            info_api: the opcode info api used to fetch information about opcodes
+            validation_api: API used to fetch information about other blocks 
+            context: Context about parts of the project. Used to validate dropdowns
+            input_type: the type of this input. Used to valdiate dropdowns
+        
+        Returns:
+            None
         """
         self.validate_block(
             path           = path,
@@ -782,14 +836,18 @@ class SRBlockOnlyInputValue(SRInputValue):
         input_type: InputType, 
     ) -> None:
         """
-        Ensures this input is valid, raises if not.
-        :param path: the path from the project to itself. Used for better errors
-        :param config: Configuration for Validation Behaviour
-        :param info_api: the opcode info api used to fetch information about opcodes
-        :param validation_api: API used to fetch information about other blocks 
-        :param context: Context about parts of the project. Used to validate dropdowns
-        :param input_type: the type of this input. Used to valdiate dropdowns
-        :return: None
+        Ensures this input is valid, raise ValidationError if not.
+        
+        Args:
+            path: the path from the project to itself. Used for better errors
+            config: Configuration for Validation Behaviour
+            info_api: the opcode info api used to fetch information about opcodes
+            validation_api: API used to fetch information about other blocks 
+            context: Context about parts of the project. Used to validate dropdowns
+            input_type: the type of this input. Used to valdiate dropdowns
+        
+        Returns:
+            None
         """
         self.validate_block(
             path           = path,
@@ -818,14 +876,18 @@ class SRScriptInputValue(SRInputValue):
         input_type: InputType, 
     ) -> None:
         """
-        Ensures this input is valid, raises if not.
-        :param path: the path from the project to itself. Used for better errors
-        :param config: Configuration for Validation Behaviour
-        :param info_api: the opcode info api used to fetch information about opcodes
-        :param validation_api: API used to fetch information about other blocks 
-        :param context: Context about parts of the project. Used to validate dropdowns
-        :param input_type: the type of this input. Used to valdiate dropdowns
-        :return: None
+        Ensures this input is valid, raise ValidationError if not.
+        
+        Args:
+            path: the path from the project to itself. Used for better errors
+            config: Configuration for Validation Behaviour
+            info_api: the opcode info api used to fetch information about opcodes
+            validation_api: API used to fetch information about other blocks 
+            context: Context about parts of the project. Used to validate dropdowns
+            input_type: the type of this input. Used to valdiate dropdowns
+        
+        Returns:
+            None
         """
         AA_LIST_OF_TYPE(self, path, "blocks", SRBlock)
         for i, block in enumerate(self.blocks):
