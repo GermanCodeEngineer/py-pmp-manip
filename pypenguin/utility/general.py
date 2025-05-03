@@ -109,6 +109,7 @@ def ensure_correct_path(_path, target_folder_name="pypenguin"):
 
 # Utility Classes
 from enum import Enum
+from typing import TypeVar, Generic, Iterator
 
 class PypenguinEnum(Enum):
     def __repr__(self):
@@ -118,13 +119,14 @@ class GreprClass:
     def __repr__(self) -> str:
         return grepr(self)
 
-from typing import TypeVar, Generic, Iterator
-
 K1 = TypeVar("K1")
 K2 = TypeVar("K2")
 V  = TypeVar("V" )
 
 class DualKeyDict(Generic[K1, K2, V]):
+    """
+    A custom dictionary system, which allows access by key1 or key2.
+    """
     def __init__(self, data: dict[tuple[K1, K2], V] | None = None, /) -> None:
         self._values  : dict[K1, V ] = {}
         self._k2_to_k1: dict[K2, K1] = {}

@@ -11,6 +11,14 @@ class ThanksError(PypenguinError):
 class PathError(PypenguinError): pass
 
 ###############################################################
+#                ERRORS FOR THE OPCODE INFO API               #
+###############################################################
+
+class OpcodeInfoError(PypenguinError): pass
+class UnknownOpcodeError(OpcodeInfoError): pass
+class SameOpcodeTwiceError(OpcodeInfoError): pass
+
+###############################################################
 #                  ERRORS FOR DESERIALIZATION                 #
 ###############################################################
 

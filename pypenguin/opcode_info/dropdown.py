@@ -1,7 +1,7 @@
 from typing      import Any
 from dataclasses import dataclass, field
 
-from utility import PypenguinEnum, remove_duplicates, BlameDevsError
+from utility import PypenguinEnum, GreprClass, remove_duplicates, BlameDevsError
 
 from core.context import PartialContext, CompleteContext
 
@@ -27,7 +27,7 @@ class DropdownValueKind(PypenguinEnum):
     SOUND          = 12
 
 @dataclass
-class DropdownInfo:
+class DropdownInfo(GreprClass):
     """
     The information about a dropdown of a certain opcode.
     """
@@ -75,7 +75,7 @@ class DropdownValueRule(PypenguinEnum):
 
 
 @dataclass
-class DropdownTypeInfo:
+class DropdownTypeInfo(GreprClass):
     """
     The information about a dropdown type, which can be used for one or many opcodes.
     """

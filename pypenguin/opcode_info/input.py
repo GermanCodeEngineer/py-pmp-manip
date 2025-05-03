@@ -1,11 +1,11 @@
-from utility import PypenguinEnum
+from utility import PypenguinEnum, GreprClass
 from dataclasses import dataclass
 
 from opcode_info.menu     import MenuInfo
 from opcode_info.dropdown import DropdownType
 
 @dataclass
-class InputInfo:
+class InputInfo(GreprClass):
     """
     The information about a input of a certain opcode.
     """
@@ -80,7 +80,6 @@ class InputType(PypenguinEnum):
                 return cls.TEXT
             case "false":
                 return cls.BOOLEAN
-            case _: raise ValueError()
     
     # BLOCK_AND_TEXT
     DIRECTION           = (InputMode.BLOCK_AND_TEXT, 0)

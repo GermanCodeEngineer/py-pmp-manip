@@ -1,4 +1,9 @@
-class MenuInfo:
+from dataclasses import dataclass
+
+from utility import GreprClass
+
+@dataclass
+class MenuInfo(GreprClass):
     """
     The information about a menu in an input.
     """
@@ -7,7 +12,3 @@ class MenuInfo:
     
     opcode: str
     inner : str
-    
-    def __init__(self, opcode: str, inner: str):
-        self.opcode = opcode
-        self.inner  = inner
