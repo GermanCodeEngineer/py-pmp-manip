@@ -81,7 +81,7 @@ class FRSound(GreprClass):
         Returns:
             the FRSound
         """
-        self = cls(
+        return cls(
             name         = data["name"       ],
             asset_id     = data["assetId"    ],
             data_format  = data["dataFormat" ],
@@ -89,7 +89,6 @@ class FRSound(GreprClass):
             rate         = data["rate"       ],
             sample_count = data["sampleCount"],
         )
-        return self
 
     def step(self) -> "SRSound":
         """

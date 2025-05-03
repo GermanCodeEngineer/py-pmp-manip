@@ -231,7 +231,7 @@ class FRCustomBlockCallMutation(FRMutation):
             tag_name     = data["tagName" ],
             children     = data["children"],
             proccode     = data["proccode"],
-            argument_ids = loads(data["argumentids"     ]),
+            argument_ids = loads(data["argumentids"]),
             warp         = warp,
             returns      = loads(data["returns"]),
             edited       = loads(data["edited" ]),

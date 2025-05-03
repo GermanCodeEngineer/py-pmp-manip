@@ -50,6 +50,8 @@ class FRProject(GreprClass):
         Returns:
             the FRProject
         """
+        with open("extraced.json", "w") as file:
+            dump(data, file)
         return cls(
             targets = [
                 (FRStage if i==0 else FRSprite).from_data(target_data, info_api=info_api)
