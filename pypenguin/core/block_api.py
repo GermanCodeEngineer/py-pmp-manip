@@ -6,12 +6,12 @@ from pypenguin.utility import GreprClass, FSCError, ValidationError
 from pypenguin.core.custom_block import SRCustomBlockOpcode
 
 if TYPE_CHECKING:
-    from pypenguin.core.block          import FRBlock, TRBlock, SRBlock, SRScript
+    from pypenguin.core.block          import FRBlock, SRBlock, SRScript
     from pypenguin.core.comment        import SRComment
     from pypenguin.core.block_mutation import FRCustomBlockMutation, SRCustomBlockMutation
 
 @dataclass(repr=False)
-class FRtoTRAPI(GreprClass):
+class FTCAPI(GreprClass):
     """
     An API which allows the access to other blocks in the same target during conversion from first to temporary representation.
     """

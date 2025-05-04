@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from pypenguin.utility import GreprClass, ThanksError, ValidationConfig, FSCError, DeserializationError
 from pypenguin.utility import AA_TYPE, AA_HEX_COLOR
 
-from pypenguin.core.block_api import FRtoTRAPI
+from pypenguin.core.block_api import FTCAPI
 from pypenguin.core.custom_block import SRCustomBlockOpcode, SRCustomBlockOptype
 
 @dataclass(repr=False)
@@ -21,7 +21,6 @@ class FRMutation(GreprClass, ABC):
     children: list # always []
 
     def __post_init__(self) -> None:
-        print("1, ", end="")
         """
         Ensure my assumptions about mutations were correct.
         
@@ -31,6 +30,7 @@ class FRMutation(GreprClass, ABC):
         if (self.tag_name != "mutation") or (self.children != []):
             raise ThanksError()
 
+    @classmethod
     @abstractmethod
     def from_data(cls, data: dict[str, Any]) -> "FRMutation":
         """
@@ -44,7 +44,7 @@ class FRMutation(GreprClass, ABC):
         """
 
     @abstractmethod
-    def step(self, block_api: FRtoTRAPI) -> "SRMutation":
+    def step(self, block_api: FTCAPI) -> "SRMutation":
         """
         Convert a mutation from first into second representation.
         
@@ -54,7 +54,6 @@ class FRMutation(GreprClass, ABC):
         Returns:
             the second representation of the mutation
         """
-        pass
 
 @dataclass(repr=False)
 class FRCustomBlockArgumentMutation(FRMutation):
@@ -106,7 +105,7 @@ class FRCustomBlockArgumentMutation(FRMutation):
         """
         self._argument_name = name
     
-    def step(self, block_api: FRtoTRAPI) -> "SRCustomBlockArgumentMutation":
+    def step(self, block_api: FTCAPI) -> "SRCustomBlockArgumentMutation":
         """
         Convert a custom block argument mutation from first into second representation.
         
@@ -172,7 +171,7 @@ class FRCustomBlockMutation(FRMutation):
             color       = tuple(loads(data["color"  ])),
         )
     
-    def step(self, block_api: FRtoTRAPI) -> "SRCustomBlockMutation":
+    def step(self, block_api: FTCAPI) -> "SRCustomBlockMutation":
         """
         Convert a custom block definition mutation from first into second representation.
         
@@ -237,7 +236,7 @@ class FRCustomBlockCallMutation(FRMutation):
             color  = tuple(loads(data["color"  ])),
         )
     
-    def step(self, block_api: FRtoTRAPI) -> "SRCustomBlockCallMutation":
+    def step(self, block_api: FTCAPI) -> "SRCustomBlockCallMutation":
         """
         Convert a custom block call mutation from first into second representation.
         
@@ -281,7 +280,7 @@ class FRStopScriptMutation(FRMutation):
             has_next = loads(data["hasnext"]),
         )
     
-    def step(self, block_api: FRtoTRAPI) -> "SRStopScriptMutation":
+    def step(self, block_api: FTCAPI) -> "SRStopScriptMutation":
         """
         Convert a stop script mutation from first into second representation.
         
@@ -316,7 +315,6 @@ class SRMutation(GreprClass, ABC):
         Returns:
             None
         """
-        pass
 
 @dataclass(repr=False)
 class SRCustomBlockArgumentMutation(SRMutation):

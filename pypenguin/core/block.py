@@ -13,7 +13,7 @@ from pypenguin.core.block_mutation import SRMutation
 from pypenguin.core.comment        import SRComment
 from pypenguin.core.context        import CompleteContext
 from pypenguin.core.dropdown       import SRDropdownValue
-from pypenguin.core.block_api      import FRtoTRAPI, ValidationAPI
+from pypenguin.core.block_api      import FTCAPI, ValidationAPI
 
 @dataclass(repr=False)
 class FRBlock(GreprClass):
@@ -133,7 +133,7 @@ class FRBlock(GreprClass):
         else: raise DeserializationError(f"Invalid constant(first element) for FRBlock conversion: {data[0]}")
 
     def step(self, 
-        block_api: FRtoTRAPI, 
+        block_api: FTCAPI, 
         info_api: OpcodeInfoAPI, 
         own_id: str
     ) -> "TRBlock":
@@ -181,7 +181,7 @@ class FRBlock(GreprClass):
         return new_block
 
     def step_inputs(self, 
-        block_api: FRtoTRAPI, 
+        block_api: FTCAPI, 
         info_api: OpcodeInfoAPI,
         opcode_info: OpcodeInfo,
         own_id: str

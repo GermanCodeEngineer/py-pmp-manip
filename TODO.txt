@@ -1,4 +1,5 @@
 TODOs:
     - complete tests
+    - safely access dictionaries in APIs
     - add "Raises" to docstrings
     - complete deoptimization

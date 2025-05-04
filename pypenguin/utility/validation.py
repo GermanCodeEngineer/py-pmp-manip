@@ -138,8 +138,11 @@ def AA_NOT_ONE_OF(obj, path, attr, forbidden_values, condition=None):
 
 def AA_HEX_COLOR(obj, path, attr, condition=None):
     attr_value, descr = value_and_descr(obj, attr)
-    if (not isinstance(attr_value, str)) or (not bool(re.fullmatch(r'#([0-9a-fA-F]{6})', attr_value))):
-        raise InvalidValueError(path, f"{descr} must be a valid hex color eg. '#FF0956'")
+    msg = f"{descr} must be a valid hex color eg. '#FF0956'"
+    if not isinstance(attr_value, str):
+        raise TypeValidationError(path, msg)
+    if not bool(re.fullmatch(r'#([0-9a-fA-F]{6})', attr_value)):
+        raise InvalidValueError(path, msg)
 
 from urllib.parse import urlparse
 

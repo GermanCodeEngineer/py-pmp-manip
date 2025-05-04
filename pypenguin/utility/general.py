@@ -1,6 +1,4 @@
 # Utility functions
-from copy import copy
-
 def grepr(obj, annotate_fields=True, include_attributes=False, *, indent=4):
     def _format(obj, level=0):
         is_compatible = bool(getattr(obj, "_grepr", False))
@@ -76,11 +74,6 @@ def grepr(obj, annotate_fields=True, include_attributes=False, *, indent=4):
     if indent is not None and not isinstance(indent, str):
         indent = ' ' * indent
     return _format(obj)[0]
-
-def copymodify(obj, attr: str, value):
-    copied_obj = copy(obj)
-    setattr(copied_obj, attr, value)
-    return copied_obj
 
 # Files
 import zipfile

@@ -1,8 +1,10 @@
-from pytest import fixture, raises
+from pytest import fixture
 
-from pypenguin.utility import ValidationConfig, copymodify, TypeValidationError
+from pypenguin.utility import ValidationConfig, TypeValidationError
 
 from pypenguin.core.asset import FRCostume, FRSound, SRCostume, SRSound
+
+from tests.utility import execute_attr_validation_tests
 
 @fixture
 def config():
@@ -97,30 +99,30 @@ def test_srcostume_validate(config):
     )
     costume.validate(path=[], config=config)
     
-    items = [
-        ("name", 5, TypeValidationError),
-        ("file_extension", {}, TypeValidationError),
-        ("rotation_center", [], TypeValidationError),
-        ("bitmap_resolution", "hi", TypeValidationError),
-    ]
-    for attr, value, error in items:
-        modified_costume = copymodify(costume, attr, value)
-        with raises(error):
-            modified_costume.validate(path=[], config=config)
+    execute_attr_validation_tests(
+        obj=costume,
+        attr_tests=[
+            ("name", 5, TypeValidationError),
+            ("file_extension", {}, TypeValidationError),
+            ("rotation_center", [], TypeValidationError),
+            ("bitmap_resolution", "hi", TypeValidationError),
+        ],
+        validate_func=lambda obj: obj.validate(path=[], config=config)
+    )
 
 # SRSound
 def test_srsound_validate(config):
-    costume = SRSound(
+    sound = SRSound(
         name="Hello there!",
         file_extension="wav",
     )
-    costume.validate(path=[], config=config)
+    sound.validate(path=[], config=config)
     
-    sub_tests = [
-        ("name", 5, TypeValidationError),
-        ("file_extension", {}, TypeValidationError),
-    ]
-    for attr, value, error in sub_tests:
-        modified_costume = copymodify(costume, attr, value)
-        with raises(error):
-            modified_costume.validate(path=[], config=config)
+    execute_attr_validation_tests(
+        obj=sound,
+        attr_tests=[
+            ("name", 5, TypeValidationError),
+            ("file_extension", {}, TypeValidationError),
+        ],
+        validate_func=lambda obj: obj.validate(path=[], config=config),
+    )

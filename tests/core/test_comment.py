@@ -1,8 +1,10 @@
 from pytest import fixture, raises
 
-from pypenguin.utility import ValidationConfig, copymodify, TypeValidationError, InvalidValueError
+from pypenguin.utility import ValidationConfig, TypeValidationError, InvalidValueError
 
 from pypenguin.core.comment import FRComment, SRComment
+
+from tests.utility import execute_attr_validation_tests
 
 @fixture
 def config():
@@ -62,8 +64,6 @@ def test_frcomment_step_floating():
     assert srcomment.text == frcomment.text
 
 # SRComment
-from pypenguin.core.comment import SRComment
-
 def test_srcomment_validate(config):
     comment = SRComment(
         position=(10, 10),
@@ -73,15 +73,14 @@ def test_srcomment_validate(config):
     )
     comment.validate(path=[], config=config)
 
-    sub_tests = [
-        ("position", [10], TypeValidationError),
-        ("size", 50, TypeValidationError),
-        ("size", (30, 30), InvalidValueError),  # Too small
-        ("is_minimized", "nope", TypeValidationError),
-        ("text", {}, TypeValidationError),
-    ]
-
-    for attr, value, error in sub_tests:
-        modified = copymodify(comment, attr, value)
-        with raises(error):
-            modified.validate(path=[], config=config)
+    execute_attr_validation_tests(
+        obj=comment,
+        attr_tests=[
+            ("position", [10], TypeValidationError),
+            ("size", 50, TypeValidationError),
+            ("size", (30, 30), InvalidValueError),  # Too small
+            ("is_minimized", "nope", TypeValidationError),
+            ("text", {}, TypeValidationError),
+        ],
+        validate_func=lambda obj: obj.validate(path=[], config=config)
+    )

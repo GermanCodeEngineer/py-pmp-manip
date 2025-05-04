@@ -28,7 +28,7 @@ class SpecialCaseType(PypenguinEnum):
     # block_api will be None for a TRBlock or SRBlock and the block api for a FRBlock
     """
     def example(
-        block: "FRBlock|TRBlock|SRBlock", block_api: "FRtoTRAPI|None"
+        block: "FRBlock|TRBlock|SRBlock", block_api: "FTCAPI|None"
     ) -> DualKeyDict[str, str, InputType]:
         ...
     """
@@ -36,13 +36,13 @@ class SpecialCaseType(PypenguinEnum):
     # Behaviour Handlers
     PRE_FR_STEP = 2 # execure before FRBlock.step
     """
-    def example(block: "FRBlock", block_api: "FRtoTRAPI") -> "FRBlock":
+    def example(block: "FRBlock", block_api: "FTCAPI") -> "FRBlock":
         ...
     """
      
     FR_STEP = 3 # execute instead of FRBlock.step
     """
-    def example(block: "FRBlock", block_api: "FRtoTRAPI") -> "TRBlock":
+    def example(block: "FRBlock", block_api: "FTCAPI") -> "TRBlock":
         ...
     """
     
