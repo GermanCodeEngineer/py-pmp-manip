@@ -21,6 +21,7 @@ class FRMutation(GreprClass, ABC):
     children: list # always []
 
     def __post_init__(self) -> None:
+        print("1, ", end="")
         """
         Ensure my assumptions about mutations were correct.
         
@@ -30,7 +31,7 @@ class FRMutation(GreprClass, ABC):
         if (self.tag_name != "mutation") or (self.children != []):
             raise ThanksError()
 
-    @classmethod
+    @abstractmethod
     def from_data(cls, data: dict[str, Any]) -> "FRMutation":
         """
         Create a mutation from raw data.
@@ -41,10 +42,6 @@ class FRMutation(GreprClass, ABC):
         Returns:
             the mutation
         """
-        return cls(
-            tag_name = data["tagName" ],
-            children = data["children"],
-        )
 
     @abstractmethod
     def step(self, block_api: FRtoTRAPI) -> "SRMutation":
@@ -76,6 +73,7 @@ class FRCustomBlockArgumentMutation(FRMutation):
         Returns:
             None
         """
+        super().__post_init__()
         self._argument_name = None
     
     @classmethod

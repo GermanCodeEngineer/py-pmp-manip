@@ -1,2 +1,4 @@
 TODOs:
-    - complete optimization
+    - complete tests
+    - add "Raises" to docstrings
+    - complete deoptimization
