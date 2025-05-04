@@ -1,4 +1,4 @@
-from utility import removeDuplicates, stringToToken
+from pypenguin.utility import removeDuplicates, stringToToken
 
 from pypenguin.database import inputDefault, inputTextDefault, optionDefault, deoptimizeOptionValue, getDeoptimizedOpcode, getInputType, getOptionType
 

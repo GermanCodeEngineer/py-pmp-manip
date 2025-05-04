@@ -2,13 +2,13 @@ from typing      import Any
 from dataclasses import dataclass
 from math        import inf
 
-from utility           import GreprClass, ValidationConfig
-from utility           import AA_TYPE, AA_TYPES, AA_DICT_OF_TYPE, AA_COORD_PAIR, AA_BOXED_COORD_PAIR, AA_EQUAL, AA_BIGGER_OR_EQUAL, InvalidOpcodeError, MissingDropdownError, UnnecessaryDropdownError
-from opcode_info       import OpcodeInfoAPI, DropdownType
-from important_opcodes import *
+from pypenguin.utility           import GreprClass, ValidationConfig
+from pypenguin.utility           import AA_TYPE, AA_TYPES, AA_DICT_OF_TYPE, AA_COORD_PAIR, AA_BOXED_COORD_PAIR, AA_EQUAL, AA_BIGGER_OR_EQUAL, InvalidOpcodeError, MissingDropdownError, UnnecessaryDropdownError
+from pypenguin.opcode_info       import OpcodeInfoAPI, DropdownType
+from pypenguin.important_opcodes import *
 
-from core.dropdown import SRDropdownValue
-from core.context  import PartialContext
+from pypenguin.core.dropdown import SRDropdownValue
+from pypenguin.core.context  import PartialContext
 
 @dataclass(repr=False)
 class FRMonitor(GreprClass):

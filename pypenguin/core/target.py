@@ -2,21 +2,21 @@ from typing      import Any
 from copy        import deepcopy
 from dataclasses import dataclass
 
-from utility     import GreprClass, ThanksError, ValidationConfig
-from utility     import AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_MIN, AA_RANGE, AA_COORD_PAIR, AA_NOT_ONE_OF, SameNameTwiceError
-from opcode_info import OpcodeInfoAPI, DropdownValueKind
+from pypenguin.utility     import GreprClass, ThanksError, ValidationConfig
+from pypenguin.utility     import AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_MIN, AA_RANGE, AA_COORD_PAIR, AA_NOT_ONE_OF, SameNameTwiceError
+from pypenguin.opcode_info import OpcodeInfoAPI, DropdownValueKind
 
-from core.asset          import FRCostume, FRSound, SRCostume, SRSound
-from core.block          import FRBlock, TRBlock, SRScript, TRBlockReference
-from core.block_mutation import SRCustomBlockMutation
-from core.comment        import FRComment, SRComment
-from core.context        import PartialContext, CompleteContext
-from core.dropdown       import SRDropdownValue
-from core.enums          import SRSpriteRotationStyle
-from core.block_api      import FRtoTRAPI, ValidationAPI
-from core.monitor        import SRMonitor
-from core.vars_lists     import SRVariable, SRVariable, SRVariable, SRCloudVariable
-from core.vars_lists     import SRList, SRList, SRList
+from pypenguin.core.asset          import FRCostume, FRSound, SRCostume, SRSound
+from pypenguin.core.block          import FRBlock, TRBlock, SRScript, TRBlockReference
+from pypenguin.core.block_mutation import SRCustomBlockMutation
+from pypenguin.core.comment        import FRComment, SRComment
+from pypenguin.core.context        import PartialContext, CompleteContext
+from pypenguin.core.dropdown       import SRDropdownValue
+from pypenguin.core.enums          import SRSpriteRotationStyle
+from pypenguin.core.block_api      import FRtoTRAPI, ValidationAPI
+from pypenguin.core.monitor        import SRMonitor
+from pypenguin.core.vars_lists     import SRVariable, SRVariable, SRVariable, SRCloudVariable
+from pypenguin.core.vars_lists     import SRList, SRList, SRList
 
 @dataclass(repr=False)
 class FRTarget(GreprClass):

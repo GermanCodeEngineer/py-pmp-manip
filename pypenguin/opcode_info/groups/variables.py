@@ -1,6 +1,6 @@
-from utility import DualKeyDict
+from pypenguin.utility import DualKeyDict
 
-from opcode_info import OpcodeInfoGroup, OpcodeInfo, OpcodeType, InputInfo, InputType, DropdownInfo, DropdownType, MenuInfo
+from pypenguin.opcode_info import OpcodeInfoGroup, OpcodeInfo, OpcodeType, InputInfo, InputType, DropdownInfo, DropdownType, MenuInfo
 
 variables = OpcodeInfoGroup(name="variables", opcode_info=DualKeyDict({
     ("data_setvariableto", "set [VARIABLE] to (VALUE)"): OpcodeInfo(

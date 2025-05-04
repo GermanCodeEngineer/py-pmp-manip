@@ -1,16 +1,16 @@
 from typing      import TYPE_CHECKING, Type, Iterable
 from dataclasses import dataclass, field
 
-from utility import DualKeyDict, GreprClass, PypenguinEnum, UnknownOpcodeError, SameOpcodeTwiceError
+from pypenguin.utility import DualKeyDict, GreprClass, PypenguinEnum, UnknownOpcodeError, SameOpcodeTwiceError
 
-from opcode_info.input        import InputInfo, InputType, InputMode
-from opcode_info.dropdown     import DropdownInfo
-from opcode_info.special_case import SpecialCase, SpecialCaseType
+from pypenguin.opcode_info.input        import InputInfo, InputType, InputMode
+from pypenguin.opcode_info.dropdown     import DropdownInfo
+from pypenguin.opcode_info.special_case import SpecialCase, SpecialCaseType
 
 if TYPE_CHECKING:
-    from core.block import FRBlock, TRBlock, SRBlock
-    from core.block_api import FRtoTRAPI, ValidationAPI
-    from core.block_mutation import FRMutation, SRMutation
+    from pypenguin.core.block import FRBlock, TRBlock, SRBlock
+    from pypenguin.core.block_api import FRtoTRAPI, ValidationAPI
+    from pypenguin.core.block_mutation import FRMutation, SRMutation
 
 class OpcodeType(PypenguinEnum):
     """

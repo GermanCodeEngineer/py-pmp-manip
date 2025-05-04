@@ -2,18 +2,18 @@ from typing      import Any
 from dataclasses import dataclass, field
 from abc         import ABC, abstractmethod
 
-from utility           import GreprClass, get_closest_matches, ValidationConfig, DeserializationError, FSCError
-from utility           import AA_TYPE, AA_NONE, AA_NONE_OR_TYPE, AA_COORD_PAIR, AA_LIST_OF_TYPE, AA_DICT_OF_TYPE, AA_MIN_LEN, AA_EQUAL
-from utility           import UnnecessaryInputError, MissingInputError, UnnecessaryDropdownError, MissingDropdownError, InvalidOpcodeError, InvalidBlockShapeError
-from opcode_info       import OpcodeInfoAPI, OpcodeInfo, InputType, InputMode, OpcodeType, SpecialCaseType
-from important_opcodes import *
+from pypenguin.utility           import GreprClass, get_closest_matches, ValidationConfig, DeserializationError, FSCError
+from pypenguin.utility           import AA_TYPE, AA_NONE, AA_NONE_OR_TYPE, AA_COORD_PAIR, AA_LIST_OF_TYPE, AA_DICT_OF_TYPE, AA_MIN_LEN, AA_EQUAL
+from pypenguin.utility           import UnnecessaryInputError, MissingInputError, UnnecessaryDropdownError, MissingDropdownError, InvalidOpcodeError, InvalidBlockShapeError
+from pypenguin.opcode_info       import OpcodeInfoAPI, OpcodeInfo, InputType, InputMode, OpcodeType, SpecialCaseType
+from pypenguin.important_opcodes import *
 
-from core.block_mutation import FRMutation
-from core.block_mutation import SRMutation
-from core.comment        import SRComment
-from core.context        import CompleteContext
-from core.dropdown       import SRDropdownValue
-from core.block_api      import FRtoTRAPI, ValidationAPI
+from pypenguin.core.block_mutation import FRMutation
+from pypenguin.core.block_mutation import SRMutation
+from pypenguin.core.comment        import SRComment
+from pypenguin.core.context        import CompleteContext
+from pypenguin.core.dropdown       import SRDropdownValue
+from pypenguin.core.block_api      import FRtoTRAPI, ValidationAPI
 
 @dataclass(repr=False)
 class FRBlock(GreprClass):

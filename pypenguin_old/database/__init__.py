@@ -25,7 +25,7 @@ from pypenguin.database.beautiful.link_bitwise             import opcodes as lin
 from pypenguin.database.beautiful.pm_json                  import opcodes as pm_json
 
 #from pypenguin.utility                           import flipKeysAndValues, removeDuplicates
-from utility import flipKeysAndValues, removeDuplicates
+from pypenguin.utility import flipKeysAndValues, removeDuplicates
 
 import functools, re
 

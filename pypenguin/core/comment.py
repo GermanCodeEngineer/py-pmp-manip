@@ -1,8 +1,8 @@
 from typing      import Any
 from dataclasses import dataclass
 
-from utility import GreprClass, ValidationConfig
-from utility import AA_COORD_PAIR, AA_TYPE, InvalidValueError
+from pypenguin.utility import GreprClass, ValidationConfig
+from pypenguin.utility import AA_COORD_PAIR, AA_TYPE, InvalidValueError
 
 @dataclass(repr=False)
 class FRComment(GreprClass):

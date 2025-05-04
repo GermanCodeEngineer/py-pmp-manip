@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing      import Callable
 
-from utility import PypenguinEnum, GreprClass
+from pypenguin.utility import PypenguinEnum, GreprClass
 
 class SpecialCaseType(PypenguinEnum):
     """

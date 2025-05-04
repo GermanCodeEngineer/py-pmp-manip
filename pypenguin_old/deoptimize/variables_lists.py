@@ -1,4 +1,4 @@
-from utility import stringToToken
+from pypenguin.utility import stringToToken
 
 
 def translateVariables(data, spriteNames):

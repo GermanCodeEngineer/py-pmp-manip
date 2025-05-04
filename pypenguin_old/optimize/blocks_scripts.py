@@ -1,4 +1,4 @@
-from utility import generateCustomOpcode, pp
+from pypenguin.utility import generateCustomOpcode, pp
 from pypenguin.database import getOptimizedOpcode, getDeoptimizedOpcode, getOptimizedInputId, getInputMode, getInputModes, getOptimizedOptionId, getBlockType, optimizeOptionValue, getInputType, getOptionType, inputTextDefault
 
 import copy, json

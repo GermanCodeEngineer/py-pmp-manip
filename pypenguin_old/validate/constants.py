@@ -307,7 +307,7 @@ from jsonschema import validate, exceptions
 
 
 def validateSchema(pathToData, data, schema):
-    from utility import pp
+    from pypenguin.utility import pp
 
     try:
         validate(instance=data, schema=schema)

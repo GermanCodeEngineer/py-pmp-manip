@@ -85,7 +85,7 @@ def copymodify(obj, attr: str, value):
 # Files
 import zipfile
 import os
-from utility.errors import PathError
+from pypenguin.utility.errors import PathError
 
 def read_file_of_zip(zip_path, file_path):
     zip_path = ensure_correct_path(zip_path)

@@ -1,6 +1,6 @@
-from utility import DualKeyDict
+from pypenguin.utility import DualKeyDict
 
-from opcode_info import OpcodeInfoGroup, OpcodeInfo, OpcodeType, InputInfo, InputType, DropdownInfo, DropdownType, MenuInfo
+from pypenguin.opcode_info import OpcodeInfoGroup, OpcodeInfo, OpcodeType, InputInfo, InputType, DropdownInfo, DropdownType, MenuInfo
 
 sensing = OpcodeInfoGroup(name="sensing", opcode_info=DualKeyDict({
     ("sensing_touchingobject", "touching ([OBJECT]) ?"): OpcodeInfo(

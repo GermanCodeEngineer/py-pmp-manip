@@ -1,8 +1,8 @@
 from pytest import fixture, raises
 
-from utility import ValidationConfig, copymodify, TypeValidationError
+from pypenguin.utility import ValidationConfig, copymodify, TypeValidationError
 
-from core.asset import FRCostume, FRSound, SRCostume, SRSound
+from pypenguin.core.asset import FRCostume, FRSound, SRCostume, SRSound
 
 @fixture
 def config():
@@ -31,6 +31,7 @@ RAW_COSTUME_DATA_2 = {
 def test_frcostume_from_data():
     costume_data = RAW_COSTUME_DATA_1
     costume = FRCostume.from_data(costume_data)
+    assert isinstance(costume, FRCostume)
     assert costume.name == costume_data["name"]
     assert costume.asset_id == costume_data["assetId"]
     assert costume.data_format == costume_data["dataFormat"]
@@ -71,6 +72,7 @@ RAW_SOUND_DATA = {
 def test_frsound_from_data():
     sound_data = RAW_SOUND_DATA
     sound = FRSound.from_data(sound_data)
+    assert isinstance(sound, FRSound)
     assert sound.name == sound_data["name"]
     assert sound.asset_id == sound_data["assetId"]
     assert sound.data_format == sound_data["dataFormat"]

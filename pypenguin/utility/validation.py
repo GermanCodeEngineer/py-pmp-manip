@@ -3,7 +3,7 @@ import re
 from typing      import Any
 from dataclasses import dataclass
 
-from utility.errors import TypeValidationError, RangeValidationError, InvalidValueError
+from pypenguin.utility.errors import TypeValidationError, RangeValidationError, InvalidValueError
 
 def value_and_descr(obj, attr) -> tuple[Any, str]:
     return getattr(obj, attr), f"{attr} of a {obj.__class__.__name__}"

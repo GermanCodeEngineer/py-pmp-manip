@@ -1,6 +1,6 @@
 import json, copy
 
-from utility import numberToLiteral, BlockSelector, generateRandomToken, parseCustomOpcode, stringToToken, LocalStringToToken, Platform, getSelectors, editDataStructure, removeDuplicates, pp
+from pypenguin.utility import numberToLiteral, BlockSelector, generateRandomToken, parseCustomOpcode, stringToToken, LocalStringToToken, Platform, getSelectors, editDataStructure, removeDuplicates, pp
 from pypenguin.deoptimize.options import translateOptions
 from pypenguin.deoptimize.comments import translateComment
 from pypenguin.database import *

@@ -1,8 +1,8 @@
 from typing      import Any
 from dataclasses import dataclass
 
-from utility import GreprClass, ValidationConfig
-from utility import AA_TYPE, AA_TYPES, AA_LIST_OF_TYPES
+from pypenguin.utility import GreprClass, ValidationConfig
+from pypenguin.utility import AA_TYPE, AA_TYPES, AA_LIST_OF_TYPES
 
 @dataclass(repr=False)
 class SRVariable(GreprClass):

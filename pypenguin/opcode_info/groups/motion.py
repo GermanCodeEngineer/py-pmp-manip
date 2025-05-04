@@ -1,6 +1,6 @@
-from utility import DualKeyDict
+from pypenguin.utility import DualKeyDict
 
-from opcode_info import OpcodeInfoGroup, OpcodeInfo, OpcodeType, InputInfo, InputType, DropdownInfo, DropdownType, MenuInfo
+from pypenguin.opcode_info import OpcodeInfoGroup, OpcodeInfo, OpcodeType, InputInfo, InputType, DropdownInfo, DropdownType, MenuInfo
 
 motion = OpcodeInfoGroup(name="motion", opcode_info=DualKeyDict({
     ("motion_movesteps", "move (STEPS) steps"): OpcodeInfo(

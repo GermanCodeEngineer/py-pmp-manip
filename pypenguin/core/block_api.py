@@ -1,14 +1,14 @@
 from typing      import TYPE_CHECKING
 from dataclasses import dataclass, field
 
-from utility import GreprClass, FSCError, ValidationError
+from pypenguin.utility import GreprClass, FSCError, ValidationError
 
-from core.custom_block import SRCustomBlockOpcode
+from pypenguin.core.custom_block import SRCustomBlockOpcode
 
 if TYPE_CHECKING:
-    from core.block          import FRBlock, TRBlock, SRBlock, SRScript
-    from core.comment        import SRComment
-    from core.block_mutation import FRCustomBlockMutation, SRCustomBlockMutation
+    from pypenguin.core.block          import FRBlock, TRBlock, SRBlock, SRScript
+    from pypenguin.core.comment        import SRComment
+    from pypenguin.core.block_mutation import FRCustomBlockMutation, SRCustomBlockMutation
 
 @dataclass(repr=False)
 class FRtoTRAPI(GreprClass):
@@ -63,7 +63,7 @@ class FRtoTRAPI(GreprClass):
         Returns:
             the custom block mutation
         """
-        from core.block_mutation import FRCustomBlockMutation
+        from pypenguin.core.block_mutation import FRCustomBlockMutation
         for block in self.blocks.values():
             if not isinstance(block.mutation, FRCustomBlockMutation): continue
             if block.mutation.proccode == proccode:
@@ -101,7 +101,7 @@ class ValidationAPI(GreprClass):
         Returns:
             None
         """
-        from core.block_mutation import SRCustomBlockMutation
+        from pypenguin.core.block_mutation import SRCustomBlockMutation
         all_blocks = self.get_all_blocks()
         self.cb_mutations = {}
         for block in all_blocks:
@@ -116,7 +116,7 @@ class ValidationAPI(GreprClass):
         Returns:
             all blocks in the target 
         """
-        from core.block import SRBlock
+        from pypenguin.core.block import SRBlock
         def recursive_block_search(block: "SRBlock") -> None:
             blocks.append(block)
             if not isinstance(getattr(block, "inputs", None), dict):

@@ -1,6 +1,6 @@
-from utility import DualKeyDict
+from pypenguin.utility import DualKeyDict
 
-from opcode_info import OpcodeInfoGroup, OpcodeInfo, OpcodeType, InputInfo, InputType, DropdownInfo, DropdownType, MenuInfo
+from pypenguin.opcode_info import OpcodeInfoGroup, OpcodeInfo, OpcodeType, InputInfo, InputType, DropdownInfo, DropdownType, MenuInfo
 
 control = OpcodeInfoGroup(name="control", opcode_info=DualKeyDict({
     ("control_wait", "wait (SECONDS) seconds"): OpcodeInfo(

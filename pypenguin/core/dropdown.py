@@ -1,11 +1,11 @@
 from typing      import Any
 from dataclasses import dataclass
 
-from utility     import GreprClass, ValidationConfig
-from utility     import AA_TYPE, AA_JSON_COMPATIBLE, InvalidDropdownValueError
-from opcode_info import DropdownType, DropdownValueKind
+from pypenguin.utility     import GreprClass, ValidationConfig
+from pypenguin.utility     import AA_TYPE, AA_JSON_COMPATIBLE, InvalidDropdownValueError
+from pypenguin.opcode_info import DropdownType, DropdownValueKind
 
-from core.context import PartialContext
+from pypenguin.core.context import PartialContext
 
 
 @dataclass(repr=False)

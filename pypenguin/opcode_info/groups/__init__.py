@@ -1,28 +1,28 @@
 from typing import TYPE_CHECKING
 
-from utility           import DualKeyDict, InvalidValueError
-from important_opcodes import *
+from pypenguin.utility           import DualKeyDict, InvalidValueError
+from pypenguin.important_opcodes import *
 
-from opcode_info.main             import OpcodeInfo, OpcodeType, OpcodeInfoGroup, OpcodeInfoAPI
-from opcode_info.input            import InputInfo, InputType, InputMode
-from opcode_info.dropdown         import DropdownInfo, DropdownType
-from opcode_info.special_case     import SpecialCase, SpecialCaseType
+from pypenguin.opcode_info.main             import OpcodeInfo, OpcodeType, OpcodeInfoGroup, OpcodeInfoAPI
+from pypenguin.opcode_info.input            import InputInfo, InputType, InputMode
+from pypenguin.opcode_info.dropdown         import DropdownInfo, DropdownType
+from pypenguin.opcode_info.special_case     import SpecialCase, SpecialCaseType
 
-from opcode_info.groups.motion    import motion
-from opcode_info.groups.looks     import looks
-from opcode_info.groups.sounds    import sounds
-from opcode_info.groups.events    import events
-from opcode_info.groups.control   import control
-from opcode_info.groups.sensing   import sensing
-from opcode_info.groups.operators import operators
-from opcode_info.groups.variables import variables
-from opcode_info.groups.lists     import lists
+from pypenguin.opcode_info.groups.motion    import motion
+from pypenguin.opcode_info.groups.looks     import looks
+from pypenguin.opcode_info.groups.sounds    import sounds
+from pypenguin.opcode_info.groups.events    import events
+from pypenguin.opcode_info.groups.control   import control
+from pypenguin.opcode_info.groups.sensing   import sensing
+from pypenguin.opcode_info.groups.operators import operators
+from pypenguin.opcode_info.groups.variables import variables
+from pypenguin.opcode_info.groups.lists     import lists
 
 if TYPE_CHECKING:
-    from core.block          import FRBlock, TRBlock, SRBlock
-    from core.block_api   import FRtoTRAPI, ValidationAPI
+    from pypenguin.core.block          import FRBlock, TRBlock, SRBlock
+    from pypenguin.core.block_api   import FRtoTRAPI, ValidationAPI
 
-from core.block_mutation import FRCustomBlockMutation, FRCustomBlockArgumentMutation, FRCustomBlockCallMutation, FRStopScriptMutation, SRCustomBlockMutation, SRCustomBlockArgumentMutation, SRCustomBlockCallMutation, SRStopScriptMutation
+from pypenguin.core.block_mutation import FRCustomBlockMutation, FRCustomBlockArgumentMutation, FRCustomBlockCallMutation, FRStopScriptMutation, SRCustomBlockMutation, SRCustomBlockArgumentMutation, SRCustomBlockCallMutation, SRStopScriptMutation
 
 motion.add_opcode("motion_goto_menu", "#REACHABLE TARGET MENU (GO)", OpcodeInfo(
     opcode_type=OpcodeType.MENU,
@@ -163,7 +163,7 @@ info_api.set_opcode_mutation_class(OPCODE_CB_CALL, old_cls=FRCustomBlockCallMuta
 # Special Cases
 
 def GET_OPCODE_TYPE__STOP_SCRIPT(block: "SRBlock|TRBlock", validation_api: "ValidationAPI") -> OpcodeType:
-    from core.block_mutation import SRStopScriptMutation
+    from pypenguin.core.block_mutation import SRStopScriptMutation
     mutation: SRStopScriptMutation = block.mutation
     return OpcodeType.ENDING_STATEMENT if mutation.is_ending_statement else OpcodeType.STATEMENT
 
@@ -174,7 +174,7 @@ info_api.add_opcode_case(OPCODE_STOP_SCRIPT, SpecialCase(
 
 def GET_OPCODE_TYPE__CB_CALL(block: "SRBlock|TRBlock", validation_api: "ValidationAPI") -> OpcodeType:
     # Get the complete mutation and derive OpcodeType from optype
-    from core.block_mutation import SRCustomBlockCallMutation
+    from pypenguin.core.block_mutation import SRCustomBlockCallMutation
     partial_mutation: SRCustomBlockCallMutation = block.mutation
     complete_mutation = validation_api.get_cb_mutation(partial_mutation.custom_opcode)
     return complete_mutation.optype.get_corresponding_opcode_type()
@@ -207,7 +207,7 @@ info_api.add_opcodes_case(ANY_OPCODE_CB_DEF, SpecialCase(
 def PRE__CB_ARG(block: "FRBlock", block_api: "FRtoTRAPI") -> "FRBlock":
     # Transfer argument name from a field into the mutation
     # because only real dropdowns should be listed in "fields"
-    from core.block_mutation import FRCustomBlockArgumentMutation
+    from pypenguin.core.block_mutation import FRCustomBlockArgumentMutation
     mutation: FRCustomBlockArgumentMutation = block.mutation
     mutation.store_argument_name(block.fields["VALUE"][0])
     del block.fields["VALUE"]
@@ -219,7 +219,7 @@ info_api.add_opcodes_case(ANY_OPCODE_CB_ARG, SpecialCase(
 ))
 
 def PRE__CB_CALL(block: "FRBlock", block_api: "FRtoTRAPI") -> "FRBlock":
-    from core.block_mutation import FRCustomBlockCallMutation
+    from pypenguin.core.block_mutation import FRCustomBlockCallMutation
     partial_mutation: FRCustomBlockCallMutation = block.mutation
     complete_mutation = block_api.get_cb_mutation(partial_mutation.proccode)
     new_inputs = {}
@@ -237,7 +237,7 @@ info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
 
 def FR_STEP__CB_PROTOTYPE(block: "FRBlock", block_api: "FRtoTRAPI") -> "TRBlock":
     # Return an empty, temporary block
-    from core.block import TRBlock
+    from pypenguin.core.block import TRBlock
     return TRBlock(
         opcode       = block.opcode,
         inputs       = {},
@@ -257,8 +257,8 @@ info_api.add_opcode_case(OPCODE_CB_PROTOTYPE, SpecialCase(
 def GET_ALL_INPUT_TYPES__CB_CALL(
     block: "FRBlock|TRBlock|SRBlock", block_api: "FRtoTRAPI|None"
 ) -> DualKeyDict[str, str, InputType]:
-    from core.block_mutation import FRCustomBlockCallMutation, SRCustomBlockCallMutation
-    from core.block import FRBlock
+    from pypenguin.core.block_mutation import FRCustomBlockCallMutation, SRCustomBlockCallMutation
+    from pypenguin.core.block import FRBlock
     if isinstance(block, FRBlock):
         old_mutation: FRCustomBlockCallMutation = block.mutation
         assert block_api is not None, "When a FRBlock is given, block_api mustn't be None"
@@ -275,7 +275,7 @@ info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
 
 
 def POST_VALIDATION__CB_DEF(path:list, block: "SRBlock") -> None:
-    from core.block_mutation import SRCustomBlockMutation
+    from pypenguin.core.block_mutation import SRCustomBlockMutation
     mutation: SRCustomBlockMutation = block.mutation
     if block.opcode == NEW_OPCODE_CB_DEF:
         if mutation.optype.is_reporter():

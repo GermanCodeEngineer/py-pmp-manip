@@ -1,9 +1,9 @@
 from pytest import fixture, raises
 from json   import dumps, loads
 
-from utility import DeserializationError, FSCError
+from pypenguin.utility import DeserializationError, FSCError
 
-from core.block_mutation import (
+from pypenguin.core.block_mutation import (
     FRCustomBlockArgumentMutation, FRCustomBlockMutation,
     FRCustomBlockCallMutation, FRStopScriptMutation,
     SRCustomBlockArgumentMutation, SRCustomBlockMutation,
@@ -44,7 +44,7 @@ def test_argument_mutation_from_data_and_step(api):
     assert frmutation.color == loads(data["color"])
     
     srmutation.store_argument_name("my_arg")
-    srmutation = mutation.step(api)
+    srmutation = frmutation.step(api)
     assert isinstance(srmutation, SRCustomBlockArgumentMutation)
     assert srmutation.argument_name == "my_arg"
     assert srmutation.color1 == "#123456"
@@ -75,11 +75,11 @@ def test_custom_block_mutation_from_data_and_step(api):
         "warp": dumps(True),
         "returns": dumps(False),
         "edited": dumps(True),
-        "optype": ,
+        "optype": 4,
         "color": dumps(["#111", "#222", "#333"]),
     }
     frmutation = FRCustomBlockMutation.from_data(data)
-    srmutation = mutation.step(api)
+    srmutation = frmutation.step(api)
 
     assert isinstance(srmutation, SRCustomBlockMutation)
     assert srmutation.no_screen_refresh is True

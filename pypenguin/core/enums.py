@@ -1,4 +1,4 @@
-from utility import PypenguinEnum, FSCError
+from pypenguin.utility import PypenguinEnum, FSCError
 
 class SRTTSLanguage(PypenguinEnum):    
     """

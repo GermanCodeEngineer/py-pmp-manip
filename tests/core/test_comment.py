@@ -1,8 +1,8 @@
 from pytest import fixture, raises
 
-from utility import ValidationConfig, copymodify, TypeValidationError, InvalidValueError
+from pypenguin.utility import ValidationConfig, copymodify, TypeValidationError, InvalidValueError
 
-from core.comment import FRComment, SRComment
+from pypenguin.core.comment import FRComment, SRComment
 
 @fixture
 def config():
@@ -62,7 +62,7 @@ def test_frcomment_step_floating():
     assert srcomment.text == frcomment.text
 
 # SRComment
-from core.comment import SRComment
+from pypenguin.core.comment import SRComment
 
 def test_srcomment_validate(config):
     comment = SRComment(

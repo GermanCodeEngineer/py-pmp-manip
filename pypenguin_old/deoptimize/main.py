@@ -1,4 +1,4 @@
-from utility import BlockSelector, stringToToken, Platform, pformat, pp, writeJSONFile, readJSONFile, ensureCorrectPath
+from pypenguin.utility import BlockSelector, stringToToken, Platform, pformat, pp, writeJSONFile, readJSONFile, ensureCorrectPath
 
 from pypenguin.deoptimize.variables_lists import translateVariables, translateLists
 from pypenguin.deoptimize.blocks_scripts import prepareScripts, flattenScripts, restoreBlocks, unprepareBlocks, makeJsonCompatible, standardizeScripts, removeTemporaryAttrs

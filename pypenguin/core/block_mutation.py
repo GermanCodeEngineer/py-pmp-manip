@@ -3,11 +3,11 @@ from abc         import ABC, abstractmethod
 from typing      import Any
 from dataclasses import dataclass, field
 
-from utility import GreprClass, ThanksError, ValidationConfig, FSCError, DeserializationError
-from utility import AA_TYPE, AA_HEX_COLOR
+from pypenguin.utility import GreprClass, ThanksError, ValidationConfig, FSCError, DeserializationError
+from pypenguin.utility import AA_TYPE, AA_HEX_COLOR
 
-from core.block_api import FRtoTRAPI
-from core.custom_block import SRCustomBlockOpcode, SRCustomBlockOptype
+from pypenguin.core.block_api import FRtoTRAPI
+from pypenguin.core.custom_block import SRCustomBlockOpcode, SRCustomBlockOptype
 
 @dataclass(repr=False)
 class FRMutation(GreprClass, ABC):

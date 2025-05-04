@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from utility import GreprClass
+from pypenguin.utility import GreprClass
 
 @dataclass
 class MenuInfo(GreprClass):

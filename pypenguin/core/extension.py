@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from utility import GreprClass, ValidationConfig
-from utility import AA_TYPE, is_valid_js_data_uri, is_valid_url, InvalidValueError
+from pypenguin.utility import GreprClass, ValidationConfig
+from pypenguin.utility import AA_TYPE, is_valid_js_data_uri, is_valid_url, InvalidValueError
 
 @dataclass(repr=False)
 class SRExtension(GreprClass):

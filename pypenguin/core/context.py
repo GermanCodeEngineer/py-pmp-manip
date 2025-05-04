@@ -1,10 +1,10 @@
 from typing      import TYPE_CHECKING, Any
 from dataclasses import dataclass
 
-from utility     import GreprClass
+from pypenguin.utility     import GreprClass
 
 if TYPE_CHECKING:
-    from opcode_info import DropdownValueKind
+    from pypenguin.opcode_info import DropdownValueKind
 
 
 @dataclass(repr=False)

@@ -1,7 +1,7 @@
 from typing      import Any
 from dataclasses import dataclass
 
-from utility import GreprClass
+from pypenguin.utility import GreprClass
 
 @dataclass(repr=False)
 class FRMeta(GreprClass):

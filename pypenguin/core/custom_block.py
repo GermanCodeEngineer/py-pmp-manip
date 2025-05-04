@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from re          import split 
 
-from utility import GreprClass, PypenguinEnum, SameNameTwiceError, ValidationConfig, FSCError
-from utility import AA_TYPE, AA_TUPLE_OF_TYPES, AA_MIN_LEN
+from pypenguin.utility import GreprClass, PypenguinEnum, SameNameTwiceError, ValidationConfig, FSCError
+from pypenguin.utility import AA_TYPE, AA_TUPLE_OF_TYPES, AA_MIN_LEN
 
-from opcode_info import InputType, OpcodeType
+from pypenguin.opcode_info import InputType, OpcodeType
 
 @dataclass(repr=False, frozen=True, unsafe_hash=True)
 class SRCustomBlockOpcode(GreprClass):

@@ -140,7 +140,7 @@ for cat in ["motion", "looks", "sounds", "events", "control", "sensing", "operat
     elif cat == "lists": block_cat = "data"
     else:
         block_cat = cat
-    string = "from utility import DualKeyDict\n\nfrom opcode_info import OpcodeInfoGroup, OpcodeInfo, OpcodeType, InputInfo, InputType, DropdownInfo, DropdownType, MenuInfo\n\n" + cat + ' = OpcodeInfoGroup(name="' + cat + '", opcode_info=DualKeyDict({\n'
+    string = "from pypenguin.utility import DualKeyDict\n\nfrom pypenguin.opcode_info import OpcodeInfoGroup, OpcodeInfo, OpcodeType, InputInfo, InputType, DropdownInfo, DropdownType, MenuInfo\n\n" + cat + ' = OpcodeInfoGroup(name="' + cat + '", opcode_info=DualKeyDict({\n'
     for opcode, block in opcodes.items():
         block_string = '    ("'+opcode+'", "'+block["newOpcode"]+'"): OpcodeInfo(\n'
         

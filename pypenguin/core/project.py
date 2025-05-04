@@ -1,18 +1,18 @@
 from json        import dump, loads
 from dataclasses import dataclass
 
-from utility     import read_file_of_zip, ThanksError, GreprClass, ValidationConfig
-from utility     import AA_TYPE, AA_NONE_OR_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_RANGE, SameNameTwiceError, SameNumberTwiceError, LayerOrderError
-from opcode_info import OpcodeInfoAPI, DropdownValueKind
+from pypenguin.utility     import read_file_of_zip, ThanksError, GreprClass, ValidationConfig
+from pypenguin.utility     import AA_TYPE, AA_NONE_OR_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_RANGE, SameNameTwiceError, SameNumberTwiceError, LayerOrderError
+from pypenguin.opcode_info import OpcodeInfoAPI, DropdownValueKind
 
-from core.context       import PartialContext
-from core.dropdown      import SRDropdownValue
-from core.extension     import SRExtension, SRCustomExtension, SRBuiltinExtension
-from core.meta          import FRMeta
-from core.monitor       import FRMonitor, SRMonitor
-from core.enums         import SRTTSLanguage, SRVideoState
-from core.target        import FRTarget, FRStage, FRSprite, SRStage, SRSprite
-from core.vars_lists    import SRVariable, SRList
+from pypenguin.core.context       import PartialContext
+from pypenguin.core.dropdown      import SRDropdownValue
+from pypenguin.core.extension     import SRExtension, SRCustomExtension, SRBuiltinExtension
+from pypenguin.core.meta          import FRMeta
+from pypenguin.core.monitor       import FRMonitor, SRMonitor
+from pypenguin.core.enums         import SRTTSLanguage, SRVideoState
+from pypenguin.core.target        import FRTarget, FRStage, FRSprite, SRStage, SRSprite
+from pypenguin.core.vars_lists    import SRVariable, SRList
 
 @dataclass(repr=False)
 class FRProject(GreprClass): 

@@ -1,4 +1,4 @@
-from utility import generateRandomToken, stringToToken, LocalStringToToken
+from pypenguin.utility import generateRandomToken, stringToToken, LocalStringToToken
 
 from pypenguin.database import getOptionType, getBlockType, getDeoptimizedOptionId
 

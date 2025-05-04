@@ -1,8 +1,8 @@
-from utility import PypenguinEnum, GreprClass
+from pypenguin.utility import PypenguinEnum, GreprClass
 from dataclasses import dataclass
 
-from opcode_info.menu     import MenuInfo
-from opcode_info.dropdown import DropdownType
+from pypenguin.opcode_info.menu     import MenuInfo
+from pypenguin.opcode_info.dropdown import DropdownType
 
 @dataclass
 class InputInfo(GreprClass):

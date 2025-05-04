@@ -1,4 +1,4 @@
-from utility import Platform
+from pypenguin.utility import Platform
 
 from optimize.costumes_sounds  import translateCostumes, translateSounds
 from optimize.variables_lists  import translateVariables, translateLists
