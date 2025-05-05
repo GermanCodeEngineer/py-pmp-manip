@@ -221,7 +221,7 @@ def remove_duplicates(items: list) -> list:
             result.append(item)
     return result
 
-def lists_equal_ignore_order(a, b) -> bool:
+def lists_equal_ignore_order(a: list, b: list) -> bool:
     if len(a) != len(b):
         return False
 
@@ -238,4 +238,13 @@ def get_closest_matches(string, possible_values: list[str], n: int) -> list[str]
     sorted_matches = sorted(similarity_scores, key=lambda x: x[1], reverse=True)
     return [i[0] for i in sorted_matches[:n]]   
 
+def tuplify(obj):
+    if isinstance(obj, list):
+        return tuple(tuplify(item) for item in obj)
+    elif isinstance(obj, dict):
+        return {tuplify(key): tuplify(value) for key, value in obj.items()}
+    elif isinstance(obj, (set, tuple)):
+        return type(obj)(tuplify(item) for item in obj)
+    else:
+        return obj
 

@@ -13,8 +13,8 @@ file_path = "../assets/from_online/dumb example.pmp"
 
 project = FRProject.from_pmp_file(file_path, info_api=info_api)
 
-#print(project)
+print(project)
 
 new_project = project.step(info_api=info_api)
 new_project.validate(info_api=info_api, config=ValidationConfig())
-print(new_project.sprites[0].scripts)
+#print(new_project.sprites[0].scripts)

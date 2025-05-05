@@ -2,7 +2,7 @@ from typing      import Any
 from dataclasses import dataclass, field
 from abc         import ABC, abstractmethod
 
-from pypenguin.utility           import GreprClass, get_closest_matches, ValidationConfig, DeserializationError, FSCError
+from pypenguin.utility           import GreprClass, get_closest_matches, tuplify, ValidationConfig, DeserializationError, FSCError
 from pypenguin.utility           import AA_TYPE, AA_NONE, AA_NONE_OR_TYPE, AA_COORD_PAIR, AA_LIST_OF_TYPE, AA_DICT_OF_TYPE, AA_MIN_LEN, AA_EQUAL
 from pypenguin.utility           import UnnecessaryInputError, MissingInputError, UnnecessaryDropdownError, MissingDropdownError, InvalidOpcodeError, InvalidBlockShapeError
 from pypenguin.opcode_info       import OpcodeInfoAPI, OpcodeInfo, InputType, InputMode, OpcodeType, SpecialCaseType
@@ -52,24 +52,21 @@ class FRBlock(GreprClass):
         """
         opcode = data["opcode"]
         opcode_info = info_api.get_info_by_old(opcode)
-        if opcode_info.old_mutation_cls is not None:
-            mutation = opcode_info.old_mutation_cls.from_data(data["mutation"])
-        elif "mutation" in data:
-            raise DeserializationError(f"Invalid mutation for FRBlock with opcode {repr(opcode)}: {data['mutation']}")
-        else:
+        if opcode_info.old_mutation_cls is None:
+            if "mutation" in data:
+                raise DeserializationError(f"Invalid mutation for FRBlock with opcode {repr(opcode)}: {data['mutation']}")
             mutation = None
+        else:
+            if "mutation" not in data:
+                cls_name = opcode_info.old_mutation_cls.__name__
+                raise DeserializationError(f"Missing mutation of type {cls_name} for FRBlock with opcode {repr(opcode)}")
+            mutation = opcode_info.old_mutation_cls.from_data(data["mutation"])
         return cls(
             opcode    = opcode,
             next      = data["next"    ],
             parent    = data["parent"  ],
-            inputs    = {
-                input_id: tuple(
-                    [tuple(item) if isinstance(item, list) else item for item in input_data]
-                ) for input_id, input_data in data["inputs"].items()
-            },
-            fields    = {
-                field_id: tuple(field_data) for field_id, field_data in data["fields"].items()
-            },
+            inputs    = tuplify(data["inputs"]),
+            fields    = tuplify(data["fields"]),
             shadow    = data["shadow"  ],
             top_level = data["topLevel"],
             x         = data.get("x", None),
@@ -419,7 +416,7 @@ class TRInputValue(GreprClass):
     immediate_block: TRBlock | None
     text: str | None
 
-@dataclass(repr=False)
+@dataclass(repr=False, frozen=True, unsafe_hash=True)
 class TRBlockReference(GreprClass):
     """
     A block reference in  temporary representation. Basis for the temporary id system
@@ -620,12 +617,13 @@ class SRBlock(GreprClass):
             elif not(is_first and is_last):
                 raise InvalidBlockShapeError(path, "If contained in a substack, a block of type ...REPORTER must be the only block in that substack")
 
-@dataclass(repr=False)
+@dataclass(repr=False, eq=False)
 class SRInputValue(GreprClass, ABC):
     """
     The second representation for a block input. 
     It can contain a substack of blocks, a block, a text field and a dropdown.
-    Please use the subclasses instead.
+    **Please use the subclasses instead**.
+    **Be careful when accessing fields**, because only the subclasses guarantee there existance.
     """
     _grepr = True
     _grepr_fields = []
@@ -637,6 +635,17 @@ class SRInputValue(GreprClass, ABC):
 
     def __init__(self) -> None:
         raise NotImplementedError("Please use the subclasses or the from_mode method for concrete data")
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, SRInputValue):
+            return NotImplemented
+        for attr in self._grepr_fields:
+            print("trying", repr(attr))
+            if attr not in other._grepr_fields:
+                return False
+            if getattr(self, attr) != getattr(other, attr):
+                return False
+        return True
 
     @classmethod
     def from_mode(cls,
@@ -728,7 +737,7 @@ class SRInputValue(GreprClass, ABC):
             )
     
 
-@dataclass(repr=False)
+@dataclass(repr=False, eq=False)
 class SRBlockAndTextInputValue(SRInputValue):
     """
     The second representation for a block input, which has a text field and might contain a block.
@@ -769,7 +778,7 @@ class SRBlockAndTextInputValue(SRInputValue):
         )
         AA_TYPE(self, path, "text", str)
 
-@dataclass(repr=False)
+@dataclass(repr=False, eq=False)
 class SRBlockAndDropdownInputValue(SRInputValue):
     """
     The second representation for a block input, which has a dropdown and might contain a block.
@@ -818,7 +827,7 @@ class SRBlockAndDropdownInputValue(SRInputValue):
                 context       = context,
             )
 
-@dataclass(repr=False)
+@dataclass(repr=False, eq=False)
 class SRBlockOnlyInputValue(SRInputValue):
     """
     The second representation for a block input, which might contain a block.
@@ -857,7 +866,7 @@ class SRBlockOnlyInputValue(SRInputValue):
             context        = context,
         )
 
-@dataclass(repr=False)
+@dataclass(repr=False, eq=False)
 class SRScriptInputValue(SRInputValue):
     """
     The second representation for a block input, which contains a substack of blocks.

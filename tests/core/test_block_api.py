@@ -2,19 +2,23 @@ from pytest import fixture, raises
 from copy   import copy
 
 from pypenguin.utility import FSCError, lists_equal_ignore_order
+from pypenguin.opcode_info import DropdownValueKind
 
 from pypenguin.core.block_api      import FTCAPI, ValidationAPI
-from pypenguin.core.block          import FRBlock, SRBlock
+from pypenguin.core.block          import (
+    FRBlock, SRBlock, SRBlockAndTextInputValue, 
+    SRScript, SRBlockOnlyInputValue, SRDropdownValue
+)
 from pypenguin.core.block_mutation import (
     FRCustomBlockMutation, FRCustomBlockArgumentMutation,
     SRCustomBlockMutation, SRCustomBlockCallMutation,
+    SRCustomBlockArgumentMutation, SRStopScriptMutation,
 )
 from pypenguin.core.comment        import SRComment
 from pypenguin.core.custom_block   import (
     SRCustomBlockOpcode, SRCustomBlockArgument, SRCustomBlockArgumentType,
+    SRCustomBlockOptype,
 )
-
-from tests.utility import execute_attr_validation_tests
 
 ALL_FR_BLOCKS = {
     "al": FRBlock(
@@ -247,19 +251,14 @@ ALL_SR_BLOCKS = [
             custom_opcode=SR_BLOCK_CUSTOM_OPCODE,
         ),
     ),
-    SRScript(
-        position=(822, 1315),
-        blocks=[
-            SRBlock(
-                opcode="stop script [TARGET]",
-                inputs={},
-                dropdowns={
-                    "TARGET": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="all"),
-                },
-                comment=None,
-                mutation=SRStopScriptMutation(is_ending_statement=True),
-            ),
-        ],
+    SRBlock(
+        opcode="stop script [TARGET]",
+        inputs={},
+        dropdowns={
+            "TARGET": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="all"),
+        },
+        comment=None,
+        mutation=SRStopScriptMutation(is_ending_statement=True),
     ),
 ]
 
@@ -359,7 +358,7 @@ def ftcapi():
 
 @fixture
 def vapi():
-    return ValidationAPI()
+    return ValidationAPI(scripts=ALL_SR_SCRIPTS)
 
 
 def test_ftcapi_get_all_blocks(ftcapi: FTCAPI):
@@ -385,7 +384,7 @@ def test_ftcapi_get_comment(ftcapi: FTCAPI):
 def test_vapi_post_init(vapi: ValidationAPI):
     cb_mutations = {
         SR_BLOCK_CUSTOM_OPCODE: SRCustomBlockMutation(
-            custom_opcode=custom_opcode,
+            custom_opcode=SR_BLOCK_CUSTOM_OPCODE,
             no_screen_refresh=False,
             optype=SRCustomBlockOptype.STATEMENT,
             color1="#FF6680",
