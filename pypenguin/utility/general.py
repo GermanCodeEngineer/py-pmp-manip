@@ -212,7 +212,7 @@ class DualKeyDict(Generic[K1, K2, V]):
 # Data Functions
 import difflib
 
-def remove_duplicates(items: list):
+def remove_duplicates(items: list) -> list:
     seen = []
     result = []
     for item in items:
@@ -220,6 +220,18 @@ def remove_duplicates(items: list):
             seen.append(item)
             result.append(item)
     return result
+
+def lists_equal_ignore_order(a, b) -> bool:
+    if len(a) != len(b):
+        return False
+
+    b_copy = b[:]
+    for item in a:
+        try:
+            b_copy.remove(item)  # uses __eq__, safe for mutable objects
+        except ValueError:
+            return False
+    return not b_copy
 
 def get_closest_matches(string, possible_values: list[str], n: int) -> list[str]:
     similarity_scores = [(item, difflib.SequenceMatcher(None, string, item).ratio()) for item in possible_values]

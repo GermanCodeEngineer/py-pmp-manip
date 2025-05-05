@@ -419,7 +419,7 @@ class TRInputValue(GreprClass):
     immediate_block: TRBlock | None
     text: str | None
 
-@dataclass(repr=False, unsafe_hash=True)
+@dataclass(repr=False)
 class TRBlockReference(GreprClass):
     """
     A block reference in  temporary representation. Basis for the temporary id system

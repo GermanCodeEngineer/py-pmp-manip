@@ -1,16 +1,22 @@
 from pytest import fixture, raises
 from copy   import copy
 
-from pypenguin.utility import FSCError
+from pypenguin.utility import FSCError, lists_equal_ignore_order
 
 from pypenguin.core.block_api      import FTCAPI, ValidationAPI
-from pypenguin.core.block          import FRBlock
-from pypenguin.core.block_mutation import FRCustomBlockMutation, FRCustomBlockArgumentMutation
+from pypenguin.core.block          import FRBlock, SRBlock
+from pypenguin.core.block_mutation import (
+    FRCustomBlockMutation, FRCustomBlockArgumentMutation,
+    SRCustomBlockMutation, SRCustomBlockCallMutation,
+)
 from pypenguin.core.comment        import SRComment
+from pypenguin.core.custom_block   import (
+    SRCustomBlockOpcode, SRCustomBlockArgument, SRCustomBlockArgumentType,
+)
 
 from tests.utility import execute_attr_validation_tests
 
-ALL_BLOCKS = {
+ALL_FR_BLOCKS = {
     "al": FRBlock(
         opcode="event_whenflagclicked",
         next="z",
@@ -130,7 +136,7 @@ ALL_BLOCKS = {
     ),
 }
 
-ALL_COMMENTS = {
+ALL_SR_COMMENTS = {
     "j": SRComment(
         position=(1031, 348),
         size=(200, 200),
@@ -139,18 +145,228 @@ ALL_COMMENTS = {
     )
 }
 
+SR_BLOCK_CUSTOM_OPCODE = SRCustomBlockOpcode(
+    segments=(
+        "de",
+        SRCustomBlockArgument(name="boolean", type=SRCustomBlockArgumentType.BOOLEAN),
+        "label text",
+    ),
+)
+
+ALL_SR_BLOCKS = [
+    SRBlock(
+        opcode="define custom block",
+        inputs={},
+        dropdowns={},
+        comment=None,
+        mutation=SRCustomBlockMutation(
+            custom_opcode=SR_BLOCK_CUSTOM_OPCODE,
+            no_screen_refresh=False,
+            optype=SRCustomBlockOptype.STATEMENT,
+            color1="#FF6680",
+            color2="#FF4D6A",
+            color3="#FF3355",
+        ),
+    ),
+    SRBlock(
+        opcode="say (MESSAGE) for (SECONDS) seconds",
+        inputs={
+            "MESSAGE": SRBlockAndTextInputValue(
+                block=SRBlock(
+                    opcode="not <OPERAND>",
+                    inputs={
+                        "OPERAND": SRBlockOnlyInputValue(
+                            block=SRBlock(
+                                opcode="value of boolean [ARGUMENT]",
+                                inputs={},
+                                dropdowns={},
+                                comment=None,
+                                mutation=SRCustomBlockArgumentMutation(
+                                    argument_name="boolean",
+                                    color1="#FF6680",
+                                    color2="#FF4D6A",
+                                    color3="#FF3355",
+                                ),
+                            ),
+                        ),
+                    },
+                    dropdowns={},
+                    comment=None,
+                    mutation=None,
+                ),
+                text="Hello!",
+            ),
+            "SECONDS": SRBlockAndTextInputValue(block=None, text="2"),
+        },
+        dropdowns={},
+        comment=None,
+        mutation=None,
+    ),
+    SRBlock(
+        opcode="not <OPERAND>",
+        inputs={
+            "OPERAND": SRBlockOnlyInputValue(
+                block=SRBlock(
+                    opcode="value of boolean [ARGUMENT]",
+                    inputs={},
+                    dropdowns={},
+                    comment=None,
+                    mutation=SRCustomBlockArgumentMutation(
+                        argument_name="boolean",
+                        color1="#FF6680",
+                        color2="#FF4D6A",
+                        color3="#FF3355",
+                    ),
+                ),
+            ),
+        },
+        dropdowns={},
+        comment=None,
+        mutation=None,
+    ),
+    SRBlock(
+        opcode="value of boolean [ARGUMENT]",
+        inputs={},
+        dropdowns={},
+        comment=None,
+        mutation=SRCustomBlockArgumentMutation(
+            argument_name="boolean",
+            color1="#FF6680",
+            color2="#FF4D6A",
+            color3="#FF3355",
+        ),
+    ),
+    SRBlock(
+        opcode="call custom block",
+        inputs={
+            "boolean": SRBlockOnlyInputValue(block=None),
+        },
+        dropdowns={},
+        comment=None,
+        mutation=SRCustomBlockCallMutation(
+            custom_opcode=SR_BLOCK_CUSTOM_OPCODE,
+        ),
+    ),
+    SRScript(
+        position=(822, 1315),
+        blocks=[
+            SRBlock(
+                opcode="stop script [TARGET]",
+                inputs={},
+                dropdowns={
+                    "TARGET": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="all"),
+                },
+                comment=None,
+                mutation=SRStopScriptMutation(is_ending_statement=True),
+            ),
+        ],
+    ),
+]
+
+ALL_SR_SCRIPTS = [
+    SRScript(
+        position=(407, 917),
+        blocks=[
+            SRBlock(
+                opcode="define custom block",
+                inputs={},
+                dropdowns={},
+                comment=None,
+                mutation=SRCustomBlockMutation(
+                    custom_opcode=SR_BLOCK_CUSTOM_OPCODE,
+                    no_screen_refresh=False,
+                    optype=SRCustomBlockOptype.STATEMENT,
+                    color1="#FF6680",
+                    color2="#FF4D6A",
+                    color3="#FF3355",
+                ),
+            ),
+            SRBlock(
+                opcode="say (MESSAGE) for (SECONDS) seconds",
+                inputs={
+                    "MESSAGE": SRBlockAndTextInputValue(
+                        block=SRBlock(
+                            opcode="not <OPERAND>",
+                            inputs={
+                                "OPERAND": SRBlockOnlyInputValue(
+                                    block=SRBlock(
+                                        opcode="value of boolean [ARGUMENT]",
+                                        inputs={},
+                                        dropdowns={},
+                                        comment=None,
+                                        mutation=SRCustomBlockArgumentMutation(
+                                            argument_name="boolean",
+                                            color1="#FF6680",
+                                            color2="#FF4D6A",
+                                            color3="#FF3355",
+                                        ),
+                                    ),
+                                ),
+                            },
+                            dropdowns={},
+                            comment=None,
+                            mutation=None,
+                        ),
+                        text="Hello!",
+                    ),
+                    "SECONDS": SRBlockAndTextInputValue(block=None, text="2"),
+                },
+                dropdowns={},
+                comment=None,
+                mutation=None,
+            ),
+        ]
+    ),
+    SRScript(
+        position=(534, 945),
+        blocks=[
+            SRBlock(
+                opcode="call custom block",
+                inputs={
+                    "boolean": SRBlockOnlyInputValue(block=None),
+                },
+                dropdowns={},
+                comment=None,
+                mutation=SRCustomBlockCallMutation(
+                    custom_opcode=SR_BLOCK_CUSTOM_OPCODE,
+                ),
+            ),
+        ],
+    ), 
+    SRScript(
+        position=(822, 1315),
+        blocks=[
+            SRBlock(
+                opcode="stop script [TARGET]",
+                inputs={},
+                dropdowns={
+                    "TARGET": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="all"),
+                },
+                comment=None,
+                mutation=SRStopScriptMutation(is_ending_statement=True),
+            ),
+        ],
+    ),
+]
+
+
 @fixture
 def ftcapi():
     return FTCAPI(
-        blocks=ALL_BLOCKS,
-        block_comments=ALL_COMMENTS,
+        blocks=ALL_FR_BLOCKS,
+        block_comments=ALL_SR_COMMENTS,
     )
 
+@fixture
+def vapi():
+    return ValidationAPI()
+
+
 def test_ftcapi_get_all_blocks(ftcapi: FTCAPI):
-    assert ftcapi.get_all_blocks() == ALL_BLOCKS
+    assert ftcapi.get_all_blocks() == ALL_FR_BLOCKS
 
 def test_ftcapi_get_blocks(ftcapi: FTCAPI):
-    assert ftcapi.get_block("al") == ALL_BLOCKS["al"]
+    assert ftcapi.get_block("al") == ALL_FR_BLOCKS["al"]
 
 def test_ftcapi_schedule_block_deletion(ftcapi: FTCAPI):
     ftcapi_copy = copy(ftcapi)
@@ -158,10 +374,32 @@ def test_ftcapi_schedule_block_deletion(ftcapi: FTCAPI):
     assert ftcapi_copy.scheduled_block_deletions == ["z"]
 
 def test_ftcapi_get_cb_mutation(ftcapi: FTCAPI):
-    assert ftcapi.get_cb_mutation("rep %b %s") == ALL_BLOCKS["b"].mutation
+    assert ftcapi.get_cb_mutation("rep %b %s") == ALL_FR_BLOCKS["b"].mutation
     with raises(FSCError):
         ftcapi.get_cb_mutation("some %s proccode")
 
 def test_ftcapi_get_comment(ftcapi: FTCAPI):
-    assert ftcapi.get_comment("j") == ALL_COMMENTS["j"]
+    assert ftcapi.get_comment("j") == ALL_SR_COMMENTS["j"]
+
+
+def test_vapi_post_init(vapi: ValidationAPI):
+    cb_mutations = {
+        SR_BLOCK_CUSTOM_OPCODE: SRCustomBlockMutation(
+            custom_opcode=custom_opcode,
+            no_screen_refresh=False,
+            optype=SRCustomBlockOptype.STATEMENT,
+            color1="#FF6680",
+            color2="#FF4D6A",
+            color3="#FF3355",
+        ),
+    }
+    assert vapi.cb_mutations == cb_mutations
+
+
+def test_vapi_get_all_blocks(vapi: ValidationAPI):
+    assert lists_equal_ignore_order(vapi.get_all_blocks(), ALL_SR_BLOCKS)
+
+def test_vapi_get_cb_mutation(vapi: ValidationAPI):
+    assert vapi.get_cb_mutation(SR_BLOCK_CUSTOM_OPCODE) == vapi.cb_mutations[SR_BLOCK_CUSTOM_OPCODE]
+
 
