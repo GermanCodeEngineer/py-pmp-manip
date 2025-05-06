@@ -9,7 +9,7 @@ from pypenguin.core.block          import FRBlock
 from pypenguin.core.block_mutation import FRCustomBlockMutation
 
 # FRBlock
-def test_frblock_from_data():
+def test_frblock_from_data_1():
     data = {
         "opcode": "event_broadcast",
         "next": None,
@@ -34,6 +34,21 @@ def test_frblock_from_data():
     assert frblock.fields    == tuplify(data["fields"])
     assert frblock.shadow    == data["shadow"]
     assert frblock.top_level == data["topLevel"]
+
+def test_frblock_from_data_2():
+    data = {
+        "opcode": "motion_glideto", 
+        "next": None, 
+        "parent": None, 
+        "inputs": {
+            "SECS": [1, [4, "1"]], 
+            "TO": [1, "k"],
+        }, 
+        "fields": {}, 
+        "shadow": False, 
+        "topLevel": False, 
+        "comment": "j",
+    }
 
 def test_frblock_from_data_invalid_mutation():
     data = {
