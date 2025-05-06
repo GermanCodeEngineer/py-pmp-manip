@@ -10,7 +10,8 @@ from pypenguin.core.block          import (
     SRScript, SRBlockOnlyInputValue, SRDropdownValue
 )
 from pypenguin.core.block_mutation import (
-    FRCustomBlockMutation, FRCustomBlockArgumentMutation,
+    FRCustomBlockMutation, FRCustomBlockCallMutation,
+    FRCustomBlockArgumentMutation,
     SRCustomBlockMutation, SRCustomBlockCallMutation,
     SRCustomBlockArgumentMutation, SRStopScriptMutation,
 )
@@ -100,6 +101,32 @@ ALL_FR_BLOCKS = {
             edited=True,
             optype="string",
             color=("#FF6680", "#FF4D6A", "#FF3355")
+        ),
+    ),
+    "t": FRBlock(
+        opcode="procedures_call",
+        next=None,
+        parent=None,
+        inputs={
+            "@#z0NEJ4p%{?+(BDp~@F": [1, [10, "7"]],
+            "}G[ASqXh*6Yj)lUVOc`q": [2, "u"],
+        },
+        fields={},
+        shadow=False,
+        top_level=True,
+        x=716,
+        y=1167,
+        comment=None,
+        mutation=FRCustomBlockCallMutation(
+            tag_name="mutation",
+            children=[],
+            proccode="rep %b %s",
+            argument_ids=["}G[ASqXh*6Yj)lUVOc`q", "@#z0NEJ4p%{?+(BDp~@F"],
+            warp=True,
+            returns=True,
+            edited=True,
+            optype="string",
+            color=["#FF6680", "#FF4D6A", "#FF3355"],
         ),
     ),
     "p": FRBlock(

@@ -50,7 +50,7 @@ class FRProject(GreprClass):
         Returns:
             the FRProject
         """
-        with open("extraced.json", "w") as file:
+        with open("extracted.json", "w") as file:
             dump(data, file)
         return cls(
             targets = [

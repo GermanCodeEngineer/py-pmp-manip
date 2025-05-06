@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 @dataclass(repr=False)
 class FTCAPI(GreprClass):
     """
-    An API which allows the access to other blocks in the same target during conversion from first to temporary representation.
+    An API which allows the access to other blocks in the same target during **c**onversion from **f**irst to **t**emporary representation.
     """
     _grepr = True
     _grepr_fields = ["blocks", "scheduled_block_deletions"]

@@ -17,4 +17,4 @@ print(project)
 
 new_project = project.step(info_api=info_api)
 new_project.validate(info_api=info_api, config=ValidationConfig())
-#print(new_project.sprites[0].scripts)
+print(new_project)

@@ -2,4 +2,5 @@ TODOs:
     - complete tests
     - safely access dictionaries in APIs
     - add "Raises" to docstrings
+    - reorganize opcode_info
     - complete deoptimization

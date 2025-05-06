@@ -89,12 +89,14 @@ class FRBlock(GreprClass):
         Returns:
             the FRBlock
         """
-        if   (len(data) == 3):
-            assert parent_id is not None 
+        if   len(data) == 3:
+            if parent_id is None:
+                raise DeserializationError(f"Invalid parent_id for FRBlock conversion of {data}: {parent_id}")
             x = None
             y = None
-        elif (len(data) == 5): 
-            assert parent_id is None
+        elif len(data) == 5: 
+            if parent_id is not None:
+                raise DeserializationError(f"Invalid parent_id for FRBlock conversion of {data}: {parent_id}")
             x = data[3]
             y = data[4]
         else: raise DeserializationError(f"Invalid data for FRBlock conversion: {data}")
@@ -203,11 +205,11 @@ class FRBlock(GreprClass):
             references      = []
             immediate_block = None
             text            = None
-            
             for item in input_value[1:]: # ignore first item(some irrelevant number)
                 if isinstance(item, str):
                     references.append(TRBlockReference(item))
                 elif isinstance(item, tuple) and item[0] in {4, 5, 6, 7, 8, 9, 10, 11}:
+                    print("HI HERE ITS ACTUALLY", input_id, item)
                     text = item[1]
                 elif isinstance(item, tuple) and item[0] in {12, 13}:
                     immediate_fr_block = FRBlock.from_tuple(item, parent_id=own_id)

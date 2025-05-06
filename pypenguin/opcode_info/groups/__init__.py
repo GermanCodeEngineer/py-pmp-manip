@@ -223,8 +223,8 @@ def PRE__CB_CALL(block: "FRBlock", block_api: "FTCAPI") -> "FRBlock":
     partial_mutation: FRCustomBlockCallMutation = block.mutation
     complete_mutation = block_api.get_cb_mutation(partial_mutation.proccode)
     new_inputs = {}
-    for input_id, input_value in block.inputs.items():
-        argument_index = complete_mutation.argument_ids.index(input_id)
+    for argument_id, input_value in block.inputs.items():
+        argument_index = complete_mutation.argument_ids.index(argument_id)
         argument_name  = complete_mutation.argument_names[argument_index]
         new_inputs[argument_name] = input_value
     block.inputs = new_inputs
