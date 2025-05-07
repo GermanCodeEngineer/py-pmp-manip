@@ -9,7 +9,7 @@ from pypenguin.utility import ValidationConfig
 #file_path = "../assets/from_online/my 1st platformer.pmp"
 #file_path = "../assets/input_modes.pmp"
 #file_path = "../assets/monitors.pmp"
-file_path = "../assets/from_online/dumb example.pmp"
+file_path = "../assets/dumb example.pmp"
 
 project = FRProject.from_pmp_file(file_path, info_api=info_api)
 

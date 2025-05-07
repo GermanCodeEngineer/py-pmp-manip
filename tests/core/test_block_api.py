@@ -108,8 +108,8 @@ ALL_FR_BLOCKS = {
         next=None,
         parent=None,
         inputs={
-            "@#z0NEJ4p%{?+(BDp~@F": [1, [10, "7"]],
-            "}G[ASqXh*6Yj)lUVOc`q": [2, "u"],
+            "@#z0NEJ4p%{?+(BDp~@F": (1, (10, "7")),
+            "}G[ASqXh*6Yj)lUVOc`q": (2, "u"),
         },
         fields={},
         shadow=False,
@@ -126,7 +126,7 @@ ALL_FR_BLOCKS = {
             returns=True,
             edited=True,
             optype="string",
-            color=["#FF6680", "#FF4D6A", "#FF3355"],
+            color=("#FF6680", "#FF4D6A", "#FF3355"),
         ),
     ),
     "p": FRBlock(
@@ -173,7 +173,13 @@ ALL_SR_COMMENTS = {
         size=(200, 200),
         is_minimized=False,
         text="hi from attached comment"
-    )
+    ),
+    "n": SRComment(
+        position=(1019, 727),
+        size=(200, 200),
+        is_minimized=False,
+        text="hi im a block comment",
+    ),
 }
 
 SR_BLOCK_CUSTOM_OPCODE = SRCustomBlockOpcode(

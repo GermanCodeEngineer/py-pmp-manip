@@ -238,15 +238,16 @@ info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
 def FR_STEP__CB_PROTOTYPE(block: "FRBlock", block_api: "FTCAPI") -> "TRBlock":
     # Return an empty, temporary block
     from pypenguin.core.block import TRBlock
+    print("HI FROM SPECIAL")
     return TRBlock(
         opcode       = block.opcode,
-        inputs       = {},
-        dropdowns    = {},
-        position     = None,
-        comment      = None, # Can't possibly have a comment
-        mutation     = None,
-        next         = None,
-        is_top_level = False,
+        inputs       = ...,
+        dropdowns    = ...,
+        position     = ...,
+        comment      = ..., # Can't possibly have a comment
+        mutation     = ...,
+        next         = ...,
+        is_top_level = ...,
     )
 
 info_api.add_opcode_case(OPCODE_CB_PROTOTYPE, SpecialCase(

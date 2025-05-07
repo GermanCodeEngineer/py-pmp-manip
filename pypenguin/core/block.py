@@ -109,7 +109,7 @@ class FRBlock(GreprClass):
                 inputs    = {},
                 fields    = {"VARIABLE": (data[1], data[2], "")},
                 shadow    = False,
-                top_level = x is None,
+                top_level = x is not None,
                 x         = x,
                 y         = y,
                 comment   = None,
@@ -123,7 +123,7 @@ class FRBlock(GreprClass):
                 inputs    = {},
                 fields    = {"LIST": (data[1], data[2], "")},
                 shadow    = False,
-                top_level = x is None,
+                top_level = x is not None,
                 x         = x,
                 y         = y,
                 comment   = None,
@@ -209,7 +209,6 @@ class FRBlock(GreprClass):
                 if isinstance(item, str):
                     references.append(TRBlockReference(item))
                 elif isinstance(item, tuple) and item[0] in {4, 5, 6, 7, 8, 9, 10, 11}:
-                    print("HI HERE ITS ACTUALLY", input_id, item)
                     text = item[1]
                 elif isinstance(item, tuple) and item[0] in {12, 13}:
                     immediate_fr_block = FRBlock.from_tuple(item, parent_id=own_id)
@@ -218,6 +217,7 @@ class FRBlock(GreprClass):
                         info_api  = info_api,
                         own_id    = None, # None is fine, because tuple blocks can't possibly contain more tuple blocks 
                     )
+                else: raise FSCError(f"Invalid input value {input_value} for input {repr(input_id)}")
 
             new_inputs[input_id] = TRInputValue(
                 mode            = input_mode,
@@ -642,7 +642,6 @@ class SRInputValue(GreprClass, ABC):
         if not isinstance(other, SRInputValue):
             return NotImplemented
         for attr in self._grepr_fields:
-            print("trying", repr(attr))
             if attr not in other._grepr_fields:
                 return False
             if getattr(self, attr) != getattr(other, attr):
