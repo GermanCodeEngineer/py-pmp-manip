@@ -5,7 +5,7 @@ from pypenguin.opcode_info        import InputMode
 from pypenguin.opcode_info.groups import info_api
 from pypenguin.important_opcodes  import *
 
-from pypenguin.core.block          import FRBlock, TRBlock, TRBlockReference, TRInputValue
+from pypenguin.core.block          import FRBlock, IRBlock, IRBlockReference, IRInputValue
 from pypenguin.core.block_api      import FTCAPI
 from pypenguin.core.block_mutation import (
     FRCustomBlockMutation, FRCustomBlockCallMutation, FRCustomBlockArgumentMutation,
@@ -16,7 +16,7 @@ from pypenguin.core.custom_block   import (
     SRCustomBlockOptype
 )
 
-from tests.core.test_block_api import ALL_FR_BLOCKS, ALL_SR_COMMENTS
+from tests.core.test_block_api import ALL_FR_BLOCKS, ALL_FR_BLOCK_DATAS, ALL_SR_COMMENTS
 
 @fixture
 def block_api():
@@ -27,45 +27,21 @@ def block_api():
 
 # FRBlock
 def test_frblock_from_data():
-    data = {
-        "opcode": "event_broadcast",
-        "next": None,
-        "parent": None,
-        "inputs": {
-            "BROADCAST_INPUT": [
-                1, [11, "hbn", "ajUzOI^,`@L4q@F6iXUp"],
-            ],
-        },
-        "fields": {},
-        "shadow": False,
-        "topLevel": True,
-        "x": 107,
-        "y": 313,
-    }
+    data = ALL_FR_BLOCK_DATAS["d"]
     frblock = FRBlock.from_data(data, info_api=info_api)
     assert isinstance(frblock, FRBlock)
     assert frblock.opcode    == data["opcode"]
     assert frblock.next      == data["next"]
     assert frblock.parent    == data["parent"]
-    assert frblock.inputs    == tuplify(data["inputs"])
-    assert frblock.fields    == tuplify(data["fields"])
+    assert frblock.inputs    == {
+        "BROADCAST_INPUT": (1, (11, "my message", "]zYMvs0rF)-eOEt26c|,")),
+    }
+    assert frblock.fields    == {}
     assert frblock.shadow    == data["shadow"]
     assert frblock.top_level == data["topLevel"]
 
 def test_frblock_from_data_comment():
-    data = {
-        "opcode": "motion_glideto", 
-        "next": None, 
-        "parent": "e", 
-        "inputs": {
-            "SECS": [1, [4, "1"]], 
-            "TO": [1, "k"],
-        }, 
-        "fields": {}, 
-        "shadow": False, 
-        "topLevel": False, 
-        "comment": "j",
-    }
+    data = ALL_FR_BLOCK_DATAS["b"]
     frblock = FRBlock.from_data(data, info_api=info_api)
     assert isinstance(frblock, FRBlock)
     assert frblock.x       is None
@@ -73,28 +49,13 @@ def test_frblock_from_data_comment():
     assert frblock.comment == data["comment"]
 
 def test_frblock_from_data_invalid_mutation():
-    data = {
-        "opcode": "event_broadcast",
-        "next": None,
-        "parent": None,
-        "inputs": {
-            "BROADCAST_INPUT": [
-                1, [11, "hbn", "ajUzOI^,`@L4q@F6iXUp"],
-            ],
-        },
-        "fields": {},
-        "shadow": False,
-        "topLevel": True,
-        "x": 107,
-        "y": 313,
-        "mutation": {...},
-    }
+    data = ALL_FR_BLOCK_DATAS["d"] | {"mutation": {...}}
     with raises(DeserializationError):
         FRBlock.from_data(data, info_api=info_api)
 
 def test_frblock_from_data_missing_mutation():
     data = {
-        "opcode": "argument_reporter_boolean",
+        "opcode": "argument_reporter_boolean", #3
         "next": None,
         "parent": "a",
         "inputs": {},
@@ -109,7 +70,7 @@ def test_frblock_from_data_missing_mutation():
 
 def test_frblock_from_data_valid_mutation():
     data = {
-        "opcode": "procedures_prototype",
+        "opcode": "procedures_prototype", #4
         "next": None,
         "parent": "h",
         "inputs": {
@@ -190,8 +151,9 @@ def test_frblock_from_tuple_invalid():
 
 def test_frblock_step(block_api: FTCAPI):
     # TODO: next
+    frblock = ALL_FR_BLOCKS["f"]
     frblock = FRBlock(
-        opcode="operator_random",
+        opcode="operator_random", #5
         next=None,
         parent="m",
         inputs={
@@ -211,19 +173,19 @@ def test_frblock_step(block_api: FTCAPI):
         info_api=info_api,
         own_id="e",
     )
-    assert isinstance(trblock, TRBlock)
+    assert isinstance(trblock, IRBlock)
     assert trblock.opcode       == frblock.opcode
     assert trblock.inputs       == {
-        "FROM": TRInputValue(
+        "FROM": IRInputValue(
             mode=InputMode.BLOCK_AND_TEXT,
             references=[],
             immediate_block=None,
             text="1",
         ),
-        "TO": TRInputValue(
+        "TO": IRInputValue(
             mode=InputMode.BLOCK_AND_TEXT,
             references=[],
-            immediate_block=TRBlock(
+            immediate_block=IRBlock(
                 opcode=OPCODE_VAR_VALUE,
                 inputs={},
                 dropdowns={"VARIABLE": "priv"},
@@ -238,14 +200,14 @@ def test_frblock_step(block_api: FTCAPI):
     }
     assert trblock.dropdowns    == {}
     assert trblock.position     is None
-    assert trblock.comment      == block_api.get_comment("n")
+    assert trblock.comment      is None
     assert trblock.mutation     is None
     assert trblock.next         is None
     assert trblock.is_top_level is False
 
 def test_frblock_step_cb_def(block_api: FTCAPI):
     frblock = FRBlock(
-        opcode="procedures_definition_return",
+        opcode="procedures_definition_return", #6
         next=None,
         parent=None,
         inputs={
@@ -264,7 +226,7 @@ def test_frblock_step_cb_def(block_api: FTCAPI):
         info_api=info_api,
         own_id="h",
     )
-    assert isinstance(trblock, TRBlock)
+    assert isinstance(trblock, IRBlock)
     assert trblock.opcode       == frblock.opcode
     assert trblock.inputs       == {}
     assert trblock.dropdowns    == {}
@@ -289,7 +251,7 @@ def test_frblock_step_cb_def(block_api: FTCAPI):
 
 def test_frblock_step_cb_prototype(block_api: FTCAPI):
     frblock = FRBlock(
-        opcode="procedures_prototype",
+        opcode="procedures_prototype", #4
         next=None,
         parent="h",
         inputs={
@@ -320,7 +282,7 @@ def test_frblock_step_cb_prototype(block_api: FTCAPI):
         info_api=info_api,
         own_id="b",
     )
-    assert isinstance(trblock, TRBlock) # An empty block which will be deleted in the next step
+    assert isinstance(trblock, IRBlock) # An empty block which will be deleted in the next step
     assert trblock.opcode       == frblock.opcode
     assert trblock.inputs       == ...
     assert trblock.dropdowns    == ...
@@ -332,7 +294,7 @@ def test_frblock_step_cb_prototype(block_api: FTCAPI):
 
 def test_frblock_step_cb_arg(block_api: FTCAPI):
     frblock = FRBlock(
-        opcode="argument_reporter_string_number",
+        opcode="argument_reporter_string_number", #3
         next=None,
         parent="b",
         inputs={},
@@ -354,7 +316,7 @@ def test_frblock_step_cb_arg(block_api: FTCAPI):
         info_api=info_api,
         own_id="q",
     )
-    assert isinstance(trblock, TRBlock)
+    assert isinstance(trblock, IRBlock)
     assert trblock.opcode       == frblock.opcode
     assert trblock.inputs       == {}
     assert trblock.dropdowns    == {}
@@ -371,7 +333,7 @@ def test_frblock_step_cb_arg(block_api: FTCAPI):
 
 def test_frblock_step_cb_call(block_api: FTCAPI):    
     frblock = FRBlock(
-        opcode="procedures_call",
+        opcode="procedures_call", #7
         next=None,
         parent=None,
         inputs={
@@ -401,16 +363,16 @@ def test_frblock_step_cb_call(block_api: FTCAPI):
         info_api=info_api,
         own_id="t",
     )
-    assert isinstance(trblock, TRBlock)
+    assert isinstance(trblock, IRBlock)
     assert trblock.opcode       == frblock.opcode
     assert trblock.inputs       == {
-        "booleano": TRInputValue(
+        "booleano": IRInputValue(
             mode=InputMode.BLOCK_ONLY,
-            references=[TRBlockReference(id="u")],
+            references=[IRBlockReference(id="u")],
             immediate_block=None,
             text=None,
         ),
-        "number in": TRInputValue(
+        "number in": IRInputValue(
             mode=InputMode.BLOCK_AND_TEXT,
             references=[],
             immediate_block=None,

@@ -69,8 +69,8 @@ class FRMonitor(GreprClass):
             visible     = data["visible"   ],
             
             # Properties for some opcodes
-            width       = data["width"     ],
-            height      = data["height"    ],
+            width       = 100 if data["width" ] == 0 else data["width" ],
+            height      = 120 if data["height"] == 0 else data["height"],
             slider_min  = data.get("sliderMin" , None),
             slider_max  = data.get("sliderMax" , None),
             is_discrete = data.get("isDiscrete", None),

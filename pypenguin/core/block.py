@@ -25,7 +25,7 @@ class FRBlock(GreprClass):
 
     opcode: str
     next: str | None
-    parent: str
+    parent: str | None
     inputs: dict[str, (
        tuple[int, str | tuple] 
      | tuple[int, str | tuple, str | tuple]
@@ -33,10 +33,10 @@ class FRBlock(GreprClass):
     fields: dict[str, tuple[str, str] | tuple[str, str, str]]
     shadow: bool
     top_level: bool
-    x: int | float | None
-    y: int | float | None
-    comment: str | None # a comment id
-    mutation: "FRMutation | None"
+    x: int | float | None = None
+    y: int | float | None = None
+    comment: str | None = None # a comment id
+    mutation: "FRMutation | None" = None
 
     @classmethod
     def from_data(cls, data: dict[str, Any], info_api: OpcodeInfoAPI) -> "FRBlock":
@@ -135,16 +135,16 @@ class FRBlock(GreprClass):
         block_api: FTCAPI, 
         info_api: OpcodeInfoAPI, 
         own_id: str
-    ) -> "TRBlock":
+    ) -> "IRBlock":
         """
-        Converts a FRBlock into a TRBlock
+        Converts a FRBlock into a IRBlock
         
         Args:
             block_api: API used to fetch information about other blocks
             info_api: the opcode info api used to fetch information about opcodes
         
         Returns:
-            the TRBlock
+            the IRBlock
         """
         opcode_info = info_api.get_info_by_old(self.opcode)
         pre_handler = opcode_info.get_special_case(SpecialCaseType.PRE_FR_STEP)
@@ -163,7 +163,7 @@ class FRBlock(GreprClass):
             for dropdown_id, dropdown_value in self.fields.items():
                 new_dropdowns[dropdown_id] = dropdown_value[0]
             
-            new_block = TRBlock(
+            new_block = IRBlock(
                 opcode       = self.opcode,
                 inputs       = new_inputs,
                 dropdowns    = new_dropdowns,
@@ -172,7 +172,7 @@ class FRBlock(GreprClass):
                 mutation     = None if self.mutation is None else self.mutation.step(
                     block_api = block_api,
                 ),
-                next         = None if self.next     is None else TRBlockReference(self.next),
+                next         = None if self.next     is None else IRBlockReference(self.next),
                 is_top_level = self.top_level,
             )
         else:
@@ -184,9 +184,9 @@ class FRBlock(GreprClass):
         info_api: OpcodeInfoAPI,
         opcode_info: OpcodeInfo,
         own_id: str
-    ) -> dict[str, "TRInputValue"]:
+    ) -> dict[str, "IRInputValue"]:
         """
-        Converts the inputs of a FRBlock into the TR Fromat
+        Converts the inputs of a FRBlock into the IR Fromat
         
         Args:
             block_api: API used to fetch information about other blocks
@@ -194,7 +194,7 @@ class FRBlock(GreprClass):
             opcode_info: the Information about the block's opcode
         
         Returns:
-            the inputs in TR Format
+            the inputs in IR Format
         """
         input_modes = opcode_info.get_old_input_ids_modes(block=self, block_api=block_api)
         
@@ -207,7 +207,7 @@ class FRBlock(GreprClass):
             text            = None
             for item in input_value[1:]: # ignore first item(some irrelevant number)
                 if isinstance(item, str):
-                    references.append(TRBlockReference(item))
+                    references.append(IRBlockReference(item))
                 elif isinstance(item, tuple) and item[0] in {4, 5, 6, 7, 8, 9, 10, 11}:
                     text = item[1]
                 elif isinstance(item, tuple) and item[0] in {12, 13}:
@@ -219,7 +219,7 @@ class FRBlock(GreprClass):
                     )
                 else: raise FSCError(f"Invalid input value {input_value} for input {repr(input_id)}")
 
-            new_inputs[input_id] = TRInputValue(
+            new_inputs[input_id] = IRInputValue(
                 mode            = input_mode,
                 references      = references,
                 immediate_block = immediate_block,
@@ -231,7 +231,7 @@ class FRBlock(GreprClass):
             if input_id in new_inputs:
                 continue
             if input_mode.can_be_missing():
-                new_inputs[input_id] = TRInputValue(
+                new_inputs[input_id] = IRInputValue(
                     mode            = input_mode,
                     references      = [],
                     immediate_block = None,
@@ -242,29 +242,30 @@ class FRBlock(GreprClass):
         return new_inputs
 
 
+
 @dataclass(repr=False)
-class TRBlock(GreprClass):
+class IRBlock(GreprClass):
     """
-    The temporary representation for a block. It has similarities with SRBlock but uses an id system
+    The intermediate representation for a block. It has similarities with SRBlock but uses an id system
     """
     _grepr = True
     _grepr_fields = ["opcode", "inputs", "dropdowns", "comment", "mutation", "position", "next", "is_top_level"]
     
     opcode: str
-    inputs: dict[str, "TRInputValue"]
+    inputs: dict[str, "IRInputValue"]
     dropdowns: dict[str, Any]
     comment: SRComment | None
     mutation: "SRMutation | None"
     position: tuple[int | float, int | float] | None
-    next: "TRBlockReference | None"
+    next: "IRBlockReference | None"
     is_top_level: bool
 
     def step(self, 
-        all_blocks: dict[str, "TRBlock"],
+        all_blocks: dict[str, "IRBlock"],
         info_api: OpcodeInfoAPI,
     ) -> tuple[tuple[int|float,int|float] | None, list["SRBlock | str"]]:
         """
-        Converts a TRBlock into a SRBlock
+        Converts a IRBlock into a SRBlock
         
         Args:
             all_blocks: a dictionary of all blocks
@@ -285,7 +286,7 @@ class TRBlock(GreprClass):
             --> "_mouse_" """
         
         old_new_input_ids = opcode_info.get_old_new_input_ids(block=self, block_api=None)
-        # maps old input ids to new input ids # block_api isn't necessary for a TRBlock 
+        # maps old input ids to new input ids # block_api isn't necessary for a IRBlock 
         
         new_inputs = {}
         for input_id, input_value in self.inputs.items():
@@ -372,7 +373,7 @@ class TRBlock(GreprClass):
             )
         
         input_types = opcode_info.get_new_input_ids_types(block=self, block_api=None) 
-        # maps input ids to their types # block_api isn't necessary for a TRBlock
+        # maps input ids to their types # block_api isn't necessary for a IRBlock
         for new_input_id in input_types.keys():
             if new_input_id not in new_inputs:
                 input_mode = input_types[new_input_id].get_mode()
@@ -406,27 +407,28 @@ class TRBlock(GreprClass):
         return (self.position, new_blocks) 
  
 @dataclass(repr=False)
-class TRInputValue(GreprClass):
+class IRInputValue(GreprClass):
     """
-    The temporary representation for the value of a block's input
+    The intermediate representation for the value of a block's input
     """
     _grepr = True
     _grepr_fields = ["mode", "references", "immediate_block", "text"]
     
     mode: InputMode
-    references: list["TRBlockReference"]
-    immediate_block: TRBlock | None
+    references: list["IRBlockReference"]
+    immediate_block: IRBlock | None
     text: str | None
 
 @dataclass(repr=False, frozen=True, unsafe_hash=True)
-class TRBlockReference(GreprClass):
+class IRBlockReference(GreprClass):
     """
-    A block reference in  temporary representation. Basis for the temporary id system
+    A block reference in intermediate representation. Basis for the temporary id system
     """
     _grepr = True
     _grepr_fields = ["id"]
     
     id: str
+
 
 
 @dataclass(repr=False)
@@ -544,7 +546,7 @@ class SRBlock(GreprClass):
             self.mutation.validate(path+["mutation"], config)
 
         input_types = opcode_info.get_new_input_ids_types(block=self, block_api=None) 
-        # maps input ids to their types # block_api isn't necessary for a TRBlock
+        # maps input ids to their types # block_api isn't necessary for a IRBlock
         
         for new_input_id, input in self.inputs.items():
             if new_input_id not in input_types.keys():
@@ -619,7 +621,8 @@ class SRBlock(GreprClass):
             elif not(is_first and is_last):
                 raise InvalidBlockShapeError(path, "If contained in a substack, a block of type ...REPORTER must be the only block in that substack")
 
-@dataclass(repr=False, eq=False)
+
+@dataclass(repr=False, eq=False, init=False)
 class SRInputValue(GreprClass, ABC):
     """
     The second representation for a block input. 
@@ -736,7 +739,6 @@ class SRInputValue(GreprClass, ABC):
                 context          = context,
                 expects_reporter = True,
             )
-    
 
 @dataclass(repr=False, eq=False)
 class SRBlockAndTextInputValue(SRInputValue):

@@ -108,7 +108,7 @@ def AA_BOXED_COORD_PAIR(obj, path, attr,
         or (attr_value[0] < min_x) or (attr_value[0] > max_x)
         or (attr_value[1] < min_y) or (attr_value[1] > max_y)
     ):
-        raise TypeValidationError(path, f"{descr} must be a coordinate pair. It must be a tuple of length 2. Each item must be an int or float. The first coordinate must be in range from {min_x} to {max_x}. The second coordinate must be in range from {min_y} to {max_y}", condition)
+        raise TypeValidationError(path, f"{descr} must be a coordinate pair. It must be a tuple of length 2. Each item must be an int or float. The first coordinate must be in range from {min_x} to {max_x}. The second coordinate must be in range from {min_y} to {max_y} not {attr_value}", condition)
 
 def AA_JSON_COMPATIBLE(obj, path, attr, condition=None):
     attr_value, descr = value_and_descr(obj, attr)

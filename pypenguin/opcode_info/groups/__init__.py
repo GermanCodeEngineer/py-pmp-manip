@@ -19,7 +19,7 @@ from pypenguin.opcode_info.groups.variables import variables
 from pypenguin.opcode_info.groups.lists     import lists
 
 if TYPE_CHECKING:
-    from pypenguin.core.block          import FRBlock, TRBlock, SRBlock
+    from pypenguin.core.block          import FRBlock, IRBlock, SRBlock
     from pypenguin.core.block_api   import FTCAPI, ValidationAPI
 
 from pypenguin.core.block_mutation import FRCustomBlockMutation, FRCustomBlockArgumentMutation, FRCustomBlockCallMutation, FRStopScriptMutation, SRCustomBlockMutation, SRCustomBlockArgumentMutation, SRCustomBlockCallMutation, SRStopScriptMutation
@@ -162,7 +162,7 @@ info_api.set_opcode_mutation_class(OPCODE_CB_CALL, old_cls=FRCustomBlockCallMuta
 
 # Special Cases
 
-def GET_OPCODE_TYPE__STOP_SCRIPT(block: "SRBlock|TRBlock", validation_api: "ValidationAPI") -> OpcodeType:
+def GET_OPCODE_TYPE__STOP_SCRIPT(block: "SRBlock|IRBlock", validation_api: "ValidationAPI") -> OpcodeType:
     from pypenguin.core.block_mutation import SRStopScriptMutation
     mutation: SRStopScriptMutation = block.mutation
     return OpcodeType.ENDING_STATEMENT if mutation.is_ending_statement else OpcodeType.STATEMENT
@@ -172,7 +172,7 @@ info_api.add_opcode_case(OPCODE_STOP_SCRIPT, SpecialCase(
     function=GET_OPCODE_TYPE__STOP_SCRIPT,
 ))
 
-def GET_OPCODE_TYPE__CB_CALL(block: "SRBlock|TRBlock", validation_api: "ValidationAPI") -> OpcodeType:
+def GET_OPCODE_TYPE__CB_CALL(block: "SRBlock|IRBlock", validation_api: "ValidationAPI") -> OpcodeType:
     # Get the complete mutation and derive OpcodeType from optype
     from pypenguin.core.block_mutation import SRCustomBlockCallMutation
     partial_mutation: SRCustomBlockCallMutation = block.mutation
@@ -195,6 +195,7 @@ def PRE__CB_DEF(block: "FRBlock", block_api: "FTCAPI") -> "FRBlock":
     del block.inputs["custom_block"]
      
     for block_candidate_id, block_candidate in block_api.get_all_blocks().items():
+        block_candidate
         if block_candidate.parent == prototype_id:
             block_api.schedule_block_deletion(block_candidate_id)
     return block
@@ -235,11 +236,10 @@ info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
     function=PRE__CB_CALL,
 ))
 
-def FR_STEP__CB_PROTOTYPE(block: "FRBlock", block_api: "FTCAPI") -> "TRBlock":
+def FR_STEP__CB_PROTOTYPE(block: "FRBlock", block_api: "FTCAPI") -> "IRBlock":
     # Return an empty, temporary block
-    from pypenguin.core.block import TRBlock
-    print("HI FROM SPECIAL")
-    return TRBlock(
+    from pypenguin.core.block import IRBlock
+    return IRBlock(
         opcode       = block.opcode,
         inputs       = ...,
         dropdowns    = ...,
@@ -256,7 +256,7 @@ info_api.add_opcode_case(OPCODE_CB_PROTOTYPE, SpecialCase(
 ))
 
 def GET_ALL_INPUT_TYPES__CB_CALL(
-    block: "FRBlock|TRBlock|SRBlock", block_api: "FTCAPI|None"
+    block: "FRBlock|IRBlock|SRBlock", block_api: "FTCAPI|None"
 ) -> DualKeyDict[str, str, InputType]:
     from pypenguin.core.block_mutation import FRCustomBlockCallMutation, SRCustomBlockCallMutation
     from pypenguin.core.block import FRBlock

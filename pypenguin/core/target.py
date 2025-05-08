@@ -7,7 +7,7 @@ from pypenguin.utility     import AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_MIN, AA
 from pypenguin.opcode_info import OpcodeInfoAPI, DropdownValueKind
 
 from pypenguin.core.asset          import FRCostume, FRSound, SRCostume, SRSound
-from pypenguin.core.block          import FRBlock, TRBlock, SRScript, TRBlockReference
+from pypenguin.core.block          import FRBlock, IRBlock, SRScript, IRBlockReference
 from pypenguin.core.block_mutation import SRCustomBlockMutation
 from pypenguin.core.comment        import FRComment, SRComment
 from pypenguin.core.context        import PartialContext, CompleteContext
@@ -31,7 +31,7 @@ class FRTarget(GreprClass):
     variables: dict[str, tuple[str, Any]]
     lists: dict[str, tuple[str, Any]]
     broadcasts: dict[str, str]
-    custom_vars: list | None
+    custom_vars: list
     blocks: dict[str, tuple | FRBlock]
     comments: dict[str, FRComment]
     current_costume: int
@@ -137,20 +137,21 @@ class FRTarget(GreprClass):
                 blocks[block_reference] = FRBlock.from_tuple(block, parent_id=None)
 
         block_api = FTCAPI(blocks=blocks, block_comments=attached_comments)
-        new_blocks: dict["TRBlockReference", "TRBlock"] = {}
+        new_blocks: dict["IRBlockReference", "IRBlock"] = {}
         for block_reference, block in blocks.items():
             new_block = block.step(
                 block_api = block_api,
                 info_api  = info_api,
                 own_id    = block_reference,
             )
-            new_blocks[TRBlockReference(id=block_reference)] = new_block
+            new_blocks[IRBlockReference(id=block_reference)] = new_block
 
         for block_reference in block_api.scheduled_block_deletions:
-            del new_blocks[TRBlockReference(id=block_reference)]
+            del new_blocks[IRBlockReference(id=block_reference)]
+        print(new_blocks)
         
         # Get all top level block ids
-        top_level_block_refs: list[TRBlockReference] = []
+        top_level_block_refs: list[IRBlockReference] = []
         [top_level_block_refs.append(block_reference) if block.is_top_level else None for block_reference, block in new_blocks.items()]
         
         # Account for that one bug(not my fault), where a block is falsely independent

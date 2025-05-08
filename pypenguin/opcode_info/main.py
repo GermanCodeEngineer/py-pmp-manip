@@ -8,7 +8,7 @@ from pypenguin.opcode_info.dropdown     import DropdownInfo
 from pypenguin.opcode_info.special_case import SpecialCase, SpecialCaseType
 
 if TYPE_CHECKING:
-    from pypenguin.core.block import FRBlock, TRBlock, SRBlock
+    from pypenguin.core.block import FRBlock, IRBlock, SRBlock
     from pypenguin.core.block_api import FTCAPI, ValidationAPI
     from pypenguin.core.block_mutation import FRMutation, SRMutation
 
@@ -223,7 +223,7 @@ class OpcodeInfo:
     ##############################################################
     
     # Get the opcode type. Avoid OpcodeType.DYNAMIC
-    def get_opcode_type(self, block: "TRBlock|SRBlock", validation_api: "ValidationAPI") -> OpcodeType:
+    def get_opcode_type(self, block: "IRBlock|SRBlock", validation_api: "ValidationAPI") -> OpcodeType:
         instead_case = self.get_special_case(SpecialCaseType.GET_OPCODE_TYPE)
         if self.opcode_type == OpcodeType.DYNAMIC:
             assert instead_case is not None, "If opcode_type is DYNAMIC, a special case with type GET_OPCODE_TYPE must be defined"
@@ -234,7 +234,7 @@ class OpcodeInfo:
     
     # Get input ids, types, modes
     def get_input_ids_types(self, 
-        block: "FRBlock|TRBlock|SRBlock", block_api: "FTCAPI|None",
+        block: "FRBlock|IRBlock|SRBlock", block_api: "FTCAPI|None",
     ) -> DualKeyDict[str, str, InputType]:
         """
         Get all the old and new inputs ids and their input types.
@@ -256,7 +256,7 @@ class OpcodeInfo:
             return instead_case.call(block=block, block_api=block_api)
     
     def get_new_input_ids_types(self, 
-        block: "FRBlock|TRBlock|SRBlock", block_api: "FTCAPI|None",
+        block: "FRBlock|IRBlock|SRBlock", block_api: "FTCAPI|None",
     ) -> dict[str, InputType]:
         """
         Get all the new inputs ids and their input types.
@@ -271,7 +271,7 @@ class OpcodeInfo:
         return dict(self.get_input_ids_types(block, block_api).items_key2())
     
     def get_old_input_ids_modes(self, 
-        block: "FRBlock|TRBlock|SRBlock", block_api: "FTCAPI|None",
+        block: "FRBlock|IRBlock|SRBlock", block_api: "FTCAPI|None",
     ) -> dict[str, InputMode]:
         """
         Get all the old inputs ids and their input modes.
@@ -290,7 +290,7 @@ class OpcodeInfo:
     
     # Get new input id
     def get_old_new_input_ids(self, 
-        block: "FRBlock|TRBlock|SRBlock", block_api: "FTCAPI|None",
+        block: "FRBlock|IRBlock|SRBlock", block_api: "FTCAPI|None",
     ) -> dict[str, str]:
         """
         Get all the old and new inputs id.
