@@ -2,9 +2,12 @@ from typing      import Any
 from dataclasses import dataclass, field
 from abc         import ABC, abstractmethod
 
-from pypenguin.utility           import GreprClass, get_closest_matches, tuplify, ValidationConfig, DeserializationError, FSCError
-from pypenguin.utility           import AA_TYPE, AA_NONE, AA_NONE_OR_TYPE, AA_COORD_PAIR, AA_LIST_OF_TYPE, AA_DICT_OF_TYPE, AA_MIN_LEN, AA_EQUAL
-from pypenguin.utility           import UnnecessaryInputError, MissingInputError, UnnecessaryDropdownError, MissingDropdownError, InvalidOpcodeError, InvalidBlockShapeError
+from pypenguin.utility           import (
+    GreprClass, ValidationConfig, get_closest_matches, tuplify,
+    AA_TYPE, AA_NONE, AA_NONE_OR_TYPE, AA_COORD_PAIR, AA_LIST_OF_TYPE, AA_DICT_OF_TYPE, AA_MIN_LEN,
+    DeserializationError, FirstToInterConversionError, InterToSecondConversionError,
+    UnnecessaryInputError, MissingInputError, UnnecessaryDropdownError, MissingDropdownError, InvalidOpcodeError, InvalidBlockShapeError,
+)
 from pypenguin.opcode_info       import OpcodeInfoAPI, OpcodeInfo, InputType, InputMode, OpcodeType, SpecialCaseType
 from pypenguin.important_opcodes import *
 
@@ -13,7 +16,7 @@ from pypenguin.core.block_mutation import SRMutation
 from pypenguin.core.comment        import SRComment
 from pypenguin.core.context        import CompleteContext
 from pypenguin.core.dropdown       import SRDropdownValue
-from pypenguin.core.block_api      import FTCAPI, ValidationAPI
+from pypenguin.core.block_api      import FICAPI, ValidationAPI
 
 @dataclass(repr=False)
 class FRBlock(GreprClass):
@@ -132,7 +135,7 @@ class FRBlock(GreprClass):
         else: raise DeserializationError(f"Invalid constant(first element) for FRBlock conversion: {data[0]}")
 
     def step(self, 
-        block_api: FTCAPI, 
+        block_api: FICAPI, 
         info_api: OpcodeInfoAPI, 
         own_id: str
     ) -> "IRBlock":
@@ -180,7 +183,7 @@ class FRBlock(GreprClass):
         return new_block
 
     def step_inputs(self, 
-        block_api: FTCAPI, 
+        block_api: FICAPI, 
         info_api: OpcodeInfoAPI,
         opcode_info: OpcodeInfo,
         own_id: str
@@ -217,7 +220,7 @@ class FRBlock(GreprClass):
                         info_api  = info_api,
                         own_id    = None, # None is fine, because tuple blocks can't possibly contain more tuple blocks 
                     )
-                else: raise FSCError(f"Invalid input value {input_value} for input {repr(input_id)}")
+                else: raise FirstToInterConversionError(f"Invalid input value {input_value} for input {repr(input_id)}")
 
             new_inputs[input_id] = IRInputValue(
                 mode            = input_mode,
@@ -237,7 +240,7 @@ class FRBlock(GreprClass):
                     immediate_block = None,
                     text            = None,
                 )
-            else: raise FSCError(f"Didn't expect input {repr(input_id)} missing")
+            else: raise FirstToInterConversionError(f"Didn't expect input {repr(input_id)} missing")
         
         return new_inputs
 
@@ -290,7 +293,7 @@ class IRBlock(GreprClass):
         
         new_inputs = {}
         for input_id, input_value in self.inputs.items():
-            sub_scripts = []
+            sub_scripts: list[list[SRBlock|str]] = []
             if input_value.immediate_block is not None:
                 _, sub_blocks = input_value.immediate_block.step(
                     all_blocks = all_blocks,
@@ -319,7 +322,7 @@ class IRBlock(GreprClass):
                 sub_script  = []
                 sub_block_a = None
                 sub_block_b = None
-            else: raise FSCError(f"Invalid script count {script_count}")
+            else: raise InterToSecondConversionError(f"Invalid script count {script_count}")
             
             input_blocks   = []
             input_block    = None
@@ -380,7 +383,7 @@ class IRBlock(GreprClass):
                 if input_mode.can_be_missing():
                     new_inputs[new_input_id] = SRInputValue.from_mode(mode=input_mode)
                 else:
-                    raise FSCError(f"For a block with opcode {repr(self.opcode)}, input {repr(new_input_id)} is missing")
+                    raise InterToSecondConversionError(f"For a block with opcode {repr(self.opcode)}, input {repr(new_input_id)} is missing")
         
         new_dropdowns = {}
         for dropdown_id, dropdown_value in self.dropdowns.items():

@@ -107,7 +107,8 @@ def test_srcostume_validate(config):
             ("rotation_center", [], TypeValidationError),
             ("bitmap_resolution", "hi", TypeValidationError),
         ],
-        validate_func=lambda obj: obj.validate(path=[], config=config)
+        validate_func=SRCostume.validate,
+        func_args=[[], config],
     )
 
 # SRSound
@@ -124,5 +125,6 @@ def test_srsound_validate(config):
             ("name", 5, TypeValidationError),
             ("file_extension", {}, TypeValidationError),
         ],
-        validate_func=lambda obj: obj.validate(path=[], config=config),
+        validate_func=SRSound.validate,
+        func_args=[[], config],
     )

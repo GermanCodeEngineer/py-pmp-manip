@@ -13,7 +13,7 @@ from pypenguin.core.comment        import FRComment, SRComment
 from pypenguin.core.context        import PartialContext, CompleteContext
 from pypenguin.core.dropdown       import SRDropdownValue
 from pypenguin.core.enums          import SRSpriteRotationStyle
-from pypenguin.core.block_api      import FTCAPI, ValidationAPI
+from pypenguin.core.block_api      import FICAPI, ValidationAPI
 from pypenguin.core.monitor        import SRMonitor
 from pypenguin.core.vars_lists     import SRVariable, SRVariable, SRVariable, SRCloudVariable
 from pypenguin.core.vars_lists     import SRList, SRList, SRList
@@ -136,7 +136,7 @@ class FRTarget(GreprClass):
             if isinstance(block, tuple):
                 blocks[block_reference] = FRBlock.from_tuple(block, parent_id=None)
 
-        block_api = FTCAPI(blocks=blocks, block_comments=attached_comments)
+        block_api = FICAPI(blocks=blocks, block_comments=attached_comments)
         new_blocks: dict["IRBlockReference", "IRBlock"] = {}
         for block_reference, block in blocks.items():
             new_block = block.step(

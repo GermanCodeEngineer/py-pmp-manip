@@ -2,7 +2,7 @@ from pytest import fixture, raises
 from json   import dumps
 
 from pypenguin.utility import (
-    DeserializationError, FSCError, ThanksError, 
+    DeserializationError, FirstToSecondConversionError, ThanksError, 
     ValidationConfig, TypeValidationError, InvalidValueError
 )
 
@@ -114,7 +114,7 @@ def test_argument_mutation_step_without_storing_argument(api: DummyAPI):
     }
     frmutation = FRCustomBlockArgumentMutation.from_data(data)
 
-    with raises(FSCError):
+    with raises(FirstToSecondConversionError):
         frmutation.step(api)
 
 
@@ -263,7 +263,8 @@ def test_argument_mutation_validate(config):
             ("color3", (), TypeValidationError),
             ("color3", "255", InvalidValueError),
         ],
-        validate_func=lambda obj: obj.validate(path=[], config=config)
+        validate_func=SRCustomBlockArgumentMutation.validate,
+        func_args=[[], config],
     )
 
 def test_custom_block_mutation_validate(config):
@@ -290,7 +291,8 @@ def test_custom_block_mutation_validate(config):
             ("color3", (), TypeValidationError),
             ("color3", "255", InvalidValueError),
         ],
-        validate_func=lambda obj: obj.validate(path=[], config=config)
+        validate_func=SRCustomBlockMutation.validate,
+        func_args=[[], config],
     )
     
     
@@ -306,7 +308,8 @@ def test_custom_block_call_mutation_validate(config):
         attr_tests=[
             ("custom_opcode", "some custom opcode", TypeValidationError),
         ],
-        validate_func=lambda obj: obj.validate(path=[], config=config)
+        validate_func=SRCustomBlockCallMutation.validate,
+        func_args=[[], config],
     )
 
 def test_stop_script_mutation_validate(config):
@@ -321,7 +324,8 @@ def test_stop_script_mutation_validate(config):
         attr_tests=[
             ("is_ending_statement", {...}, TypeValidationError),
         ],
-        validate_func=lambda obj: obj.validate(path=[], config=config)
+        validate_func=SRStopScriptMutation.validate,
+        func_args=[[], config],
     )
     
 

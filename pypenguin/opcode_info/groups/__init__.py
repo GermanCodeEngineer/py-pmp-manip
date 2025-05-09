@@ -20,7 +20,7 @@ from pypenguin.opcode_info.groups.lists     import lists
 
 if TYPE_CHECKING:
     from pypenguin.core.block          import FRBlock, IRBlock, SRBlock
-    from pypenguin.core.block_api   import FTCAPI, ValidationAPI
+    from pypenguin.core.block_api   import FICAPI, ValidationAPI
 
 from pypenguin.core.block_mutation import FRCustomBlockMutation, FRCustomBlockArgumentMutation, FRCustomBlockCallMutation, FRStopScriptMutation, SRCustomBlockMutation, SRCustomBlockArgumentMutation, SRCustomBlockCallMutation, SRStopScriptMutation
 
@@ -184,7 +184,7 @@ info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
     function=GET_OPCODE_TYPE__CB_CALL,
 ))
 
-def PRE__CB_DEF(block: "FRBlock", block_api: "FTCAPI") -> "FRBlock":
+def PRE__CB_DEF(block: "FRBlock", block_api: "FICAPI") -> "FRBlock":
     # Transfer mutation from prototype block to definition block
     # Order deletion of the prototype block and its argument blocks
     # Delete "custom_block" input, which references the prototype
@@ -205,7 +205,7 @@ info_api.add_opcodes_case(ANY_OPCODE_CB_DEF, SpecialCase(
     function=PRE__CB_DEF,
 ))
 
-def PRE__CB_ARG(block: "FRBlock", block_api: "FTCAPI") -> "FRBlock":
+def PRE__CB_ARG(block: "FRBlock", block_api: "FICAPI") -> "FRBlock":
     # Transfer argument name from a field into the mutation
     # because only real dropdowns should be listed in "fields"
     from pypenguin.core.block_mutation import FRCustomBlockArgumentMutation
@@ -219,7 +219,7 @@ info_api.add_opcodes_case(ANY_OPCODE_CB_ARG, SpecialCase(
     function=PRE__CB_ARG,
 ))
 
-def PRE__CB_CALL(block: "FRBlock", block_api: "FTCAPI") -> "FRBlock":
+def PRE__CB_CALL(block: "FRBlock", block_api: "FICAPI") -> "FRBlock":
     from pypenguin.core.block_mutation import FRCustomBlockCallMutation
     partial_mutation: FRCustomBlockCallMutation = block.mutation
     complete_mutation = block_api.get_cb_mutation(partial_mutation.proccode)
@@ -236,7 +236,7 @@ info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
     function=PRE__CB_CALL,
 ))
 
-def FR_STEP__CB_PROTOTYPE(block: "FRBlock", block_api: "FTCAPI") -> "IRBlock":
+def FR_STEP__CB_PROTOTYPE(block: "FRBlock", block_api: "FICAPI") -> "IRBlock":
     # Return an empty, temporary block
     from pypenguin.core.block import IRBlock
     return IRBlock(
@@ -256,7 +256,7 @@ info_api.add_opcode_case(OPCODE_CB_PROTOTYPE, SpecialCase(
 ))
 
 def GET_ALL_INPUT_TYPES__CB_CALL(
-    block: "FRBlock|IRBlock|SRBlock", block_api: "FTCAPI|None"
+    block: "FRBlock|IRBlock|SRBlock", block_api: "FICAPI|None"
 ) -> DualKeyDict[str, str, InputType]:
     from pypenguin.core.block_mutation import FRCustomBlockCallMutation, SRCustomBlockCallMutation
     from pypenguin.core.block import FRBlock

@@ -1,14 +1,14 @@
 from pytest import fixture, raises
 
-from pypenguin.utility            import tuplify, DeserializationError, FSCError
+from pypenguin.utility            import DeserializationError
 from pypenguin.opcode_info        import InputMode
 from pypenguin.opcode_info.groups import info_api
 from pypenguin.important_opcodes  import *
 
 from pypenguin.core.block          import FRBlock, IRBlock, IRBlockReference, IRInputValue
-from pypenguin.core.block_api      import FTCAPI
+from pypenguin.core.block_api      import FICAPI
 from pypenguin.core.block_mutation import (
-    FRCustomBlockMutation, FRCustomBlockCallMutation, FRCustomBlockArgumentMutation,
+    FRCustomBlockMutation, FRCustomBlockCallMutation,
     SRCustomBlockMutation, SRCustomBlockCallMutation, SRCustomBlockArgumentMutation,
 )
 from pypenguin.core.custom_block   import (
@@ -19,8 +19,8 @@ from pypenguin.core.custom_block   import (
 from tests.core.constants import ALL_FR_BLOCKS, ALL_FR_BLOCK_DATAS, ALL_SR_COMMENTS
 
 @fixture
-def ftcapi():
-    return FTCAPI(
+def ficapi():
+    return FICAPI(
         blocks=ALL_FR_BLOCKS,
         block_comments=ALL_SR_COMMENTS,
     )
@@ -122,11 +122,11 @@ def test_frblock_from_tuple_invalid():
         FRBlock.from_tuple([77, ..., ...], parent_id="qqq")
 
 
-def test_frblock_step(ftcapi: FTCAPI):
+def test_frblock_step(ficapi: FICAPI):
     # TODO: next
     frblock = ALL_FR_BLOCKS["f"]
     trblock = frblock.step(
-        block_api=ftcapi,
+        block_api=ficapi,
         info_api=info_api,
         own_id="f",
     )
@@ -152,7 +152,7 @@ def test_frblock_step(ftcapi: FTCAPI):
         ),
         "TO": IRInputValue(
             mode=InputMode.BLOCK_AND_TEXT,
-            references=[IRBlockReference("g")],
+            references=[IRBlockReference(id="g")],
             immediate_block=None,
             text="10",
         ),
@@ -164,10 +164,10 @@ def test_frblock_step(ftcapi: FTCAPI):
     assert trblock.next         is None
     assert trblock.is_top_level is True
 
-def test_frblock_step_cb_def(ftcapi: FTCAPI):
+def test_frblock_step_cb_def(ficapi: FICAPI):
     frblock = ALL_FR_BLOCKS["h"]
     trblock = frblock.step(
-        block_api=ftcapi,
+        block_api=ficapi,
         info_api=info_api,
         own_id="h",
     )
@@ -195,10 +195,10 @@ def test_frblock_step_cb_def(ftcapi: FTCAPI):
     assert trblock.next         is None
     assert trblock.is_top_level is True
 
-def test_frblock_step_cb_prototype(ftcapi: FTCAPI):
+def test_frblock_step_cb_prototype(ficapi: FICAPI):
     frblock = ALL_FR_BLOCKS["a"]
     trblock = frblock.step(
-        block_api=ftcapi,
+        block_api=ficapi,
         info_api=info_api,
         own_id="a",
     )
@@ -212,10 +212,10 @@ def test_frblock_step_cb_prototype(ftcapi: FTCAPI):
     assert trblock.next         == ...
     assert trblock.is_top_level == ...
 
-def test_frblock_step_cb_arg(ftcapi: FTCAPI):
+def test_frblock_step_cb_arg(ficapi: FICAPI):
     frblock = ALL_FR_BLOCKS["i"]
     trblock = frblock.step(
-        block_api=ftcapi,
+        block_api=ficapi,
         info_api=info_api,
         own_id="i",
     )
@@ -234,7 +234,7 @@ def test_frblock_step_cb_arg(ftcapi: FTCAPI):
     assert trblock.next         is None
     assert trblock.is_top_level is False
 
-def test_frblock_step_cb_call(ftcapi: FTCAPI):    
+def test_frblock_step_cb_call(ficapi: FICAPI):    
     frblock = ALL_FR_BLOCKS["c"]
     frblock = FRBlock(
         opcode="procedures_call",
@@ -262,7 +262,7 @@ def test_frblock_step_cb_call(ftcapi: FTCAPI):
         )
     )
     trblock = frblock.step(
-        block_api=ftcapi,
+        block_api=ficapi,
         info_api=info_api,
         own_id="t",
     )

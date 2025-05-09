@@ -27,12 +27,13 @@ class DeserializationError(PypenguinError):
         super().__init__(f"Issue during deserialization: {msg}")
 
 ###############################################################
-#                ERRORS FOR FR TO SR CONVERSION               #
+#         ERRORS FOR CONVERSION BETWEEN REPRESENTATIONS       #
 ###############################################################
 
-class FSCError(PypenguinError): # First (Representation) -> Second (Representation) Conversion
-    def __init__(self, msg: str) -> None:
-        super().__init__(f"Issue during first to second representation conversion: {msg}")
+class ConversionError(PypenguinError): pass
+class FirstToSecondConversionError(ConversionError): pass
+class FirstToInterConversionError(FirstToSecondConversionError): pass
+class InterToSecondConversionError(FirstToSecondConversionError): pass
 
 ###############################################################
 #                    ERRORS FOR VALIDATION                    #

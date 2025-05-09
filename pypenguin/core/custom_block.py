@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from re          import split 
 
-from pypenguin.utility import GreprClass, PypenguinEnum, SameNameTwiceError, ValidationConfig, FSCError
+from pypenguin.utility import GreprClass, PypenguinEnum, SameNameTwiceError, ValidationConfig, FirstToInterConversionError
 from pypenguin.utility import AA_TYPE, AA_TUPLE_OF_TYPES, AA_MIN_LEN
 
 from pypenguin.opcode_info import InputType, OpcodeType
@@ -161,7 +161,7 @@ class SRCustomBlockOptype(PypenguinEnum):
         for value, optype_candidate in cls._value2member_map_.items():
             if value[1] == code:
                 return optype_candidate
-        raise FSCError(f"Couldn't find video state enum for video state code: {repr(code)}")
+        raise FirstToInterConversionError(f"Couldn't find video state enum for video state code: {repr(code)}")
 
     def is_reporter(self) -> bool:
         """

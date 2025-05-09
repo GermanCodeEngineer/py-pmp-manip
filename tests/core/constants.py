@@ -3,14 +3,13 @@ from pypenguin.opcode_info import DropdownValueKind, InputMode
 from pypenguin.core.block          import (
     FRBlock, IRBlock, IRBlockReference, IRInputValue,
     SRBlock, SRScript, 
-    SRBlockAndTextInputValue, SRBlockAndDropdownInputValue, SRBlockOnlyInputValue, 
+    SRBlockAndTextInputValue, SRBlockAndDropdownInputValue, SRBlockOnlyInputValue, SRScriptInputValue,
     SRDropdownValue,
 )
 from pypenguin.core.block_mutation import (
     FRCustomBlockMutation, FRCustomBlockCallMutation,
     FRCustomBlockArgumentMutation,
     SRCustomBlockMutation, SRCustomBlockCallMutation,
-    SRCustomBlockArgumentMutation, SRStopScriptMutation,
 )
 from pypenguin.core.comment        import SRComment
 from pypenguin.core.custom_block   import (
@@ -200,7 +199,33 @@ ALL_FR_BLOCK_DATAS = {
         "shadow": False,
         "topLevel": False,
     },
-    "n": [13, "my list", "ta`eJd|abk.):i6vI0u}", 646, 561],
+    "p": [13, "my list", "ta`eJd|abk.):i6vI0u}", 646, 561],
+    "n": {
+        "opcode": "control_if",
+        "next": None,
+        "parent": None,
+        "inputs": {
+            "SUBSTACK": [2, "o"],
+        },
+        "fields": {},
+        "shadow": False,
+        "topLevel": True,
+        "x": 528,
+        "y": 1175,
+    },
+    "o": {
+        "opcode": "data_changevariableby",
+        "next": None,
+        "parent": "n",
+        "inputs": {
+            "VALUE": [1, [4, "1"]],
+        },
+        "fields": {
+            "VARIABLE": ["my variable", "`jEk@4|i[#Fk?(8x)AV.-my variable", ""],
+        },
+        "shadow": False,
+        "topLevel": False,
+    },
 }
 
 ALL_FR_BLOCKS = {
@@ -396,7 +421,7 @@ ALL_FR_BLOCKS = {
         shadow=False,
         top_level=False,
     ),
-    "n": FRBlock(
+    "p": FRBlock(
         opcode="data_listcontents",
         next=None,
         parent=None,
@@ -408,6 +433,32 @@ ALL_FR_BLOCKS = {
         top_level=True,
         x=446,
         y=652,
+    ),
+    "n": FRBlock(
+        opcode="control_if",
+        next=None,
+        parent=None,
+        inputs={
+            "SUBSTACK": [2, "o"],
+        },
+        fields={},
+        shadow=False,
+        top_level=True,
+        x=528,
+        y=1175,
+    ),
+    "o": FRBlock(
+        opcode="data_changevariableby",
+        next=None,
+        parent="n",
+        inputs={
+            "VALUE": [1, [4, "1"]],
+        },
+        fields={
+            "VARIABLE": ["my variable", "`jEk@4|i[#Fk?(8x)AV.-my variable", ""],
+        },
+        shadow=False,
+        top_level=False,
     ),
 }
 
@@ -624,7 +675,7 @@ ALL_IR_BLOCKS = {
         next=None,
         is_top_level=False,
     ), 
-    IRBlockReference(id="n"): IRBlock(
+    IRBlockReference(id="p"): IRBlock(
         opcode="data_listcontents",
         inputs={},
         dropdowns={
@@ -635,6 +686,42 @@ ALL_IR_BLOCKS = {
         position=(446, 652),
         next=None,
         is_top_level=True,
+    ),
+    "n": IRBlock(
+        opcode="control_if",
+        inputs={
+            "SUBSTACK": IRInputValue(
+                mode=InputMode.SCRIPT,
+                references=[IRBlockReference(id="o")],
+                immediate_block=None,
+                text=None,
+            ),
+        },
+        dropdowns={},
+        comment=None,
+        mutation=None,
+        position=(528, 1175),
+        next=None,
+        is_top_level=True,
+    ),
+    "o": IRBlock(
+        opcode="data_changevariableby",
+        inputs={
+            "VALUE": IRInputValue(
+                mode=InputMode.BLOCK_AND_TEXT,
+                references=[],
+                immediate_block=None,
+                text="1",
+            ),
+        },
+        dropdowns={
+            "VARIABLE": "my variable",
+        },
+        comment=None,
+        mutation=None,
+        position=None,
+        next=None,
+        is_top_level=False,
     ),
 }
 
@@ -654,7 +741,7 @@ ALL_SR_COMMENTS = {
         is_minimized=False,
         text="hi from attached comment"
     ),
-    "n": SRComment(
+    "q": SRComment(
         position=(1019, 727),
         size=(200, 200),
         is_minimized=False,
@@ -833,6 +920,41 @@ ALL_SR_BLOCKS = [
         comment=None,
         mutation=None,
     ),
+    SRBlock(
+        opcode="if <CONDITION> then {THEN}",
+        inputs={
+            "CONDITION": SRBlockOnlyInputValue(block=None),
+            "THEN": SRScriptInputValue(
+                blocks=[
+                    SRBlock(
+                        opcode="change [VARIABLE] by (VALUE)",
+                        inputs={
+                            "VALUE": SRBlockAndTextInputValue(block=None, text="1"),
+                        },
+                        dropdowns={
+                            "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="my variable"),
+                        },
+                        comment=None,
+                        mutation=None,
+                    ),
+                ],
+            )
+        },
+        dropdowns={},
+        comment=None,
+        mutation=None,
+    ),
+    SRBlock(
+        opcode="change [VARIABLE] by (VALUE)",
+        inputs={
+            "VALUE": SRBlockAndTextInputValue(block=None, text="1"),
+        },
+        dropdowns={
+            "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="my variable"),
+        },
+        comment=None,
+        mutation=None,
+    ),
 ]
 
 
@@ -997,6 +1119,35 @@ ALL_SR_SCRIPTS = [
                 dropdowns={
                     "LIST": SRDropdownValue(kind=DropdownValueKind.LIST, value="my list"),
                 },
+                comment=None,
+                mutation=None,
+            ),
+        ],
+    ),
+    SRScript( # [6]
+        position=(528, 1175),
+        blocks=[
+            SRBlock(
+                opcode="if <CONDITION> then {THEN}",
+                inputs={
+                    "CONDITION": SRBlockOnlyInputValue(block=None),
+                    "THEN": SRScriptInputValue(
+                        blocks=[
+                            SRBlock(
+                                opcode="change [VARIABLE] by (VALUE)",
+                                inputs={
+                                    "VALUE": SRBlockAndTextInputValue(block=None, text="1"),
+                                },
+                                dropdowns={
+                                    "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="my variable"),
+                                },
+                                comment=None,
+                                mutation=None,
+                            ),
+                        ],
+                    )
+                },
+                dropdowns={},
                 comment=None,
                 mutation=None,
             ),

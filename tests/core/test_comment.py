@@ -82,5 +82,6 @@ def test_srcomment_validate(config):
             ("is_minimized", "nope", TypeValidationError),
             ("text", {}, TypeValidationError),
         ],
-        validate_func=lambda obj: obj.validate(path=[], config=config)
+        validate_func=SRComment.validate,
+        func_args=[[], config],
     )

@@ -1,7 +1,7 @@
 from typing      import TYPE_CHECKING
 from dataclasses import dataclass, field
 
-from pypenguin.utility import GreprClass, FSCError, ValidationError
+from pypenguin.utility import GreprClass, FirstToInterConversionError, ValidationError
 
 from pypenguin.core.custom_block import SRCustomBlockOpcode
 
@@ -11,9 +11,9 @@ if TYPE_CHECKING:
     from pypenguin.core.block_mutation import FRCustomBlockMutation, SRCustomBlockMutation
 
 @dataclass(repr=False)
-class FTCAPI(GreprClass):
+class FICAPI(GreprClass):
     """
-    An API which allows the access to other blocks in the same target during **c**onversion from **f**irst to **t**emporary representation.
+    An API which allows the access to other blocks in the same target during **c**onversion from **f**irst to **i**ntermediate representation.
     """
     _grepr = True
     _grepr_fields = ["blocks", "scheduled_block_deletions"]
@@ -68,7 +68,7 @@ class FTCAPI(GreprClass):
             if not isinstance(block.mutation, FRCustomBlockMutation): continue
             if block.mutation.proccode == proccode:
                 return block.mutation
-        raise FSCError(f"Mutation of proccode {repr(proccode)} not found.")
+        raise FirstToInterConversionError(f"Mutation of proccode {repr(proccode)} not found.")
 
     def get_comment(self, comment_id: str) -> "SRComment":
         """
@@ -125,7 +125,7 @@ class ValidationAPI(GreprClass):
                 if isinstance(getattr(input, "block", None), SRBlock):
                     recursive_block_search(input.block)
                 if isinstance(getattr(input, "blocks", None), list):
-                    (recursive_block_search(sub_block) for sub_block in input.blocks if isinstance(sub_block, SRBlock))
+                    [recursive_block_search(sub_block) for sub_block in input.blocks if isinstance(sub_block, SRBlock)]
                             
         blocks = []
         for script in self.scripts:
