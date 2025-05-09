@@ -1,5 +1,5 @@
 #from pytest import fixture, raises
-from copy   import copy
+#from copy   import copy
 
 from pypenguin.utility import FSCError, lists_equal_ignore_order
 from pypenguin.opcode_info import DropdownValueKind

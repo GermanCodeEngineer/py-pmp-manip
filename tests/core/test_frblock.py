@@ -9,17 +9,17 @@ from pypenguin.core.block          import FRBlock, IRBlock, IRBlockReference, IR
 from pypenguin.core.block_api      import FTCAPI
 from pypenguin.core.block_mutation import (
     FRCustomBlockMutation, FRCustomBlockCallMutation, FRCustomBlockArgumentMutation,
-    SRCustomBlockMutation, SRCustomBlockArgumentMutation,
+    SRCustomBlockMutation, SRCustomBlockCallMutation, SRCustomBlockArgumentMutation,
 )
 from pypenguin.core.custom_block   import (
     SRCustomBlockOpcode, SRCustomBlockArgument, SRCustomBlockArgumentType,
     SRCustomBlockOptype
 )
 
-from tests.core.test_block_api import ALL_FR_BLOCKS, ALL_FR_BLOCK_DATAS, ALL_SR_COMMENTS
+from tests.core.constants import ALL_FR_BLOCKS, ALL_FR_BLOCK_DATAS, ALL_SR_COMMENTS
 
 @fixture
-def block_api():
+def ftcapi():
     return FTCAPI(
         blocks=ALL_FR_BLOCKS,
         block_comments=ALL_SR_COMMENTS,
@@ -54,55 +54,28 @@ def test_frblock_from_data_invalid_mutation():
         FRBlock.from_data(data, info_api=info_api)
 
 def test_frblock_from_data_missing_mutation():
-    data = {
-        "opcode": "argument_reporter_boolean", #3
-        "next": None,
-        "parent": "a",
-        "inputs": {},
-        "fields": {
-            "VALUE": ["boolean", "|%?~)R0k:KB.c`h[qvn("],
-        },
-        "shadow": True,
-        "topLevel": False,
-    }
+    data = ALL_FR_BLOCK_DATAS["j"].copy()
+    del data["mutation"]
     with raises(DeserializationError):
         FRBlock.from_data(data, info_api=info_api)
 
 def test_frblock_from_data_valid_mutation():
-    data = {
-        "opcode": "procedures_prototype", #4
-        "next": None,
-        "parent": "h",
-        "inputs": {
-            "}G[ASqXh*6Yj)lUVOc`q": [
-                1,
-                "p"
-            ],
-            "@#z0NEJ4p%{?+(BDp~@F": [
-                1,
-                "q"
-            ]
-        },
-        "fields": {},
-        "shadow": True,
-        "topLevel": False,
-        "mutation": {
-            "tagName": "mutation",
-            "children": [],
-            "proccode": "rep %b %s",
-            "argumentids": "[\"}G[ASqXh*6Yj)lUVOc`q\",\"@#z0NEJ4p%{?+(BDp~@F\"]",
-            "argumentnames": "[\"booleano\",\"number in\"]",
-            "argumentdefaults": "[\"false\",\"\"]",
-            "warp": "true",
-            "returns": "true",
-            "edited": "true",
-            "optype": "\"string\"",
-            "color": "[\"#FF6680\",\"#FF4D6A\",\"#FF3355\"]"
-        }
-    }
+    data = ALL_FR_BLOCK_DATAS["a"]
     frblock = FRBlock.from_data(data, info_api=info_api)
     assert isinstance(frblock, FRBlock)
-    assert frblock.mutation == FRCustomBlockMutation.from_data(data["mutation"])
+    assert frblock.mutation == FRCustomBlockMutation(
+        tag_name="mutation",
+        children=[],
+        proccode="do sth text %s and bool %b",
+        argument_ids=["?+wI)AquGQlzMnn5I8tA", "1OrbjF=wjT?D$)m|0N=X"],
+        argument_names=["a text arg", "a bool arg"],
+        argument_defaults=["", "false"],
+        warp=False,
+        returns=True,
+        edited=True,
+        optype="number",
+        color=("#FF6680", "#FF4D6A", "#FF3355"),
+    )
 
 
 def test_frblock_from_tuple_not_top_level():
@@ -149,29 +122,13 @@ def test_frblock_from_tuple_invalid():
         FRBlock.from_tuple([77, ..., ...], parent_id="qqq")
 
 
-def test_frblock_step(block_api: FTCAPI):
+def test_frblock_step(ftcapi: FTCAPI):
     # TODO: next
     frblock = ALL_FR_BLOCKS["f"]
-    frblock = FRBlock(
-        opcode="operator_random", #5
-        next=None,
-        parent="m",
-        inputs={
-            "FROM": (1, (4, "1")),
-            "TO": (3, (12, "priv", ",fe+c/836;:I2j}Z3N_D"), (4, "10")),
-        },
-        fields={},
-        shadow=False,
-        top_level=False,
-        x=None,
-        y=None,
-        comment="n",
-        mutation=None,
-    )
     trblock = frblock.step(
-        block_api=block_api,
+        block_api=ftcapi,
         info_api=info_api,
-        own_id="e",
+        own_id="f",
     )
     assert isinstance(trblock, IRBlock)
     assert trblock.opcode       == frblock.opcode
@@ -179,50 +136,38 @@ def test_frblock_step(block_api: FTCAPI):
         "FROM": IRInputValue(
             mode=InputMode.BLOCK_AND_TEXT,
             references=[],
-            immediate_block=None,
+            immediate_block=IRBlock(
+                opcode="data_variable",
+                inputs={},
+                dropdowns={
+                    "VARIABLE": "my variable",
+                },
+                position=None,
+                comment=None,
+                mutation=None,
+                next=None,
+                is_top_level=False,
+            ),
             text="1",
         ),
         "TO": IRInputValue(
             mode=InputMode.BLOCK_AND_TEXT,
-            references=[],
-            immediate_block=IRBlock(
-                opcode=OPCODE_VAR_VALUE,
-                inputs={},
-                dropdowns={"VARIABLE": "priv"},
-                comment=None,
-                mutation=None,
-                position=None,
-                next=None,
-                is_top_level=False,
-            ),
+            references=[IRBlockReference("g")],
+            immediate_block=None,
             text="10",
         ),
     }
     assert trblock.dropdowns    == {}
-    assert trblock.position     is None
+    assert trblock.position     == (304, 424)
     assert trblock.comment      is None
     assert trblock.mutation     is None
     assert trblock.next         is None
-    assert trblock.is_top_level is False
+    assert trblock.is_top_level is True
 
-def test_frblock_step_cb_def(block_api: FTCAPI):
-    frblock = FRBlock(
-        opcode="procedures_definition_return", #6
-        next=None,
-        parent=None,
-        inputs={
-            "custom_block": (1, "b"),
-        },
-        fields={},
-        shadow=False,
-        top_level=True,
-        x=775,
-        y=859,
-        comment=None,
-        mutation=None,
-    )
+def test_frblock_step_cb_def(ftcapi: FTCAPI):
+    frblock = ALL_FR_BLOCKS["h"]
     trblock = frblock.step(
-        block_api=block_api,
+        block_api=ftcapi,
         info_api=info_api,
         own_id="h",
     )
@@ -230,18 +175,19 @@ def test_frblock_step_cb_def(block_api: FTCAPI):
     assert trblock.opcode       == frblock.opcode
     assert trblock.inputs       == {}
     assert trblock.dropdowns    == {}
-    assert trblock.position     == (775, 859)
+    assert trblock.position     == (344, 799)
     assert trblock.comment      is None
     assert trblock.mutation     == SRCustomBlockMutation(
         custom_opcode=SRCustomBlockOpcode(
             segments=(
-                "rep",
-                SRCustomBlockArgument(name="booleano" , type=SRCustomBlockArgumentType.BOOLEAN      ),
-                SRCustomBlockArgument(name="number in", type=SRCustomBlockArgumentType.STRING_NUMBER),
+                "do sth text",
+                SRCustomBlockArgument(name="a text arg", type=SRCustomBlockArgumentType.STRING_NUMBER),
+                "and bool",
+                SRCustomBlockArgument(name="a bool arg", type=SRCustomBlockArgumentType.BOOLEAN),
             ),
         ),
-        no_screen_refresh=True,
-        optype=SRCustomBlockOptype.STRING_REPORTER,
+        no_screen_refresh=False,
+        optype=SRCustomBlockOptype.NUMBER_REPORTER,
         color1="#FF6680",
         color2="#FF4D6A", 
         color3="#FF3355",
@@ -249,38 +195,12 @@ def test_frblock_step_cb_def(block_api: FTCAPI):
     assert trblock.next         is None
     assert trblock.is_top_level is True
 
-def test_frblock_step_cb_prototype(block_api: FTCAPI):
-    frblock = FRBlock(
-        opcode="procedures_prototype", #4
-        next=None,
-        parent="h",
-        inputs={
-            "}G[ASqXh*6Yj)lUVOc`q": (1, "p"),
-            "@#z0NEJ4p%{?+(BDp~@F": (1, "q")},
-        fields={},
-        shadow=True,
-        top_level=False,
-        x=None,
-        y=None,
-        comment=None,
-        mutation=FRCustomBlockMutation(
-            tag_name="mutation",
-            children=[],
-            proccode="rep %b %s",
-            argument_ids=["}G[ASqXh*6Yj)lUVOc`q", "@#z0NEJ4p%{?+(BDp~@F"],
-            argument_names=["booleano", "number in"],
-            argument_defaults=["false", ""],
-            warp=True,
-            returns=True,
-            edited=True,
-            optype="string",
-            color=("#FF6680", "#FF4D6A", "#FF3355")
-        ),
-    )
+def test_frblock_step_cb_prototype(ftcapi: FTCAPI):
+    frblock = ALL_FR_BLOCKS["a"]
     trblock = frblock.step(
-        block_api=block_api,
+        block_api=ftcapi,
         info_api=info_api,
-        own_id="b",
+        own_id="a",
     )
     assert isinstance(trblock, IRBlock) # An empty block which will be deleted in the next step
     assert trblock.opcode       == frblock.opcode
@@ -292,29 +212,12 @@ def test_frblock_step_cb_prototype(block_api: FTCAPI):
     assert trblock.next         == ...
     assert trblock.is_top_level == ...
 
-def test_frblock_step_cb_arg(block_api: FTCAPI):
-    frblock = FRBlock(
-        opcode="argument_reporter_string_number", #3
-        next=None,
-        parent="b",
-        inputs={},
-        fields={
-            "VALUE": ("number in", "8/qVRnf-YhH[,*vDNE[:")},
-        shadow=True,
-        top_level=False,
-        x=None,
-        y=None,
-        comment=None,
-        mutation=FRCustomBlockArgumentMutation(
-            tag_name="mutation",
-            children=[],
-            color=("#FF6680", "#FF4D6A", "#FF3355"),
-        ),
-    )
+def test_frblock_step_cb_arg(ftcapi: FTCAPI):
+    frblock = ALL_FR_BLOCKS["i"]
     trblock = frblock.step(
-        block_api=block_api,
+        block_api=ftcapi,
         info_api=info_api,
-        own_id="q",
+        own_id="i",
     )
     assert isinstance(trblock, IRBlock)
     assert trblock.opcode       == frblock.opcode
@@ -323,7 +226,7 @@ def test_frblock_step_cb_arg(block_api: FTCAPI):
     assert trblock.position     is None
     assert trblock.comment      is None
     assert trblock.mutation     == SRCustomBlockArgumentMutation(
-        argument_name="number in",
+        argument_name="a text arg",
         color1="#FF6680",
         color2="#FF4D6A",
         color3="#FF3355",
@@ -331,58 +234,67 @@ def test_frblock_step_cb_arg(block_api: FTCAPI):
     assert trblock.next         is None
     assert trblock.is_top_level is False
 
-def test_frblock_step_cb_call(block_api: FTCAPI):    
+def test_frblock_step_cb_call(ftcapi: FTCAPI):    
+    frblock = ALL_FR_BLOCKS["c"]
     frblock = FRBlock(
-        opcode="procedures_call", #7
+        opcode="procedures_call",
         next=None,
         parent=None,
         inputs={
-            "@#z0NEJ4p%{?+(BDp~@F": (1, (10, "7")),
-            "}G[ASqXh*6Yj)lUVOc`q": (2, "u"),
+            "?+wI)AquGQlzMnn5I8tA": (3, "k", (10, "")),
+            "1OrbjF=wjT?D$)m|0N=X": (2, "l"),
         },
         fields={},
         shadow=False,
         top_level=True,
-        x=716,
-        y=1167,
-        comment=None,
+        x=499,
+        y=933,
         mutation=FRCustomBlockCallMutation(
             tag_name="mutation",
             children=[],
-            proccode="rep %b %s",
-            argument_ids=["}G[ASqXh*6Yj)lUVOc`q", "@#z0NEJ4p%{?+(BDp~@F"],
-            warp=True,
+            proccode="do sth text %s and bool %b",
+            argument_ids=["?+wI)AquGQlzMnn5I8tA", "1OrbjF=wjT?D$)m|0N=X"],
+            warp=False,
             returns=True,
             edited=True,
-            optype="string",
+            optype="number",
             color=("#FF6680", "#FF4D6A", "#FF3355"),
-        ),
+        )
     )
     trblock = frblock.step(
-        block_api=block_api,
+        block_api=ftcapi,
         info_api=info_api,
         own_id="t",
     )
     assert isinstance(trblock, IRBlock)
     assert trblock.opcode       == frblock.opcode
     assert trblock.inputs       == {
-        "booleano": IRInputValue(
+        "a text arg": IRInputValue(
+            mode=InputMode.BLOCK_AND_TEXT,
+            references=[IRBlockReference(id="k")],
+            immediate_block=None,
+            text="",
+        ),
+        "a bool arg": IRInputValue(
             mode=InputMode.BLOCK_ONLY,
-            references=[IRBlockReference(id="u")],
+            references=[IRBlockReference(id="l")],
             immediate_block=None,
             text=None,
         ),
-        "number in": IRInputValue(
-            mode=InputMode.BLOCK_AND_TEXT,
-            references=[],
-            immediate_block=None,
-            text="7",
-        ),
     }
     assert trblock.dropdowns    == {}
-    assert trblock.position     == (716, 1167)
+    assert trblock.position     == (499, 933)
     assert trblock.comment      is None
-    assert trblock.mutation     == frblock.mutation.step(block_api=block_api)
+    assert trblock.mutation     == SRCustomBlockCallMutation(
+        custom_opcode=SRCustomBlockOpcode(
+            segments=(
+                "do sth text",
+                SRCustomBlockArgument(name="a text arg", type=SRCustomBlockArgumentType.STRING_NUMBER),
+                "and bool",
+                SRCustomBlockArgument(name="a bool arg", type=SRCustomBlockArgumentType.BOOLEAN),
+            ),
+        ),
+    )
     assert trblock.next         is None
     assert trblock.is_top_level is True
 

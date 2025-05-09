@@ -291,6 +291,13 @@ class IRBlock(GreprClass):
         new_inputs = {}
         for input_id, input_value in self.inputs.items():
             sub_scripts = []
+            if input_value.immediate_block is not None:
+                _, sub_blocks = input_value.immediate_block.step(
+                    all_blocks = all_blocks,
+                    info_api   = info_api,
+                )
+                sub_scripts.append(sub_blocks)
+            
             for sub_reference in input_value.references: 
                 sub_block = all_blocks[sub_reference]
                 _, sub_blocks = sub_block.step(
@@ -299,18 +306,11 @@ class IRBlock(GreprClass):
                 )
                 sub_scripts.append(sub_blocks)
             
-            if input_value.immediate_block is not None:
-                _, sub_blocks = input_value.immediate_block.step(
-                    all_blocks = all_blocks,
-                    info_api   = info_api,
-                )
-                sub_scripts.insert(0, sub_blocks)
-            
             script_count = len(sub_scripts)
             if script_count == 2:
                 sub_script  = sub_scripts[0] # blocks of first script
                 sub_block_a = sub_scripts[0][0] # first block of first script
-                sub_block_b = sub_scripts[1][0] # second block of first script
+                sub_block_b = sub_scripts[1][0] # first block of second script
             elif script_count == 1:
                 sub_script  = sub_scripts[0] # blocks of first script
                 sub_block_a = sub_scripts[0][0] # first block of frist script
@@ -786,7 +786,7 @@ class SRBlockAndDropdownInputValue(SRInputValue):
     """
     The second representation for a block input, which has a dropdown and might contain a block.
     """
-    _grepr_fields = SRInputValue._grepr_fields + ["block", "text"]
+    _grepr_fields = SRInputValue._grepr_fields + ["block", "dropdown"]
     
     block   : SRBlock         | None
     dropdown: SRDropdownValue | None
