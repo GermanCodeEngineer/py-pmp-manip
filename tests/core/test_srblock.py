@@ -7,9 +7,12 @@ from pypenguin.utility            import (
     UnnecessaryInputError, MissingInputError, UnnecessaryDropdownError, MissingDropdownError,
 )
 from pypenguin.opcode_info.groups import info_api
-from pypenguin.opcode_info        import DropdownValueKind
+from pypenguin.opcode_info        import DropdownValueKind, OpcodeType, InputType
 
-from pypenguin.core.block     import SRScript, SRBlock, SRBlockOnlyInputValue
+from pypenguin.core.block     import (
+    SRScript, SRBlock, SRInputValue, 
+    SRBlockAndTextInputValue, SRBlockOnlyInputValue, SRBlockAndDropdownInputValue, SRScriptInputValue,
+)
 from pypenguin.core.block_api import ValidationAPI
 from pypenguin.core.context   import CompleteContext
 from pypenguin.core.dropdown  import SRDropdownValue
@@ -48,6 +51,8 @@ def context():
         is_stage=False,
     )
 
+
+
 def test_srscript_validate(config, validation_api, context):        
     script = ALL_SR_SCRIPTS[0]
     script.validate(
@@ -71,6 +76,7 @@ def test_srscript_validate(config, validation_api, context):
     )
 
 
+
 def test_srblock_validate(config, validation_api, context):
     block = ALL_SR_SCRIPTS[0].blocks[0]
     block.validate([], config, info_api, validation_api, context, expects_reporter=False)
@@ -92,6 +98,10 @@ def test_srblock_validate(config, validation_api, context):
 def test_srblock_validate_reporter(config, validation_api, context):
     block = ALL_SR_SCRIPTS[1].blocks[0]
     block.validate([], config, info_api, validation_api, context, expects_reporter=True)
+
+def test_srblock_validate_cb_def(config, validation_api, context):
+    block = ALL_SR_SCRIPTS[4].blocks[0]
+    block.validate([], config, info_api, validation_api, context, expects_reporter=False)    
 
 def test_srblock_validate_unexpected_mutation(config, validation_api, context):
     block = copy(ALL_SR_SCRIPTS[0].blocks[1])
@@ -122,7 +132,6 @@ def test_srblock_validate_missing_input(config, validation_api, context):
     with raises(MissingInputError):
         block.validate([], config, info_api, validation_api, context, expects_reporter=False) # 1
 
-
 def test_srblock_validate_unexpected_dropdown(config, validation_api, context):
     block = deepcopy(ALL_SR_SCRIPTS[2].blocks[0])
     block.dropdowns["SOME_ID"] = SRDropdownValue(kind=DropdownValueKind.STANDARD, value="something")
@@ -134,4 +143,160 @@ def test_srblock_validate_missing_dropdown(config, validation_api, context):
     del block.dropdowns["VARIABLE"]
     with raises(MissingDropdownError):
         block.validate([], config, info_api, validation_api, context, expects_reporter=True)
+
+
+def test_srblock_validate_opcode_type():
+    reporter_tests = [
+        (True , 0b000), (True , 0b001), (True , 0b010), (True , 0b011),
+        (True , 0b100), (True , 0b101), (True , 0b110), (False, 0b111),
+    ]
+    sub_tests = [ # should_raise, (is_top_level, is_first, is_last)
+        (OpcodeType.STATEMENT       , [
+            (False, 0b000), (False, 0b001), (False, 0b010), (False, 0b011),
+            (False, 0b100), (False, 0b101), (False, 0b110), (False, 0b111),
+        ]),
+        (OpcodeType.ENDING_STATEMENT, [
+            (True , 0b000), (False, 0b001), (True , 0b010), (False, 0b011),
+            (True , 0b100), (False, 0b101), (True , 0b110), (False, 0b111),
+        ]),
+        (OpcodeType.HAT             , [
+            (True , 0b000), (True , 0b001), (True , 0b010), (True , 0b011),
+            (True , 0b100), (True , 0b101), (False, 0b110), (False, 0b111),
+        ]),
+        (OpcodeType.STRING_REPORTER , reporter_tests),
+        (OpcodeType.NUMBER_REPORTER , reporter_tests),
+        (OpcodeType.BOOLEAN_REPORTER, reporter_tests),
+    ]
+    for opcode_type, items in sub_tests:
+        for should_raise, flags in items:
+            is_top_level = bool((flags        )//0b100)
+            is_first     = bool((flags % 0b100)//0b010)
+            is_last      = bool((flags % 0b010)//0b001)
+            if should_raise:
+                with raises(InvalidBlockShapeError):
+                    SRBlock.validate_opcode_type(
+                        path=[],
+                        opcode_type=opcode_type,
+                        is_top_level=is_top_level,
+                        is_first    =is_first,
+                        is_last     =is_last,
+                    )
+            else:
+                SRBlock.validate_opcode_type(
+                    path=[],
+                    opcode_type=opcode_type,
+                    is_top_level=is_top_level,
+                    is_first    =is_first,
+                    is_last     =is_last,
+                )
+
+
+
+def test_srinputvalue_init():
+    class DummyInputValue(SRInputValue):
+        # fullfill abstract method requirement
+        def validate(self, *args, **kwargs): 
+            pass
+    with raises(NotImplementedError):
+        DummyInputValue()
+
+def test_srinputvalue_eq():
+    sub_tests = [
+           (False, 
+            SRBlockAndTextInputValue(block=None, text="a text field"), 
+            SRBlockOnlyInputValue(block=None),
+        ), (False, 
+            SRBlockAndTextInputValue(block=None, text="a text field"), 
+            SRBlockAndTextInputValue(block=None, text="another text"), 
+        ), (False, 
+            SRBlockAndTextInputValue(block=5   , text="a text field"), 
+            SRBlockAndTextInputValue(block=None, text="a text field"), 
+        ), (True, 
+            SRBlockAndTextInputValue(block=45, text="a text field"), 
+            SRBlockAndTextInputValue(block=45, text="a text field"), 
+        )
+    ]
+    for target_result, a, b in sub_tests:
+        assert (a == b) == target_result
+    
+    a = SRBlockAndTextInputValue(block=None, text="a text field")
+    b = SRBlockOnlyInputValue(block=None)
+    
+
+def test_srinputvalue_validate_block(config, validation_api, context):
+    input_value = SRBlockAndDropdownInputValue(
+        block=ALL_SR_SCRIPTS[5].blocks[0],
+        dropdown=SRDropdownValue(kind=DropdownValueKind.BROADCAST_MSG, value="my message"),
+    )
+    input_value.validate_block([], config, info_api, validation_api, context)
+
+
+def test_srblockandtextinputvalue_validate(config, validation_api, context):
+    input_type = InputType.TEXT
+    input_value = SRBlockAndTextInputValue(
+        block=ALL_SR_SCRIPTS[1].blocks[0],
+        text="some random text",
+    )
+    input_value.validate([], config, info_api, validation_api, context, input_type)
+    
+    execute_attr_validation_tests(
+        obj=input_value,
+        attr_tests=[
+            ("block", 5, TypeValidationError),
+            ("text", {}, TypeValidationError),
+        ],
+        validate_func=SRBlockAndTextInputValue.validate,
+        func_args=[[], config, info_api, validation_api, context, input_type],
+    )
+
+def test_srblockanddropdowninputvalue_validate(config, validation_api, context):
+    input_type = InputType.MOUSE_OR_OTHER_SPRITE
+    input_value = SRBlockAndDropdownInputValue(
+        block=ALL_SR_SCRIPTS[5].blocks[0],
+        dropdown=SRDropdownValue(kind=DropdownValueKind.OBJECT, value="mouse-pointer"),
+    )
+    input_value.validate([], config, info_api, validation_api, context, input_type)
+    
+    execute_attr_validation_tests(
+        obj=input_value,
+        attr_tests=[
+            ("block", 5, TypeValidationError),
+            ("dropdown", {}, TypeValidationError),
+        ],
+        validate_func=SRBlockAndDropdownInputValue.validate,
+        func_args=[[], config, info_api, validation_api, context, input_type],
+    )
+
+def test_srblockonlyinputvalue_validate(config, validation_api, context):
+    input_type = InputType.BOOLEAN
+    input_value = SRBlockOnlyInputValue(
+        block=None,
+    )
+    input_value.validate([], config, info_api, validation_api, context, input_type)
+    
+    execute_attr_validation_tests(
+        obj=input_value,
+        attr_tests=[
+            ("block", 5, TypeValidationError),
+        ],
+        validate_func=SRBlockOnlyInputValue.validate,
+        func_args=[[], config, info_api, validation_api, context, input_type],
+    )
+
+def test_srscriptinputvalue_validate(config, validation_api, context):
+    input_type = InputType.SCRIPT
+    input_value = SRScriptInputValue(
+        blocks=ALL_SR_SCRIPTS[0].blocks,
+    )
+    input_value.validate([], config, info_api, validation_api, context, input_type)
+    
+    execute_attr_validation_tests(
+        obj=input_value,
+        attr_tests=[
+            ("blocks", 9, TypeValidationError),
+            ("blocks", [{}], TypeValidationError),
+        ],
+        validate_func=SRScriptInputValue.validate,
+        func_args=[[], config, info_api, validation_api, context, input_type],
+    )
 

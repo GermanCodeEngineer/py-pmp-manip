@@ -482,7 +482,7 @@ class SRScript(GreprClass):
             )
             opcode_info = info_api.get_info_by_new(block.opcode)
             opcode_type = opcode_info.get_opcode_type(block=block, validation_api=validation_api)
-            block.validate_opcode_type(
+            SRBlock.validate_opcode_type(
                 opcode_type  = opcode_type,
                 path         = current_path,
                 is_top_level = True,
@@ -589,7 +589,8 @@ class SRBlock(GreprClass):
         if post_case is not None:
             post_case.call(path=path, block=self)
 
-    def validate_opcode_type(self, 
+    @staticmethod
+    def validate_opcode_type(
         path: list,
         opcode_type: OpcodeType,
         is_top_level: bool,
@@ -597,7 +598,7 @@ class SRBlock(GreprClass):
         is_last: bool,
     ) -> None:
         """
-        Ensure this shape of block is allowed at a specific location.  
+        Ensure a block shape is allowed at a specific location.  
         
         Args:
             path: the path from the project to itself. Used for better errors
@@ -647,6 +648,10 @@ class SRInputValue(GreprClass, ABC):
     def __eq__(self, other) -> bool:
         if not isinstance(other, SRInputValue):
             return NotImplemented
+        if type(self) != type(other):
+            return NotImplemented
+        if len(self._grepr_fields) != len(other._grepr_fields):
+            return False
         for attr in self._grepr_fields:
             if attr not in other._grepr_fields:
                 return False
@@ -718,7 +723,7 @@ class SRInputValue(GreprClass, ABC):
         context: CompleteContext, 
     ) -> None:
         """
-        Ensures this input is valid, raise ValidationError if not.
+        Ensures the block of this input is valid, raise ValidationError if not.
         
         Args:
             path: the path from the project to itself. Used for better errors
@@ -917,7 +922,7 @@ class SRScriptInputValue(SRInputValue):
             )
             opcode_info = info_api.get_info_by_new(block.opcode)
             opcode_type = opcode_info.get_opcode_type(block=block, validation_api=validation_api)
-            block.validate_opcode_type(
+            SRBlock.validate_opcode_type(
                 opcode_type  = opcode_type,
                 path         = current_path,
                 is_top_level = False,
