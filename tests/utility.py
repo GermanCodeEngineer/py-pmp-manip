@@ -1,6 +1,7 @@
-from typing import Any, Type, Callable, TypeVar
-from copy   import copy
-from pytest import raises
+from typing      import Any, Type, Callable, TypeVar
+from types       import MethodType
+from copy        import copy
+from pytest      import raises
 
 from pypenguin.utility import ValidationError
 
@@ -11,6 +12,8 @@ def copymodify(obj: CPM, attr: str, value: Any) -> CPM:
     Copy an object and modify an attribute.
     `copymodify(x, 'y', z)` is equivalent to `x2 = copy.copy(x)\nx2.y = z`
     """
+    if isinstance(getattr(obj, "_copymodify_", None), MethodType):
+        return obj._copymodify_(attr, value)
     copied_obj = copy(obj)
     setattr(copied_obj, attr, value)
     return copied_obj

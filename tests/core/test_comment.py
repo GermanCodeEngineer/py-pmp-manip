@@ -32,7 +32,7 @@ RAW_COMMENT_DATA_FLOATING = {
     "text": "Floating comment here",
 }
 
-def test_frcomment_from_data():
+def test_FRComment_from_data():
     data = RAW_COMMENT_DATA_ATTACHED
     comment = FRComment.from_data(data)
     assert comment.block_id == data["blockId"]
@@ -43,7 +43,7 @@ def test_frcomment_from_data():
     assert comment.minimized == data["minimized"]
     assert comment.text == data["text"]
 
-def test_frcomment_step_attached():
+def test_FRComment_step_attached():
     frcomment = FRComment.from_data(RAW_COMMENT_DATA_ATTACHED)
     is_attached, srcomment = frcomment.step()
     assert is_attached is True
@@ -53,7 +53,7 @@ def test_frcomment_step_attached():
     assert srcomment.is_minimized == frcomment.minimized
     assert srcomment.text == frcomment.text
 
-def test_frcomment_step_floating():
+def test_FRComment_step_floating():
     frcomment = FRComment.from_data(RAW_COMMENT_DATA_FLOATING)
     is_attached, srcomment = frcomment.step()
     assert is_attached is False
@@ -64,17 +64,17 @@ def test_frcomment_step_floating():
     assert srcomment.text == frcomment.text
 
 # SRComment
-def test_srcomment_validate(config):
-    comment = SRComment(
+def test_SRComment_validate(config):
+    srcomment = SRComment(
         position=(10, 10),
         size=(52, 32),
         is_minimized=False,
         text="Comment text"
     )
-    comment.validate(path=[], config=config)
+    srcomment.validate(path=[], config=config)
 
     execute_attr_validation_tests(
-        obj=comment,
+        obj=srcomment,
         attr_tests=[
             ("position", [10], TypeValidationError),
             ("size", 50, TypeValidationError),

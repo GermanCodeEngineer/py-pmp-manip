@@ -23,31 +23,31 @@ def ficapi():
     )
 
 @fixture
-def vapi():
+def validation_api():
     return ValidationAPI(scripts=ALL_SR_SCRIPTS)
 
 
-def test_ficapi_get_all_blocks(ficapi: FICAPI):
+def test_FICAPI_get_all_blocks(ficapi: FICAPI):
     assert ficapi.get_all_blocks() == ALL_FR_BLOCKS
 
-def test_ficapi_get_blocks(ficapi: FICAPI):
+def test_FICAPI_get_blocks(ficapi: FICAPI):
     assert ficapi.get_block("d") == ALL_FR_BLOCKS["d"]
 
-def test_ficapi_schedule_block_deletion(ficapi: FICAPI):
+def test_FICAPI_schedule_block_deletion(ficapi: FICAPI):
     ficapi_copy = deepcopy(ficapi)
     ficapi_copy.schedule_block_deletion("z")
     assert ficapi_copy.scheduled_block_deletions == ["z"]
 
-def test_ficapi_get_cb_mutation(ficapi: FICAPI):
+def test_FICAPI_get_cb_mutation(ficapi: FICAPI):
     assert ficapi.get_cb_mutation("do sth text %s and bool %b") == ALL_FR_BLOCKS["a"].mutation
     with raises(FirstToInterConversionError):
         ficapi.get_cb_mutation("some %s proccode")
 
-def test_ficapi_get_comment(ficapi: FICAPI):
+def test_FICAPI_get_comment(ficapi: FICAPI):
     assert ficapi.get_comment("j") == ALL_SR_COMMENTS["j"]
 
 
-def test_vapi_post_init(vapi: ValidationAPI):
+def test_ValidationAPI_post_init(validation_api: ValidationAPI):
     cb_mutations = {
         SR_BLOCK_CUSTOM_OPCODE: SRCustomBlockMutation(
             custom_opcode=SR_BLOCK_CUSTOM_OPCODE,
@@ -58,13 +58,13 @@ def test_vapi_post_init(vapi: ValidationAPI):
             color3="#FF3355",
         ),
     }
-    assert vapi.cb_mutations == cb_mutations
+    assert validation_api.cb_mutations == cb_mutations
 
 
-def test_vapi_get_all_blocks(vapi: ValidationAPI):
-    assert lists_equal_ignore_order(vapi.get_all_blocks(), ALL_SR_BLOCKS)
+def test_ValidationAPI_get_all_blocks(validation_api: ValidationAPI):
+    assert lists_equal_ignore_order(validation_api.get_all_blocks(), ALL_SR_BLOCKS)
 
-def test_vapi_get_cb_mutation(vapi: ValidationAPI):
-    assert vapi.get_cb_mutation(SR_BLOCK_CUSTOM_OPCODE) == vapi.cb_mutations[SR_BLOCK_CUSTOM_OPCODE]
+def test_ValidationAPI_get_cb_mutation(validation_api: ValidationAPI):
+    assert validation_api.get_cb_mutation(SR_BLOCK_CUSTOM_OPCODE) == validation_api.cb_mutations[SR_BLOCK_CUSTOM_OPCODE]
 
 

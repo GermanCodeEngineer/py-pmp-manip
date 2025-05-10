@@ -26,7 +26,7 @@ def ficapi():
     )
 
 # FRBlock
-def test_frblock_from_data():
+def test_FRBlock_from_data():
     data = ALL_FR_BLOCK_DATAS["d"]
     frblock = FRBlock.from_data(data, info_api=info_api)
     assert isinstance(frblock, FRBlock)
@@ -40,7 +40,7 @@ def test_frblock_from_data():
     assert frblock.shadow    == data["shadow"]
     assert frblock.top_level == data["topLevel"]
 
-def test_frblock_from_data_comment():
+def test_FRBlock_from_data_comment():
     data = ALL_FR_BLOCK_DATAS["b"]
     frblock = FRBlock.from_data(data, info_api=info_api)
     assert isinstance(frblock, FRBlock)
@@ -48,18 +48,18 @@ def test_frblock_from_data_comment():
     assert frblock.y       is None
     assert frblock.comment == data["comment"]
 
-def test_frblock_from_data_invalid_mutation():
+def test_FRBlock_from_data_invalid_mutation():
     data = ALL_FR_BLOCK_DATAS["d"] | {"mutation": {...}}
     with raises(DeserializationError):
         FRBlock.from_data(data, info_api=info_api)
 
-def test_frblock_from_data_missing_mutation():
+def test_FRBlock_from_data_missing_mutation():
     data = ALL_FR_BLOCK_DATAS["j"].copy()
     del data["mutation"]
     with raises(DeserializationError):
         FRBlock.from_data(data, info_api=info_api)
 
-def test_frblock_from_data_valid_mutation():
+def test_FRBlock_from_data_valid_mutation():
     data = ALL_FR_BLOCK_DATAS["a"]
     frblock = FRBlock.from_data(data, info_api=info_api)
     assert isinstance(frblock, FRBlock)
@@ -78,51 +78,51 @@ def test_frblock_from_data_valid_mutation():
     )
 
 
-def test_frblock_from_tuple_not_top_level():
+def test_FRBlock_from_tuple_not_top_level():
     data = [OPCODE_VAR_VALUE_NUM, "a variable", ",fe+c/836;:I2j}Z3N_D"]
     parent_id = "m"
-    block = FRBlock.from_tuple(data, parent_id=parent_id)
-    assert isinstance(block, FRBlock)
-    assert block.opcode    == OPCODE_VAR_VALUE
-    assert block.next      is None
-    assert block.parent    == parent_id
-    assert block.inputs    == {}
-    assert block.fields    == {"VARIABLE": ("a variable", ",fe+c/836;:I2j}Z3N_D", "")}
-    assert block.shadow    is False
-    assert block.top_level is False
-    assert block.x         is None
-    assert block.y         is None
-    assert block.comment   is None
-    assert block.mutation  is None
+    frblock = FRBlock.from_tuple(data, parent_id=parent_id)
+    assert isinstance(frblock, FRBlock)
+    assert frblock.opcode    == OPCODE_VAR_VALUE
+    assert frblock.next      is None
+    assert frblock.parent    == parent_id
+    assert frblock.inputs    == {}
+    assert frblock.fields    == {"VARIABLE": ("a variable", ",fe+c/836;:I2j}Z3N_D", "")}
+    assert frblock.shadow    is False
+    assert frblock.top_level is False
+    assert frblock.x         is None
+    assert frblock.y         is None
+    assert frblock.comment   is None
+    assert frblock.mutation  is None
 
     with raises(DeserializationError):
         FRBlock.from_tuple(data, parent_id=None)
 
-def test_frblock_from_tuple_list_top_level():
+def test_FRBlock_from_tuple_list_top_level():
     data = [OPCODE_LIST_VALUE_NUM, "a list", "FAp;aT9l%(^4R:g]NHc7", 460, 628]
-    block = FRBlock.from_tuple(data, parent_id=None)
-    assert isinstance(block, FRBlock)
-    assert block.opcode    == OPCODE_LIST_VALUE
-    assert block.next      is None
-    assert block.parent    is None
-    assert block.inputs    == {}
-    assert block.fields    == {"LIST": ("a list", "FAp;aT9l%(^4R:g]NHc7", "")}
-    assert block.shadow    is False
-    assert block.top_level is True
-    assert block.x         == data[3]
-    assert block.y         == data[4]
-    assert block.comment   is None
-    assert block.mutation  is None
+    frblock = FRBlock.from_tuple(data, parent_id=None)
+    assert isinstance(frblock, FRBlock)
+    assert frblock.opcode    == OPCODE_LIST_VALUE
+    assert frblock.next      is None
+    assert frblock.parent    is None
+    assert frblock.inputs    == {}
+    assert frblock.fields    == {"LIST": ("a list", "FAp;aT9l%(^4R:g]NHc7", "")}
+    assert frblock.shadow    is False
+    assert frblock.top_level is True
+    assert frblock.x         == data[3]
+    assert frblock.y         == data[4]
+    assert frblock.comment   is None
+    assert frblock.mutation  is None
 
     with raises(DeserializationError):
         FRBlock.from_tuple(data, parent_id="qqq")
 
-def test_frblock_from_tuple_invalid():
+def test_FRBlock_from_tuple_invalid():
     with raises(DeserializationError):
         FRBlock.from_tuple([77, ..., ...], parent_id="qqq")
 
 
-def test_frblock_step(ficapi: FICAPI):
+def test_FRBlock_step(ficapi: FICAPI):
     # TODO: next
     frblock = ALL_FR_BLOCKS["f"]
     trblock = frblock.step(
@@ -164,7 +164,7 @@ def test_frblock_step(ficapi: FICAPI):
     assert trblock.next         is None
     assert trblock.is_top_level is True
 
-def test_frblock_step_cb_def(ficapi: FICAPI):
+def test_FRBlock_step_cb_def(ficapi: FICAPI):
     frblock = ALL_FR_BLOCKS["h"]
     trblock = frblock.step(
         block_api=ficapi,
@@ -195,7 +195,7 @@ def test_frblock_step_cb_def(ficapi: FICAPI):
     assert trblock.next         is None
     assert trblock.is_top_level is True
 
-def test_frblock_step_cb_prototype(ficapi: FICAPI):
+def test_FRBlock_step_cb_prototype(ficapi: FICAPI):
     frblock = ALL_FR_BLOCKS["a"]
     trblock = frblock.step(
         block_api=ficapi,
@@ -212,7 +212,7 @@ def test_frblock_step_cb_prototype(ficapi: FICAPI):
     assert trblock.next         == ...
     assert trblock.is_top_level == ...
 
-def test_frblock_step_cb_arg(ficapi: FICAPI):
+def test_FRBlock_step_cb_arg(ficapi: FICAPI):
     frblock = ALL_FR_BLOCKS["i"]
     trblock = frblock.step(
         block_api=ficapi,
@@ -234,7 +234,7 @@ def test_frblock_step_cb_arg(ficapi: FICAPI):
     assert trblock.next         is None
     assert trblock.is_top_level is False
 
-def test_frblock_step_cb_call(ficapi: FICAPI):    
+def test_FRBlock_step_cb_call(ficapi: FICAPI):    
     frblock = ALL_FR_BLOCKS["c"]
     frblock = FRBlock(
         opcode="procedures_call",

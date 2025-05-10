@@ -65,6 +65,7 @@ class SRCustomBlockOpcode(GreprClass):
         Ensures the custom block opcode is valid, raise if not.
         
         Args:
+            path: the path from the project to itself. Used for better errors
             config: Configuration for Validation Behaviour
         
         Returns:
@@ -83,6 +84,20 @@ class SRCustomBlockOpcode(GreprClass):
                     raise SameNameTwiceError(other_path, current_path, f"Two arguments of a {self.__class__.__name__} mustn't have the same name")
                 names[segment.name] = current_path
 
+    def _copymodify_(self, attr: str, value) -> "SRCustomBlockOpcode":
+        """
+        [Internal method] Creates a copy with one attribute set to a new value.
+
+        Args:
+            attr: the attribute to set in the copy
+            value: the value to set the attribute to
+        
+        Returns:
+            the modified copy
+        """
+        assert attr == "segments"
+        return SRCustomBlockOpcode(segments=value)
+
 @dataclass(repr=False, frozen=True)
 class SRCustomBlockArgument(GreprClass):
     """
@@ -99,6 +114,7 @@ class SRCustomBlockArgument(GreprClass):
         Ensures the custom block argument is valid, raise if not.
         
         Args:
+            path: the path from the project to itself. Used for better errors
             config: Configuration for Validation Behaviour
         
         Returns:
@@ -106,27 +122,26 @@ class SRCustomBlockArgument(GreprClass):
         """
         AA_TYPE(self, path, "name", str)
         AA_TYPE(self, path, "type", SRCustomBlockArgumentType)
+    
+    def _copymodify_(self, attr: str, value) -> "SRCustomBlockArgument":
+        """
+        [Internal method] Creates a copy with one attribute set to a new value.
+
+        Args:
+            attr: the attribute to set in the copy
+            value: the value to set the attribute to
+        
+        Returns:
+            the modified copy
+        """
+        assert attr in {"name", "type"}
+        if   attr == "name": return SRCustomBlockArgument(name=value, type=self.type)
+        elif attr == "type": return SRCustomBlockArgument(name=self.name, type=value)
 
 class SRCustomBlockArgumentType(PypenguinEnum):
     """
     The second representation for a argument type of a custom opcode argument
-    """
-    @classmethod
-    def get_by_default(cls, default: str) -> "SRCustomBlockArgumentType":
-        """
-        Gets the argument type based on its default value.
-        
-        Args:
-            default: the default value
-        
-        Returns:
-            the argument type
-        """
-        match default:
-            case "":
-                return cls.STRING_NUMBER
-            case "false":
-                return cls.BOOLEAN
+    """        
     
     def get_corresponding_input_type(self) -> InputType:
         """
@@ -135,14 +150,10 @@ class SRCustomBlockArgumentType(PypenguinEnum):
         Returns:
             the input type
         """
-        match self:
-            case SRCustomBlockArgumentType.STRING_NUMBER:
-                return InputType.TEXT
-            case SRCustomBlockArgumentType.BOOLEAN:
-                return InputType.BOOLEAN
+        return self.value[0]
 
-    STRING_NUMBER = 0
-    BOOLEAN       = 1
+    STRING_NUMBER = (InputType.TEXT   , 0)
+    BOOLEAN       = (InputType.BOOLEAN, 1)
 
 class SRCustomBlockOptype(PypenguinEnum):
     """
@@ -182,11 +193,12 @@ class SRCustomBlockOptype(PypenguinEnum):
         Returns:
             the corresponding opcode type
         """
+        
         return OpcodeType._member_map_[self.name]
 
-    STATEMENT         = (False, "statement")
-    ENDING_STATEMENT  = (False, "end"      )
+    STATEMENT        = (False, "statement")
+    ENDING_STATEMENT = (False, "end"      )
     
-    STRING_REPORTER   = (True , "string"   )
-    NUMBER_REPORTER   = (True , "number"   )
-    BOOLEAN_REPORTER  = (True , "boolean"  )
+    STRING_REPORTER  = (True , "string"   )
+    NUMBER_REPORTER  = (True , "number"   )
+    BOOLEAN_REPORTER = (True , "boolean"  )

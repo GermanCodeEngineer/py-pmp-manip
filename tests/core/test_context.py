@@ -2,7 +2,7 @@ from pypenguin.opcode_info import DropdownValueKind
 
 from pypenguin.core.context  import PartialContext, CompleteContext
 
-def test_completecontext_from_partial():
+def test_CompleteContext_from_partial():
     my_variable = (DropdownValueKind.VARIABLE, "my variable")
     my_sprite_variable = (DropdownValueKind.VARIABLE, "my sprite variable")
     my_list = (DropdownValueKind.LIST, "my list")

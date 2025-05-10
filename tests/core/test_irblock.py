@@ -9,7 +9,7 @@ from pypenguin.core.block import IRBlockReference
 
 from tests.core.constants import ALL_IR_BLOCKS, ALL_SR_SCRIPTS
 
-def test_irblock_step_block_and_text_block_only():
+def test_IRBlock_step_block_and_text_block_only():
     irblock = ALL_IR_BLOCKS[IRBlockReference(id="c")]
     _, values = irblock.step(
         all_blocks=ALL_IR_BLOCKS,
@@ -17,7 +17,7 @@ def test_irblock_step_block_and_text_block_only():
     )
     assert values == ALL_SR_SCRIPTS[4].blocks
 
-def test_irblock_step_script():
+def test_IRBlock_step_script():
     irblock = ALL_IR_BLOCKS[IRBlockReference(id="d")]
     _, values = irblock.step(
         all_blocks=ALL_IR_BLOCKS,
@@ -25,7 +25,7 @@ def test_irblock_step_script():
     )
     assert values == ALL_SR_SCRIPTS[0].blocks
 
-def test_irblock_step_menu():
+def test_IRBlock_step_menu():
     irblock = ALL_IR_BLOCKS[IRBlockReference(id="e")]
     _, values = irblock.step(
         all_blocks=ALL_IR_BLOCKS,
@@ -33,7 +33,7 @@ def test_irblock_step_menu():
     )
     assert values == ["_random_"]
 
-def test_irblock_step_invalid_script_count():
+def test_IRBlock_step_invalid_script_count():
     irblock = deepcopy(ALL_IR_BLOCKS[IRBlockReference(id="c")])
     irblock.inputs["a text arg"].references = [
         IRBlockReference(id="b"),
@@ -46,7 +46,7 @@ def test_irblock_step_invalid_script_count():
             info_api=info_api,
         )
 
-def test_irblock_step_missing_input():
+def test_IRBlock_step_missing_input():
     irblock = deepcopy(ALL_IR_BLOCKS["o"])
     del irblock.inputs["VALUE"]
     with raises(InterToSecondConversionError):

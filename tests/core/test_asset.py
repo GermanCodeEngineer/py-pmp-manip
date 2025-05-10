@@ -30,24 +30,24 @@ RAW_COSTUME_DATA_2 = {
     "rotationCenterY": 197.11651651651664,
 }
 
-def test_frcostume_from_data():
+def test_FRCostume_from_data():
     costume_data = RAW_COSTUME_DATA_1
-    costume = FRCostume.from_data(costume_data)
-    assert isinstance(costume, FRCostume)
-    assert costume.name == costume_data["name"]
-    assert costume.asset_id == costume_data["assetId"]
-    assert costume.data_format == costume_data["dataFormat"]
-    assert costume.md5ext == costume_data["md5ext"]
-    assert costume.rotation_center_x == costume_data["rotationCenterX"]
-    assert costume.rotation_center_y == costume_data["rotationCenterY"]
-    assert costume.bitmap_resolution == costume_data["bitmapResolution"]
+    frcostume = FRCostume.from_data(costume_data)
+    assert isinstance(frcostume, FRCostume)
+    assert frcostume.name == costume_data["name"]
+    assert frcostume.asset_id == costume_data["assetId"]
+    assert frcostume.data_format == costume_data["dataFormat"]
+    assert frcostume.md5ext == costume_data["md5ext"]
+    assert frcostume.rotation_center_x == costume_data["rotationCenterX"]
+    assert frcostume.rotation_center_y == costume_data["rotationCenterY"]
+    assert frcostume.bitmap_resolution == costume_data["bitmapResolution"]
 
-def test_frcostume_from_data_bitmap_resolution():
+def test_FRCostume_from_data_bitmap_resolution():
     costume_data = RAW_COSTUME_DATA_2
-    costume = FRCostume.from_data(costume_data)
-    assert costume.bitmap_resolution == None
+    srcostume = FRCostume.from_data(costume_data)
+    assert srcostume.bitmap_resolution == None
 
-def test_frcostume_step():
+def test_FRCostume_step():
     frcostume = FRCostume.from_data(RAW_COSTUME_DATA_1)
     srcostume = frcostume.step()
     assert isinstance(srcostume, SRCostume)
@@ -56,7 +56,7 @@ def test_frcostume_step():
     assert srcostume.rotation_center == (frcostume.rotation_center_x, frcostume.rotation_center_y)
     assert srcostume.bitmap_resolution == frcostume.bitmap_resolution
 
-def test_frcostume_step_bitmap_resolution():
+def test_FRCostume_step_bitmap_resolution():
     frcostume = FRCostume.from_data(RAW_COSTUME_DATA_2)
     srcostume = frcostume.step()
     assert srcostume.bitmap_resolution == 1
@@ -71,18 +71,18 @@ RAW_SOUND_DATA = {
     "sampleCount": 1123, 
 }
 
-def test_frsound_from_data():
+def test_FRSound_from_data():
     sound_data = RAW_SOUND_DATA
-    sound = FRSound.from_data(sound_data)
-    assert isinstance(sound, FRSound)
-    assert sound.name == sound_data["name"]
-    assert sound.asset_id == sound_data["assetId"]
-    assert sound.data_format == sound_data["dataFormat"]
-    assert sound.md5ext == sound_data["md5ext"]
-    assert sound.rate == sound_data["rate"]
-    assert sound.sample_count == sound_data["sampleCount"]
+    frsound = FRSound.from_data(sound_data)
+    assert isinstance(frsound, FRSound)
+    assert frsound.name == sound_data["name"]
+    assert frsound.asset_id == sound_data["assetId"]
+    assert frsound.data_format == sound_data["dataFormat"]
+    assert frsound.md5ext == sound_data["md5ext"]
+    assert frsound.rate == sound_data["rate"]
+    assert frsound.sample_count == sound_data["sampleCount"]
 
-def test_frsound_step():
+def test_FRSound_step():
     frsound = FRSound.from_data(RAW_SOUND_DATA)
     srsound = frsound.step()
     assert isinstance(srsound, SRSound)
@@ -90,17 +90,17 @@ def test_frsound_step():
     assert srsound.file_extension == frsound.data_format
 
 # SRCostume
-def test_srcostume_validate(config):
-    costume = SRCostume(
+def test_SRCostume_validate(config):
+    srcostume = SRCostume(
         name="my costume",
         file_extension="png",
         rotation_center=(-20, 15.6),
         bitmap_resolution=1,
     )
-    costume.validate(path=[], config=config)
+    srcostume.validate(path=[], config=config)
     
     execute_attr_validation_tests(
-        obj=costume,
+        obj=srcostume,
         attr_tests=[
             ("name", 5, TypeValidationError),
             ("file_extension", {}, TypeValidationError),
@@ -112,15 +112,15 @@ def test_srcostume_validate(config):
     )
 
 # SRSound
-def test_srsound_validate(config):
-    sound = SRSound(
+def test_SRSound_validate(config):
+    srsound = SRSound(
         name="Hello there!",
         file_extension="wav",
     )
-    sound.validate(path=[], config=config)
+    srsound.validate(path=[], config=config)
     
     execute_attr_validation_tests(
-        obj=sound,
+        obj=srsound,
         attr_tests=[
             ("name", 5, TypeValidationError),
             ("file_extension", {}, TypeValidationError),

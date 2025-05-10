@@ -56,7 +56,7 @@ def api() -> DummyAPI:
     )
 
 
-def test_mutation_from_data_and_post_init():
+def test_FRMutation_from_data_and_post_init():
     class DummyFRMutation(FRMutation):
         @classmethod
         def from_data(cls, data) -> "DummyFRMutation":
@@ -88,7 +88,7 @@ def test_mutation_from_data_and_post_init():
         })
 
 
-def test_argument_mutation_from_data_and_step(api: DummyAPI):
+def test_FRCustomBlockArgumentMutation_from_data_and_step(api: DummyAPI):
     colors = ["#FF6680", "#FF4D6A", "#FF3355"]
     data = {
         "tagName": "mutation", 
@@ -106,7 +106,7 @@ def test_argument_mutation_from_data_and_step(api: DummyAPI):
     assert srmutation.color2 == colors[1]
     assert srmutation.color3 == colors[2]
 
-def test_argument_mutation_step_without_storing_argument(api: DummyAPI):
+def test_FRCustomBlockArgumentMutation_step_without_storing_argument(api: DummyAPI):
     data = {
         "tagName": "mutation",
         "children": [],
@@ -118,7 +118,7 @@ def test_argument_mutation_step_without_storing_argument(api: DummyAPI):
         frmutation.step(api)
 
 
-def test_custom_block_mutation_from_data_and_step(api: DummyAPI):
+def test_FRCustomBlockMutation_from_data_and_step(api: DummyAPI):
     warp = False
     returns = None
     edited = True
@@ -162,7 +162,7 @@ def test_custom_block_mutation_from_data_and_step(api: DummyAPI):
     assert srmutation.color3 == frmutation.color[2]
 
 
-def test_custom_block_call_mutation_from_data_and_step(api: DummyAPI):
+def test_FRCustomBlockCallMutation_from_data_and_step(api: DummyAPI):
     warp = False
     returns = None
     edited = True
@@ -197,7 +197,7 @@ def test_custom_block_call_mutation_from_data_and_step(api: DummyAPI):
     assert srmutation.custom_opcode == custom_opcode
 
 
-def test_custom_block_mutation_warp():
+def test_FRCustomBlockMutation_warp():
     colors = ["#FF6680", "#FF4D6A", "#FF3355"]
     data = {
         "tagName": "mutation", 
@@ -225,7 +225,7 @@ def test_custom_block_mutation_warp():
         FRCustomBlockCallMutation.from_data(data | {"warp": []})
     
 
-def test_stop_script_mutation_from_data_and_step(api: DummyAPI):
+def test_FRStopScriptMutation_from_data_and_step(api: DummyAPI):
     has_next = False
     data = {
         "tagName": "mutation",
@@ -243,17 +243,17 @@ def test_stop_script_mutation_from_data_and_step(api: DummyAPI):
 def config():
     return ValidationConfig()
 
-def test_argument_mutation_validate(config):
-    mutation = SRCustomBlockArgumentMutation(
+def test_SRCustomBlockArgumentMutation_validate(config):
+    srmutation = SRCustomBlockArgumentMutation(
         argument_name="my argument",
         color1="#f8e43a",
         color2="#c38d12",
         color3="#e9d563",
     )
-    mutation.validate(path=[], config=config)
+    srmutation.validate(path=[], config=config)
     
     execute_attr_validation_tests(
-        obj=mutation,
+        obj=srmutation,
         attr_tests=[
             ("argument_name", 5, TypeValidationError),
             ("color1", {}, TypeValidationError),
@@ -267,8 +267,8 @@ def test_argument_mutation_validate(config):
         func_args=[[], config],
     )
 
-def test_custom_block_mutation_validate(config):
-    mutation = SRCustomBlockMutation(
+def test_SRCustomBlockMutation_validate(config):
+    srmutation = SRCustomBlockMutation(
         custom_opcode=SRCustomBlockOpcode(segments=("hi",)),
         no_screen_refresh=True,
         optype=SRCustomBlockOptype.STRING_REPORTER,
@@ -277,10 +277,10 @@ def test_custom_block_mutation_validate(config):
         color3="#e9d563",
     )
 
-    mutation.validate(path=[], config=config)
+    srmutation.validate(path=[], config=config)
     
     execute_attr_validation_tests(
-        obj=mutation,
+        obj=srmutation,
         attr_tests=[
             ("custom_opcode", "some custom opcode", TypeValidationError),
             ("no_screen_refresh", None, TypeValidationError),
@@ -296,15 +296,15 @@ def test_custom_block_mutation_validate(config):
     )
     
     
-def test_custom_block_call_mutation_validate(config):
-    mutation = SRCustomBlockCallMutation(
+def test_SRCustomBlockCallMutation_validate(config):
+    srmutation = SRCustomBlockCallMutation(
         custom_opcode=SRCustomBlockOpcode(segments=("hi",)),
     )
 
-    mutation.validate(path=[], config=config)
+    srmutation.validate(path=[], config=config)
     
     execute_attr_validation_tests(
-        obj=mutation,
+        obj=srmutation,
         attr_tests=[
             ("custom_opcode", "some custom opcode", TypeValidationError),
         ],
@@ -312,15 +312,15 @@ def test_custom_block_call_mutation_validate(config):
         func_args=[[], config],
     )
 
-def test_stop_script_mutation_validate(config):
-    mutation = SRStopScriptMutation(
+def test_SRStopScriptMutation_validate(config):
+    srmutation = SRStopScriptMutation(
         is_ending_statement=True,
     )
 
-    mutation.validate(path=[], config=config)
+    srmutation.validate(path=[], config=config)
 
     execute_attr_validation_tests(
-        obj=mutation,
+        obj=srmutation,
         attr_tests=[
             ("is_ending_statement", {...}, TypeValidationError),
         ],
