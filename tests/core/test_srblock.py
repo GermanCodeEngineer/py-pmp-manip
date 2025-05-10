@@ -35,10 +35,10 @@ def validation_api():
 @fixture
 def context():
     return CompleteContext(
-        scope_variables=[SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="my variable")],
-        scope_lists=[SRDropdownValue(kind=DropdownValueKind.LIST, value="my list")],
+        scope_variables=[(DropdownValueKind.VARIABLE, "my variable")],
+        scope_lists=[(DropdownValueKind.LIST, "my list")],
 
-        all_sprite_variables=[SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="my variable")],
+        all_sprite_variables=[(DropdownValueKind.VARIABLE, "my variable")],
 
         sprite_only_variables=[],
         sprite_only_lists=[],
