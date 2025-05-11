@@ -144,6 +144,12 @@ def AA_HEX_COLOR(obj, path, attr, condition=None):
     if not bool(re.fullmatch(r'#([0-9a-fA-F]{6})', attr_value)):
         raise InvalidValueError(path, msg)
 
+def AA_ALNUM(obj, path, attr, condition=None):
+    attr_value, descr = value_and_descr(obj, attr)
+    attr_value: str
+    if not attr_value.isalnum():
+        raise InvalidValueError(path, f"{descr} must contain only alpha-numeric characters")
+
 from urllib.parse import urlparse
 
 def is_valid_js_data_uri(s) -> bool:

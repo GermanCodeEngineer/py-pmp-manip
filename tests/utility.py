@@ -31,7 +31,7 @@ def execute_attr_validation_tests(
 
     Args:
         obj: the object to 
-        attr_tests: list of tuples, which contain:
+        attr_tests: list of tuples, which contain
             - the attribute to change (str)
             - the value for the modified attribute
             - the type of error which is expected to be raised

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from pypenguin.utility import GreprClass, ValidationConfig
-from pypenguin.utility import AA_TYPE, is_valid_js_data_uri, is_valid_url, InvalidValueError
+from pypenguin.utility import AA_TYPE, AA_ALNUM, is_valid_js_data_uri, is_valid_url, InvalidValueError
 
 @dataclass(repr=False)
 class SRExtension(GreprClass):
@@ -25,16 +25,16 @@ class SRExtension(GreprClass):
         Returns:
             None
         """
-        AA_TYPE(self, path, "id", str) # possibly verify its one of PenguinMod's extension if not custom
-        if not self.id.isalnum():
-            raise InvalidValueError(path, f"id of {self.__class__.__name__} may only contain alpha-numeric characters")
+        AA_TYPE(self, path, "id", str) # TODO: possibly verify its one of PenguinMod's extension if not custom
+        AA_ALNUM(self, path, "id")
 
 class SRBuiltinExtension(SRExtension):
     """
     The second representation for a builtin extension.
     Creating an extension and adding it to a project is equivalent to clicking the "add extension" button.
+    Builtin Extensions don't specify a url.
     """
-    pass # Builtin Extensions don't specify a url.
+    pass
 
 @dataclass(repr=False)
 class SRCustomExtension(SRExtension):

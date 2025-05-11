@@ -40,38 +40,50 @@ class DropdownValueRule(PypenguinEnum):
     """
     A rule which determines which values are allowed for dropdowns under given circumstances(context)
     """
-    def get_default_kind(self) -> "DropdownValueKind | None":
+    def get_default_kind_for_guess(self) -> "DropdownValueKind | None":
         """
-        Gets the dropdown value kind, which is used as a default(optional).
+        Gets the dropdown value kind for an approximate dropdown value guess, which is used as a default(optional).
 
         Returns:
-            the default dropdown value kind
+            the default dropdown value kind for an approximate guess
         """
         return self.value[0]
-
-    STAGE                     = (None                           ,  0)
-    OTHER_SPRITE              = (DropdownValueKind.SPRITE       ,  1)
-    OTHER_SPRITE_EXCEPT_STAGE = (DropdownValueKind.SPRITE       ,  2)
-    MYSELF                    = (None                           ,  3)
-    MYSELF_IF_SPRITE          = (None                           ,  4)
-
-    MOUSE_POINTER             = (None                           ,  5)
-    EDGE                      = (None                           ,  6)
-
-    RANDOM_POSITION           = (None                           ,  7)
-
-    MUTABLE_SPRITE_PROPERTY   = (DropdownValueKind.VARIABLE     ,  8)
-    READABLE_SPRITE_PROPERTY  = (DropdownValueKind.VARIABLE     ,  9)
-
-    COSTUME                   = (DropdownValueKind.COSTUME      , 10)
-    BACKDROP                  = (DropdownValueKind.BACKDROP     , 11)
-    SOUND                     = (DropdownValueKind.SOUND        , 12)
-
-    VARIABLE                  = (DropdownValueKind.VARIABLE     , 13)
-    LIST                      = (DropdownValueKind.LIST         , 14)
-    BROADCAST_MSG             = (DropdownValueKind.BROADCAST_MSG, 15)
     
-    FONT                      = (DropdownValueKind.STANDARD     , 16)
+    def get_default_kind_for_calculation(self) -> "DropdownValueKind | None":
+        """
+        Gets the dropdown value kind for an exact dropdown value calculation, which is used as a default(optional).
+
+        Returns:
+            the default dropdown value kind for an exact calculation
+        """
+        if self.value[1]: # -> 
+            return self.value[0]
+        return None
+
+    # ("default dropdown value kind", "should keep dropdown value kind for exact calculation?", "index for uniqueness")
+    STAGE                     = (None                           , None ,  0)
+    OTHER_SPRITE              = (DropdownValueKind.SPRITE       , False,  1)
+    OTHER_SPRITE_EXCEPT_STAGE = (DropdownValueKind.SPRITE       , False,  2)
+    MYSELF                    = (None                           , None ,  3)
+    MYSELF_IF_SPRITE          = (None                           , None ,  4)
+
+    MOUSE_POINTER             = (None                           , None ,  5)
+    EDGE                      = (None                           , None ,  6)
+
+    RANDOM_POSITION           = (None                           , None ,  7)
+
+    MUTABLE_SPRITE_PROPERTY   = (DropdownValueKind.VARIABLE     , False,  8)
+    READABLE_SPRITE_PROPERTY  = (DropdownValueKind.VARIABLE     , False,  9)
+
+    COSTUME                   = (DropdownValueKind.COSTUME      , False, 10)
+    BACKDROP                  = (DropdownValueKind.BACKDROP     , False, 11)
+    SOUND                     = (DropdownValueKind.SOUND        , False, 12)
+
+    VARIABLE                  = (DropdownValueKind.VARIABLE     , False, 13)
+    LIST                      = (DropdownValueKind.LIST         , False, 14)
+    BROADCAST_MSG             = (DropdownValueKind.BROADCAST_MSG, True , 15)
+    
+    FONT                      = (DropdownValueKind.STANDARD     , True , 16)
 
 
 @dataclass
@@ -110,16 +122,33 @@ class DropdownType(PypenguinEnum):
         """
         return self.value
     
-    def get_default_kind(self) -> DropdownValueKind | None:
+    def get_default_kind_for_guess(self) -> DropdownValueKind | None:
         """
-        Gets the default dropdown value kind of a dropdown type.
+        Gets the dropdown value kind if a dropdown type for an approximate dropdown value guess, which is used as a default(optional).
 
         Returns:
-            the default dropdown kind
+            the default dropdown value kind for an approximate guess
         """
         default_kind = None
         for behaviour in self.get_type_info().rules:
-            behaviour_default_kind = behaviour.get_default_kind()
+            behaviour_default_kind = behaviour.get_default_kind_for_guess()
+            if behaviour_default_kind is not None:
+                if default_kind is None:
+                    default_kind = behaviour_default_kind
+                else:
+                    raise BlameDevsError(f"Got multiple default dropdown value kinds for {self}: {default_kind} and {behaviour_default_kind}")
+        return default_kind
+
+    def get_default_kind_for_calculation(self) -> DropdownValueKind | None:
+        """
+        Gets the dropdown value kind if a dropdown type for an approximate dropdown value guess, which is used as a default(optional).
+
+        Returns:
+            the default dropdown value kind for an approximate guess
+        """
+        default_kind = None
+        for behaviour in self.get_type_info().rules:
+            behaviour_default_kind = behaviour.get_default_kind_for_calculation()
             if behaviour_default_kind is not None:
                 if default_kind is None:
                     default_kind = behaviour_default_kind
@@ -163,7 +192,7 @@ class DropdownType(PypenguinEnum):
         direct_values=["loudness", "timer"],
         old_direct_values=["LOUDNESS", "TIMER"],
     )
-    MOUSE_OR_OTHER_SPRITE = DropdownTypeInfo(rules=[DropdownValueRule.MOUSE_POINTER, DropdownValueRule.OTHER_SPRITE])
+    MOUSE_OR_OTHER_SPRITE = DropdownTypeInfo(rules=[DropdownValueRule.MOUSE_POINTER, DropdownValueRule.OTHER_SPRITE_EXCEPT_STAGE])
     MOUSE_EDGE_OR_OTHER_SPRITE = DropdownTypeInfo(rules=[DropdownValueRule.MOUSE_POINTER, DropdownValueRule.EDGE, DropdownValueRule.OTHER_SPRITE])
     MOUSE_EDGE_MYSELF_OR_OTHER_SPRITE = DropdownTypeInfo(rules=[DropdownValueRule.MOUSE_POINTER, DropdownValueRule.EDGE, DropdownValueRule.MYSELF, DropdownValueRule.OTHER_SPRITE])
     X_OR_Y = DropdownTypeInfo(direct_values=["x", "y"])
@@ -175,7 +204,7 @@ class DropdownType(PypenguinEnum):
         old_direct_values=["YEAR", "MONTH", "DATE", "DAYOFWEEK", "HOUR", "MINUTE", "SECOND", "TIMESTAMP"],
     )
     FINGER_INDEX = DropdownTypeInfo(direct_values=["1", "2", "3", "4", "5"])
-    RANDOM_MOUSE_OR_OTHER_SPRITE = DropdownTypeInfo(rules=[DropdownValueRule.RANDOM_POSITION, DropdownValueRule.MOUSE_POINTER, DropdownValueRule.OTHER_SPRITE])
+    RANDOM_MOUSE_OR_OTHER_SPRITE = DropdownTypeInfo(rules=[DropdownValueRule.RANDOM_POSITION, DropdownValueRule.MOUSE_POINTER, DropdownValueRule.OTHER_SPRITE_EXCEPT_STAGE])
     ROTATION_STYLE = DropdownTypeInfo(direct_values=["left-right", "up-down", "don't rotate", "look at", "all around"])
     STAGE_ZONE = DropdownTypeInfo(direct_values=["bottom-left", "bottom", "bottom-right", "top-left", "top", "top-right", "left", "right"])
     TEXT_BUBBLE_COLOR_PROPERTY = DropdownTypeInfo(
@@ -364,8 +393,14 @@ class DropdownType(PypenguinEnum):
                     values.extend([(DropdownValueKind.COSTUME, i) for i in range(len(context.backdrops))])
                 case DropdownValueRule.SOUND:
                     values.extend(context.sounds)
-                case DropdownValueRule.SOUND:
-                    pass
+                case DropdownValueRule.VARIABLE:
+                    values.extend(context.scope_variables)
+                case DropdownValueRule.LIST:
+                    values.extend(context.scope_lists)
+                
+                case DropdownValueRule.BROADCAST_MSG | DropdownValueRule.FONT:
+                    pass # Can't be guessed
+
         if (values == []) and (dropdown_type_info.fallback is not None):
             values.append(dropdown_type_info.fallback)
         return remove_duplicates(values)
@@ -509,7 +544,7 @@ class DropdownType(PypenguinEnum):
             old_value = False
         new_values = self.guess_possible_new_dropdown_values(include_behaviours=True)
         old_values = self.guess_possible_old_dropdown_values()
-        default_kind = self.get_default_kind()
+        default_kind = self.get_default_kind_for_guess()
         
         assert len(new_values) == len(old_values)
         
