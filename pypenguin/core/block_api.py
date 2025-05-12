@@ -106,8 +106,9 @@ class ValidationAPI(GreprClass):
         self.cb_mutations = {}
         for block in all_blocks:
             if isinstance(getattr(block, "mutation", None), SRCustomBlockMutation):
-                if hasattr(block.mutation, "custom_opcode"):
-                    self.cb_mutations[block.mutation.custom_opcode] = block.mutation
+                mutation: SRCustomBlockMutation = block.mutation
+                if hasattr(mutation, "custom_opcode"):
+                    self.cb_mutations[mutation.custom_opcode] = mutation
 
     def get_all_blocks(self) -> list["SRBlock"]:
         """

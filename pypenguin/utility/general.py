@@ -210,7 +210,11 @@ class DualKeyDict(Generic[K1, K2, V]):
             yield (key1, key2, self.get_by_key1(key1))
 
 # Data Functions
-import difflib
+from difflib import SequenceMatcher
+from hashlib import sha256
+
+token_charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!#%()*+,-./:;=?@[]^_`{|}~"
+charset_char_count = len(token_charset)
 
 def remove_duplicates(items: list) -> list:
     seen = []
@@ -234,7 +238,7 @@ def lists_equal_ignore_order(a: list, b: list) -> bool:
     return not b_copy
 
 def get_closest_matches(string, possible_values: list[str], n: int) -> list[str]:
-    similarity_scores = [(item, difflib.SequenceMatcher(None, string, item).ratio()) for item in possible_values]
+    similarity_scores = [(item, SequenceMatcher(None, string, item).ratio()) for item in possible_values]
     sorted_matches = sorted(similarity_scores, key=lambda x: x[1], reverse=True)
     return [i[0] for i in sorted_matches[:n]]   
 
@@ -247,4 +251,22 @@ def tuplify(obj):
         return type(obj)(tuplify(item) for item in obj)
     else:
         return obj
+
+def string_to_sha256(primary: str, secondary: str|None=None) -> str:
+    def convert(input_string: str, digits: int) -> str:
+        hash_object = sha256(input_string.encode())
+        hex_hash = hash_object.hexdigest()
+
+        result = []
+        for i in range(digits):
+            chunk = hex_hash[i * 2:(i * 2) + 2]
+            index = int(chunk, 16) % charset_char_count
+            result.append(token_charset[index])
+
+        return ''.join(result)
+
+    if secondary is None:
+        return convert(primary, digits=20)
+    else:
+        return convert(primary, digits=16) + convert(secondary, digits=4)
 

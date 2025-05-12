@@ -1,4 +1,4 @@
-from pypenguin.utility import generateRandomToken, stringToToken, LocalStringToToken
+from pypenguin.utility import generateRandomToken, string_to_sha256, LocalStringToToken
 
 from pypenguin.database import getOptionType, getBlockType, getDeoptimizedOptionId
 
@@ -24,7 +24,7 @@ def translateOptions(data, opcode, spriteName):
                 token = LocalStringToToken(optionData, spriteName=spriteName)
                 magicString = "list"
             elif mode == "broadcast":
-                token = stringToToken(optionData)
+                token = string_to_sha256(optionData)
                 magicString = "broadcast_msg"
             
             newOptionData = [optionData, token, magicString]

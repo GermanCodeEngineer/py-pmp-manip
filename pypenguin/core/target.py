@@ -1,9 +1,14 @@
 from typing      import Any
 from copy        import deepcopy
 from dataclasses import dataclass
+from abc         import ABC, abstractmethod
 
-from pypenguin.utility     import GreprClass, ThanksError, ValidationConfig
-from pypenguin.utility     import AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_MIN, AA_RANGE, AA_COORD_PAIR, AA_NOT_ONE_OF, SameNameTwiceError
+from pypenguin.utility     import (
+    string_to_sha256,
+    GreprClass, ThanksError, ValidationConfig, 
+    AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_MIN, AA_RANGE, AA_COORD_PAIR, AA_NOT_ONE_OF, 
+    SameNameTwiceError,
+)
 from pypenguin.opcode_info import OpcodeInfoAPI, DropdownValueKind
 
 from pypenguin.core.asset          import FRCostume, FRSound, SRCostume, SRSound
@@ -19,7 +24,7 @@ from pypenguin.core.vars_lists     import SRVariable, SRVariable, SRVariable, SR
 from pypenguin.core.vars_lists     import SRList, SRList, SRList
 
 @dataclass(repr=False)
-class FRTarget(GreprClass):
+class FRTarget(GreprClass, ABC):
     """
     The first representation (FR) of a target. A target can be either a sprite or the stage.
     """
@@ -37,9 +42,9 @@ class FRTarget(GreprClass):
     current_costume: int
     costumes: list[FRCostume]
     sounds: list[FRSound] 
-    id: str
     volume: int | float
     layer_order: int
+    id: str
     
     def __post_init__(self) -> None:
         """
@@ -84,12 +89,12 @@ class FRTarget(GreprClass):
             "current_costume": data["currentCostume"],
             "costumes": [FRCostume.from_data(costume_data) for costume_data in data["costumes"]],
             "sounds": [FRSound.from_data(sound_data) for sound_data in data["sounds"]],
-            "id": data["id"],
             "volume": data["volume"],
             "layer_order": data["layerOrder"],
         }
 
     @classmethod
+    @abstractmethod
     def from_data(cls, data: dict[str, Any], info_api: OpcodeInfoAPI) -> "FRTarget":
         """
         Deserializes raw data into a FRTarget.
@@ -101,8 +106,6 @@ class FRTarget(GreprClass):
         Returns:
             the FRTarget
         """
-        common_fields = cls._parse_common_fields(data, info_api)
-        return cls(**common_fields)
 
     def _step_common(self, info_api: OpcodeInfoAPI
     ) -> tuple[
@@ -244,8 +247,13 @@ class FRStage(FRTarget):
             the FRStage
         """
         common_fields = cls._parse_common_fields(data, info_api)
+        if "id" in data:
+            id = data["id"]
+        else:
+            id = string_to_sha256(primary="_stage_")
         return cls(
             **common_fields,
+            id=id,
             tempo=data["tempo"],
             video_transparency=data["videoTransparency"],
             video_state=data["videoState"],
@@ -307,8 +315,13 @@ class FRSprite(FRTarget):
             the FRSprite
         """
         common_fields = cls._parse_common_fields(data, info_api)
+        if "id" in data:
+            id = data["id"]
+        else:
+            id = string_to_sha256(primary=data["name"])
         return cls(
             **common_fields,
+            id=id,
             visible=data["visible"],
             x=data["x"],
             y=data["y"],
@@ -502,7 +515,7 @@ class SRSprite(SRTarget):
         context = self.get_complete_context(partial_context=context)
         for i, monitor in enumerate(self.local_monitors):
             monitor.validate_dropdown_values(
-                path     = path+["global_monitors", i], 
+                path     = path+["local_monitors", i], 
                 info_api = info_api, 
                 context  = context,
             )

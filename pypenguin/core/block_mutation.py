@@ -165,10 +165,10 @@ class FRCustomBlockMutation(FRMutation):
             argument_names    = loads(data["argumentnames"   ]),
             argument_defaults = loads(data["argumentdefaults"]),
             warp              = warp,
-            returns           = loads(data["returns"]),
-            edited            = loads(data["edited" ]),
+            returns           = loads(data["returns"]) if "returns" in data else False,
+            edited            = loads(data["edited" ]) if "edited" in data else True,
             optype            = loads(data["optype" ]) if "optype" in data else "statement",
-            color       = tuple(loads(data["color"  ])),
+            color             = tuple(loads(data["color"])) if "color" in data else ("#FF6680", "#FF4D6A", "#FF3355"),
         )
     
     def step(self, block_api: FICAPI) -> "SRCustomBlockMutation":

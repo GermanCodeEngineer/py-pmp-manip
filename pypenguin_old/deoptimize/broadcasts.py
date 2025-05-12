@@ -1,4 +1,4 @@
-from pypenguin.utility import removeDuplicates, stringToToken
+from pypenguin.utility import removeDuplicates, string_to_sha256
 
 from pypenguin.database import inputDefault, inputTextDefault, optionDefault, deoptimizeOptionValue, getDeoptimizedOpcode, getInputType, getOptionType
 
@@ -46,6 +46,6 @@ def generateBroadcasts(data):
             optionValue=broadcastMessage,
             optionType="broadcast",
         )
-        newDatas[broadcastMessage] = stringToToken(broadcastMessage)
+        newDatas[broadcastMessage] = string_to_sha256(broadcastMessage)
     # Because all broadcast messages are for all sprites (None=Stage)
     return newDatas

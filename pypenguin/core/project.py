@@ -1,12 +1,14 @@
 from json        import dump, loads
 from dataclasses import dataclass
 
-from pypenguin.utility     import read_file_of_zip, ThanksError, GreprClass, ValidationConfig
-from pypenguin.utility     import AA_TYPE, AA_NONE_OR_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_RANGE, SameNameTwiceError, SameNumberTwiceError, LayerOrderError
+from pypenguin.utility     import (
+    read_file_of_zip, string_to_sha256, ThanksError, GreprClass, ValidationConfig, 
+    AA_TYPE, AA_NONE_OR_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_RANGE, 
+    SameNameTwiceError, SameNumberTwiceError, LayerOrderError,
+)
 from pypenguin.opcode_info import OpcodeInfoAPI, DropdownValueKind
 
 from pypenguin.core.context       import PartialContext
-from pypenguin.core.dropdown      import SRDropdownValue
 from pypenguin.core.extension     import SRExtension, SRCustomExtension, SRBuiltinExtension
 from pypenguin.core.meta          import FRMeta
 from pypenguin.core.monitor       import FRMonitor, SRMonitor
@@ -101,13 +103,13 @@ class FRProject(GreprClass):
         # - test this method + test sprite id 
         # - test custom block type of sb3's defaulting to "statement"
 
-        #for i, sprite_data in enumerate(project_data["targets"]):
+        for i, sprite_data in enumerate(project_data["targets"]):
             #sprite_data["customVars"] = []
-            #if i == 0:
-            #    token = stringToToken("_stage_")
-            #else:
-            #    token = stringToToken(sprite_data["name"])
-            #sprite_data["id"        ] = token
+            if i == 0:
+                token = string_to_sha256(primary="_stage_")
+            else:
+                token = string_to_sha256(primary=sprite_data["name"])
+            sprite_data["id"] = token
     
             #for block_data in sprite_data["blocks"].values():
             #    if isinstance(block_data, list): continue # skip list blocks
@@ -350,13 +352,13 @@ class SRProject(GreprClass):
                 raise SameNameTwiceError(other_path, current_path, "Two sprites mustn't have the same name")
             defined_sprites[sprite.name] = current_path
             sprite_only_variables[sprite.name] = [
-                SRDropdownValue(DropdownValueKind.VARIABLE, variable.name) for variable in sprite.sprite_only_variables]
+                (DropdownValueKind.VARIABLE, variable.name) for variable in sprite.sprite_only_variables]
             sprite_only_lists    [sprite.name] = [
-                SRDropdownValue(DropdownValueKind.LIST    , list_   .name) for list_    in sprite.sprite_only_lists]
+                (DropdownValueKind.LIST    , list_   .name) for list_    in sprite.sprite_only_lists]
         
-        all_sprite_variables = [SRDropdownValue(DropdownValueKind.VARIABLE, variable.name) for variable in self.all_sprite_variables]
-        all_sprite_lists     = [SRDropdownValue(DropdownValueKind.LIST    , list_   .name) for list_    in self.all_sprite_lists    ]
-        backdrops            = [SRDropdownValue(DropdownValueKind.BACKDROP, backdrop.name) for backdrop in self.stage.costumes      ]
+        all_sprite_variables = [(DropdownValueKind.VARIABLE, variable.name) for variable in self.all_sprite_variables]
+        all_sprite_lists     = [(DropdownValueKind.LIST    , list_   .name) for list_    in self.all_sprite_lists    ]
+        backdrops            = [(DropdownValueKind.BACKDROP, backdrop.name) for backdrop in self.stage.costumes      ]
         for i, target in enumerate([self.stage]+self.sprites):
             if i == 0:
                 target_key = None
@@ -371,7 +373,7 @@ class SRProject(GreprClass):
                 sprite_only_variables = sprite_only_variables,
                 sprite_only_lists     = sprite_only_lists,
                 other_sprites         = [
-                    SRDropdownValue(DropdownValueKind.SPRITE, sprite_name) for sprite_name in defined_sprites.keys()],
+                    (DropdownValueKind.SPRITE, sprite_name) for sprite_name in defined_sprites.keys()],
                 backdrops             = backdrops,
             )
             target.validate_scripts(

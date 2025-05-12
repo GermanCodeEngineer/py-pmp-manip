@@ -2,8 +2,11 @@ from typing      import Any
 from dataclasses import dataclass
 from math        import inf
 
-from pypenguin.utility           import GreprClass, ValidationConfig
-from pypenguin.utility           import AA_TYPE, AA_TYPES, AA_DICT_OF_TYPE, AA_COORD_PAIR, AA_BOXED_COORD_PAIR, AA_EQUAL, AA_BIGGER_OR_EQUAL, InvalidOpcodeError, MissingDropdownError, UnnecessaryDropdownError
+from pypenguin.utility           import (
+    GreprClass, ValidationConfig,
+    AA_TYPE, AA_TYPES, AA_DICT_OF_TYPE, AA_COORD_PAIR, AA_BOXED_COORD_PAIR, AA_EQUAL, AA_BIGGER_OR_EQUAL, 
+    InvalidOpcodeError, MissingDropdownError, UnnecessaryDropdownError, ThanksError,
+)
 from pypenguin.opcode_info       import OpcodeInfoAPI, DropdownType
 from pypenguin.important_opcodes import *
 
@@ -43,7 +46,8 @@ class FRMonitor(GreprClass):
         Returns:
             None
         """
-        assert isinstance(self.params, dict)
+        if not isinstance(self.params, dict):
+            raise ThanksError()
 
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRMonitor":

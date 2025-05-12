@@ -3,7 +3,7 @@ from pypenguin.core.asset          import FRCostume, FRSound
 from pypenguin.core.block_mutation import FRMutation, FRCustomBlockArgumentMutation, FRCustomBlockMutation, FRCustomBlockCallMutation, FRStopScriptMutation
 from pypenguin.core.block          import FRBlock
 from pypenguin.core.comment        import FRComment
-from pypenguin.core.meta           import FRMeta, FRPlatformMeta
+from pypenguin.core.meta           import FRMeta, FRPenguinModPlatformMeta
 from pypenguin.core.monitor        import FRMonitor
 from pypenguin.core.project        import FRProject
 from pypenguin.core.target         import FRTarget, FRStage, FRSprite

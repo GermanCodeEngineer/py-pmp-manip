@@ -1,4 +1,4 @@
-from pytest import raises, fixture
+from pytest import fixture, raises
 from copy   import copy, deepcopy
 
 from pypenguin.utility            import (

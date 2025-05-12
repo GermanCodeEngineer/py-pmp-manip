@@ -1,13 +1,13 @@
-from pypenguin.utility import stringToToken
+from pypenguin.utility import string_to_sha256
 import json
 
 def adaptProject(data):
     for i, spriteData in enumerate(data["targets"]):
         spriteData["customVars"] = []
         if i == 0:
-            token = stringToToken("_stage_")
+            token = string_to_sha256("_stage_")
         else:
-            token = stringToToken(spriteData["name"])
+            token = string_to_sha256(spriteData["name"])
         spriteData["id"        ] = token
 
         for blockData in spriteData["blocks"].values():

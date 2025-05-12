@@ -1,4 +1,4 @@
-from pypenguin.utility import BlockSelector, stringToToken, Platform, pformat, pp, writeJSONFile, readJSONFile, ensureCorrectPath
+from pypenguin.utility import BlockSelector, string_to_sha256, Platform, pformat, pp, writeJSONFile, readJSONFile, ensureCorrectPath
 
 from pypenguin.deoptimize.variables_lists import translateVariables, translateLists
 from pypenguin.deoptimize.blocks_scripts import prepareScripts, flattenScripts, restoreBlocks, unprepareBlocks, makeJsonCompatible, standardizeScripts, removeTemporaryAttrs
@@ -101,9 +101,9 @@ def deoptimizeProject(projectData, targetPlatform):
         )
 
         if i == 0:
-            token = stringToToken("_stage_")
+            token = string_to_sha256("_stage_")
         else:
-            token = stringToToken(spriteData["name"])
+            token = string_to_sha256(spriteData["name"])
         
         
         newSpriteData = {

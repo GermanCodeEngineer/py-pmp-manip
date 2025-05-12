@@ -1,6 +1,6 @@
 import json, copy
 
-from pypenguin.utility import numberToLiteral, BlockSelector, generateRandomToken, parseCustomOpcode, stringToToken, LocalStringToToken, Platform, getSelectors, editDataStructure, removeDuplicates, pp
+from pypenguin.utility import numberToLiteral, BlockSelector, generateRandomToken, parseCustomOpcode, string_to_sha256, LocalStringToToken, Platform, getSelectors, editDataStructure, removeDuplicates, pp
 from pypenguin.deoptimize.options import translateOptions
 from pypenguin.deoptimize.comments import translateComment
 from pypenguin.database import *
@@ -509,7 +509,7 @@ def restoreInputs(data, opcode, spriteName, blockData):
                 magicNumber = getInputMagicNumber(inputType=inputType)
                 if inputMode == "block-and-broadcast-option":
                     text = inputData["text"][1]
-                    token = stringToToken(text)
+                    token = string_to_sha256(text)
                     textData = [magicNumber, text, token]
                 else:
                     textData = [magicNumber, inputData["text"]]

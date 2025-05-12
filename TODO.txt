@@ -3,5 +3,7 @@ TODOs:
     - safely access dictionaries in APIs
     - add "Raises" to docstrings
     - create @grepr decorator
+    - avoid from ... import * and define __all__
+    - rename colors to (main color, prototype color, outline color)
     - reorganize opcode_info
     - complete deoptimization
