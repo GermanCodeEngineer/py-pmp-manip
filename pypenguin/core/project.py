@@ -31,15 +31,6 @@ class FRProject(GreprClass):
     extension_urls: dict[str, str]
     meta: FRMeta
 
-    def __post_init__(self) -> None:
-        """
-        Ensure my assumption about extension_data was correct.
-        
-        Returns:
-            None
-        """
-        if self.extension_data != {}: raise ThanksError()
-
     @classmethod
     def from_data(cls, data: dict, info_api: OpcodeInfoAPI):
         """
@@ -68,6 +59,15 @@ class FRProject(GreprClass):
             extension_urls = data.get("extensionURLs", {}),
             meta           = FRMeta.from_data(data["meta"]),
         )
+
+    def __post_init__(self) -> None:
+        """
+        Ensure my assumption about extension_data was correct.
+        
+        Returns:
+            None
+        """
+        if self.extension_data != {}: raise ThanksError()
 
     @classmethod
     def from_pmp_file(cls, file_path: str, info_api: OpcodeInfoAPI) -> "FRProject":
@@ -157,12 +157,13 @@ class FRProject(GreprClass):
         sprite_names = [sprite.name for sprite in new_sprites]
         for monitor in self.monitors:
             monitor_sprite_name, new_monitor = monitor.step(info_api=info_api, sprite_names=sprite_names)
-            if new_monitor is not None:
-                if monitor_sprite_name is None:
-                    global_monitors.append(new_monitor)
-                else:
-                    sprite_index = sprite_names.index(monitor_sprite_name)
-                    new_sprites[sprite_index].local_monitors.append(new_monitor)
+            if new_monitor is None: 
+                continue
+            if monitor_sprite_name is None:
+                global_monitors.append(new_monitor)
+            else:
+                sprite_index = sprite_names.index(monitor_sprite_name)
+                new_sprites[sprite_index].local_monitors.append(new_monitor)
        
         if old_stage.text_to_speech_language is None:
             new_tts_language = None
@@ -214,12 +215,13 @@ class SRProject(GreprClass):
     global_monitors: list[SRMonitor]
     extensions: list[SRExtension]
 
-    def validate_var_names(self, path: list) -> None:
+    def validate_var_names(self, path: list, config: ValidationConfig) -> None:
         """
         Ensures no variables with the same name exist.
 
         Args:
             path: the path from the project to itself. Used for better errors
+            config: Configuration for Validation Behaviour
         
         Returns:
             None
@@ -240,12 +242,13 @@ class SRProject(GreprClass):
                     raise SameNameTwiceError(other_path, current_path, "Two variables mustn't have the same name")
                 defined_variables[variable.name] = current_path
         
-    def validate_list_names(self, path: list) -> None:
+    def validate_list_names(self, path: list, config: ValidationConfig) -> None:
         """
         Ensures no lists with the same name exist.
 
         Args:
             path: the path from the project to itself. Used for better errors
+            config: Configuration for Validation Behaviour
         
         Returns:
             None
@@ -331,8 +334,8 @@ class SRProject(GreprClass):
         for i, list_ in enumerate(self.all_sprite_lists):
             list_.validate(path+["all_sprite_lists", i], config)
         
-        self.validate_var_names(path)
-        self.validate_list_names(path)
+        self.validate_var_names(path, config)
+        self.validate_list_names(path, config)
         
         for i, monitor in enumerate(self.global_monitors):
             monitor.validate(path+["global_monitors", i], config, info_api)
@@ -395,6 +398,7 @@ class SRProject(GreprClass):
         for i, monitor in enumerate(self.global_monitors):
             monitor.validate_dropdown_values(
                 path     = path+["global_monitors", i], 
+                config   = config,
                 info_api = info_api, 
                 context  = global_context,
             )

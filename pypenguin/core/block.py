@@ -485,6 +485,7 @@ class SRScript(GreprClass):
             SRBlock.validate_opcode_type(
                 opcode_type  = opcode_type,
                 path         = current_path,
+                config       = config,
                 is_top_level = True,
                 is_first     = (i == 0),
                 is_last      = ((i+1) == len(self.blocks)),
@@ -574,6 +575,7 @@ class SRBlock(GreprClass):
             dropdown.validate(current_path, config)
             dropdown.validate_value(
                 path          = current_path,
+                config        = config,
                 dropdown_type = opcode_info.get_dropdown_info_by_new(new_dropdown_id).type,
                 context       = context,
             )
@@ -592,6 +594,7 @@ class SRBlock(GreprClass):
     @staticmethod
     def validate_opcode_type(
         path: list,
+        config: ValidationConfig, 
         opcode_type: OpcodeType,
         is_top_level: bool,
         is_first: bool,
@@ -602,6 +605,7 @@ class SRBlock(GreprClass):
         
         Args:
             path: the path from the project to itself. Used for better errors
+            config: Configuration for Validation Behaviour
             opcode_type: the opcode type of this block.
             is_top_level: Wether this block is in a script(True) or in a substack(False)
             is_fist: Wether this block is the first in it's script/substack
@@ -834,6 +838,7 @@ class SRBlockAndDropdownInputValue(SRInputValue):
             self.dropdown.validate(current_path, config)
             self.dropdown.validate_value(
                 path          = current_path,
+                config        = config,
                 dropdown_type = input_type.get_corresponding_dropdown_type(),
                 context       = context,
             )
@@ -925,6 +930,7 @@ class SRScriptInputValue(SRInputValue):
             SRBlock.validate_opcode_type(
                 opcode_type  = opcode_type,
                 path         = current_path,
+                config       = config,
                 is_top_level = False,
                 is_first     = (i == 0),
                 is_last      = ((i+1) == len(self.blocks)),

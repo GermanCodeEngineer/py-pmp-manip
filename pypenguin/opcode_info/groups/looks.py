@@ -59,11 +59,11 @@ looks = OpcodeInfoGroup(name="looks", opcode_info=DualKeyDict({
     ),
     ("looks_sayWidth", "bubble width"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
-        can_have_monitor="True",
+        can_have_monitor=True,
     ),
     ("looks_sayHeight", "bubble height"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
-        can_have_monitor="True",
+        can_have_monitor=True,
     ),
     ("looks_switchcostumeto", "switch costume to ([COSTUME])"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
@@ -111,11 +111,11 @@ looks = OpcodeInfoGroup(name="looks", opcode_info=DualKeyDict({
     ),
     ("looks_stretchGetX", "x stretch"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
-        can_have_monitor="True",
+        can_have_monitor=True,
     ),
     ("looks_stretchGetY", "y stretch"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
-        can_have_monitor="True",
+        can_have_monitor=True,
     ),
     ("looks_changeeffectby", "change [EFFECT] sprite effect by (AMOUNT)"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
@@ -146,14 +146,14 @@ looks = OpcodeInfoGroup(name="looks", opcode_info=DualKeyDict({
     ),
     ("looks_getEffectValue", "[EFFECT] sprite effect"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
-        can_have_monitor="True",
+        can_have_monitor=True,
         dropdowns=DualKeyDict({
             ("EFFECT", "EFFECT"): DropdownInfo(DropdownType.SPRITE_EFFECT),
         }),
     ),
     ("looks_tintColor", "tint color"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
-        can_have_monitor="True",
+        can_have_monitor=True,
     ),
     ("looks_show", "show"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
@@ -163,7 +163,7 @@ looks = OpcodeInfoGroup(name="looks", opcode_info=DualKeyDict({
     ),
     ("looks_getSpriteVisible", "visible?"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
-        can_have_monitor="True",
+        can_have_monitor=True,
     ),
     ("looks_changeVisibilityOfSpriteShow", "show ([TARGET])"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
@@ -215,24 +215,24 @@ looks = OpcodeInfoGroup(name="looks", opcode_info=DualKeyDict({
     ),
     ("looks_layersGetLayer", "layer"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
-        can_have_monitor="True",
+        can_have_monitor=True,
     ),
     ("looks_costumenumbername", "costume [PROPERTY]"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
-        can_have_monitor="True",
+        can_have_monitor=True,
         dropdowns=DualKeyDict({
             ("NUMBER_NAME", "PROPERTY"): DropdownInfo(DropdownType.NUMBER_NAME),
         }),
     ),
     ("looks_backdropnumbername", "backdrop [PROPERTY]"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
-        can_have_monitor="True",
+        can_have_monitor=True,
         dropdowns=DualKeyDict({
             ("NUMBER_NAME", "PROPERTY"): DropdownInfo(DropdownType.NUMBER_NAME),
         }),
     ),
     ("looks_size", "size"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
-        can_have_monitor="True",
+        can_have_monitor=True,
     ),
 }))

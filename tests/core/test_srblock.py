@@ -175,19 +175,21 @@ def test_SRBlock_validate_opcode_type():
             if should_raise:
                 with raises(InvalidBlockShapeError):
                     SRBlock.validate_opcode_type(
-                        path=[],
-                        opcode_type=opcode_type,
-                        is_top_level=is_top_level,
-                        is_first    =is_first,
-                        is_last     =is_last,
+                        path         = [],
+                        config       = config,
+                        opcode_type  = opcode_type,
+                        is_top_level = is_top_level,
+                        is_first     = is_first,
+                        is_last      = is_last,
                     )
             else:
                 SRBlock.validate_opcode_type(
-                    path=[],
-                    opcode_type=opcode_type,
-                    is_top_level=is_top_level,
-                    is_first    =is_first,
-                    is_last     =is_last,
+                    path         = [],
+                    config       = config,
+                    opcode_type  = opcode_type,
+                    is_top_level = is_top_level,
+                    is_first     = is_first,
+                    is_last      = is_last,
                 )
 
 

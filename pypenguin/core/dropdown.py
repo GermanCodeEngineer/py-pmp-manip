@@ -49,7 +49,12 @@ class SRDropdownValue(GreprClass):
         AA_TYPE(self, path, "kind", DropdownValueKind)
         AA_JSON_COMPATIBLE(self, path, "value")
 
-    def validate_value(self, path: list, dropdown_type: "DropdownType", context: PartialContext | CompleteContext) -> None:
+    def validate_value(self, 
+        path: list, 
+        config: ValidationConfig, 
+        dropdown_type: "DropdownType", 
+        context: PartialContext | CompleteContext,
+    ) -> None:
         """
         Ensures the value of a SRDropdownValue is allowed under given circumstances(context),
         raise ValidationError if not. 
@@ -58,6 +63,7 @@ class SRDropdownValue(GreprClass):
         
         Args:
             path: the path from the project to itself. Used for better errors
+            config: Configuration for Validation Behaviour
             dropdown_type: the dropdown type as described in the opcode specific information.
             context: Context about parts of the project. Used to validate the values of dropdowns.
         

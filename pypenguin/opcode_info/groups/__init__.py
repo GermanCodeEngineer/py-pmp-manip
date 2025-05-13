@@ -94,14 +94,14 @@ variables.add_opcode(OPCODE_VAR_VALUE, NEW_OPCODE_VAR_VALUE, OpcodeInfo(
     dropdowns=DualKeyDict({
         ("VARIABLE", "VARIABLE"): DropdownInfo(DropdownType.VARIABLE),
     }),
-    can_have_monitor="True",
+    can_have_monitor=True,
 ))
 lists.add_opcode(OPCODE_LIST_VALUE, NEW_OPCODE_LIST_VALUE, OpcodeInfo(
     opcode_type=OpcodeType.STRING_REPORTER,
     dropdowns=DualKeyDict({
         ("LIST", "LIST"): DropdownInfo(DropdownType.LIST),
     }),
-    can_have_monitor="True",
+    can_have_monitor=True,
 ))
 
 custom_blocks = OpcodeInfoGroup(

@@ -46,17 +46,22 @@ class FRTarget(GreprClass, ABC):
     layer_order: int
     id: str
     
-    def __post_init__(self) -> None:
+    @classmethod
+    @abstractmethod
+    def from_data(cls, data: dict[str, Any], info_api: OpcodeInfoAPI) -> "FRTarget":
         """
-        Ensure my assumption about custom_vars was correct.
+        Deserializes raw data into a FRTarget.
+        
+        Args:
+            data: the raw data
+            info_api: the opcode info api used to fetch information about opcodes
         
         Returns:
-            None
+            the FRTarget
         """
-        if self.custom_vars != []: raise ThanksError()
 
     @staticmethod
-    def _parse_common_fields(data: dict[str, Any], info_api: OpcodeInfoAPI) -> dict:
+    def _from_data_common(data: dict[str, Any], info_api: OpcodeInfoAPI) -> dict:
         """
         [Helper Method] Prepare common fields for FRTarget and its subclasses.
 
@@ -93,19 +98,14 @@ class FRTarget(GreprClass, ABC):
             "layer_order": data["layerOrder"],
         }
 
-    @classmethod
-    @abstractmethod
-    def from_data(cls, data: dict[str, Any], info_api: OpcodeInfoAPI) -> "FRTarget":
+    def __post_init__(self) -> None:
         """
-        Deserializes raw data into a FRTarget.
-        
-        Args:
-            data: the raw data
-            info_api: the opcode info api used to fetch information about opcodes
+        Ensure my assumption about custom_vars was correct.
         
         Returns:
-            the FRTarget
+            None
         """
+        if self.custom_vars != []: raise ThanksError()
 
     def _step_common(self, info_api: OpcodeInfoAPI
     ) -> tuple[
@@ -246,7 +246,7 @@ class FRStage(FRTarget):
         Returns:
             the FRStage
         """
-        common_fields = cls._parse_common_fields(data, info_api)
+        common_fields = cls._from_data_common(data, info_api)
         if "id" in data:
             id = data["id"]
         else:
@@ -314,7 +314,7 @@ class FRSprite(FRTarget):
         Returns:
             the FRSprite
         """
-        common_fields = cls._parse_common_fields(data, info_api)
+        common_fields = cls._from_data_common(data, info_api)
         if "id" in data:
             id = data["id"]
         else:
@@ -386,6 +386,7 @@ class SRTarget(GreprClass):
     volume: int | float
 
     def validate(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
+        # TODO: docstring
         AA_LIST_OF_TYPE(self, path, "scripts", SRScript)
         AA_LIST_OF_TYPE(self, path, "comments", SRComment)
         AA_LIST_OF_TYPE(self, path, "costumes", SRCostume)
@@ -417,6 +418,7 @@ class SRTarget(GreprClass):
             defined_sounds[sound.name] = current_path
     
     def get_complete_context(self, partial_context: PartialContext) -> CompleteContext:
+        # TODO: docstring
         return CompleteContext.from_partial(
             pc       = partial_context,
             costumes = [SRDropdownValue(DropdownValueKind.COSTUME, costume.name) for costume in self.costumes],
@@ -430,6 +432,7 @@ class SRTarget(GreprClass):
         info_api: OpcodeInfoAPI,
         context: PartialContext,
     ) -> None:
+        # TODO: docstring
         context = self.get_complete_context(partial_context=context)
         validation_api = ValidationAPI(scripts=self.scripts)
         cb_optypes = {}
@@ -480,6 +483,7 @@ class SRSprite(SRTarget):
     rotation_style: "SRSpriteRotationStyle"
     
     def validate(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
+        # TODO: docstring
         super().validate(path, config, info_api)
         
         AA_TYPE(self, path, "name", str)
@@ -509,13 +513,16 @@ class SRSprite(SRTarget):
     
     def validate_monitors(self, 
         path: list, 
+        config: ValidationConfig,
         info_api: OpcodeInfoAPI,
         context: PartialContext,
     ) -> None:
+        # TODO: docstring
         context = self.get_complete_context(partial_context=context)
         for i, monitor in enumerate(self.local_monitors):
             monitor.validate_dropdown_values(
                 path     = path+["local_monitors", i], 
+                config   = config,
                 info_api = info_api, 
                 context  = context,
             )

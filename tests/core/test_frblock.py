@@ -236,31 +236,6 @@ def test_FRBlock_step_cb_arg(ficapi: FICAPI):
 
 def test_FRBlock_step_cb_call(ficapi: FICAPI):    
     frblock = ALL_FR_BLOCKS["c"]
-    frblock = FRBlock(
-        opcode="procedures_call",
-        next=None,
-        parent=None,
-        inputs={
-            "?+wI)AquGQlzMnn5I8tA": (3, "k", (10, "")),
-            "1OrbjF=wjT?D$)m|0N=X": (2, "l"),
-        },
-        fields={},
-        shadow=False,
-        top_level=True,
-        x=499,
-        y=933,
-        mutation=FRCustomBlockCallMutation(
-            tag_name="mutation",
-            children=[],
-            proccode="do sth text %s and bool %b",
-            argument_ids=["?+wI)AquGQlzMnn5I8tA", "1OrbjF=wjT?D$)m|0N=X"],
-            warp=False,
-            returns=True,
-            edited=True,
-            optype="number",
-            color=("#FF6680", "#FF4D6A", "#FF3355"),
-        )
-    )
     trblock = frblock.step(
         block_api=ficapi,
         info_api=info_api,

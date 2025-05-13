@@ -53,9 +53,9 @@ def test_SRDropdownValue_validate(config):
         func_args=[[], config],
     )
 
-def test_SRDropdownValue_validate_value(context):
+def test_SRDropdownValue_validate_value(config, context):
     dropdown_value = SRDropdownValue(kind=DropdownValueKind.SPRITE, value="Player")
-    dropdown_value.validate_value([], DropdownType.MOUSE_OR_OTHER_SPRITE, context)
+    dropdown_value.validate_value([], config, DropdownType.MOUSE_OR_OTHER_SPRITE, context)
 
     execute_attr_validation_tests(
         obj=dropdown_value,
@@ -63,7 +63,7 @@ def test_SRDropdownValue_validate_value(context):
             ("value", "a non existing sprite", InvalidDropdownValueError),
         ],
         validate_func=SRDropdownValue.validate_value,
-        func_args=[[], DropdownType.MOUSE_OR_OTHER_SPRITE, context],
+        func_args=[[], config, DropdownType.MOUSE_OR_OTHER_SPRITE, context],
     )
 
 

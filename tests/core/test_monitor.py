@@ -1,8 +1,18 @@
 from pytest import fixture, raises
+from copy   import copy
 
-from pypenguin.utility import ThanksError
+from pypenguin.utility            import (
+    ValidationConfig, 
+    ThanksError, TypeValidationError, InvalidOpcodeError, UnnecessaryDropdownError, MissingDropdownError, RangeValidationError,
+)
+from pypenguin.opcode_info        import DropdownValueKind
+from pypenguin.opcode_info.groups import info_api
+from pypenguin.important_opcodes  import NEW_OPCODE_VAR_VALUE, NEW_OPCODE_LIST_VALUE
 
-from pypenguin.core.monitor import FRMonitor
+from pypenguin.core.dropdown import SRDropdownValue
+from pypenguin.core.monitor  import FRMonitor, SRMonitor, SRVariableMonitor, SRListMonitor, STAGE_WIDTH, STAGE_HEIGHT
+
+from tests.utility import execute_attr_validation_tests
 
 ALL_FR_MONITOR_DATAS = [
     { # [0]
@@ -145,7 +155,7 @@ ALL_FR_MONITOR_DATAS = [
     },
 ]
 
-ALL_FR_MONITORS = [
+ALL_FR_MONITORS: list[FRMonitor] = [
     FRMonitor( # [0]
         id="5I9nI;7P)jdiR-_X;/%l_xposition",
         mode="default",
@@ -302,6 +312,94 @@ ALL_FR_MONITORS = [
     ),
 ]
 
+ALL_LOCAL_SR_MONITORS: list[SRMonitor] = [
+    SRMonitor( # [0] for [0]
+        opcode="x position",
+        dropdowns={},
+        position=(-235, -175),
+        is_visible=True,
+    ),
+    SRMonitor( # [1] for [1]
+        opcode="y position",
+        dropdowns={},
+        position=(-235, -149),
+        is_visible=True,
+    ),
+    SRListMonitor( # [2] for [4]
+        opcode="value of [LIST]",
+        dropdowns={
+            "LIST": SRDropdownValue(kind=DropdownValueKind.LIST, value="locl"),
+        },
+        position=(102, -165),
+        is_visible=True,
+        size=(100, 198),
+    ),
+    SRVariableMonitor( # [3] for [6]
+        opcode="value of [VARIABLE]",
+        dropdowns={
+            "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="locl"),
+        },
+        position=(-188, -60),
+        is_visible=True,
+        slider_min=0,
+        slider_max=100,
+        allow_only_integers=True,
+    ),
+]
+
+ALL_GLOBAL_SR_MONITORS: list[SRMonitor] = [
+    SRVariableMonitor( # [0]
+        opcode="value of [VARIABLE]",
+        dropdowns={
+            "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="globl"),
+        },
+        position=(-130, -104),
+        is_visible=True,
+        slider_min=-50.3,
+        slider_max=100,
+        allow_only_integers=False,
+    ),
+    SRVariableMonitor( # [1]
+        opcode="value of [VARIABLE]",
+        dropdowns={
+            "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="globl2"),
+        },
+        position=(-24, -52),
+        is_visible=True,
+        slider_min=-20,
+        slider_max=100,
+        allow_only_integers=True,
+    ),
+    SRListMonitor( # [2]
+        opcode="value of [LIST]",
+        dropdowns={
+            "LIST": SRDropdownValue(kind=DropdownValueKind.LIST, value="globl"),
+        },
+        position=(-204, -27),
+        is_visible=True,
+        size=(176, 147)),
+    SRMonitor( # [3] for [7]
+        opcode="mouse down?",
+        dropdowns={},
+        position=(15, 40),
+        is_visible=True,
+    ),
+    SRMonitor( # [4] for [8]
+        opcode="answer",
+        dropdowns={},
+        position=(-35, -175),
+        is_visible=True,
+    ),
+]
+
+SPRITE_NAMES = ["Sprite1"]
+
+@fixture
+def config():
+    return ValidationConfig()
+
+
+
 
 def test_FRMonitor_from_data():
     monitor_data = ALL_FR_MONITOR_DATAS[0]
@@ -322,9 +420,94 @@ def test_FRMonitor_from_data():
     assert frmonitor.slider_max == monitor_data["sliderMax"]
     assert frmonitor.is_discrete == monitor_data["isDiscrete"]
 
+def test_FRMonitor_from_data_list():
+    monitor_data = ALL_FR_MONITOR_DATAS[4]
+    frmonitor = FRMonitor.from_data(monitor_data)
+    assert isinstance(frmonitor, FRMonitor)
+    assert frmonitor.slider_min == None
+    assert frmonitor.slider_max == None
+    assert frmonitor.is_discrete == None
+
+
 def test_FRMonitor_post_init():
     with raises(ThanksError):
         FRMonitor.from_data(ALL_FR_MONITOR_DATAS[1] | {"params": []})
 
 
+def test_FRMonitor_step():
+    frmonitor = ALL_FR_MONITORS[7]
+    sprite_name, srmonitor = frmonitor.step(
+        info_api=info_api,
+        sprite_names=SPRITE_NAMES,
+    )
+    assert sprite_name == frmonitor.sprite_name
+    assert isinstance(srmonitor, SRMonitor)
+    assert srmonitor == ALL_GLOBAL_SR_MONITORS[3]
+
+def test_FRMonitor_step_unnecessary():
+    frmonitor = copy(ALL_FR_MONITORS[7])
+    frmonitor.sprite_name = "A non-existing sprite"
+    result = frmonitor.step(
+        info_api=info_api,
+        sprite_names=SPRITE_NAMES,
+    )
+    assert result == (None, None)
+
+
+
+def test_SRMonitor_post_init():
+    with raises(AssertionError):
+        SRMonitor(
+            opcode=NEW_OPCODE_VAR_VALUE,
+            dropdowns=...,
+            position=...,
+            is_visible=...,
+        )
+    with raises(AssertionError):
+        SRMonitor(
+            opcode=NEW_OPCODE_LIST_VALUE,
+            dropdowns=...,
+            position=...,
+            is_visible=...,
+        )
+
+
+def test_SRMonitor_validate(config):
+    srmonitor = ALL_GLOBAL_SR_MONITORS[4]
+    srmonitor.validate([], config, info_api)
+    
+    execute_attr_validation_tests(
+        obj=srmonitor,
+        attr_tests=[
+            ("opcode", set(), TypeValidationError),
+            ("opcode", "some undefined opcode", InvalidOpcodeError),
+            ("dropdowns", [], TypeValidationError),
+            ("dropdowns", {8:9}, TypeValidationError),
+            ("position", 9, TypeValidationError),
+            ("is_visible", None, TypeValidationError),
+        ],
+        validate_func=SRMonitor.validate,
+        func_args=[[], config, info_api],
+    )
+
+def test_SRMonitor_validate_position_outside_stage(config):
+    srmonitor = copy(ALL_LOCAL_SR_MONITORS[3])
+    srmonitor.position = (STAGE_HEIGHT * 2, STAGE_HEIGHT * 2)
+    with raises(RangeValidationError):
+        srmonitor.validate([], config, info_api)
+
+def test_SRMonitor_validate_unexpected_dropdown(config):
+    srmonitor = copy(ALL_LOCAL_SR_MONITORS[0])
+    srmonitor.dropdowns = {"SOME_ID": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="some value")}
+    with raises(UnnecessaryDropdownError):
+        srmonitor.validate([], config, info_api)
+
+def test_SRMonitor_validate_missing_dropdown(config):
+    srmonitor = copy(ALL_LOCAL_SR_MONITORS[2])
+    del srmonitor.dropdowns["LIST"]
+    with raises(MissingDropdownError):
+        srmonitor.validate([], config, info_api)
+
+
+def test_SRMonitor_validate_dropdown_values()
 

@@ -20,16 +20,6 @@ class FRMutation(GreprClass, ABC):
     tag_name: str # always "mutation"
     children: list # always []
 
-    def __post_init__(self) -> None:
-        """
-        Ensure my assumptions about mutations were correct.
-        
-        Returns:
-            None
-        """
-        if (self.tag_name != "mutation") or (self.children != []):
-            raise ThanksError()
-
     @classmethod
     @abstractmethod
     def from_data(cls, data: dict[str, Any]) -> "FRMutation":
@@ -42,6 +32,17 @@ class FRMutation(GreprClass, ABC):
         Returns:
             the mutation
         """
+
+    
+    def __post_init__(self) -> None:
+        """
+        Ensure my assumptions about mutations were correct.
+        
+        Returns:
+            None
+        """
+        if (self.tag_name != "mutation") or (self.children != []):
+            raise ThanksError()
 
     @abstractmethod
     def step(self, block_api: FICAPI) -> "SRMutation":
@@ -65,16 +66,6 @@ class FRCustomBlockArgumentMutation(FRMutation):
     color: tuple[str, str, str]
     _argument_name: str | None = field(init=False)
     
-    def __post_init__(self) -> None:
-        """
-        Create the empty '_argument_name' attribute.
-        
-        Returns:
-            None
-        """
-        super().__post_init__()
-        self._argument_name = None
-    
     @classmethod
     def from_data(cls, data: dict[str, str]) -> "FRCustomBlockArgumentMutation":
         """
@@ -91,6 +82,16 @@ class FRCustomBlockArgumentMutation(FRMutation):
             children = data["children"],
             color = tuple(loads(data["color"])),
         )
+    
+    def __post_init__(self) -> None:
+        """
+        Create the empty '_argument_name' attribute.
+        
+        Returns:
+            None
+        """
+        super().__post_init__()
+        self._argument_name = None
     
     def store_argument_name(self, name: str) -> None:
         """
