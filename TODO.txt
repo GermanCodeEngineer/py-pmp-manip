@@ -1,5 +1,6 @@
 TODOs:
     - complete tests
+    - ensure "mode" of monitors is handled
     - safely access dictionaries in APIs
     - add "Raises" to docstrings
     - create @grepr decorator

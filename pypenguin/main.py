@@ -14,9 +14,14 @@ file_path = "../assets/monitors.pmp"
 #file_path = "../assets/scratch_project.sb3"
 
 project = FRProject.from_pmp_file(file_path, info_api=info_api)
+from json import loads
 
 #print(project)
+with open("extracted.json", "r") as file:
+    from pprint import pprint
+    pprint(loads(file.read()))
+
 
 new_project = project.step(info_api=info_api)
-print(new_project)
+#print(new_project)
 new_project.validate(info_api=info_api, config=ValidationConfig())

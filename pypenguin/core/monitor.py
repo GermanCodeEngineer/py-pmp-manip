@@ -73,8 +73,8 @@ class FRMonitor(GreprClass):
             visible     = data["visible"   ],
             
             # Properties for some opcodes
-            width       = 100 if data["width" ] == 0 else data["width" ],
-            height      = 120 if data["height"] == 0 else data["height"],
+            width       = data["width" ],
+            height      = data["height"],
             slider_min  = data.get("sliderMin" , None),
             slider_max  = data.get("sliderMax" , None),
             is_discrete = data.get("isDiscrete", None),
@@ -129,7 +129,10 @@ class FRMonitor(GreprClass):
                 dropdowns   = new_dropdowns,
                 position    = position,
                 is_visible  = self.visible,
-                size        = (self.width, self.height)
+                size        = (
+                    100 if self.width  == 0 else self.width,
+                    120 if self.height == 0 else self.height,
+                )
             ))
         else:
             return (self.sprite_name, SRMonitor(
