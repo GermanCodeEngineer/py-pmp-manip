@@ -6,26 +6,29 @@ def grepr(obj, annotate_fields=True, include_attributes=False, *, indent=4):
             level += 1
             prefix = '\n' + indent * level
             sep = ',\n' + indent * level
+            end_sep = ',\n' + indent * (level-1)
         else:
             prefix = ''
             sep = ', '
+            end_sep = ""
         if isinstance(obj, list):
             if not obj:
                 return '[]', True
-            return '[%s%s]' % (prefix, sep.join(_format(x, level)[0] for x in obj)), False
+            return '[%s%s%s]' % (prefix, sep.join(_format(x, level)[0] for x in obj), end_sep), False
         if isinstance(obj, tuple):
             if not obj:
                 return '()', True
             if len(obj) <= 2:
-                return '(%s)' % (", ".join(_format(x, level)[0] for x in obj)), False
+                return '(%s%s)' % (", ".join(_format(x, level)[0] for x in obj), end_sep), False
             else:
-                return '(%s%s)' % (prefix, sep.join(_format(x, level)[0] for x in obj)), False
+                return '(%s%s%s)' % (prefix, sep.join(_format(x, level)[0] for x in obj), end_sep), False
         elif isinstance(obj, dict):
             if not obj:
                 return '{}', True
             args = [f'{_format(key, level)[0]}: {_format(value, level)[0]}' for key,value in obj.copy().items()]    
-            short = '{%s}' % (", ".join(args),)
-            return '{%s%s}' % (prefix, sep.join(args)), False
+            return '{%s%s%s}' % (prefix, sep.join(args), end_sep), False
+        elif isinstance(obj, str):
+            return f'"{obj.replace('"', '\\"')}"', True
         elif isinstance(obj, DualKeyDict):
             if not obj:
                 return 'DKD{}', True
@@ -69,7 +72,7 @@ def grepr(obj, annotate_fields=True, include_attributes=False, *, indent=4):
         return repr(obj), True
  
     is_compatible = bool(getattr(obj, "_grepr", False))
-    if not(is_compatible) and not(isinstance(obj, (list, dict))):
+    if not(is_compatible) and not(isinstance(obj, (list, dict, str))):
         return repr(obj)
     if indent is not None and not isinstance(indent, str):
         indent = ' ' * indent
