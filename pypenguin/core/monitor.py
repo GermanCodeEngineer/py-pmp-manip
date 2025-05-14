@@ -1,6 +1,5 @@
 from typing      import Any
 from dataclasses import dataclass
-from math        import inf
 
 from pypenguin.utility           import (
     GreprClass, ValidationConfig,
@@ -162,6 +161,8 @@ class SRMonitor(GreprClass):
             assert isinstance(self, SRVariableMonitor), f"Must be a SRVariableMonitor instance if opcode is {repr(NEW_OPCODE_VAR_VALUE)}"
         elif self.opcode == NEW_OPCODE_LIST_VALUE:
             assert isinstance(self, SRListMonitor), f"Must be a SRListMonitor instance if opcode is {repr(NEW_OPCODE_LIST_VALUE)}"
+        else:
+            assert not isinstance(self, (SRVariableMonitor, SRListMonitor)), f"Mustn't be a SRVariableMonitor or SRListMonitor if opcode is neither {repr(NEW_OPCODE_VAR_VALUE)} nor {repr(NEW_OPCODE_LIST_VALUE)}"
     
     def validate(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
         """
@@ -258,13 +259,13 @@ class SRVariableMonitor(SRMonitor):
         
         AA_TYPE(self, path, "allow_only_integers", bool)
         if self.allow_only_integers:
+            allowed_types = (int,)
             condition = "When allow_only_integers is True"
-            AA_TYPE(self, path, "slider_min", int, condition=condition)
-            AA_TYPE(self, path, "slider_max", int, condition=condition)
         else:
+            allowed_types = (int, float)
             condition = "When allow_only_integers is False"
-            AA_TYPES(self, path, "slider_min", (int, float), condition=condition)
-            AA_TYPES(self, path, "slider_max", (int, float), condition=condition)
+        AA_TYPES(self, path, "slider_min", allowed_types, condition=condition)
+        AA_TYPES(self, path, "slider_max", allowed_types, condition=condition)
 
         AA_BIGGER_OR_EQUAL(self, path, "slider_max", "slider_min")
 
@@ -294,7 +295,8 @@ class SRListMonitor(SRMonitor):
         AA_EQUAL(self, path, "opcode", NEW_OPCODE_LIST_VALUE)
         
         if config.raise_when_monitor_bigger_then_stage:
-            AA_BOXED_COORD_PAIR(self, path, "size", min_x=100, max_x=STAGE_WIDTH, min_y=60, max_y=STAGE_HEIGHT)
+            max_x, max_y = STAGE_WIDTH, STAGE_HEIGHT
         else:
-            AA_BOXED_COORD_PAIR(self, path, "size", min_x=100, max_x=inf,         min_y=60, max_y=inf         )
+            max_x, max_y = None, None
+        AA_BOXED_COORD_PAIR(self, path, "size", min_x=100, max_x=max_x, min_y=60, max_y=max_y)
 

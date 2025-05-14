@@ -43,8 +43,8 @@ class FRProject(GreprClass):
         Returns:
             the FRProject
         """
-        with open("extracted.json", "w") as file:
-            dump(data, file)
+        #with open("extracted.json", "w") as file:
+        #    dump(data, file)
         return cls(
             targets = [
                 (FRStage if i==0 else FRSprite).from_data(target_data, info_api=info_api)
@@ -59,15 +59,6 @@ class FRProject(GreprClass):
             extension_urls = data.get("extensionURLs", {}),
             meta           = FRMeta.from_data(data["meta"]),
         )
-
-    def __post_init__(self) -> None:
-        """
-        Ensure my assumption about extension_data was correct.
-        
-        Returns:
-            None
-        """
-        if self.extension_data != {}: raise ThanksError()
 
     @classmethod
     def from_pmp_file(cls, file_path: str, info_api: OpcodeInfoAPI) -> "FRProject":
@@ -99,36 +90,22 @@ class FRProject(GreprClass):
         """
         assert file_path.endswith(".sb3")
         project_data = loads(read_file_of_zip(file_path, "project.json"))
-        # TODO: 
-        # - test this method + test sprite id 
-        # - test custom block type of sb3's defaulting to "statement"
-
         for i, sprite_data in enumerate(project_data["targets"]):
-            #sprite_data["customVars"] = []
             if i == 0:
                 token = string_to_sha256(primary="_stage_")
             else:
                 token = string_to_sha256(primary=sprite_data["name"])
             sprite_data["id"] = token
-    
-            #for block_data in sprite_data["blocks"].values():
-            #    if isinstance(block_data, list): continue # skip list blocks
-            #    if block_data["opcode"] == "procedures_prototype":
-            #        block_data["mutation"]["optype"] = json.dumps("statement") # Scratch custom blocks are always "instruction" blocks
-        
-        #project_data["extensionData"] = {}
-    
-        #project_data["meta"] = {
-        #    "semver": "3.0.0",
-        #    "vm"    : "0.2.0",
-        #    "agent" : "",
-        #    "platform": {
-        #        "name"   : "PenguinMod",
-        #        "url"    : "https://penguinmod.com/",
-        #        "version": "stable",
-        #    },
-        #}
         return cls.from_data(project_data, info_api=info_api)
+
+    def __post_init__(self) -> None:
+        """
+        Ensure my assumption about extension_data was correct.
+        
+        Returns:
+            None
+        """
+        if self.extension_data != {}: raise ThanksError()
 
     def step(self, info_api: OpcodeInfoAPI):
         """
@@ -391,6 +368,7 @@ class SRProject(GreprClass):
                 target: SRSprite
                 target.validate_monitors(
                     path     = current_path, 
+                    config   = config,
                     info_api = info_api, 
                     context  = partial_context,
                 )

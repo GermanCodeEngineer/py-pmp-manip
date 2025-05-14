@@ -19,7 +19,7 @@ def grepr(obj, annotate_fields=True, include_attributes=False, *, indent=4):
             if not obj:
                 return '()', True
             if len(obj) <= 2:
-                return '(%s%s)' % (", ".join(_format(x, level)[0] for x in obj), end_sep), False
+                return '(%s)' % (", ".join(_format(x, level)[0] for x in obj)), False
             else:
                 return '(%s%s%s)' % (prefix, sep.join(_format(x, level)[0] for x in obj), end_sep), False
         elif isinstance(obj, dict):
@@ -38,7 +38,7 @@ def grepr(obj, annotate_fields=True, include_attributes=False, *, indent=4):
                 key2_str, _ = _format(key2, level)
                 value_str, _ = _format(value, level)
                 args.append(f'{key1_str} / {key2_str}: {value_str}')
-            return 'DKD{%s%s}' % (prefix, sep.join(args)), False
+            return 'DKD{%s%s%s}' % (prefix, sep.join(args), end_sep), False
         elif is_compatible:
             cls = type(obj)
             args = []
@@ -68,7 +68,7 @@ def grepr(obj, annotate_fields=True, include_attributes=False, *, indent=4):
             class_name = getattr(obj, "_grepr_class_name", obj.__class__.__name__)
             if allsimple and len(args) <= 3:
                 return '%s(%s)' % (class_name, ', '.join(args)), not args
-            return '%s(%s%s)' % (class_name, prefix, sep.join(args)), False
+            return '%s(%s%s%s)' % (class_name, prefix, sep.join(args), end_sep), False
         return repr(obj), True
  
     is_compatible = bool(getattr(obj, "_grepr", False))

@@ -151,7 +151,6 @@ class FRTarget(GreprClass, ABC):
 
         for block_reference in block_api.scheduled_block_deletions:
             del new_blocks[IRBlockReference(id=block_reference)]
-        print(new_blocks)
         
         # Get all top level block ids
         top_level_block_refs: list[IRBlockReference] = []

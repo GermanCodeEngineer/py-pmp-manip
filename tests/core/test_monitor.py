@@ -3,7 +3,8 @@ from copy   import copy
 
 from pypenguin.utility            import (
     ValidationConfig, 
-    ThanksError, TypeValidationError, InvalidOpcodeError, UnnecessaryDropdownError, MissingDropdownError, RangeValidationError,
+    ThanksError, TypeValidationError, InvalidOpcodeError, UnnecessaryDropdownError, 
+    MissingDropdownError, RangeValidationError, InvalidValueError,
 )
 from pypenguin.opcode_info        import DropdownValueKind
 from pypenguin.opcode_info.groups import info_api
@@ -14,6 +15,10 @@ from pypenguin.core.dropdown import SRDropdownValue
 from pypenguin.core.monitor  import FRMonitor, SRMonitor, SRVariableMonitor, SRListMonitor, STAGE_WIDTH, STAGE_HEIGHT
 
 from tests.utility import execute_attr_validation_tests
+
+@fixture
+def config():
+    return ValidationConfig()
 
 @fixture
 def context():
@@ -414,10 +419,6 @@ ALL_GLOBAL_SR_MONITORS: list[SRMonitor] = [
 
 SPRITE_NAMES = ["Sprite1"]
 
-@fixture
-def config():
-    return ValidationConfig()
-
 
 
 
@@ -530,8 +531,76 @@ def test_SRMonitor_validate_missing_dropdown(config):
 
 
 def test_SRMonitor_validate_dropdown_values(context):
-    srmonitor = ALL_LOCAL_SR_MONITORS[2]
+    srmonitor = ALL_LOCAL_SR_MONITORS[3]
     srmonitor.validate_dropdown_values([], config, info_api, context)
 
+
+
+def test_SRVariableMonitor_validate_all_numbers(config):
+    srmonitor = ALL_GLOBAL_SR_MONITORS[0]
+    srmonitor: SRVariableMonitor
+    srmonitor.validate([], config, info_api)
+    
+    execute_attr_validation_tests(
+        obj=srmonitor,
+        attr_tests=[
+            ("allow_only_integers", 8, TypeValidationError),
+            ("slider_min", "", TypeValidationError),
+            ("slider_max", None, TypeValidationError),
+            ("slider_min", 200, RangeValidationError), # bigger then slider_max
+        ],
+        validate_func=SRVariableMonitor.validate,
+        func_args=[[], config, info_api],
+    )
+
+def test_SRVariableMonitor_validate_only_integers(config):
+    srmonitor = ALL_GLOBAL_SR_MONITORS[1]
+    srmonitor: SRVariableMonitor
+    srmonitor.validate([], config, info_api)
+    
+    execute_attr_validation_tests(
+        obj=srmonitor,
+        attr_tests=[
+            ("slider_min", 4.3, TypeValidationError),
+            ("slider_max", 90.45, TypeValidationError),
+        ],
+        validate_func=SRVariableMonitor.validate,
+        func_args=[[], config, info_api],
+    )
+
+def test_SRVariableMonitor_validate_invalid_opcode(config):
+    srmonitor = copy(ALL_GLOBAL_SR_MONITORS[0])
+    srmonitor: SRVariableMonitor
+    srmonitor.opcode = "x position"
+    srmonitor.dropdowns = {}
+    with raises(InvalidValueError):
+        srmonitor.validate([], config, info_api)
+
+
+
+def test_SRListMonitor_validate(config):
+    srmonitor = ALL_GLOBAL_SR_MONITORS[2]
+    srmonitor: SRListMonitor
+    srmonitor.validate([], config, info_api)
+
+def test_SRListMonitor_validate_too_big_size(config):
+    srmonitor = copy(ALL_GLOBAL_SR_MONITORS[2])
+    srmonitor: SRListMonitor
+    srmonitor.size = (2*STAGE_WIDTH, 2*STAGE_HEIGHT)
+    with raises(RangeValidationError):
+        srmonitor.validate([], config, info_api)
+    
+    modified_config = copy(config)
+    modified_config: ValidationConfig
+    modified_config.raise_when_monitor_bigger_then_stage = False
+    srmonitor.validate([], modified_config, info_api)
+
+def test_SRListMonitor_validate_invalid_opcode(config):
+    srmonitor = copy(ALL_GLOBAL_SR_MONITORS[2])
+    srmonitor: SRListMonitor
+    srmonitor.opcode = "x position"
+    srmonitor.dropdowns = {}
+    with raises(InvalidValueError):
+        srmonitor.validate([], config, info_api)
 
 

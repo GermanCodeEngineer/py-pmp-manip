@@ -4,6 +4,7 @@ from typing      import Any
 from dataclasses import dataclass
 
 from pypenguin.utility.errors import TypeValidationError, RangeValidationError, InvalidValueError
+from pypenguin.utility.general import GreprClass
 
 def value_and_descr(obj, attr) -> tuple[Any, str]:
     return getattr(obj, attr), f"{attr} of a {obj.__class__.__name__}"
@@ -14,6 +15,9 @@ def AA_TYPE(obj, path, attr, t, condition=None) -> None:
         raise TypeValidationError(path, f"{descr} must be of type {t.__name__} not {attr_value.__class__.__name__}", condition)
 
 def AA_TYPES(obj, path, attr, ts, condition=None) -> None:
+    assert len(ts) >= 1
+    if len(ts) == 1:
+        return AA_TYPE(obj, path, attr, ts[0], condition=condition)
     attr_value, descr = value_and_descr(obj, attr)
     if not isinstance(attr_value, ts):
         types_str = "|".join([t.__name__ for t in ts])
@@ -99,7 +103,7 @@ def AA_COORD_PAIR(obj, path, attr, condition=None):
 
 def AA_BOXED_COORD_PAIR(
         obj, path, attr, 
-        min_x: int|float, max_x: int|float, min_y:int|float, max_y: int|float, 
+        min_x: int|float|None, max_x: int|float|None, min_y:int|float|None, max_y: int|float|None, 
         condition=None
     ):
     attr_value, descr = value_and_descr(obj, attr)
@@ -111,8 +115,8 @@ def AA_BOXED_COORD_PAIR(
     ):
         raise TypeValidationError(path, msg, condition)
     if (
-           (attr_value[0] < min_x) or (attr_value[0] > max_x)
-        or (attr_value[1] < min_y) or (attr_value[1] > max_y)
+           ((min_x is not None) and (attr_value[0] < min_x)) or ((max_x is not None) and (attr_value[0] > max_x))
+        or ((min_y is not None) and (attr_value[1] < min_y)) or ((max_y is not None) and (attr_value[1] > max_y))
     ):
         raise RangeValidationError(path, msg, condition)
 
@@ -129,7 +133,7 @@ def AA_JSON_COMPATIBLE(obj, path, attr, condition=None):
 def AA_EQUAL(obj, path, attr, value, condition=None):
     attr_value, descr = value_and_descr(obj, attr)
     if attr_value != value:
-        raise InvalidValueError(path, f"{descr} must be {value}", condition)
+        raise InvalidValueError(path, f"{descr} must be {repr(value)}", condition)
 
 def AA_BIGGER_OR_EQUAL(obj, path, attr1, attr2, condition=None):
     attr1_value, attr1_descr = value_and_descr(obj, attr1)
@@ -173,8 +177,8 @@ def is_valid_url(url: str) -> bool:
     except Exception:
         return False
 
-@dataclass
-class ValidationConfig:
+@dataclass(repr=False)
+class ValidationConfig(GreprClass):
     raise_when_monitor_position_outside_stage: bool = True
     raise_when_monitor_bigger_then_stage: bool = True
 
