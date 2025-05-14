@@ -11,7 +11,7 @@ from pypenguin.opcode_info       import OpcodeInfoAPI, DropdownType
 from pypenguin.important_opcodes import *
 
 from pypenguin.core.dropdown import SRDropdownValue
-from pypenguin.core.context  import PartialContext
+from pypenguin.core.context  import PartialContext, CompleteContext
 
 STAGE_WIDTH : int = 480
 STAGE_HEIGHT: int = 360
@@ -200,7 +200,12 @@ class SRMonitor(GreprClass):
             if new_dropdown_id not in self.dropdowns:
                 raise MissingDropdownError(path, f"dropdowns of {self.__class__.__name__} with opcode {repr(self.opcode)} is missing dropdown {repr(new_dropdown_id)}")
     
-    def validate_dropdown_values(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI, context: PartialContext) -> None:
+    def validate_dropdown_values(self, 
+        path: list, 
+        config: ValidationConfig, 
+        info_api: OpcodeInfoAPI, 
+        context: PartialContext | CompleteContext,
+     ) -> None:
         """
         Ensure the dropdown values of a SRMonitor are valid, raise ValidationError if not.
         For validation of the monitor itself, call the validate method.

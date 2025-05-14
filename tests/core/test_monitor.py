@@ -9,10 +9,30 @@ from pypenguin.opcode_info        import DropdownValueKind
 from pypenguin.opcode_info.groups import info_api
 from pypenguin.important_opcodes  import NEW_OPCODE_VAR_VALUE, NEW_OPCODE_LIST_VALUE
 
+from pypenguin.core.context  import PartialContext
 from pypenguin.core.dropdown import SRDropdownValue
 from pypenguin.core.monitor  import FRMonitor, SRMonitor, SRVariableMonitor, SRListMonitor, STAGE_WIDTH, STAGE_HEIGHT
 
 from tests.utility import execute_attr_validation_tests
+
+@fixture
+def context():
+    my_variable = (DropdownValueKind.VARIABLE, "globl")
+    my_sprite_variable = (DropdownValueKind.VARIABLE, "locl")
+    my_list = (DropdownValueKind.LIST, "globl")
+    my_sprite_list = (DropdownValueKind.LIST, "locl")
+    return PartialContext(
+        scope_variables=[my_variable, my_sprite_variable],
+        scope_lists=[my_list, my_sprite_list],
+
+        all_sprite_variables=[my_variable],
+
+        sprite_only_variables=[my_sprite_variable],
+        sprite_only_lists=[my_sprite_list],
+
+        other_sprites=[(DropdownValueKind.SPRITE, "Sprite1")],
+        backdrops=[(DropdownValueKind.BACKDROP, "intro"), (DropdownValueKind.BACKDROP, "scene1")],
+    )
 
 ALL_FR_MONITOR_DATAS = [
     { # [0]
@@ -509,5 +529,9 @@ def test_SRMonitor_validate_missing_dropdown(config):
         srmonitor.validate([], config, info_api)
 
 
-def test_SRMonitor_validate_dropdown_values()
+def test_SRMonitor_validate_dropdown_values(context):
+    srmonitor = ALL_LOCAL_SR_MONITORS[2]
+    srmonitor.validate_dropdown_values([], config, info_api, context)
+
+
 

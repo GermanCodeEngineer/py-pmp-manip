@@ -3,7 +3,7 @@ from pytest import fixture, raises
 from pypenguin.utility     import ValidationConfig, TypeValidationError, InvalidDropdownValueError
 from pypenguin.opcode_info import DropdownType, DropdownValueKind
 
-from pypenguin.core.context import PartialContext
+from pypenguin.core.context  import PartialContext
 from pypenguin.core.dropdown import SRDropdownValue
 
 from tests.utility import execute_attr_validation_tests
