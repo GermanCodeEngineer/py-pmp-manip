@@ -117,13 +117,13 @@ class FRProject(GreprClass):
         Returns:
             the SRProject
         """
+        old_stage: FRStage
+        new_stage: SRStage
         new_sprites: list[SRSprite] = []
         for target in self.targets:
             if  target.is_stage:
                 old_stage: FRStage = target
-                (
-                    new_stage, all_sprite_variables, all_sprite_lists,
-                ) = old_stage.step(info_api)
+                new_stage, all_sprite_variables, all_sprite_lists = old_stage.step(info_api)
             else:
                 target: FRSprite
                 new_sprite, _, _ = target.step(info_api)
@@ -192,92 +192,6 @@ class SRProject(GreprClass):
     global_monitors: list[SRMonitor]
     extensions: list[SRExtension]
 
-    def validate_var_names(self, path: list, config: ValidationConfig) -> None:
-        """
-        Ensures no variables with the same name exist.
-
-        Args:
-            path: the path from the project to itself. Used for better errors
-            config: Configuration for Validation Behaviour
-        
-        Returns:
-            None
-        """
-        defined_variables = {}
-        for i, variable in enumerate(self.all_sprite_variables):
-            current_path = path+["all_sprite_variables", i]
-            if variable.name in defined_variables:
-                other_path = defined_variables[variable.name]
-                raise SameNameTwiceError(other_path, current_path, "Two variables mustn't have the same name")
-            defined_variables[variable.name] = current_path
-        
-        for i, sprite in enumerate(self.sprites):
-            for j, variable in enumerate(sprite.sprite_only_variables):
-                current_path = path+["sprites", i, "sprite_only_variables", j]
-                if variable.name in defined_variables:
-                    other_path = defined_variables[variable.name]
-                    raise SameNameTwiceError(other_path, current_path, "Two variables mustn't have the same name")
-                defined_variables[variable.name] = current_path
-        
-    def validate_list_names(self, path: list, config: ValidationConfig) -> None:
-        """
-        Ensures no lists with the same name exist.
-
-        Args:
-            path: the path from the project to itself. Used for better errors
-            config: Configuration for Validation Behaviour
-        
-        Returns:
-            None
-        """
-        defined_lists = {}
-        for i, list_ in enumerate(self.all_sprite_lists):
-            current_path = path+["all_sprite_lists", i]
-            if list_.name in defined_lists:
-                other_path = defined_lists[list_.name]
-                raise SameNameTwiceError(other_path, current_path, "Two lists mustn't have the same name")
-            defined_lists[list_.name] = current_path
-        
-        for i, sprite in enumerate(self.sprites):
-            for j, list_ in enumerate(sprite.sprite_only_lists):
-                current_path = path+["sprites", i, "sprite_only_lists", j]
-                if list_.name in defined_lists:
-                    other_path = defined_lists[list_.name]
-                    raise SameNameTwiceError(other_path, current_path, "Two lists mustn't have the same name")
-                defined_lists[list_.name] = current_path
-
-    def validate_sprites(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
-        """
-        Ensure the sprites of a SRProject are valid, raise ValidationError if not.
-        
-        Args:
-            path: the path from the project to itself. Used for better errors
-            config: Configuration for Validation Behaviour
-            info_api: the opcode info api used to fetch information about opcodes
-        
-        Returns:
-            None
-        """
-        # Validate sprites and their layer orders
-        layer_orders: dict[int, list] = {}
-        for i, sprite in enumerate(self.sprites):
-            current_path = path+["sprites", i]
-            sprite.validate(current_path, config, info_api)
-            if sprite.layer_order in layer_orders:
-                other_path = layer_orders[sprite.layer_order]
-                raise SameNumberTwiceError(other_path, current_path, "Two sprites mustn't have the same layer order")
-            layer_orders[sprite.layer_order] = current_path
-        
-        min_layer_order = min(layer_orders.keys())
-        if min_layer_order != 1:
-            raise LayerOrderError(layer_orders[min_layer_order], "layer_order must start at 1")
-        
-        next_layer_order = 1
-        for layer_order, current_path in dict(sorted(layer_orders.items())).items():
-            if layer_order > next_layer_order: # Can't be lower because minimum of 1 was alredy ensured + sorting
-                raise LayerOrderError(current_path, f"layer_order should start at 1 and then increase for each sprite in order from back to front. It should be {next_layer_order} here")
-            next_layer_order += 1
-
     def validate(self, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
         """
         Ensure a SRProject is valid, raise ValidationError if not.
@@ -304,15 +218,15 @@ class SRProject(GreprClass):
         
         self.stage.validate(path+["stage"], config, info_api)
 
-        self.validate_sprites(path, config, info_api)    
+        self._validate_sprites(path, config, info_api)    
         
         for i, variable in enumerate(self.all_sprite_variables):
             variable.validate(path+["all_sprite_variables", i], config)
         for i, list_ in enumerate(self.all_sprite_lists):
             list_.validate(path+["all_sprite_lists", i], config)
         
-        self.validate_var_names(path, config)
-        self.validate_list_names(path, config)
+        self._validate_var_names(path, config)
+        self._validate_list_names(path, config)
         
         for i, monitor in enumerate(self.global_monitors):
             monitor.validate(path+["global_monitors", i], config, info_api)
@@ -380,3 +294,89 @@ class SRProject(GreprClass):
                 info_api = info_api, 
                 context  = global_context,
             )
+
+    def _validate_var_names(self, path: list, config: ValidationConfig) -> None:
+        """
+        Ensures no variables with the same name exist.
+
+        Args:
+            path: the path from the project to itself. Used for better errors
+            config: Configuration for Validation Behaviour
+        
+        Returns:
+            None
+        """
+        defined_variables = {}
+        for i, variable in enumerate(self.all_sprite_variables):
+            current_path = path+["all_sprite_variables", i]
+            if variable.name in defined_variables:
+                other_path = defined_variables[variable.name]
+                raise SameNameTwiceError(other_path, current_path, "Two variables mustn't have the same name")
+            defined_variables[variable.name] = current_path
+        
+        for i, sprite in enumerate(self.sprites):
+            for j, variable in enumerate(sprite.sprite_only_variables):
+                current_path = path+["sprites", i, "sprite_only_variables", j]
+                if variable.name in defined_variables:
+                    other_path = defined_variables[variable.name]
+                    raise SameNameTwiceError(other_path, current_path, "Two variables mustn't have the same name")
+                defined_variables[variable.name] = current_path
+        
+    def _validate_list_names(self, path: list, config: ValidationConfig) -> None:
+        """
+        Ensures no lists with the same name exist.
+
+        Args:
+            path: the path from the project to itself. Used for better errors
+            config: Configuration for Validation Behaviour
+        
+        Returns:
+            None
+        """
+        defined_lists = {}
+        for i, list_ in enumerate(self.all_sprite_lists):
+            current_path = path+["all_sprite_lists", i]
+            if list_.name in defined_lists:
+                other_path = defined_lists[list_.name]
+                raise SameNameTwiceError(other_path, current_path, "Two lists mustn't have the same name")
+            defined_lists[list_.name] = current_path
+        
+        for i, sprite in enumerate(self.sprites):
+            for j, list_ in enumerate(sprite.sprite_only_lists):
+                current_path = path+["sprites", i, "sprite_only_lists", j]
+                if list_.name in defined_lists:
+                    other_path = defined_lists[list_.name]
+                    raise SameNameTwiceError(other_path, current_path, "Two lists mustn't have the same name")
+                defined_lists[list_.name] = current_path
+
+    def _validate_sprites(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
+        """
+        Ensure the sprites of a SRProject are valid, raise ValidationError if not.
+        
+        Args:
+            path: the path from the project to itself. Used for better errors
+            config: Configuration for Validation Behaviour
+            info_api: the opcode info api used to fetch information about opcodes
+        
+        Returns:
+            None
+        """
+        # Validate sprites and their layer orders
+        layer_orders: dict[int, list] = {}
+        for i, sprite in enumerate(self.sprites):
+            current_path = path+["sprites", i]
+            sprite.validate(current_path, config, info_api)
+            if sprite.layer_order in layer_orders:
+                other_path = layer_orders[sprite.layer_order]
+                raise SameNumberTwiceError(other_path, current_path, "Two sprites mustn't have the same layer order")
+            layer_orders[sprite.layer_order] = current_path
+        
+        min_layer_order = min(layer_orders.keys())
+        if min_layer_order != 1:
+            raise LayerOrderError(layer_orders[min_layer_order], "layer_order must start at 1")
+        
+        next_layer_order = 1
+        for layer_order, current_path in dict(sorted(layer_orders.items())).items():
+            if layer_order > next_layer_order: # Can't be lower because minimum of 1 was alredy ensured + sorting
+                raise LayerOrderError(current_path, f"layer_order should start at 1 and then increase for each sprite in order from back to front. It should be {next_layer_order} here")
+            next_layer_order += 1

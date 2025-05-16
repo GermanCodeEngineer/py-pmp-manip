@@ -1,4 +1,3 @@
-from typing      import Any
 from dataclasses import dataclass
 
 from pypenguin.utility import GreprClass, ValidationConfig
@@ -10,7 +9,7 @@ class SRVariable(GreprClass):
     _grepr_fields = ["name", "current_value"]
     
     name: str
-    current_value: Any
+    current_value: int | float | str | bool
 
     def validate(self, path: list, config: ValidationConfig) -> None:
         """
@@ -25,7 +24,6 @@ class SRVariable(GreprClass):
         """
         AA_TYPE(self, path, "name", str)
         AA_TYPES(self, path, "current_value", (int, float, str, bool)) # Only these can be saved in Scratch Projects
-        #AA_JSON_COMPATIBLE(self, path, "current_value")
 
 class SRCloudVariable(SRVariable):
     pass
@@ -36,7 +34,7 @@ class SRList(GreprClass):
     _grepr_fields = ["name", "current_value"]
     
     name: str
-    current_value: list[Any]
+    current_value: list[int | float | str | bool]
 
     def validate(self, path: list, config: ValidationConfig):
         """
@@ -51,7 +49,4 @@ class SRList(GreprClass):
         """
         AA_TYPE(self, path, "name", str)
         AA_LIST_OF_TYPES(self, path, "current_value", (int, float, str, bool)) # Only these can be saved in Scratch Projects
-        #AA_TYPE(self, path, "current_value", list) # still must be a list
-        #AA_JSON_COMPATIBLE(self, path, "current_value")
-
 

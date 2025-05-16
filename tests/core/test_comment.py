@@ -63,13 +63,14 @@ def test_FRComment_step_floating():
     assert srcomment.is_minimized == frcomment.minimized
     assert srcomment.text == frcomment.text
 
-# SRComment
+
+
 def test_SRComment_validate(config):
     srcomment = SRComment(
         position=(10, 10),
         size=(52, 32),
         is_minimized=False,
-        text="Comment text"
+        text="Comment text",
     )
     srcomment.validate(path=[], config=config)
 

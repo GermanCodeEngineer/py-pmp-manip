@@ -15,7 +15,7 @@ from pypenguin.utility import ValidationConfig, read_file_of_zip, grepr
 file_path = "../assets/testing_blocks.pmp"
 #file_path = "../assets/scratch_project.sb3"
 
-print(grepr(loads(read_file_of_zip(file_path, "project.json"))))
+#print(grepr(loads(read_file_of_zip(file_path, "project.json"))))
 
 project = FRProject.from_pmp_file(file_path, info_api=info_api)
 
@@ -23,5 +23,5 @@ project = FRProject.from_pmp_file(file_path, info_api=info_api)
 
 
 new_project = project.step(info_api=info_api)
-#print(new_project)
+print(new_project)
 new_project.validate(info_api=info_api, config=ValidationConfig())
