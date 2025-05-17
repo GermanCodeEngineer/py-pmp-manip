@@ -134,7 +134,7 @@ class ValidationAPI(GreprClass):
                 recursive_block_search(block)
         return blocks
     
-    def get_cb_mutation(self, custom_opcode: SRCustomBlockOpcode) -> "FRCustomBlockMutation":
+    def get_cb_mutation(self, custom_opcode: SRCustomBlockOpcode) -> "SRCustomBlockMutation":
         """
         Get a custom block mutation by its custom opcode
         

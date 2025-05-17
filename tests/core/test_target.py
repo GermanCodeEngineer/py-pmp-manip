@@ -1,0 +1,212 @@
+from pytest import fixture, raises
+from copy   import copy, deepcopy
+
+from pypenguin.utility            import (
+    string_to_sha256,
+    ValidationConfig, 
+    ThanksError, FirstToSecondConversionError, TypeValidationError, RangeValidationError, 
+    SameNameTwiceError
+)
+from pypenguin.opcode_info.groups import info_api
+
+from pypenguin.core.asset      import FRCostume, FRSound, SRCostume, SRSound
+from pypenguin.core.comment    import FRComment
+from pypenguin.core.target     import FRTarget, FRStage, FRSprite, SRTarget #, SRStage, SRSprite
+from pypenguin.core.vars_lists import SRVariable, SRCloudVariable, SRList
+
+from tests.core.constants import SPRITE_DATA, STAGE_DATA, FR_SPRITE, FR_STAGE, SR_SPRITE, SR_STAGE
+
+from tests.utility import execute_attr_validation_tests
+
+@fixture
+def config():
+    return ValidationConfig()
+
+
+
+def test_FRTarget_from_data_common():
+    result = FRTarget._from_data_common(SPRITE_DATA, info_api)
+    goal = {
+        "is_stage": False,
+        "name": "Sprite1",
+        "variables": {},
+        "lists": {},
+        "broadcasts": {},
+        "custom_vars": [],
+        "blocks": FR_SPRITE.blocks,
+        "comments": FR_SPRITE.comments,
+        "current_costume": 0,
+        "costumes": FR_SPRITE.costumes,
+        "sounds": FR_SPRITE.sounds,
+        "volume": 100,
+        "layer_order": 1,
+    }
+    assert result == goal
+
+
+def test_FRTarget_post_init():
+    class DummyFRTarget(FRTarget):
+        @classmethod # to fullfill the abstractmethod requirement
+        def from_data(cls, data, info_api) -> "DummyFRTarget":
+            pass
+
+    with raises(ThanksError):
+        DummyFRTarget(
+            is_stage=...,
+            name=...,
+            variables=...,
+            lists=...,
+            broadcasts=...,
+            custom_vars="something else",
+            blocks=...,
+            comments=...,
+            current_costume=...,
+            costumes=...,
+            sounds=...,
+            volume=...,
+            layer_order=...,
+            id=...,
+        )
+
+
+def test_FRTarget_step_common():
+    (
+        scripts,
+        comments,
+        costumes,
+        sounds,
+        _, _,
+    )  = FR_SPRITE._step_common(info_api)
+    assert scripts == SR_SPRITE.scripts
+    assert comments == SR_SPRITE.comments
+    assert costumes == SR_SPRITE.costumes
+    assert sounds == SR_SPRITE.sounds
+
+
+def test_FRTarget_step_variables_lists():
+    frsprite = copy(FR_STAGE)
+    frsprite.variables = {
+        "ZkrFaN(VCdWk,nAAs*L*": ("some var", 55),
+        "za}CppN*OcX`Pe`H_Cxj": ("some cloud var", "https://needgod.net/", True),
+    }
+    frsprite.lists = {
+        "S}|FmMKusDx]ogbnuxIa": ("some list", ["a", "b", "c", "$$$"]),
+    }
+    sprite_only_variables, sprite_only_lists = frsprite._step_variables_lists()
+    assert sprite_only_variables == [
+        SRVariable(name="some var", current_value=55),
+        SRCloudVariable(name="some cloud var", current_value="https://needgod.net/"),
+    ]
+    assert sprite_only_lists == [
+        SRList(name="some list", current_value=["a", "b", "c", "$$$"]),
+    ]
+
+def test_FRTarget_step_variables_lists_invalid():
+    frsprite = copy(FR_STAGE)
+    frsprite.variables = {"b-bPdkv!fE]yunTdvpQi": ("some other var", None, None)}
+    with raises(FirstToSecondConversionError):
+        frsprite._step_variables_lists()
+
+    frsprite = copy(FR_STAGE)
+    frsprite.variables = {"LSfpvIEwXe-upUsR|ypy": ("some other list", None, None)}
+    with raises(FirstToSecondConversionError):
+        frsprite._step_variables_lists()
+
+
+
+def test_FRStage_from_data():
+    frstage = FRStage.from_data(STAGE_DATA, info_api)
+    assert frstage == FR_STAGE
+
+def test_FRStage_from_data_missing_id():
+    stage_data = copy(STAGE_DATA)
+    del stage_data["id"]
+    frstage = FRStage.from_data(stage_data, info_api)
+    target_stage = copy(FR_STAGE)
+    target_stage.id = string_to_sha256("_stage_") # constant default value
+    assert frstage == target_stage
+
+
+def test_FRStage_step():
+    srstage, _, _ = FR_STAGE.step(info_api)
+    assert srstage == SR_STAGE
+
+
+
+def test_FRSprite_from_data():
+    frsprite = FRSprite.from_data(SPRITE_DATA, info_api)
+    assert frsprite == FR_SPRITE
+
+def test_FRSprite_from_data_missing_id():
+    sprite_data = copy(SPRITE_DATA)
+    del sprite_data["id"]
+    frsprite = FRSprite.from_data(sprite_data, info_api)
+    target_sprite = copy(FR_SPRITE)
+    target_sprite.id = string_to_sha256(target_sprite.name) # constant default value
+    assert frsprite == target_sprite
+
+
+def test_FRSprite_step():
+    srsprite, _, _ = FR_SPRITE.step(info_api)
+    assert srsprite == SR_SPRITE
+
+
+
+def test_SRTarget_create_empty():
+    srtarget = SRTarget.create_empty() 
+    assert isinstance(srtarget, SRTarget)
+    assert srtarget.scripts == []
+    assert srtarget.comments == []
+    assert srtarget.costume_index == 0
+    assert srtarget.sounds == []
+    assert srtarget.volume == 100
+
+
+def test_SRTarget_validate(config):
+    srtarget = SR_STAGE
+    srtarget.validate([], config, info_api)
+
+    execute_attr_validation_tests(
+        obj=srtarget,
+        attr_tests=[
+            ("scripts", 5, TypeValidationError),
+            ("scripts", [5], TypeValidationError),
+            ("comments", (), TypeValidationError),
+            ("comments", [()], TypeValidationError),
+            ("costumes", {}, TypeValidationError),
+            ("costumes", [], RangeValidationError),
+            ("costumes", [{}], TypeValidationError),
+            ("costume_index", "costume1", TypeValidationError),
+            ("costume_index", 3, RangeValidationError),
+            ("sounds", "a str", TypeValidationError),
+            ("sounds", ["a str"], TypeValidationError),
+            ("volume", [], TypeValidationError),
+            ("volume", -5, RangeValidationError),
+            ("volume", 105, RangeValidationError),
+        ],
+        validate_func=SRTarget.validate,
+        func_args=[[], config, info_api],
+    )
+
+def test_SRTarget_validate_same_costume_name(config):
+    srtarget = SRTarget.create_empty()
+    srtarget.costumes = [
+        SRCostume.create_empty(name="costume1"),
+        SRCostume.create_empty(name="costume1"),
+    ]
+    with raises(SameNameTwiceError):
+        srtarget.validate([], config, info_api)
+
+def test_SRTarget_validate_same_sound_name(config):
+    srtarget = SRTarget.create_empty()
+    srtarget.sounds = [
+        SRSound(name="Hello there!", file_extension="wav"),
+        SRSound(name="Hello there!", file_extension="wav"),
+    ]
+    with raises(SameNameTwiceError):
+        srtarget.validate([], config, info_api)
+
+
+def test_SRTarget_validate_scripts(config):
+    pass
+

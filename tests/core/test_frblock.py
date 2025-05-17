@@ -16,12 +16,12 @@ from pypenguin.core.custom_block   import (
     SRCustomBlockOptype
 )
 
-from tests.core.constants import ALL_FR_BLOCKS, ALL_FR_BLOCK_DATAS, ALL_SR_COMMENTS
+from tests.core.constants import ALL_FR_BLOCKS_CLEAN, ALL_FR_BLOCK_DATAS, ALL_SR_COMMENTS
 
 @fixture
 def ficapi():
     return FICAPI(
-        blocks=ALL_FR_BLOCKS,
+        blocks=ALL_FR_BLOCKS_CLEAN,
         block_comments=ALL_SR_COMMENTS,
     )
 
@@ -124,7 +124,7 @@ def test_FRBlock_from_tuple_invalid():
 
 def test_FRBlock_step(ficapi: FICAPI):
     # TODO: next
-    frblock = ALL_FR_BLOCKS["f"]
+    frblock = ALL_FR_BLOCKS_CLEAN["f"]
     trblock = frblock.step(
         block_api=ficapi,
         info_api=info_api,
@@ -165,7 +165,7 @@ def test_FRBlock_step(ficapi: FICAPI):
     assert trblock.is_top_level is True
 
 def test_FRBlock_step_cb_def(ficapi: FICAPI):
-    frblock = ALL_FR_BLOCKS["h"]
+    frblock = ALL_FR_BLOCKS_CLEAN["h"]
     trblock = frblock.step(
         block_api=ficapi,
         info_api=info_api,
@@ -196,7 +196,7 @@ def test_FRBlock_step_cb_def(ficapi: FICAPI):
     assert trblock.is_top_level is True
 
 def test_FRBlock_step_cb_prototype(ficapi: FICAPI):
-    frblock = ALL_FR_BLOCKS["a"]
+    frblock = ALL_FR_BLOCKS_CLEAN["a"]
     trblock = frblock.step(
         block_api=ficapi,
         info_api=info_api,
@@ -213,7 +213,7 @@ def test_FRBlock_step_cb_prototype(ficapi: FICAPI):
     assert trblock.is_top_level == ...
 
 def test_FRBlock_step_cb_arg(ficapi: FICAPI):
-    frblock = ALL_FR_BLOCKS["i"]
+    frblock = ALL_FR_BLOCKS_CLEAN["i"]
     trblock = frblock.step(
         block_api=ficapi,
         info_api=info_api,
@@ -235,7 +235,7 @@ def test_FRBlock_step_cb_arg(ficapi: FICAPI):
     assert trblock.is_top_level is False
 
 def test_FRBlock_step_cb_call(ficapi: FICAPI):    
-    frblock = ALL_FR_BLOCKS["c"]
+    frblock = ALL_FR_BLOCKS_CLEAN["c"]
     trblock = frblock.step(
         block_api=ficapi,
         info_api=info_api,

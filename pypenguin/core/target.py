@@ -6,8 +6,8 @@ from abc         import ABC, abstractmethod
 from pypenguin.utility     import (
     string_to_sha256,
     GreprClass, ThanksError, ValidationConfig, 
-    AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_MIN, AA_RANGE, AA_COORD_PAIR, AA_NOT_ONE_OF, 
-    SameNameTwiceError,
+    AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_MIN_LEN, AA_MIN, AA_RANGE, AA_COORD_PAIR, AA_NOT_ONE_OF, 
+    SameNameTwiceError, FirstToSecondConversionError,
 )
 from pypenguin.opcode_info import OpcodeInfoAPI, DropdownValueKind
 
@@ -33,7 +33,7 @@ class FRTarget(GreprClass, ABC):
     
     is_stage: bool
     name: str
-    variables: dict[str, tuple[str, Any]]
+    variables: dict[str, tuple[str, Any] | tuple[str, Any, bool]]
     lists: dict[str, tuple[str, Any]]
     broadcasts: dict[str, str]
     custom_vars: list
@@ -61,7 +61,7 @@ class FRTarget(GreprClass, ABC):
         """
 
     @staticmethod
-    def _from_data_common(data: dict[str, Any], info_api: OpcodeInfoAPI) -> dict:
+    def _from_data_common(data: dict[str, Any], info_api: OpcodeInfoAPI) -> dict[str, Any]:
         """
         [Helper Method] Prepare common fields for FRTarget and its subclasses.
 
@@ -107,8 +107,7 @@ class FRTarget(GreprClass, ABC):
         """
         if self.custom_vars != []: raise ThanksError()
 
-    def _step_common(self, info_api: OpcodeInfoAPI
-    ) -> tuple[
+    def _step_common(self, info_api: OpcodeInfoAPI) -> tuple[
         list[SRScript], 
         list[SRComment], 
         list[SRCostume], 
@@ -123,7 +122,7 @@ class FRTarget(GreprClass, ABC):
             info_api: the opcode info api used to fetch information about opcodes
         
         Returns:
-            lists of: scripts, floating comments, costumes, sounds, variables and lists
+            lists of scripts, floating comments, costumes, sounds, variables and lists
         """
         floating_comments = []
         attached_comments = {}
@@ -194,30 +193,25 @@ class FRTarget(GreprClass, ABC):
         [Helper Method] Converts the variables and lists of a FRProject into second representation and returns them.
         
         Returns:
-            the variables and lists in second representation
+            list of variables and list of lists in second representation
         """
         new_variables = []
         for variable in self.variables.values():
             name = variable[0]
             current_value = variable[1]
-            if self.is_stage:
-                if (len(variable) == 3) and (variable[2] == True):
-                    cls = SRCloudVariable
-                else:
-                    cls = SRVariable
-            else:
-                cls = SRVariable
-            new_variables.append(cls(name=name, current_value=current_value))
+            if len(variable) == 2:
+                new_variables.append(SRVariable(name, current_value))
+            elif self.is_stage and (len(variable) == 3) and (variable[2] == True):
+                new_variables.append(SRCloudVariable(name, current_value))
+            else: raise FirstToSecondConversionError(f"Invalid variable data {variable}")
         
         new_lists = []
         for list_ in self.lists.values():
             name = list_[0]
             current_value = list_[1]
-            if self.is_stage:
-                cls = SRList
-            else:
-                cls = SRList
-            new_lists.append(cls(name=name, current_value=current_value))
+            if len(list_) == 2:
+                new_lists.append(SRList(name, current_value))
+            else: raise FirstToSecondConversionError(f"Invalid list data {list_}")
         
         return new_variables, new_lists
 
@@ -249,7 +243,7 @@ class FRStage(FRTarget):
         if "id" in data:
             id = data["id"]
         else:
-            id = string_to_sha256(primary="_stage_")
+            id = string_to_sha256(primary="_stage_") # "nAkI`?tY/Vqn|(Xh.]zf"
         return cls(
             **common_fields,
             id=id,
@@ -370,7 +364,7 @@ class FRSprite(FRTarget):
 
 
 @dataclass(repr=False)
-class SRTarget(GreprClass, ABC):
+class SRTarget(GreprClass):
     """
     The second representation (SR) of a target, which is much more user friendly. A target can be either a sprite or the stage.
     """
@@ -385,14 +379,22 @@ class SRTarget(GreprClass, ABC):
     volume: int | float
 
     @classmethod
-    @abstractmethod
-    def create_empty(cls, *args, **kwargs) -> "SRTarget": pass
+    def create_empty(cls) -> "SRStage":
+        return cls(
+            scripts=[],
+            comments=[],
+            costume_index=0,
+            costumes=[SRCostume.create_empty()],
+            sounds=[],
+            volume=100,
+        )
 
     def validate(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
         # TODO: docstring
         AA_LIST_OF_TYPE(self, path, "scripts", SRScript)
         AA_LIST_OF_TYPE(self, path, "comments", SRComment)
         AA_LIST_OF_TYPE(self, path, "costumes", SRCostume)
+        AA_MIN_LEN(self, path, "costumes", min_len=1)
         AA_TYPE(self, path, "costume_index", int)
         AA_RANGE(self, path, "costume_index", min=0, max=len(self.costumes)-1, condition=f"In this case the sprite has {len(self.costumes)} costume(s)")
         AA_LIST_OF_TYPE(self, path, "sounds", SRSound)
@@ -419,15 +421,6 @@ class SRTarget(GreprClass, ABC):
                 other_path = defined_sounds[sound.name]
                 raise SameNameTwiceError(other_path, current_path, "Two sounds mustn't have the same name")
             defined_sounds[sound.name] = current_path
-    
-    def get_complete_context(self, partial_context: PartialContext) -> CompleteContext:
-        # TODO: docstring
-        return CompleteContext.from_partial(
-            pc       = partial_context,
-            costumes = [SRDropdownValue(DropdownValueKind.COSTUME, costume.name) for costume in self.costumes],
-            sounds   = [SRDropdownValue(DropdownValueKind.SOUND  , sound  .name) for sound   in self.sounds  ],
-            is_stage = isinstance(self, SRStage),
-        )
     
     def validate_scripts(self, 
         path: list, 
@@ -456,20 +449,19 @@ class SRTarget(GreprClass, ABC):
                         raise SameNameTwiceError(other_path, current_path, "Two custom blocks mustn't have the same name(see .mutation.custom_opcode.proccode)")
                     cb_optypes[custom_opcode] = block.mutation.optype
 
+    def get_complete_context(self, partial_context: PartialContext) -> CompleteContext:
+        # TODO: docstring
+        return CompleteContext.from_partial(
+            pc       = partial_context,
+            costumes = [SRDropdownValue(DropdownValueKind.COSTUME, costume.name) for costume in self.costumes],
+            sounds   = [SRDropdownValue(DropdownValueKind.SOUND  , sound  .name) for sound   in self.sounds  ],
+            is_stage = isinstance(self, SRStage),
+        )
+
 class SRStage(SRTarget):
     """
     The second representation (SR) of the stage, which is much more user friendly
     """
-    @classmethod
-    def create_empty(cls) -> "SRStage":
-        return cls(
-            scripts=[],
-            comments=[],
-            costume_index=0,
-            costumes=[SRCostume.create_empty()],
-            sounds=[],
-            volume=100,
-        )
 
 @dataclass(repr=False)
 class SRSprite(SRTarget):

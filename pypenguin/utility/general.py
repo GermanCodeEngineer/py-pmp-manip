@@ -1,6 +1,6 @@
 # Utility functions
 def grepr(obj, annotate_fields=True, include_attributes=False, *, indent=4):
-    def _format(obj, level=0):
+    def _grepr(obj, level=0):
         is_compatible = bool(getattr(obj, "_grepr", False))
         if indent is not None:
             level += 1
@@ -14,18 +14,18 @@ def grepr(obj, annotate_fields=True, include_attributes=False, *, indent=4):
         if isinstance(obj, list):
             if not obj:
                 return '[]', True
-            return '[%s%s%s]' % (prefix, sep.join(_format(x, level)[0] for x in obj), end_sep), False
+            return '[%s%s%s]' % (prefix, sep.join(_grepr(x, level)[0] for x in obj), end_sep), False
         if isinstance(obj, tuple):
             if not obj:
                 return '()', True
             if len(obj) <= 2:
-                return '(%s)' % (", ".join(_format(x, level)[0] for x in obj)), False
+                return '(%s)' % (", ".join(_grepr(x, level)[0] for x in obj)), False
             else:
-                return '(%s%s%s)' % (prefix, sep.join(_format(x, level)[0] for x in obj), end_sep), False
+                return '(%s%s%s)' % (prefix, sep.join(_grepr(x, level)[0] for x in obj), end_sep), False
         elif isinstance(obj, dict):
             if not obj:
                 return '{}', True
-            args = [f'{_format(key, level)[0]}: {_format(value, level)[0]}' for key,value in obj.copy().items()]    
+            args = [f'{_grepr(key, level)[0]}: {_grepr(value, level)[0]}' for key,value in obj.copy().items()]    
             return '{%s%s%s}' % (prefix, sep.join(args), end_sep), False
         elif isinstance(obj, str):
             return f'"{obj.replace('"', '\\"')}"', True
@@ -34,9 +34,9 @@ def grepr(obj, annotate_fields=True, include_attributes=False, *, indent=4):
                 return 'DKD{}', True
             args = []
             for key1, key2, value in obj.items_key1_key2():
-                key1_str, _ = _format(key1, level)
-                key2_str, _ = _format(key2, level)
-                value_str, _ = _format(value, level)
+                key1_str, _ = _grepr(key1, level)
+                key2_str, _ = _grepr(key2, level)
+                value_str, _ = _grepr(value, level)
                 args.append(f'{key1_str} / {key2_str}: {value_str}')
             return 'DKD{%s%s%s}' % (prefix, sep.join(args), end_sep), False
         elif is_compatible:
@@ -48,7 +48,7 @@ def grepr(obj, annotate_fields=True, include_attributes=False, *, indent=4):
                 if not hasattr(obj, name):
                     continue
                 value = getattr(obj, name)
-                value, simple = _format(value, level)
+                value, simple = _grepr(value, level)
                 allsimple = allsimple and simple
                 if keywords:
                     args.append('%s=%s' % (name, value))
@@ -62,7 +62,7 @@ def grepr(obj, annotate_fields=True, include_attributes=False, *, indent=4):
                         continue
                     if value is None and getattr(cls, name, ...) is None:
                         continue
-                    value, simple = _format(value, level)
+                    value, simple = _grepr(value, level)
                     allsimple = allsimple and simple
                     args.append('%s=%s' % (name, value))
             class_name = getattr(obj, "_grepr_class_name", obj.__class__.__name__)
@@ -72,11 +72,11 @@ def grepr(obj, annotate_fields=True, include_attributes=False, *, indent=4):
         return repr(obj), True
  
     is_compatible = bool(getattr(obj, "_grepr", False))
-    if not(is_compatible) and not(isinstance(obj, (list, dict, str))):
+    if not(is_compatible) and not(isinstance(obj, (list, tuple, dict, str, DualKeyDict))):
         return repr(obj)
     if indent is not None and not isinstance(indent, str):
         indent = ' ' * indent
-    return _format(obj)[0]
+    return _grepr(obj)[0]
 
 # Files
 import zipfile
@@ -216,8 +216,7 @@ class DualKeyDict(Generic[K1, K2, V]):
 from difflib import SequenceMatcher
 from hashlib import sha256
 
-token_charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!#%()*+,-./:;=?@[]^_`{|}~"
-charset_char_count = len(token_charset)
+TOKEN_CHARSET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!#%()*+,-./:;=?@[]^_`{|}~"
 
 def remove_duplicates(items: list) -> list:
     seen = []
@@ -237,6 +236,7 @@ def lists_equal_ignore_order(a: list, b: list) -> bool:
         try:
             b_copy.remove(item)  # uses __eq__, safe for mutable objects
         except ValueError:
+            raise Exception(item)
             return False
     return not b_copy
 
@@ -256,20 +256,18 @@ def tuplify(obj):
         return obj
 
 def string_to_sha256(primary: str, secondary: str|None=None) -> str:
-    def convert(input_string: str, digits: int) -> str:
-        hash_object = sha256(input_string.encode())
-        hex_hash = hash_object.hexdigest()
+    def _string_to_sha256(input_string: str, digits: int) -> str:
+        hex_hash = sha256(input_string.encode()).hexdigest()
 
         result = []
         for i in range(digits):
             chunk = hex_hash[i * 2:(i * 2) + 2]
-            index = int(chunk, 16) % charset_char_count
-            result.append(token_charset[index])
-
+            index = int(chunk, 16) % len(TOKEN_CHARSET)
+            result.append(TOKEN_CHARSET[index])
         return ''.join(result)
 
     if secondary is None:
-        return convert(primary, digits=20)
+        return _string_to_sha256(primary, digits=20)
     else:
-        return convert(primary, digits=16) + convert(secondary, digits=4)
+        return _string_to_sha256(primary, digits=16) + _string_to_sha256(secondary, digits=4)
 

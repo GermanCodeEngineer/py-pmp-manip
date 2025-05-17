@@ -1,4 +1,4 @@
-from json        import dump, loads
+from json        import loads
 from dataclasses import dataclass
 
 from pypenguin.utility     import (
@@ -43,8 +43,6 @@ class FRProject(GreprClass):
         Returns:
             the FRProject
         """
-        #with open("extracted.json", "w") as file:
-        #    dump(data, file)
         return cls(
             targets = [
                 (FRStage if i==0 else FRSprite).from_data(target_data, info_api=info_api)
@@ -239,7 +237,7 @@ class SRProject(GreprClass):
         
         self.stage.validate(path+["stage"], config, info_api)
 
-        self._validate_sprites(path, config, info_api)    
+        self._validate_sprites(path, config, info_api)
         
         for i, variable in enumerate(self.all_sprite_variables):
             variable.validate(path+["all_sprite_variables", i], config)
@@ -316,6 +314,40 @@ class SRProject(GreprClass):
                 context  = global_context,
             )
 
+    def _validate_sprites(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
+        """
+        Ensure the sprites of a SRProject are valid, raise ValidationError if not.
+        
+        Args:
+            path: the path from the project to itself. Used for better errors
+            config: Configuration for Validation Behaviour
+            info_api: the opcode info api used to fetch information about opcodes
+        
+        Returns:
+            None
+        """
+        if len(self.sprites) == 0:
+            return # There is nothing to do then
+        layer_orders: dict[int, list] = {}
+        for i, sprite in enumerate(self.sprites):
+            current_path = path+["sprites", i]
+            sprite.validate(current_path, config, info_api)
+            if sprite.layer_order in layer_orders:
+                other_path = layer_orders[sprite.layer_order]
+                raise SameNumberTwiceError(other_path, current_path, "Two sprites mustn't have the same layer order")
+            layer_orders[sprite.layer_order] = current_path
+        
+        min_layer_order = min(layer_orders.keys())
+        if min_layer_order != 1:
+            raise LayerOrderError(layer_orders[min_layer_order], "layer_order must start at 1")
+        
+        next_layer_order = 1
+        for layer_order, current_path in dict(sorted(layer_orders.items())).items():
+            if layer_order > next_layer_order: 
+            # Can't be lower because minimum of 1 was alredy ensured + sorting
+                raise LayerOrderError(current_path, f"layer_order should start at 1 and then increase for each sprite in order from back to front. It should be {next_layer_order} here")
+            next_layer_order += 1
+
     def _validate_var_names(self, path: list, config: ValidationConfig) -> None:
         """
         Ensures no variables with the same name exist.
@@ -369,37 +401,3 @@ class SRProject(GreprClass):
                     other_path = defined_lists[list_.name]
                     raise SameNameTwiceError(other_path, current_path, "Two lists mustn't have the same name")
                 defined_lists[list_.name] = current_path
-
-    def _validate_sprites(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
-        """
-        Ensure the sprites of a SRProject are valid, raise ValidationError if not.
-        
-        Args:
-            path: the path from the project to itself. Used for better errors
-            config: Configuration for Validation Behaviour
-            info_api: the opcode info api used to fetch information about opcodes
-        
-        Returns:
-            None
-        """
-        if len(self.sprites) == 0:
-            return # There is nothing to do then
-        layer_orders: dict[int, list] = {}
-        for i, sprite in enumerate(self.sprites):
-            current_path = path+["sprites", i]
-            sprite.validate(current_path, config, info_api)
-            if sprite.layer_order in layer_orders:
-                other_path = layer_orders[sprite.layer_order]
-                raise SameNumberTwiceError(other_path, current_path, "Two sprites mustn't have the same layer order")
-            layer_orders[sprite.layer_order] = current_path
-        
-        min_layer_order = min(layer_orders.keys())
-        if min_layer_order != 1:
-            raise LayerOrderError(layer_orders[min_layer_order], "layer_order must start at 1")
-        
-        next_layer_order = 1
-        for layer_order, current_path in dict(sorted(layer_orders.items())).items():
-            if layer_order > next_layer_order: 
-            # Can't be lower because minimum of 1 was alredy ensured + sorting
-                raise LayerOrderError(current_path, f"layer_order should start at 1 and then increase for each sprite in order from back to front. It should be {next_layer_order} here")
-            next_layer_order += 1

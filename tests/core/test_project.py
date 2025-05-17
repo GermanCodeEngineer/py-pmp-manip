@@ -7,14 +7,13 @@ from pypenguin.utility            import (
     SameNameTwiceError, SameNumberTwiceError, LayerOrderError,
 )
 from pypenguin.opcode_info.groups import info_api
-#from pypenguin.opcode_info        import DropdownValueKind, OpcodeType, InputType
 
-from pypenguin.core.enums      import SRTTSLanguage
+from pypenguin.core.enums      import SRTTSLanguage, SRVideoState
 from pypenguin.core.project    import FRProject, SRProject
-from pypenguin.core.target     import FRStage, SRSprite
+from pypenguin.core.target     import FRStage, SRSprite, SRStage
 from pypenguin.core.vars_lists import SRVariable, SRList
 
-from tests.core.constants   import PROJECT_DATA, FR_PROJECT, SR_PROJECT
+from tests.core.constants import PROJECT_DATA, FR_PROJECT, SR_PROJECT
 
 from tests.utility import execute_attr_validation_tests
 
@@ -30,10 +29,14 @@ def test_FRProject_from_data():
 
 def test_FRProject_from_pmp_file():
     frproject = FRProject.from_pmp_file("../tests/assets/testing_blocks.pmp", info_api)
+    with raises(AssertionError):
+        FRProject.from_pmp_file("../tests/assets/scratch_project.sb3", info_api)
 
 
 def test_FRProject_from_sb3_file():
     frproject = FRProject.from_sb3_file("../tests/assets/scratch_project.sb3", info_api)
+    with raises(AssertionError):
+        FRProject.from_sb3_file("../tests/assets/testing_blocks.pmp", info_api)
 
 
 def test_FRProject_post_init():
@@ -51,7 +54,7 @@ def test_FRProject_step_tts():
     target_srproject = copy(SR_PROJECT)
     target_srproject.text_to_speech_language = SRTTSLanguage.GERMAN
     assert frproject.step(info_api) == target_srproject
-    
+
 
 
 def test_SRProject_create_empty():
@@ -106,59 +109,59 @@ def test_SRProject_validate_same_sprite_name(config):
     with raises(SameNameTwiceError):
         srproject.validate(config, info_api)
 
-def test_SRProject_validate_layer_order(config):
+def test_SRProject_validate_sprites_layer_order(config):
     srproject = SRProject.create_empty()
     srproject.sprites = [
         SRSprite.create_empty(name="Sprite1", layer_order=1),
         SRSprite.create_empty(name="Sprite2", layer_order=1),
     ]
     with raises(SameNumberTwiceError):
-        srproject.validate(config, info_api)
+        srproject._validate_sprites([], config, info_api)
     
     srproject.sprites[0].layer_order = 2 # must start at 1
     srproject.sprites[1].layer_order = 3
     with raises(LayerOrderError):
-        srproject.validate(config, info_api)
+        srproject._validate_sprites([], config, info_api)
     
     srproject.sprites[0].layer_order = 1 # 2, 3 are missing
     srproject.sprites[1].layer_order = 4
     with raises(LayerOrderError):
-        srproject.validate(config, info_api)
+        srproject._validate_sprites([], config, info_api)
     
-def test_SRProject_validate_same_global_variable_name(config):
+def test_SRProject_validate_var_names_same_global(config):
     srproject = SRProject.create_empty()
     srproject.all_sprite_variables = [
         SRVariable(name="same var", current_value=5),
         SRVariable(name="same var", current_value=";)"),
     ]
     with raises(SameNameTwiceError):
-        srproject.validate(config, info_api)
+        srproject._validate_var_names([], config)
 
-def test_SRProject_validate_same_inter_variable_name(config):
+def test_SRProject_validate_var_names_same_inter(config):
     srproject = SRProject.create_empty()
     srproject.all_sprite_variables = [SRVariable(name="same var", current_value="(;")]
     sprite = SRSprite.create_empty(name="Sprite1", layer_order=1)
     sprite.sprite_only_variables = [SRVariable(name="same var", current_value=")=")]
     srproject.sprites = [sprite]
     with raises(SameNameTwiceError):
-        srproject.validate(config, info_api)
+        srproject._validate_var_names([], config)
 
-def test_SRProject_validate_same_global_list_name(config):
+def test_SRProject_validate_var_list_same_global(config):
     srproject = SRProject.create_empty()
     srproject.all_sprite_lists = [
         SRList(name="same list", current_value=[5]),
         SRList(name="same list", current_value=[";)"]),
     ]
     with raises(SameNameTwiceError):
-        srproject.validate(config, info_api)
+        srproject._validate_list_names([], config)
 
-def test_SRProject_validate_same_inter_list_name(config):
+def test_SRProject_validate_var_list_same_inter(config):
     srproject = SRProject.create_empty()
     srproject.all_sprite_lists = [SRList(name="same var", current_value=["(;", ");"])]
     sprite = SRSprite.create_empty(name="Sprite1", layer_order=1)
     sprite.sprite_only_lists = [SRList(name="same var", current_value=[")=", "(="])]
     srproject.sprites = [sprite]
     with raises(SameNameTwiceError):
-        srproject.validate(config, info_api)
+        srproject._validate_list_names([], config)
 
 

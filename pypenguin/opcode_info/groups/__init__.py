@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING
+from copy   import copy, deepcopy
 
 from pypenguin.utility           import DualKeyDict, InvalidValueError
 from pypenguin.important_opcodes import *
@@ -188,6 +189,7 @@ def PRE__CB_DEF(block: "FRBlock", block_api: "FICAPI") -> "FRBlock":
     # Transfer mutation from prototype block to definition block
     # Order deletion of the prototype block and its argument blocks
     # Delete "custom_block" input, which references the prototype
+    block = deepcopy(block)
     prototype_id    = block.inputs["custom_block"][1]
     prototype_block = block_api.get_block(prototype_id)
     block.mutation  = prototype_block.mutation
@@ -195,7 +197,6 @@ def PRE__CB_DEF(block: "FRBlock", block_api: "FICAPI") -> "FRBlock":
     del block.inputs["custom_block"]
      
     for block_candidate_id, block_candidate in block_api.get_all_blocks().items():
-        block_candidate
         if block_candidate.parent == prototype_id:
             block_api.schedule_block_deletion(block_candidate_id)
     return block
@@ -209,6 +210,7 @@ def PRE__CB_ARG(block: "FRBlock", block_api: "FICAPI") -> "FRBlock":
     # Transfer argument name from a field into the mutation
     # because only real dropdowns should be listed in "fields"
     from pypenguin.core.block_mutation import FRCustomBlockArgumentMutation
+    block = deepcopy(block)
     mutation: FRCustomBlockArgumentMutation = block.mutation
     mutation.store_argument_name(block.fields["VALUE"][0])
     del block.fields["VALUE"]
@@ -221,6 +223,7 @@ info_api.add_opcodes_case(ANY_OPCODE_CB_ARG, SpecialCase(
 
 def PRE__CB_CALL(block: "FRBlock", block_api: "FICAPI") -> "FRBlock":
     from pypenguin.core.block_mutation import FRCustomBlockCallMutation
+    block = copy(block)
     partial_mutation: FRCustomBlockCallMutation = block.mutation
     complete_mutation = block_api.get_cb_mutation(partial_mutation.proccode)
     new_inputs = {}

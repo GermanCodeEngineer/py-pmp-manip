@@ -97,7 +97,7 @@ ALL_FR_BLOCK_DATAS = {
         "next": None,
         "parent": "h",
         "inputs": {
-            "?+wI]AquGQlzMnn5I8tA": [1, "i"],
+            "?+wI)AquGQlzMnn5I8tA": [1, "i"],
             "1OrbjF=wjT?D$)m|0N=X": [1, "j"],
         },
         "fields": {},
@@ -260,6 +260,7 @@ ALL_FR_BLOCKS = {
         fields={},
         shadow=False,
         top_level=False,
+        comment="j",
     ),
     "e": FRBlock(
         opcode="motion_glideto_menu",
@@ -288,19 +289,7 @@ ALL_FR_BLOCKS = {
         x=304,
         y=424,
     ),
-    "m": FRBlock(
-        opcode="data_variable",
-        next=None,
-        parent=None,
-        inputs={},
-        fields={
-            "VARIABLE": ("my variable", "`jEk@4|i[#Fk?(8x)AV.-my variable", ""),
-        },
-        shadow=False,
-        top_level=True,
-        x=446,
-        y=652,
-    ),
+    "m": (12, "my variable", "`jEk@4|i[#Fk?(8x)AV.-my variable", 446, 652),
     "h": FRBlock(
         opcode="procedures_definition_return",
         next=None,
@@ -428,25 +417,13 @@ ALL_FR_BLOCKS = {
         shadow=False,
         top_level=False,
     ),
-    "p": FRBlock(
-        opcode="data_listcontents",
-        next=None,
-        parent=None,
-        inputs={},
-        fields={
-            "LIST": ("my list", "ta`eJd|abk.):i6vI0u}", ""),
-        },
-        shadow=False,
-        top_level=True,
-        x=446,
-        y=652,
-    ),
+    "p": (13, "my list", "ta`eJd|abk.):i6vI0u}", 646, 561),
     "n": FRBlock(
         opcode="control_if",
         next=None,
         parent=None,
         inputs={
-            "SUBSTACK": [2, "o"],
+            "SUBSTACK": (2, "o"),
         },
         fields={},
         shadow=False,
@@ -459,13 +436,42 @@ ALL_FR_BLOCKS = {
         next=None,
         parent="n",
         inputs={
-            "VALUE": [1, [4, "1"]],
+            "VALUE": (1, (4, "1")),
         },
         fields={
-            "VARIABLE": ["my variable", "`jEk@4|i[#Fk?(8x)AV.-my variable", ""],
+            "VARIABLE": ("my variable", "`jEk@4|i[#Fk?(8x)AV.-my variable", ""),
         },
         shadow=False,
         top_level=False,
+    ),
+}
+
+ALL_FR_BLOCKS_CLEAN: dict[str, FRBlock] = ALL_FR_BLOCKS | {
+    "m": FRBlock(
+        opcode="data_variable",
+        next=None,
+        parent=None,
+        inputs={},
+        fields={
+            "VARIABLE": ("my variable", "`jEk@4|i[#Fk?(8x)AV.-my variable", ""),
+        },
+        shadow=False,
+        top_level=True,
+        x=446,
+        y=652,
+    ),
+    "p": FRBlock(
+        opcode="data_listcontents",
+        next=None,
+        parent=None,
+        inputs={},
+        fields={
+            "LIST": ("my list", "ta`eJd|abk.):i6vI0u}", ""),
+        },
+        shadow=False,
+        top_level=True,
+        x=646,
+        y=561,
     ),
 }
 
@@ -506,7 +512,12 @@ ALL_IR_BLOCKS = {
             ),
         },
         dropdowns={},
-        comment=None,
+        comment=SRComment(
+            position=(1031, 348),
+            size=(200, 200),
+            is_minimized=False,
+            text="hi from attached comment"
+        ),
         mutation=None,
         position=None,
         next=None,
@@ -690,7 +701,7 @@ ALL_IR_BLOCKS = {
         },
         comment=None,
         mutation=None,
-        position=(446, 652),
+        position=(646, 561),
         next=None,
         is_top_level=True,
     ),
@@ -748,222 +759,7 @@ ALL_SR_COMMENTS = {
         is_minimized=False,
         text="hi from attached comment"
     ),
-    "q": SRComment(
-        position=(1019, 727),
-        size=(200, 200),
-        is_minimized=False,
-        text="hi im a block comment",
-    ),
 }
-
-ALL_SR_BLOCKS = [
-    SRBlock(
-        opcode="broadcast ([MESSAGE])",
-        inputs={
-            "MESSAGE": SRBlockAndDropdownInputValue(
-                block=None, 
-                dropdown=SRDropdownValue(kind=DropdownValueKind.BROADCAST_MSG, value="my message"),
-            ),
-        },
-        dropdowns={},
-        comment=None,
-        mutation=None,
-    ),
-    SRBlock(
-        opcode="glide (SECONDS) secs to ([TARGET])",
-        inputs={
-            "SECONDS": SRBlockAndTextInputValue(block=None, text="1"),
-            "TARGET": SRBlockAndDropdownInputValue(
-                block=None, 
-                dropdown=SRDropdownValue(kind=DropdownValueKind.OBJECT, value="random position"),
-            ),
-        },
-        dropdowns={},
-        comment=None,
-        mutation=None,
-    ), 
-    SRBlock(
-        opcode="pick random (OPERAND1) to (OPERAND2)",
-        inputs={
-            "OPERAND1": SRBlockAndTextInputValue(
-                block=SRBlock(
-                    opcode="value of [VARIABLE]",
-                    inputs={},
-                    dropdowns={
-                        "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="my variable"),
-                    },
-                    comment=None,
-                    mutation=None,
-                ),
-                text="1",
-            ),
-            "OPERAND2": SRBlockAndTextInputValue(
-                block=SRBlock(
-                    opcode="join (STRING1) (STRING2)",
-                    inputs={
-                        "STRING1": SRBlockAndTextInputValue(block=None, text="apple "),
-                        "STRING2": SRBlockAndTextInputValue(block=None, text="banana"),
-                    },
-                    dropdowns={},
-                    comment=None,
-                    mutation=None,
-                ),
-                text="10",
-            ),
-        },
-        dropdowns={},
-        comment=None,
-        mutation=None,
-    ), 
-    SRBlock(
-        opcode="value of [VARIABLE]",
-        inputs={},
-        dropdowns={
-            "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="my variable"),
-        },
-        comment=None,
-        mutation=None,
-    ),  
-    SRBlock(
-        opcode="join (STRING1) (STRING2)",
-        inputs={
-            "STRING1": SRBlockAndTextInputValue(block=None, text="apple "),
-            "STRING2": SRBlockAndTextInputValue(block=None, text="banana"),
-        },
-        dropdowns={},
-        comment=None,
-        mutation=None,
-    ),
-    SRBlock(
-        opcode="value of [VARIABLE]",
-        inputs={},
-        dropdowns={
-            "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="my variable"),
-        },
-        comment=None,
-        mutation=None,
-    ),
-    SRBlock(
-        opcode="define custom block reporter",
-        inputs={},
-        dropdowns={},
-        comment=None,
-        mutation=SRCustomBlockMutation(
-            custom_opcode=SRCustomBlockOpcode(
-                segments=(
-                    "do sth text",
-                    SRCustomBlockArgument(name="a text arg", type=SRCustomBlockArgumentType.STRING_NUMBER),
-                    "and bool",
-                    SRCustomBlockArgument(name="a bool arg", type=SRCustomBlockArgumentType.BOOLEAN),
-                ),
-            ),
-            no_screen_refresh=False,
-            optype=SRCustomBlockOptype.NUMBER_REPORTER,
-            color1="#FF6680",
-            color2="#FF4D6A",
-            color3="#FF3355",
-        ),
-    ),
-    SRBlock(
-        opcode="call custom block",
-        inputs={
-            "a text arg": SRBlockAndTextInputValue(
-                block=SRBlock(
-                    opcode="length of (TEXT)",
-                    inputs={
-                        "TEXT": SRBlockAndTextInputValue(block=None, text="apple"),
-                    },
-                    dropdowns={},
-                    comment=None,
-                    mutation=None,
-                ),
-                text="",
-             ),
-            "a bool arg": SRBlockOnlyInputValue(
-                block=SRBlock(
-                    opcode="false",
-                    inputs={},
-                    dropdowns={},
-                    comment=None,
-                    mutation=None,
-                ),
-            ),
-        },
-        dropdowns={},
-        comment=None,
-        mutation=SRCustomBlockCallMutation(
-            custom_opcode=SRCustomBlockOpcode(
-                segments=(
-                    "do sth text",
-                    SRCustomBlockArgument(name="a text arg", type=SRCustomBlockArgumentType.STRING_NUMBER),
-                    "and bool",
-                    SRCustomBlockArgument(name="a bool arg", type=SRCustomBlockArgumentType.BOOLEAN),
-                ),
-            ),
-        ),
-    ),
-    SRBlock(
-        opcode="length of (TEXT)",
-        inputs={
-            "TEXT": SRBlockAndTextInputValue(block=None, text="apple"),
-        },
-        dropdowns={},
-        comment=None,
-        mutation=None,
-    ),
-    SRBlock(
-        opcode="false",
-        inputs={},
-        dropdowns={},
-        comment=None,
-        mutation=None,
-    ),
-    SRBlock(
-        opcode="value of [LIST]",
-        inputs={},
-        dropdowns={
-            "LIST": SRDropdownValue(kind=DropdownValueKind.LIST, value="my list"),
-        },
-        comment=None,
-        mutation=None,
-    ),
-    SRBlock(
-        opcode="if <CONDITION> then {THEN}",
-        inputs={
-            "CONDITION": SRBlockOnlyInputValue(block=None),
-            "THEN": SRScriptInputValue(
-                blocks=[
-                    SRBlock(
-                        opcode="change [VARIABLE] by (VALUE)",
-                        inputs={
-                            "VALUE": SRBlockAndTextInputValue(block=None, text="1"),
-                        },
-                        dropdowns={
-                            "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="my variable"),
-                        },
-                        comment=None,
-                        mutation=None,
-                    ),
-                ],
-            )
-        },
-        dropdowns={},
-        comment=None,
-        mutation=None,
-    ),
-    SRBlock(
-        opcode="change [VARIABLE] by (VALUE)",
-        inputs={
-            "VALUE": SRBlockAndTextInputValue(block=None, text="1"),
-        },
-        dropdowns={
-            "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="my variable"),
-        },
-        comment=None,
-        mutation=None,
-    ),
-]
-
 
 ALL_SR_SCRIPTS = [
     SRScript( # [0]
@@ -991,7 +787,12 @@ ALL_SR_SCRIPTS = [
                     ),
                 },
                 dropdowns={},
-                comment=None,
+                comment=SRComment(
+                    position=(1031, 348),
+                    size=(200, 200),
+                    is_minimized=False,
+                    text="hi from attached comment"
+                ),
                 mutation=None,
             ),
         ],
@@ -1118,7 +919,7 @@ ALL_SR_SCRIPTS = [
         ],
     ), 
     SRScript( # [5]
-        position=(446, 652),
+        position=(646, 561),
         blocks=[
             SRBlock(
                 opcode="value of [LIST]",
@@ -1162,7 +963,20 @@ ALL_SR_SCRIPTS = [
     ),
 ]
 
-
+ALL_SR_BLOCKS = [
+    *ALL_SR_SCRIPTS[0].blocks,
+    *ALL_SR_SCRIPTS[1].blocks,
+    ALL_SR_SCRIPTS[1].blocks[0].inputs["OPERAND1"].block,
+    ALL_SR_SCRIPTS[1].blocks[0].inputs["OPERAND2"].block,
+    *ALL_SR_SCRIPTS[2].blocks,
+    *ALL_SR_SCRIPTS[3].blocks,
+    *ALL_SR_SCRIPTS[4].blocks,
+    ALL_SR_SCRIPTS[4].blocks[0].inputs["a text arg"].block,
+    ALL_SR_SCRIPTS[4].blocks[0].inputs["a bool arg"].block,
+    *ALL_SR_SCRIPTS[5].blocks,
+    *ALL_SR_SCRIPTS[6].blocks,
+    *ALL_SR_SCRIPTS[6].blocks[0].inputs["THEN"].blocks,
+]
 
 
 
@@ -1255,404 +1069,16 @@ SPRITE_DATA = {
     "lists": {},
     "broadcasts": {},
     "customVars": [],
-    "blocks": {
-        "d": {
-            "opcode": "event_broadcast",
-            "next": "b",
-            "parent": None,
-            "inputs": {
-                "BROADCAST_INPUT": [
-                    1,
-                    [
-                        11,
-                        "my message",
-                        "]zYMvs0rF)-eOEt26c|,",
-                    ],
-                ],
-            },
-            "fields": {},
-            "shadow": False,
-            "topLevel": True,
-            "x": 268,
-            "y": 220,
-        },
-        "b": {
-            "opcode": "motion_glideto",
-            "next": None,
-            "parent": "d",
-            "inputs": {
-                "SECS": [
-                    1,
-                    [
-                        4,
-                        "1",
-                    ],
-                ],
-                "TO": [
-                    1,
-                    "f",
-                ],
-            },
-            "fields": {},
-            "shadow": False,
-            "topLevel": False,
-            "comment": "e",
-        },
-        "f": {
-            "opcode": "motion_glideto_menu",
-            "next": None,
-            "parent": "b",
-            "inputs": {},
-            "fields": {
-                "TO": [
-                    "_random_",
-                    "@86dYv/6h#d_V/%rK3/M",
-                ],
-            },
-            "shadow": True,
-            "topLevel": False,
-        },
-        "g": {
-            "opcode": "operator_random",
-            "next": None,
-            "parent": None,
-            "inputs": {
-                "FROM": [
-                    3,
-                    [
-                        12,
-                        "my variable",
-                        "`jEk@4|i[#Fk?(8x)AV.-my variable",
-                    ],
-                    [
-                        4,
-                        "1",
-                    ],
-                ],
-                "TO": [
-                    3,
-                    "h",
-                    [
-                        4,
-                        "10",
-                    ],
-                ],
-            },
-            "fields": {},
-            "shadow": False,
-            "topLevel": True,
-            "x": 304,
-            "y": 424,
-        },
-        "i": {
-            "opcode": "procedures_definition_return",
-            "next": None,
-            "parent": None,
-            "inputs": {
-                "custom_block": [
-                    1,
-                    "a",
-                ],
-            },
-            "fields": {},
-            "shadow": False,
-            "topLevel": True,
-            "x": 344,
-            "y": 799,
-        },
-        "a": {
-            "opcode": "procedures_prototype",
-            "next": None,
-            "parent": "i",
-            "inputs": {
-                "?+wI)AquGQlzMnn5I8tA": [
-                    1,
-                    "j",
-                ],
-                "1OrbjF=wjT?D$)m|0N=X": [
-                    1,
-                    "k",
-                ],
-            },
-            "fields": {},
-            "shadow": True,
-            "topLevel": False,
-            "mutation": {
-                "tagName": "mutation",
-                "children": [],
-                "proccode": "do sth text %s and bool %b",
-                "argumentids": "[\"?+wI)AquGQlzMnn5I8tA\",\"1OrbjF=wjT?D$)m|0N=X\"]",
-                "argumentnames": "[\"a text arg\",\"a bool arg\"]",
-                "argumentdefaults": "[\"\",\"false\"]",
-                "warp": "false",
-                "returns": "true",
-                "edited": "true",
-                "optype": "\"number\"",
-                "color": "[\"#FF6680\",\"#FF4D6A\",\"#FF3355\"]",
-            },
-        },
-        "j": {
-            "opcode": "argument_reporter_string_number",
-            "next": None,
-            "parent": "a",
-            "inputs": {},
-            "fields": {
-                "VALUE": [
-                    "a text arg",
-                    ";jX/UwBwE{CX@UdiwnJd",
-                ],
-            },
-            "shadow": True,
-            "topLevel": False,
-            "mutation": {
-                "tagName": "mutation",
-                "children": [],
-                "color": "[\"#FF6680\",\"#FF4D6A\",\"#FF3355\"]",
-            },
-        },
-        "k": {
-            "opcode": "argument_reporter_boolean",
-            "next": None,
-            "parent": "a",
-            "inputs": {},
-            "fields": {
-                "VALUE": [
-                    "a bool arg",
-                    "WM*d_x(VPqmUl[4GOC({",
-                ],
-            },
-            "shadow": True,
-            "topLevel": False,
-            "mutation": {
-                "tagName": "mutation",
-                "children": [],
-                "color": "[\"#FF6680\",\"#FF4D6A\",\"#FF3355\"]",
-            },
-        },
-        "h": {
-            "opcode": "operator_join",
-            "next": None,
-            "parent": "g",
-            "inputs": {
-                "STRING1": [
-                    1,
-                    [
-                        10,
-                        "apple ",
-                    ],
-                ],
-                "STRING2": [
-                    1,
-                    [
-                        10,
-                        "banana",
-                    ],
-                ],
-            },
-            "fields": {},
-            "shadow": False,
-            "topLevel": False,
-        },
-        "c": {
-            "opcode": "procedures_call",
-            "next": None,
-            "parent": None,
-            "inputs": {
-                "?+wI)AquGQlzMnn5I8tA": [
-                    3,
-                    "l",
-                    [
-                        10,
-                        "",
-                    ],
-                ],
-                "1OrbjF=wjT?D$)m|0N=X": [
-                    2,
-                    "m",
-                ],
-            },
-            "fields": {},
-            "shadow": False,
-            "topLevel": True,
-            "x": 499,
-            "y": 933,
-            "mutation": {
-                "tagName": "mutation",
-                "children": [],
-                "proccode": "do sth text %s and bool %b",
-                "argumentids": "[\"?+wI)AquGQlzMnn5I8tA\",\"1OrbjF=wjT?D$)m|0N=X\"]",
-                "warp": "false",
-                "returns": "true",
-                "edited": "true",
-                "optype": "\"number\"",
-                "color": "[\"#FF6680\",\"#FF4D6A\",\"#FF3355\"]",
-            },
-        },
-        "m": {
-            "opcode": "operator_falseBoolean",
-            "next": None,
-            "parent": "c",
-            "inputs": {},
-            "fields": {},
-            "shadow": False,
-            "topLevel": False,
-        },
-        "l": {
-            "opcode": "operator_length",
-            "next": None,
-            "parent": "c",
-            "inputs": {
-                "STRING": [
-                    1,
-                    [
-                        10,
-                        "apple",
-                    ],
-                ],
-            },
-            "fields": {},
-            "shadow": False,
-            "topLevel": False,
-        },
-        "p": [
-            12,
-            "my variable",
-            "`jEk@4|i[#Fk?(8x)AV.-my variable",
-            446,
-            652,
-        ],
-        "q": [
-            13,
-            "my list",
-            "ta`eJd|abk.):i6vI0u}",
-            646,
-            561,
-        ],
-        "r": {
-            "opcode": "argument_reporter_string_number",
-            "next": None,
-            "parent": "a",
-            "inputs": {},
-            "fields": {
-                "VALUE": [
-                    "a text arg",
-                    "^yv5=2v`Ry/g^Z`)Ys.1",
-                ],
-            },
-            "shadow": True,
-            "topLevel": False,
-            "mutation": {
-                "tagName": "mutation",
-                "children": [],
-                "color": "[\"#FF6680\",\"#FF4D6A\",\"#FF3355\"]",
-            },
-        },
-        "s": {
-            "opcode": "argument_reporter_boolean",
-            "next": None,
-            "parent": "a",
-            "inputs": {},
-            "fields": {
-                "VALUE": [
-                    "a bool arg",
-                    "2z2~7Noo4%=i2{EWKf(_",
-                ],
-            },
-            "shadow": True,
-            "topLevel": False,
-            "mutation": {
-                "tagName": "mutation",
-                "children": [],
-                "color": "[\"#FF6680\",\"#FF4D6A\",\"#FF3355\"]",
-            },
-        },
-        "t": {
-            "opcode": "argument_reporter_string_number",
-            "next": None,
-            "parent": "a",
-            "inputs": {},
-            "fields": {
-                "VALUE": [
-                    "a text arg",
-                    "^#w/pW=4-9Dq9)klf:9x",
-                ],
-            },
-            "shadow": True,
-            "topLevel": False,
-            "mutation": {
-                "tagName": "mutation",
-                "children": [],
-                "color": "[\"#FF6680\",\"#FF4D6A\",\"#FF3355\"]",
-            },
-        },
-        "u": {
-            "opcode": "argument_reporter_boolean",
-            "next": None,
-            "parent": "a",
-            "inputs": {},
-            "fields": {
-                "VALUE": [
-                    "a bool arg",
-                    "5gbANC]?3[@Ynp:~POWJ",
-                ],
-            },
-            "shadow": True,
-            "topLevel": False,
-            "mutation": {
-                "tagName": "mutation",
-                "children": [],
-                "color": "[\"#FF6680\",\"#FF4D6A\",\"#FF3355\"]",
-            },
-        },
-        "n": {
-            "opcode": "control_if",
-            "next": None,
-            "parent": None,
-            "inputs": {
-                "SUBSTACK": [
-                    2,
-                    "o",
-                ],
-            },
-            "fields": {},
-            "shadow": False,
-            "topLevel": True,
-            "x": 528,
-            "y": 1175,
-        },
-        "o": {
-            "opcode": "data_changevariableby",
-            "next": None,
-            "parent": "n",
-            "inputs": {
-                "VALUE": [
-                    1,
-                    [
-                        4,
-                        "1",
-                    ],
-                ],
-            },
-            "fields": {
-                "VARIABLE": [
-                    "my variable",
-                    "`jEk@4|i[#Fk?(8x)AV.-my variable",
-                    "",
-                ],
-            },
-            "shadow": False,
-            "topLevel": False,
-        },
-    },
+    "blocks": ALL_FR_BLOCK_DATAS,
     "comments": {
-        "e": {
+        "j": {
             "blockId": "b",
-            "x": 620.6666690685131,
-            "y": 276.1481481481487,
+            "x": 1031,
+            "y": 348,
             "width": 200,
             "height": 200,
             "minimized": False,
-            "text": "im a comment",
+            "text": "hi from attached comment",
         },
     },
     "currentCostume": 0,
@@ -1696,420 +1122,16 @@ FR_SPRITE = FRSprite(
     lists={},
     broadcasts={},
     custom_vars=[],
-    blocks={
-        "d": FRBlock(
-            opcode="event_broadcast",
-            next="b",
-            parent=None,
-            inputs={
-                "BROADCAST_INPUT": (1, (
-                        11,
-                        "my message",
-                        "]zYMvs0rF)-eOEt26c|,",
-                    )),
-            },
-            fields={},
-            shadow=False,
-            top_level=True,
-            x=268,
-            y=220,
-            comment=None,
-            mutation=None,
-        ),
-        "b": FRBlock(
-            opcode="motion_glideto",
-            next=None,
-            parent="d",
-            inputs={
-                "SECS": (1, (4, "1")),
-                "TO": (1, "f"),
-            },
-            fields={},
-            shadow=False,
-            top_level=False,
-            x=None,
-            y=None,
-            comment="e",
-            mutation=None,
-        ),
-        "f": FRBlock(
-            opcode="motion_glideto_menu",
-            next=None,
-            parent="b",
-            inputs={},
-            fields={
-                "TO": ("_random_", "@86dYv/6h#d_V/%rK3/M"),
-            },
-            shadow=True,
-            top_level=False,
-            x=None,
-            y=None,
-            comment=None,
-            mutation=None,
-        ),
-        "g": FRBlock(
-            opcode="operator_random",
-            next=None,
-            parent=None,
-            inputs={
-                "FROM": (
-                    3,
-                    (
-                        12,
-                        "my variable",
-                        "`jEk@4|i[#Fk?(8x)AV.-my variable",
-                    ),
-                    (4, "1"),
-                ),
-                "TO": (
-                    3,
-                    "h",
-                    (4, "10"),
-                ),
-            },
-            fields={},
-            shadow=False,
-            top_level=True,
-            x=304,
-            y=424,
-            comment=None,
-            mutation=None,
-        ),
-        "i": FRBlock(
-            opcode="procedures_definition_return",
-            next=None,
-            parent=None,
-            inputs={
-                "custom_block": (1, "a"),
-            },
-            fields={},
-            shadow=False,
-            top_level=True,
-            x=344,
-            y=799,
-            comment=None,
-            mutation=None,
-        ),
-        "a": FRBlock(
-            opcode="procedures_prototype",
-            next=None,
-            parent="i",
-            inputs={
-                "?+wI)AquGQlzMnn5I8tA": (1, "j"),
-                "1OrbjF=wjT?D$)m|0N=X": (1, "k"),
-            },
-            fields={},
-            shadow=True,
-            top_level=False,
-            x=None,
-            y=None,
-            comment=None,
-            mutation=FRCustomBlockMutation(
-                tag_name="mutation",
-                children=[],
-                proccode="do sth text %s and bool %b",
-                argument_ids=[
-                    "?+wI)AquGQlzMnn5I8tA",
-                    "1OrbjF=wjT?D$)m|0N=X",
-                ],
-                argument_names=[
-                    "a text arg",
-                    "a bool arg",
-                ],
-                argument_defaults=[
-                    "",
-                    "false",
-                ],
-                warp=False,
-                returns=True,
-                edited=True,
-                optype="number",
-                color=(
-                    "#FF6680",
-                    "#FF4D6A",
-                    "#FF3355",
-                ),
-            ),
-        ),
-        "j": FRBlock(
-            opcode="argument_reporter_string_number",
-            next=None,
-            parent="a",
-            inputs={},
-            fields={
-                "VALUE": ("a text arg", ";jX/UwBwE{CX@UdiwnJd"),
-            },
-            shadow=True,
-            top_level=False,
-            x=None,
-            y=None,
-            comment=None,
-            mutation=FRCustomBlockArgumentMutation(
-                tag_name="mutation",
-                children=[],
-                color=(
-                    "#FF6680",
-                    "#FF4D6A",
-                    "#FF3355",
-                ),
-            ),
-        ),
-        "k": FRBlock(
-            opcode="argument_reporter_boolean",
-            next=None,
-            parent="a",
-            inputs={},
-            fields={
-                "VALUE": ("a bool arg", "WM*d_x(VPqmUl[4GOC({"),
-            },
-            shadow=True,
-            top_level=False,
-            x=None,
-            y=None,
-            comment=None,
-            mutation=FRCustomBlockArgumentMutation(
-                tag_name="mutation",
-                children=[],
-                color=(
-                    "#FF6680",
-                    "#FF4D6A",
-                    "#FF3355",
-                ),
-            ),
-        ),
-        "h": FRBlock(
-            opcode="operator_join",
-            next=None,
-            parent="g",
-            inputs={
-                "STRING1": (1, (10, "apple ")),
-                "STRING2": (1, (10, "banana")),
-            },
-            fields={},
-            shadow=False,
-            top_level=False,
-            x=None,
-            y=None,
-            comment=None,
-            mutation=None,
-        ),
-        "c": FRBlock(
-            opcode="procedures_call",
-            next=None,
-            parent=None,
-            inputs={
-                "?+wI)AquGQlzMnn5I8tA": (
-                    3,
-                    "l",
-                    (10, ""),
-                ),
-                "1OrbjF=wjT?D$)m|0N=X": (2, "m"),
-            },
-            fields={},
-            shadow=False,
-            top_level=True,
-            x=499,
-            y=933,
-            comment=None,
-            mutation=FRCustomBlockCallMutation(
-                tag_name="mutation",
-                children=[],
-                proccode="do sth text %s and bool %b",
-                argument_ids=[
-                    "?+wI)AquGQlzMnn5I8tA",
-                    "1OrbjF=wjT?D$)m|0N=X",
-                ],
-                warp=False,
-                returns=True,
-                edited=True,
-                optype="number",
-                color=(
-                    "#FF6680",
-                    "#FF4D6A",
-                    "#FF3355",
-                ),
-            ),
-        ),
-        "m": FRBlock(
-            opcode="operator_falseBoolean",
-            next=None,
-            parent="c",
-            inputs={},
-            fields={},
-            shadow=False,
-            top_level=False,
-            x=None,
-            y=None,
-            comment=None,
-            mutation=None,
-        ),
-        "l": FRBlock(
-            opcode="operator_length",
-            next=None,
-            parent="c",
-            inputs={
-                "STRING": (1, (10, "apple")),
-            },
-            fields={},
-            shadow=False,
-            top_level=False,
-            x=None,
-            y=None,
-            comment=None,
-            mutation=None,
-        ),
-        "p": (
-            12,
-            "my variable",
-            "`jEk@4|i[#Fk?(8x)AV.-my variable",
-            446,
-            652,
-        ),
-        "q": (
-            13,
-            "my list",
-            "ta`eJd|abk.):i6vI0u}",
-            646,
-            561,
-        ),
-        "r": FRBlock(
-            opcode="argument_reporter_string_number",
-            next=None,
-            parent="a",
-            inputs={},
-            fields={
-                "VALUE": ("a text arg", "^yv5=2v`Ry/g^Z`)Ys.1"),
-            },
-            shadow=True,
-            top_level=False,
-            x=None,
-            y=None,
-            comment=None,
-            mutation=FRCustomBlockArgumentMutation(
-                tag_name="mutation",
-                children=[],
-                color=(
-                    "#FF6680",
-                    "#FF4D6A",
-                    "#FF3355",
-                ),
-            ),
-        ),
-        "s": FRBlock(
-            opcode="argument_reporter_boolean",
-            next=None,
-            parent="a",
-            inputs={},
-            fields={
-                "VALUE": ("a bool arg", "2z2~7Noo4%=i2{EWKf(_"),
-            },
-            shadow=True,
-            top_level=False,
-            x=None,
-            y=None,
-            comment=None,
-            mutation=FRCustomBlockArgumentMutation(
-                tag_name="mutation",
-                children=[],
-                color=(
-                    "#FF6680",
-                    "#FF4D6A",
-                    "#FF3355",
-                ),
-            ),
-        ),
-        "t": FRBlock(
-            opcode="argument_reporter_string_number",
-            next=None,
-            parent="a",
-            inputs={},
-            fields={
-                "VALUE": ("a text arg", "^#w/pW=4-9Dq9)klf:9x"),
-            },
-            shadow=True,
-            top_level=False,
-            x=None,
-            y=None,
-            comment=None,
-            mutation=FRCustomBlockArgumentMutation(
-                tag_name="mutation",
-                children=[],
-                color=(
-                    "#FF6680",
-                    "#FF4D6A",
-                    "#FF3355",
-                ),
-            ),
-        ),
-        "u": FRBlock(
-            opcode="argument_reporter_boolean",
-            next=None,
-            parent="a",
-            inputs={},
-            fields={
-                "VALUE": ("a bool arg", "5gbANC]?3[@Ynp:~POWJ"),
-            },
-            shadow=True,
-            top_level=False,
-            x=None,
-            y=None,
-            comment=None,
-            mutation=FRCustomBlockArgumentMutation(
-                tag_name="mutation",
-                children=[],
-                color=(
-                    "#FF6680",
-                    "#FF4D6A",
-                    "#FF3355",
-                ),
-            ),
-        ),
-        "n": FRBlock(
-            opcode="control_if",
-            next=None,
-            parent=None,
-            inputs={
-                "SUBSTACK": (2, "o"),
-            },
-            fields={},
-            shadow=False,
-            top_level=True,
-            x=528,
-            y=1175,
-            comment=None,
-            mutation=None,
-        ),
-        "o": FRBlock(
-            opcode="data_changevariableby",
-            next=None,
-            parent="n",
-            inputs={
-                "VALUE": (1, (4, "1")),
-            },
-            fields={
-                "VARIABLE": (
-                    "my variable",
-                    "`jEk@4|i[#Fk?(8x)AV.-my variable",
-                    "",
-                ),
-            },
-            shadow=False,
-            top_level=False,
-            x=None,
-            y=None,
-            comment=None,
-            mutation=None,
-        ),
-    },
+    blocks=ALL_FR_BLOCKS,
     comments={
-        "e": FRComment(
+        "j": FRComment(
             block_id="b",
-            x=620.6666690685131,
-            y=276.1481481481487,
+            x=1031,
+            y=348,
             width=200,
             height=200,
             minimized=False,
-            text="im a comment",
+            text="hi from attached comment",
         ),
     },
     current_costume=0,
@@ -2226,251 +1248,55 @@ PROJECT_DATA = {
 }
 
 
-SR_PROJECT = SRProject(
-    stage=SRStage(
-        scripts=[],
-        comments=[],
-        costume_index=0,
-        costumes=[
-            SRCostume(
-                name="backdrop1",
-                file_extension="svg",
-                rotation_center=(240, 180),
-                bitmap_resolution=1,
-            ),
-        ],
-        sounds=[],
-        volume=100,
-    ),
-    sprites=[
-        SRSprite(
-            name="Sprite1",
-            scripts=[
-                SRScript(
-                    position=(268, 220),
-                    blocks=[
-                        SRBlock(
-                            opcode="broadcast ([MESSAGE])",
-                            inputs={
-                                "MESSAGE": SRBlockAndDropdownInputValue(
-                                    block=None,
-                                    dropdown=SRDropdownValue(kind=DropdownValueKind.BROADCAST_MSG, value="my message"),
-                                ),
-                            },
-                            dropdowns={},
-                            comment=None,
-                            mutation=None,
-                        ),
-                        SRBlock(
-                            opcode="glide (SECONDS) secs to ([TARGET])",
-                            inputs={
-                                "SECONDS": SRBlockAndTextInputValue(block=None, text="1"),
-                                "TARGET": SRBlockAndDropdownInputValue(
-                                    block=None,
-                                    dropdown=SRDropdownValue(kind=DropdownValueKind.OBJECT, value="random position"),
-                                ),
-                            },
-                            dropdowns={},
-                            comment=SRComment(
-                                position=(620.6666690685131, 276.1481481481487),
-                                size=(200, 200),
-                                is_minimized=False,
-                                text="im a comment",
-                            ),
-                            mutation=None,
-                        ),
-                    ],
-                ),
-                SRScript(
-                    position=(304, 424),
-                    blocks=[
-                        SRBlock(
-                            opcode="pick random (OPERAND1) to (OPERAND2)",
-                            inputs={
-                                "OPERAND1": SRBlockAndTextInputValue(
-                                    block=SRBlock(
-                                        opcode="value of [VARIABLE]",
-                                        inputs={},
-                                        dropdowns={
-                                            "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="my variable"),
-                                        },
-                                        comment=None,
-                                        mutation=None,
-                                    ),
-                                    text="1",
-                                ),
-                                "OPERAND2": SRBlockAndTextInputValue(
-                                    block=SRBlock(
-                                        opcode="join (STRING1) (STRING2)",
-                                        inputs={
-                                            "STRING1": SRBlockAndTextInputValue(block=None, text="apple "),
-                                            "STRING2": SRBlockAndTextInputValue(block=None, text="banana"),
-                                        },
-                                        dropdowns={},
-                                        comment=None,
-                                        mutation=None,
-                                    ),
-                                    text="10",
-                                ),
-                            },
-                            dropdowns={},
-                            comment=None,
-                            mutation=None,
-                        ),
-                    ],
-                ),
-                SRScript(
-                    position=(344, 799),
-                    blocks=[
-                        SRBlock(
-                            opcode="define custom block reporter",
-                            inputs={},
-                            dropdowns={},
-                            comment=None,
-                            mutation=SRCustomBlockMutation(
-                                custom_opcode=SRCustomBlockOpcode(
-                                    segments=(
-                                        "do sth text",
-                                        SRCustomBlockArgument(name="a text arg", type=SRCustomBlockArgumentType.STRING_NUMBER),
-                                        "and bool",
-                                        SRCustomBlockArgument(name="a bool arg", type=SRCustomBlockArgumentType.BOOLEAN),
-                                    ),
-                                ),
-                                no_screen_refresh=False,
-                                optype=SRCustomBlockOptype.NUMBER_REPORTER,
-                                color1="#FF6680",
-                                color2="#FF4D6A",
-                                color3="#FF3355",
-                            ),
-                        ),
-                    ],
-                ),
-                SRScript(
-                    position=(499, 933),
-                    blocks=[
-                        SRBlock(
-                            opcode="call custom block",
-                            inputs={
-                                "a text arg": SRBlockAndTextInputValue(
-                                    block=SRBlock(
-                                        opcode="length of (TEXT)",
-                                        inputs={
-                                            "TEXT": SRBlockAndTextInputValue(block=None, text="apple"),
-                                        },
-                                        dropdowns={},
-                                        comment=None,
-                                        mutation=None,
-                                    ),
-                                    text="",
-                                ),
-                                "a bool arg": SRBlockOnlyInputValue(
-                                    block=SRBlock(
-                                        opcode="false",
-                                        inputs={},
-                                        dropdowns={},
-                                        comment=None,
-                                        mutation=None,
-                                    ),
-                                ),
-                            },
-                            dropdowns={},
-                            comment=None,
-                            mutation=SRCustomBlockCallMutation(
-                                custom_opcode=SRCustomBlockOpcode(
-                                    segments=(
-                                        "do sth text",
-                                        SRCustomBlockArgument(name="a text arg", type=SRCustomBlockArgumentType.STRING_NUMBER),
-                                        "and bool",
-                                        SRCustomBlockArgument(name="a bool arg", type=SRCustomBlockArgumentType.BOOLEAN),
-                                    ),
-                                ),
-                            ),
-                        ),
-                    ],
-                ),
-                SRScript(
-                    position=(446, 652),
-                    blocks=[
-                        SRBlock(
-                            opcode="value of [VARIABLE]",
-                            inputs={},
-                            dropdowns={
-                                "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="my variable"),
-                            },
-                            comment=None,
-                            mutation=None,
-                        ),
-                    ],
-                ),
-                SRScript(
-                    position=(646, 561),
-                    blocks=[
-                        SRBlock(
-                            opcode="value of [LIST]",
-                            inputs={},
-                            dropdowns={
-                                "LIST": SRDropdownValue(kind=DropdownValueKind.LIST, value="my list"),
-                            },
-                            comment=None,
-                            mutation=None,
-                        ),
-                    ],
-                ),
-                SRScript(
-                    position=(528, 1175),
-                    blocks=[
-                        SRBlock(
-                            opcode="if <CONDITION> then {THEN}",
-                            inputs={
-                                "THEN": SRScriptInputValue(
-                                    blocks=[
-                                        SRBlock(
-                                            opcode="change [VARIABLE] by (VALUE)",
-                                            inputs={
-                                                "VALUE": SRBlockAndTextInputValue(block=None, text="1"),
-                                            },
-                                            dropdowns={
-                                                "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="my variable"),
-                                            },
-                                            comment=None,
-                                            mutation=None,
-                                        ),
-                                    ],
-                                ),
-                                "CONDITION": SRBlockOnlyInputValue(block=None),
-                            },
-                            dropdowns={},
-                            comment=None,
-                            mutation=None,
-                        ),
-                    ],
-                ),
-            ],
-            comments=[],
-            costume_index=0,
-            costumes=[
-                SRCostume(
-                    name="costume1",
-                    file_extension="svg",
-                    rotation_center=(26, 46),
-                    bitmap_resolution=1,
-                ),
-            ],
-            sounds=[
-                SRSound(name="Squawk", file_extension="wav"),
-            ],
-            volume=100,
-            sprite_only_variables=[],
-            sprite_only_lists=[],
-            local_monitors=[],
-            layer_order=1,
-            is_visible=True,
-            position=(0, 0),
-            size=100,
-            direction=90,
-            is_draggable=False,
-            rotation_style=SRSpriteRotationStyle.ALL_AROUND,
+SR_STAGE = SRStage(
+    scripts=[],
+    comments=[],
+    costume_index=0,
+    costumes=[
+        SRCostume(
+            name="backdrop1",
+            file_extension="svg",
+            rotation_center=(240, 180),
+            bitmap_resolution=1,
         ),
+    ],
+    sounds=[],
+    volume=100,
+)
+
+SR_SPRITE = SRSprite(
+    name="Sprite1",
+    scripts=ALL_SR_SCRIPTS,
+    comments=[],
+    costume_index=0,
+    costumes=[
+        SRCostume(
+            name="costume1",
+            file_extension="svg",
+            rotation_center=(26, 46),
+            bitmap_resolution=1,
+        ),
+    ],
+    sounds=[
+        SRSound(name="Squawk", file_extension="wav"),
+    ],
+    volume=100,
+    sprite_only_variables=[],
+    sprite_only_lists=[],
+    local_monitors=[],
+    layer_order=1,
+    is_visible=True,
+    position=(0, 0),
+    size=100,
+    direction=90,
+    is_draggable=False,
+    rotation_style=SRSpriteRotationStyle.ALL_AROUND,
+)
+
+SR_PROJECT = SRProject(
+    stage=SR_STAGE,
+    sprites=[
+        SR_SPRITE,
     ],
     all_sprite_variables=[
         SRVariable(name="my variable", current_value=0),

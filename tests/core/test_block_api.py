@@ -12,13 +12,13 @@ from pypenguin.core.custom_block   import (
 )
 
 from tests.core.constants import (
-    ALL_FR_BLOCKS, ALL_SR_COMMENTS, ALL_SR_SCRIPTS, ALL_SR_BLOCKS, SR_BLOCK_CUSTOM_OPCODE,
+    ALL_FR_BLOCKS_CLEAN, ALL_SR_COMMENTS, ALL_SR_SCRIPTS, ALL_SR_BLOCKS, SR_BLOCK_CUSTOM_OPCODE,
 )
 
 @fixture
 def ficapi():
     return FICAPI(
-        blocks=ALL_FR_BLOCKS,
+        blocks=ALL_FR_BLOCKS_CLEAN,
         block_comments=ALL_SR_COMMENTS,
     )
 
@@ -28,10 +28,10 @@ def validation_api():
 
 
 def test_FICAPI_get_all_blocks(ficapi: FICAPI):
-    assert ficapi.get_all_blocks() == ALL_FR_BLOCKS
+    assert ficapi.get_all_blocks() == ALL_FR_BLOCKS_CLEAN
 
 def test_FICAPI_get_blocks(ficapi: FICAPI):
-    assert ficapi.get_block("d") == ALL_FR_BLOCKS["d"]
+    assert ficapi.get_block("d") == ALL_FR_BLOCKS_CLEAN["d"]
 
 def test_FICAPI_schedule_block_deletion(ficapi: FICAPI):
     ficapi_copy = deepcopy(ficapi)
@@ -39,7 +39,7 @@ def test_FICAPI_schedule_block_deletion(ficapi: FICAPI):
     assert ficapi_copy.scheduled_block_deletions == ["z"]
 
 def test_FICAPI_get_cb_mutation(ficapi: FICAPI):
-    assert ficapi.get_cb_mutation("do sth text %s and bool %b") == ALL_FR_BLOCKS["a"].mutation
+    assert ficapi.get_cb_mutation("do sth text %s and bool %b") == ALL_FR_BLOCKS_CLEAN["a"].mutation
     with raises(FirstToInterConversionError):
         ficapi.get_cb_mutation("some %s proccode")
 
