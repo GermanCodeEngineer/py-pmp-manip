@@ -370,7 +370,7 @@ class FRSprite(FRTarget):
 
 
 @dataclass(repr=False)
-class SRTarget(GreprClass):
+class SRTarget(GreprClass, ABC):
     """
     The second representation (SR) of a target, which is much more user friendly. A target can be either a sprite or the stage.
     """
@@ -383,6 +383,10 @@ class SRTarget(GreprClass):
     costumes: list[SRCostume]
     sounds: list[SRSound]
     volume: int | float
+
+    @classmethod
+    @abstractmethod
+    def create_empty(cls, *args, **kwargs) -> "SRTarget": pass
 
     def validate(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
         # TODO: docstring
@@ -456,7 +460,16 @@ class SRStage(SRTarget):
     """
     The second representation (SR) of the stage, which is much more user friendly
     """
-    pass # The stage has no additional properties
+    @classmethod
+    def create_empty(cls) -> "SRStage":
+        return cls(
+            scripts=[],
+            comments=[],
+            costume_index=0,
+            costumes=[SRCostume.create_empty()],
+            sounds=[],
+            volume=100,
+        )
 
 @dataclass(repr=False)
 class SRSprite(SRTarget):
@@ -473,13 +486,35 @@ class SRSprite(SRTarget):
     # layer_order:
     #   - must be at least 1
     #   - no two sprites can have the same value for it
-    #   - the values should go from 1 up to the number of sprites in the project, no value can be skipped
+    #   - the values should go from 1 up to the count of sprites in the project, no value can be skipped
     is_visible: bool
     position: tuple[int | float, int | float]
     size: int | float
     direction: int | float
     is_draggable: bool
     rotation_style: "SRSpriteRotationStyle"
+    
+    @classmethod
+    def create_empty(cls, name: str, layer_order: int) -> "SRSprite":
+        return cls(
+            scripts=[],
+            comments=[],
+            costume_index=0,
+            costumes=[SRCostume.create_empty()],
+            sounds=[],
+            volume=100,
+            name=name,
+            sprite_only_variables=[],
+            sprite_only_lists=[],
+            local_monitors=[],
+            layer_order=layer_order,
+            is_visible=True,
+            position=(0, 0),
+            size=100,
+            direction=90,
+            is_draggable=False,
+            rotation_style=SRSpriteRotationStyle.ALL_AROUND,
+        )
     
     def validate(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
         # TODO: docstring

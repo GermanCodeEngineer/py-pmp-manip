@@ -192,6 +192,27 @@ class SRProject(GreprClass):
     global_monitors: list[SRMonitor]
     extensions: list[SRExtension]
 
+    @classmethod
+    def create_empty(cls) -> "SRProject":
+        """
+        Create an empty SRProject with no sprites, variables etc. and the default settings.
+        
+        Returns:
+            the empty SRProject
+        """
+        return cls(
+            stage=SRStage.create_empty(),
+            sprites=[],
+            all_sprite_variables=[],
+            all_sprite_lists=[],
+            tempo=60,
+            video_transparency=50,
+            video_state=SRVideoState.ON,
+            text_to_speech_language=None,
+            global_monitors=[],
+            extensions=[],
+        )
+
     def validate(self, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
         """
         Ensure a SRProject is valid, raise ValidationError if not.
@@ -361,7 +382,8 @@ class SRProject(GreprClass):
         Returns:
             None
         """
-        # Validate sprites and their layer orders
+        if len(self.sprites) == 0:
+            return # There is nothing to do then
         layer_orders: dict[int, list] = {}
         for i, sprite in enumerate(self.sprites):
             current_path = path+["sprites", i]
@@ -377,6 +399,7 @@ class SRProject(GreprClass):
         
         next_layer_order = 1
         for layer_order, current_path in dict(sorted(layer_orders.items())).items():
-            if layer_order > next_layer_order: # Can't be lower because minimum of 1 was alredy ensured + sorting
+            if layer_order > next_layer_order: 
+            # Can't be lower because minimum of 1 was alredy ensured + sorting
                 raise LayerOrderError(current_path, f"layer_order should start at 1 and then increase for each sprite in order from back to front. It should be {next_layer_order} here")
             next_layer_order += 1

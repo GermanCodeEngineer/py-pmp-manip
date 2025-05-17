@@ -115,7 +115,17 @@ class SRCostume(GreprClass):
     file_extension: str
     rotation_center: tuple[int | float, int | float]
     bitmap_resolution: int
-  
+    
+    
+    @classmethod
+    def create_empty(cls, name: str = "empty") -> "SRCostume":
+        return cls(
+            name=name,
+            file_extension="svg",
+            rotation_center=(0,0),
+            bitmap_resolution=1,
+        )
+    
     def validate(self, path: list, config: ValidationConfig) -> None:
         """
         Ensure a SRCostume is valid, raise ValidationError if not.
