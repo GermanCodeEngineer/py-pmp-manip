@@ -426,7 +426,7 @@ class SRTarget(GreprClass):
         path: list, 
         config: ValidationConfig,
         info_api: OpcodeInfoAPI,
-        context: PartialContext,
+        context: PartialContext | CompleteContext,
     ) -> None:
         # TODO: docstring
         context = self.get_complete_context(partial_context=context)
@@ -446,7 +446,7 @@ class SRTarget(GreprClass):
                     custom_opcode = block.mutation.custom_opcode
                     if custom_opcode in cb_optypes:
                         other_path = cb_optypes[custom_opcode]
-                        raise SameNameTwiceError(other_path, current_path, "Two custom blocks mustn't have the same name(see .mutation.custom_opcode.proccode)")
+                        raise SameNameTwiceError(other_path, current_path, "Two custom blocks mustn't have the same custom_opcode(see .mutation.custom_opcode)")
                     cb_optypes[custom_opcode] = block.mutation.optype
 
     def get_complete_context(self, partial_context: PartialContext) -> CompleteContext:

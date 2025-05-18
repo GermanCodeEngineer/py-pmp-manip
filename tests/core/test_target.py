@@ -7,6 +7,7 @@ from pypenguin.utility            import (
     ThanksError, FirstToSecondConversionError, TypeValidationError, RangeValidationError, 
     SameNameTwiceError
 )
+from pypenguin.opcode_info import DropdownValueKind
 from pypenguin.opcode_info.groups import info_api
 
 from pypenguin.core.asset      import FRCostume, FRSound, SRCostume, SRSound
@@ -21,6 +22,27 @@ from tests.utility import execute_attr_validation_tests
 @fixture
 def config():
     return ValidationConfig()
+
+@fixture
+def context():
+    my_variable = (DropdownValueKind.VARIABLE, "globl")
+    my_sprite_variable = (DropdownValueKind.VARIABLE, "locl")
+    my_list = (DropdownValueKind.LIST, "globl")
+    my_sprite_list = (DropdownValueKind.LIST, "locl")
+    return PartialContext(
+        scope_variables=[my_variable, my_sprite_variable],
+        scope_lists=[my_list, my_sprite_list],
+
+        all_sprite_variables=[my_variable],
+
+        sprite_only_variables=[my_sprite_variable],
+        sprite_only_lists=[my_sprite_list],
+
+        other_sprites=[(DropdownValueKind.SPRITE, "Sprite1")],
+        backdrops=[(DropdownValueKind.BACKDROP, "intro"), (DropdownValueKind.BACKDROP, "scene1")],
+    )
+
+
 
 
 
@@ -207,6 +229,7 @@ def test_SRTarget_validate_same_sound_name(config):
         srtarget.validate([], config, info_api)
 
 
-def test_SRTarget_validate_scripts(config):
-    pass
+def test_SRTarget_validate_scripts(config, context):
+    srtarget = SR_SPRITE
+    srtarget.validate_scripts([], config, info_api, context)
 
