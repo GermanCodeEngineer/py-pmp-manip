@@ -78,6 +78,7 @@ class SRDropdownValue(GreprClass):
         )
         if (self.kind, self.value) not in possible_values:
             if default_kind is None:
+                print(possible_values, repr(possible_values_string))
                 raise InvalidDropdownValueError(path, f"In this case must be one of these: {possible_values_string}")
             elif self.kind != default_kind:
                 raise InvalidDropdownValueError(path, f"If kind is not {default_kind} must be one of these: {possible_values_string}")

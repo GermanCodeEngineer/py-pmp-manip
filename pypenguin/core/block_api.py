@@ -90,7 +90,7 @@ class ValidationAPI(GreprClass):
     _grepr = True
     _grepr_fields = ["scripts", "cb_mutations:"]
 
-    scripts: dict[str, "SRScript"]
+    scripts: list["SRScript"]
     cb_mutations: dict[SRCustomBlockOpcode, "SRCustomBlockMutation"] = field(init=False)
     # Safe access is needed because blocks haven't actually been validated yet
     

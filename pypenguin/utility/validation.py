@@ -1,16 +1,16 @@
 import json
 import re
-from typing      import Any
+from typing      import Any, Type
 from dataclasses import dataclass
 
 from pypenguin.utility.errors import TypeValidationError, RangeValidationError, InvalidValueError
 from pypenguin.utility.general import GreprClass
 
-def value_and_descr(obj, attr) -> tuple[Any, str]:
+def _value_and_descr(obj, attr) -> tuple[Any, str]:
     return getattr(obj, attr), f"{attr} of a {obj.__class__.__name__}"
 
 def AA_TYPE(obj, path, attr, t, condition=None) -> None:
-    attr_value, descr = value_and_descr(obj, attr)
+    attr_value, descr = _value_and_descr(obj, attr)
     if not isinstance(attr_value, t):
         raise TypeValidationError(path, f"{descr} must be of type {t.__name__} not {attr_value.__class__.__name__}", condition)
 
@@ -18,23 +18,23 @@ def AA_TYPES(obj, path, attr, ts, condition=None) -> None:
     assert len(ts) >= 1
     if len(ts) == 1:
         return AA_TYPE(obj, path, attr, ts[0], condition=condition)
-    attr_value, descr = value_and_descr(obj, attr)
+    attr_value, descr = _value_and_descr(obj, attr)
     if not isinstance(attr_value, ts):
         types_str = "|".join([t.__name__ for t in ts])
         raise TypeValidationError(path, f"{descr} must be one of types {types_str} not {attr_value.__class__.__name__}", condition)
 
 def AA_NONE(obj, path, attr, condition=None) -> None:
-    attr_value, descr = value_and_descr(obj, attr)
+    attr_value, descr = _value_and_descr(obj, attr)
     if attr_value is not None:
         raise TypeValidationError(path, f"{descr} must be None", condition)
 
 def AA_NONE_OR_TYPE(obj, path, attr, t, condition=None) -> None:
-    attr_value, descr = value_and_descr(obj, attr)
+    attr_value, descr = _value_and_descr(obj, attr)
     if (attr_value is not None) and not(isinstance(attr_value, t)):
         raise TypeValidationError(path, f"{descr} must be either None or of type {t.__name__} not of type {attr_value.__class__.__name__}", condition)
 
 def AA_LIST_OF_TYPE(obj, path, attr, t, condition=None) -> None:
-    attr_value, descr = value_and_descr(obj, attr)
+    attr_value, descr = _value_and_descr(obj, attr)
     msg = f"{descr} must be a list of {t.__name__}"
     if not isinstance(attr_value, list):
         raise TypeValidationError(path, f"{msg} not a {attr_value.__class__.__name__}", condition)
@@ -43,7 +43,7 @@ def AA_LIST_OF_TYPE(obj, path, attr, t, condition=None) -> None:
             raise TypeValidationError(path, f"{msg} not of {item.__class__.__name__}", condition)
 
 def AA_LIST_OF_TYPES(obj, path, attr, ts, condition=None) -> None:
-    attr_value, descr = value_and_descr(obj, attr)
+    attr_value, descr = _value_and_descr(obj, attr)
     types_str = "|".join([t.__name__ for t in ts])
     msg = f"{descr} must be a list. Each item must be one of types {types_str}"
     if not isinstance(attr_value, list):
@@ -53,7 +53,7 @@ def AA_LIST_OF_TYPES(obj, path, attr, ts, condition=None) -> None:
             raise TypeValidationError(path, f"{msg} not of {item.__class__.__name__}", condition)
 
 def AA_TUPLE_OF_TYPES(obj, path, attr, ts, condition=None) -> None:
-    attr_value, descr = value_and_descr(obj, attr)
+    attr_value, descr = _value_and_descr(obj, attr)
     types_str = "|".join([t.__name__ for t in ts])
     msg = f"{descr} must be a tuple. Each item must be one of types {types_str}"
     if not isinstance(attr_value, tuple):
@@ -63,7 +63,7 @@ def AA_TUPLE_OF_TYPES(obj, path, attr, ts, condition=None) -> None:
             raise TypeValidationError(path, f"{msg} not of {item.__class__.__name__}", condition)
 
 def AA_DICT_OF_TYPE(obj, path, attr, key_t, value_t, condition=None) -> None:
-    attr_value, descr = value_and_descr(obj, attr)
+    attr_value, descr = _value_and_descr(obj, attr)
     if not isinstance(attr_value, dict):
         raise TypeValidationError(path, f"{descr} must be a dict. Each key must be of type {key_t.__name__}. Each value must be of type {value_t.__name__}", condition)
     for key, value in attr_value.items():
@@ -73,27 +73,27 @@ def AA_DICT_OF_TYPE(obj, path, attr, key_t, value_t, condition=None) -> None:
             raise TypeValidationError(path, f"{descr} must be a dict. Each key must be of type {key_t.__name__}. Each value must be of type {value_t.__name__} NOT {value.__class__.__name__}", condition)
 
 def AA_MIN(obj, path, attr, min, condition=None):
-    attr_value, descr = value_and_descr(obj, attr)
+    attr_value, descr = _value_and_descr(obj, attr)
     if attr_value < min:
         raise RangeValidationError(path, f"{descr} must be at least {min}", condition)
 
 def AA_MAX(obj, path, attr, max, condition=None):
-    attr_value, descr = value_and_descr(obj, attr)
+    attr_value, descr = _value_and_descr(obj, attr)
     if attr_value > max:
         raise RangeValidationError(path, f"{descr} must be at most {max}", condition)
 
 def AA_RANGE(obj, path, attr, min, max, condition=None):
-    attr_value, descr = value_and_descr(obj, attr)
+    attr_value, descr = _value_and_descr(obj, attr)
     if (attr_value < min) or (attr_value > max):
         raise RangeValidationError(path, f"{descr} must be at least {min} and at most {max}", condition)
 
 def AA_MIN_LEN(obj, path, attr, min_len: int, condition=None):
-    attr_value, descr = value_and_descr(obj, attr)
+    attr_value, descr = _value_and_descr(obj, attr)
     if len(attr_value) < min_len:
         raise RangeValidationError(path, f"{descr} must contain at least {min_len} element(s)")
 
 def AA_COORD_PAIR(obj, path, attr, condition=None):
-    attr_value, descr = value_and_descr(obj, attr)
+    attr_value, descr = _value_and_descr(obj, attr)
     if (
            (not isinstance(attr_value, tuple)) or (len(attr_value) != 2) 
         or (not isinstance(attr_value[0], (int, float))) 
@@ -106,7 +106,7 @@ def AA_BOXED_COORD_PAIR(
         min_x: int|float|None, max_x: int|float|None, min_y:int|float|None, max_y: int|float|None, 
         condition=None
     ):
-    attr_value, descr = value_and_descr(obj, attr)
+    attr_value, descr = _value_and_descr(obj, attr)
     msg = f"{descr} must be a coordinate pair. It must be a tuple of length 2. Each item must be an int or float. The first coordinate must be in range from {min_x} to {max_x}. The second coordinate must be in range from {min_y} to {max_y} not {attr_value}"
     if (
            (not isinstance(attr_value, tuple)) or (len(attr_value) != 2) 
@@ -121,7 +121,7 @@ def AA_BOXED_COORD_PAIR(
         raise RangeValidationError(path, msg, condition)
 
 def AA_JSON_COMPATIBLE(obj, path, attr, condition=None):
-    attr_value, descr = value_and_descr(obj, attr)
+    attr_value, descr = _value_and_descr(obj, attr)
     try:
         json.dumps(attr_value)
         error = None
@@ -131,23 +131,23 @@ def AA_JSON_COMPATIBLE(obj, path, attr, condition=None):
         raise error
 
 def AA_EQUAL(obj, path, attr, value, condition=None):
-    attr_value, descr = value_and_descr(obj, attr)
+    attr_value, descr = _value_and_descr(obj, attr)
     if attr_value != value:
         raise InvalidValueError(path, f"{descr} must be {repr(value)}", condition)
 
 def AA_BIGGER_OR_EQUAL(obj, path, attr1, attr2, condition=None):
-    attr1_value, attr1_descr = value_and_descr(obj, attr1)
-    attr2_value, attr2_descr = value_and_descr(obj, attr2)
+    attr1_value, attr1_descr = _value_and_descr(obj, attr1)
+    attr2_value, attr2_descr = _value_and_descr(obj, attr2)
     if not(attr1_value >= attr2_value):
         raise RangeValidationError(path, f"{attr1_descr} must be bigger then or equal to {attr2}", condition)
 
 def AA_NOT_ONE_OF(obj, path, attr, forbidden_values, condition=None):
-    attr_value, descr = value_and_descr(obj, attr)
+    attr_value, descr = _value_and_descr(obj, attr)
     if attr_value in forbidden_values:
         raise InvalidValueError(path, f"{descr} must not be one of {repr(forbidden_values)}")
 
 def AA_HEX_COLOR(obj, path, attr, condition=None):
-    attr_value, descr = value_and_descr(obj, attr)
+    attr_value, descr = _value_and_descr(obj, attr)
     msg = f"{descr} must be a valid hex color eg. '#FF0956'"
     if not isinstance(attr_value, str):
         raise TypeValidationError(path, msg)
@@ -155,7 +155,7 @@ def AA_HEX_COLOR(obj, path, attr, condition=None):
         raise InvalidValueError(path, msg)
 
 def AA_ALNUM(obj, path, attr, condition=None):
-    attr_value, descr = value_and_descr(obj, attr)
+    attr_value, descr = _value_and_descr(obj, attr)
     attr_value: str
     if not attr_value.isalnum():
         raise InvalidValueError(path, f"{descr} must contain only alpha-numeric characters")

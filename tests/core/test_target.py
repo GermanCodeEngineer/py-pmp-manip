@@ -1,19 +1,24 @@
 from pytest import fixture, raises
-from copy   import copy, deepcopy
+from copy   import copy
 
 from pypenguin.utility            import (
     string_to_sha256,
     ValidationConfig, 
     ThanksError, FirstToSecondConversionError, TypeValidationError, RangeValidationError, 
-    SameNameTwiceError
+    SameNameTwiceError, InvalidValueError
 )
 from pypenguin.opcode_info import DropdownValueKind
 from pypenguin.opcode_info.groups import info_api
 
-from pypenguin.core.asset      import FRCostume, FRSound, SRCostume, SRSound
-from pypenguin.core.comment    import FRComment
-from pypenguin.core.target     import FRTarget, FRStage, FRSprite, SRTarget #, SRStage, SRSprite
-from pypenguin.core.vars_lists import SRVariable, SRCloudVariable, SRList
+from pypenguin.core.asset          import SRCostume, SRSound
+from pypenguin.core.block          import SRScript, SRBlock
+from pypenguin.core.block_mutation import SRCustomBlockMutation
+from pypenguin.core.context        import PartialContext
+from pypenguin.core.custom_block   import SRCustomBlockOptype, SRCustomBlockOpcode, SRCustomBlockArgument, SRCustomBlockArgumentType
+from pypenguin.core.dropdown       import SRDropdownValue
+from pypenguin.core.enums          import SRSpriteRotationStyle
+from pypenguin.core.target         import FRTarget, FRStage, FRSprite, SRTarget, SRSprite
+from pypenguin.core.vars_lists     import SRVariable, SRCloudVariable, SRList
 
 from tests.core.constants import SPRITE_DATA, STAGE_DATA, FR_SPRITE, FR_STAGE, SR_SPRITE, SR_STAGE
 
@@ -25,10 +30,10 @@ def config():
 
 @fixture
 def context():
-    my_variable = (DropdownValueKind.VARIABLE, "globl")
-    my_sprite_variable = (DropdownValueKind.VARIABLE, "locl")
-    my_list = (DropdownValueKind.LIST, "globl")
-    my_sprite_list = (DropdownValueKind.LIST, "locl")
+    my_variable = (DropdownValueKind.VARIABLE, "my variable")
+    my_sprite_variable = (DropdownValueKind.VARIABLE, "my sprite variable")
+    my_list = (DropdownValueKind.LIST, "my list")
+    my_sprite_list = (DropdownValueKind.LIST, "my sprite list")
     return PartialContext(
         scope_variables=[my_variable, my_sprite_variable],
         scope_lists=[my_list, my_sprite_list],
@@ -38,7 +43,7 @@ def context():
         sprite_only_variables=[my_sprite_variable],
         sprite_only_lists=[my_sprite_list],
 
-        other_sprites=[(DropdownValueKind.SPRITE, "Sprite1")],
+        other_sprites=[(DropdownValueKind.SPRITE, "Sprite2"), (DropdownValueKind.SPRITE, "Player")],
         backdrops=[(DropdownValueKind.BACKDROP, "intro"), (DropdownValueKind.BACKDROP, "scene1")],
     )
 
@@ -229,7 +234,106 @@ def test_SRTarget_validate_same_sound_name(config):
         srtarget.validate([], config, info_api)
 
 
+
 def test_SRTarget_validate_scripts(config, context):
     srtarget = SR_SPRITE
     srtarget.validate_scripts([], config, info_api, context)
+
+def test_SRTarget_validate_scripts_same_custom_opcode(config, context):
+    srtarget = SRTarget.create_empty()
+    cb_def_script = SRScript(
+        position=(0, 0),
+        blocks=[
+            SRBlock(
+                opcode="define custom block",
+                inputs={},
+                dropdowns={},
+                comment=None,
+                mutation=SRCustomBlockMutation(
+                    custom_opcode=SRCustomBlockOpcode(segments=(
+                        "hi", SRCustomBlockArgument("name", SRCustomBlockArgumentType.STRING_NUMBER),
+                    )),
+                    no_screen_refresh=True,
+                    optype=SRCustomBlockOptype.ENDING_STATEMENT,
+                    color1="#FF6680",
+                    color2="#FF4D6A",
+                    color3="#FF3355",
+                ),
+            ),
+        ],
+    )
+    srtarget.scripts = [
+        cb_def_script,
+        copy(cb_def_script),
+    ]
+    with raises(SameNameTwiceError):
+        srtarget.validate_scripts([], config, info_api, context)
+
+
+def test_SRTarget_get_complete_context(context):
+    srtarget = copy(SR_SPRITE)
+    srtarget.sounds = [SRSound(name="Hello World!", file_extension="mp3")]
+    complete_context = srtarget.get_complete_context(context)
+    assert complete_context.costumes == [SRDropdownValue(DropdownValueKind.COSTUME, "costume1")]
+    assert complete_context.sounds == [SRDropdownValue(DropdownValueKind.SOUND, "Hello World!")]
+    assert complete_context.is_stage == False
+
+
+
+def test_SRSprite_create_empty():
+    srsprite = SRSprite.create_empty(name="Player", layer_order=2) 
+    assert isinstance(srsprite, SRTarget)
+    assert srsprite.scripts == []
+    assert srsprite.comments == []
+    assert srsprite.costume_index == 0
+    assert srsprite.sounds == []
+    assert srsprite.volume == 100
+    assert srsprite.name == "Player"
+    assert srsprite.sprite_only_variables == []
+    assert srsprite.sprite_only_lists == []
+    assert srsprite.local_monitors == []
+    assert srsprite.layer_order == 2
+    assert srsprite.is_visible is True
+    assert srsprite.position == (0, 0)
+    assert srsprite.size == 100
+    assert srsprite.direction == 90
+    assert srsprite.is_draggable is False
+    assert srsprite.rotation_style == SRSpriteRotationStyle.ALL_AROUND
+
+
+def test_SRSprite_validate(config):
+    srsprite = SR_SPRITE
+    srsprite.validate([], config, info_api)
+
+    execute_attr_validation_tests(
+        obj=srsprite,
+        attr_tests=[
+            ("name", False, TypeValidationError),
+            ("name", "_stage_", InvalidValueError),
+            ("sprite_only_variables", (), TypeValidationError),
+            ("sprite_only_variables", [()], TypeValidationError),
+            ("sprite_only_lists", {}, TypeValidationError),
+            ("sprite_only_lists", [{}], TypeValidationError),
+            ("local_monitors", None, TypeValidationError),
+            ("local_monitors", [None], TypeValidationError),
+            ("layer_order", "costume1", TypeValidationError),
+            ("layer_order", 0, RangeValidationError),
+            ("is_visible", "a str", TypeValidationError),
+            ("position", 45, TypeValidationError),
+            ("position", ("", ""), TypeValidationError),
+            ("size", "100", TypeValidationError),
+            ("size", -4, RangeValidationError),
+            ("direction", [], TypeValidationError),
+            ("direction", 190, RangeValidationError),
+            ("is_draggable", [], TypeValidationError),
+            ("rotation_style", "don't rotate", TypeValidationError),
+        ],
+        validate_func=SRSprite.validate,
+        func_args=[[], config, info_api],
+    )
+
+
+def test_SRSprite_validate_monitors(config, context):
+    srsprite = SR_SPRITE
+    srsprite.validate_monitors([], config, info_api, context)
 

@@ -431,7 +431,7 @@ class SRTarget(GreprClass):
         # TODO: docstring
         context = self.get_complete_context(partial_context=context)
         validation_api = ValidationAPI(scripts=self.scripts)
-        cb_optypes = {}
+        cb_custom_opcodes = {}
         for i, script in enumerate(self.scripts):
             script.validate(
                 path           = path+["scripts", i],
@@ -444,10 +444,10 @@ class SRTarget(GreprClass):
                 current_path = path+["scripts", i, "blocks", j]
                 if isinstance(block.mutation, SRCustomBlockMutation):
                     custom_opcode = block.mutation.custom_opcode
-                    if custom_opcode in cb_optypes:
-                        other_path = cb_optypes[custom_opcode]
+                    if custom_opcode in cb_custom_opcodes:
+                        other_path = cb_custom_opcodes[custom_opcode]
                         raise SameNameTwiceError(other_path, current_path, "Two custom blocks mustn't have the same custom_opcode(see .mutation.custom_opcode)")
-                    cb_optypes[custom_opcode] = block.mutation.optype
+                    cb_custom_opcodes[custom_opcode] = current_path
 
     def get_complete_context(self, partial_context: PartialContext) -> CompleteContext:
         # TODO: docstring

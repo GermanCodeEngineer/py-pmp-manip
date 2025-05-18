@@ -27,24 +27,30 @@ def validation_api():
     return ValidationAPI(scripts=ALL_SR_SCRIPTS)
 
 
+
 def test_FICAPI_get_all_blocks(ficapi: FICAPI):
     assert ficapi.get_all_blocks() == ALL_FR_BLOCKS_CLEAN
 
-def test_FICAPI_get_blocks(ficapi: FICAPI):
+
+def test_FICAPI_get_block(ficapi: FICAPI):
     assert ficapi.get_block("d") == ALL_FR_BLOCKS_CLEAN["d"]
+
 
 def test_FICAPI_schedule_block_deletion(ficapi: FICAPI):
     ficapi_copy = deepcopy(ficapi)
     ficapi_copy.schedule_block_deletion("z")
     assert ficapi_copy.scheduled_block_deletions == ["z"]
 
+
 def test_FICAPI_get_cb_mutation(ficapi: FICAPI):
     assert ficapi.get_cb_mutation("do sth text %s and bool %b") == ALL_FR_BLOCKS_CLEAN["a"].mutation
     with raises(FirstToInterConversionError):
         ficapi.get_cb_mutation("some %s proccode")
 
+
 def test_FICAPI_get_comment(ficapi: FICAPI):
     assert ficapi.get_comment("j") == ALL_SR_COMMENTS["j"]
+
 
 
 def test_ValidationAPI_post_init(validation_api: ValidationAPI):
@@ -63,6 +69,7 @@ def test_ValidationAPI_post_init(validation_api: ValidationAPI):
 
 def test_ValidationAPI_get_all_blocks(validation_api: ValidationAPI):
     assert lists_equal_ignore_order(validation_api.get_all_blocks(), ALL_SR_BLOCKS)
+
 
 def test_ValidationAPI_get_cb_mutation(validation_api: ValidationAPI):
     assert validation_api.get_cb_mutation(SR_BLOCK_CUSTOM_OPCODE) == validation_api.cb_mutations[SR_BLOCK_CUSTOM_OPCODE]
