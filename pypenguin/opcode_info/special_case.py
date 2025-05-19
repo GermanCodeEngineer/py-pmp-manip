@@ -25,10 +25,10 @@ class SpecialCaseType(PypenguinEnum):
     GET_ALL_INPUT_IDS_TYPES = 1
     # map new and old input id to input type
     # -> DualKeyDict[old, new, InpuType]
-    # block_api will be None for a TRBlock or SRBlock and the block api for a FRBlock
+    # ficapi will be None for a TRBlock or SRBlock and the block api for a FRBlock
     """
     def example(
-        block: "FRBlock|TRBlock|SRBlock", block_api: "FICAPI|None"
+        block: "FRBlock|TRBlock|SRBlock", ficapi: "FICAPI|None"
     ) -> DualKeyDict[str, str, InputType]:
         ...
     """
@@ -36,13 +36,13 @@ class SpecialCaseType(PypenguinEnum):
     # Behaviour Handlers
     PRE_FR_STEP = 2 # execure before FRBlock.step
     """
-    def example(block: "FRBlock", block_api: "FICAPI") -> "FRBlock":
+    def example(block: "FRBlock", ficapi: "FICAPI") -> "FRBlock":
         ...
     """
      
     FR_STEP = 3 # execute instead of FRBlock.step
     """
-    def example(block: "FRBlock", block_api: "FICAPI") -> "TRBlock":
+    def example(block: "FRBlock", ficapi: "FICAPI") -> "TRBlock":
         ...
     """
     

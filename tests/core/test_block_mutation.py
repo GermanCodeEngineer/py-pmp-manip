@@ -64,7 +64,7 @@ def test_FRMutation_from_data_and_post_init():
                 tag_name = data["tagName" ],
                 children = data["children"],
             )
-        def step(self, block_api): pass
+        def step(self, ficapi): pass
 
     data = {
         "tagName": "mutation",

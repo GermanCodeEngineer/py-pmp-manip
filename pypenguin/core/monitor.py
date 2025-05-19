@@ -6,11 +6,12 @@ from pypenguin.utility           import (
     AA_TYPE, AA_TYPES, AA_DICT_OF_TYPE, AA_COORD_PAIR, AA_BOXED_COORD_PAIR, AA_EQUAL, AA_BIGGER_OR_EQUAL, 
     InvalidOpcodeError, MissingDropdownError, UnnecessaryDropdownError, ThanksError,
 )
-from pypenguin.opcode_info       import OpcodeInfoAPI, DropdownType
+from pypenguin.opcode_info       import OpcodeInfoAPI
 from pypenguin.important_opcodes import *
 
-from pypenguin.core.dropdown import SRDropdownValue
 from pypenguin.core.context  import PartialContext, CompleteContext
+from pypenguin.core.dropdown import SRDropdownValue
+from pypenguin.core.enums    import SRVariableMonitorReadoutMode
 
 STAGE_WIDTH : int = 480
 STAGE_HEIGHT: int = 360
@@ -83,6 +84,14 @@ class FRMonitor(GreprClass):
         """
         if not isinstance(self.params, dict):
             raise ThanksError()
+        if self.opcode == OPCODE_VAR_VALUE:
+            valid = self.mode in {"default", "large", "slider"}
+        elif self.opcode == OPCODE_LIST_VALUE:
+            valid = self.mode == "list"
+        else:
+            valid = self.mode == "default"
+        if not valid:
+            raise ThanksError()
 
     def step(self, info_api: OpcodeInfoAPI, sprite_names: list[str]) -> tuple[str | None, "SRMonitor | None"]:
         """
@@ -114,6 +123,7 @@ class FRMonitor(GreprClass):
                 dropdowns           = new_dropdowns,
                 position            = position,
                 is_visible          = self.visible,
+                readout_mode        = SRVariableMonitorReadoutMode.from_code(self.mode),
                 slider_min          = self.slider_min,
                 slider_max          = self.slider_max,
                 allow_only_integers = self.is_discrete,
@@ -235,8 +245,9 @@ class SRVariableMonitor(SRMonitor):
     """
     The second representation exclusively for variable monitors
     """
-    _grepr_fields = SRMonitor._grepr_fields + ["slider_min", "slider_max", "allow_only_integers"]
+    _grepr_fields = SRMonitor._grepr_fields + ["readout_mode", "slider_min", "slider_max", "allow_only_integers"]
     
+    readout_mode: SRVariableMonitorReadoutMode
     slider_min: int | float
     slider_max: int | float
     allow_only_integers: bool
@@ -257,6 +268,7 @@ class SRVariableMonitor(SRMonitor):
         super().validate(path, config, info_api)
         AA_EQUAL(self, path, "opcode", NEW_OPCODE_VAR_VALUE)
         
+        AA_TYPE(self, path, "readout_mode", SRVariableMonitorReadoutMode)
         AA_TYPE(self, path, "allow_only_integers", bool)
         if self.allow_only_integers:
             allowed_types = (int,)

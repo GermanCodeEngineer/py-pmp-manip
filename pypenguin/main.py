@@ -10,9 +10,9 @@ from pypenguin.utility import ValidationConfig, read_file_of_zip, grepr
 
 #file_path = "../assets/from_online/my 1st platformer.pmp"
 #file_path = "../assets/input_modes.pmp"
-#file_path = "../assets/monitors.pmp"
+file_path = "../assets/monitors.pmp"
 #file_path = "../assets/dumb example.pmp"
-file_path = "../assets/testing_blocks.pmp"
+#file_path = "../assets/testing_blocks.pmp"
 #file_path = "../assets/scratch_project.sb3"
 
 print(grepr(loads(read_file_of_zip(file_path, "project.json"))))

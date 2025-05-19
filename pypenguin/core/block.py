@@ -1,4 +1,4 @@
-from typing      import Any
+from typing      import Any, TYPE_CHECKING
 from dataclasses import dataclass, field
 from abc         import ABC, abstractmethod
 
@@ -11,12 +11,13 @@ from pypenguin.utility           import (
 from pypenguin.opcode_info       import OpcodeInfoAPI, OpcodeInfo, InputType, InputMode, OpcodeType, SpecialCaseType
 from pypenguin.important_opcodes import *
 
-from pypenguin.core.block_mutation import FRMutation
-from pypenguin.core.block_mutation import SRMutation
+from pypenguin.core.block_mutation import FRMutation, SRMutation
 from pypenguin.core.comment        import SRComment
 from pypenguin.core.context        import CompleteContext
 from pypenguin.core.dropdown       import SRDropdownValue
-from pypenguin.core.block_api      import FICAPI, ValidationAPI
+
+if TYPE_CHECKING:
+    from pypenguin.core.block_api      import FIConversionAPI, ValidationAPI
 
 @dataclass(repr=False)
 class FRBlock(GreprClass):
@@ -135,7 +136,7 @@ class FRBlock(GreprClass):
         else: raise DeserializationError(f"Invalid constant(first element) for FRBlock conversion: {data[0]}")
 
     def step(self, 
-        block_api: FICAPI, 
+        ficapi: "FIConversionAPI", 
         info_api: OpcodeInfoAPI, 
         own_id: str
     ) -> "IRBlock":
@@ -143,7 +144,7 @@ class FRBlock(GreprClass):
         Converts a FRBlock into a IRBlock
         
         Args:
-            block_api: API used to fetch information about other blocks
+            ficapi: API used to fetch information about other blocks
             info_api: the opcode info api used to fetch information about opcodes
         
         Returns:
@@ -152,12 +153,12 @@ class FRBlock(GreprClass):
         opcode_info = info_api.get_info_by_old(self.opcode)
         pre_handler = opcode_info.get_special_case(SpecialCaseType.PRE_FR_STEP)
         if pre_handler is not None:
-            self = pre_handler.call(block_api=block_api, block=self)
+            self = pre_handler.call(ficapi=ficapi, block=self)
         
         instead_handler = opcode_info.get_special_case(SpecialCaseType.FR_STEP)
         if instead_handler is None:
             new_inputs = self.step_inputs(
-                block_api  = block_api,
+                ficapi  = ficapi,
                 info_api   = info_api,
                 opcode_info = opcode_info,
                 own_id     = own_id,
@@ -171,19 +172,19 @@ class FRBlock(GreprClass):
                 inputs       = new_inputs,
                 dropdowns    = new_dropdowns,
                 position     = (self.x, self.y) if self.top_level else None,
-                comment      = None if self.comment  is None else block_api.get_comment(self.comment),
+                comment      = None if self.comment  is None else ficapi.get_comment(self.comment),
                 mutation     = None if self.mutation is None else self.mutation.step(
-                    block_api = block_api,
+                    ficapi = ficapi,
                 ),
                 next         = None if self.next     is None else IRBlockReference(self.next),
                 is_top_level = self.top_level,
             )
         else:
-            new_block = instead_handler.call(block_api=block_api, block=self)
+            new_block = instead_handler.call(ficapi=ficapi, block=self)
         return new_block
 
     def step_inputs(self, 
-        block_api: FICAPI, 
+        ficapi: "FIConversionAPI", 
         info_api: OpcodeInfoAPI,
         opcode_info: OpcodeInfo,
         own_id: str
@@ -192,14 +193,14 @@ class FRBlock(GreprClass):
         Converts the inputs of a FRBlock into the IR Fromat
         
         Args:
-            block_api: API used to fetch information about other blocks
+            ficapi: API used to fetch information about other blocks
             info_api: the opcode info api used to fetch information about opcodes
             opcode_info: the Information about the block's opcode
         
         Returns:
             the inputs in IR Format
         """
-        input_modes = opcode_info.get_old_input_ids_modes(block=self, block_api=block_api)
+        input_modes = opcode_info.get_old_input_ids_modes(block=self, ficapi=ficapi)
         
         new_inputs = {}
         for input_id, input_value in self.inputs.items():
@@ -216,7 +217,7 @@ class FRBlock(GreprClass):
                 elif isinstance(item, tuple) and item[0] in {12, 13}:
                     immediate_fr_block = FRBlock.from_tuple(item, parent_id=own_id)
                     immediate_block = immediate_fr_block.step(
-                        block_api = block_api,
+                        ficapi = ficapi,
                         info_api  = info_api,
                         own_id    = None, # None is fine, because tuple blocks can't possibly contain more tuple blocks 
                     )
@@ -288,8 +289,8 @@ class IRBlock(GreprClass):
             }
             --> "_mouse_" """
         
-        old_new_input_ids = opcode_info.get_old_new_input_ids(block=self, block_api=None)
-        # maps old input ids to new input ids # block_api isn't necessary for a IRBlock 
+        old_new_input_ids = opcode_info.get_old_new_input_ids(block=self, ficapi=None)
+        # maps old input ids to new input ids # ficapi isn't necessary for a IRBlock 
         
         new_inputs = {}
         for input_id, input_value in self.inputs.items():
@@ -375,8 +376,8 @@ class IRBlock(GreprClass):
                 dropdown = input_dropdown,
             )
         
-        input_types = opcode_info.get_new_input_ids_types(block=self, block_api=None) 
-        # maps input ids to their types # block_api isn't necessary for a IRBlock
+        input_types = opcode_info.get_new_input_ids_types(block=self, ficapi=None) 
+        # maps input ids to their types # ficapi isn't necessary for a IRBlock
         for new_input_id in input_types.keys():
             if new_input_id not in new_inputs:
                 input_mode = input_types[new_input_id].get_mode()
@@ -450,7 +451,7 @@ class SRScript(GreprClass):
         path: list, 
         config: ValidationConfig,
         info_api: OpcodeInfoAPI,
-        validation_api: ValidationAPI,
+        validation_api: "ValidationAPI",
         context: CompleteContext,
     ) -> None:
         """
@@ -510,7 +511,7 @@ class SRBlock(GreprClass):
         path: list, 
         config: ValidationConfig,
         info_api: OpcodeInfoAPI,
-        validation_api: ValidationAPI, 
+        validation_api: "ValidationAPI", 
         context: CompleteContext,
         expects_reporter: bool,
     ) -> None:
@@ -549,8 +550,8 @@ class SRBlock(GreprClass):
             AA_TYPE(self, path, "mutation", opcode_info.new_mutation_cls, condition="For this opcode")
             self.mutation.validate(path+["mutation"], config)
 
-        input_types = opcode_info.get_new_input_ids_types(block=self, block_api=None) 
-        # maps input ids to their types # block_api isn't necessary for a IRBlock
+        input_types = opcode_info.get_new_input_ids_types(block=self, ficapi=None) 
+        # maps input ids to their types # ficapi isn't necessary for a IRBlock
         
         for new_input_id, input in self.inputs.items():
             if new_input_id not in input_types.keys():
@@ -699,7 +700,7 @@ class SRInputValue(GreprClass, ABC):
         path: list, 
         config: ValidationConfig,
         info_api: OpcodeInfoAPI,
-        validation_api: ValidationAPI, 
+        validation_api: "ValidationAPI", 
         context: CompleteContext, 
         input_type: InputType, 
     ) -> None:
@@ -723,7 +724,7 @@ class SRInputValue(GreprClass, ABC):
         path: list, 
         config: ValidationConfig,
         info_api: OpcodeInfoAPI,
-        validation_api: ValidationAPI, 
+        validation_api: "ValidationAPI", 
         context: CompleteContext, 
     ) -> None:
         """
@@ -766,7 +767,7 @@ class SRBlockAndTextInputValue(SRInputValue):
         path: list, 
         config: ValidationConfig,
         info_api: OpcodeInfoAPI,
-        validation_api: ValidationAPI, 
+        validation_api: "ValidationAPI", 
         context: CompleteContext, 
         input_type: InputType, 
     ) -> None:
@@ -807,7 +808,7 @@ class SRBlockAndDropdownInputValue(SRInputValue):
         path: list, 
         config: ValidationConfig,
         info_api: OpcodeInfoAPI,
-        validation_api: ValidationAPI, 
+        validation_api: "ValidationAPI", 
         context: CompleteContext, 
         input_type: InputType, 
     ) -> None:
@@ -856,7 +857,7 @@ class SRBlockOnlyInputValue(SRInputValue):
         path: list, 
         config: ValidationConfig,
         info_api: OpcodeInfoAPI,
-        validation_api: ValidationAPI, 
+        validation_api: "ValidationAPI", 
         context: CompleteContext, 
         input_type: InputType, 
     ) -> None:
@@ -896,7 +897,7 @@ class SRScriptInputValue(SRInputValue):
         path: list, 
         config: ValidationConfig,
         info_api: OpcodeInfoAPI,
-        validation_api: ValidationAPI, 
+        validation_api: "ValidationAPI", 
         context: CompleteContext, 
         input_type: InputType, 
     ) -> None:

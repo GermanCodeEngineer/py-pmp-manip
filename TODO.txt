@@ -1,7 +1,5 @@
 TODOs:
     - complete tests
-    - ensure "mode" of monitors is handled
-    - safely access dictionaries in APIs
     - revise errors
     - add "Raises" to docstrings
     - manage layer_order differently

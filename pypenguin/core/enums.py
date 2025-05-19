@@ -70,7 +70,7 @@ class SRVideoState(PypenguinEnum):
 
 class SRSpriteRotationStyle(PypenguinEnum):
     """
-    The second representation for the rotation style of a sprite
+    The second representation for the rotation style of a sprite (e.g. "all around")
     """
 
     @classmethod
@@ -91,4 +91,28 @@ class SRSpriteRotationStyle(PypenguinEnum):
     ALL_AROUND  = "all around"
     LEFT_RIGHT  = "left-right"
     DONT_ROTATE = "don't rotate"
+
+class SRVariableMonitorReadoutMode(PypenguinEnum):
+    """
+    The second representation for the readout mode of a sprite (e.g. "normal readout" or "slider")
+    """
+
+    @classmethod
+    def from_code(cls, code: str) -> "SRVariableMonitorReadoutMode":
+        """
+        Gets the equivalent readout mode enum by its readout mode code.
+        
+        Args:
+            code: the readout mode code
+        
+        Returns:
+            the readout mode enum
+        """
+        if code in cls._value2member_map_:
+            return cls._value2member_map_[code]
+        raise FirstToSecondConversionError(f"Couldn't find readout mode enum for readout mode code: {repr(code)}")
+    
+    NORMAL = "default"
+    LARGE  = "large"
+    SLIDER = "slider"
 

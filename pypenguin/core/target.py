@@ -18,7 +18,7 @@ from pypenguin.core.comment        import FRComment, SRComment
 from pypenguin.core.context        import PartialContext, CompleteContext
 from pypenguin.core.dropdown       import SRDropdownValue
 from pypenguin.core.enums          import SRSpriteRotationStyle
-from pypenguin.core.block_api      import FICAPI, ValidationAPI
+from pypenguin.core.block_api      import FIConversionAPI, ValidationAPI
 from pypenguin.core.monitor        import SRMonitor
 from pypenguin.core.vars_lists     import SRVariable, SRVariable, SRVariable, SRCloudVariable
 from pypenguin.core.vars_lists     import SRList, SRList, SRList
@@ -138,17 +138,17 @@ class FRTarget(GreprClass, ABC):
             if isinstance(block, tuple):
                 blocks[block_reference] = FRBlock.from_tuple(block, parent_id=None)
 
-        block_api = FICAPI(blocks=blocks, block_comments=attached_comments)
+        ficapi = FIConversionAPI(blocks=blocks, block_comments=attached_comments)
         new_blocks: dict["IRBlockReference", "IRBlock"] = {}
         for block_reference, block in blocks.items():
             new_block = block.step(
-                block_api = block_api,
+                ficapi = ficapi,
                 info_api  = info_api,
                 own_id    = block_reference,
             )
             new_blocks[IRBlockReference(id=block_reference)] = new_block
 
-        for block_reference in block_api.scheduled_block_deletions:
+        for block_reference in ficapi.scheduled_block_deletions:
             del new_blocks[IRBlockReference(id=block_reference)]
         
         # Get all top level block ids

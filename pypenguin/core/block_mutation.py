@@ -1,13 +1,15 @@
 from json        import loads
 from abc         import ABC, abstractmethod
-from typing      import Any
+from typing      import Any, TYPE_CHECKING
 from dataclasses import dataclass, field
 
 from pypenguin.utility import GreprClass, ThanksError, ValidationConfig, FirstToSecondConversionError, DeserializationError
 from pypenguin.utility import AA_TYPE, AA_HEX_COLOR
 
-from pypenguin.core.block_api import FICAPI
 from pypenguin.core.custom_block import SRCustomBlockOpcode, SRCustomBlockOptype
+
+if TYPE_CHECKING:
+    from pypenguin.core.block_api import FIConversionAPI
 
 @dataclass(repr=False)
 class FRMutation(GreprClass, ABC):
@@ -45,12 +47,12 @@ class FRMutation(GreprClass, ABC):
             raise ThanksError()
 
     @abstractmethod
-    def step(self, block_api: FICAPI) -> "SRMutation":
+    def step(self, ficapi: "FIConversionAPI") -> "SRMutation":
         """
         Convert a mutation from first into second representation.
         
         Args:
-            block_api: API used to fetch information about other blocks
+            ficapi: API used to fetch information about other blocks
         
         Returns:
             the second representation of the mutation
@@ -106,12 +108,12 @@ class FRCustomBlockArgumentMutation(FRMutation):
         """
         self._argument_name = name
     
-    def step(self, block_api: FICAPI) -> "SRCustomBlockArgumentMutation":
+    def step(self, ficapi: "FIConversionAPI") -> "SRCustomBlockArgumentMutation":
         """
         Convert a custom block argument mutation from first into second representation.
         
         Args:
-            block_api: API used to fetch information about other blocks
+            ficapi: API used to fetch information about other blocks
         
         Returns:
             the second representation of the mutation
@@ -172,12 +174,12 @@ class FRCustomBlockMutation(FRMutation):
             color             = tuple(loads(data["color"])) if "color" in data else ("#FF6680", "#FF4D6A", "#FF3355"),
         )
     
-    def step(self, block_api: FICAPI) -> "SRCustomBlockMutation":
+    def step(self, ficapi: "FIConversionAPI") -> "SRCustomBlockMutation":
         """
         Convert a custom block definition mutation from first into second representation.
         
         Args:
-            block_api: API used to fetch information about other blocks
+            ficapi: API used to fetch information about other blocks
         
         Returns:
             the second representation of the mutation
@@ -237,17 +239,17 @@ class FRCustomBlockCallMutation(FRMutation):
             color  = tuple(loads(data["color"  ])),
         )
     
-    def step(self, block_api: FICAPI) -> "SRCustomBlockCallMutation":
+    def step(self, ficapi: "FIConversionAPI") -> "SRCustomBlockCallMutation":
         """
         Convert a custom block call mutation from first into second representation.
         
         Args:
-            block_api: API used to fetch information about other blocks
+            ficapi: API used to fetch information about other blocks
         
         Returns:
             the second representation of the mutation
         """
-        complete_mutation = block_api.get_cb_mutation(self.proccode) # Get complete mutation
+        complete_mutation = ficapi.get_cb_mutation(self.proccode) # Get complete mutation
         return SRCustomBlockCallMutation(
             custom_opcode      = SRCustomBlockOpcode.from_proccode_argument_names(
                 proccode          = self.proccode,
@@ -281,12 +283,12 @@ class FRStopScriptMutation(FRMutation):
             has_next = loads(data["hasnext"]),
         )
     
-    def step(self, block_api: FICAPI) -> "SRStopScriptMutation":
+    def step(self, ficapi: "FIConversionAPI") -> "SRStopScriptMutation":
         """
         Convert a stop script mutation from first into second representation.
         
         Args:
-            block_api: API used to fetch information about other blocks
+            ficapi: API used to fetch information about other blocks
         
         Returns:
             the second representation of the mutation

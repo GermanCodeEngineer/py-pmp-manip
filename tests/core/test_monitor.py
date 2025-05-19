@@ -12,6 +12,7 @@ from pypenguin.important_opcodes  import NEW_OPCODE_VAR_VALUE, NEW_OPCODE_LIST_V
 
 from pypenguin.core.context  import PartialContext
 from pypenguin.core.dropdown import SRDropdownValue
+from pypenguin.core.enums    import SRVariableMonitorReadoutMode
 from pypenguin.core.monitor  import FRMonitor, SRMonitor, SRVariableMonitor, SRListMonitor, STAGE_WIDTH, STAGE_HEIGHT
 
 from tests.utility import execute_attr_validation_tests
@@ -366,6 +367,7 @@ ALL_LOCAL_SR_MONITORS: list[SRMonitor] = [
         },
         position=(-188, -60),
         is_visible=True,
+        readout_mode=SRVariableMonitorReadoutMode.NORMAL,
         slider_min=0,
         slider_max=100,
         allow_only_integers=True,
@@ -380,6 +382,7 @@ ALL_GLOBAL_SR_MONITORS: list[SRMonitor] = [
         },
         position=(-130, -104),
         is_visible=True,
+        readout_mode=SRVariableMonitorReadoutMode.LARGE,
         slider_min=-50.3,
         slider_max=100,
         allow_only_integers=False,
@@ -391,6 +394,7 @@ ALL_GLOBAL_SR_MONITORS: list[SRMonitor] = [
         },
         position=(-24, -52),
         is_visible=True,
+        readout_mode=SRVariableMonitorReadoutMode.SLIDER,
         slider_min=-20,
         slider_max=100,
         allow_only_integers=True,
@@ -450,9 +454,13 @@ def test_FRMonitor_from_data_list():
     assert frmonitor.is_discrete == None
 
 
-def test_FRMonitor_post_init():
+def test_FRMonitor_post_init_params():
     with raises(ThanksError):
         FRMonitor.from_data(ALL_FR_MONITOR_DATAS[1] | {"params": []})
+
+def test_FRMonitor_post_init_mode():
+    with raises(ThanksError):
+        FRMonitor.from_data(ALL_FR_MONITOR_DATAS[8] | {"mode": "invalid"})
 
 
 def test_FRMonitor_step():
@@ -545,6 +553,7 @@ def test_SRVariableMonitor_validate_all_numbers(config):
         obj=srmonitor,
         attr_tests=[
             ("allow_only_integers", 8, TypeValidationError),
+            ("readout_mode", "normal", TypeValidationError),
             ("slider_min", "", TypeValidationError),
             ("slider_max", None, TypeValidationError),
             ("slider_min", 200, RangeValidationError), # bigger then slider_max

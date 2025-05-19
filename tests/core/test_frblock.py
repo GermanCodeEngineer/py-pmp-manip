@@ -6,7 +6,7 @@ from pypenguin.opcode_info.groups import info_api
 from pypenguin.important_opcodes  import *
 
 from pypenguin.core.block          import FRBlock, IRBlock, IRBlockReference, IRInputValue
-from pypenguin.core.block_api      import FICAPI
+from pypenguin.core.block_api      import FIConversionAPI
 from pypenguin.core.block_mutation import (
     FRCustomBlockMutation, FRCustomBlockCallMutation,
     SRCustomBlockMutation, SRCustomBlockCallMutation, SRCustomBlockArgumentMutation,
@@ -20,7 +20,7 @@ from tests.core.constants import ALL_FR_BLOCKS_CLEAN, ALL_FR_BLOCK_DATAS, ALL_SR
 
 @fixture
 def ficapi():
-    return FICAPI(
+    return FIConversionAPI(
         blocks=ALL_FR_BLOCKS_CLEAN,
         block_comments=ALL_SR_COMMENTS,
     )
@@ -122,11 +122,11 @@ def test_FRBlock_from_tuple_invalid():
         FRBlock.from_tuple([77, ..., ...], parent_id="qqq")
 
 
-def test_FRBlock_step(ficapi: FICAPI):
+def test_FRBlock_step(ficapi: FIConversionAPI):
     # TODO: next
     frblock = ALL_FR_BLOCKS_CLEAN["f"]
     trblock = frblock.step(
-        block_api=ficapi,
+        ficapi=ficapi,
         info_api=info_api,
         own_id="f",
     )
@@ -164,10 +164,10 @@ def test_FRBlock_step(ficapi: FICAPI):
     assert trblock.next         is None
     assert trblock.is_top_level is True
 
-def test_FRBlock_step_cb_def(ficapi: FICAPI):
+def test_FRBlock_step_cb_def(ficapi: FIConversionAPI):
     frblock = ALL_FR_BLOCKS_CLEAN["h"]
     trblock = frblock.step(
-        block_api=ficapi,
+        ficapi=ficapi,
         info_api=info_api,
         own_id="h",
     )
@@ -195,10 +195,10 @@ def test_FRBlock_step_cb_def(ficapi: FICAPI):
     assert trblock.next         is None
     assert trblock.is_top_level is True
 
-def test_FRBlock_step_cb_prototype(ficapi: FICAPI):
+def test_FRBlock_step_cb_prototype(ficapi: FIConversionAPI):
     frblock = ALL_FR_BLOCKS_CLEAN["a"]
     trblock = frblock.step(
-        block_api=ficapi,
+        ficapi=ficapi,
         info_api=info_api,
         own_id="a",
     )
@@ -212,10 +212,10 @@ def test_FRBlock_step_cb_prototype(ficapi: FICAPI):
     assert trblock.next         == ...
     assert trblock.is_top_level == ...
 
-def test_FRBlock_step_cb_arg(ficapi: FICAPI):
+def test_FRBlock_step_cb_arg(ficapi: FIConversionAPI):
     frblock = ALL_FR_BLOCKS_CLEAN["i"]
     trblock = frblock.step(
-        block_api=ficapi,
+        ficapi=ficapi,
         info_api=info_api,
         own_id="i",
     )
@@ -234,10 +234,10 @@ def test_FRBlock_step_cb_arg(ficapi: FICAPI):
     assert trblock.next         is None
     assert trblock.is_top_level is False
 
-def test_FRBlock_step_cb_call(ficapi: FICAPI):    
+def test_FRBlock_step_cb_call(ficapi: FIConversionAPI):    
     frblock = ALL_FR_BLOCKS_CLEAN["c"]
     trblock = frblock.step(
-        block_api=ficapi,
+        ficapi=ficapi,
         info_api=info_api,
         own_id="t",
     )
