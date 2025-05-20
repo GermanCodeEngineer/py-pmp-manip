@@ -3,7 +3,7 @@ from pypenguin.core.block          import *
 from pypenguin.code.block_api      import *
 from pypenguin.core.block_mutation import *
 from pypenguin.core.comment        import *
-from pypenguin.code.context        import *
+from pypenguin.core.context        import *
 from pypenguin.core.custom_block   import *
 from pypenguin.core.dropdown       import *
 from pypenguin.core.enums          import *

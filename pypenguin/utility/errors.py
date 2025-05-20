@@ -3,6 +3,7 @@ class PypenguinError(Exception):
 
 
 class BlameDevsError(PypenguinError): pass
+class PathError(PypenguinError): pass
 
 class ThanksError(PypenguinError):
     def __init__(self):
