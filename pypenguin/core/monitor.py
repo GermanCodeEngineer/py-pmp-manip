@@ -48,7 +48,7 @@ class FRMonitor(GreprClass):
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRMonitor":
         """
-        Deserializes raw data into a FRMonitor.
+        Deserializes raw data into a FRMonitor
         
         Args:
             data: the raw data
@@ -78,7 +78,7 @@ class FRMonitor(GreprClass):
     
     def __post_init__(self) -> None:
         """
-        Ensure my assumptions about monitors were correct.
+        Ensure my assumptions about monitors were correct
         
         Returns:
             None
@@ -151,7 +151,7 @@ class FRMonitor(GreprClass):
 @dataclass(repr=False)
 class SRMonitor(GreprClass):
     """
-    The second representation for a monitor. It is much more user friendly.
+    The second representation for a monitor. It is much more user friendly
     """
     _grepr = True
     _grepr_fields = ["opcode", "dropdowns", "sprite", "position", "is_visible"]
@@ -163,7 +163,7 @@ class SRMonitor(GreprClass):
     
     def __post_init__(self) -> None:
         """
-        Ensure that it is impossible to create a variable/list monitor without using the correct subclass.
+        Ensure that it is impossible to create a variable/list monitor without using the correct subclass
 
         Returns:
             None
@@ -177,16 +177,22 @@ class SRMonitor(GreprClass):
     
     def validate(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
         """
-        Ensure a SRMonitor is valid, raise ValidationError if not.
-        To validate the exact dropdown values you should additionally call the validate_dropdown_values method.
+        Ensure a SRMonitor is valid, raise ValidationError if not
+        To validate the exact dropdown values you should additionally call the validate_dropdown_values method
         
         Args:
-            path: the path from the project to itself. Used for better errors
+            path: the path from the project to itself. Used for better error messages
             config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
         
         Returns:
             None
+        
+        Raises:
+            ValidationError: if the SRMonitor is invalid
+            InvalidOpcodeError(ValidationError): if the opcode is not a defined opcode
+            UnnecessaryDropdownError(ValidationError): if a key of dropdowns is not expected for the specific opcode
+            MissingDropdownError(ValidationError): if an expected key of dropdowns for the specific opcode is missing
         """
         AA_TYPE(self, path, "opcode", str)
         AA_DICT_OF_TYPE(self, path, "dropdowns", key_t=str, value_t=SRDropdownValue)
@@ -199,18 +205,25 @@ class SRMonitor(GreprClass):
             AA_COORD_PAIR(self, path, "position")
         AA_TYPE(self, path, "is_visible", bool)
         
+        cls_name = self.__class__.__name__
         opcode_info = info_api.get_info_by_new_safe(self.opcode)
         if (opcode_info is None) or (not opcode_info.can_have_monitor):
-            raise InvalidOpcodeError(path, f"opcode of {self.__class__.__name__} must be a defined opcode. That block must be able to have monitors")
+            raise InvalidOpcodeError(path, 
+                f"opcode of {cls_name} must be a defined opcode. That block must be able to have monitors",
+            )
         
         new_dropdown_ids = opcode_info.get_all_new_dropdown_ids()
         for new_dropdown_id, dropdown_value in self.dropdowns.items():
             dropdown_value.validate(path+["dropdowns", (new_dropdown_id,)], config)
             if new_dropdown_id not in new_dropdown_ids:
-                raise UnnecessaryDropdownError(path, f"dropdowns of {self.__class__.__name__} with opcode {repr(self.opcode)} includes unnecessary dropdown {repr(new_dropdown_id)}")
+                raise UnnecessaryDropdownError(path, 
+                    f"dropdowns of {cls_name} with opcode {repr(self.opcode)} includes unnecessary dropdown {repr(new_dropdown_id)}",
+                )
         for new_dropdown_id in new_dropdown_ids:
             if new_dropdown_id not in self.dropdowns:
-                raise MissingDropdownError(path, f"dropdowns of {self.__class__.__name__} with opcode {repr(self.opcode)} is missing dropdown {repr(new_dropdown_id)}")
+                raise MissingDropdownError(path, 
+                    f"dropdowns of {cls_name} with opcode {repr(self.opcode)} is missing dropdown {repr(new_dropdown_id)}",
+                )
     
     def validate_dropdown_values(self, 
         path: list, 
@@ -219,17 +232,20 @@ class SRMonitor(GreprClass):
         context: PartialContext | CompleteContext,
      ) -> None:
         """
-        Ensure the dropdown values of a SRMonitor are valid, raise ValidationError if not.
-        For validation of the monitor itself, call the validate method.
+        Ensure the dropdown values of a SRMonitor are valid, raise ValidationError if not
+        For validation of the monitor itself, call the validate method
         
         Args:
-            path: the path from the project to itself. Used for better errors
+            path: the path from the project to itself. Used for better error messages
             config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
             context: Context about parts of the project. Used to validate dropdowns
         
         Returns:
             None
+        
+        Raises:
+            ValidationError: if some of the dropdown values of the SRMonitor are invalid
         """
         opcode_info = info_api.get_info_by_new(self.opcode)
         for new_dropdown_id, dropdown in self.dropdowns.items():
@@ -255,16 +271,19 @@ class SRVariableMonitor(SRMonitor):
     
     def validate(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI):
         """
-        Ensure a SRVariableMonitor is valid, raise ValidationError if not.
-        To validate the exact dropdown values you should additionally call the validate_dropdown_values method.
+        Ensure a SRVariableMonitor is valid, raise ValidationError if not
+        To validate the exact dropdown values you should additionally call the validate_dropdown_values method
         
         Args:
-            path: the path from the project to itself. Used for better errors
+            path: the path from the project to itself. Used for better error messages
             config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
         
         Returns:
             None
+        
+        Raises:
+            ValidationError: if the SRVariableMonitor is invalid
         """
         super().validate(path, config, info_api)
         AA_EQUAL(self, path, "opcode", NEW_OPCODE_VAR_VALUE)
@@ -293,16 +312,19 @@ class SRListMonitor(SRMonitor):
     
     def validate(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI):
         """
-        Ensure a SRListMonitor is valid, raise ValidationError if not.
-        To validate the exact dropdown values you should additionally call the validate_dropdown_values method.
+        Ensure a SRListMonitor is valid, raise ValidationError if not
+        To validate the exact dropdown values you should additionally call the validate_dropdown_values method
         
         Args:
-            path: the path from the project to itself. Used for better errors
+            path: the path from the project to itself. Used for better error messages
             config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
         
         Returns:
             None
+        
+        Raises:
+            ValidationError: if the SRListMonitor is invalid
         """
         super().validate(path, config, info_api)
         AA_EQUAL(self, path, "opcode", NEW_OPCODE_LIST_VALUE)

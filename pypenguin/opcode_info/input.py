@@ -7,7 +7,7 @@ from pypenguin.opcode_info.dropdown import DropdownType
 @dataclass
 class InputInfo(GreprClass):
     """
-    The information about a input of a certain opcode.
+    The information about a input of a certain opcode
     """
     _grepr = True
     _grepr_fields = ["type", "menu"]
@@ -17,7 +17,7 @@ class InputInfo(GreprClass):
 
 class InputMode(PypenguinEnum):
     """
-    Mostly determines the behaviour of inputs.
+    Mostly determines the behaviour of inputs
     """
 
     def can_be_missing(self) -> bool:
@@ -39,14 +39,14 @@ class InputMode(PypenguinEnum):
 
 class InputType(PypenguinEnum):
     """
-    A input type, which can be used for one or many opcodes.
-    The input type has only little influence, except those which can contain a dropdown. Then it will be used for dropdown validation.
-    Its superior input mode mostly determines its behaviour.
+    A input type, which can be used for one or many opcodes
+    The input type has only little influence, except those which can contain a dropdown. Then it will be used for dropdown validation
+    Its superior input mode mostly determines its behaviour
     """
 
     def get_mode(self) -> InputMode:
         """
-        Get the superior input mode.
+        Get the superior input mode
 
         Returns:
             the input mode
@@ -55,7 +55,7 @@ class InputType(PypenguinEnum):
     
     def get_corresponding_dropdown_type(self) -> "DropdownType":
         """
-        Get the corresponding dropdown type.
+        Get the corresponding dropdown type
 
         Returns:
             the corresponding dropdown type
@@ -70,7 +70,7 @@ class InputType(PypenguinEnum):
     @classmethod
     def get_by_cb_default(cls, default: str) -> "InputType":
         """
-        Get the input type by its corresponding default in custom blocks.
+        Get the input type by its corresponding default in custom blocks
 
         Returns:
             the input type

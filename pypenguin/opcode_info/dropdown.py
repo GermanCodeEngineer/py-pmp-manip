@@ -7,7 +7,7 @@ from pypenguin.core.context import PartialContext, CompleteContext
 
 class DropdownValueKind(PypenguinEnum):
     """
-    The kind of a dropdown value clarifies what it references. Eg. VARIABLE shows that the dropdown value is referencing a variable.
+    The kind of a dropdown value clarifies what it references. Eg. VARIABLE shows that the dropdown value is referencing a variable
     """
     STANDARD       =  0
     SUGGESTION     =  1
@@ -29,7 +29,7 @@ class DropdownValueKind(PypenguinEnum):
 @dataclass
 class DropdownInfo(GreprClass):
     """
-    The information about a dropdown of a certain opcode.
+    The information about a dropdown of a certain opcode
     """
     _grepr = True
     _grepr_fields = ["type"]
@@ -42,7 +42,7 @@ class DropdownValueRule(PypenguinEnum):
     """
     def get_default_kind_for_guess(self) -> "DropdownValueKind | None":
         """
-        Gets the dropdown value kind for an approximate dropdown value guess, which is used as a default(optional).
+        Gets the dropdown value kind for an approximate dropdown value guess, which is used as a default(optional)
 
         Returns:
             the default dropdown value kind for an approximate guess
@@ -51,7 +51,7 @@ class DropdownValueRule(PypenguinEnum):
     
     def get_default_kind_for_calculation(self) -> "DropdownValueKind | None":
         """
-        Gets the dropdown value kind for an exact dropdown value calculation, which is used as a default(optional).
+        Gets the dropdown value kind for an exact dropdown value calculation, which is used as a default(optional)
 
         Returns:
             the default dropdown value kind for an exact calculation
@@ -89,7 +89,7 @@ class DropdownValueRule(PypenguinEnum):
 @dataclass
 class DropdownTypeInfo(GreprClass):
     """
-    The information about a dropdown type, which can be used for one or many opcodes.
+    The information about a dropdown type, which can be used for one or many opcodes
     """
     _grepr = True
     _grepr_fields = ["direct_values", "behaviours", "old_direct_values", "fallback"]
@@ -101,7 +101,7 @@ class DropdownTypeInfo(GreprClass):
     
     def __post_init__(self) -> None:
         """
-        Ensure the old_direct_values default to the direct_values.
+        Ensure the old_direct_values default to the direct_values
 
         Returns:
             None
@@ -111,11 +111,11 @@ class DropdownTypeInfo(GreprClass):
     
 class DropdownType(PypenguinEnum):
     """
-    A dropdown type, which can be used for one or many opcodes.
+    A dropdown type, which can be used for one or many opcodes
     """
     def get_type_info(self) -> DropdownTypeInfo:
         """
-        Get the dropdown type info of a dropdown type.
+        Get the dropdown type info of a dropdown type
 
         Returns:
             the dropdown type
@@ -124,7 +124,7 @@ class DropdownType(PypenguinEnum):
     
     def get_default_kind_for_guess(self) -> DropdownValueKind | None:
         """
-        Gets the dropdown value kind if a dropdown type for an approximate dropdown value guess, which is used as a default(optional).
+        Gets the dropdown value kind if a dropdown type for an approximate dropdown value guess, which is used as a default(optional)
 
         Returns:
             the default dropdown value kind for an approximate guess
@@ -141,7 +141,7 @@ class DropdownType(PypenguinEnum):
 
     def get_default_kind_for_calculation(self) -> DropdownValueKind | None:
         """
-        Gets the dropdown value kind if a dropdown type for an approximate dropdown value guess, which is used as a default(optional).
+        Gets the dropdown value kind if a dropdown type for an approximate dropdown value guess, which is used as a default(optional)
 
         Returns:
             the default dropdown value kind for an approximate guess
@@ -303,10 +303,10 @@ class DropdownType(PypenguinEnum):
 
     def calculate_possible_new_dropdown_values(self, context: PartialContext|CompleteContext) -> list[tuple[DropdownValueKind, Any]]:
         """
-        Calulate all the possible values for a SRDropdownValue in certain circumstances(given context).
+        Calulate all the possible values for a SRDropdownValue in certain circumstances(given context)
 
         Args:
-            context: Context about parts of the project. Eg. costumes are important to know what values can be selected for a costume dropdown.
+            context: Context about parts of the project. Eg. costumes are important to know what values can be selected for a costume dropdown
 
         Returns:
             a list of possible values as tuples => (kind, value)
@@ -343,7 +343,7 @@ class DropdownType(PypenguinEnum):
                     values.append((DropdownValueKind.OBJECT, "random position"))
                 
                 case DropdownValueRule.MUTABLE_SPRITE_PROPERTY:
-                    # trying to validate here is so much additional work and makes everything a lot more complicated.
+                    # trying to validate here is so much additional work and makes everything a lot more complicated
                     # instead i will choose the lazy way here
                     values.extend([
                         (DropdownValueKind.STANDARD, "backdrop"), 
@@ -363,7 +363,7 @@ class DropdownType(PypenguinEnum):
                     raise Exception("TODO: ensure this works")
                 
                 case DropdownValueRule.READABLE_SPRITE_PROPERTY:
-                    # trying to validate here is so much additional work and makes everything a lot more complicated.
+                    # trying to validate here is so much additional work and makes everything a lot more complicated
                     # instead i will choose the lazy way here
 
                     values.extend([
@@ -407,7 +407,7 @@ class DropdownType(PypenguinEnum):
 
     def guess_possible_new_dropdown_values(self, include_behaviours: bool) -> list[tuple[DropdownValueKind, Any]]:
         """
-        Guess all the possible values for a SRDropdownValue without context.
+        Guess all the possible values for a SRDropdownValue without context
 
         Returns:
             a list of possible values as tuples => (kind, value)
@@ -481,7 +481,7 @@ class DropdownType(PypenguinEnum):
 
     def guess_possible_old_dropdown_values(self) -> list[Any]:
         """
-        Guess all the possible values for a dropdown value in first representation without context.
+        Guess all the possible values for a dropdown value in first representation without context
 
         Returns:
             a list of possible values
@@ -531,7 +531,7 @@ class DropdownType(PypenguinEnum):
 
     def translate_old_to_new_value(self, old_value: Any) -> tuple[DropdownValueKind, Any]:
         """
-        Translate a dropdown value from first representation into a SRDropdownValue expressed as a tuple.
+        Translate a dropdown value from first representation into a SRDropdownValue expressed as a tuple
 
         Args:
             old_value: dropdown value in first representation

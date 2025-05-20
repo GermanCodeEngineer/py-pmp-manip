@@ -23,7 +23,7 @@ class FRComment(GreprClass):
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRComment":
         """
-        Deserializes raw data into a FRComment.
+        Deserializes raw data into a FRComment
         
         Args:
             data: the raw data
@@ -73,13 +73,17 @@ class SRComment(GreprClass):
     
     def validate(self, path: list, config: ValidationConfig) -> None:
         """
-        Ensure a SRComment is valid, raise ValidationError if not.
+        Ensure a SRComment is valid, raise ValidationError if not
         
         Args:
             config: Configuration for Validation Behaviour
         
         Returns:
             None
+        
+        Raises:
+            ValidationError: if the SRComment is invalid
+            InvalidValueError(ValidationError): if size is smaller then the minimum
         """
         AA_COORD_PAIR(self, path, "position")
         AA_COORD_PAIR(self, path, "size")

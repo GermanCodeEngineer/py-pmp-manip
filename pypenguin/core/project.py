@@ -19,7 +19,7 @@ from pypenguin.core.vars_lists    import SRVariable, SRList
 @dataclass(repr=False)
 class FRProject(GreprClass): 
     """
-    The first representation (FR) of the project data tree. Its data is equivalent to the data stored in a .pmp file.
+    The first representation (FR) of the project data tree. Its data is equivalent to the data stored in a .pmp file
     """
     _grepr = True
     _grepr_fields = ["targets", "monitors", "extension_data", "extensions", "extension_urls", "meta"]
@@ -34,7 +34,7 @@ class FRProject(GreprClass):
     @classmethod
     def from_data(cls, data: dict, info_api: OpcodeInfoAPI):
         """
-        Deserializes raw data into a FRProject.
+        Deserializes raw data into a FRProject
         
         Args:
             data: the raw data
@@ -61,7 +61,7 @@ class FRProject(GreprClass):
     @classmethod
     def from_pmp_file(cls, file_path: str, info_api: OpcodeInfoAPI) -> "FRProject":
         """
-        Reads project data from a PenguinMod Project file(.pmp) and creates a FRProject from it.
+        Reads project data from a PenguinMod Project file(.pmp) and creates a FRProject from it
 
         Args:
             file_path: file path to the .pmp file
@@ -77,7 +77,7 @@ class FRProject(GreprClass):
     @classmethod
     def from_sb3_file(cls, file_path: str, info_api: OpcodeInfoAPI):
         """
-        Reads project data from a Scratch Project file(.sb3) and creates a FRProject from it.
+        Reads project data from a Scratch Project file(.sb3) and creates a FRProject from it
 
         Args:
             file_path: file path to the .sb3 file
@@ -98,7 +98,7 @@ class FRProject(GreprClass):
 
     def __post_init__(self) -> None:
         """
-        Ensure my assumption about extension_data was correct.
+        Ensure my assumption about extension_data was correct
         
         Returns:
             None
@@ -107,7 +107,7 @@ class FRProject(GreprClass):
 
     def step(self, info_api: OpcodeInfoAPI):
         """
-        Converts a FRProject into a SRProject.
+        Converts a FRProject into a SRProject
         
         Args:
             info_api: the opcode info api used to fetch information about opcodes
@@ -174,7 +174,7 @@ class FRProject(GreprClass):
 @dataclass(repr=False)
 class SRProject(GreprClass):
     """
-    The second representation (SR) of a Scratch/PenguinMod Project.
+    The second representation (SR) of a Scratch/PenguinMod Project
     """
     _grepr = True
     _grepr_fields = ["stage", "sprites", "all_sprite_variables", "all_sprite_lists", "tempo", "video_transparency", "video_state", "text_to_speech_language", "global_monitors", "extensions"]
@@ -193,7 +193,7 @@ class SRProject(GreprClass):
     @classmethod
     def create_empty(cls) -> "SRProject":
         """
-        Create an empty SRProject with no sprites, variables etc. and the default settings.
+        Create an empty SRProject with no sprites, variables etc. and the default settings
         
         Returns:
             the empty SRProject
@@ -213,7 +213,7 @@ class SRProject(GreprClass):
 
     def validate(self, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
         """
-        Ensure a SRProject is valid, raise ValidationError if not.
+        Ensure a SRProject is valid, raise ValidationError if not
         
         Args:
             config: Configuration for Validation Behaviour
@@ -221,6 +221,10 @@ class SRProject(GreprClass):
         
         Returns:
             None
+        
+        Raises:
+            ValidationError: if the SRProject is invalid
+            SameNameTwiceError(ValidationError): if two sprites have the same name
         """
         path = []
         AA_TYPE(self, path, "stage", SRStage)
@@ -299,7 +303,7 @@ class SRProject(GreprClass):
                 global_context = partial_context
             else:
                 target: SRSprite
-                target.validate_monitors(
+                target.validate_monitor_dropdown_values(
                     path     = current_path, 
                     config   = config,
                     info_api = info_api, 
@@ -316,15 +320,18 @@ class SRProject(GreprClass):
 
     def _validate_sprites(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
         """
-        Ensure the sprites of a SRProject are valid, raise ValidationError if not.
+        [Internal Method] Ensure the sprites of a SRProject are valid, raise ValidationError if not
         
         Args:
-            path: the path from the project to itself. Used for better errors
+            path: the path from the project to itself. Used for better error messages
             config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
         
         Returns:
             None
+        
+        Raises:
+            LayerOrderError(ValidationError): if the project contains sprites with an invalid layer_order in the project context
         """
         if len(self.sprites) == 0:
             return # There is nothing to do then
@@ -350,14 +357,17 @@ class SRProject(GreprClass):
 
     def _validate_var_names(self, path: list, config: ValidationConfig) -> None:
         """
-        Ensures no variables with the same name exist.
+        Ensures no variables with the same name exist
 
         Args:
-            path: the path from the project to itself. Used for better errors
+            path: the path from the project to itself. Used for better error messages
             config: Configuration for Validation Behaviour
         
         Returns:
             None
+        
+        Raises:
+            SameNameTwiceError(ValidationError): if the project contains vars with the same name
         """
         defined_variables = {}
         for i, variable in enumerate(self.all_sprite_variables):
@@ -377,14 +387,17 @@ class SRProject(GreprClass):
         
     def _validate_list_names(self, path: list, config: ValidationConfig) -> None:
         """
-        Ensures no lists with the same name exist.
+        Ensures no lists with the same name exist
 
         Args:
-            path: the path from the project to itself. Used for better errors
+            path: the path from the project to itself. Used for better error messages
             config: Configuration for Validation Behaviour
         
         Returns:
             None
+        
+        Raises:
+            SameNameTwiceError(ValidationError): if the project contains lists with the same name
         """
         defined_lists = {}
         for i, list_ in enumerate(self.all_sprite_lists):

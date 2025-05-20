@@ -9,7 +9,7 @@ CPM = TypeVar("CPM")
 
 def copymodify(obj: CPM, attr: str, value: Any) -> CPM:
     """
-    Copy an object and modify an attribute.
+    Copy an object and modify an attribute
     `copymodify(x, 'y', z)` is equivalent to `x2 = copy.copy(x)\nx2.y = z`
     """
     if isinstance(getattr(obj, "_copymodify_", None), MethodType):
@@ -27,7 +27,7 @@ def execute_attr_validation_tests(
         func_args: list[Any]=[],
     ) -> None:
     """
-    Test validation. For every "test" change one attribute to an invalid value and ensure an error is raised.
+    Test validation. For every "test" change one attribute to an invalid value and ensure an error is raised
 
     Args:
         obj: the object to 

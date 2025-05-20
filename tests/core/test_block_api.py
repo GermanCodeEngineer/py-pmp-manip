@@ -28,27 +28,27 @@ def validation_api():
 
 
 
-def test_FICAPI_get_block_id_by_parent_id(ficapi: FIConversionAPI):
+def test_FIConversionAPI_get_block_id_by_parent_id(ficapi: FIConversionAPI):
     assert ficapi.get_block_ids_by_parent_id("c") == {"l", "k"}
 
 
-def test_FICAPI_get_block(ficapi: FIConversionAPI):
+def test_FIConversionAPI_get_block(ficapi: FIConversionAPI):
     assert ficapi.get_block("d") == ALL_FR_BLOCKS_CLEAN["d"]
 
 
-def test_FICAPI_schedule_block_deletion(ficapi: FIConversionAPI):
+def test_FIConversionAPI_schedule_block_deletion(ficapi: FIConversionAPI):
     ficapi_copy = deepcopy(ficapi)
     ficapi_copy.schedule_block_deletion("z")
     assert ficapi_copy.scheduled_block_deletions == ["z"]
 
 
-def test_FICAPI_get_cb_mutation(ficapi: FIConversionAPI):
+def test_FIConversionAPI_get_cb_mutation(ficapi: FIConversionAPI):
     assert ficapi.get_cb_mutation("do sth text %s and bool %b") == ALL_FR_BLOCKS_CLEAN["a"].mutation
     with raises(FirstToInterConversionError):
         ficapi.get_cb_mutation("some %s proccode")
 
 
-def test_FICAPI_get_comment(ficapi: FIConversionAPI):
+def test_FIConversionAPI_get_comment(ficapi: FIConversionAPI):
     assert ficapi.get_comment("j") == ALL_SR_COMMENTS["j"]
 
 

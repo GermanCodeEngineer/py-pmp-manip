@@ -23,7 +23,7 @@ class SRCustomBlockOpcode(GreprClass):
     @classmethod
     def from_proccode_argument_names(cls, proccode: str, argument_names: list[str]) -> "SRCustomBlockOpcode":
         """
-        Creates a custom block opcode given the procedure code and the argument names.
+        Creates a custom block opcode given the procedure code and the argument names
         
         Args:
             proccode: the procedure core
@@ -50,7 +50,7 @@ class SRCustomBlockOpcode(GreprClass):
     
     def get_corresponding_input_types(self) -> dict[str, InputType]:
         """
-        Fetches the argument ids and types.
+        Fetches the argument ids and types
         
         Returns:
             a dict mapping the argument ids to their types
@@ -62,14 +62,18 @@ class SRCustomBlockOpcode(GreprClass):
     
     def validate(self, path: list, config: ValidationConfig) -> None:
         """
-        Ensures the custom block opcode is valid, raise if not.
+        Ensures the custom block opcode is valid, raise if not
         
         Args:
-            path: the path from the project to itself. Used for better errors
+            path: the path from the project to itself. Used for better error messages
             config: Configuration for Validation Behaviour
         
         Returns:
             None
+        
+        Raises:
+            ValidationError: if the SRCustomBlockOpcode is invalid
+            SameNameTwiceError(ValidationError): if two arguments have the same name
         """
         AA_TUPLE_OF_TYPES(self, path, "segments", (str, SRCustomBlockArgument))
         AA_MIN_LEN(self, path, "segments", min_len=1)
@@ -81,12 +85,14 @@ class SRCustomBlockOpcode(GreprClass):
                 segment.validate(current_path, config)
                 if segment.name in names:
                     other_path = names[segment.name]
-                    raise SameNameTwiceError(other_path, current_path, f"Two arguments of a {self.__class__.__name__} mustn't have the same name")
+                    raise SameNameTwiceError(other_path, current_path, 
+                        f"Two arguments of a {self.__class__.__name__} mustn't have the same name",
+                    )
                 names[segment.name] = current_path
 
     def _copymodify_(self, attr: str, value) -> "SRCustomBlockOpcode":
         """
-        [Internal method] Creates a copy with one attribute set to a new value.
+        [Internal method] Creates a copy with one attribute set to a new value
 
         Args:
             attr: the attribute to set in the copy
@@ -111,21 +117,24 @@ class SRCustomBlockArgument(GreprClass):
 
     def validate(self, path: list, config: ValidationConfig) -> None:
         """
-        Ensures the custom block argument is valid, raise if not.
+        Ensures the custom block argument is valid, raise if not
         
         Args:
-            path: the path from the project to itself. Used for better errors
+            path: the path from the project to itself. Used for better error messages
             config: Configuration for Validation Behaviour
         
         Returns:
             None
+        
+        Raises:
+            ValidationError: if the SRCustomBlockArgument is invalid
         """
         AA_TYPE(self, path, "name", str)
         AA_TYPE(self, path, "type", SRCustomBlockArgumentType)
     
     def _copymodify_(self, attr: str, value) -> "SRCustomBlockArgument":
         """
-        [Internal method] Creates a copy with one attribute set to a new value.
+        [Internal method] Creates a copy with one attribute set to a new value
 
         Args:
             attr: the attribute to set in the copy
@@ -145,7 +154,7 @@ class SRCustomBlockArgumentType(PypenguinEnum):
     
     def get_corresponding_input_type(self) -> InputType:
         """
-        Gets the equivalent input type.
+        Gets the equivalent input type
         
         Returns:
             the input type
@@ -162,7 +171,7 @@ class SRCustomBlockOptype(PypenguinEnum):
     @classmethod
     def from_code(cls, code: str | None) -> "SRCustomBlockOptype":
         """
-        Gets the argument type based on its equivalent code.
+        Gets the argument type based on its equivalent code
         
         Args:
             code: the equivalent code

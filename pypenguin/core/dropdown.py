@@ -36,15 +36,18 @@ class SRDropdownValue(GreprClass):
 
     def validate(self, path: list, config: ValidationConfig) -> None:
         """
-        Ensure a SRDropdownValue is structurally valid, raise ValidationError if not.
-        For exact validation, you should additionally call the validate_value method.
+        Ensure a SRDropdownValue is structurally valid, raise ValidationError if not
+        For exact validation, you should additionally call the validate_value method
         
         Args:
-            path: the path from the project to itself. Used for better errors
+            path: the path from the project to itself. Used for better error messages
             config: Configuration for Validation Behaviour
         
         Returns:
             None
+        
+        Raises:
+            ValidationError: if the SRDropdownValue is invalid
         """
         AA_TYPE(self, path, "kind", DropdownValueKind)
         AA_JSON_COMPATIBLE(self, path, "value")
@@ -59,29 +62,33 @@ class SRDropdownValue(GreprClass):
         Ensures the value of a SRDropdownValue is allowed under given circumstances(context),
         raise ValidationError if not. 
         For example, it ensures that only variables are referenced, which actually exist.     
-        For structural validation call the validate method.
+        For structural validation call the validate method
         
         Args:
-            path: the path from the project to itself. Used for better errors
+            path: the path from the project to itself. Used for better error messages
             config: Configuration for Validation Behaviour
-            dropdown_type: the dropdown type as described in the opcode specific information.
-            context: Context about parts of the project. Used to validate the values of dropdowns.
+            dropdown_type: the dropdown type as described in the opcode specific information
+            context: Context about parts of the project. Used to validate the values of dropdowns
         
         Returns:
             None
+        
+        Raises:
+            InvalidDropdownValueError(ValidationError): if the value is invalid in the specific situation
         """
         possible_values = dropdown_type.calculate_possible_new_dropdown_values(context=context)
         default_kind = dropdown_type.get_default_kind_for_calculation()
         possible_values_string = (
-            "No possible values." if possible_values == [] else
+            "No possible values" if possible_values == [] else
             "".join(["\n- "+repr(value) for value in possible_values])
         )
         if (self.kind, self.value) not in possible_values:
             if default_kind is None:
-                print(possible_values, repr(possible_values_string))
                 raise InvalidDropdownValueError(path, f"In this case must be one of these: {possible_values_string}")
-            elif self.kind != default_kind:
-                raise InvalidDropdownValueError(path, f"If kind is not {default_kind} must be one of these: {possible_values_string}")
+            elif self.kind is not default_kind:
+                raise InvalidDropdownValueError(
+                    path, f"Either kind must be {default_kind} or (kind, value) must be one of these: {possible_values_string}"
+                )
 
 
 __all__ = ["SRDropdownValue"]

@@ -45,7 +45,7 @@ class FRBlock(GreprClass):
     @classmethod
     def from_data(cls, data: dict[str, Any], info_api: OpcodeInfoAPI) -> "FRBlock":
         """
-        Deserializes raw data into a FRBlock.
+        Deserializes raw data into a FRBlock
         
         Args:
             data: the raw data
@@ -439,7 +439,7 @@ class IRBlockReference(GreprClass):
 class SRScript(GreprClass):
     """
     The second representation for a script. 
-    It uses a nested block structure and is much more user friendly then the first representation.
+    It uses a nested block structure and is much more user friendly then the first representation
     """
     _grepr = True
     _grepr_fields = ["position", "blocks"]
@@ -455,10 +455,10 @@ class SRScript(GreprClass):
         context: CompleteContext,
     ) -> None:
         """
-        Ensure a SRScript is valid, raise ValidationError if not.
+        Ensure a SRScript is valid, raise ValidationError if not
         
         Args:
-            path: the path from the project to itself. Used for better errors
+            path: the path from the project to itself. Used for better error messages
             config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
             validation_api: API used to fetch information about other blocks 
@@ -466,6 +466,9 @@ class SRScript(GreprClass):
         
         Returns:
             None
+        
+        Raises:
+            ValidationError: if the SRScript is invalid
         """
         AA_COORD_PAIR(self, path, "position")
         AA_LIST_OF_TYPE(self, path, "blocks", SRBlock)
@@ -496,7 +499,7 @@ class SRScript(GreprClass):
 class SRBlock(GreprClass):
     """
     The second representation for a block. 
-    It uses a nested block structure and is much more user friendly then the first representation.
+    It uses a nested block structure and is much more user friendly then the first representation
     """
     _grepr = True
     _grepr_fields = ["opcode", "inputs", "dropdowns", "comment", "mutation"]
@@ -516,10 +519,10 @@ class SRBlock(GreprClass):
         expects_reporter: bool,
     ) -> None:
         """
-        Ensure a SRBlock is valid, raise ValidationError if not.
+        Ensure a SRBlock is valid, raise ValidationError if not
         
         Args:
-            path: the path from the project to itself. Used for better errors
+            path: the path from the project to itself. Used for better error messages
             config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
             validation_api: API used to fetch information about other blocks 
@@ -528,6 +531,15 @@ class SRBlock(GreprClass):
         
         Returns:
             None
+        
+        Raises:
+            ValidationError: if the SRBlock is invalid
+            InvalidOpcodeError(ValidationError): if the opcode is not a defined opcode
+            UnnecessaryInputError(ValidationError): if a key of inputs is not expected for the specific opcode
+            MissingInputError(ValidationError): if an expected key of inputs for the specific opcode is missing
+            UnnecessaryDropdownError(ValidationError): if a key of dropdowns is not expected for the specific opcode
+            MissingDropdownError(ValidationError): if an expected key of dropdowns for the specific opcode is missing
+            InvalidBlockShapeError(ValidationError): if a reporter block was expected but a non-reporter block was found
         """
         AA_TYPE(self, path, "opcode", str)
         AA_DICT_OF_TYPE(self, path, "inputs"   , key_t=str, value_t=SRInputValue   )
@@ -535,10 +547,14 @@ class SRBlock(GreprClass):
         AA_NONE_OR_TYPE(self, path, "comment", SRComment)
         AA_NONE_OR_TYPE(self, path, "mutation", SRMutation)
         
+        cls_name = self.__class__.__name__
         opcode_info = info_api.get_info_by_new_safe(self.opcode)
         if opcode_info is None:
             closest_matches = get_closest_matches(self.opcode, info_api.get_all_new(), n=10)
-            msg = f"opcode of {self.__class__.__name__} must be a defined opcode not {repr(self.opcode)}. The closest matches are: \n  - "+"\n  - ".join([repr(m) for m in closest_matches])
+            msg = (
+                f"opcode of {cls_name} must be a defined opcode not {repr(self.opcode)}. "
+                f"The closest matches are: \n  - "+"\n  - ".join([repr(m) for m in closest_matches])
+            )
             raise InvalidOpcodeError(path, msg)
         
         if self.comment is not None:
@@ -555,7 +571,9 @@ class SRBlock(GreprClass):
         
         for new_input_id, input in self.inputs.items():
             if new_input_id not in input_types.keys():
-                raise UnnecessaryInputError(path, f"inputs of {self.__class__.__name__} with opcode {repr(self.opcode)} includes unnecessary input {repr(new_input_id)}")
+                raise UnnecessaryInputError(path, 
+                    f"inputs of {cls_name} with opcode {repr(self.opcode)} includes unnecessary input {repr(new_input_id)}",
+                )
             input.validate(
                 path           = path+["inputs", (new_input_id,)],
                 config         = config,
@@ -566,12 +584,16 @@ class SRBlock(GreprClass):
             )
         for new_input_id in input_types.keys():
             if new_input_id not in self.inputs:
-                raise MissingInputError(path, f"inputs of {self.__class__.__name__} with opcode {repr(self.opcode)} is missing input {repr(new_input_id)}")
+                raise MissingInputError(path, 
+                    f"inputs of {cls_name} with opcode {repr(self.opcode)} is missing input {repr(new_input_id)}",
+                )
         
         new_dropdown_ids = opcode_info.get_all_new_dropdown_ids()
         for new_dropdown_id, dropdown in self.dropdowns.items():
             if new_dropdown_id not in new_dropdown_ids:
-                raise UnnecessaryDropdownError(path, f"dropdowns of {self.__class__.__name__} with opcode {repr(self.opcode)} includes unnecessary dropdown {repr(new_dropdown_id)}")
+                raise UnnecessaryDropdownError(path, 
+                    f"dropdowns of {cls_name} with opcode {repr(self.opcode)} includes unnecessary dropdown {repr(new_dropdown_id)}",
+                )
             current_path = path+["dropdowns", (new_dropdown_id,)]
             dropdown.validate(current_path, config)
             dropdown.validate_value(
@@ -582,7 +604,9 @@ class SRBlock(GreprClass):
             )
         for new_dropdown_id in new_dropdown_ids:
             if new_dropdown_id not in self.dropdowns:
-                raise MissingDropdownError(path, f"dropdowns of {self.__class__.__name__} with opcode {repr(self.opcode)} is missing dropdown {repr(new_dropdown_id)}")
+                raise MissingDropdownError(path, 
+                    f"dropdowns of {cls_name} with opcode {repr(self.opcode)} is missing dropdown {repr(new_dropdown_id)}",
+                )
         
         opcode_type = opcode_info.get_opcode_type(block=self, validation_api=validation_api)
         if expects_reporter and not(opcode_type.is_reporter()):
@@ -605,15 +629,18 @@ class SRBlock(GreprClass):
         Ensure a block shape is allowed at a specific location.  
         
         Args:
-            path: the path from the project to itself. Used for better errors
+            path: the path from the project to itself. Used for better error messages
             config: Configuration for Validation Behaviour
-            opcode_type: the opcode type of this block.
+            opcode_type: the opcode type of this block
             is_top_level: Wether this block is in a script(True) or in a substack(False)
             is_fist: Wether this block is the first in it's script/substack
             is_last: Wether this block is the last in it's script/substack
         
         Returns:
             None
+        
+        Raises:
+            InvalidBlockShapeError(ValidationError): if the opcode_type of the block's opcode is invalid in a specific situation
         """
         if   opcode_type == OpcodeType.STATEMENT: pass
         elif opcode_type == OpcodeType.ENDING_STATEMENT:
@@ -635,9 +662,9 @@ class SRBlock(GreprClass):
 class SRInputValue(GreprClass, ABC):
     """
     The second representation for a block input. 
-    It can contain a substack of blocks, a block, a text field and a dropdown.
-    **Please use the subclasses instead**.
-    **Be careful when accessing fields**, because only the subclasses guarantee there existance.
+    It can contain a substack of blocks, a block, a text field and a dropdown
+    **Please use the subclasses instead**
+    **Be careful when accessing fields**, because only the subclasses guarantee there existance
     """
     _grepr = True
     _grepr_fields = []
@@ -673,7 +700,7 @@ class SRInputValue(GreprClass, ABC):
         dropdown: SRDropdownValue | None = None,
     ) -> "SRInputValue":
         """
-        Creates a SRInputValue, given its mode and data.
+        Creates a SRInputValue, given its mode and data
         
         Args:
             mode: the input mode
@@ -705,10 +732,10 @@ class SRInputValue(GreprClass, ABC):
         input_type: InputType, 
     ) -> None:
         """
-        Ensures this input is valid, raise ValidationError if not.
+        Ensures this input is valid, raise ValidationError if not
         
         Args:
-            path: the path from the project to itself. Used for better errors
+            path: the path from the project to itself. Used for better error messages
             config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
             validation_api: API used to fetch information about other blocks 
@@ -717,8 +744,10 @@ class SRInputValue(GreprClass, ABC):
         
         Returns:
             None
+        
+        Raises:
+            ValidationError: if the SRInputValue is invalid
         """
-        pass
 
     def validate_block(self, 
         path: list, 
@@ -728,23 +757,25 @@ class SRInputValue(GreprClass, ABC):
         context: CompleteContext, 
     ) -> None:
         """
-        Ensures the block of this input is valid, raise ValidationError if not.
+        Ensures the block of this input is valid, raise ValidationError if not
         
         Args:
-            path: the path from the project to itself. Used for better errors
+            path: the path from the project to itself. Used for better error messages
             config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
             validation_api: API used to fetch information about other blocks 
             context: Context about parts of the project. Used to validate dropdowns
-            input_type: the type of this input. Used to valdiate dropdowns
         
         Returns:
             None
+        
+        Raises:
+            ValidationError: if the block of the SRInputValue is invalid
         """
-        self: SRBlockAndTextInputValue | SRBlockAndDropdownInputValue | SRBlockOnlyInputValue = self
+        block: SRBlock = self.block
         AA_NONE_OR_TYPE(self, path, "block", SRBlock)
-        if self.block is not None:
-            self.block.validate(
+        if block is not None:
+            block.validate(
                 path             = path+["block"],
                 config           = config,
                 info_api         = info_api,
@@ -756,7 +787,7 @@ class SRInputValue(GreprClass, ABC):
 @dataclass(repr=False, eq=False)
 class SRBlockAndTextInputValue(SRInputValue):
     """
-    The second representation for a block input, which has a text field and might contain a block.
+    The second representation for a block input, which has a text field and might contain a block
     """
     _grepr_fields = SRInputValue._grepr_fields + ["block", "text"]
     
@@ -772,10 +803,10 @@ class SRBlockAndTextInputValue(SRInputValue):
         input_type: InputType, 
     ) -> None:
         """
-        Ensures this input is valid, raise ValidationError if not.
+        Ensures this input is valid, raise ValidationError if not
         
         Args:
-            path: the path from the project to itself. Used for better errors
+            path: the path from the project to itself. Used for better error messages
             config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
             validation_api: API used to fetch information about other blocks 
@@ -784,6 +815,9 @@ class SRBlockAndTextInputValue(SRInputValue):
         
         Returns:
             None
+        
+        Raises:
+            ValidationError: if the SRBlockAndTextInputValue is invalid
         """
         self.validate_block(
             path           = path,
@@ -797,7 +831,7 @@ class SRBlockAndTextInputValue(SRInputValue):
 @dataclass(repr=False, eq=False)
 class SRBlockAndDropdownInputValue(SRInputValue):
     """
-    The second representation for a block input, which has a dropdown and might contain a block.
+    The second representation for a block input, which has a dropdown and might contain a block
     """
     _grepr_fields = SRInputValue._grepr_fields + ["block", "dropdown"]
     
@@ -813,10 +847,10 @@ class SRBlockAndDropdownInputValue(SRInputValue):
         input_type: InputType, 
     ) -> None:
         """
-        Ensures this input is valid, raise ValidationError if not.
+        Ensures this input is valid, raise ValidationError if not
         
         Args:
-            path: the path from the project to itself. Used for better errors
+            path: the path from the project to itself. Used for better error messages
             config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
             validation_api: API used to fetch information about other blocks 
@@ -825,6 +859,9 @@ class SRBlockAndDropdownInputValue(SRInputValue):
         
         Returns:
             None
+        
+        Raises:
+            ValidationError: if the SRBlockAndDropdownInputValue is invalid
         """
         self.validate_block(
             path           = path,
@@ -847,7 +884,7 @@ class SRBlockAndDropdownInputValue(SRInputValue):
 @dataclass(repr=False, eq=False)
 class SRBlockOnlyInputValue(SRInputValue):
     """
-    The second representation for a block input, which might contain a block.
+    The second representation for a block input, which might contain a block
     """
     _grepr_fields = SRInputValue._grepr_fields + ["block"]
     
@@ -862,10 +899,10 @@ class SRBlockOnlyInputValue(SRInputValue):
         input_type: InputType, 
     ) -> None:
         """
-        Ensures this input is valid, raise ValidationError if not.
+        Ensures this input is valid, raise ValidationError if not
         
         Args:
-            path: the path from the project to itself. Used for better errors
+            path: the path from the project to itself. Used for better error messages
             config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
             validation_api: API used to fetch information about other blocks 
@@ -874,6 +911,9 @@ class SRBlockOnlyInputValue(SRInputValue):
         
         Returns:
             None
+        
+        Raises:
+            ValidationError: if the SRBlockOnlyInputValue is invalid
         """
         self.validate_block(
             path           = path,
@@ -886,7 +926,7 @@ class SRBlockOnlyInputValue(SRInputValue):
 @dataclass(repr=False, eq=False)
 class SRScriptInputValue(SRInputValue):
     """
-    The second representation for a block input, which contains a substack of blocks.
+    The second representation for a block input, which contains a substack of blocks
     """
     
     _grepr_fields = SRInputValue._grepr_fields + ["blocks"]
@@ -902,10 +942,10 @@ class SRScriptInputValue(SRInputValue):
         input_type: InputType, 
     ) -> None:
         """
-        Ensures this input is valid, raise ValidationError if not.
+        Ensures this input is valid, raise ValidationError if not
         
         Args:
-            path: the path from the project to itself. Used for better errors
+            path: the path from the project to itself. Used for better error messages
             config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
             validation_api: API used to fetch information about other blocks 
@@ -914,6 +954,9 @@ class SRScriptInputValue(SRInputValue):
         
         Returns:
             None
+        
+        Raises:
+            ValidationError: if the SRScriptInputValue is invalid
         """
         AA_LIST_OF_TYPE(self, path, "blocks", SRBlock)
         for i, block in enumerate(self.blocks):

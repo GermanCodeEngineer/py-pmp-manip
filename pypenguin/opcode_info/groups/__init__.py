@@ -51,7 +51,7 @@ looks.add_opcode("looks_getOtherSpriteVisible_menu", "#IS SPRITE VISIBLE MENU", 
     opcode_type=OpcodeType.MENU,
 ))
 
-sounds.add_opcode("sound_sounds_menu", "#SOUND MENU", OpcodeInfo( # this is certainly correct.
+sounds.add_opcode("sound_sounds_menu", "#SOUND MENU", OpcodeInfo( # this is certainly correct
     opcode_type=OpcodeType.MENU,
 ))
 

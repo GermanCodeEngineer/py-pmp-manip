@@ -26,7 +26,7 @@ from pypenguin.core.vars_lists     import SRList, SRList, SRList
 @dataclass(repr=False)
 class FRTarget(GreprClass, ABC):
     """
-    The first representation (FR) of a target. A target can be either a sprite or the stage.
+    The first representation (FR) of a target. A target can be either a sprite or the stage
     """
     _grepr = True
     _grepr_fields = ["is_stage", "name", "variables", "lists", "broadcasts", "custom_vars", "blocks", "comments", "current_costume", "costumes", "sounds", "id", "volume", "layer_order"]
@@ -50,7 +50,7 @@ class FRTarget(GreprClass, ABC):
     @abstractmethod
     def from_data(cls, data: dict[str, Any], info_api: OpcodeInfoAPI) -> "FRTarget":
         """
-        Deserializes raw data into a FRTarget.
+        Deserializes raw data into a FRTarget
         
         Args:
             data: the raw data
@@ -63,7 +63,7 @@ class FRTarget(GreprClass, ABC):
     @staticmethod
     def _from_data_common(data: dict[str, Any], info_api: OpcodeInfoAPI) -> dict[str, Any]:
         """
-        [Helper Method] Prepare common fields for FRTarget and its subclasses.
+        [Helper Method] Prepare common fields for FRTarget and its subclasses
 
         Args:
             data: the raw data
@@ -100,7 +100,7 @@ class FRTarget(GreprClass, ABC):
 
     def __post_init__(self) -> None:
         """
-        Ensure my assumption about custom_vars was correct.
+        Ensure my assumption about custom_vars was correct
         
         Returns:
             None
@@ -116,7 +116,7 @@ class FRTarget(GreprClass, ABC):
         list[SRList],
     ]:
         """
-        [Helper Method] Convert common fields into second representation.
+        [Helper Method] Convert common fields into second representation
 
         Args:
             info_api: the opcode info api used to fetch information about opcodes
@@ -193,7 +193,7 @@ class FRTarget(GreprClass, ABC):
     
     def _step_variables_lists(self) -> tuple[list[SRVariable], list[SRList]]:
         """
-        [Helper Method] Converts the variables and lists of a FRProject into second representation and returns them.
+        [Helper Method] Converts the variables and lists of a FRProject into second representation and returns them
         
         Returns:
             list of variables and list of lists in second representation
@@ -233,7 +233,7 @@ class FRStage(FRTarget):
     @classmethod
     def from_data(cls, data: dict[str, Any], info_api: OpcodeInfoAPI) -> "FRStage":
         """
-        Deserializes raw data into a FRStage.
+        Deserializes raw data into a FRStage
         
         Args:
             data: the raw data
@@ -301,7 +301,7 @@ class FRSprite(FRTarget):
     @classmethod
     def from_data(cls, data: dict[str, Any], info_api: OpcodeInfoAPI) -> "FRSprite":
         """
-        Deserializes raw data into a FRSprite.
+        Deserializes raw data into a FRSprite
         
         Args:
             data: the raw data
@@ -329,7 +329,7 @@ class FRSprite(FRTarget):
 
     def step(self, info_api: OpcodeInfoAPI) -> tuple["SRSprite", None, None]:
         """
-        Converts a FRSprite into a SRSprite.
+        Converts a FRSprite into a SRSprite
         
         Args:
             info_api: the opcode info api used to fetch information about opcodes
@@ -369,7 +369,7 @@ class FRSprite(FRTarget):
 @dataclass(repr=False)
 class SRTarget(GreprClass):
     """
-    The second representation (SR) of a target, which is much more user friendly. A target can be either a sprite or the stage.
+    The second representation (SR) of a target, which is much more user friendly. A target can be either a sprite or the stage
     """
     _grepr = True
     _grepr_fields = ["scripts", "comments", "costume_index", "costumes", "sounds", "volume"]
@@ -393,7 +393,21 @@ class SRTarget(GreprClass):
         )
 
     def validate(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
-        # TODO: docstring
+        """
+        Ensure a SRTarget is valid, raise ValidationError if not
+        
+        Args:
+            path: the path from the project to itself. Used for better error messages
+            config: Configuration for Validation Behaviour
+            info_api: the opcode info api used to fetch information about opcodes
+        
+        Returns:
+            None
+        
+        Raises:
+            ValidationError: if the SRTarget is invalid
+            SameNameTwiceError(ValidationError): if two costumes or two sounds have the same name
+        """
         AA_LIST_OF_TYPE(self, path, "scripts", SRScript)
         AA_LIST_OF_TYPE(self, path, "comments", SRComment)
         AA_LIST_OF_TYPE(self, path, "costumes", SRCostume)
@@ -431,7 +445,22 @@ class SRTarget(GreprClass):
         info_api: OpcodeInfoAPI,
         context: PartialContext | CompleteContext,
     ) -> None:
-        # TODO: docstring
+        """
+        Ensure the scripts of a SRTarget are valid, raise ValidationError if not
+        
+        Args:
+            path: the path from the project to itself. Used for better error messages
+            config: Configuration for Validation Behaviour
+            info_api: the opcode info api used to fetch information about opcodes
+            context: Context about parts of the project. Used to validate dropdowns
+        
+        Returns:
+            None
+        
+        Raises:
+            ValidationError: if the scripts of the SRTarget are invalid
+            SameNameTwiceError(ValidationError): if two custom blocks have the same custom_opcode.
+        """
         context = self.get_complete_context(partial_context=context)
         validation_api = ValidationAPI(scripts=self.scripts)
         cb_custom_opcodes = {}
@@ -449,11 +478,21 @@ class SRTarget(GreprClass):
                     custom_opcode = block.mutation.custom_opcode
                     if custom_opcode in cb_custom_opcodes:
                         other_path = cb_custom_opcodes[custom_opcode]
-                        raise SameNameTwiceError(other_path, current_path, "Two custom blocks mustn't have the same custom_opcode(see .mutation.custom_opcode)")
+                        raise SameNameTwiceError(
+                            other_path, current_path, "Two custom blocks mustn't have the same custom_opcode(see .mutation.custom_opcode)",
+                        )
                     cb_custom_opcodes[custom_opcode] = current_path
 
     def get_complete_context(self, partial_context: PartialContext) -> CompleteContext:
-        # TODO: docstring
+        """
+        Gets the complete context for a SRTarget from the given partial context (project context)
+
+        Args:
+            partial_context: the partial context (project context)
+        
+        Returns:
+            the complete context
+        """
         return CompleteContext.from_partial(
             pc       = partial_context,
             costumes = [SRDropdownValue(DropdownValueKind.COSTUME, costume.name) for costume in self.costumes],
@@ -491,6 +530,7 @@ class SRSprite(SRTarget):
     
     @classmethod
     def create_empty(cls, name: str, layer_order: int) -> "SRSprite":
+        # TODO: docstring
         return cls(
             scripts=[],
             comments=[],
@@ -512,7 +552,20 @@ class SRSprite(SRTarget):
         )
     
     def validate(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
-        # TODO: docstring
+        """
+        Ensure a SRSprite is valid, raise ValidationError if not
+        
+        Args:
+            path: the path from the project to itself. Used for better error messages
+            config: Configuration for Validation Behaviour
+            info_api: the opcode info api used to fetch information about opcodes
+        
+        Returns:
+            None
+        
+        Raises:
+            ValidationError: if the SRSprite is invalid
+        """
         super().validate(path, config, info_api)
         
         AA_TYPE(self, path, "name", str)
@@ -540,13 +593,27 @@ class SRSprite(SRTarget):
         for i, monitor in enumerate(self.local_monitors):
             monitor.validate(path+["local_monitors", i], config, info_api)
     
-    def validate_monitors(self, 
+    def validate_monitor_dropdown_values(self, 
         path: list, 
         config: ValidationConfig,
         info_api: OpcodeInfoAPI,
-        context: PartialContext,
+        context: PartialContext | CompleteContext,
     ) -> None:
-        # TODO: docstring
+        """
+        Ensure the dropdown values of the monitors of a SRSprite are valid, raise ValidationError if not
+        
+        Args:
+            path: the path from the project to itself. Used for better error messages
+            config: Configuration for Validation Behaviour
+            info_api: the opcode info api used to fetch information about opcodes
+            context: Context about parts of the project. Used to validate dropdowns
+        
+        Returns:
+            None
+        
+        Raises:
+            ValidationError: if the monitor dropdown values of the SRSprite are invalid
+        """
         context = self.get_complete_context(partial_context=context)
         for i, monitor in enumerate(self.local_monitors):
             monitor.validate_dropdown_values(

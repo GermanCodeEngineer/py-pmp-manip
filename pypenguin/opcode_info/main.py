@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 class OpcodeType(PypenguinEnum):
     """
-    Represents the shape of all blocks with a certain opcode.
+    Represents the shape of all blocks with a certain opcode
     """
     
     def is_reporter(self) -> bool:
@@ -47,7 +47,7 @@ class OpcodeType(PypenguinEnum):
 @dataclass
 class OpcodeInfo(GreprClass):
     """
-    The information about all the blocks with a certain opcode.
+    The information about all the blocks with a certain opcode
     """
     _grepr = True
     _grepr_fields = ["opcode_type", "inputs", "dropdowns", "can_have_monitor", "old_mutation_cls", "new_mutation_cls"]
@@ -63,7 +63,7 @@ class OpcodeInfo(GreprClass):
     # Special Cases
     def add_special_case(self, special_case: SpecialCase) -> None:
         """
-        Add special behaviour to a block opcode.
+        Add special behaviour to a block opcode
         
         Args:
             special_case: The special behaviour to add
@@ -74,7 +74,7 @@ class OpcodeInfo(GreprClass):
         self.special_cases[special_case.type] = special_case
     def get_special_case(self, case_type: SpecialCaseType) -> SpecialCase | None:
         """
-        Get special behaviour by its SpecialCaseType.
+        Get special behaviour by its SpecialCaseType
         
         Args:
             case_type: The kind of special case to look for
@@ -88,7 +88,7 @@ class OpcodeInfo(GreprClass):
     # Mutation Class
     def set_mutation_class(self, old_cls: Type["FRMutation"], new_cls: Type["SRMutation"]) -> None:
         """
-        Blocks with some opcodes store additional information. For that purpose a mutation class can be added.
+        Blocks with some opcodes store additional information. For that purpose a mutation class can be added
         
         Args:
             old_cls: the mutation class to use in first representation
@@ -104,7 +104,7 @@ class OpcodeInfo(GreprClass):
     # Info by Old Id
     def get_input_info_by_old(self, old: str) -> InputInfo:
         """
-        Get information about an input by its old id.
+        Get information about an input by its old id
         
         Args:
             old: the old input id
@@ -115,7 +115,7 @@ class OpcodeInfo(GreprClass):
         return self.inputs.get_by_key1(old)
     def get_dropdown_info_by_old(self, old: str) -> DropdownInfo:
         """
-        Get information about an dropdown by its old id.
+        Get information about an dropdown by its old id
         
         Args:
             old: the old dropdown id
@@ -129,7 +129,7 @@ class OpcodeInfo(GreprClass):
     # Info by New Id
     def get_input_info_by_new(self, new: str) -> InputInfo:
         """
-        Get information about an input by its new id.
+        Get information about an input by its new id
         
         Args:
             new: the new input id
@@ -140,7 +140,7 @@ class OpcodeInfo(GreprClass):
         return self.inputs.get_by_key2(new)
     def get_dropdown_info_by_new(self, new: str) -> DropdownInfo:
         """
-        Get information about an dropdown by its new id.
+        Get information about an dropdown by its new id
         
         Args:
             new: the new dropdown id
@@ -154,7 +154,7 @@ class OpcodeInfo(GreprClass):
     # Old Id -> New Id
     def get_new_input_id(self, old: str) -> str:
         """
-        Get the new input id by its old id.
+        Get the new input id by its old id
         
         Args:
             old: the old input id
@@ -165,7 +165,7 @@ class OpcodeInfo(GreprClass):
         return self.inputs.get_key2_for_key1(old)
     def get_new_dropdown_id(self, old: str) -> str:
         """
-        Get the new dropdown id by its old id.
+        Get the new dropdown id by its old id
         
         Args:
             old: the old dropdown id
@@ -179,7 +179,7 @@ class OpcodeInfo(GreprClass):
     # New Id -> Old Id
     def get_old_input_id(self, new: str) -> str:
         """
-        Get the old input id by its new id.
+        Get the old input id by its new id
         
         Args:
             new: the new input id
@@ -190,7 +190,7 @@ class OpcodeInfo(GreprClass):
         return self.inputs.get_key1_for_key2(new)
     def get_old_dropdown_id(self, new: str) -> str:
         """
-        Get the old dropdown id by its new id.
+        Get the old dropdown id by its new id
         
         Args:
             new: the new input id
@@ -204,7 +204,7 @@ class OpcodeInfo(GreprClass):
     # Fetching all ids
     def get_all_new_input_ids(self) -> list[str]:
         """
-        Get all new input ids.
+        Get all new input ids
         
         Returns:
             all new input ids
@@ -212,7 +212,7 @@ class OpcodeInfo(GreprClass):
         return list(self.inputs.keys_key2())
     def get_all_new_dropdown_ids(self) -> list[str]:
         """
-        Get all new dropdown ids.
+        Get all new dropdown ids
         
         Returns:
             all new dropdown ids
@@ -240,7 +240,7 @@ class OpcodeInfo(GreprClass):
         block: "FRBlock|IRBlock|SRBlock", ficapi: "FIConversionAPI|None",
     ) -> DualKeyDict[str, str, InputType]:
         """
-        Get all the old and new inputs ids and their input types.
+        Get all the old and new inputs ids and their input types
         
         Args:
             block: To determine the ids and types e.g. Custom Blocks need the block as context
@@ -262,7 +262,7 @@ class OpcodeInfo(GreprClass):
         block: "FRBlock|IRBlock|SRBlock", ficapi: "FIConversionAPI|None",
     ) -> dict[str, InputType]:
         """
-        Get all the new inputs ids and their input types.
+        Get all the new inputs ids and their input types
         
         Args:
             block: To determine the ids and types e.g. Custom Blocks need the block as context
@@ -277,7 +277,7 @@ class OpcodeInfo(GreprClass):
         block: "FRBlock|IRBlock|SRBlock", ficapi: "FIConversionAPI|None",
     ) -> dict[str, InputMode]:
         """
-        Get all the old inputs ids and their input modes.
+        Get all the old inputs ids and their input modes
         
         Args:
             block: To determine the ids and types e.g. Custom Blocks need the block as context
@@ -296,7 +296,7 @@ class OpcodeInfo(GreprClass):
         block: "FRBlock|IRBlock|SRBlock", ficapi: "FIConversionAPI|None",
     ) -> dict[str, str]:
         """
-        Get all the old and new inputs id.
+        Get all the old and new inputs id
         
         Args:
             block: To determine the ids and types e.g. Custom Blocks need the block as context
@@ -311,7 +311,7 @@ class OpcodeInfo(GreprClass):
 class OpcodeInfoGroup(GreprClass):
     """
     Represents a group of block opcode information. 
-    Therefore it's used to represent opcode information about categories and extensions.
+    Therefore it's used to represent opcode information about categories and extensions
     """
     _grepr = True
     _grepr_fields = ["name", "opcode_info"]
@@ -321,7 +321,7 @@ class OpcodeInfoGroup(GreprClass):
 
     def add_opcode(self, old_opcode: str, new_opcode: str, opcode_info: OpcodeInfo) -> None:
         """
-        Add an opcode to a OpcodeInfoGroup with information about it.
+        Add an opcode to a OpcodeInfoGroup with information about it
         
         Args:
             old_opcode: the old opcode referencing opcode_info
@@ -340,7 +340,7 @@ class OpcodeInfoGroup(GreprClass):
 @dataclass
 class OpcodeInfoAPI(GreprClass):
     """
-    API which provides a way to fetch information about block opcodes.
+    API which provides a way to fetch information about block opcodes
     """
     _grepr = True
     _grepr_fields = ["opcode_info"]
@@ -350,7 +350,7 @@ class OpcodeInfoAPI(GreprClass):
     # Add Special Cases
     def add_opcode_case(self, old_opcode: str, special_case: SpecialCase) -> None:
         """
-        Add a special case to the information about an opcode.
+        Add a special case to the information about an opcode
         
         Args:
             old_opcode: the old opcode referencing the target opcode information
@@ -365,7 +365,7 @@ class OpcodeInfoAPI(GreprClass):
     
     def add_opcodes_case(self, old_opcodes: Iterable[str], special_case: SpecialCase) -> None:
         """
-        Add a special case to the information about multiple opcodes.
+        Add a special case to the information about multiple opcodes
         
         Args:
             old_opcodes: the old opcodes referencing the target opcode information
@@ -382,7 +382,7 @@ class OpcodeInfoAPI(GreprClass):
     def set_opcode_mutation_class(self, old_opcode: str, old_cls: Type["FRMutation"], new_cls: Type["SRMutation"]) -> None:
         """
         Blocks with some opcodes store additional information. 
-        For that purpose a mutation class can be added to a given opcode.
+        For that purpose a mutation class can be added to a given opcode
         
         Args:
             old_opcodes: the old opcodes referencing the target opcode information
@@ -403,7 +403,7 @@ class OpcodeInfoAPI(GreprClass):
     ) -> None:
         """
         Blocks with some opcodes store additional information. 
-        For that purpose a mutation class can be added to the given opcodes.
+        For that purpose a mutation class can be added to the given opcodes
         
         Args:
             old_opcodes: the old opcodes referencing the target opcode information
@@ -420,7 +420,7 @@ class OpcodeInfoAPI(GreprClass):
     # Add Categories/Extensions
     def add_group(self, group: OpcodeInfoGroup) -> None:
         """
-        Add a category or extension to the API.
+        Add a category or extension to the API
         
         Args:
             group: the category or extension
@@ -441,7 +441,7 @@ class OpcodeInfoAPI(GreprClass):
     # Get all opcodes
     def get_all_new(self) -> list[str]:
         """
-        Get a list of all new opcodes.
+        Get a list of all new opcodes
         
         Returns:
             a list of all new opcodes
@@ -449,7 +449,7 @@ class OpcodeInfoAPI(GreprClass):
         return list(self.opcode_info.keys_key2())
     def get_all_old(self) -> list[str]:
         """
-        Get a list of all old opcodes.
+        Get a list of all old opcodes
         
         Returns:
             a list of all old opcodes
@@ -461,7 +461,7 @@ class OpcodeInfoAPI(GreprClass):
     def get_new_by_old_safe(self, old: str) -> str | None:
         """
         Safely get the new opcode for an old opcode, return None if the old opcode is unknown.
-        Use this one, if you want to handle the unknown case yourself.
+        Use this one, if you want to handle the unknown case yourself
         
         Args:
             old: the old opcode
@@ -475,7 +475,7 @@ class OpcodeInfoAPI(GreprClass):
     def get_new_by_old(self, old: str) -> str:
         """
         Get the new opcode for an old opcode, raise UnknownOpcodeError if the old opcode is unknown.
-        Use this one, if you do NOT want to handle the unknown case yourself.
+        Use this one, if you do NOT want to handle the unknown case yourself
         
         Args:
             old: the old opcode
@@ -493,7 +493,7 @@ class OpcodeInfoAPI(GreprClass):
     def get_old_by_new_safe(self, new: str) -> str:
         """
         Safely get the old opcode for an new opcode, return None if the new opcode is unknown.
-        Use this one, if you want to handle the unknown case yourself.
+        Use this one, if you want to handle the unknown case yourself
         
         Args:
             new: the new opcode
@@ -507,7 +507,7 @@ class OpcodeInfoAPI(GreprClass):
     def get_old_by_new(self, new: str) -> str:
         """
         Get the old opcode for an new opcode, raise UnknownOpcodeError if the new opcode is unknown.
-        Use this one, if you do NOT want to handle the unknown case yourself.
+        Use this one, if you do NOT want to handle the unknown case yourself
         
         Args:
             new: the new opcode
@@ -525,7 +525,7 @@ class OpcodeInfoAPI(GreprClass):
     def get_info_by_old_safe(self, old: str) -> OpcodeInfo | None:
         """
         Safely get the opcode information by old opcode, return None if the old opcode is unknown.
-        Use this one, if you want to handle the unknown case yourself.
+        Use this one, if you want to handle the unknown case yourself
         
         Args:
             old: the old opcode
@@ -539,7 +539,7 @@ class OpcodeInfoAPI(GreprClass):
     def get_info_by_old(self, old: str) -> OpcodeInfo:
         """
         Get the opcode infotamtion by old opcode, raise UnknownOpcodeError if the old opcode is unknown.
-        Use this one, if you do NOT want to handle the unknown case yourself.
+        Use this one, if you do NOT want to handle the unknown case yourself
         
         Args:
             old: the old opcode
@@ -557,7 +557,7 @@ class OpcodeInfoAPI(GreprClass):
     def get_info_by_new_safe(self, new: str) -> OpcodeInfo | None:
         """
         Safely get the opcode information by new opcode, return None if the new opcode is unknown.
-        Use this one, if you want to handle the unknown case yourself.
+        Use this one, if you want to handle the unknown case yourself
         
         Args:
             new the new opcode
@@ -571,7 +571,7 @@ class OpcodeInfoAPI(GreprClass):
     def get_info_by_new(self, new: str) -> OpcodeInfo:
         """
         Get the opcode infotamtion by new opcode, raise UnknownOpcodeError if the new opcode is unknown.
-        Use this one, if you do NOT want to handle the unknown case yourself.
+        Use this one, if you do NOT want to handle the unknown case yourself
         
         Args:
             new: the new opcode

@@ -5,7 +5,7 @@ from pypenguin.utility import PypenguinEnum, GreprClass
 
 class SpecialCaseType(PypenguinEnum):
     """
-    Currently impletented kinds of Special Cases. Documentation is included in the source code.
+    Currently impletented kinds of Special Cases. Documentation is included in the source code
     """
     
     ######################################################
@@ -29,7 +29,7 @@ class SpecialCaseType(PypenguinEnum):
     # ficapi will be None for a TRBlock or SRBlock and the block api for a FRBlock
     """
     def example(
-        block: "FRBlock|TRBlock|SRBlock", ficapi: "FICAPI|None"
+        block: "FRBlock|TRBlock|SRBlock", ficapi: "FIConversionAPI|None"
     ) -> DualKeyDict[str, str, InputType]:
         ...
     """
@@ -41,13 +41,13 @@ class SpecialCaseType(PypenguinEnum):
     
     PRE_FR_STEP = 2 # execure before FRBlock.step
     """
-    def example(block: "FRBlock", ficapi: "FICAPI") -> "FRBlock":
+    def example(block: "FRBlock", ficapi: "FIConversionAPI") -> "FRBlock":
         ...
     """
      
     FR_STEP = 3 # execute instead of FRBlock.step
     """
-    def example(block: "FRBlock", ficapi: "FICAPI") -> "TRBlock":
+    def example(block: "FRBlock", ficapi: "FIConversionAPI") -> "TRBlock":
         ...
     """
     
@@ -60,7 +60,7 @@ class SpecialCaseType(PypenguinEnum):
 @dataclass
 class SpecialCase(GreprClass):
     """
-    Special Cases allows for custom behaviour for special blocks.
+    Special Cases allows for custom behaviour for special blocks
     """
     _grepr = True
     _grepr_fields = ["type", "function"]
@@ -70,7 +70,7 @@ class SpecialCase(GreprClass):
     
     def call(self, *args, **kwargs):
         """
-        Call a special case and get its return value. Arguments depend on SpecialCaseType.
+        Call a special case and get its return value. Arguments depend on SpecialCaseType
         Parameters:
             *args: positional arguments forwarded to the function
             **kwargs: keyword arguments forwarded to the function

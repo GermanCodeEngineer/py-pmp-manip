@@ -23,7 +23,7 @@ class FRCostume(GreprClass):
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRCostume":
         """
-        Deserializes raw data into a FRSound.
+        Deserializes raw data into a FRSound
         
         Args:
             data: the raw data
@@ -43,7 +43,7 @@ class FRCostume(GreprClass):
 
     def step(self) -> "SRCostume":
         """
-        Converts a FRComment into a SRComment.
+        Converts a FRComment into a SRComment
         
         Returns:
             the SRComment
@@ -100,13 +100,13 @@ class FRSound(GreprClass):
         return SRSound(
             name           = self.name,
             file_extension = self.data_format,
-            # Other attributes can be derived from the sound files.
+            # Other attributes can be derived from the sound files
         )
 
 @dataclass(repr=False)
 class SRCostume(GreprClass):
     """
-    The second representation for a costume. It is more user friendly then the first representation.
+    The second representation for a costume. It is more user friendly then the first representation
     """
     _grepr = True
     _grepr_fields = ["name", "file_extension", "rotation_center", "bitmap_resolution"]
@@ -128,14 +128,17 @@ class SRCostume(GreprClass):
     
     def validate(self, path: list, config: ValidationConfig) -> None:
         """
-        Ensure a SRCostume is valid, raise ValidationError if not.
+        Ensure a SRCostume is valid, raise ValidationError if not
         
         Args:
-            path: the path from the project to itself. Used for better errors
+            path: the path from the project to itself. Used for better error messages
             config: Configuration for Validation Behaviour
         
         Returns:
             None
+        
+        Raises:
+            ValidationError: if the SRCostume is invalid
         """
         AA_TYPE(self, path, "name", str)
         AA_TYPE(self, path, "file_extension", str)
@@ -146,7 +149,7 @@ class SRCostume(GreprClass):
 @dataclass(repr=False)
 class SRSound(GreprClass):
     """
-    The second representation for a sound. It is more user friendly then the first representation.
+    The second representation for a sound. It is more user friendly then the first representation
     """
     _grepr = True
     _grepr_fields = ["name", "file_extension"]
@@ -156,14 +159,17 @@ class SRSound(GreprClass):
     
     def validate(self, path: list, config: ValidationConfig) -> None:
         """
-        Ensure a SRSound is valid, raise ValidationError if not.
+        Ensure a SRSound is valid, raise ValidationError if not
         
         Args:
-            path: the path from the project to itself. Used for better errors
+            path: the path from the project to itself. Used for better error messages
             config: Configuration for Validation Behaviour
         
         Returns:
             None
+        
+        Raises:
+            ValidationError: if the SRSound is invalid
         """
         AA_TYPE(self, path, "name", str)
         AA_TYPE(self, path, "file_extension", str)

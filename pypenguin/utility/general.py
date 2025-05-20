@@ -130,7 +130,7 @@ V  = TypeVar("V" )
 
 class DualKeyDict(Generic[K1, K2, V]):
     """
-    A custom dictionary system, which allows access by key1 or key2.
+    A custom dictionary system, which allows access by key1 or key2
     """
     def __init__(self, data: dict[tuple[K1, K2], V] | None = None, /) -> None:
         self._values  : dict[K1, V ] = {}
@@ -181,10 +181,10 @@ class DualKeyDict(Generic[K1, K2, V]):
 
     # Dict-like behavior (explicitly discouraged)
     def __iter__(self):
-        raise NotImplementedError("Don't iterate DualKeyDict directly. Use keys_key1, keys_key2, values, items_key1, items_key2 etc.")
+        raise NotImplementedError("Don't iterate DualKeyDict directly. Use keys_key1, keys_key2, values, items_key1, items_key2 etc")
 
     def __contains__(self, key: object) -> bool:
-        raise NotImplementedError("Don't check whether a DualKeyDict contains something like a normal dict. Use has_key1 or has_key2 instead.")
+        raise NotImplementedError("Don't check whether a DualKeyDict contains something like a normal dict. Use has_key1 or has_key2 instead")
 
     def __len__(self) -> int:
         return len(self._values)

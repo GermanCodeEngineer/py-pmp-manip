@@ -42,7 +42,7 @@ class FRMeta(GreprClass):
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRMeta":
         """
-        Deserializes raw data into a FRMeta.
+        Deserializes raw data into a FRMeta
         
         Args:
             data: the raw data
@@ -62,7 +62,7 @@ class FRMeta(GreprClass):
     
     def __post_init__(self) -> None:
         """
-        Ensure the metadata is valid.
+        Ensure the metadata is valid
         
         Returns:
             None
@@ -86,7 +86,7 @@ class FRPenguinModPlatformMeta(GreprClass):
     @classmethod
     def from_data(cls, data: dict[str, str]) -> "FRPenguinModPlatformMeta":
         """
-        Deserializes raw data into a FRPenguinModPlatformMeta.
+        Deserializes raw data into a FRPenguinModPlatformMeta
         
         Args:
             data: the raw data
@@ -102,7 +102,7 @@ class FRPenguinModPlatformMeta(GreprClass):
     
     def __post_init__(self) -> None:
         """
-        Ensure the metadata is valid.
+        Ensure the metadata is valid
         
         Returns:
             None

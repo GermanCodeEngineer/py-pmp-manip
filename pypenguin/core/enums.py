@@ -8,7 +8,7 @@ class SRTTSLanguage(PypenguinEnum):
     @classmethod
     def from_code(cls, code: str) -> "SRTTSLanguage":
         """
-        Gets the equivalent language enum by its scratch language code.
+        Gets the equivalent language enum by its scratch language code
         
         Args:
             code: the language code
@@ -52,7 +52,7 @@ class SRVideoState(PypenguinEnum):
     @classmethod
     def from_code(cls, code: str) -> "SRVideoState":
         """
-        Gets the equivalent video state enum by its video state code.
+        Gets the equivalent video state enum by its video state code
         
         Args:
             code: the video state code
@@ -76,7 +76,7 @@ class SRSpriteRotationStyle(PypenguinEnum):
     @classmethod
     def from_code(cls, code: str) -> "SRSpriteRotationStyle":
         """
-        Gets the equivalent rotation style enum by its rotation style code.
+        Gets the equivalent rotation style enum by its rotation style code
         
         Args:
             code: the rotation style code
@@ -100,7 +100,7 @@ class SRVariableMonitorReadoutMode(PypenguinEnum):
     @classmethod
     def from_code(cls, code: str) -> "SRVariableMonitorReadoutMode":
         """
-        Gets the equivalent readout mode enum by its readout mode code.
+        Gets the equivalent readout mode enum by its readout mode code
         
         Args:
             code: the readout mode code

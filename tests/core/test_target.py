@@ -335,5 +335,5 @@ def test_SRSprite_validate(config):
 
 def test_SRSprite_validate_monitors(config, context):
     srsprite = SR_SPRITE
-    srsprite.validate_monitors([], config, info_api, context)
+    srsprite.validate_monitor_dropdown_values([], config, info_api, context)
 

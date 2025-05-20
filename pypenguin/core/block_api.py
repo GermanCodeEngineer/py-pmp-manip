@@ -11,7 +11,7 @@ from pypenguin.core.block_mutation import FRCustomBlockMutation, SRCustomBlockMu
 @dataclass(repr=False)
 class FIConversionAPI(GreprClass):
     """
-    An API which allows the access to other blocks in the same target during **c**onversion from **f**irst to **i**ntermediate representation.
+    An API which allows the access to other blocks in the same target during **c**onversion from **f**irst to **i**ntermediate representation
     """
     _grepr = True
     _grepr_fields = ["blocks", "scheduled_block_deletions"]
@@ -50,7 +50,7 @@ class FIConversionAPI(GreprClass):
     def schedule_block_deletion(self, block_id: str) -> None:
         """
         Order a block to be deleted. 
-        It will no longer be present in Temporary and Second Representation.
+        It will no longer be present in Temporary and Second Representation
         
         Args:
             block_id: the id of the block to be deleted
@@ -93,7 +93,7 @@ class FIConversionAPI(GreprClass):
 @dataclass(repr=False)
 class ValidationAPI(GreprClass):
     """
-    An API which allows the access to other blocks in the same target during validation.
+    An API which allows the access to other blocks in the same target during validation
     """
     _grepr = True
     _grepr_fields = ["scripts", "cb_mutations:"]
@@ -104,7 +104,7 @@ class ValidationAPI(GreprClass):
     
     def __post_init__(self) -> None:
         """
-        Fetch and store custom block mutations for later.
+        Fetch and store custom block mutations for later
         
         Returns:
             None
