@@ -63,3 +63,7 @@ class SRCustomExtension(SRExtension):
         AA_TYPE(self, path, "url", str)
         if not (is_valid_url(self.url) or is_valid_js_data_uri(self.url)):
             raise InvalidValueError(path, f"url of {self.__class__.__name__} must be either a valid url or a valid javascript data uri.")
+
+
+__all__ = ["SRExtension", "SRCustomExtension"]
+

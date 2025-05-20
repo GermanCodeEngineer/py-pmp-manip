@@ -401,3 +401,7 @@ class SRProject(GreprClass):
                     other_path = defined_lists[list_.name]
                     raise SameNameTwiceError(other_path, current_path, "Two lists mustn't have the same name")
                 defined_lists[list_.name] = current_path
+
+
+__all__ = ["FRProject", "SRProject"]
+

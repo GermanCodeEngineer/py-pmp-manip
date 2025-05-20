@@ -50,3 +50,6 @@ class SRList(GreprClass):
         AA_TYPE(self, path, "name", str)
         AA_LIST_OF_TYPES(self, path, "current_value", (int, float, str, bool)) # Only these can be saved in Scratch Projects
 
+
+__all__ = ["SRVariable", "SRCloudVariable", "SRList"]
+

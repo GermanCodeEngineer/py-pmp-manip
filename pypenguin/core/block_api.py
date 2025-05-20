@@ -160,3 +160,6 @@ class ValidationAPI(GreprClass):
             return self.cb_mutations[custom_opcode]
         raise ValidationError(f"Mutation of custom_opcode {custom_opcode} not found")
 
+
+__all__ = ["FIConversionAPI", "ValidationAPI"]
+

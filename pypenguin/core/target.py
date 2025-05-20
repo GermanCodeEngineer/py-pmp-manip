@@ -153,7 +153,10 @@ class FRTarget(GreprClass, ABC):
         
         # Get all top level block ids
         top_level_block_refs: list[IRBlockReference] = []
-        [top_level_block_refs.append(block_reference) if block.is_top_level else None for block_reference, block in new_blocks.items()]
+        [
+            top_level_block_refs.append(block_reference) 
+            if block.is_top_level else None for block_reference, block in new_blocks.items()
+        ]
         
         # Account for that one bug(not my fault), where a block is falsely independent
         for block_reference, block in new_blocks.items():
@@ -553,4 +556,6 @@ class SRSprite(SRTarget):
                 context  = context,
             )
 
+
+__all__ = ["FRTarget", "FRStage", "FRSprite", "SRTarget", "SRStage", "SRSprite"]
 

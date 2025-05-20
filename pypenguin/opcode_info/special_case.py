@@ -5,8 +5,9 @@ from pypenguin.utility import PypenguinEnum, GreprClass
 
 class SpecialCaseType(PypenguinEnum):
     """
-    Documentation for the currently implemented Special Cases
+    Currently impletented kinds of Special Cases. Documentation is included in the source code.
     """
+    
     ######################################################
     #                    Data Handlers                   # 
     ######################################################
@@ -33,7 +34,11 @@ class SpecialCaseType(PypenguinEnum):
         ...
     """
     
-    # Behaviour Handlers
+    
+    ######################################################
+    #                 Behaviour Handlers                 # 
+    ######################################################
+    
     PRE_FR_STEP = 2 # execure before FRBlock.step
     """
     def example(block: "FRBlock", ficapi: "FICAPI") -> "FRBlock":
@@ -48,7 +53,7 @@ class SpecialCaseType(PypenguinEnum):
     
     POST_VALIDATION = 4 # execute after SRBlock.validate
     """
-    def example(path:list, block: "SRBlock") -> None:
+    def example(path: list, block: "SRBlock") -> None:
         ...
     """    
 
@@ -74,4 +79,7 @@ class SpecialCase(GreprClass):
             the return value of the function
         """
         return self.function(*args, **kwargs)
+
+
+__all__ = ["SpecialCaseType", "SpecialCase"]
 

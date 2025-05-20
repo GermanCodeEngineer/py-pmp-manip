@@ -168,3 +168,6 @@ class SRSound(GreprClass):
         AA_TYPE(self, path, "name", str)
         AA_TYPE(self, path, "file_extension", str)
 
+
+__all__ = ["FRCostume", "FRSound", "SRCostume", "SRSound"]
+

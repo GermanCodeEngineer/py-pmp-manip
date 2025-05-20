@@ -12,3 +12,7 @@ class MenuInfo(GreprClass):
     
     opcode: str
     inner : str
+
+
+__all__ = ["MenuInfo"]
+

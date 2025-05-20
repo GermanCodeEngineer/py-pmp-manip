@@ -13,6 +13,7 @@ from pypenguin.core.context  import PartialContext, CompleteContext
 from pypenguin.core.dropdown import SRDropdownValue
 from pypenguin.core.enums    import SRVariableMonitorReadoutMode
 
+# TODO: create global config
 STAGE_WIDTH : int = 480
 STAGE_HEIGHT: int = 360
 LIST_MONITOR_DEFAULT_WIDTH  = 100
@@ -311,4 +312,10 @@ class SRListMonitor(SRMonitor):
         else:
             max_x, max_y = None, None
         AA_BOXED_COORD_PAIR(self, path, "size", min_x=100, max_x=max_x, min_y=60, max_y=max_y)
+
+
+__all__ = [
+    "STAGE_WIDTH", "STAGE_HEIGHT", 
+    "FRMonitor", "SRMonitor", "SRVariableMonitor", "SRListMonitor",
+]
 

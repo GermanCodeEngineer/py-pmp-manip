@@ -432,3 +432,11 @@ class SRStopScriptMutation(SRMutation):
         """
         AA_TYPE(self, path, "is_ending_statement", bool)
 
+
+__all__ = [
+    "FRMutation", "FRCustomBlockArgumentMutation", 
+    "FRCustomBlockMutation", "FRCustomBlockCallMutation", "FRStopScriptMutation",
+    "SRMutation", "SRCustomBlockArgumentMutation", 
+    "SRCustomBlockMutation", "SRCustomBlockCallMutation", "SRStopScriptMutation",
+]
+

@@ -84,3 +84,5 @@ class SRDropdownValue(GreprClass):
                 raise InvalidDropdownValueError(path, f"If kind is not {default_kind} must be one of these: {possible_values_string}")
 
 
+__all__ = ["SRDropdownValue"]
+

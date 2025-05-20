@@ -936,3 +936,11 @@ class SRScriptInputValue(SRInputValue):
                 is_first     = (i == 0),
                 is_last      = ((i+1) == len(self.blocks)),
             )
+
+
+__all__ = [
+    "FRBlock", "IRBlock", "IRInputValue", "IRBlockReference", 
+    "SRScript", "SRBlock", "SRInputValue", "SRBlockAndTextInputValue", 
+    "SRBlockAndDropdownInputValue", "SRBlockOnlyInputValue", "SRScriptInputValue",
+]
+

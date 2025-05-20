@@ -1,7 +1,10 @@
 from typing      import TYPE_CHECKING, Type, Iterable
 from dataclasses import dataclass, field
 
-from pypenguin.utility import DualKeyDict, GreprClass, PypenguinEnum, UnknownOpcodeError, SameOpcodeTwiceError
+from pypenguin.utility import (
+    DualKeyDict, GreprClass, PypenguinEnum, 
+    UnknownOpcodeError, SameOpcodeTwiceError,
+)
 
 from pypenguin.opcode_info.input        import InputInfo, InputType, InputMode
 from pypenguin.opcode_info.dropdown     import DropdownInfo
@@ -42,7 +45,7 @@ class OpcodeType(PypenguinEnum):
 # TODO: find solution for draw polygon block
 
 @dataclass
-class OpcodeInfo:
+class OpcodeInfo(GreprClass):
     """
     The information about all the blocks with a certain opcode.
     """
@@ -305,7 +308,7 @@ class OpcodeInfo:
         return dict(self.get_input_ids_types(block, ficapi).keys_key1_key2())
 
 @dataclass
-class OpcodeInfoGroup:
+class OpcodeInfoGroup(GreprClass):
     """
     Represents a group of block opcode information. 
     Therefore it's used to represent opcode information about categories and extensions.
@@ -393,7 +396,11 @@ class OpcodeInfoAPI(GreprClass):
         opcode_info = self.get_info_by_old(old_opcode)
         opcode_info.set_mutation_class(old_cls=old_cls, new_cls=new_cls)
     
-    def set_opcodes_mutation_class(self, old_opcodes: Iterable[str], old_cls: Type["FRMutation"], new_cls: Type["SRMutation"]) -> None:
+    def set_opcodes_mutation_class(self, 
+        old_opcodes: Iterable[str], 
+        old_cls: Type["FRMutation"], 
+        new_cls: Type["SRMutation"],
+    ) -> None:
         """
         Blocks with some opcodes store additional information. 
         For that purpose a mutation class can be added to the given opcodes.
@@ -576,3 +583,7 @@ class OpcodeInfoAPI(GreprClass):
         if info is not None:
             return info
         raise UnknownOpcodeError(f"Could not find OpcodeInfo by new opcode {repr(new)}")
+
+
+__all__ = ["OpcodeType", "OpcodeInfo", "OpcodeInfoGroup", "OpcodeInfoAPI"]
+

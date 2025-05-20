@@ -5,16 +5,20 @@ from pypenguin.utility import GreprClass, ThanksError
 
 SCRATCH_SEMVER = "3.0.0"
 
+SCRATCH_VM = "11.1.0"
+
 SCRATCH_META_DATA = {
     "semver": SCRATCH_SEMVER,
-    "vm": "11.1.0",
-    "agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+    "vm": SCRATCH_VM,
+    "agent": "", # doesn't matter
 }
+
+PENGUINMOD_VM = "0.2.0"
 
 PENGUINMOD_META_DATA = {
     "semver": SCRATCH_SEMVER,
-    "vm": "0.2.0",
-    "agent": "",
+    "vm": PENGUINMOD_VM,
+    "agent": "", # always empty
     "platform": {
         "name": "PenguinMod",
         "url": "https://penguinmod.com/",
@@ -47,10 +51,13 @@ class FRMeta(GreprClass):
             the FRMeta
         """
         return cls(
-            semver = data["semver"],
-            vm     = data["vm"    ],
-            agent  = data["agent" ],
-            platform = FRPenguinModPlatformMeta.from_data(data["platform"]) if "platform" in data else None,
+            semver   = data["semver"],
+            vm       = data["vm"    ],
+            agent    = data["agent" ],
+            platform = (
+                FRPenguinModPlatformMeta.from_data(data["platform"]) 
+                if "platform" in data else None
+            ),
         )
     
     def __post_init__(self) -> None:
@@ -60,9 +67,9 @@ class FRMeta(GreprClass):
         Returns:
             None
         """
-        if (self.semver != SCRATCH_SEMVER) or ((self.vm != SCRATCH_META_DATA["vm"]) and (self.vm != PENGUINMOD_META_DATA["vm"])):
+        if (self.semver != SCRATCH_SEMVER) or (self.vm not in {SCRATCH_VM, PENGUINMOD_VM}):
             # agent can be anything i don't care
-            raise ThanksError()
+            raise ThanksError() # project must be older or newer
 
 @dataclass(repr=False)
 class FRPenguinModPlatformMeta(GreprClass):
@@ -102,6 +109,10 @@ class FRPenguinModPlatformMeta(GreprClass):
         """
         if (   (self.name != PENGUINMOD_META_DATA["platform"]["name"])
             or (self.url != PENGUINMOD_META_DATA["platform"]["url"])
-            or (self.version != PENGUINMOD_META_DATA["platform"]["version"])):
+            or (self.version != PENGUINMOD_META_DATA["platform"]["version"])
+        ):
             raise ThanksError()
-            
+
+
+__all__ = ["FRMeta", "FRPenguinModPlatformMeta"]
+

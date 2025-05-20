@@ -88,3 +88,6 @@ class SRComment(GreprClass):
         AA_TYPE(self, path, "is_minimized", bool)
         AA_TYPE(self, path, "text", str)
 
+
+__all__ = ["FRComment", "SRComment"]
+

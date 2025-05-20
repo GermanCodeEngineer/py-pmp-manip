@@ -202,3 +202,9 @@ class SRCustomBlockOptype(PypenguinEnum):
     STRING_REPORTER  = (True , "string"   )
     NUMBER_REPORTER  = (True , "number"   )
     BOOLEAN_REPORTER = (True , "boolean"  )
+
+
+__all__ = [
+    "SRCustomBlockOpcode", "SRCustomBlockArgument", "SRCustomBlockArgumentType", "SRCustomBlockOptype",
+]
+

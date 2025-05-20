@@ -1,4 +1,5 @@
 # Utility functions
+
 def grepr(obj, annotate_fields=True, include_attributes=False, *, indent=4):
     def _grepr(obj, level=0):
         is_compatible = bool(getattr(obj, "_grepr", False))
@@ -270,4 +271,11 @@ def string_to_sha256(primary: str, secondary: str|None=None) -> str:
         return _string_to_sha256(primary, digits=20)
     else:
         return _string_to_sha256(primary, digits=16) + _string_to_sha256(secondary, digits=4)
+
+
+__all__ = [
+    "grepr", "read_file_of_zip", "ensure_correct_path", 
+    "PypenguinEnum", "GreprClass", "DualKeyDict", 
+    "remove_duplicates", "lists_equal_ignore_order", "get_closest_matches", "tuplify", "string_to_sha256",
+]
 

@@ -70,3 +70,7 @@ class CompleteContext(GreprClass):
             sounds                = sounds,
             is_stage              = is_stage,
         )
+
+
+__all__ = ["PartialContext", "CompleteContext"]
+

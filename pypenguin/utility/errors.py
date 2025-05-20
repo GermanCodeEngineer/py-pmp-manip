@@ -6,9 +6,8 @@ class BlameDevsError(PypenguinError): pass
 
 class ThanksError(PypenguinError):
     def __init__(self):
-        super().__init__("Your project is unique! It could help me with my research! Please create an issue with your project attached! https://github.com/Fritzforcode/PyPenguinOO/issues/new")
+        super().__init__("Your project is unique! It could help me with my research! Please create an issue with your project attached! https://github.com/Fritzforcode/pypenguin/issues/new/")
 
-class PathError(PypenguinError): pass
 
 ###############################################################
 #                ERRORS FOR THE OPCODE INFO API               #
@@ -39,7 +38,7 @@ class InterToSecondConversionError(FirstToSecondConversionError): pass
 #                    ERRORS FOR VALIDATION                    #
 ###############################################################
 
-def generate_path_string(path: list) -> str:
+def _generate_path_string(path: list) -> str:
     path_string = ""
     for item in path:
         if   isinstance(item, str):
@@ -55,7 +54,7 @@ class ValidationError(PypenguinError): pass
 
 class PathValidationError(ValidationError):
     def __init__(self, path: list, msg: str, condition: str|None = None) -> None:
-        path_string = generate_path_string(path)
+        path_string = _generate_path_string(path)
         full_message = ""
         if path_string != "":
             full_message += f"At {path_string}: "
@@ -82,8 +81,8 @@ class LayerOrderError(PathValidationError): pass
 
 class SameValueTwiceError(ValidationError):
     def __init__(self, path1: list, path2: list, msg: str, condition: str|None = None) -> None:
-        path1_string = generate_path_string(path1)
-        path2_string = generate_path_string(path2)
+        path1_string = _generate_path_string(path1)
+        path2_string = _generate_path_string(path2)
         full_message = f"At {path1_string} and {path2_string}: "
         if condition is not None:
             full_message += f"{condition}: "
@@ -92,4 +91,17 @@ class SameValueTwiceError(ValidationError):
 
 class SameNameTwiceError(SameValueTwiceError): pass
 class SameNumberTwiceError(SameValueTwiceError): pass
+
+
+__all__ = [
+    "PypenguinError", "BlameDevsError", "ThanksError", 
+    "OpcodeInfoError", "UnknownOpcodeError", "SameOpcodeTwiceError", 
+    "DeserializationError", "ConversionError", "FirstToSecondConversionError",
+    "FirstToInterConversionError", "InterToSecondConversionError", 
+    "ValidationError", "PathValidationError", "TypeValidationError", "InvalidValueError",
+    "RangeValidationError", "MissingInputError", "UnnecessaryInputError", 
+    "MissingDropdownError", "UnnecessaryDropdownError", "InvalidDropdownValueError", 
+    "InvalidOpcodeError", "InvalidBlockShapeError", "LayerOrderError", 
+    "SameValueTwiceError", "SameNameTwiceError", "SameNumberTwiceError",
+]
 

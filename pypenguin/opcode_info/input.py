@@ -135,3 +135,6 @@ class InputType(PypenguinEnum):
     READ_FILE_MODE                      = (InputMode.BLOCK_AND_DROPDOWN, 27)
     FILE_SELECTOR_MODE                  = (InputMode.BLOCK_AND_DROPDOWN, 28)
 
+
+__all__ = ["InputInfo", "InputMode", "InputType"]
+

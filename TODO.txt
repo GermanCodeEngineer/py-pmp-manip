@@ -1,4 +1,5 @@
 TODOs:
+    - rename remaining "FICAPI"
     - complete tests
     - revise errors
     - add "Raises" to docstrings
