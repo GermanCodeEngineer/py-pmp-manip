@@ -1,14 +1,13 @@
 from pytest import fixture, raises
 
 from pypenguin.utility            import DeserializationError
-from pypenguin.opcode_info        import InputMode
-from pypenguin.opcode_info.groups import info_api
+from pypenguin.opcode_info        import InputMode, info_api
 from pypenguin.important_opcodes  import *
 
 from pypenguin.core.block          import FRBlock, IRBlock, IRBlockReference, IRInputValue
 from pypenguin.core.block_api      import FIConversionAPI
 from pypenguin.core.block_mutation import (
-    FRCustomBlockMutation, FRCustomBlockCallMutation,
+    FRCustomBlockMutation,
     SRCustomBlockMutation, SRCustomBlockCallMutation, SRCustomBlockArgumentMutation,
 )
 from pypenguin.core.custom_block   import (

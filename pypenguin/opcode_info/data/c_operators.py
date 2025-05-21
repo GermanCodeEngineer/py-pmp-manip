@@ -1,6 +1,6 @@
 from pypenguin.utility import DualKeyDict
 
-from pypenguin.opcode_info import OpcodeInfoGroup, OpcodeInfo, OpcodeType, InputInfo, InputType, DropdownInfo, DropdownType, MenuInfo
+from pypenguin.opcode_info.api import OpcodeInfoGroup, OpcodeInfo, OpcodeType, InputInfo, InputType, DropdownInfo, DropdownType, MenuInfo
 
 operators = OpcodeInfoGroup(name="operators", opcode_info=DualKeyDict({
     ("operator_add", "(OPERAND1) + (OPERAND2)"): OpcodeInfo(

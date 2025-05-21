@@ -6,8 +6,7 @@ from pypenguin.utility            import (
     TypeValidationError, RangeValidationError, InvalidOpcodeError, InvalidBlockShapeError,
     UnnecessaryInputError, MissingInputError, UnnecessaryDropdownError, MissingDropdownError,
 )
-from pypenguin.opcode_info.groups import info_api
-from pypenguin.opcode_info        import DropdownValueKind, OpcodeType, InputType
+from pypenguin.opcode_info import info_api, DropdownValueKind, OpcodeType, InputType
 
 from pypenguin.core.block     import (
     SRScript, SRBlock, SRInputValue, 

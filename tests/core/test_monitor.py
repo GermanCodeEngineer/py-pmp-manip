@@ -6,8 +6,7 @@ from pypenguin.utility            import (
     ThanksError, TypeValidationError, InvalidOpcodeError, UnnecessaryDropdownError, 
     MissingDropdownError, RangeValidationError, InvalidValueError,
 )
-from pypenguin.opcode_info        import DropdownValueKind
-from pypenguin.opcode_info.groups import info_api
+from pypenguin.opcode_info        import DropdownValueKind, info_api
 from pypenguin.important_opcodes  import NEW_OPCODE_VAR_VALUE, NEW_OPCODE_LIST_VALUE
 
 from pypenguin.core.context  import PartialContext

@@ -7,8 +7,7 @@ from pypenguin.utility            import (
     ThanksError, FirstToSecondConversionError, TypeValidationError, RangeValidationError, 
     SameNameTwiceError, InvalidValueError
 )
-from pypenguin.opcode_info import DropdownValueKind
-from pypenguin.opcode_info.groups import info_api
+from pypenguin.opcode_info import info_api, DropdownValueKind
 
 from pypenguin.core.asset          import SRCostume, SRSound
 from pypenguin.core.block          import SRScript, SRBlock

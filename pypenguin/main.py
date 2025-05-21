@@ -4,8 +4,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.
 from json import loads
 
 from pypenguin.core import *
-from pypenguin.opcode_info.groups import info_api
-from pypenguin.opcode_info import InputMode
+from pypenguin.opcode_info import info_api, InputMode
 from pypenguin.utility import ValidationConfig, read_file_of_zip, grepr
 
 #file_path = "../assets/from_online/my 1st platformer.pmp"

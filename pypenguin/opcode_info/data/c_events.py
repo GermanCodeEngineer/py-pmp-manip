@@ -1,6 +1,6 @@
 from pypenguin.utility import DualKeyDict
 
-from pypenguin.opcode_info import OpcodeInfoGroup, OpcodeInfo, OpcodeType, InputInfo, InputType, DropdownInfo, DropdownType, MenuInfo
+from pypenguin.opcode_info.api import OpcodeInfoGroup, OpcodeInfo, OpcodeType, InputInfo, InputType, DropdownInfo, DropdownType, MenuInfo
 
 events = OpcodeInfoGroup(name="events", opcode_info=DualKeyDict({
     ("event_whenflagclicked", "when green flag clicked"): OpcodeInfo(

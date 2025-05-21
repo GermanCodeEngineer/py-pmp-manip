@@ -1,6 +1,6 @@
 from pypenguin.utility import DualKeyDict
 
-from pypenguin.opcode_info import OpcodeInfoGroup, OpcodeInfo, OpcodeType, InputInfo, InputType, DropdownInfo, DropdownType, MenuInfo
+from pypenguin.opcode_info.api import OpcodeInfoGroup, OpcodeInfo, OpcodeType, InputInfo, InputType, DropdownInfo, DropdownType, MenuInfo
 
 sounds = OpcodeInfoGroup(name="sounds", opcode_info=DualKeyDict({
     ("sound_playuntildone", "play sound ([SOUND]) until done"): OpcodeInfo(
@@ -70,7 +70,7 @@ sounds = OpcodeInfoGroup(name="sounds", opcode_info=DualKeyDict({
     ),
     ("sound_getEffectValue", "[EFFECT] sound effect"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
-        can_have_monitor=True,
+        can_have_monitor="True",
         dropdowns=DualKeyDict({
             ("EFFECT", "EFFECT"): DropdownInfo(DropdownType.SOUND_EFFECT),
         }),
@@ -89,6 +89,6 @@ sounds = OpcodeInfoGroup(name="sounds", opcode_info=DualKeyDict({
     ),
     ("sound_volume", "volume"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
-        can_have_monitor=True,
+        can_have_monitor="True",
     ),
 }))

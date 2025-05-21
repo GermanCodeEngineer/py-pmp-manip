@@ -6,7 +6,7 @@ from pypenguin.utility            import (
     ThanksError, TypeValidationError, RangeValidationError, 
     SameNameTwiceError, SameNumberTwiceError, LayerOrderError,
 )
-from pypenguin.opcode_info.groups import info_api
+from pypenguin.opcode_info import info_api
 
 from pypenguin.core.enums      import SRTTSLanguage, SRVideoState
 from pypenguin.core.project    import FRProject, SRProject

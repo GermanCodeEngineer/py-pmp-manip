@@ -1,7 +1,6 @@
 from pypenguin.utility import grepr_dataclass, PypenguinEnum
 
-from pypenguin.opcode_info.menu     import MenuInfo
-from pypenguin.opcode_info.dropdown import DropdownType
+from pypenguin.opcode_info.api.dropdown import DropdownType
 
 @grepr_dataclass(grepr_fields=["type", "menu"])
 class InputInfo:
@@ -10,7 +9,7 @@ class InputInfo:
     """
     
     type: "InputType"
-    menu: MenuInfo | None = None
+    menu: "MenuInfo | None" = None
 
 class InputMode(PypenguinEnum):
     """
@@ -132,6 +131,13 @@ class InputType(PypenguinEnum):
     READ_FILE_MODE                      = (InputMode.BLOCK_AND_DROPDOWN, 27)
     FILE_SELECTOR_MODE                  = (InputMode.BLOCK_AND_DROPDOWN, 28)
 
+@grepr_dataclass(grepr_fields=["opcode", "inner"])
+class MenuInfo:
+    """
+    The information about a menu in an input
+    """
+    
+    opcode: str
+    inner : str
 
-__all__ = ["InputInfo", "InputMode", "InputType"]
-
+__all__ = ["InputInfo", "InputMode", "InputType", "MenuInfo"]

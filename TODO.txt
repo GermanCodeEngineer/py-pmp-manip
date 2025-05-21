@@ -5,5 +5,4 @@ TODOs:
     - maybe replace _copymodify_
     - possibly load costumes and sounds into memory
     - todos + go over code
-    - reorganize opcode_info
     - complete deoptimization

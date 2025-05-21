@@ -2,7 +2,7 @@ from pytest import raises
 from copy   import deepcopy
 
 from pypenguin.utility            import InterToSecondConversionError
-from pypenguin.opcode_info.groups import info_api
+from pypenguin.opcode_info import info_api
 from pypenguin.important_opcodes  import *
 
 from pypenguin.core.block import IRBlockReference

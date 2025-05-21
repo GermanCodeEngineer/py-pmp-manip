@@ -4,20 +4,22 @@ from copy   import copy, deepcopy
 from pypenguin.utility           import DualKeyDict, InvalidValueError
 from pypenguin.important_opcodes import *
 
-from pypenguin.opcode_info.main             import OpcodeInfo, OpcodeType, OpcodeInfoGroup, OpcodeInfoAPI
-from pypenguin.opcode_info.input            import InputInfo, InputType, InputMode
-from pypenguin.opcode_info.dropdown         import DropdownInfo, DropdownType
-from pypenguin.opcode_info.special_case     import SpecialCase, SpecialCaseType
+from pypenguin.opcode_info.api import (
+    OpcodeInfo, OpcodeType, OpcodeInfoGroup, OpcodeInfoAPI, 
+    InputInfo, InputType, 
+    DropdownInfo, DropdownType, 
+    SpecialCase, SpecialCaseType,
+)
 
-from pypenguin.opcode_info.groups.motion    import motion
-from pypenguin.opcode_info.groups.looks     import looks
-from pypenguin.opcode_info.groups.sounds    import sounds
-from pypenguin.opcode_info.groups.events    import events
-from pypenguin.opcode_info.groups.control   import control
-from pypenguin.opcode_info.groups.sensing   import sensing
-from pypenguin.opcode_info.groups.operators import operators
-from pypenguin.opcode_info.groups.variables import variables
-from pypenguin.opcode_info.groups.lists     import lists
+from pypenguin.opcode_info.data.c_motion    import motion
+from pypenguin.opcode_info.data.c_looks     import looks
+from pypenguin.opcode_info.data.c_sounds    import sounds
+from pypenguin.opcode_info.data.c_events    import events
+from pypenguin.opcode_info.data.c_control   import control
+from pypenguin.opcode_info.data.c_sensing   import sensing
+from pypenguin.opcode_info.data.c_operators import operators
+from pypenguin.opcode_info.data.c_variables import variables
+from pypenguin.opcode_info.data.c_lists     import lists
 
 if TYPE_CHECKING:
     from pypenguin.core.block          import FRBlock, IRBlock, SRBlock
@@ -292,4 +294,7 @@ info_api.add_opcodes_case(ANY_OPCODE_CB_DEF, SpecialCase(
     type=SpecialCaseType.POST_VALIDATION,
     function=POST_VALIDATION__CB_DEF,
 ))
+
+
+__all__ = ["info_api"]
 

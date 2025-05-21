@@ -1,6 +1,6 @@
 from pypenguin.utility import DualKeyDict
 
-from pypenguin.opcode_info import OpcodeInfoGroup, OpcodeInfo, OpcodeType, InputInfo, InputType, DropdownInfo, DropdownType, MenuInfo
+from pypenguin.opcode_info.api import OpcodeInfoGroup, OpcodeInfo, OpcodeType, InputInfo, InputType, DropdownInfo, DropdownType, MenuInfo
 
 lists = OpcodeInfoGroup(name="lists", opcode_info=DualKeyDict({
     ("data_addtolist", "add (ITEM) to [LIST]"): OpcodeInfo(

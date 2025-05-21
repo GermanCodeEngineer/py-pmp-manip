@@ -6,9 +6,9 @@ from pypenguin.utility import (
     UnknownOpcodeError, SameOpcodeTwiceError,
 )
 
-from pypenguin.opcode_info.input        import InputInfo, InputType, InputMode
-from pypenguin.opcode_info.dropdown     import DropdownInfo
-from pypenguin.opcode_info.special_case import SpecialCase, SpecialCaseType
+from pypenguin.opcode_info.api.input        import InputInfo, InputType, InputMode
+from pypenguin.opcode_info.api.dropdown     import DropdownInfo
+from pypenguin.opcode_info.api.special_case import SpecialCase, SpecialCaseType
 
 if TYPE_CHECKING:
     from pypenguin.core.block import FRBlock, IRBlock, SRBlock
