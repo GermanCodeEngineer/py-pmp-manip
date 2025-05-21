@@ -230,7 +230,7 @@ def test_SRInputValue_validate_block(config, validation_api, context):
         block=ALL_SR_SCRIPTS[5].blocks[0],
         dropdown=SRDropdownValue(kind=DropdownValueKind.BROADCAST_MSG, value="my message"),
     )
-    input_value.validate_block([], config, info_api, validation_api, context)
+    input_value._validate_block([], config, info_api, validation_api, context)
 
 
 def test_SRBlockAndTextInputValue_validate(config, validation_api, context):

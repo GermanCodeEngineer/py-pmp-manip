@@ -28,15 +28,21 @@ def test_FRProject_from_data():
 
 
 def test_FRProject_from_pmp_file():
-    frproject = FRProject.from_pmp_file("../tests/assets/testing_blocks.pmp", info_api)
+    FRProject._from_pmp_file("../tests/assets/testing_blocks.pmp", info_api)
     with raises(AssertionError):
-        FRProject.from_pmp_file("../tests/assets/scratch_project.sb3", info_api)
+        FRProject._from_pmp_file("../tests/assets/scratch_project.sb3", info_api)
 
 
 def test_FRProject_from_sb3_file():
-    frproject = FRProject.from_sb3_file("../tests/assets/scratch_project.sb3", info_api)
+    FRProject._from_sb3_file("../tests/assets/scratch_project.sb3", info_api)
     with raises(AssertionError):
-        FRProject.from_sb3_file("../tests/assets/testing_blocks.pmp", info_api)
+        FRProject._from_sb3_file("../tests/assets/testing_blocks.pmp", info_api)
+
+def test_FRProject_from_file():
+    FRProject.from_file("../tests/assets/testing_blocks.pmp", info_api)
+    FRProject.from_file("../tests/assets/scratch_project.sb3", info_api)
+    with raises(AssertionError):
+        FRProject.from_file("abc/def/ghi/jc_loves_u.any", info_api)
 
 
 def test_FRProject_post_init():

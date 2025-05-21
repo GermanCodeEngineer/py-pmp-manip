@@ -1,4 +1,4 @@
-from typing      import Any
+from typing import Any
 
 from pypenguin.utility import grepr_dataclass, ValidationConfig, AA_COORD_PAIR, AA_TYPE, InvalidValueError
 

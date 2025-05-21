@@ -63,7 +63,7 @@ class FRTarget(ABC):
     @staticmethod
     def _from_data_common(data: dict[str, Any], info_api: OpcodeInfoAPI) -> dict[str, Any]:
         """
-        [Helper Method] Prepare common fields for FRTarget and its subclasses
+        *[Helper Method]* Prepare common fields for FRTarget and its subclasses
 
         Args:
             data: the raw data
@@ -116,7 +116,7 @@ class FRTarget(ABC):
         list[SRList],
     ]:
         """
-        [Helper Method] Convert common fields into second representation
+        *[Helper Method]* Convert common fields into second representation
 
         Args:
             info_api: the opcode info api used to fetch information about opcodes
@@ -193,7 +193,7 @@ class FRTarget(ABC):
     
     def _step_variables_lists(self) -> tuple[list[SRVariable], list[SRList]]:
         """
-        [Helper Method] Converts the variables and lists of a FRProject into second representation and returns them
+        *[Helper Method]* Converts the variables and lists of a FRProject into second representation and returns them
         
         Returns:
             list of variables and list of lists in second representation
@@ -413,7 +413,9 @@ class SRTarget:
         AA_LIST_OF_TYPE(self, path, "costumes", SRCostume)
         AA_MIN_LEN(self, path, "costumes", min_len=1)
         AA_TYPE(self, path, "costume_index", int)
-        AA_RANGE(self, path, "costume_index", min=0, max=len(self.costumes)-1, condition=f"In this case the sprite has {len(self.costumes)} costume(s)")
+        AA_RANGE(self, path, "costume_index", 
+            min=0, max=len(self.costumes)-1, condition=f"In this case the sprite has {len(self.costumes)} costume(s)",
+        )
         AA_LIST_OF_TYPE(self, path, "sounds", SRSound)
         AA_TYPES(self, path, "volume", (int, float))
         AA_RANGE(self, path, "volume", min=0, max=100)
@@ -461,7 +463,7 @@ class SRTarget:
             ValidationError: if the scripts of the SRTarget are invalid
             SameNameTwiceError(ValidationError): if two custom blocks have the same custom_opcode.
         """
-        context = self.get_complete_context(partial_context=context)
+        context = self._get_complete_context(partial_context=context)
         validation_api = ValidationAPI(scripts=self.scripts)
         cb_custom_opcodes = {}
         for i, script in enumerate(self.scripts):
@@ -483,9 +485,9 @@ class SRTarget:
                         )
                     cb_custom_opcodes[custom_opcode] = current_path
 
-    def get_complete_context(self, partial_context: PartialContext) -> CompleteContext:
+    def _get_complete_context(self, partial_context: PartialContext) -> CompleteContext:
         """
-        Gets the complete context for a SRTarget from the given partial context (project context)
+        *[Helper Method]* Gets the complete context for a SRTarget from the given partial context (project context)
 
         Args:
             partial_context: the partial context (project context)
@@ -614,7 +616,7 @@ class SRSprite(SRTarget):
         Raises:
             ValidationError: if the monitor dropdown values of the SRSprite are invalid
         """
-        context = self.get_complete_context(partial_context=context)
+        context = self._get_complete_context(partial_context=context)
         for i, monitor in enumerate(self.local_monitors):
             monitor.validate_dropdown_values(
                 path     = path+["local_monitors", i], 

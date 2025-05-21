@@ -155,7 +155,7 @@ class FRBlock:
         
         instead_handler = opcode_info.get_special_case(SpecialCaseType.FR_STEP)
         if instead_handler is None:
-            new_inputs = self.step_inputs(
+            new_inputs = self._step_inputs(
                 ficapi  = ficapi,
                 info_api   = info_api,
                 opcode_info = opcode_info,
@@ -181,14 +181,14 @@ class FRBlock:
             new_block = instead_handler.call(ficapi=ficapi, block=self)
         return new_block
 
-    def step_inputs(self, 
+    def _step_inputs(self, 
         ficapi: "FIConversionAPI", 
         info_api: OpcodeInfoAPI,
         opcode_info: OpcodeInfo,
         own_id: str
     ) -> dict[str, "IRInputValue"]:
         """
-        Converts the inputs of a FRBlock into the IR Fromat
+        *[Internal Method]* Converts the inputs of a FRBlock into the IR Fromat
         
         Args:
             ficapi: API used to fetch information about other blocks
@@ -662,9 +662,28 @@ class SRInputValue(ABC):
     dropdown: SRDropdownValue | None = field(init=False)
 
     def __init__(self) -> None:
+        """
+        Create a SRInputValue. 
+        **Please use the subclasses or the from_mode method for concrete data. This method will raise a NotImplementedError.**
+
+        Returns:
+            None
+
+        Raises:
+            NotImplementedError: always
+        """
         raise NotImplementedError("Please use the subclasses or the from_mode method for concrete data")
 
     def __eq__(self, other) -> bool:
+        """
+        Return self == other
+
+        Args:
+            other: value to compare to
+        
+        Returns:
+            self == other
+        """
         if not isinstance(other, SRInputValue):
             return NotImplemented
         if type(self) != type(other):
@@ -736,7 +755,7 @@ class SRInputValue(ABC):
             ValidationError: if the SRInputValue is invalid
         """
 
-    def validate_block(self, 
+    def _validate_block(self, 
         path: list, 
         config: ValidationConfig,
         info_api: OpcodeInfoAPI,
@@ -744,7 +763,7 @@ class SRInputValue(ABC):
         context: CompleteContext, 
     ) -> None:
         """
-        Ensures the block of this input is valid, raise ValidationError if not
+        *[Internal Method]* Ensures the block of this input is valid, raise ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -805,7 +824,7 @@ class SRBlockAndTextInputValue(SRInputValue):
         Raises:
             ValidationError: if the SRBlockAndTextInputValue is invalid
         """
-        self.validate_block(
+        self._validate_block(
             path           = path,
             config         = config,
             info_api       = info_api,
@@ -848,7 +867,7 @@ class SRBlockAndDropdownInputValue(SRInputValue):
         Raises:
             ValidationError: if the SRBlockAndDropdownInputValue is invalid
         """
-        self.validate_block(
+        self._validate_block(
             path           = path,
             config         = config,
             info_api       = info_api,
@@ -899,7 +918,7 @@ class SRBlockOnlyInputValue(SRInputValue):
         Raises:
             ValidationError: if the SRBlockOnlyInputValue is invalid
         """
-        self.validate_block(
+        self._validate_block(
             path           = path,
             config         = config,
             info_api       = info_api,

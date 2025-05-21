@@ -11,10 +11,10 @@ from pypenguin.core.block_mutation import FRCustomBlockMutation, SRCustomBlockMu
 @grepr_dataclass(grepr_fields=["blocks", "scheduled_block_deletions"])
 class FIConversionAPI:
     """
-    An API which allows the access to other blocks in the same target during **c**onversion from **f**irst to **i**ntermediate representation
+    An API which allows the access to other blocks in the same target during **conversion** from **f**irst to **i**ntermediate representation
     """
 
-    blocks: dict[str, "FRBlock"]
+    blocks: dict[str, FRBlock]
     block_comments: dict[str, SRComment]
     scheduled_block_deletions: list[str] = field(default_factory=list)
 
@@ -25,16 +25,13 @@ class FIConversionAPI:
         Returns:
             the set of block ids
         """
-        print("parent_id", repr(parent_id))
         block_ids = set()
         for block_id_candidate, block_candidate in self.blocks.items():
-            print("candidate", (block_id_candidate, block_candidate.parent))
             if block_candidate.parent == parent_id:
-                print("YEAH")
                 block_ids.add(block_id_candidate)
         return block_ids
 
-    def get_block(self, block_id: str) -> "FRBlock":
+    def get_block(self, block_id: str) -> FRBlock:
         """
         Get a block in the same target by block id
         
@@ -117,7 +114,7 @@ class ValidationAPI:
 
     def _get_all_blocks(self) -> list["SRBlock"]:
         """
-        Get all blocks in the same target
+        *[Internal Method]* Get all blocks in the same target
         
         Returns:
             all blocks in the target 

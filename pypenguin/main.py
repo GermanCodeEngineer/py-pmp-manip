@@ -17,7 +17,7 @@ file_path = "../assets/monitors.pmp"
 
 print(grepr(loads(read_file_of_zip(file_path, "project.json"))))
 
-project = FRProject.from_pmp_file(file_path, info_api=info_api)
+project = FRProject.from_file(file_path, info_api=info_api)
 
 #print(project)
 

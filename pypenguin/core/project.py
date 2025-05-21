@@ -55,34 +55,18 @@ class FRProject:
             extension_urls = data.get("extensionURLs", {}),
             meta           = FRMeta.from_data(data["meta"]),
         )
-
-    @classmethod
-    def from_pmp_file(cls, file_path: str, info_api: OpcodeInfoAPI) -> "FRProject":
-        """
-        Reads project data from a PenguinMod Project file(.pmp) and creates a FRProject from it
-
-        Args:
-            file_path: file path to the .pmp file
-            info_api: the opcode info api used to fetch information about opcodes
-        
-        Returns:
-            None
-        """
-        assert file_path.endswith(".pmp")
-        project_data = loads(read_file_of_zip(file_path, "project.json"))
-        return cls.from_data(project_data, info_api=info_api)
     
     @classmethod
-    def from_sb3_file(cls, file_path: str, info_api: OpcodeInfoAPI):
+    def _from_sb3_file(cls, file_path: str, info_api: OpcodeInfoAPI):
         """
-        Reads project data from a Scratch Project file(.sb3) and creates a FRProject from it
+        *[Internal Method]* Reads project data from a Scratch Project file(.sb3) and creates a FRProject from it
 
         Args:
             file_path: file path to the .sb3 file
             info_api: the opcode info api used to fetch information about opcodes
         
         Returns:
-            None
+            the FRProject
         """
         assert file_path.endswith(".sb3")
         project_data = loads(read_file_of_zip(file_path, "project.json"))
@@ -93,6 +77,40 @@ class FRProject:
                 token = string_to_sha256(primary=sprite_data["name"])
             sprite_data["id"] = token
         return cls.from_data(project_data, info_api=info_api)
+
+    @classmethod
+    def _from_pmp_file(cls, file_path: str, info_api: OpcodeInfoAPI) -> "FRProject":
+        """
+        *[Internal Method]* Reads project data from a PenguinMod Project file(.pmp) and creates a FRProject from it
+
+        Args:
+            file_path: file path to the .pmp file
+            info_api: the opcode info api used to fetch information about opcodes
+        
+        Returns:
+            the FRProject
+        """
+        assert file_path.endswith(".pmp")
+        project_data = loads(read_file_of_zip(file_path, "project.json"))
+        return cls.from_data(project_data, info_api=info_api)
+
+    @classmethod
+    def from_file(cls, file_path: str, info_api: OpcodeInfoAPI) -> "FRProject":
+        """
+        Reads project data from a project file(.sb3 or .pmp) and creates a FRProject from it
+
+        Args:
+            file_path: file path to the .sb3 or .pmp file
+            info_api: the opcode info api used to fetch information about opcodes
+        
+        Returns:
+            the FRProject
+        """
+        assert file_path.endswith(".sb3") or file_path.endswith(".pmp")
+        if   file_path.endswith(".sb3"):
+            return FRProject._from_sb3_file(file_path, info_api)
+        elif file_path.endswith(".pmp"):
+            return FRProject._from_pmp_file(file_path, info_api)
 
     def __post_init__(self) -> None:
         """
@@ -316,7 +334,7 @@ class SRProject:
 
     def _validate_sprites(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
         """
-        [Internal Method] Ensure the sprites of a SRProject are valid, raise ValidationError if not
+        *[Internal Method]* Ensure the sprites of a SRProject are valid, raise ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -353,7 +371,7 @@ class SRProject:
 
     def _validate_var_names(self, path: list, config: ValidationConfig) -> None:
         """
-        Ensures no variables with the same name exist
+        *[Internal Method]* Ensures no variables with the same name exist
 
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -383,7 +401,7 @@ class SRProject:
         
     def _validate_list_names(self, path: list, config: ValidationConfig) -> None:
         """
-        Ensures no lists with the same name exist
+        *[Internal Method]* Ensures no lists with the same name exist
 
         Args:
             path: the path from the project to itself. Used for better error messages

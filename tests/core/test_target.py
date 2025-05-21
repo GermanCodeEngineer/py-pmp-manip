@@ -273,7 +273,7 @@ def test_SRTarget_validate_scripts_same_custom_opcode(config, context):
 def test_SRTarget_get_complete_context(context):
     srtarget = copy(SR_SPRITE)
     srtarget.sounds = [SRSound(name="Hello World!", file_extension="mp3")]
-    complete_context = srtarget.get_complete_context(context)
+    complete_context = srtarget._get_complete_context(context)
     assert complete_context.costumes == [SRDropdownValue(DropdownValueKind.COSTUME, "costume1")]
     assert complete_context.sounds == [SRDropdownValue(DropdownValueKind.SOUND, "Hello World!")]
     assert complete_context.is_stage == False

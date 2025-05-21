@@ -143,7 +143,7 @@ def grepr_dataclass(*, grepr_fields: list[str], parent_cls: type|None = None,
             cls._grepr_fields = grepr_fields
         else:
             cls._grepr_fields = parent_cls._grepr_fields + grepr_fields
-        dataclass(cls, 
+        cls = dataclass(cls, 
             init=init, repr=False, eq=eq,
             order=order, unsafe_hash=unsafe_hash, frozen=frozen,
             match_args=match_args, kw_only=kw_only,

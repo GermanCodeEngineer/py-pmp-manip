@@ -33,7 +33,6 @@ class FRMutation(ABC):
             the mutation
         """
 
-    
     def __post_init__(self) -> None:
         """
         Ensure my assumptions about mutations were correct

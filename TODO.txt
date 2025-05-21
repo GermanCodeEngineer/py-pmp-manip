@@ -1,10 +1,9 @@
 TODOs:
-    - create_empty + docstrings
-    - [Internal Method]
     - complete tests
     - manage layer_order differently
+    - maybe remove IRBlockReference
+    - maybe replace _copymodify_
     - possibly load costumes and sounds into memory
     - todos + go over code
-    - create @grepr decorator
     - reorganize opcode_info
     - complete deoptimization
