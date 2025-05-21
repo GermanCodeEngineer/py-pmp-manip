@@ -59,9 +59,9 @@ def test_ValidationAPI_post_init(validation_api: ValidationAPI):
             custom_opcode=SR_BLOCK_CUSTOM_OPCODE,
             no_screen_refresh=False,
             optype=SRCustomBlockOptype.NUMBER_REPORTER,
-            color1="#FF6680",
-            color2="#FF4D6A",
-            color3="#FF3355",
+            main_color="#FF6680",
+            prototype_color="#FF4D6A",
+            outline_color="#FF3355",
         ),
     }
     assert validation_api.cb_mutations == cb_mutations

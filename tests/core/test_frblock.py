@@ -188,9 +188,9 @@ def test_FRBlock_step_cb_def(ficapi: FIConversionAPI):
         ),
         no_screen_refresh=False,
         optype=SRCustomBlockOptype.NUMBER_REPORTER,
-        color1="#FF6680",
-        color2="#FF4D6A", 
-        color3="#FF3355",
+        main_color="#FF6680",
+        prototype_color="#FF4D6A", 
+        outline_color="#FF3355",
     )
     assert trblock.next         is None
     assert trblock.is_top_level is True
@@ -227,9 +227,9 @@ def test_FRBlock_step_cb_arg(ficapi: FIConversionAPI):
     assert trblock.comment      is None
     assert trblock.mutation     == SRCustomBlockArgumentMutation(
         argument_name="a text arg",
-        color1="#FF6680",
-        color2="#FF4D6A",
-        color3="#FF3355",
+        main_color="#FF6680",
+        prototype_color="#FF4D6A",
+        outline_color="#FF3355",
     )
     assert trblock.next         is None
     assert trblock.is_top_level is False

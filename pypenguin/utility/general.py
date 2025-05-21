@@ -124,6 +124,16 @@ class GreprClass:
     def __repr__(self) -> str:
         return grepr(self)
 
+def grepr_class(fields: list[str]):
+    def decorator(cls):
+        def __repr__(self) -> str:
+            return grepr(self)
+        cls.__repr__ = __repr__
+        cls._grepr = True
+        cls._grepr_fields = fields
+        return cls
+    return decorator
+
 K1 = TypeVar("K1")
 K2 = TypeVar("K2")
 V  = TypeVar("V" )
@@ -275,7 +285,7 @@ def string_to_sha256(primary: str, secondary: str|None=None) -> str:
 
 __all__ = [
     "grepr", "read_file_of_zip", "ensure_correct_path", 
-    "PypenguinEnum", "GreprClass", "DualKeyDict", 
+    "PypenguinEnum", "GreprClass", "grepr_class", "DualKeyDict", 
     "remove_duplicates", "lists_equal_ignore_order", "get_closest_matches", "tuplify", "string_to_sha256",
 ]
 

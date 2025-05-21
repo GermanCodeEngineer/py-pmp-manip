@@ -122,9 +122,9 @@ class FRCustomBlockArgumentMutation(FRMutation):
             raise FirstToSecondConversionError("Argument name must be set before SR conversion")
         return SRCustomBlockArgumentMutation(
             argument_name = self._argument_name,
-            color1        = self.color[0],
-            color2        = self.color[1],
-            color3        = self.color[2],
+            main_color        = self.color[0],
+            prototype_color        = self.color[1],
+            outline_color        = self.color[2],
         )
 
 @dataclass(repr=False)
@@ -191,9 +191,9 @@ class FRCustomBlockMutation(FRMutation):
             ),
             no_screen_refresh = self.warp,
             optype            = SRCustomBlockOptype.from_code(self.optype),
-            color1            = self.color[0],
-            color2            = self.color[1],
-            color3            = self.color[2],
+            main_color            = self.color[0],
+            prototype_color            = self.color[1],
+            outline_color            = self.color[2],
         )
 
 @dataclass(repr=False)
@@ -327,14 +327,14 @@ class SRCustomBlockArgumentMutation(SRMutation):
     """
     The second representation for the mutation of a custom block argument reporter
     """
-    _grepr_fields = FRMutation._grepr_fields + ["argument_name", "color1", "color2", "color3"]
+    _grepr_fields = FRMutation._grepr_fields + ["argument_name", "main_color", "prototype_color", "outline_color"]
     
     argument_name: str
     # hex format
     # what each color does, is unknown (for now)
-    color1: str
-    color2: str
-    color3: str
+    main_color: str
+    prototype_color: str
+    outline_color: str
 
     def validate(self, path: list, config: ValidationConfig) -> None:
         """
@@ -351,16 +351,16 @@ class SRCustomBlockArgumentMutation(SRMutation):
             ValidationError: if the SRCustomBlockArgumentMutation is invalid
         """
         AA_TYPE(self, path, "argument_name", str)
-        AA_HEX_COLOR(self, path, "color1")
-        AA_HEX_COLOR(self, path, "color2")
-        AA_HEX_COLOR(self, path, "color3")
+        AA_HEX_COLOR(self, path, "main_color")
+        AA_HEX_COLOR(self, path, "prototype_color")
+        AA_HEX_COLOR(self, path, "outline_color")
     
 @dataclass(repr=False)
 class SRCustomBlockMutation(SRMutation):
     """
     The second representation for the mutation of a custom block definition
     """
-    _grepr_fields = SRMutation._grepr_fields + ["custom_opcode", "no_screen_refresh", "optype", "color1", "color2", "color3"]
+    _grepr_fields = SRMutation._grepr_fields + ["custom_opcode", "no_screen_refresh", "optype", "main_color", "prototype_color", "outline_color"]
     
     custom_opcode: "SRCustomBlockOpcode"
     no_screen_refresh: bool
@@ -368,9 +368,9 @@ class SRCustomBlockMutation(SRMutation):
     
     # hex format
     # what each color does, is unknown (for now)
-    color1: str
-    color2: str
-    color3: str
+    main_color: str
+    prototype_color: str
+    outline_color: str
     
     def validate(self, path: list, config: ValidationConfig) -> None:
         """
@@ -389,9 +389,9 @@ class SRCustomBlockMutation(SRMutation):
         AA_TYPE(self, path, "custom_opcode", SRCustomBlockOpcode)
         AA_TYPE(self, path, "no_screen_refresh", bool)
         AA_TYPE(self, path, "optype", SRCustomBlockOptype)
-        AA_HEX_COLOR(self, path, "color1")
-        AA_HEX_COLOR(self, path, "color2")
-        AA_HEX_COLOR(self, path, "color3")
+        AA_HEX_COLOR(self, path, "main_color")
+        AA_HEX_COLOR(self, path, "prototype_color")
+        AA_HEX_COLOR(self, path, "outline_color")
 
         self.custom_opcode.validate(path+["custom_opcode"], config)
 

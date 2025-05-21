@@ -102,9 +102,9 @@ def test_FRCustomBlockArgumentMutation_from_data_and_step(api: DummyAPI):
     srmutation = frmutation.step(api)
     assert isinstance(srmutation, SRCustomBlockArgumentMutation)
     assert srmutation.argument_name == "my_arg"
-    assert srmutation.color1 == colors[0]
-    assert srmutation.color2 == colors[1]
-    assert srmutation.color3 == colors[2]
+    assert srmutation.main_color == colors[0]
+    assert srmutation.prototype_color == colors[1]
+    assert srmutation.outline_color == colors[2]
 
 def test_FRCustomBlockArgumentMutation_step_without_storing_argument(api: DummyAPI):
     data = {
@@ -157,9 +157,9 @@ def test_FRCustomBlockMutation_from_data_and_step(api: DummyAPI):
     assert srmutation.custom_opcode == custom_opcode
     assert srmutation.no_screen_refresh == frmutation.warp
     assert srmutation.optype == SRCustomBlockOptype.from_code(frmutation.optype)
-    assert srmutation.color1 == frmutation.color[0]
-    assert srmutation.color2 == frmutation.color[1]
-    assert srmutation.color3 == frmutation.color[2]
+    assert srmutation.main_color == frmutation.color[0]
+    assert srmutation.prototype_color == frmutation.color[1]
+    assert srmutation.outline_color == frmutation.color[2]
 
 
 def test_FRCustomBlockCallMutation_from_data_and_step(api: DummyAPI):
@@ -246,9 +246,9 @@ def config():
 def test_SRCustomBlockArgumentMutation_validate(config):
     srmutation = SRCustomBlockArgumentMutation(
         argument_name="my argument",
-        color1="#f8e43a",
-        color2="#c38d12",
-        color3="#e9d563",
+        main_color="#f8e43a",
+        prototype_color="#c38d12",
+        outline_color="#e9d563",
     )
     srmutation.validate(path=[], config=config)
     
@@ -256,12 +256,12 @@ def test_SRCustomBlockArgumentMutation_validate(config):
         obj=srmutation,
         attr_tests=[
             ("argument_name", 5, TypeValidationError),
-            ("color1", {}, TypeValidationError),
-            ("color1", "", InvalidValueError),
-            ("color2", [], TypeValidationError),
-            ("color2", "#abc", InvalidValueError),
-            ("color3", (), TypeValidationError),
-            ("color3", "255", InvalidValueError),
+            ("main_color", {}, TypeValidationError),
+            ("main_color", "", InvalidValueError),
+            ("prototype_color", [], TypeValidationError),
+            ("prototype_color", "#abc", InvalidValueError),
+            ("outline_color", (), TypeValidationError),
+            ("outline_color", "255", InvalidValueError),
         ],
         validate_func=SRCustomBlockArgumentMutation.validate,
         func_args=[[], config],
@@ -272,9 +272,9 @@ def test_SRCustomBlockMutation_validate(config):
         custom_opcode=SRCustomBlockOpcode(segments=("hi",)),
         no_screen_refresh=True,
         optype=SRCustomBlockOptype.STRING_REPORTER,
-        color1="#f8e43a",
-        color2="#c38d12",
-        color3="#e9d563",
+        main_color="#f8e43a",
+        prototype_color="#c38d12",
+        outline_color="#e9d563",
     )
 
     srmutation.validate(path=[], config=config)
@@ -284,12 +284,12 @@ def test_SRCustomBlockMutation_validate(config):
         attr_tests=[
             ("custom_opcode", "some custom opcode", TypeValidationError),
             ("no_screen_refresh", None, TypeValidationError),
-            ("color1", {}, TypeValidationError),
-            ("color1", "", InvalidValueError),
-            ("color2", [], TypeValidationError),
-            ("color2", "#abc", InvalidValueError),
-            ("color3", (), TypeValidationError),
-            ("color3", "255", InvalidValueError),
+            ("main_color", {}, TypeValidationError),
+            ("main_color", "", InvalidValueError),
+            ("prototype_color", [], TypeValidationError),
+            ("prototype_color", "#abc", InvalidValueError),
+            ("outline_color", (), TypeValidationError),
+            ("outline_color", "255", InvalidValueError),
         ],
         validate_func=SRCustomBlockMutation.validate,
         func_args=[[], config],
