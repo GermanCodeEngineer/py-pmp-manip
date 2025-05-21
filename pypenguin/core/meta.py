@@ -1,7 +1,6 @@
-from typing      import Any
-from dataclasses import dataclass
+from typing import Any
 
-from pypenguin.utility import GreprClass, ThanksError
+from pypenguin.utility import grepr_dataclass, ThanksError
 
 SCRATCH_SEMVER = "3.0.0"
 
@@ -26,13 +25,11 @@ PENGUINMOD_META_DATA = {
     },
 }
 
-@dataclass(repr=False)
-class FRMeta(GreprClass):
+@grepr_dataclass(grepr_fields=["semver", "vm", "agent", "platform"])
+class FRMeta:
     """
     The first representation for the metadata of a project
     """
-    _grepr = True
-    _grepr_fields = ["semver", "vm", "agent", "platform"]
     
     semver: str
     vm: str
@@ -71,13 +68,11 @@ class FRMeta(GreprClass):
             # agent can be anything i don't care
             raise ThanksError() # project must be older or newer
 
-@dataclass(repr=False)
-class FRPenguinModPlatformMeta(GreprClass):
+@grepr_dataclass(grepr_fields=["name", "url", "version"])
+class FRPenguinModPlatformMeta:
     """
     The first representation for the metadata of the penguinmod platform
     """
-    _grepr = True
-    _grepr_fields = ["name", "url", "version"]
     
     name: str
     url: str

@@ -3,7 +3,7 @@ from abc         import ABC, abstractmethod
 from typing      import Any, TYPE_CHECKING
 from dataclasses import dataclass, field
 
-from pypenguin.utility import GreprClass, ThanksError, ValidationConfig, FirstToSecondConversionError, DeserializationError
+from pypenguin.utility import grepr_dataclass, ThanksError, ValidationConfig, FirstToSecondConversionError, DeserializationError
 from pypenguin.utility import AA_TYPE, AA_HEX_COLOR
 
 from pypenguin.core.custom_block import SRCustomBlockOpcode, SRCustomBlockOptype
@@ -11,13 +11,11 @@ from pypenguin.core.custom_block import SRCustomBlockOpcode, SRCustomBlockOptype
 if TYPE_CHECKING:
     from pypenguin.core.block_api import FIConversionAPI
 
-@dataclass(repr=False)
-class FRMutation(GreprClass, ABC):
+@grepr_dataclass(grepr_fields=["tag_name", "children"])
+class FRMutation(ABC):
     """
     The first representation for the mutation of a block. Mutations hold special information, which only special blocks have
     """
-    _grepr = True
-    _grepr_fields = ["tag_name", "children"]
     
     tag_name: str # always "mutation"
     children: list # always []
@@ -58,12 +56,11 @@ class FRMutation(GreprClass, ABC):
             the second representation of the mutation
         """
 
-@dataclass(repr=False)
+@grepr_dataclass(grepr_fields=["color"], parent_cls=FRMutation)
 class FRCustomBlockArgumentMutation(FRMutation):
     """
     The first representation for the mutation of a custom block's argument reporter
     """
-    _grepr_fields = FRMutation._grepr_fields + ["color"]
     
     color: tuple[str, str, str]
     _argument_name: str | None = field(init=False)
@@ -127,12 +124,11 @@ class FRCustomBlockArgumentMutation(FRMutation):
             outline_color        = self.color[2],
         )
 
-@dataclass(repr=False)
+@grepr_dataclass(grepr_fields=["proccode", "argument_ids", "argument_names", "argument_defaults", "warp", "returns", "edited", "optype", "color"], parent_cls=FRMutation)
 class FRCustomBlockMutation(FRMutation):
     """
     The first representation for the mutation of a custom block definition
     """
-    _grepr_fields = FRMutation._grepr_fields + ["proccode", "argument_ids", "argument_names", "argument_defaults", "warp", "returns", "edited", "optype", "color"]
     
     proccode: str
     argument_ids: list[str]
@@ -196,12 +192,11 @@ class FRCustomBlockMutation(FRMutation):
             outline_color            = self.color[2],
         )
 
-@dataclass(repr=False)
+@grepr_dataclass(grepr_fields=["proccode", "argument_ids", "warp", "returns", "edited", "optype", "color"], parent_cls=FRMutation)
 class FRCustomBlockCallMutation(FRMutation):
     """
     The first representation for the mutation of a custom block call
     """
-    _grepr_fields = FRMutation._grepr_fields + ["proccode", "argument_ids", "warp", "returns", "edited", "optype", "color"]
     
     proccode: str
     argument_ids: list[str]
@@ -257,12 +252,11 @@ class FRCustomBlockCallMutation(FRMutation):
             ),
         )
 
-@dataclass(repr=False)
+@grepr_dataclass(grepr_fields=["has_next"], parent_cls=FRMutation)
 class FRStopScriptMutation(FRMutation):
     """
     The first representation for the mutation of a stop script mutation
     """
-    _grepr_fields = FRMutation._grepr_fields + ["has_next"]
     
     has_next: bool
     
@@ -298,13 +292,11 @@ class FRStopScriptMutation(FRMutation):
         )
 
 
-@dataclass(repr=False)
-class SRMutation(GreprClass, ABC):
+@grepr_dataclass(grepr_fields=[])
+class SRMutation(ABC):
     """
     The second representation for the mutation of a block. Mutations hold special information, which only special blocks have. This representation is much more user friendly then the first representation
     """
-    _grepr = True
-    _grepr_fields = []
 
     @abstractmethod
     def validate(self, path: list, config: ValidationConfig) -> None:
@@ -322,12 +314,11 @@ class SRMutation(GreprClass, ABC):
             ValidationError: if the SRMutation is invalid
         """
 
-@dataclass(repr=False)
+@grepr_dataclass(grepr_fields=["argument_name", "main_color", "prototype_color", "outline_color"], parent_cls=SRMutation)
 class SRCustomBlockArgumentMutation(SRMutation):
     """
     The second representation for the mutation of a custom block argument reporter
     """
-    _grepr_fields = FRMutation._grepr_fields + ["argument_name", "main_color", "prototype_color", "outline_color"]
     
     argument_name: str
     # hex format
@@ -355,12 +346,11 @@ class SRCustomBlockArgumentMutation(SRMutation):
         AA_HEX_COLOR(self, path, "prototype_color")
         AA_HEX_COLOR(self, path, "outline_color")
     
-@dataclass(repr=False)
+@grepr_dataclass(grepr_fields=["custom_opcode", "no_screen_refresh", "optype", "main_color", "prototype_color", "outline_color"], parent_cls=SRMutation)
 class SRCustomBlockMutation(SRMutation):
     """
     The second representation for the mutation of a custom block definition
     """
-    _grepr_fields = SRMutation._grepr_fields + ["custom_opcode", "no_screen_refresh", "optype", "main_color", "prototype_color", "outline_color"]
     
     custom_opcode: "SRCustomBlockOpcode"
     no_screen_refresh: bool
@@ -395,12 +385,11 @@ class SRCustomBlockMutation(SRMutation):
 
         self.custom_opcode.validate(path+["custom_opcode"], config)
 
-@dataclass(repr=False)    
+@grepr_dataclass(grepr_fields=["custom_opcode"], parent_cls=SRMutation)    
 class SRCustomBlockCallMutation(SRMutation):
     """
     The second representation for the mutation of a custom block call
     """
-    _grepr_fields = SRMutation._grepr_fields + ["custom_opcode"]
     
     custom_opcode: "SRCustomBlockOpcode"
     
@@ -422,12 +411,11 @@ class SRCustomBlockCallMutation(SRMutation):
 
         self.custom_opcode.validate(path+["custom_opcode"], config)
 
-@dataclass(repr=False)
+@grepr_dataclass(grepr_fields=["is_ending_statement"], parent_cls=SRMutation)
 class SRStopScriptMutation(SRMutation):
     """
     The second representation for the mutation of a "stop [this script v] block
     """
-    _grepr_fields = SRMutation._grepr_fields + ["is_ending_statement"]
     
     is_ending_statement: bool
 

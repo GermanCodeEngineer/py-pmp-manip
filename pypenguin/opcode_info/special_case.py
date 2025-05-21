@@ -1,7 +1,6 @@
-from dataclasses import dataclass
-from typing      import Callable
+from typing import Callable
 
-from pypenguin.utility import PypenguinEnum, GreprClass
+from pypenguin.utility import grepr_dataclass, PypenguinEnum
 
 class SpecialCaseType(PypenguinEnum):
     """
@@ -57,13 +56,11 @@ class SpecialCaseType(PypenguinEnum):
         ...
     """    
 
-@dataclass
-class SpecialCase(GreprClass):
+@grepr_dataclass(grepr_fields=["type", "function"])
+class SpecialCase:
     """
     Special Cases allows for custom behaviour for special blocks
     """
-    _grepr = True
-    _grepr_fields = ["type", "function"]
 
     type: SpecialCaseType
     function: Callable

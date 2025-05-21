@@ -1,15 +1,13 @@
-from typing      import Any
-from dataclasses import dataclass
+from typing import Any
 
 from pypenguin.utility import (
-    grepr_class, GreprClass, ValidationConfig, 
+    grepr_dataclass, ValidationConfig, 
     AA_TYPE, AA_COORD_PAIR, AA_MIN,
 )
 
 
-@dataclass(repr=False)
-@grepr_class(fields=["name", "asset_id", "data_format", "md5ext", "rotation_center_x", "rotation_center_y", "bitmap_resolution"])
-class FRCostume(GreprClass):
+@grepr_dataclass(grepr_fields=["name", "asset_id", "data_format", "md5ext", "rotation_center_x", "rotation_center_y", "bitmap_resolution"])
+class FRCostume:
     """
     The first representation for a costume. It is very close to the raw data in a project
     """
@@ -57,9 +55,8 @@ class FRCostume(GreprClass):
             bitmap_resolution = 1 if self.bitmap_resolution is None else self.bitmap_resolution,
         )
 
-@dataclass(repr=False)
-@grepr_class(fields=["name", "asset_id", "data_format", "md5ext", "rate", "sample_count"])
-class FRSound(GreprClass):
+@grepr_dataclass(grepr_fields=["name", "asset_id", "data_format", "md5ext", "rate", "sample_count"])
+class FRSound:
     """
     The first representation for a sound. It is very close to the raw data in a project
     """
@@ -104,19 +101,16 @@ class FRSound(GreprClass):
             # Other attributes can be derived from the sound files
         )
 
-@dataclass(repr=False)
-class SRCostume(GreprClass):
+@grepr_dataclass(grepr_fields=["name", "file_extension", "rotation_center", "bitmap_resolution"])
+class SRCostume:
     """
     The second representation for a costume. It is more user friendly then the first representation
     """
-    _grepr = True
-    _grepr_fields = ["name", "file_extension", "rotation_center", "bitmap_resolution"]
 
     name: str
     file_extension: str
     rotation_center: tuple[int | float, int | float]
     bitmap_resolution: int
-    
     
     @classmethod
     def create_empty(cls, name: str = "empty") -> "SRCostume":
@@ -147,13 +141,11 @@ class SRCostume(GreprClass):
         AA_TYPE(self, path, "bitmap_resolution", int)
         AA_MIN(self, path, "bitmap_resolution", min=1)
 
-@dataclass(repr=False)
-class SRSound(GreprClass):
+@grepr_dataclass(grepr_fields=["name", "file_extension"])
+class SRSound:
     """
     The second representation for a sound. It is more user friendly then the first representation
     """
-    _grepr = True
-    _grepr_fields = ["name", "file_extension"]
 
     name: str
     file_extension: str

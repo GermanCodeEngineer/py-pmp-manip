@@ -1,8 +1,8 @@
 from typing      import TYPE_CHECKING, Type, Iterable
-from dataclasses import dataclass, field
+from dataclasses import field
 
 from pypenguin.utility import (
-    DualKeyDict, GreprClass, PypenguinEnum, 
+    DualKeyDict, grepr_dataclass, PypenguinEnum, 
     UnknownOpcodeError, SameOpcodeTwiceError,
 )
 
@@ -44,13 +44,11 @@ class OpcodeType(PypenguinEnum):
     DYNAMIC           = (False, 9)
 # TODO: find solution for draw polygon block
 
-@dataclass
-class OpcodeInfo(GreprClass):
+@grepr_dataclass(grepr_fields=["opcode_type", "inputs", "dropdowns", "can_have_monitor", "old_mutation_cls", "new_mutation_cls"])
+class OpcodeInfo:
     """
     The information about all the blocks with a certain opcode
     """
-    _grepr = True
-    _grepr_fields = ["opcode_type", "inputs", "dropdowns", "can_have_monitor", "old_mutation_cls", "new_mutation_cls"]
     
     opcode_type: OpcodeType
     inputs: DualKeyDict[str, str, InputInfo] = field(default_factory=DualKeyDict)
@@ -307,14 +305,12 @@ class OpcodeInfo(GreprClass):
         """
         return dict(self.get_input_ids_types(block, ficapi).keys_key1_key2())
 
-@dataclass
-class OpcodeInfoGroup(GreprClass):
+@grepr_dataclass(grepr_fields=["name", "opcode_info"])
+class OpcodeInfoGroup:
     """
     Represents a group of block opcode information. 
     Therefore it's used to represent opcode information about categories and extensions
     """
-    _grepr = True
-    _grepr_fields = ["name", "opcode_info"]
 
     name: str
     opcode_info: DualKeyDict[str, str, OpcodeInfo]
@@ -337,13 +333,11 @@ class OpcodeInfoGroup(GreprClass):
             value = opcode_info,
         )
 
-@dataclass
-class OpcodeInfoAPI(GreprClass):
+@grepr_dataclass(grepr_fields=["opcode_info"])
+class OpcodeInfoAPI:
     """
     API which provides a way to fetch information about block opcodes
     """
-    _grepr = True
-    _grepr_fields = ["opcode_info"]
 
     opcode_info: DualKeyDict[str, str, OpcodeInfo] = field(default_factory=DualKeyDict)
 

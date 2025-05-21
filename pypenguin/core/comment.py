@@ -1,16 +1,12 @@
 from typing      import Any
-from dataclasses import dataclass
 
-from pypenguin.utility import GreprClass, ValidationConfig
-from pypenguin.utility import AA_COORD_PAIR, AA_TYPE, InvalidValueError
+from pypenguin.utility import grepr_dataclass, ValidationConfig, AA_COORD_PAIR, AA_TYPE, InvalidValueError
 
-@dataclass(repr=False)
-class FRComment(GreprClass):
+@grepr_dataclass(grepr_fields=["block_id", "x", "y", "width", "height", "minimized", "text"])
+class FRComment:
     """
     The first representation for a block. It is very close to the raw data in a project
     """
-    _grepr = True
-    _grepr_fields = ["block_id", "x", "y", "width", "height", "minimized", "text"]
     
     block_id: str | None
     x: int | float
@@ -58,13 +54,11 @@ class FRComment(GreprClass):
         )
         return (self.block_id is not None, comment)
 
-@dataclass(repr=False)
-class SRComment(GreprClass):
+@grepr_dataclass(grepr_fields=["position", "size", "is_minimized", "text"])
+class SRComment:
     """
     The second representation for a comment
     """
-    _grepr = True
-    _grepr_fields = ["position", "size", "is_minimized", "text"]
     
     position: tuple[int | float, int | float]
     size: tuple[int | float, int | float]

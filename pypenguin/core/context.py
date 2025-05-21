@@ -1,19 +1,16 @@
 from typing      import TYPE_CHECKING, Any
-from dataclasses import dataclass
 
-from pypenguin.utility     import GreprClass
+from pypenguin.utility import grepr_dataclass
 
 if TYPE_CHECKING:
     from pypenguin.opcode_info import DropdownValueKind
 
 
-@dataclass(repr=False)
-class PartialContext(GreprClass):
+@grepr_dataclass(grepr_fields=["scope_variables", "scope_lists", "all_sprite_variables", "sprite_only_variables", "sprite_only_lists", "other_sprites", "backdrops"])
+class PartialContext:
     """
     A temporary dataclass which stores the context for dropdown validation excluding sprite context
     """
-    _grepr = True
-    _grepr_fields = ["scope_variables", "scope_lists", "all_sprite_variables", "sprite_only_variables", "sprite_only_lists", "other_sprites", "backdrops"]
 
     scope_variables: list[tuple["DropdownValueKind", Any]]
     scope_lists: list[tuple["DropdownValueKind", Any]]
@@ -23,13 +20,11 @@ class PartialContext(GreprClass):
     other_sprites: list[tuple["DropdownValueKind", Any]]
     backdrops: list[tuple["DropdownValueKind", Any]]
 
-@dataclass(repr=False)
-class CompleteContext(GreprClass):
+@grepr_dataclass(grepr_fields=["scope_variables", "scope_lists", "all_sprite_variables", "sprite_only_variables", "sprite_only_lists", "other_sprites", "backdrops", "costumes", "sounds", "is_stage"])
+class CompleteContext:
     """
     A temporary dataclass which stores the context for dropdown validation including sprite context
     """
-    _grepr = True
-    _grepr_fields = ["scope_variables", "scope_lists", "all_sprite_variables", "sprite_only_variables", "sprite_only_lists", "other_sprites", "backdrops", "costumes", "sounds", "is_stage"]
 
     scope_variables: list[tuple["DropdownValueKind", Any]]
     scope_lists: list[tuple["DropdownValueKind", Any]]

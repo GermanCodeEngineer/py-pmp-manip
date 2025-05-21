@@ -1,12 +1,9 @@
 from dataclasses import dataclass
 
-from pypenguin.utility import GreprClass, ValidationConfig
-from pypenguin.utility import AA_TYPE, AA_TYPES, AA_LIST_OF_TYPES
+from pypenguin.utility import grepr_dataclass, ValidationConfig, AA_TYPE, AA_TYPES, AA_LIST_OF_TYPES
 
-@dataclass(repr=False)
-class SRVariable(GreprClass):
-    _grepr = True
-    _grepr_fields = ["name", "current_value"]
+@grepr_dataclass(grepr_fields=["name", "current_value"])
+class SRVariable:
     
     name: str
     current_value: int | float | str | bool
@@ -31,10 +28,8 @@ class SRVariable(GreprClass):
 class SRCloudVariable(SRVariable):
     pass
 
-@dataclass(repr=False)
-class SRList(GreprClass):
-    _grepr = True
-    _grepr_fields = ["name", "current_value"]
+@grepr_dataclass(grepr_fields=["name", "current_value"])
+class SRList:
     
     name: str
     current_value: list[int | float | str | bool]

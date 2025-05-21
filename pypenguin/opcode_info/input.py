@@ -1,16 +1,13 @@
-from pypenguin.utility import PypenguinEnum, GreprClass
-from dataclasses import dataclass
+from pypenguin.utility import grepr_dataclass, PypenguinEnum
 
 from pypenguin.opcode_info.menu     import MenuInfo
 from pypenguin.opcode_info.dropdown import DropdownType
 
-@dataclass
-class InputInfo(GreprClass):
+@grepr_dataclass(grepr_fields=["type", "menu"])
+class InputInfo:
     """
     The information about a input of a certain opcode
     """
-    _grepr = True
-    _grepr_fields = ["type", "menu"]
     
     type: "InputType"
     menu: MenuInfo | None = None

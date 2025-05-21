@@ -1,22 +1,19 @@
-from dataclasses import dataclass
 from re import split 
 
 from pypenguin.utility import (
-    GreprClass, PypenguinEnum, ValidationConfig,
+    grepr_dataclass, PypenguinEnum, ValidationConfig,
     SameNameTwiceError, FirstToInterConversionError,
     AA_TYPE, AA_TUPLE_OF_TYPES, AA_MIN_LEN,
 )
 
 from pypenguin.opcode_info import InputType, OpcodeType
 
-@dataclass(repr=False, frozen=True, unsafe_hash=True)
-class SRCustomBlockOpcode(GreprClass):
+@grepr_dataclass(grepr_fields=["segments"], frozen=True, unsafe_hash=True)
+class SRCustomBlockOpcode:
     """
     The second representation for the "custom opcode" of a custom block. 
     It stores the segments, which can be either a string(=> a label) or a SRCustomBlockArgument with name and type
     """
-    _grepr = True
-    _grepr_fields = ["segments"]
 
     segments: tuple["str | SRCustomBlockArgument"]
 
@@ -104,14 +101,12 @@ class SRCustomBlockOpcode(GreprClass):
         assert attr == "segments"
         return SRCustomBlockOpcode(segments=value)
 
-@dataclass(repr=False, frozen=True)
-class SRCustomBlockArgument(GreprClass):
+@grepr_dataclass(grepr_fields=["name", "type"], frozen=True, unsafe_hash=True)
+class SRCustomBlockArgument:
     """
     The second representation for a argument of a custom opcode
     """
-    _grepr = True
-    _grepr_fields = ["name", "type"]
-
+    
     name: str
     type: "SRCustomBlockArgumentType"
 

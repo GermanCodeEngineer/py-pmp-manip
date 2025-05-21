@@ -5,7 +5,7 @@ from abc         import ABC, abstractmethod
 
 from pypenguin.utility     import (
     string_to_sha256,
-    GreprClass, ThanksError, ValidationConfig, 
+    grepr_dataclass, ThanksError, ValidationConfig, 
     AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_MIN_LEN, AA_MIN, AA_RANGE, AA_COORD_PAIR, AA_NOT_ONE_OF, 
     SameNameTwiceError, FirstToSecondConversionError,
 )
@@ -24,7 +24,7 @@ from pypenguin.core.vars_lists     import SRVariable, SRVariable, SRVariable, SR
 from pypenguin.core.vars_lists     import SRList, SRList, SRList
 
 @dataclass(repr=False)
-class FRTarget(GreprClass, ABC):
+class FRTarget(ABC):
     """
     The first representation (FR) of a target. A target can be either a sprite or the stage
     """
@@ -367,7 +367,7 @@ class FRSprite(FRTarget):
 
 
 @dataclass(repr=False)
-class SRTarget(GreprClass):
+class SRTarget:
     """
     The second representation (SR) of a target, which is much more user friendly. A target can be either a sprite or the stage
     """

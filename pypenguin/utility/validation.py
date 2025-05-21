@@ -1,11 +1,10 @@
 import json
 import re
 from typing       import Any, Type
-from dataclasses  import dataclass
 from urllib.parse import urlparse
 
 from pypenguin.utility.errors import TypeValidationError, RangeValidationError, InvalidValueError
-from pypenguin.utility.general import GreprClass
+from pypenguin.utility.general import grepr_dataclass
 
 def _value_and_descr(obj, attr) -> tuple[Any, str]:
     return getattr(obj, attr), f"{attr} of a {obj.__class__.__name__}"
@@ -176,8 +175,8 @@ def is_valid_url(url: str) -> bool:
     except Exception:
         return False
 
-@dataclass(repr=False)
-class ValidationConfig(GreprClass):
+@grepr_dataclass(grepr_fields=["raise_when_monitor_position_outside_stage", "raise_when_monitor_bigger_then_stage"])
+class ValidationConfig:
     raise_when_monitor_position_outside_stage: bool = True
     raise_when_monitor_bigger_then_stage: bool = True
 

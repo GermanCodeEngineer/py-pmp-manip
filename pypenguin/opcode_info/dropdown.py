@@ -1,7 +1,7 @@
 from typing      import Any
 from dataclasses import dataclass, field
 
-from pypenguin.utility import PypenguinEnum, GreprClass, remove_duplicates, BlameDevsError
+from pypenguin.utility import PypenguinEnum, grepr_dataclass, remove_duplicates, BlameDevsError
 
 from pypenguin.core.context import PartialContext, CompleteContext
 
@@ -26,13 +26,11 @@ class DropdownValueKind(PypenguinEnum):
     BACKDROP       = 11
     SOUND          = 12
 
-@dataclass
-class DropdownInfo(GreprClass):
+@grepr_dataclass(grepr_fields=["type"])
+class DropdownInfo:
     """
     The information about a dropdown of a certain opcode
     """
-    _grepr = True
-    _grepr_fields = ["type"]
     
     type: "DropdownType"
 
@@ -86,13 +84,11 @@ class DropdownValueRule(PypenguinEnum):
     FONT                      = (DropdownValueKind.STANDARD     , True , 16)
 
 
-@dataclass
-class DropdownTypeInfo(GreprClass):
+@grepr_dataclass(grepr_fields=["direct_values", "behaviours", "old_direct_values", "fallback"])
+class DropdownTypeInfo:
     """
     The information about a dropdown type, which can be used for one or many opcodes
     """
-    _grepr = True
-    _grepr_fields = ["direct_values", "behaviours", "old_direct_values", "fallback"]
 
     direct_values:     list[str | int | bool]  = field(default_factory=list)
     rules:             list[DropdownValueRule] = field(default_factory=list)

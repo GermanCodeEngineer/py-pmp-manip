@@ -1,9 +1,9 @@
 from typing      import Any, TYPE_CHECKING
-from dataclasses import dataclass, field
+from dataclasses import field
 from abc         import ABC, abstractmethod
 
 from pypenguin.utility           import (
-    GreprClass, ValidationConfig, get_closest_matches, tuplify,
+    grepr_dataclass, ValidationConfig, get_closest_matches, tuplify,
     AA_TYPE, AA_NONE, AA_NONE_OR_TYPE, AA_COORD_PAIR, AA_LIST_OF_TYPE, AA_DICT_OF_TYPE, AA_MIN_LEN,
     DeserializationError, FirstToInterConversionError, InterToSecondConversionError,
     UnnecessaryInputError, MissingInputError, UnnecessaryDropdownError, MissingDropdownError, InvalidOpcodeError, InvalidBlockShapeError,
@@ -19,13 +19,11 @@ from pypenguin.core.dropdown       import SRDropdownValue
 if TYPE_CHECKING:
     from pypenguin.core.block_api      import FIConversionAPI, ValidationAPI
 
-@dataclass(repr=False)
-class FRBlock(GreprClass):
+@grepr_dataclass(grepr_fields=["opcode", "next", "parent", "inputs", "fields", "shadow", "top_level", "x", "y", "comment", "mutation"])
+class FRBlock:
     """
     The first representation for a block. It is very close to the raw data in a project
     """
-    _grepr = True
-    _grepr_fields = ["opcode", "next", "parent", "inputs", "fields", "shadow", "top_level", "x", "y", "comment", "mutation"]
 
     opcode: str
     next: str | None
@@ -247,13 +245,11 @@ class FRBlock(GreprClass):
 
 
 
-@dataclass(repr=False)
-class IRBlock(GreprClass):
+@grepr_dataclass(grepr_fields=["opcode", "inputs", "dropdowns", "comment", "mutation", "position", "next", "is_top_level"])
+class IRBlock:
     """
     The intermediate representation for a block. It has similarities with SRBlock but uses an id system
     """
-    _grepr = True
-    _grepr_fields = ["opcode", "inputs", "dropdowns", "comment", "mutation", "position", "next", "is_top_level"]
     
     opcode: str
     inputs: dict[str, "IRInputValue"]
@@ -410,39 +406,33 @@ class IRBlock(GreprClass):
         
         return (self.position, new_blocks) 
  
-@dataclass(repr=False)
-class IRInputValue(GreprClass):
+@grepr_dataclass(grepr_fields=["mode", "references", "immediate_block", "text"])
+class IRInputValue:
     """
     The intermediate representation for the value of a block's input
     """
-    _grepr = True
-    _grepr_fields = ["mode", "references", "immediate_block", "text"]
     
     mode: InputMode
     references: list["IRBlockReference"]
     immediate_block: IRBlock | None
     text: str | None
 
-@dataclass(repr=False, frozen=True, unsafe_hash=True)
-class IRBlockReference(GreprClass):
+@grepr_dataclass(grepr_fields=["id"], frozen=True, unsafe_hash=True)
+class IRBlockReference:
     """
     A block reference in intermediate representation. Basis for the temporary id system
     """
-    _grepr = True
-    _grepr_fields = ["id"]
     
     id: str
 
 
 
-@dataclass(repr=False)
-class SRScript(GreprClass):
+@grepr_dataclass(grepr_fields=["position", "blocks"])
+class SRScript:
     """
     The second representation for a script. 
     It uses a nested block structure and is much more user friendly then the first representation
     """
-    _grepr = True
-    _grepr_fields = ["position", "blocks"]
 
     position: tuple[int | float, int | float]
     blocks: list["SRBlock"]
@@ -495,14 +485,12 @@ class SRScript(GreprClass):
                 is_last      = ((i+1) == len(self.blocks)),
             )
 
-@dataclass(repr=False)
-class SRBlock(GreprClass):
+@grepr_dataclass(grepr_fields=["opcode", "inputs", "dropdowns", "comment", "mutation"])
+class SRBlock:
     """
     The second representation for a block. 
     It uses a nested block structure and is much more user friendly then the first representation
     """
-    _grepr = True
-    _grepr_fields = ["opcode", "inputs", "dropdowns", "comment", "mutation"]
     
     opcode: str
     inputs: dict[str, "SRInputValue"]
@@ -658,18 +646,17 @@ class SRBlock(GreprClass):
                 raise InvalidBlockShapeError(path, "If contained in a substack, a block of type ...REPORTER must be the only block in that substack")
 
 
-@dataclass(repr=False, eq=False, init=False)
-class SRInputValue(GreprClass, ABC):
+@grepr_dataclass(grepr_fields=[], eq=False, init=False)
+class SRInputValue(ABC):
     """
     The second representation for a block input. 
     It can contain a substack of blocks, a block, a text field and a dropdown
     **Please use the subclasses instead**
     **Be careful when accessing fields**, because only the subclasses guarantee there existance
     """
-    _grepr = True
-    _grepr_fields = []
     
-    blocks: list[SRBlock]     | None = field(init=False)
+    # these aren't guaranteed to exist and are only listed for good typing
+    blocks: list[SRBlock]     | None = field(init=False) 
     block: SRBlock            | None = field(init=False)
     text: str                 | None = field(init=False)
     dropdown: SRDropdownValue | None = field(init=False)
@@ -784,13 +771,12 @@ class SRInputValue(GreprClass, ABC):
                 expects_reporter = True,
             )
 
-@dataclass(repr=False, eq=False)
+@grepr_dataclass(grepr_fields=["block", "text"], parent_cls=SRInputValue, eq=False)
 class SRBlockAndTextInputValue(SRInputValue):
     """
     The second representation for a block input, which has a text field and might contain a block
     """
-    _grepr_fields = SRInputValue._grepr_fields + ["block", "text"]
-    
+
     block: SRBlock | None
     text : str
     
@@ -828,12 +814,11 @@ class SRBlockAndTextInputValue(SRInputValue):
         )
         AA_TYPE(self, path, "text", str)
 
-@dataclass(repr=False, eq=False)
+@grepr_dataclass(grepr_fields=["block", "dropdown"], parent_cls=SRInputValue, eq=False)
 class SRBlockAndDropdownInputValue(SRInputValue):
     """
     The second representation for a block input, which has a dropdown and might contain a block
     """
-    _grepr_fields = SRInputValue._grepr_fields + ["block", "dropdown"]
     
     block   : SRBlock         | None
     dropdown: SRDropdownValue | None
@@ -881,12 +866,11 @@ class SRBlockAndDropdownInputValue(SRInputValue):
                 context       = context,
             )
 
-@dataclass(repr=False, eq=False)
+@grepr_dataclass(grepr_fields=["block"], parent_cls=SRInputValue, eq=False)
 class SRBlockOnlyInputValue(SRInputValue):
     """
     The second representation for a block input, which might contain a block
     """
-    _grepr_fields = SRInputValue._grepr_fields + ["block"]
     
     block: SRBlock | None
 
@@ -923,13 +907,11 @@ class SRBlockOnlyInputValue(SRInputValue):
             context        = context,
         )
 
-@dataclass(repr=False, eq=False)
+@grepr_dataclass(grepr_fields=["blocks"], parent_cls=SRInputValue, eq=False)
 class SRScriptInputValue(SRInputValue):
     """
     The second representation for a block input, which contains a substack of blocks
     """
-    
-    _grepr_fields = SRInputValue._grepr_fields + ["blocks"]
     
     blocks: list[SRBlock]
 

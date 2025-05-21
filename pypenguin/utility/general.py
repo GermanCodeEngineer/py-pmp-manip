@@ -113,24 +113,42 @@ def ensure_correct_path(_path, target_folder_name="pypenguin"):
         return final_path
 
 # Utility Classes
-from enum import Enum
-from typing import TypeVar, Generic, Iterator
+from enum        import Enum
+from typing      import TypeVar, Generic, Iterator
+from dataclasses import dataclass
 
 class PypenguinEnum(Enum):
     def __repr__(self):
         return self.__class__.__name__ + "." + self.name
 
-class GreprClass:
-    def __repr__(self) -> str:
-        return grepr(self)
-
-def grepr_class(fields: list[str]):
-    def decorator(cls):
+def grepr_dataclass(*, grepr_fields: list[str], parent_cls: type|None = None, 
+        init: bool = True, eq: bool = True, order: bool = False, 
+        unsafe_hash: bool = False, frozen: bool = False, 
+        match_args: bool = True, kw_only: bool = False, 
+        slots: bool = False, weakref_slot: bool = False,
+    ):
+    """
+    A decorator which combines @dataclass and a good representation system.
+    Args:
+        grepr_fields: fields for the good repr implementation
+        parent_cls: class whose fields will also be included in the good repr impletementation
+        init...: dataclass parameters
+    """
+    def decorator(cls: type):
         def __repr__(self) -> str:
             return grepr(self)
         cls.__repr__ = __repr__
         cls._grepr = True
-        cls._grepr_fields = fields
+        if parent_cls is None:
+            cls._grepr_fields = grepr_fields
+        else:
+            cls._grepr_fields = parent_cls._grepr_fields + grepr_fields
+        dataclass(cls, 
+            init=init, repr=False, eq=eq,
+            order=order, unsafe_hash=unsafe_hash, frozen=frozen,
+            match_args=match_args, kw_only=kw_only,
+            slots=slots, weakref_slot=weakref_slot,
+        )
         return cls
     return decorator
 
@@ -285,7 +303,7 @@ def string_to_sha256(primary: str, secondary: str|None=None) -> str:
 
 __all__ = [
     "grepr", "read_file_of_zip", "ensure_correct_path", 
-    "PypenguinEnum", "GreprClass", "grepr_class", "DualKeyDict", 
+    "PypenguinEnum", "grepr_dataclass", "DualKeyDict", 
     "remove_duplicates", "lists_equal_ignore_order", "get_closest_matches", "tuplify", "string_to_sha256",
 ]
 

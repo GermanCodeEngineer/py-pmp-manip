@@ -1,16 +1,13 @@
 from dataclasses import dataclass
 
-from pypenguin.utility import GreprClass, ValidationConfig
-from pypenguin.utility import AA_TYPE, AA_ALNUM, is_valid_js_data_uri, is_valid_url, InvalidValueError
+from pypenguin.utility import grepr_dataclass, ValidationConfig, AA_TYPE, AA_ALNUM, is_valid_js_data_uri, is_valid_url, InvalidValueError
 
-@dataclass(repr=False)
-class SRExtension(GreprClass):
+@grepr_dataclass(grepr_fields=["id"])
+class SRExtension:
     """
     The second representation for an extension.
     Creating an extension and adding it to a project is equivalent to clicking the "add extension" button
     """
-    _grepr = True
-    _grepr_fields = ["id"]
     
     id: str
 
@@ -37,16 +34,14 @@ class SRBuiltinExtension(SRExtension):
     Creating an extension and adding it to a project is equivalent to clicking the "add extension" button.
     Builtin Extensions don't specify a url
     """
-    pass
 
-@dataclass(repr=False)
+@grepr_dataclass(grepr_fields=["url"], parent_cls=SRExtension)
 class SRCustomExtension(SRExtension):
     """
     The second representation for a custom extension. 
     Can be created either with url("https://...") or javascript data uri("data:application/javascript,...")
     Creating an extension and adding it to a project is equivalent to clicking the "add extension" button
     """
-    _grepr_fields = SRExtension._grepr_fields + ["url"]
     
     url: str # either "https://..." or "data:application/javascript,..."
     

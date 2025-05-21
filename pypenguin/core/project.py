@@ -2,7 +2,7 @@ from json        import loads
 from dataclasses import dataclass
 
 from pypenguin.utility     import (
-    read_file_of_zip, string_to_sha256, ThanksError, GreprClass, ValidationConfig, 
+    read_file_of_zip, string_to_sha256, ThanksError, grepr_dataclass, ValidationConfig, 
     AA_TYPE, AA_NONE_OR_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_RANGE, 
     SameNameTwiceError, SameNumberTwiceError, LayerOrderError,
 )
@@ -16,13 +16,11 @@ from pypenguin.core.enums         import SRTTSLanguage, SRVideoState
 from pypenguin.core.target        import FRTarget, FRStage, FRSprite, SRStage, SRSprite
 from pypenguin.core.vars_lists    import SRVariable, SRList
 
-@dataclass(repr=False)
-class FRProject(GreprClass): 
+@grepr_dataclass(grepr_fields=["targets", "monitors", "extension_data", "extensions", "extension_urls", "meta"])
+class FRProject: 
     """
     The first representation (FR) of the project data tree. Its data is equivalent to the data stored in a .pmp file
     """
-    _grepr = True
-    _grepr_fields = ["targets", "monitors", "extension_data", "extensions", "extension_urls", "meta"]
 
     targets: list[FRTarget]
     monitors: list[FRMonitor]
@@ -171,13 +169,11 @@ class FRProject(GreprClass):
         )
 
 
-@dataclass(repr=False)
-class SRProject(GreprClass):
+@grepr_dataclass(grepr_fields=["stage", "sprites", "all_sprite_variables", "all_sprite_lists", "tempo", "video_transparency", "video_state", "text_to_speech_language", "global_monitors", "extensions"])
+class SRProject:
     """
     The second representation (SR) of a Scratch/PenguinMod Project
     """
-    _grepr = True
-    _grepr_fields = ["stage", "sprites", "all_sprite_variables", "all_sprite_lists", "tempo", "video_transparency", "video_state", "text_to_speech_language", "global_monitors", "extensions"]
     
     stage: SRStage
     sprites: list[SRSprite]

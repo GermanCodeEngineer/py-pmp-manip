@@ -1,6 +1,6 @@
-from dataclasses import dataclass, field
+from dataclasses import field
 
-from pypenguin.utility import GreprClass, FirstToInterConversionError, ValidationError
+from pypenguin.utility import grepr_dataclass, FirstToInterConversionError, ValidationError
 
 from pypenguin.core.custom_block import SRCustomBlockOpcode
 
@@ -8,13 +8,11 @@ from pypenguin.core.block          import FRBlock, SRBlock, SRScript
 from pypenguin.core.comment        import SRComment
 from pypenguin.core.block_mutation import FRCustomBlockMutation, SRCustomBlockMutation
 
-@dataclass(repr=False)
-class FIConversionAPI(GreprClass):
+@grepr_dataclass(grepr_fields=["blocks", "scheduled_block_deletions"])
+class FIConversionAPI:
     """
     An API which allows the access to other blocks in the same target during **c**onversion from **f**irst to **i**ntermediate representation
     """
-    _grepr = True
-    _grepr_fields = ["blocks", "scheduled_block_deletions"]
 
     blocks: dict[str, "FRBlock"]
     block_comments: dict[str, SRComment]
@@ -90,13 +88,11 @@ class FIConversionAPI(GreprClass):
             return self.block_comments[comment_id]
         raise FirstToInterConversionError(f"Comment with id {repr(comment_id)} not found")
 
-@dataclass(repr=False)
-class ValidationAPI(GreprClass):
+@grepr_dataclass(grepr_fields=["scripts", "cb_mutations:"])
+class ValidationAPI:
     """
     An API which allows the access to other blocks in the same target during validation
     """
-    _grepr = True
-    _grepr_fields = ["scripts", "cb_mutations:"]
 
     scripts: list["SRScript"]
     cb_mutations: dict[SRCustomBlockOpcode, "SRCustomBlockMutation"] = field(init=False)

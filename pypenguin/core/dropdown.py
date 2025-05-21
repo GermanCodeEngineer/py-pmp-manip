@@ -1,19 +1,17 @@
 from typing      import Any
 from dataclasses import dataclass
 
-from pypenguin.utility     import GreprClass, ValidationConfig, AA_TYPE, AA_JSON_COMPATIBLE, InvalidDropdownValueError
+from pypenguin.utility     import grepr_dataclass, ValidationConfig, AA_TYPE, AA_JSON_COMPATIBLE, InvalidDropdownValueError
 from pypenguin.opcode_info import DropdownType, DropdownValueKind
 
 from pypenguin.core.context import PartialContext, CompleteContext
 
 
-@dataclass(repr=False)
-class SRDropdownValue(GreprClass):
+@grepr_dataclass(grepr_fields=["kind", "value"])
+class SRDropdownValue:
     """
     The second representation for a block dropdown, containing a kind and a value
     """
-    _grepr = True
-    _grepr_fields = ["kind", "value"]
 
     kind: DropdownValueKind
     value: Any

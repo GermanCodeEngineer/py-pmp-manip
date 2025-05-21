@@ -2,7 +2,7 @@ from typing      import Any
 from dataclasses import dataclass
 
 from pypenguin.utility           import (
-    GreprClass, ValidationConfig,
+    grepr_dataclass, ValidationConfig,
     AA_TYPE, AA_TYPES, AA_DICT_OF_TYPE, AA_COORD_PAIR, AA_BOXED_COORD_PAIR, AA_EQUAL, AA_BIGGER_OR_EQUAL, 
     InvalidOpcodeError, MissingDropdownError, UnnecessaryDropdownError, ThanksError,
 )
@@ -19,13 +19,11 @@ STAGE_HEIGHT: int = 360
 LIST_MONITOR_DEFAULT_WIDTH  = 100
 LIST_MONITOR_DEFAULT_HEIGHT = 120
 
-@dataclass(repr=False)
-class FRMonitor(GreprClass):
+@grepr_dataclass(grepr_fields=["id", "mode", "opcode", "params", "sprite_name", "value", "x", "y", "visible", "width", "height", "slider_min", "slider_max", "is_discrete"])
+class FRMonitor:
     """
     The first representation for a monitor
     """
-    _grepr = True
-    _grepr_fields = ["id", "mode", "opcode", "params", "sprite_name", "value", "x", "y", "visible", "width", "height", "slider_min", "slider_max", "is_discrete"]
 
     # Core Properties
     id: str
@@ -148,13 +146,11 @@ class FRMonitor(GreprClass):
                 is_visible  = self.visible,
             ))
 
-@dataclass(repr=False)
-class SRMonitor(GreprClass):
+@grepr_dataclass(grepr_fields=["opcode", "dropdowns", "sprite", "position", "is_visible"])
+class SRMonitor:
     """
     The second representation for a monitor. It is much more user friendly
     """
-    _grepr = True
-    _grepr_fields = ["opcode", "dropdowns", "sprite", "position", "is_visible"]
     
     opcode: str
     dropdowns: dict[str, SRDropdownValue]
@@ -257,12 +253,11 @@ class SRMonitor(GreprClass):
                 context       = context,
             )
 
-@dataclass(repr=False)
+@grepr_dataclass(grepr_fields=["readout_mode", "slider_min", "slider_max", "allow_only_integers"], parent_cls=SRMonitor)
 class SRVariableMonitor(SRMonitor):
     """
     The second representation exclusively for variable monitors
     """
-    _grepr_fields = SRMonitor._grepr_fields + ["readout_mode", "slider_min", "slider_max", "allow_only_integers"]
     
     readout_mode: SRVariableMonitorReadoutMode
     slider_min: int | float
@@ -301,12 +296,11 @@ class SRVariableMonitor(SRMonitor):
 
         AA_BIGGER_OR_EQUAL(self, path, "slider_max", "slider_min")
 
-@dataclass(repr=False)
+@grepr_dataclass(grepr_fields=["size"], parent_cls=SRMonitor)
 class SRListMonitor(SRMonitor):
     """
     The second representation exclusively for list monitors
     """
-    _grepr_fields = SRMonitor._grepr_fields + ["size"]
 
     size: tuple[int | float, int | float]
     
