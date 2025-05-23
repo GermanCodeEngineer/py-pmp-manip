@@ -1,7 +1,8 @@
 from typing      import Any
 from copy        import deepcopy
-from dataclasses import dataclass
+from dataclasses import field
 from abc         import ABC, abstractmethod
+from uuid        import uuid4, UUID
 
 from pypenguin.utility     import (
     string_to_sha256,
@@ -23,13 +24,11 @@ from pypenguin.core.monitor        import SRMonitor
 from pypenguin.core.vars_lists     import SRVariable, SRVariable, SRVariable, SRCloudVariable
 from pypenguin.core.vars_lists     import SRList, SRList, SRList
 
-@dataclass(repr=False)
+@grepr_dataclass(grepr_fields=["is_stage", "name", "variables", "lists", "broadcasts", "custom_vars", "blocks", "comments", "current_costume", "costumes", "sounds", "id", "volume", "layer_order"])
 class FRTarget(ABC):
     """
     The first representation (FR) of a target. A target can be either a sprite or the stage
     """
-    _grepr = True
-    _grepr_fields = ["is_stage", "name", "variables", "lists", "broadcasts", "custom_vars", "blocks", "comments", "current_costume", "costumes", "sounds", "id", "volume", "layer_order"]
     
     is_stage: bool
     name: str
@@ -218,12 +217,14 @@ class FRTarget(ABC):
         
         return new_variables, new_lists
 
-@dataclass(repr=False)          
+@grepr_dataclass(
+    grepr_fields=["tempo", "video_transparency", "video_state", "text_to_speech_language"],
+    parent_cls=FRTarget,
+)          
 class FRStage(FRTarget):
     """
     The first representation (FR) of the stage
     """
-    _grepr_fields = FRTarget._grepr_fields + ["tempo", "video_transparency", "video_state", "text_to_speech_language"]
     
     tempo: int
     video_transparency: int | float
@@ -283,12 +284,14 @@ class FRStage(FRTarget):
             volume        = self.volume,
         ), all_sprite_variables, all_sprite_lists)
 
-@dataclass(repr=False)
+@grepr_dataclass(
+    grepr_fields=["visible", "x", "y", "size", "direction", "draggable", "rotation_style"],
+    parent_cls=FRTarget,
+)
 class FRSprite(FRTarget):
     """
     The first representation (FR) of a sprite
     """
-    _grepr_fields = FRTarget._grepr_fields + ["visible", "x", "y", "size", "direction", "draggable", "rotation_style"]
 
     visible: bool
     x: int | float
@@ -366,14 +369,11 @@ class FRSprite(FRTarget):
         ), None, None)
 
 
-@dataclass(repr=False)
+@grepr_dataclass(grepr_fields=["scripts", "comments", "costume_index", "costumes", "sounds", "volume"])
 class SRTarget:
     """
     The second representation (SR) of a target, which is much more user friendly. A target can be either a sprite or the stage
     """
-    _grepr = True
-    _grepr_fields = ["scripts", "comments", "costume_index", "costumes", "sounds", "volume"]
-
     scripts: list[SRScript]
     comments: list[SRComment]
     costume_index: int
@@ -382,7 +382,13 @@ class SRTarget:
     volume: int | float
 
     @classmethod
-    def create_empty(cls) -> "SRStage":
+    def create_empty(cls) -> "SRTarget":
+        """
+        Create an empty SRTarget with no scripts, costumes etc. and the default settings
+        
+        Returns:
+            the empty SRTarget
+        """
         return cls(
             scripts=[],
             comments=[],
@@ -507,12 +513,14 @@ class SRStage(SRTarget):
     The second representation (SR) of the stage, which is much more user friendly
     """
 
-@dataclass(repr=False)
+@grepr_dataclass(
+    grepr_fields=["name", "sprite_only_variables", "sprite_only_lists", "local_monitors", "layer_order", "is_visible", "position", "size", "direction", "is_draggable", " rotation_style", "uuid "],
+    parent_cls=SRTarget,
+)
 class SRSprite(SRTarget):
     """
     The second representation (SR) of a sprite, which is much more user friendly
     """
-    _grepr_fields = ["name"] + SRTarget._grepr_fields + ["sprite_only_variables", "sprite_only_lists", "local_monitors", "layer_order", "is_visible", "position", "size", "direction", "is_draggable", "rotation_style"]
     
     name: str
     sprite_only_variables: list[SRVariable]
@@ -529,10 +537,16 @@ class SRSprite(SRTarget):
     direction: int | float
     is_draggable: bool
     rotation_style: "SRSpriteRotationStyle"
+    uuid: UUID = field(default_factory=lambda: uuid4(), init=False, compare=False)
     
     @classmethod
-    def create_empty(cls, name: str, layer_order: int) -> "SRSprite":
-        # TODO: docstring
+    def create_empty(cls, name: str) -> "SRSprite":
+        """
+        Create an empty SRSprite with no scripts, costumes, variables, local monitors etc. and the default settings
+        
+        Returns:
+            the empty SRSprite
+        """
         return cls(
             scripts=[],
             comments=[],
@@ -544,7 +558,6 @@ class SRSprite(SRTarget):
             sprite_only_variables=[],
             sprite_only_lists=[],
             local_monitors=[],
-            layer_order=layer_order,
             is_visible=True,
             position=(0, 0),
             size=100,
@@ -552,6 +565,11 @@ class SRSprite(SRTarget):
             is_draggable=False,
             rotation_style=SRSpriteRotationStyle.ALL_AROUND,
         )
+
+    def __setattr__(self, name, value):
+        if name == "uuid" and hasattr(self, "uuid"):
+            raise AttributeError('Cannot modify "uuid" after creation')
+        super().__setattr__(name, value)
     
     def validate(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
         """
@@ -585,6 +603,7 @@ class SRSprite(SRTarget):
         AA_RANGE(self, path, "direction", min=-180, max=180)
         AA_TYPE(self, path, "is_draggable", bool)
         AA_TYPE(self, path, "rotation_style", SRSpriteRotationStyle)
+        AA_TYPE(self, path, "uuid", UUID)
         
         
         for i, variable in enumerate(self.sprite_only_variables):

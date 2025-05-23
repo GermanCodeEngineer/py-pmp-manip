@@ -300,6 +300,12 @@ def test_SRSprite_create_empty():
     assert srsprite.rotation_style == SRSpriteRotationStyle.ALL_AROUND
 
 
+def test_SRSprite_setattr(config):
+    srsprite = SR_SPRITE
+    with raises(AttributeError):
+        srsprite.uuid = "something doesn't matter"
+
+
 def test_SRSprite_validate(config):
     srsprite = SR_SPRITE
     srsprite.validate([], config, info_api)

@@ -14,7 +14,7 @@ file_path = "../assets/monitors.pmp"
 #file_path = "../assets/testing_blocks.pmp"
 #file_path = "../assets/scratch_project.sb3"
 
-print(grepr(loads(read_file_of_zip(file_path, "project.json"))))
+#print(grepr(loads(read_file_of_zip(file_path, "project.json"))))
 
 project = FRProject.from_file(file_path, info_api=info_api)
 

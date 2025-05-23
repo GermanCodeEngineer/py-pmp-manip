@@ -1,5 +1,7 @@
 from json        import loads
 from dataclasses import dataclass
+from uuid        import UUID
+from copy        import copy
 
 from pypenguin.utility     import (
     read_file_of_zip, string_to_sha256, ThanksError, grepr_dataclass, ValidationConfig, 
@@ -187,7 +189,7 @@ class FRProject:
         )
 
 
-@grepr_dataclass(grepr_fields=["stage", "sprites", "all_sprite_variables", "all_sprite_lists", "tempo", "video_transparency", "video_state", "text_to_speech_language", "global_monitors", "extensions"])
+@grepr_dataclass(grepr_fields=["stage", "sprites", "sprite_layer_stack", "all_sprite_variables", "all_sprite_lists", "tempo", "video_transparency", "video_state", "text_to_speech_language", "global_monitors", "extensions"])
 class SRProject:
     """
     The second representation (SR) of a Scratch/PenguinMod Project
@@ -195,6 +197,7 @@ class SRProject:
     
     stage: SRStage
     sprites: list[SRSprite]
+    sprite_layer_stack: list[UUID]
     all_sprite_variables: list[SRVariable]
     all_sprite_lists: list[SRList]
     tempo: int
@@ -215,6 +218,7 @@ class SRProject:
         return cls(
             stage=SRStage.create_empty(),
             sprites=[],
+            sprite_layer_stack=[],
             all_sprite_variables=[],
             all_sprite_lists=[],
             tempo=60,
@@ -224,7 +228,7 @@ class SRProject:
             global_monitors=[],
             extensions=[],
         )
-
+    
     def validate(self, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
         """
         Ensure a SRProject is valid, raise ValidationError if not
@@ -243,6 +247,7 @@ class SRProject:
         path = []
         AA_TYPE(self, path, "stage", SRStage)
         AA_LIST_OF_TYPE(self, path, "sprites", SRSprite)
+        AA_LIST_OF_TYPE(self, path, "sprite_layer_stack", UUID)
         AA_LIST_OF_TYPE(self, path, "all_sprite_variables", SRVariable)
         AA_LIST_OF_TYPE(self, path, "all_sprite_lists", SRList)
         AA_TYPE(self, path, "tempo", int)
@@ -332,7 +337,7 @@ class SRProject:
                 context  = global_context,
             )
 
-    def _validate_sprites(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
+    def _validate_sprites_old(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
         """
         *[Internal Method]* Ensure the sprites of a SRProject are valid, raise ValidationError if not
         
@@ -368,6 +373,35 @@ class SRProject:
             # Can't be lower because minimum of 1 was alredy ensured + sorting
                 raise LayerOrderError(current_path, f"layer_order should start at 1 and then increase for each sprite in order from back to front. It should be {next_layer_order} here")
             next_layer_order += 1
+
+    def _validate_sprites(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
+        """
+        *[Internal Method]* Ensure the sprites of a SRProject are valid, raise ValidationError if not
+        
+        Args:
+            path: the path from the project to itself. Used for better error messages
+            config: Configuration for Validation Behaviour
+            info_api: the opcode info api used to fetch information about opcodes
+        
+        Returns:
+            None
+        
+        Raises:
+            LayerOrderError(ValidationError): if the sprite_layer_stack is of wrong length
+        """
+        sprite_uuids: dict[int, list] = {}
+        for i, sprite in enumerate(self.sprites):
+            current_path = path+["sprites", i]
+            sprite.validate(current_path, config, info_api)
+            if sprite.uuid in sprite_uuids:
+                other_path = sprite_uuids[sprite.uuid]
+                raise SameNameTwiceError(other_path, current_path, "Two sprites mustn't have the same uuid") # TODO: use other error
+            sprite_uuids[sprite.uuid] = current_path
+        
+        for uuid in self.sprite_layer_stack:
+            if uuid not in sprite_uuids:
+                raise Exception()
+            
 
     def _validate_var_names(self, path: list, config: ValidationConfig) -> None:
         """
