@@ -1,6 +1,6 @@
 from pytest import fixture, raises
 
-from pypenguin.utility import ValidationConfig, TypeValidationError, RangeValidationError, SameNameTwiceError, FirstToInterConversionError
+from pypenguin.utility import ValidationConfig, TypeValidationError, RangeValidationError, SameValueTwiceError, FirstToInterConversionError
 
 from pypenguin.opcode_info import InputType, OpcodeType
 
@@ -66,7 +66,7 @@ def test_SRCustomBlockOpcode_validate_same_arg_name_twice(config):
         SRCustomBlockArgument(type=SRCustomBlockArgumentType.BOOLEAN, name="the same arg name"),
         ";;;",
     ))
-    with raises(SameNameTwiceError):
+    with raises(SameValueTwiceError):
         custom_opcode.validate(path=[], config=config)
 
 

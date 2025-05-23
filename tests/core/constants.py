@@ -1284,7 +1284,6 @@ SR_SPRITE = SRSprite(
     sprite_only_variables=[],
     sprite_only_lists=[],
     local_monitors=[],
-    layer_order=1,
     is_visible=True,
     position=(0, 0),
     size=100,
@@ -1295,9 +1294,8 @@ SR_SPRITE = SRSprite(
 
 SR_PROJECT = SRProject(
     stage=SR_STAGE,
-    sprites=[
-        SR_SPRITE,
-    ],
+    sprites=[SR_SPRITE],
+    sprite_layer_stack=[SR_SPRITE.uuid],
     all_sprite_variables=[
         SRVariable(name="my variable", current_value=0),
     ],

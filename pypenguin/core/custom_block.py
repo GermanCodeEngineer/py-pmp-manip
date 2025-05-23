@@ -2,7 +2,7 @@ from re import split
 
 from pypenguin.utility import (
     grepr_dataclass, PypenguinEnum, ValidationConfig,
-    SameNameTwiceError, FirstToInterConversionError,
+    SameValueTwiceError, FirstToInterConversionError,
     AA_TYPE, AA_TUPLE_OF_TYPES, AA_MIN_LEN,
 )
 
@@ -70,7 +70,7 @@ class SRCustomBlockOpcode:
         
         Raises:
             ValidationError: if the SRCustomBlockOpcode is invalid
-            SameNameTwiceError(ValidationError): if two arguments have the same name
+            SameValueTwiceError(ValidationError): if two arguments have the same name
         """
         AA_TUPLE_OF_TYPES(self, path, "segments", (str, SRCustomBlockArgument))
         AA_MIN_LEN(self, path, "segments", min_len=1)
@@ -82,7 +82,7 @@ class SRCustomBlockOpcode:
                 segment.validate(current_path, config)
                 if segment.name in names:
                     other_path = names[segment.name]
-                    raise SameNameTwiceError(other_path, current_path, 
+                    raise SameValueTwiceError(other_path, current_path, 
                         f"Two arguments of a {self.__class__.__name__} mustn't have the same name",
                     )
                 names[segment.name] = current_path

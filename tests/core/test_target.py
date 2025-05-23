@@ -1,11 +1,12 @@
 from pytest import fixture, raises
 from copy   import copy
+from uuid   import UUID
 
 from pypenguin.utility            import (
     string_to_sha256,
     ValidationConfig, 
     ThanksError, FirstToSecondConversionError, TypeValidationError, RangeValidationError, 
-    SameNameTwiceError, InvalidValueError
+    SameValueTwiceError, InvalidValueError
 )
 from pypenguin.opcode_info import info_api, DropdownValueKind
 
@@ -220,7 +221,7 @@ def test_SRTarget_validate_same_costume_name(config):
         SRCostume.create_empty(name="costume1"),
         SRCostume.create_empty(name="costume1"),
     ]
-    with raises(SameNameTwiceError):
+    with raises(SameValueTwiceError):
         srtarget.validate([], config, info_api)
 
 def test_SRTarget_validate_same_sound_name(config):
@@ -229,7 +230,7 @@ def test_SRTarget_validate_same_sound_name(config):
         SRSound(name="Hello there!", file_extension="wav"),
         SRSound(name="Hello there!", file_extension="wav"),
     ]
-    with raises(SameNameTwiceError):
+    with raises(SameValueTwiceError):
         srtarget.validate([], config, info_api)
 
 
@@ -265,7 +266,7 @@ def test_SRTarget_validate_scripts_same_custom_opcode(config, context):
         cb_def_script,
         copy(cb_def_script),
     ]
-    with raises(SameNameTwiceError):
+    with raises(SameValueTwiceError):
         srtarget.validate_scripts([], config, info_api, context)
 
 
@@ -280,8 +281,8 @@ def test_SRTarget_get_complete_context(context):
 
 
 def test_SRSprite_create_empty():
-    srsprite = SRSprite.create_empty(name="Player", layer_order=2) 
-    assert isinstance(srsprite, SRTarget)
+    srsprite = SRSprite.create_empty(name="Player") 
+    assert isinstance(srsprite, SRSprite)
     assert srsprite.scripts == []
     assert srsprite.comments == []
     assert srsprite.costume_index == 0
@@ -291,16 +292,16 @@ def test_SRSprite_create_empty():
     assert srsprite.sprite_only_variables == []
     assert srsprite.sprite_only_lists == []
     assert srsprite.local_monitors == []
-    assert srsprite.layer_order == 2
     assert srsprite.is_visible is True
     assert srsprite.position == (0, 0)
     assert srsprite.size == 100
     assert srsprite.direction == 90
     assert srsprite.is_draggable is False
     assert srsprite.rotation_style == SRSpriteRotationStyle.ALL_AROUND
+    assert isinstance(srsprite.uuid, UUID)
 
 
-def test_SRSprite_setattr(config):
+def test_SRSprite_setattr():
     srsprite = SR_SPRITE
     with raises(AttributeError):
         srsprite.uuid = "something doesn't matter"
@@ -321,8 +322,6 @@ def test_SRSprite_validate(config):
             ("sprite_only_lists", [{}], TypeValidationError),
             ("local_monitors", None, TypeValidationError),
             ("local_monitors", [None], TypeValidationError),
-            ("layer_order", "costume1", TypeValidationError),
-            ("layer_order", 0, RangeValidationError),
             ("is_visible", "a str", TypeValidationError),
             ("position", 45, TypeValidationError),
             ("position", ("", ""), TypeValidationError),
@@ -336,6 +335,12 @@ def test_SRSprite_validate(config):
         validate_func=SRSprite.validate,
         func_args=[[], config, info_api],
     )
+
+def test_SRSprite_validate_uuid(config):
+    srsprite = copy(SR_SPRITE)
+    srsprite.__dict__["uuid"] = "abc-def-ghi"
+    with raises(TypeValidationError):
+        srsprite.validate([], config, info_api)
 
 
 def test_SRSprite_validate_monitors(config, context):

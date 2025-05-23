@@ -8,7 +8,7 @@ from pypenguin.utility     import (
     string_to_sha256,
     grepr_dataclass, ThanksError, ValidationConfig, 
     AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_MIN_LEN, AA_MIN, AA_RANGE, AA_COORD_PAIR, AA_NOT_ONE_OF, 
-    SameNameTwiceError, FirstToSecondConversionError,
+    SameValueTwiceError, FirstToSecondConversionError,
 )
 from pypenguin.opcode_info import OpcodeInfoAPI, DropdownValueKind
 
@@ -359,7 +359,6 @@ class FRSprite(FRTarget):
             sprite_only_variables = sprite_only_variables,
             sprite_only_lists     = sprite_only_lists,
             local_monitors        = [], # will be filled later
-            layer_order           = self.layer_order,
             is_visible            = self.visible,
             position              = (self.x, self.y),
             size                  = self.size,
@@ -412,7 +411,7 @@ class SRTarget:
         
         Raises:
             ValidationError: if the SRTarget is invalid
-            SameNameTwiceError(ValidationError): if two costumes or two sounds have the same name
+            SameValueTwiceError(ValidationError): if two costumes or two sounds have the same name
         """
         AA_LIST_OF_TYPE(self, path, "scripts", SRScript)
         AA_LIST_OF_TYPE(self, path, "comments", SRComment)
@@ -435,7 +434,7 @@ class SRTarget:
             costume.validate(path, config)
             if costume.name in defined_costumes:
                 other_path = defined_costumes[costume.name]
-                raise SameNameTwiceError(other_path, current_path, "Two costumes mustn't have the same name")
+                raise SameValueTwiceError(other_path, current_path, "Two costumes mustn't have the same name")
             defined_costumes[costume.name] = current_path
         
         defined_sounds = {}
@@ -444,7 +443,7 @@ class SRTarget:
             sound.validate(path, config)
             if sound.name in defined_sounds:
                 other_path = defined_sounds[sound.name]
-                raise SameNameTwiceError(other_path, current_path, "Two sounds mustn't have the same name")
+                raise SameValueTwiceError(other_path, current_path, "Two sounds mustn't have the same name")
             defined_sounds[sound.name] = current_path
     
     def validate_scripts(self, 
@@ -467,7 +466,7 @@ class SRTarget:
         
         Raises:
             ValidationError: if the scripts of the SRTarget are invalid
-            SameNameTwiceError(ValidationError): if two custom blocks have the same custom_opcode.
+            SameValueTwiceError(ValidationError): if two custom blocks have the same custom_opcode.
         """
         context = self._get_complete_context(partial_context=context)
         validation_api = ValidationAPI(scripts=self.scripts)
@@ -486,7 +485,7 @@ class SRTarget:
                     custom_opcode = block.mutation.custom_opcode
                     if custom_opcode in cb_custom_opcodes:
                         other_path = cb_custom_opcodes[custom_opcode]
-                        raise SameNameTwiceError(
+                        raise SameValueTwiceError(
                             other_path, current_path, "Two custom blocks mustn't have the same custom_opcode(see .mutation.custom_opcode)",
                         )
                     cb_custom_opcodes[custom_opcode] = current_path
@@ -514,7 +513,7 @@ class SRStage(SRTarget):
     """
 
 @grepr_dataclass(
-    grepr_fields=["name", "sprite_only_variables", "sprite_only_lists", "local_monitors", "layer_order", "is_visible", "position", "size", "direction", "is_draggable", " rotation_style", "uuid "],
+    grepr_fields=["name", "sprite_only_variables", "sprite_only_lists", "local_monitors", "is_visible", "position", "size", "direction", "is_draggable", " rotation_style", "uuid"],
     parent_cls=SRTarget,
 )
 class SRSprite(SRTarget):
@@ -526,18 +525,13 @@ class SRSprite(SRTarget):
     sprite_only_variables: list[SRVariable]
     sprite_only_lists: list[SRList]
     local_monitors: list[SRMonitor]
-    layer_order: int 
-    # layer_order:
-    #   - must be at least 1
-    #   - no two sprites can have the same value for it
-    #   - the values should go from 1 up to the count of sprites in the project, no value can be skipped
     is_visible: bool
     position: tuple[int | float, int | float]
     size: int | float
     direction: int | float
     is_draggable: bool
     rotation_style: "SRSpriteRotationStyle"
-    uuid: UUID = field(default_factory=lambda: uuid4(), init=False, compare=False)
+    uuid: UUID = field(default_factory=uuid4, init=False, compare=False)
     
     @classmethod
     def create_empty(cls, name: str) -> "SRSprite":
@@ -593,8 +587,6 @@ class SRSprite(SRTarget):
         AA_LIST_OF_TYPE(self, path, "sprite_only_variables", SRVariable)
         AA_LIST_OF_TYPE(self, path, "sprite_only_lists", SRList)
         AA_LIST_OF_TYPE(self, path, "local_monitors", SRMonitor)
-        AA_TYPE(self, path, "layer_order", int)
-        AA_MIN(self, path, "layer_order", min=1)
         AA_TYPE(self, path, "is_visible", bool)
         AA_COORD_PAIR(self, path, "position")
         AA_TYPES(self, path, "size", (int, float))

@@ -78,7 +78,7 @@ class InvalidDropdownValueError(PathValidationError): pass
 class InvalidOpcodeError(PathValidationError): pass
 class InvalidBlockShapeError(PathValidationError): pass
 
-class LayerOrderError(PathValidationError): pass
+class SpriteLayerStackError(PathValidationError): pass
 
 class SameValueTwiceError(ValidationError):
     def __init__(self, path1: list, path2: list, msg: str, condition: str|None = None) -> None:
@@ -90,8 +90,6 @@ class SameValueTwiceError(ValidationError):
         full_message += msg
         super().__init__(full_message)
 
-class SameNameTwiceError(SameValueTwiceError): pass
-class SameNumberTwiceError(SameValueTwiceError): pass
 
 
 __all__ = [
@@ -102,7 +100,7 @@ __all__ = [
     "ValidationError", "PathValidationError", "TypeValidationError", "InvalidValueError",
     "RangeValidationError", "MissingInputError", "UnnecessaryInputError", 
     "MissingDropdownError", "UnnecessaryDropdownError", "InvalidDropdownValueError", 
-    "InvalidOpcodeError", "InvalidBlockShapeError", "LayerOrderError", 
-    "SameValueTwiceError", "SameNameTwiceError", "SameNumberTwiceError",
+    "InvalidOpcodeError", "InvalidBlockShapeError", "SpriteLayerStackError", 
+    "SameValueTwiceError",
 ]
 

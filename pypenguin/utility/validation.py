@@ -92,6 +92,11 @@ def AA_MIN_LEN(obj, path, attr, min_len: int, condition=None):
     if len(attr_value) < min_len:
         raise RangeValidationError(path, f"{descr} must contain at least {min_len} element(s)")
 
+def AA_EXACT_LEN(obj, path, attr, len: int, condition=None):
+    attr_value, descr = _value_and_descr(obj, attr)
+    if len(attr_value) != len:
+        raise RangeValidationError(path, f"{descr} must contain exactly {len} element(s)")
+
 def AA_COORD_PAIR(obj, path, attr, condition=None):
     attr_value, descr = _value_and_descr(obj, attr)
     if (
@@ -184,7 +189,7 @@ class ValidationConfig:
 __all__ = [
     "AA_TYPE", "AA_TYPES", "AA_NONE", "AA_NONE_OR_TYPE", 
     "AA_LIST_OF_TYPE", "AA_LIST_OF_TYPES", "AA_TUPLE_OF_TYPES", "AA_DICT_OF_TYPE",
-    "AA_MIN", "AA_MAX", "AA_RANGE", "AA_MIN_LEN", "AA_COORD_PAIR", "AA_BOXED_COORD_PAIR",
+    "AA_MIN", "AA_MAX", "AA_RANGE", "AA_MIN_LEN", "AA_EXACT_LEN", "AA_COORD_PAIR", "AA_BOXED_COORD_PAIR",
     "AA_JSON_COMPATIBLE", "AA_EQUAL", "AA_BIGGER_OR_EQUAL", "AA_NOT_ONE_OF", "AA_HEX_COLOR", "AA_ALNUM",
     "is_valid_js_data_uri", "is_valid_url", "ValidationConfig",
 ]

@@ -1,12 +1,10 @@
 from json        import loads
-from dataclasses import dataclass
 from uuid        import UUID
-from copy        import copy
 
 from pypenguin.utility     import (
     read_file_of_zip, string_to_sha256, ThanksError, grepr_dataclass, ValidationConfig, 
-    AA_TYPE, AA_NONE_OR_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_RANGE, 
-    SameNameTwiceError, SameNumberTwiceError, LayerOrderError,
+    AA_TYPE, AA_NONE_OR_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_RANGE, AA_EXACT_LEN,
+    SameValueTwiceError, SpriteLayerStackError,
 )
 from pypenguin.opcode_info import OpcodeInfoAPI, DropdownValueKind
 
@@ -136,6 +134,7 @@ class FRProject:
         old_stage: FRStage
         new_stage: SRStage
         new_sprites: list[SRSprite] = []
+        sprite_layer_stack_dict = {}
         for target in self.targets:
             if  target.is_stage:
                 old_stage: FRStage = target
@@ -145,6 +144,7 @@ class FRProject:
                 new_sprite, _, _ = target.step(info_api)
                 new_sprite: SRSprite
                 new_sprites.append(new_sprite)
+                sprite_layer_stack_dict[target.layer_order] = new_sprite.uuid
         
         global_monitors = []
         sprite_names = [sprite.name for sprite in new_sprites]
@@ -178,6 +178,7 @@ class FRProject:
         return SRProject(
             stage                   = new_stage,
             sprites                 = new_sprites,
+            sprite_layer_stack      = [pair[1] for pair in sorted(sprite_layer_stack_dict.items())],
             all_sprite_variables    = all_sprite_variables,
             all_sprite_lists        = all_sprite_lists,
             tempo                   = old_stage.tempo,
@@ -189,7 +190,7 @@ class FRProject:
         )
 
 
-@grepr_dataclass(grepr_fields=["stage", "sprites", "sprite_layer_stack", "all_sprite_variables", "all_sprite_lists", "tempo", "video_transparency", "video_state", "text_to_speech_language", "global_monitors", "extensions"])
+@grepr_dataclass(grepr_fields=["stage", "sprites", "sprite_layer_stack", "all_sprite_variables", "all_sprite_lists", "tempo", "video_transparency", "video_state", "text_to_speech_language", "global_monitors", "extensions"], eq=False)
 class SRProject:
     """
     The second representation (SR) of a Scratch/PenguinMod Project
@@ -228,7 +229,46 @@ class SRProject:
             global_monitors=[],
             extensions=[],
         )
-    
+
+    def __eq__(self, other) -> bool: # TODO: test
+        """
+        Checks whether an SRProject is equal to another.
+        Requires same sprites and sprite layer stack order.
+        Ignores mismatched UUIDs, which would otherwise make equality impossible.
+
+        Args:
+            other: The object to compare to.
+
+        Returns:
+            bool: Whether self is equal to other.
+        """
+        if not isinstance(other, SRProject):
+            return NotImplemented
+
+        if self.sprites != other.sprites:
+            return False
+
+        if len(self.sprite_layer_stack) != len(other.sprite_layer_stack):
+            return False
+
+        self_uuid_to_sprite  = {sprite.uuid: sprite for sprite in self.sprites}
+        other_uuid_to_sprite = {sprite.uuid: sprite for sprite in other.sprites}
+
+        for self_uuid, other_uuid in zip(self.sprite_layer_stack, other.sprite_layer_stack):
+            if self_uuid_to_sprite.get(self_uuid) != other_uuid_to_sprite.get(other_uuid):
+                return False
+
+        return (
+            self.stage == other.stage and
+            self.all_sprite_variables == other.all_sprite_variables and
+            self.all_sprite_lists == other.all_sprite_lists and
+            self.tempo == other.tempo and
+            self.video_transparency == other.video_transparency and
+            self.text_to_speech_language == other.text_to_speech_language and
+            self.global_monitors == other.global_monitors and
+            self.extensions == other.extensions
+        )
+
     def validate(self, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
         """
         Ensure a SRProject is valid, raise ValidationError if not
@@ -242,12 +282,15 @@ class SRProject:
         
         Raises:
             ValidationError: if the SRProject is invalid
-            SameNameTwiceError(ValidationError): if two sprites have the same name
+            SameValueTwiceError(ValidationError): if two sprites have the same name
         """
         path = []
         AA_TYPE(self, path, "stage", SRStage)
         AA_LIST_OF_TYPE(self, path, "sprites", SRSprite)
         AA_LIST_OF_TYPE(self, path, "sprite_layer_stack", UUID)
+        AA_EXACT_LEN(self, path, "sprite_layer_stack", 
+            len=len(self.sprites), condition=f"In this case the project has {len(self.sprites)} sprites(s)"
+        )
         AA_LIST_OF_TYPE(self, path, "all_sprite_variables", SRVariable)
         AA_LIST_OF_TYPE(self, path, "all_sprite_lists", SRList)
         AA_TYPE(self, path, "tempo", int)
@@ -285,7 +328,7 @@ class SRProject:
             current_path = path+["sprites", i]
             if sprite.name in defined_sprites:
                 other_path = defined_sprites[sprite.name]
-                raise SameNameTwiceError(other_path, current_path, "Two sprites mustn't have the same name")
+                raise SameValueTwiceError(other_path, current_path, "Two sprites mustn't have the same name")
             defined_sprites[sprite.name] = current_path
             sprite_only_variables[sprite.name] = [
                 (DropdownValueKind.VARIABLE, variable.name) for variable in sprite.sprite_only_variables]
@@ -350,7 +393,7 @@ class SRProject:
             None
         
         Raises:
-            LayerOrderError(ValidationError): if the project contains sprites with an invalid layer_order in the project context
+            SpriteLayerStackError(ValidationError): if the project contains sprites with an invalid layer_order in the project context
         """
         if len(self.sprites) == 0:
             return # There is nothing to do then
@@ -360,18 +403,18 @@ class SRProject:
             sprite.validate(current_path, config, info_api)
             if sprite.layer_order in layer_orders:
                 other_path = layer_orders[sprite.layer_order]
-                raise SameNumberTwiceError(other_path, current_path, "Two sprites mustn't have the same layer order")
+                raise SameValueTwiceError(other_path, current_path, "Two sprites mustn't have the same layer order")
             layer_orders[sprite.layer_order] = current_path
         
         min_layer_order = min(layer_orders.keys())
         if min_layer_order != 1:
-            raise LayerOrderError(layer_orders[min_layer_order], "layer_order must start at 1")
+            raise SpriteLayerStackError(layer_orders[min_layer_order], "layer_order must start at 1")
         
         next_layer_order = 1
         for layer_order, current_path in dict(sorted(layer_orders.items())).items():
             if layer_order > next_layer_order: 
             # Can't be lower because minimum of 1 was alredy ensured + sorting
-                raise LayerOrderError(current_path, f"layer_order should start at 1 and then increase for each sprite in order from back to front. It should be {next_layer_order} here")
+                raise SpriteLayerStackError(current_path, f"layer_order should start at 1 and then increase for each sprite in order from back to front. It should be {next_layer_order} here")
             next_layer_order += 1
 
     def _validate_sprites(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
@@ -387,20 +430,31 @@ class SRProject:
             None
         
         Raises:
-            LayerOrderError(ValidationError): if the sprite_layer_stack is of wrong length
+            SameValueTwiceError(ValidationError): if two sprites have the same UUID **OR** if the same UUID is included twice in sprite_layer_stack 
+            SpriteLayerStackError(ValidationError): if the sprite_layer_stack contains a UUID which belongs to no sprite 
         """
-        sprite_uuids: dict[int, list] = {}
+        sprite_uuid_paths: dict[UUID, list] = {}
         for i, sprite in enumerate(self.sprites):
             current_path = path+["sprites", i]
             sprite.validate(current_path, config, info_api)
-            if sprite.uuid in sprite_uuids:
-                other_path = sprite_uuids[sprite.uuid]
-                raise SameNameTwiceError(other_path, current_path, "Two sprites mustn't have the same uuid") # TODO: use other error
-            sprite_uuids[sprite.uuid] = current_path
+            if sprite.uuid in sprite_uuid_paths:
+                other_path = sprite_uuid_paths[sprite.uuid]
+                raise SameValueTwiceError(other_path, current_path, "Two sprites mustn't have the same UUID")
+            sprite_uuid_paths[sprite.uuid] = current_path
         
-        for uuid in self.sprite_layer_stack:
-            if uuid not in sprite_uuids:
-                raise Exception()
+
+        stack_uuid_paths: dict[UUID, list] = {}
+        for i, uuid in enumerate(self.sprite_layer_stack):
+            current_path = path+["sprite_layer_stack", i]
+            if sprite.uuid in stack_uuid_paths:
+                other_path = stack_uuid_paths[sprite.uuid]
+                raise SameValueTwiceError(other_path, current_path, "Two same UUID mustn't be included twice")
+            if uuid not in sprite_uuid_paths:
+                raise SpriteLayerStackError(current_path, "Must be the UUID of an existing sprite")
+            stack_uuid_paths[uuid] = current_path
+        # same length and uniqueness is assured and every UUID must have a partner sprite
+        # => no sprite can possibly be missing a partner UUID
+        
             
 
     def _validate_var_names(self, path: list, config: ValidationConfig) -> None:
@@ -415,14 +469,14 @@ class SRProject:
             None
         
         Raises:
-            SameNameTwiceError(ValidationError): if the project contains vars with the same name
+            SameValueTwiceError(ValidationError): if the project contains vars with the same name
         """
         defined_variables = {}
         for i, variable in enumerate(self.all_sprite_variables):
             current_path = path+["all_sprite_variables", i]
             if variable.name in defined_variables:
                 other_path = defined_variables[variable.name]
-                raise SameNameTwiceError(other_path, current_path, "Two variables mustn't have the same name")
+                raise SameValueTwiceError(other_path, current_path, "Two variables mustn't have the same name")
             defined_variables[variable.name] = current_path
         
         for i, sprite in enumerate(self.sprites):
@@ -430,7 +484,7 @@ class SRProject:
                 current_path = path+["sprites", i, "sprite_only_variables", j]
                 if variable.name in defined_variables:
                     other_path = defined_variables[variable.name]
-                    raise SameNameTwiceError(other_path, current_path, "Two variables mustn't have the same name")
+                    raise SameValueTwiceError(other_path, current_path, "Two variables mustn't have the same name")
                 defined_variables[variable.name] = current_path
         
     def _validate_list_names(self, path: list, config: ValidationConfig) -> None:
@@ -445,14 +499,14 @@ class SRProject:
             None
         
         Raises:
-            SameNameTwiceError(ValidationError): if the project contains lists with the same name
+            SameValueTwiceError(ValidationError): if the project contains lists with the same name
         """
         defined_lists = {}
         for i, list_ in enumerate(self.all_sprite_lists):
             current_path = path+["all_sprite_lists", i]
             if list_.name in defined_lists:
                 other_path = defined_lists[list_.name]
-                raise SameNameTwiceError(other_path, current_path, "Two lists mustn't have the same name")
+                raise SameValueTwiceError(other_path, current_path, "Two lists mustn't have the same name")
             defined_lists[list_.name] = current_path
         
         for i, sprite in enumerate(self.sprites):
@@ -460,7 +514,7 @@ class SRProject:
                 current_path = path+["sprites", i, "sprite_only_lists", j]
                 if list_.name in defined_lists:
                     other_path = defined_lists[list_.name]
-                    raise SameNameTwiceError(other_path, current_path, "Two lists mustn't have the same name")
+                    raise SameValueTwiceError(other_path, current_path, "Two lists mustn't have the same name")
                 defined_lists[list_.name] = current_path
 
 
