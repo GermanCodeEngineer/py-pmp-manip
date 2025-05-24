@@ -80,7 +80,6 @@ class SRDropdownValue:
             "No possible values" if possible_values == [] else
             "".join(["\n- "+repr(value) for value in possible_values])
         )
-        print((self.kind, self.value))
         if (self.kind, self.value) not in possible_values:
             if default_kind is None:
                 raise InvalidDropdownValueError(path, f"In this case must be one of these: {possible_values_string}")

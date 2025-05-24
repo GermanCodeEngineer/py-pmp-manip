@@ -1,14 +1,18 @@
 from typing    import Any
 from PIL       import Image
 from xml.etree import ElementTree
+from io        import BytesIO
 from pydub     import AudioSegment
 import wave
 
 from pypenguin.utility import (
     grepr_dataclass, ValidationConfig, 
     AA_TYPE, AA_COORD_PAIR, AA_MIN,
-    ThanksError,
+    ThanksError
 )
+
+EMPTY_SVG_COSTUME_XML = "<svg version=\"1.1\" width=\"2\" height=\"2\" viewBox=\"-1 -1 2 2\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n  <!-- Exported by Scratch - http://scratch.mit.edu/ -->\n</svg>"
+EMPTY_SVG_COSTUME_ROTATION_CENTER = (240, 180)
 
 
 @grepr_dataclass(grepr_fields=["name", "asset_id", "data_format", "md5ext", "rotation_center_x", "rotation_center_y", "bitmap_resolution"])
@@ -36,11 +40,12 @@ class FRCostume:
         Returns:
             the FRSound
         """
+        md5ext = data["md5ext"] if "md5ext" in data else f'{data["assetId"]}.{data["dataFormat"]}'
         return cls(
             name              = data["name"           ],
             asset_id          = data["assetId"        ],
             data_format       = data["dataFormat"     ],
-            md5ext            = data["md5ext"         ],
+            md5ext            = md5ext,
             rotation_center_x = data["rotationCenterX"],
             rotation_center_y = data["rotationCenterY"],
             bitmap_resolution = data.get("bitmapResolution", None),
@@ -54,7 +59,6 @@ class FRCostume:
             the SRComment
         """
         rotation_center = (self.rotation_center_x, self.rotation_center_y)
-        bitmap_resolution = 1 if self.bitmap_resolution is None else self.bitmap_resolution
         content_bytes = asset_files[self.md5ext]
         
         if   self.data_format == "svg":
@@ -62,17 +66,16 @@ class FRCostume:
                 name              = self.name,
                 file_extension    = self.data_format,
                 rotation_center   = rotation_center,
-                bitmap_resolution = bitmap_resolution,
                 content           = ElementTree.fromstring(content_bytes.decode("utf-8")),
             )
         elif self.data_format in {"png", "jpg", "jpeg", "bmp", "gif"}:
-            image = Image.open(content_bytes)
+            image = Image.open(BytesIO(content_bytes))
             image.load()  # Ensure it's fully loaded into memory
             return SRBitmapCostume(
                 name              = self.name,
                 file_extension    = self.data_format,
                 rotation_center   = rotation_center,
-                bitmap_resolution = bitmap_resolution,
+                bitmap_resolution = 1 if self.bitmap_resolution is None else self.bitmap_resolution,
                 content           = image,
             )
         else: raise ThanksError()
@@ -123,25 +126,29 @@ class FRSound:
             # Other attributes can be derived from the sound files
         )
 
-@grepr_dataclass(grepr_fields=["name", "file_extension", "rotation_center", "bitmap_resolution"])
+@grepr_dataclass(grepr_fields=["name", "file_extension", "rotation_center"], init=False)
 class SRCostume:
     """
-    The second representation for a costume. It is more user friendly then the first representation
+    The second representation for a costume. It is more user friendly then the first representation.
+    **Please use the subclasses SRVectorCostume and SRBitmapCostume for actual data**
     """
 
     name: str
     file_extension: str
     rotation_center: tuple[int | float, int | float]
-    bitmap_resolution: int
-    
-    @classmethod
-    def create_empty(cls, name: str = "empty") -> "SRCostume": # TODO: move
-        return cls(
-            name=name,
-            file_extension="svg",
-            rotation_center=(0,0),
-            bitmap_resolution=1,
-        )
+
+    def __init__(self, name: str, file_extension: str, rotation_center: tuple[int | float, int | float]) -> None:
+        """
+        Create a SRInputValue. 
+        **Please use the subclasses SRVectorCostume and SRBitmapCostume for concrete data. This method will raise a NotImplementedError.**
+
+        Returns:
+            None
+
+        Raises:
+            NotImplementedError: always
+        """
+        raise NotImplementedError("Please use the subclasses SRVectorCostume and SRBitmapCostume for concrete data")
     
     def validate(self, path: list, config: ValidationConfig) -> None:
         """
@@ -160,8 +167,6 @@ class SRCostume:
         AA_TYPE(self, path, "name", str)
         AA_TYPE(self, path, "file_extension", str)
         AA_COORD_PAIR(self, path, "rotation_center")
-        AA_TYPE(self, path, "bitmap_resolution", int)
-        AA_MIN(self, path, "bitmap_resolution", min=1)
 
 @grepr_dataclass(grepr_fields=["content"], parent_cls=SRCostume)
 class SRVectorCostume(SRCostume):
@@ -170,6 +175,15 @@ class SRVectorCostume(SRCostume):
     """
     
     content: ElementTree.Element
+        
+    @classmethod
+    def create_empty(cls, name: str = "empty") -> "SRCostume":
+        return cls(
+            name            = name,
+            file_extension  = "svg",
+            rotation_center = EMPTY_SVG_COSTUME_ROTATION_CENTER,
+            content         = ElementTree.fromstring(EMPTY_SVG_COSTUME_XML),
+        )
     
     def validate(self, path: list, config: ValidationConfig) -> None:
         """
@@ -189,13 +203,14 @@ class SRVectorCostume(SRCostume):
         
         AA_TYPE(self, path, "content", ElementTree.Element)
 
-@grepr_dataclass(grepr_fields=["content"], parent_cls=SRCostume)
+@grepr_dataclass(grepr_fields=["content", "bitmap_resolution"], parent_cls=SRCostume)
 class SRBitmapCostume(SRCostume):
     """
     The second representation for a bitmap(usually PNG) costume. It is more user friendly then the first representation
     """
     
     content: Image.Image
+    bitmap_resolution: int
     
     def validate(self, path: list, config: ValidationConfig) -> None:
         """
@@ -214,6 +229,9 @@ class SRBitmapCostume(SRCostume):
         super().validate(path, config)
         
         AA_TYPE(self, path, "content", Image.Image)
+        AA_TYPE(self, path, "bitmap_resolution", int)
+        AA_MIN(self, path, "bitmap_resolution", min=1)
+
 
 @grepr_dataclass(grepr_fields=["name", "file_extension"])
 class SRSound:

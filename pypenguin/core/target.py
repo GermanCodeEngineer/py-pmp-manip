@@ -507,7 +507,7 @@ class SRTarget:
         """
         return CompleteContext.from_partial(
             pc       = partial_context,
-            costumes = [(SropdownValueKind.COSTUME, costume.name) for costume in self.costumes],
+            costumes = [(DropdownValueKind.COSTUME, costume.name) for costume in self.costumes],
             sounds   = [(DropdownValueKind.SOUND  , sound  .name) for sound   in self.sounds  ],
             is_stage = isinstance(self, SRStage),
         )
