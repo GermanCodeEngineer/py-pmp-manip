@@ -2,7 +2,7 @@ TODOs:
     - complete tests
     - maybe remove IRBlockReference
     - maybe replace _copymodify_
-    - rename layer order error
+    - rename Internal Methods
     - possibly load costumes and sounds into memory
     - todos + go over code
     - complete deoptimization

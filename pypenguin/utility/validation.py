@@ -1,18 +1,26 @@
 import json
 import re
-from typing       import Any, Type
+from typing       import Any
 from urllib.parse import urlparse
 
-from pypenguin.utility.errors import TypeValidationError, RangeValidationError, InvalidValueError
+from pypenguin.utility.errors  import TypeValidationError, RangeValidationError, InvalidValueError
 from pypenguin.utility.general import grepr_dataclass
 
-def _value_and_descr(obj, attr) -> tuple[Any, str]:
-    return getattr(obj, attr), f"{attr} of a {obj.__class__.__name__}"
+def _value_and_descr(obj, attr: str) -> tuple[Any, str]:
+    return getattr(obj, attr), f"{attr} of a {_repr_type(obj.__class__)}"
+
+def _repr_type(t: type) -> str:
+    if t.__module__ == "builtins":
+        return t.__name__
+    elif t.__module__.startswith("pypenguin."): # ignore sub module name eg. "core"
+        return f"pypenguin.{t.__name__}"
+    else:
+        return f"{t.__module__}.{t.__name__}"
 
 def AA_TYPE(obj, path, attr, t, condition=None) -> None:
     attr_value, descr = _value_and_descr(obj, attr)
     if not isinstance(attr_value, t):
-        raise TypeValidationError(path, f"{descr} must be of type {t.__name__} not {attr_value.__class__.__name__}", condition)
+        raise TypeValidationError(path, f"{descr} must be of type {_repr_type(t)} not {_repr_type(attr_value.__class__)}", condition)
 
 def AA_TYPES(obj, path, attr, ts, condition=None) -> None:
     assert len(ts) >= 1
@@ -20,8 +28,8 @@ def AA_TYPES(obj, path, attr, ts, condition=None) -> None:
         return AA_TYPE(obj, path, attr, ts[0], condition=condition)
     attr_value, descr = _value_and_descr(obj, attr)
     if not isinstance(attr_value, ts):
-        types_str = "|".join([t.__name__ for t in ts])
-        raise TypeValidationError(path, f"{descr} must be one of types {types_str} not {attr_value.__class__.__name__}", condition)
+        types_str = "|".join([_repr_type(t) for t in ts])
+        raise TypeValidationError(path, f"{descr} must be one of types {types_str} not {_repr_type(attr_value.__class__)}", condition)
 
 def AA_NONE(obj, path, attr, condition=None) -> None:
     attr_value, descr = _value_and_descr(obj, attr)
@@ -31,46 +39,46 @@ def AA_NONE(obj, path, attr, condition=None) -> None:
 def AA_NONE_OR_TYPE(obj, path, attr, t, condition=None) -> None:
     attr_value, descr = _value_and_descr(obj, attr)
     if (attr_value is not None) and not(isinstance(attr_value, t)):
-        raise TypeValidationError(path, f"{descr} must be either None or of type {t.__name__} not of type {attr_value.__class__.__name__}", condition)
+        raise TypeValidationError(path, f"{descr} must be either None or of type {_repr_type(t)} not of type {_repr_type(attr_value.__class__)}", condition)
 
 def AA_LIST_OF_TYPE(obj, path, attr, t, condition=None) -> None:
     attr_value, descr = _value_and_descr(obj, attr)
-    msg = f"{descr} must be a list of {t.__name__}"
+    msg = f"{descr} must be a list of {_repr_type(t)}"
     if not isinstance(attr_value, list):
-        raise TypeValidationError(path, f"{msg} not a {attr_value.__class__.__name__}", condition)
+        raise TypeValidationError(path, f"{msg} not a {_repr_type(attr_value.__class__)}", condition)
     for item in attr_value:
         if not isinstance(item, t):
-            raise TypeValidationError(path, f"{msg} not of {item.__class__.__name__}", condition)
+            raise TypeValidationError(path, f"{msg} not of {_repr_type(item.__class__)}", condition)
 
 def AA_LIST_OF_TYPES(obj, path, attr, ts, condition=None) -> None:
     attr_value, descr = _value_and_descr(obj, attr)
-    types_str = "|".join([t.__name__ for t in ts])
+    types_str = "|".join([_repr_type(t) for t in ts])
     msg = f"{descr} must be a list. Each item must be one of types {types_str}"
     if not isinstance(attr_value, list):
-        raise TypeValidationError(path, f"{msg} not a {attr_value.__class__.__name__}", condition)
+        raise TypeValidationError(path, f"{msg} not a {_repr_type(attr_value.__class__)}", condition)
     for item in attr_value:
         if not isinstance(item, ts):
-            raise TypeValidationError(path, f"{msg} not of {item.__class__.__name__}", condition)
+            raise TypeValidationError(path, f"{msg} not of {_repr_type(item.__class__)}", condition)
 
 def AA_TUPLE_OF_TYPES(obj, path, attr, ts, condition=None) -> None:
     attr_value, descr = _value_and_descr(obj, attr)
-    types_str = "|".join([t.__name__ for t in ts])
+    types_str = "|".join([_repr_type(t) for t in ts])
     msg = f"{descr} must be a tuple. Each item must be one of types {types_str}"
     if not isinstance(attr_value, tuple):
-        raise TypeValidationError(path, f"{msg} not a {attr_value.__class__.__name__}", condition)
+        raise TypeValidationError(path, f"{msg} not a {_repr_type(attr_value.__class__)}", condition)
     for item in attr_value:
         if not isinstance(item, ts):
-            raise TypeValidationError(path, f"{msg} not of {item.__class__.__name__}", condition)
+            raise TypeValidationError(path, f"{msg} not of {_repr_type(item.__class__)}", condition)
 
 def AA_DICT_OF_TYPE(obj, path, attr, key_t, value_t, condition=None) -> None:
     attr_value, descr = _value_and_descr(obj, attr)
     if not isinstance(attr_value, dict):
-        raise TypeValidationError(path, f"{descr} must be a dict. Each key must be of type {key_t.__name__}. Each value must be of type {value_t.__name__}", condition)
+        raise TypeValidationError(path, f"{descr} must be a dict NOT a {_repr_type(attr_value.__class__)}. Each key must be of type {_repr_type(key_t)}. Each value must be of type {_repr_type(value_t)}", condition)
     for key, value in attr_value.items():
         if not isinstance(key, key_t):
-            raise TypeValidationError(path, f"{descr} must be a dict. Each key must be of type {key_t.__name__} NOT {key.__class__.__name__}. Each value must be of type {value_t.__name__}", condition)
+            raise TypeValidationError(path, f"{descr} must be a dict. Each key must be of type {_repr_type(key_t)} NOT {_repr_type(key.__class__)}. Each value must be of type {_repr_type(value_t)}", condition)
         if not isinstance(value, value_t):
-            raise TypeValidationError(path, f"{descr} must be a dict. Each key must be of type {key_t.__name__}. Each value must be of type {value_t.__name__} NOT {value.__class__.__name__}", condition)
+            raise TypeValidationError(path, f"{descr} must be a dict. Each key must be of type {_repr_type(key_t)}. Each value must be of type {_repr_type(value_t)} NOT {_repr_type(value.__class__)}", condition)
 
 def AA_MIN(obj, path, attr, min, condition=None):
     attr_value, descr = _value_and_descr(obj, attr)

@@ -84,14 +84,16 @@ import zipfile
 import os
 from pypenguin.utility.errors import PathError
 
-def read_file_of_zip(zip_path, file_path):
+def read_all_files_of_zip(zip_path) -> dict[str, bytes]:
     zip_path = ensure_correct_path(zip_path)
+    contents = {}
     with zipfile.ZipFile(zip_path, "r") as zip_ref:
-        with zip_ref.open(file_path) as file_ref:
-            content = file_ref.read().decode("utf-8")
-    return content
+        for file_name in zip_ref.namelist():
+            with zip_ref.open(file_name) as file_ref:
+                contents[file_name] = file_ref.read()
+    return contents
 
-def ensure_correct_path(_path, target_folder_name="pypenguin"):
+def ensure_correct_path(_path: str, target_folder_name: str = "pypenguin") -> str:
     if target_folder_name is not None:
         initial_path = __file__
         current_path = os.path.normpath(initial_path)
@@ -118,7 +120,7 @@ from typing      import TypeVar, Generic, Iterator
 from dataclasses import dataclass
 
 class PypenguinEnum(Enum):
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.__class__.__name__ + "." + self.name
 
 def grepr_dataclass(*, grepr_fields: list[str], parent_cls: type|None = None, 
@@ -302,7 +304,7 @@ def string_to_sha256(primary: str, secondary: str|None=None) -> str:
 
 
 __all__ = [
-    "grepr", "read_file_of_zip", "ensure_correct_path", 
+    "grepr", "read_all_files_of_zip", "ensure_correct_path", 
     "PypenguinEnum", "grepr_dataclass", "DualKeyDict", 
     "remove_duplicates", "lists_equal_ignore_order", "get_closest_matches", "tuplify", "string_to_sha256",
 ]

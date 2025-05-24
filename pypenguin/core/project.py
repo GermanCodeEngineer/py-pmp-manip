@@ -2,7 +2,7 @@ from json        import loads
 from uuid        import UUID
 
 from pypenguin.utility     import (
-    read_file_of_zip, string_to_sha256, ThanksError, grepr_dataclass, ValidationConfig, 
+    read_all_files_of_zip, string_to_sha256, ThanksError, grepr_dataclass, ValidationConfig, 
     AA_TYPE, AA_NONE_OR_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_RANGE, AA_EXACT_LEN,
     SameValueTwiceError, SpriteLayerStackError,
 )
@@ -16,7 +16,7 @@ from pypenguin.core.enums         import SRTTSLanguage, SRVideoState
 from pypenguin.core.target        import FRTarget, FRStage, FRSprite, SRStage, SRSprite
 from pypenguin.core.vars_lists    import SRVariable, SRList
 
-@grepr_dataclass(grepr_fields=["targets", "monitors", "extension_data", "extensions", "extension_urls", "meta"])
+@grepr_dataclass(grepr_fields=["targets", "monitors", "extension_data", "extensions", "extension_urls", "meta", "asset_files"])
 class FRProject: 
     """
     The first representation (FR) of the project data tree. Its data is equivalent to the data stored in a .pmp file
@@ -28,14 +28,20 @@ class FRProject:
     extensions: list[str]
     extension_urls: dict[str, str]
     meta: FRMeta
+    asset_files: dict[str, bytes]
 
     @classmethod
-    def from_data(cls, data: dict, info_api: OpcodeInfoAPI):
+    def from_data(cls, 
+        data: dict, 
+        asset_files: dict[str, bytes], 
+        info_api: OpcodeInfoAPI,
+    ) -> "FRProject":
         """
         Deserializes raw data into a FRProject
         
         Args:
             data: the raw data
+            asset_files: the contents of the costume and sound files
             info_api: the opcode info api used to fetch information about opcodes
         
         Returns:
@@ -54,45 +60,27 @@ class FRProject:
             extensions     = data["extensions"   ],
             extension_urls = data.get("extensionURLs", {}),
             meta           = FRMeta.from_data(data["meta"]),
+            asset_files    = asset_files,
         )
     
     @classmethod
-    def _from_sb3_file(cls, file_path: str, info_api: OpcodeInfoAPI):
+    def _data_sb3_to_pmp(cls, project_data: dict) -> dict:
         """
-        *[Internal Method]* Reads project data from a Scratch Project file(.sb3) and creates a FRProject from it
+        *[Internal Method]* Adapt sb3 project data to the pmp project data format
 
         Args:
-            file_path: file path to the .sb3 file
-            info_api: the opcode info api used to fetch information about opcodes
+            project_data: the project data in sb3 format
         
         Returns:
-            the FRProject
+            the project data in pmp format
         """
-        assert file_path.endswith(".sb3")
-        project_data = loads(read_file_of_zip(file_path, "project.json"))
         for i, sprite_data in enumerate(project_data["targets"]):
             if i == 0:
                 token = string_to_sha256(primary="_stage_")
             else:
                 token = string_to_sha256(primary=sprite_data["name"])
             sprite_data["id"] = token
-        return cls.from_data(project_data, info_api=info_api)
-
-    @classmethod
-    def _from_pmp_file(cls, file_path: str, info_api: OpcodeInfoAPI) -> "FRProject":
-        """
-        *[Internal Method]* Reads project data from a PenguinMod Project file(.pmp) and creates a FRProject from it
-
-        Args:
-            file_path: file path to the .pmp file
-            info_api: the opcode info api used to fetch information about opcodes
-        
-        Returns:
-            the FRProject
-        """
-        assert file_path.endswith(".pmp")
-        project_data = loads(read_file_of_zip(file_path, "project.json"))
-        return cls.from_data(project_data, info_api=info_api)
+        return project_data
 
     @classmethod
     def from_file(cls, file_path: str, info_api: OpcodeInfoAPI) -> "FRProject":
@@ -107,10 +95,12 @@ class FRProject:
             the FRProject
         """
         assert file_path.endswith(".sb3") or file_path.endswith(".pmp")
+        contents = read_all_files_of_zip(file_path)
+        project_data = loads(contents["project.json"].decode("utf-8"))
+        del contents["project.json"]
         if   file_path.endswith(".sb3"):
-            return FRProject._from_sb3_file(file_path, info_api)
-        elif file_path.endswith(".pmp"):
-            return FRProject._from_pmp_file(file_path, info_api)
+            project_data = FRProject._data_sb3_to_pmp(project_data)
+        return FRProject.from_data(project_data, asset_files=contents, info_api=info_api)
 
     def __post_init__(self) -> None:
         """
@@ -138,10 +128,16 @@ class FRProject:
         for target in self.targets:
             if  target.is_stage:
                 old_stage: FRStage = target
-                new_stage, all_sprite_variables, all_sprite_lists = old_stage.step(info_api)
+                new_stage, all_sprite_variables, all_sprite_lists = old_stage.step(
+                    asset_files=self.asset_files, 
+                    info_api=info_api,
+                )
             else:
                 target: FRSprite
-                new_sprite, _, _ = target.step(info_api)
+                new_sprite, _, _ = target.step(
+                    asset_files=self.asset_files, 
+                    info_api=info_api,
+                )
                 new_sprite: SRSprite
                 new_sprites.append(new_sprite)
                 sprite_layer_stack_dict[target.layer_order] = new_sprite.uuid

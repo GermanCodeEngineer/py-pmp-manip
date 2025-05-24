@@ -1,8 +1,13 @@
-from typing import Any
+from typing    import Any
+from PIL       import Image
+from xml.etree import ElementTree
+from pydub     import AudioSegment
+import wave
 
 from pypenguin.utility import (
     grepr_dataclass, ValidationConfig, 
     AA_TYPE, AA_COORD_PAIR, AA_MIN,
+    ThanksError,
 )
 
 
@@ -41,19 +46,36 @@ class FRCostume:
             bitmap_resolution = data.get("bitmapResolution", None),
         )
 
-    def step(self) -> "SRCostume":
+    def step(self, asset_files: dict[str, bytes]) -> "SRCostume": # TODO: update tests
         """
         Converts a FRComment into a SRComment
         
         Returns:
             the SRComment
         """
-        return SRCostume(
-            name              = self.name,
-            file_extension    = self.data_format,
-            rotation_center   = (self.rotation_center_x, self.rotation_center_y),
-            bitmap_resolution = 1 if self.bitmap_resolution is None else self.bitmap_resolution,
-        )
+        rotation_center = (self.rotation_center_x, self.rotation_center_y)
+        bitmap_resolution = 1 if self.bitmap_resolution is None else self.bitmap_resolution
+        content_bytes = asset_files[self.md5ext]
+        
+        if   self.data_format == "svg":
+            return SRVectorCostume(
+                name              = self.name,
+                file_extension    = self.data_format,
+                rotation_center   = rotation_center,
+                bitmap_resolution = bitmap_resolution,
+                content           = ElementTree.fromstring(content_bytes.decode("utf-8")),
+            )
+        elif self.data_format in {"png", "jpg", "jpeg", "bmp", "gif"}:
+            image = Image.open(content_bytes)
+            image.load()  # Ensure it's fully loaded into memory
+            return SRBitmapCostume(
+                name              = self.name,
+                file_extension    = self.data_format,
+                rotation_center   = rotation_center,
+                bitmap_resolution = bitmap_resolution,
+                content           = image,
+            )
+        else: raise ThanksError()
 
 @grepr_dataclass(grepr_fields=["name", "asset_id", "data_format", "md5ext", "rate", "sample_count"])
 class FRSound:
@@ -88,7 +110,7 @@ class FRSound:
             sample_count = data["sampleCount"],
         )
 
-    def step(self) -> "SRSound":
+    def step(self, asset_files: dict[str, bytes]) -> "SRSound":
         """
         Converts a FRSound into a SRSound
         
@@ -113,7 +135,7 @@ class SRCostume:
     bitmap_resolution: int
     
     @classmethod
-    def create_empty(cls, name: str = "empty") -> "SRCostume":
+    def create_empty(cls, name: str = "empty") -> "SRCostume": # TODO: move
         return cls(
             name=name,
             file_extension="svg",
@@ -141,6 +163,58 @@ class SRCostume:
         AA_TYPE(self, path, "bitmap_resolution", int)
         AA_MIN(self, path, "bitmap_resolution", min=1)
 
+@grepr_dataclass(grepr_fields=["content"], parent_cls=SRCostume)
+class SRVectorCostume(SRCostume):
+    """
+    The second representation for a vector(SVG) costume. It is more user friendly then the first representation
+    """
+    
+    content: ElementTree.Element
+    
+    def validate(self, path: list, config: ValidationConfig) -> None:
+        """
+        Ensure a SRVectorCostume is valid, raise ValidationError if not
+        
+        Args:
+            path: the path from the project to itself. Used for better error messages
+            config: Configuration for Validation Behaviour
+        
+        Returns:
+            None
+        
+        Raises:
+            ValidationError: if the SRVectorCostume is invalid
+        """
+        super().validate(path, config)
+        
+        AA_TYPE(self, path, "content", ElementTree.Element)
+
+@grepr_dataclass(grepr_fields=["content"], parent_cls=SRCostume)
+class SRBitmapCostume(SRCostume):
+    """
+    The second representation for a bitmap(usually PNG) costume. It is more user friendly then the first representation
+    """
+    
+    content: Image.Image
+    
+    def validate(self, path: list, config: ValidationConfig) -> None:
+        """
+        Ensure a SRBitmapCostume is valid, raise ValidationError if not
+        
+        Args:
+            path: the path from the project to itself. Used for better error messages
+            config: Configuration for Validation Behaviour
+        
+        Returns:
+            None
+        
+        Raises:
+            ValidationError: if the SRBitmapCostume is invalid
+        """
+        super().validate(path, config)
+        
+        AA_TYPE(self, path, "content", Image.Image)
+
 @grepr_dataclass(grepr_fields=["name", "file_extension"])
 class SRSound:
     """
@@ -166,7 +240,7 @@ class SRSound:
         """
         AA_TYPE(self, path, "name", str)
         AA_TYPE(self, path, "file_extension", str)
+ 
 
-
-__all__ = ["FRCostume", "FRSound", "SRCostume", "SRSound"]
+__all__ = ["FRCostume", "SRVectorCostume", "SRBitmapCostume", "FRSound", "SRCostume", "SRSound"]
 

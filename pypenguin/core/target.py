@@ -17,7 +17,6 @@ from pypenguin.core.block          import FRBlock, IRBlock, SRScript, IRBlockRef
 from pypenguin.core.block_mutation import SRCustomBlockMutation
 from pypenguin.core.comment        import FRComment, SRComment
 from pypenguin.core.context        import PartialContext, CompleteContext
-from pypenguin.core.dropdown       import SRDropdownValue
 from pypenguin.core.enums          import SRSpriteRotationStyle
 from pypenguin.core.block_api      import FIConversionAPI, ValidationAPI
 from pypenguin.core.monitor        import SRMonitor
@@ -106,7 +105,7 @@ class FRTarget(ABC):
         """
         if self.custom_vars != []: raise ThanksError()
 
-    def _step_common(self, info_api: OpcodeInfoAPI) -> tuple[
+    def _step_common(self, asset_files: dict[str, bytes], info_api: OpcodeInfoAPI) -> tuple[
         list[SRScript], 
         list[SRComment], 
         list[SRCostume], 
@@ -184,8 +183,8 @@ class FRTarget(ABC):
         return (
             new_scripts,
             floating_comments,
-            [costume.step() for costume in self.costumes],
-            [sound  .step() for sound   in self.sounds  ],
+            [costume.step(asset_files) for costume in self.costumes],
+            [sound  .step(asset_files) for sound   in self.sounds  ],
             new_variables,
             new_lists,
         )
@@ -257,7 +256,10 @@ class FRStage(FRTarget):
             text_to_speech_language=data["textToSpeechLanguage"],
         )
     
-    def step(self, info_api: OpcodeInfoAPI) -> tuple["SRStage", list[SRVariable],  list[SRList]]:
+    def step(self, 
+        asset_files: dict[str, bytes],
+        info_api: OpcodeInfoAPI,
+    ) -> tuple["SRStage", list[SRVariable],  list[SRList]]:
         """
         Converts a FRStage into a SRStage
         
@@ -274,7 +276,7 @@ class FRStage(FRTarget):
             sounds,
             all_sprite_variables,
             all_sprite_lists,
-        ) = super()._step_common(info_api)
+        ) = super()._step_common(asset_files, info_api)
         return (SRStage(
             scripts       = scripts,
             comments      = comments,
@@ -330,7 +332,10 @@ class FRSprite(FRTarget):
             rotation_style=data["rotationStyle"],
         )
 
-    def step(self, info_api: OpcodeInfoAPI) -> tuple["SRSprite", None, None]:
+    def step(self, 
+        asset_files: dict[str, bytes],
+        info_api: OpcodeInfoAPI,
+    ) -> tuple["SRSprite", None, None]:
         """
         Converts a FRSprite into a SRSprite
         
@@ -347,7 +352,7 @@ class FRSprite(FRTarget):
             sounds,
             sprite_only_variables,
             sprite_only_lists,
-        ) = super()._step_common(info_api)
+        ) = super()._step_common(asset_files, info_api)
         return (SRSprite(
             name                  = self.name,
             scripts               = scripts,
@@ -450,7 +455,7 @@ class SRTarget:
         path: list, 
         config: ValidationConfig,
         info_api: OpcodeInfoAPI,
-        context: PartialContext | CompleteContext,
+        context: PartialContext,
     ) -> None:
         """
         Ensure the scripts of a SRTarget are valid, raise ValidationError if not
@@ -502,8 +507,8 @@ class SRTarget:
         """
         return CompleteContext.from_partial(
             pc       = partial_context,
-            costumes = [SRDropdownValue(DropdownValueKind.COSTUME, costume.name) for costume in self.costumes],
-            sounds   = [SRDropdownValue(DropdownValueKind.SOUND  , sound  .name) for sound   in self.sounds  ],
+            costumes = [(SropdownValueKind.COSTUME, costume.name) for costume in self.costumes],
+            sounds   = [(DropdownValueKind.SOUND  , sound  .name) for sound   in self.sounds  ],
             is_stage = isinstance(self, SRStage),
         )
 

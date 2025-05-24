@@ -81,7 +81,7 @@ class FIConversionAPI:
         Returns:
             the comment
         """
-        if comment_id in self.blocks:
+        if comment_id in self.block_comments:
             return self.block_comments[comment_id]
         raise FirstToInterConversionError(f"Comment with id {repr(comment_id)} not found")
 
