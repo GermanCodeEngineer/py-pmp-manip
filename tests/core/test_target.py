@@ -337,7 +337,7 @@ def test_SRSprite_validate(config):
     )
 
 def test_SRSprite_validate_uuid(config):
-    srsprite = copy(SR_SPRITE)
+    srsprite = SRSprite.create_empty(name="my sprite")
     srsprite.__dict__["uuid"] = "abc-def-ghi"
     with raises(TypeValidationError):
         srsprite.validate([], config, info_api)

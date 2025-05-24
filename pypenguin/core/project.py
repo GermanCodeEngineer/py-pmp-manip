@@ -289,7 +289,7 @@ class SRProject:
         AA_LIST_OF_TYPE(self, path, "sprites", SRSprite)
         AA_LIST_OF_TYPE(self, path, "sprite_layer_stack", UUID)
         AA_EXACT_LEN(self, path, "sprite_layer_stack", 
-            len=len(self.sprites), condition=f"In this case the project has {len(self.sprites)} sprites(s)"
+            length=len(self.sprites), condition=f"In this case the project has {len(self.sprites)} sprites(s)"
         )
         AA_LIST_OF_TYPE(self, path, "all_sprite_variables", SRVariable)
         AA_LIST_OF_TYPE(self, path, "all_sprite_lists", SRList)
@@ -380,43 +380,6 @@ class SRProject:
                 context  = global_context,
             )
 
-    def _validate_sprites_old(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
-        """
-        *[Internal Method]* Ensure the sprites of a SRProject are valid, raise ValidationError if not
-        
-        Args:
-            path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
-            info_api: the opcode info api used to fetch information about opcodes
-        
-        Returns:
-            None
-        
-        Raises:
-            SpriteLayerStackError(ValidationError): if the project contains sprites with an invalid layer_order in the project context
-        """
-        if len(self.sprites) == 0:
-            return # There is nothing to do then
-        layer_orders: dict[int, list] = {}
-        for i, sprite in enumerate(self.sprites):
-            current_path = path+["sprites", i]
-            sprite.validate(current_path, config, info_api)
-            if sprite.layer_order in layer_orders:
-                other_path = layer_orders[sprite.layer_order]
-                raise SameValueTwiceError(other_path, current_path, "Two sprites mustn't have the same layer order")
-            layer_orders[sprite.layer_order] = current_path
-        
-        min_layer_order = min(layer_orders.keys())
-        if min_layer_order != 1:
-            raise SpriteLayerStackError(layer_orders[min_layer_order], "layer_order must start at 1")
-        
-        next_layer_order = 1
-        for layer_order, current_path in dict(sorted(layer_orders.items())).items():
-            if layer_order > next_layer_order: 
-            # Can't be lower because minimum of 1 was alredy ensured + sorting
-                raise SpriteLayerStackError(current_path, f"layer_order should start at 1 and then increase for each sprite in order from back to front. It should be {next_layer_order} here")
-            next_layer_order += 1
-
     def _validate_sprites(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
         """
         *[Internal Method]* Ensure the sprites of a SRProject are valid, raise ValidationError if not
@@ -446,9 +409,9 @@ class SRProject:
         stack_uuid_paths: dict[UUID, list] = {}
         for i, uuid in enumerate(self.sprite_layer_stack):
             current_path = path+["sprite_layer_stack", i]
-            if sprite.uuid in stack_uuid_paths:
+            if uuid in stack_uuid_paths:
                 other_path = stack_uuid_paths[sprite.uuid]
-                raise SameValueTwiceError(other_path, current_path, "Two same UUID mustn't be included twice")
+                raise SameValueTwiceError(other_path, current_path, "The same UUID mustn't be included twice")
             if uuid not in sprite_uuid_paths:
                 raise SpriteLayerStackError(current_path, "Must be the UUID of an existing sprite")
             stack_uuid_paths[uuid] = current_path

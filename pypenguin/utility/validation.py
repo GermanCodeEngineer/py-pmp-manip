@@ -92,10 +92,10 @@ def AA_MIN_LEN(obj, path, attr, min_len: int, condition=None):
     if len(attr_value) < min_len:
         raise RangeValidationError(path, f"{descr} must contain at least {min_len} element(s)")
 
-def AA_EXACT_LEN(obj, path, attr, len: int, condition=None):
+def AA_EXACT_LEN(obj, path, attr, length: int, condition=None):
     attr_value, descr = _value_and_descr(obj, attr)
-    if len(attr_value) != len:
-        raise RangeValidationError(path, f"{descr} must contain exactly {len} element(s)")
+    if len(attr_value) != length:
+        raise RangeValidationError(path, f"{descr} must contain exactly {length} element(s)")
 
 def AA_COORD_PAIR(obj, path, attr, condition=None):
     attr_value, descr = _value_and_descr(obj, attr)

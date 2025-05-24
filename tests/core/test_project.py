@@ -1,5 +1,6 @@
 from pytest import fixture, raises
 from copy   import copy, deepcopy
+from uuid   import uuid4
 
 from pypenguin.utility            import (
     ValidationConfig, 
@@ -127,6 +128,7 @@ def test_SRProject_validate(config):
             ("sprites", [6.7], TypeValidationError),
             ("sprite_layer_stack", None, TypeValidationError),
             ("sprite_layer_stack", [None], TypeValidationError),
+            ("sprite_layer_stack", [uuid4(), uuid4()], RangeValidationError), # must have exactly 1 item
             ("all_sprite_variables", {}, TypeValidationError),
             ("all_sprite_variables", ["bye"], TypeValidationError),
             ("all_sprite_lists", set(), TypeValidationError),
@@ -147,33 +149,13 @@ def test_SRProject_validate(config):
 
 def test_SRProject_validate_same_sprite_name(config):
     srproject = SRProject.create_empty()
-    srproject.sprites = [
-        SRSprite.create_empty(name="Sprite1"),
-        SRSprite.create_empty(name="Sprite1"),
-    ]
+    sprite1 = SRSprite.create_empty(name="sprite1")
+    sprite2 = SRSprite.create_empty(name="sprite1")
+    srproject.sprites = [sprite1, sprite2]
+    srproject.sprite_layer_stack = [sprite2.uuid, sprite1.uuid]
     with raises(SameValueTwiceError):
         srproject.validate(config, info_api)
 
-""" # TODO: create replacement
-def test_SRProject_validate_sprites_layer_order(config):
-    srproject = SRProject.create_empty()
-    srproject.sprites = [
-        SRSprite.create_empty(name="Sprite1"),
-        SRSprite.create_empty(name="Sprite2"),
-    ]
-    with raises(SameValueTwiceError):
-        srproject._validate_sprites([], config, info_api)
-    
-    srproject.sprites[0].layer_order = 2 # must start at 1
-    srproject.sprites[1].layer_order = 3
-    with raises(SpriteLayerStackError):
-        srproject._validate_sprites([], config, info_api)
-    
-    srproject.sprites[0].layer_order = 1 # 2, 3 are missing
-    srproject.sprites[1].layer_order = 4
-    with raises(SpriteLayerStackError):
-        srproject._validate_sprites([], config, info_api)
-"""
 def test_SRProject_validate_sprites_layer_order(config):
     srproject = SRProject.create_empty()
     sprite1 = SRSprite.create_empty(name="sprite1")
@@ -182,7 +164,9 @@ def test_SRProject_validate_sprites_layer_order(config):
     srproject.sprite_layer_stack = [sprite2.uuid, sprite1.uuid]
     srproject._validate_sprites([], config, info_api)
 
-    srproject.sprite_layer_stack = [sprite1.uuid]
+    srproject.sprite_layer_stack = [sprite1.uuid, uuid4()]
+    with raises(SpriteLayerStackError):
+        srproject._validate_sprites([], config, info_api)
     
 
 

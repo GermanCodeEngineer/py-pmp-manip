@@ -1,6 +1,5 @@
 TODOs:
     - complete tests
-    - manage layer_order differently
     - maybe remove IRBlockReference
     - maybe replace _copymodify_
     - rename layer order error
