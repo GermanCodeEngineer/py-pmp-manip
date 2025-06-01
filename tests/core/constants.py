@@ -1,9 +1,10 @@
 from pypenguin.opcode_info import DropdownValueKind, InputMode
+from pypenguin.utility     import read_all_files_of_zip
 
-from pypenguin.core.asset          import FRCostume, FRSound, SRCostume, SRSound
+from pypenguin.core.asset          import FRCostume, FRSound, SRVectorCostume, SRSound
 from pypenguin.core.block          import (
     FRBlock, IRBlock, IRBlockReference, IRInputValue,
-    SRBlock, SRScript, 
+    SRBlock, SRScript,
     SRBlockAndTextInputValue, SRBlockAndDropdownInputValue, SRBlockOnlyInputValue, SRScriptInputValue,
     SRDropdownValue,
 )
@@ -23,6 +24,12 @@ from pypenguin.core.monitor        import FRMonitor, SRListMonitor
 from pypenguin.core.project        import FRProject, SRProject
 from pypenguin.core.target         import FRStage, FRSprite, SRStage, SRSprite
 from pypenguin.core.vars_lists     import SRVariable, SRList
+
+from lxml      import etree
+from io        import BytesIO
+from pydub     import AudioSegment
+from PIL       import Image
+from lxml      import etree
 
 ALL_FR_BLOCK_DATAS = {
     "d": {
@@ -492,7 +499,7 @@ ALL_IR_BLOCKS = {
         position=(268, 220),
         next=IRBlockReference(id="b"),
         is_top_level=True,
-    ), 
+    ),
     IRBlockReference(id="b"): IRBlock(
         opcode="motion_glideto",
         inputs={
@@ -522,7 +529,7 @@ ALL_IR_BLOCKS = {
         position=None,
         next=None,
         is_top_level=False,
-    ), 
+    ),
     IRBlockReference(id="e"): IRBlock(
         opcode="motion_glideto_menu",
         inputs={},
@@ -534,7 +541,7 @@ ALL_IR_BLOCKS = {
         position=None,
         next=None,
         is_top_level=False,
-    ), 
+    ),
     IRBlockReference(id="f"): IRBlock(
         opcode="operator_random",
         inputs={
@@ -570,7 +577,7 @@ ALL_IR_BLOCKS = {
         position=(304, 424),
         next=None,
         is_top_level=True,
-    ), 
+    ),
     IRBlockReference(id="m"): IRBlock(
         opcode="data_variable",
         inputs={},
@@ -582,7 +589,7 @@ ALL_IR_BLOCKS = {
         position=(446, 652),
         next=None,
         is_top_level=True,
-    ), 
+    ),
     IRBlockReference(id="h"): IRBlock(
         opcode="procedures_definition_return",
         inputs={},
@@ -606,7 +613,7 @@ ALL_IR_BLOCKS = {
         position=(344, 799),
         next=None,
         is_top_level=True,
-    ), 
+    ),
     IRBlockReference(id="g"): IRBlock(
         opcode="operator_join",
         inputs={
@@ -629,7 +636,7 @@ ALL_IR_BLOCKS = {
         position=None,
         next=None,
         is_top_level=False,
-    ), 
+    ),
     IRBlockReference(id="c"): IRBlock(
         opcode="procedures_call",
         inputs={
@@ -665,7 +672,7 @@ ALL_IR_BLOCKS = {
         position=(499, 933),
         next=None,
         is_top_level=True,
-    ), 
+    ),
     IRBlockReference(id="l"): IRBlock(
         opcode="operator_falseBoolean",
         inputs={},
@@ -675,7 +682,7 @@ ALL_IR_BLOCKS = {
         position=None,
         next=None,
         is_top_level=False,
-    ), 
+    ),
     IRBlockReference(id="k"): IRBlock(
         opcode="operator_length",
         inputs={
@@ -692,7 +699,7 @@ ALL_IR_BLOCKS = {
         position=None,
         next=None,
         is_top_level=False,
-    ), 
+    ),
     IRBlockReference(id="p"): IRBlock(
         opcode="data_listcontents",
         inputs={},
@@ -769,7 +776,7 @@ ALL_SR_SCRIPTS = [
                 opcode="broadcast ([MESSAGE])",
                 inputs={
                     "MESSAGE": SRBlockAndDropdownInputValue(
-                        block=None, 
+                        block=None,
                         dropdown=SRDropdownValue(kind=DropdownValueKind.BROADCAST_MSG, value="my message"),
                     ),
                 },
@@ -782,7 +789,7 @@ ALL_SR_SCRIPTS = [
                 inputs={
                     "SECONDS": SRBlockAndTextInputValue(block=None, text="1"),
                     "TARGET": SRBlockAndDropdownInputValue(
-                        block=None, 
+                        block=None,
                         dropdown=SRDropdownValue(kind=DropdownValueKind.OBJECT, value="random position"),
                     ),
                 },
@@ -796,7 +803,7 @@ ALL_SR_SCRIPTS = [
                 mutation=None,
             ),
         ],
-    ), 
+    ),
     SRScript( # [1]
         position=(304, 424),
         blocks=[
@@ -834,7 +841,7 @@ ALL_SR_SCRIPTS = [
                 mutation=None,
             ),
         ],
-     ), 
+     ),
      SRScript( # [2]
         position=(446, 652),
         blocks=[
@@ -848,7 +855,7 @@ ALL_SR_SCRIPTS = [
                 mutation=None,
             ),
         ],
-    ), 
+    ),
     SRScript( # [3]
         position=(344, 799),
         blocks=[
@@ -917,7 +924,7 @@ ALL_SR_SCRIPTS = [
                 ),
             ),
         ],
-    ), 
+    ),
     SRScript( # [5]
         position=(646, 561),
         blocks=[
@@ -1170,6 +1177,11 @@ FR_SPRITE = FRSprite(
 
 
 
+PROJECT_ASSET_FILES = {
+    file_name: content 
+    for file_name, content in read_all_files_of_zip("../tests/assets/testing_blocks.pmp").items() 
+    if file_name != "project.json"
+}
 
 FR_PROJECT = FRProject(
     targets=[
@@ -1204,11 +1216,12 @@ FR_PROJECT = FRProject(
         vm="0.2.0",
         agent="",
         platform=FRPenguinModPlatformMeta(
-            name="PenguinMod", 
-            url="https://penguinmod.com/", 
+            name="PenguinMod",
+            url="https://penguinmod.com/",
             version="stable",
         ),
     ),
+    asset_files=PROJECT_ASSET_FILES,
 )
 
 PROJECT_DATA = {
@@ -1248,16 +1261,22 @@ PROJECT_DATA = {
 }
 
 
+BACKDROP1_CONTENT = etree.fromstring(PROJECT_ASSET_FILES["cd21514d0531fdffb22204e0ec5ed84a.svg"])
+COSTUME1_CONTENT = etree.fromstring(PROJECT_ASSET_FILES["c434b674f2da18ba13cdfe51dbc05ecc.svg"])
+SQUAWK_CONTENT = AudioSegment.from_file(
+    BytesIO(PROJECT_ASSET_FILES["e140d7ff07de8fa35c3d1595bba835ac.wav"]),
+)
+
 SR_STAGE = SRStage(
     scripts=[],
     comments=[],
     costume_index=0,
     costumes=[
-        SRCostume(
+        SRVectorCostume(
             name="backdrop1",
             file_extension="svg",
             rotation_center=(240, 180),
-            bitmap_resolution=1,
+            content=BACKDROP1_CONTENT,
         ),
     ],
     sounds=[],
@@ -1270,15 +1289,19 @@ SR_SPRITE = SRSprite(
     comments=[],
     costume_index=0,
     costumes=[
-        SRCostume(
+        SRVectorCostume(
             name="costume1",
             file_extension="svg",
             rotation_center=(26, 46),
-            bitmap_resolution=1,
+            content=COSTUME1_CONTENT,
         ),
     ],
     sounds=[
-        SRSound(name="Squawk", file_extension="wav"),
+        SRSound(
+            name="Squawk", 
+            file_extension="wav",
+            content=SQUAWK_CONTENT,
+        ),
     ],
     volume=100,
     sprite_only_variables=[],
@@ -1319,5 +1342,4 @@ SR_PROJECT = SRProject(
     ],
     extensions=[],
 )
-
 

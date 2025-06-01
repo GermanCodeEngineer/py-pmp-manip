@@ -84,7 +84,7 @@ import zipfile
 import os
 from pypenguin.utility.errors import PathError
 
-def read_all_files_of_zip(zip_path) -> dict[str, bytes]:
+def read_all_files_of_zip(zip_path: str) -> dict[str, bytes]:
     zip_path = ensure_correct_path(zip_path)
     contents = {}
     with zipfile.ZipFile(zip_path, "r") as zip_ref:
@@ -303,9 +303,66 @@ def string_to_sha256(primary: str, secondary: str|None=None) -> str:
         return _string_to_sha256(primary, digits=16) + _string_to_sha256(secondary, digits=4)
 
 
+# Special Comparers
+from lxml        import etree
+from PIL         import Image
+from pydub       import AudioSegment
+
+def xml_equal(xml1: str, xml2: str) -> bool:
+    """
+    Compare two xml strings for equality
+    
+    Args:
+        xml1: the first xml string
+        xml2: the second xml string
+    
+    Returns:
+        wether the two xml strings are equal
+    """
+    a = etree.fromstring(xml1)
+    b = etree.fromstring(xml2)
+    return etree.tostring(a) == etree.tostring(b)
+
+def image_equal(img1: Image.Image, img2: Image.Image) -> bool:
+    """
+    Compare two PIL Image instances for strict equality:
+    same size, mode, and pixel data.
+    
+    Args:
+        img1: the first image
+        img2: the second image
+    
+    Returns:
+        wether the two images are equal
+    """
+    if (img1.mode != img2.mode) or (img1.size != img2.size):
+        return False
+    return img1.tobytes() == img2.tobytes()
+
+def audio_segment_equal(a1: AudioSegment, a2: AudioSegment) -> bool:
+    """
+    Compare two AudioSegment instances for strict equality:
+    same duration, frame rate, channels, sample width, and raw audio data.
+    
+    Args:
+        a1: the first audio segment
+        a2: the second audio segment
+    
+    Returns:
+        wether the two audio segments are equal
+    """
+    return (
+        a1.frame_rate == a2.frame_rate and
+        a1.channels == a2.channels and
+        a1.sample_width == a2.sample_width and
+        len(a1) == len(a2) and
+        a1.raw_data == a2.raw_data
+    )
+
 __all__ = [
     "grepr", "read_all_files_of_zip", "ensure_correct_path", 
     "PypenguinEnum", "grepr_dataclass", "DualKeyDict", 
     "remove_duplicates", "lists_equal_ignore_order", "get_closest_matches", "tuplify", "string_to_sha256",
+    "xml_equal", "image_equal", "audio_segment_equal",
 ]
 

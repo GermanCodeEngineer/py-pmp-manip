@@ -1,17 +1,18 @@
 from typing    import Any
-from PIL       import Image
-from xml.etree import ElementTree
+from PIL       import Image, UnidentifiedImageError
+from lxml      import etree
 from io        import BytesIO
 from pydub     import AudioSegment
-import wave
+from pytest    import fixture
 
 from pypenguin.utility import (
     grepr_dataclass, ValidationConfig, 
-    AA_TYPE, AA_COORD_PAIR, AA_MIN,
-    ThanksError
+    AA_TYPE, AA_COORD_PAIR, AA_MIN, AA_EQUAL,
+    ThanksError,
+    xml_equal, image_equal, audio_segment_equal,
 )
 
-EMPTY_SVG_COSTUME_XML = "<svg version=\"1.1\" width=\"2\" height=\"2\" viewBox=\"-1 -1 2 2\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n  <!-- Exported by Scratch - http://scratch.mit.edu/ -->\n</svg>"
+EMPTY_SVG_COSTUME_XML = '<svg version="1.1" width="2" height="2" viewBox="-1 -1 2 2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">\n  <!-- Exported by Scratch - http://scratch.mit.edu/ -->\n</svg>'
 EMPTY_SVG_COSTUME_ROTATION_CENTER = (240, 180)
 
 
@@ -51,7 +52,7 @@ class FRCostume:
             bitmap_resolution = data.get("bitmapResolution", None),
         )
 
-    def step(self, asset_files: dict[str, bytes]) -> "SRCostume": # TODO: update tests
+    def step(self, asset_files: dict[str, bytes]) -> "SRVectorCostume|SRBitmapCostume": 
         """
         Converts a FRComment into a SRComment
         
@@ -61,24 +62,28 @@ class FRCostume:
         rotation_center = (self.rotation_center_x, self.rotation_center_y)
         content_bytes = asset_files[self.md5ext]
         
-        if   self.data_format == "svg":
+        if self.data_format == "svg":
             return SRVectorCostume(
                 name              = self.name,
                 file_extension    = self.data_format,
                 rotation_center   = rotation_center,
-                content           = ElementTree.fromstring(content_bytes.decode("utf-8")),
+                content           = etree.fromstring(content_bytes),
             )
-        elif self.data_format in {"png", "jpg", "jpeg", "bmp", "gif"}:
-            image = Image.open(BytesIO(content_bytes))
+        else: # "png", "jpg", "jpeg", "bmp"
+            try:
+                image = Image.open(BytesIO(content_bytes))
+            except UnidentifiedImageError:
+                raise ThanksError()
             image.load()  # Ensure it's fully loaded into memory
             return SRBitmapCostume(
                 name              = self.name,
                 file_extension    = self.data_format,
                 rotation_center   = rotation_center,
-                bitmap_resolution = 1 if self.bitmap_resolution is None else self.bitmap_resolution,
+                #bitmap_resolution = 1 if self.bitmap_resolution is None else self.bitmap_resolution, 
+                # TODO: test if necessary
+                bitmap_resolution = self.bitmap_resolution,
                 content           = image,
             )
-        else: raise ThanksError()
 
 @grepr_dataclass(grepr_fields=["name", "asset_id", "data_format", "md5ext", "rate", "sample_count"])
 class FRSound:
@@ -120,9 +125,13 @@ class FRSound:
         Returns:
             the SRSound
         """
+        content_bytes = asset_files[self.md5ext]
+        audio_segment = AudioSegment.from_file(BytesIO(content_bytes), format=self.data_format)
+        
         return SRSound(
             name           = self.name,
             file_extension = self.data_format,
+            content        = audio_segment,
             # Other attributes can be derived from the sound files
         )
 
@@ -168,13 +177,13 @@ class SRCostume:
         AA_TYPE(self, path, "file_extension", str)
         AA_COORD_PAIR(self, path, "rotation_center")
 
-@grepr_dataclass(grepr_fields=["content"], parent_cls=SRCostume)
+@grepr_dataclass(grepr_fields=["content"], parent_cls=SRCostume, eq=False)
 class SRVectorCostume(SRCostume):
     """
     The second representation for a vector(SVG) costume. It is more user friendly then the first representation
     """
     
-    content: ElementTree.Element
+    content: etree._Element
         
     @classmethod
     def create_empty(cls, name: str = "empty") -> "SRCostume":
@@ -182,9 +191,24 @@ class SRVectorCostume(SRCostume):
             name            = name,
             file_extension  = "svg",
             rotation_center = EMPTY_SVG_COSTUME_ROTATION_CENTER,
-            content         = ElementTree.fromstring(EMPTY_SVG_COSTUME_XML),
+            content         = etree.fromstring(EMPTY_SVG_COSTUME_XML),
         )
-    
+
+    def __eq__(self, other) -> bool:
+        """
+        Checks whether a SRVectorCostume is equal to another.
+        Requires same XML data. Ignores wrong identity of content.
+
+        Args:
+            other: the object to compare to
+
+        Returns:
+            bool: wether self is equal to other
+        """
+        if not super().__eq__(other):
+            return False
+        return xml_equal(etree.tostring(self.content), etree.tostring(other.content))
+        
     def validate(self, path: list, config: ValidationConfig) -> None:
         """
         Ensure a SRVectorCostume is valid, raise ValidationError if not
@@ -201,16 +225,35 @@ class SRVectorCostume(SRCostume):
         """
         super().validate(path, config)
         
-        AA_TYPE(self, path, "content", ElementTree.Element)
+        AA_EQUAL(self, path, "file_extension", "svg")
+        AA_TYPE(self, path, "content", etree._Element)
 
-@grepr_dataclass(grepr_fields=["content", "bitmap_resolution"], parent_cls=SRCostume)
+@grepr_dataclass(grepr_fields=["content", "bitmap_resolution"], parent_cls=SRCostume, eq=False)
 class SRBitmapCostume(SRCostume):
     """
     The second representation for a bitmap(usually PNG) costume. It is more user friendly then the first representation
     """
     
     content: Image.Image
-    bitmap_resolution: int
+    bitmap_resolution: int # TODO: derivable from content?
+    
+    def __eq__(self, other) -> bool:
+        """
+        Checks whether a SRBitmapCostume is equal to another.
+        Requires same image pixel data. Ignores wrong identity of content.
+
+        Args:
+            other: the object to compare to
+
+        Returns:
+            bool: wether self is equal to other
+        """
+        if not super().__eq__(other):
+            return False
+        return (
+            (self.bitmap_resolution == other.bitmap_resolution)
+            and image_equal(self.content, other.content)
+        )
     
     def validate(self, path: list, config: ValidationConfig) -> None:
         """
@@ -233,7 +276,7 @@ class SRBitmapCostume(SRCostume):
         AA_MIN(self, path, "bitmap_resolution", min=1)
 
 
-@grepr_dataclass(grepr_fields=["name", "file_extension"])
+@grepr_dataclass(grepr_fields=["name", "file_extension", "content"])
 class SRSound:
     """
     The second representation for a sound. It is more user friendly then the first representation
@@ -241,6 +284,26 @@ class SRSound:
 
     name: str
     file_extension: str
+    content: AudioSegment
+    
+    #def __eq__(self, other) -> bool:
+    #    """
+    #    Checks whether a SRSound is equal to another.
+    #    Requires same audio segment bytes. Ignores wrong identity of content.
+    #
+    #    Args:
+    #        other: the object to compare to
+    #
+    #    Returns:
+    #        bool: wether self is equal to other
+    #    """
+    #    if not isinstance(other, SRSound):
+    #        return NotImplemented
+    #    return (
+    #            (self.name == other.name)
+    #        and (self.file_extension == other.file_extension)
+    #        and audio_segment_equal(self.content, other.content)
+    #    )
     
     def validate(self, path: list, config: ValidationConfig) -> None:
         """
@@ -258,6 +321,7 @@ class SRSound:
         """
         AA_TYPE(self, path, "name", str)
         AA_TYPE(self, path, "file_extension", str)
+        AA_TYPE(self, path, "content", AudioSegment)
  
 
 __all__ = ["FRCostume", "SRVectorCostume", "SRBitmapCostume", "FRSound", "SRCostume", "SRSound"]

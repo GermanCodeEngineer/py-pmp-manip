@@ -2,6 +2,7 @@ from typing      import Any, Type, Callable, TypeVar
 from types       import MethodType
 from copy        import copy
 from pytest      import raises
+from io          import BytesIO
 
 from pypenguin.utility import ValidationError
 
@@ -18,12 +19,12 @@ def copymodify(obj: CPM, attr: str, value: Any) -> CPM:
     setattr(copied_obj, attr, value)
     return copied_obj
 
-AVT = TypeVar("AVT")
+_AVT = TypeVar("AVT")
 
 def execute_attr_validation_tests(
-        obj: AVT, 
+        obj: _AVT, 
         attr_tests: list[tuple[str, Any, Type[ValidationError]]], 
-        validate_func: Callable[[AVT], None],
+        validate_func: Callable[[_AVT], None],
         func_args: list[Any]=[],
     ) -> None:
     """
@@ -42,3 +43,7 @@ def execute_attr_validation_tests(
         modified_obj = copymodify(obj, attr, value)
         with raises(error):
             validate_func(modified_obj, *func_args)
+
+
+__all__ = ["copymodify", "execute_attr_validation_tests"]
+

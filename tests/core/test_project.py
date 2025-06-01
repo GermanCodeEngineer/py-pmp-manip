@@ -14,7 +14,7 @@ from pypenguin.core.project    import FRProject, SRProject
 from pypenguin.core.target     import FRStage, SRSprite, SRStage
 from pypenguin.core.vars_lists import SRVariable, SRList
 
-from tests.core.constants import PROJECT_DATA, FR_PROJECT, SR_PROJECT
+from tests.core.constants import PROJECT_DATA, PROJECT_ASSET_FILES, FR_PROJECT, SR_PROJECT
 
 from tests.utility import execute_attr_validation_tests
 
@@ -24,35 +24,37 @@ def config():
 
 
 def test_FRProject_from_data():
-    frproject = FRProject.from_data(PROJECT_DATA, info_api)
+    frproject = FRProject.from_data(
+        data=PROJECT_DATA, 
+        asset_files=PROJECT_ASSET_FILES, 
+        info_api=info_api,
+    )
     assert frproject == FR_PROJECT
 
 
-def test_FRProject_from_pmp_file():
-    FRProject._from_pmp_file("../tests/assets/testing_blocks.pmp", info_api)
-    with raises(AssertionError):
-        FRProject._from_pmp_file("../tests/assets/scratch_project.sb3", info_api)
-
-
-def test_FRProject_from_sb3_file():
-    FRProject._from_sb3_file("../tests/assets/scratch_project.sb3", info_api)
-    with raises(AssertionError):
-        FRProject._from_sb3_file("../tests/assets/testing_blocks.pmp", info_api)
-
 def test_FRProject_from_file():
     FRProject.from_file("../tests/assets/testing_blocks.pmp", info_api)
-    FRProject.from_file("../tests/assets/scratch_project.sb3", info_api)
+    FRProject.from_file("../tests/assets/scratch_project.sb3", info_api) 
+    # TODO: use smaller examples and check equality
     with raises(AssertionError):
-        FRProject.from_file("abc/def/ghi/jc_loves_u.any", info_api)
+        FRProject.from_file("abc/def/ghi/christ_loves_u.bible", info_api)
 
 
 def test_FRProject_post_init():
     with raises(ThanksError):
-        FRProject.from_data(PROJECT_DATA | {"extensionData": 7}, info_api)
+        FRProject.from_data(
+            data=PROJECT_DATA | {"extensionData": 7}, 
+            asset_files=PROJECT_ASSET_FILES,
+            info_api=info_api,
+        )
 
 
 def test_FRProject_step():
-    assert FR_PROJECT.step(info_api) == SR_PROJECT
+    a = FR_PROJECT.step(info_api)
+    b = SR_PROJECT
+    
+    assert a.stage.costumes == b.stage.costumes
+    assert a == b
 
 def test_FRProject_step_tts():
     frproject = deepcopy(FR_PROJECT)

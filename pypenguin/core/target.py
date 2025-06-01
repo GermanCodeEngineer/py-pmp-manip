@@ -12,7 +12,7 @@ from pypenguin.utility     import (
 )
 from pypenguin.opcode_info import OpcodeInfoAPI, DropdownValueKind
 
-from pypenguin.core.asset          import FRCostume, FRSound, SRCostume, SRSound
+from pypenguin.core.asset          import FRCostume, FRSound, SRCostume, SRVectorCostume, SRSound
 from pypenguin.core.block          import FRBlock, IRBlock, SRScript, IRBlockReference
 from pypenguin.core.block_mutation import SRCustomBlockMutation
 from pypenguin.core.comment        import FRComment, SRComment
@@ -397,7 +397,7 @@ class SRTarget:
             scripts=[],
             comments=[],
             costume_index=0,
-            costumes=[SRCostume.create_empty()],
+            costumes=[SRVectorCostume.create_empty()],
             sounds=[],
             volume=100,
         )
@@ -550,7 +550,7 @@ class SRSprite(SRTarget):
             scripts=[],
             comments=[],
             costume_index=0,
-            costumes=[SRCostume.create_empty()],
+            costumes=[SRVectorCostume.create_empty()],
             sounds=[],
             volume=100,
             name=name,

@@ -64,7 +64,7 @@ class FRProject:
         )
     
     @classmethod
-    def _data_sb3_to_pmp(cls, project_data: dict) -> dict:
+    def _data_sb3_to_pmp(cls, project_data: dict) -> dict: # TODO: add test
         """
         *[Internal Method]* Adapt sb3 project data to the pmp project data format
 
@@ -75,11 +75,8 @@ class FRProject:
             the project data in pmp format
         """
         for i, sprite_data in enumerate(project_data["targets"]):
-            if i == 0:
-                token = string_to_sha256(primary="_stage_")
-            else:
-                token = string_to_sha256(primary=sprite_data["name"])
-            sprite_data["id"] = token
+            sprite_name = "_stage_" if i == 0 else sprite_data["name"]
+            sprite_data["id"] = string_to_sha256(primary=sprite_name)
         return project_data
 
     @classmethod
@@ -228,15 +225,15 @@ class SRProject:
 
     def __eq__(self, other) -> bool: # TODO: test
         """
-        Checks whether an SRProject is equal to another.
+        Checks whether a SRProject is equal to another.
         Requires same sprites and sprite layer stack order.
         Ignores mismatched UUIDs, which would otherwise make equality impossible.
 
         Args:
-            other: The object to compare to.
+            other: the object to compare to
 
         Returns:
-            bool: Whether self is equal to other.
+            bool: wether self is equal to other
         """
         if not isinstance(other, SRProject):
             return NotImplemented
@@ -263,7 +260,7 @@ class SRProject:
             self.text_to_speech_language == other.text_to_speech_language and
             self.global_monitors == other.global_monitors and
             self.extensions == other.extensions
-        )
+        ) # TODO: optimize (move this up for performance)
 
     def validate(self, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
         """
