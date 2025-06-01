@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from pypenguin.opcode_info import DropdownValueKind, InputMode
 from pypenguin.utility     import read_all_files_of_zip
 
@@ -1343,3 +1345,167 @@ SR_PROJECT = SRProject(
     extensions=[],
 )
 
+
+
+
+SB3_PROJECT_DATA_ORGINAL = {
+    "targets": [
+        {
+            "isStage": True,
+            "name": "Stage",
+            "variables": {
+                "`jEk@4|i[#Fk?(8x)AV.-my variable": [
+                    "my variable",
+                    0,
+                ],
+            },
+            "lists": {},
+            "broadcasts": {},
+            "blocks": {},
+            "comments": {},
+            "currentCostume": 0,
+            "costumes": [
+                {
+                    "name": "backdrop1",
+                    "dataFormat": "svg",
+                    "assetId": "cd21514d0531fdffb22204e0ec5ed84a",
+                    "md5ext": "cd21514d0531fdffb22204e0ec5ed84a.svg",
+                    "rotationCenterX": 240,
+                    "rotationCenterY": 180,
+                },
+            ],
+            "sounds": [
+                {
+                    "name": "pop",
+                    "assetId": "83a9787d4cb6f3b7632b4ddfebf74367",
+                    "dataFormat": "wav",
+                    "format": "",
+                    "rate": 48000,
+                    "sampleCount": 1123,
+                    "md5ext": "83a9787d4cb6f3b7632b4ddfebf74367.wav",
+                },
+            ],
+            "volume": 100,
+            "layerOrder": 0,
+            "tempo": 60,
+            "videoTransparency": 50,
+            "videoState": "on",
+            "textToSpeechLanguage": None,
+        },
+        {
+            "isStage": False,
+            "name": "Sprite1",
+            "variables": {},
+            "lists": {},
+            "broadcasts": {},
+            "blocks": {
+                "[hzM}SQH~fJL)OHYWkYr": {
+                    "opcode": "motion_movesteps",
+                    "next": None,
+                    "parent": None,
+                    "inputs": {
+                        "STEPS": [
+                            1,
+                            [
+                                4,
+                                "10",
+                            ],
+                        ],
+                    },
+                    "fields": {},
+                    "shadow": False,
+                    "topLevel": True,
+                    "x": 405,
+                    "y": 85,
+                },
+                "s3F6y*$/hmQ:us~[*IQ@": {
+                    "opcode": "procedures_definition",
+                    "next": None,
+                    "parent": None,
+                    "inputs": {
+                        "custom_block": [
+                            1,
+                            "6WEhjll%t[@Qh)]x.?#0",
+                        ],
+                    },
+                    "fields": {},
+                    "shadow": False,
+                    "topLevel": True,
+                    "x": 385,
+                    "y": 313,
+                },
+                "6WEhjll%t[@Qh)]x.?#0": {
+                    "opcode": "procedures_prototype",
+                    "next": None,
+                    "parent": "s3F6y*$/hmQ:us~[*IQ@",
+                    "inputs": {},
+                    "fields": {},
+                    "shadow": True,
+                    "topLevel": False,
+                    "mutation": {
+                        "tagName": "mutation",
+                        "children": [],
+                        "proccode": "block name",
+                        "argumentids": "[]",
+                        "argumentnames": "[]",
+                        "argumentdefaults": "[]",
+                        "warp": "true",
+                    },
+                },
+            },
+            "comments": {},
+            "currentCostume": 0,
+            "costumes": [
+                {
+                    "name": "costume1",
+                    "bitmapResolution": 1,
+                    "dataFormat": "svg",
+                    "assetId": "bcf454acf82e4504149f7ffe07081dbc",
+                    "md5ext": "bcf454acf82e4504149f7ffe07081dbc.svg",
+                    "rotationCenterX": 48,
+                    "rotationCenterY": 50,
+                },
+                {
+                    "name": "costume2",
+                    "bitmapResolution": 1,
+                    "dataFormat": "svg",
+                    "assetId": "0fb9be3e8397c983338cb71dc84d0b25",
+                    "md5ext": "0fb9be3e8397c983338cb71dc84d0b25.svg",
+                    "rotationCenterX": 46,
+                    "rotationCenterY": 53,
+                },
+            ],
+            "sounds": [
+                {
+                    "name": "Meow",
+                    "assetId": "83c36d806dc92327b9e7049a565c6bff",
+                    "dataFormat": "wav",
+                    "format": "",
+                    "rate": 48000,
+                    "sampleCount": 40681,
+                    "md5ext": "83c36d806dc92327b9e7049a565c6bff.wav",
+                },
+            ],
+            "volume": 100,
+            "layerOrder": 1,
+            "visible": True,
+            "x": 0,
+            "y": 0,
+            "size": 100,
+            "direction": 90,
+            "draggable": False,
+            "rotationStyle": "all around",
+        },
+    ],
+    "monitors": [],
+    "extensions": [],
+    "meta": {
+        "semver": "3.0.0",
+        "vm": "11.1.0",
+        "agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+    },
+}
+
+SB3_PROJECT_DATA_CONVERTED = deepcopy(SB3_PROJECT_DATA_ORGINAL)
+SB3_PROJECT_DATA_CONVERTED["targets"][0]["id"] = "nAkI`?tY/Vqn|(Xh.]zf"
+SB3_PROJECT_DATA_CONVERTED["targets"][1]["id"] = "oTDHQbL~wA;YdpAys^y/"

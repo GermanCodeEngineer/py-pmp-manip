@@ -3,7 +3,6 @@ TODOs:
     - maybe remove IRBlockReference
     - maybe replace _copymodify_
     - rename Internal Methods
-    - check if file_extension should be fixed for SRBitmapCostume and SRSound
     - todos + go over code
     - add specific reasons for ThanksError
     - complete deoptimization

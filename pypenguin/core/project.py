@@ -63,8 +63,8 @@ class FRProject:
             asset_files    = asset_files,
         )
     
-    @classmethod
-    def _data_sb3_to_pmp(cls, project_data: dict) -> dict: # TODO: add test
+    @staticmethod
+    def _data_sb3_to_pmp(project_data: dict) -> dict:
         """
         *[Internal Method]* Adapt sb3 project data to the pmp project data format
 
@@ -223,7 +223,7 @@ class SRProject:
             extensions=[],
         )
 
-    def __eq__(self, other) -> bool: # TODO: test
+    def __eq__(self, other) -> bool:
         """
         Checks whether a SRProject is equal to another.
         Requires same sprites and sprite layer stack order.

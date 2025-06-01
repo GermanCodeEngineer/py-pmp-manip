@@ -1,6 +1,7 @@
 from pytest import fixture, raises
 from copy   import copy
 from uuid   import UUID
+from pydub  import AudioSegment
 
 from pypenguin.utility            import (
     string_to_sha256,
@@ -10,7 +11,7 @@ from pypenguin.utility            import (
 )
 from pypenguin.opcode_info import info_api, DropdownValueKind
 
-from pypenguin.core.asset          import SRCostume, SRSound
+from pypenguin.core.asset          import SRVectorCostume, SRSound
 from pypenguin.core.block          import SRScript, SRBlock
 from pypenguin.core.block_mutation import SRCustomBlockMutation
 from pypenguin.core.context        import PartialContext
@@ -20,7 +21,7 @@ from pypenguin.core.enums          import SRSpriteRotationStyle
 from pypenguin.core.target         import FRTarget, FRStage, FRSprite, SRTarget, SRSprite
 from pypenguin.core.vars_lists     import SRVariable, SRCloudVariable, SRList
 
-from tests.core.constants import SPRITE_DATA, STAGE_DATA, FR_SPRITE, FR_STAGE, SR_SPRITE, SR_STAGE
+from tests.core.constants import SPRITE_DATA, STAGE_DATA, FR_SPRITE, FR_STAGE, SR_SPRITE, SR_STAGE, PROJECT_ASSET_FILES
 
 from tests.utility import execute_attr_validation_tests
 
@@ -46,8 +47,6 @@ def context():
         other_sprites=[(DropdownValueKind.SPRITE, "Sprite2"), (DropdownValueKind.SPRITE, "Player")],
         backdrops=[(DropdownValueKind.BACKDROP, "intro"), (DropdownValueKind.BACKDROP, "scene1")],
     )
-
-
 
 
 
@@ -103,7 +102,7 @@ def test_FRTarget_step_common():
         costumes,
         sounds,
         _, _,
-    )  = FR_SPRITE._step_common(info_api)
+    )  = FR_SPRITE._step_common(PROJECT_ASSET_FILES, info_api)
     assert scripts == SR_SPRITE.scripts
     assert comments == SR_SPRITE.comments
     assert costumes == SR_SPRITE.costumes
@@ -155,7 +154,7 @@ def test_FRStage_from_data_missing_id():
 
 
 def test_FRStage_step():
-    srstage, _, _ = FR_STAGE.step(info_api)
+    srstage, _, _ = FR_STAGE.step(PROJECT_ASSET_FILES, info_api)
     assert srstage == SR_STAGE
 
 
@@ -174,7 +173,7 @@ def test_FRSprite_from_data_missing_id():
 
 
 def test_FRSprite_step():
-    srsprite, _, _ = FR_SPRITE.step(info_api)
+    srsprite, _, _ = FR_SPRITE.step(PROJECT_ASSET_FILES, info_api)
     assert srsprite == SR_SPRITE
 
 
@@ -218,8 +217,8 @@ def test_SRTarget_validate(config):
 def test_SRTarget_validate_same_costume_name(config):
     srtarget = SRTarget.create_empty()
     srtarget.costumes = [
-        SRCostume.create_empty(name="costume1"),
-        SRCostume.create_empty(name="costume1"),
+        SRVectorCostume.create_empty(name="costume1"),
+        SRVectorCostume.create_empty(name="costume1"),
     ]
     with raises(SameValueTwiceError):
         srtarget.validate([], config, info_api)
@@ -227,8 +226,8 @@ def test_SRTarget_validate_same_costume_name(config):
 def test_SRTarget_validate_same_sound_name(config):
     srtarget = SRTarget.create_empty()
     srtarget.sounds = [
-        SRSound(name="Hello there!", file_extension="wav"),
-        SRSound(name="Hello there!", file_extension="wav"),
+        SRSound(name="Hello there!", file_extension="wav", content=AudioSegment.silent(duration=0)),
+        SRSound(name="Hello there!", file_extension="wav", content=AudioSegment.silent(duration=0)),
     ]
     with raises(SameValueTwiceError):
         srtarget.validate([], config, info_api)
@@ -272,10 +271,10 @@ def test_SRTarget_validate_scripts_same_custom_opcode(config, context):
 
 def test_SRTarget_get_complete_context(context):
     srtarget = copy(SR_SPRITE)
-    srtarget.sounds = [SRSound(name="Hello World!", file_extension="mp3")]
+    srtarget.sounds = [SRSound(name="Hello World!", file_extension="mp3", content=AudioSegment.silent(duration=0))]
     complete_context = srtarget._get_complete_context(context)
-    assert complete_context.costumes == [SRDropdownValue(DropdownValueKind.COSTUME, "costume1")]
-    assert complete_context.sounds == [SRDropdownValue(DropdownValueKind.SOUND, "Hello World!")]
+    assert complete_context.costumes == [(DropdownValueKind.COSTUME, "costume1")]
+    assert complete_context.sounds == [(DropdownValueKind.SOUND, "Hello World!")]
     assert complete_context.is_stage == False
 
 

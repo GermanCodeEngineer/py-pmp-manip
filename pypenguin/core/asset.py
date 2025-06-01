@@ -9,7 +9,7 @@ from pypenguin.utility import (
     grepr_dataclass, ValidationConfig, 
     AA_TYPE, AA_COORD_PAIR, AA_MIN, AA_EQUAL,
     ThanksError,
-    xml_equal, image_equal, audio_segment_equal,
+    xml_equal, image_equal,
 )
 
 EMPTY_SVG_COSTUME_XML = '<svg version="1.1" width="2" height="2" viewBox="-1 -1 2 2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">\n  <!-- Exported by Scratch - http://scratch.mit.edu/ -->\n</svg>'
@@ -28,7 +28,7 @@ class FRCostume:
     md5ext: str
     rotation_center_x: int | float
     rotation_center_y: int | float
-    bitmap_resolution: int | None
+    bitmap_resolution: int | None # will always be None, 1 or 2
 
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRCostume":
@@ -75,14 +75,17 @@ class FRCostume:
             except UnidentifiedImageError:
                 raise ThanksError()
             image.load()  # Ensure it's fully loaded into memory
+            if   self.bitmap_resolution == 1:
+                has_double_resolution = False
+            elif self.bitmap_resolution == 2:
+                has_double_resolution = True
+            else: raise ThanksError()
             return SRBitmapCostume(
-                name              = self.name,
-                file_extension    = self.data_format,
-                rotation_center   = rotation_center,
-                #bitmap_resolution = 1 if self.bitmap_resolution is None else self.bitmap_resolution, 
-                # TODO: test if necessary
-                bitmap_resolution = self.bitmap_resolution,
-                content           = image,
+                name                  = self.name,
+                file_extension        = self.data_format,
+                rotation_center       = rotation_center,
+                has_double_resolution = has_double_resolution,
+                content               = image,
             )
 
 @grepr_dataclass(grepr_fields=["name", "asset_id", "data_format", "md5ext", "rate", "sample_count"])
@@ -207,6 +210,7 @@ class SRVectorCostume(SRCostume):
         """
         if not super().__eq__(other):
             return False
+        other: SRVectorCostume = other
         return xml_equal(etree.tostring(self.content), etree.tostring(other.content))
         
     def validate(self, path: list, config: ValidationConfig) -> None:
@@ -228,14 +232,15 @@ class SRVectorCostume(SRCostume):
         AA_EQUAL(self, path, "file_extension", "svg")
         AA_TYPE(self, path, "content", etree._Element)
 
-@grepr_dataclass(grepr_fields=["content", "bitmap_resolution"], parent_cls=SRCostume, eq=False)
+@grepr_dataclass(grepr_fields=["content", "has_double_resolution"], parent_cls=SRCostume, eq=False)
 class SRBitmapCostume(SRCostume):
     """
     The second representation for a bitmap(usually PNG) costume. It is more user friendly then the first representation
     """
     
+    # file_extension: i've only seen "png", "jpg"; others might work
     content: Image.Image
-    bitmap_resolution: int # TODO: derivable from content?
+    has_double_resolution: bool
     
     def __eq__(self, other) -> bool:
         """
@@ -250,8 +255,9 @@ class SRBitmapCostume(SRCostume):
         """
         if not super().__eq__(other):
             return False
+        other: SRBitmapCostume = other
         return (
-            (self.bitmap_resolution == other.bitmap_resolution)
+            (self.has_double_resolution == other.has_double_resolution)
             and image_equal(self.content, other.content)
         )
     
@@ -272,8 +278,7 @@ class SRBitmapCostume(SRCostume):
         super().validate(path, config)
         
         AA_TYPE(self, path, "content", Image.Image)
-        AA_TYPE(self, path, "bitmap_resolution", int)
-        AA_MIN(self, path, "bitmap_resolution", min=1)
+        AA_TYPE(self, path, "has_double_resolution", bool)
 
 
 @grepr_dataclass(grepr_fields=["name", "file_extension", "content"])
@@ -283,7 +288,7 @@ class SRSound:
     """
 
     name: str
-    file_extension: str
+    file_extension: str # i've only seen "wav", "mp3", "ogg"; others might work
     content: AudioSegment
     
     #def __eq__(self, other) -> bool:

@@ -339,30 +339,10 @@ def image_equal(img1: Image.Image, img2: Image.Image) -> bool:
         return False
     return img1.tobytes() == img2.tobytes()
 
-def audio_segment_equal(a1: AudioSegment, a2: AudioSegment) -> bool:
-    """
-    Compare two AudioSegment instances for strict equality:
-    same duration, frame rate, channels, sample width, and raw audio data.
-    
-    Args:
-        a1: the first audio segment
-        a2: the second audio segment
-    
-    Returns:
-        wether the two audio segments are equal
-    """
-    return (
-        a1.frame_rate == a2.frame_rate and
-        a1.channels == a2.channels and
-        a1.sample_width == a2.sample_width and
-        len(a1) == len(a2) and
-        a1.raw_data == a2.raw_data
-    )
-
 __all__ = [
     "grepr", "read_all_files_of_zip", "ensure_correct_path", 
     "PypenguinEnum", "grepr_dataclass", "DualKeyDict", 
     "remove_duplicates", "lists_equal_ignore_order", "get_closest_matches", "tuplify", "string_to_sha256",
-    "xml_equal", "image_equal", "audio_segment_equal",
+    "xml_equal", "image_equal",
 ]
 

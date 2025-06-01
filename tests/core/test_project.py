@@ -14,7 +14,11 @@ from pypenguin.core.project    import FRProject, SRProject
 from pypenguin.core.target     import FRStage, SRSprite, SRStage
 from pypenguin.core.vars_lists import SRVariable, SRList
 
-from tests.core.constants import PROJECT_DATA, PROJECT_ASSET_FILES, FR_PROJECT, SR_PROJECT
+from tests.core.constants import (
+    PROJECT_DATA, PROJECT_ASSET_FILES, 
+    FR_PROJECT, SR_PROJECT, 
+    SB3_PROJECT_DATA_ORGINAL, SB3_PROJECT_DATA_CONVERTED,
+)
 
 from tests.utility import execute_attr_validation_tests
 
@@ -30,6 +34,10 @@ def test_FRProject_from_data():
         info_api=info_api,
     )
     assert frproject == FR_PROJECT
+
+
+def test_FRProject_data_sb3_to_pmp():
+    assert FRProject._data_sb3_to_pmp(SB3_PROJECT_DATA_ORGINAL) == SB3_PROJECT_DATA_CONVERTED
 
 
 def test_FRProject_from_file():
