@@ -1,4 +1,4 @@
-from pypenguin.validate.constants import validateSchema, costumeSchema, soundSchema
+from pypenguin_old.validate.constants import validateSchema, costumeSchema, soundSchema
 
 def validateCostume(path, data, isStage):
     # Check costume format

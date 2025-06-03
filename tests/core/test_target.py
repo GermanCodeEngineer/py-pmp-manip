@@ -96,21 +96,21 @@ def test_FRTarget_post_init():
         )
 
 
-def test_FRTarget_step_common():
+def test_FRTarget_to_second_common():
     (
         scripts,
         comments,
         costumes,
         sounds,
         _, _,
-    )  = FR_SPRITE._step_common(PROJECT_ASSET_FILES, info_api)
+    )  = FR_SPRITE._to_second_common(PROJECT_ASSET_FILES, info_api)
     assert scripts == SR_SPRITE.scripts
     assert comments == SR_SPRITE.comments
     assert costumes == SR_SPRITE.costumes
     assert sounds == SR_SPRITE.sounds
 
 
-def test_FRTarget_step_variables_lists():
+def test_FRTarget_to_second_variables_lists():
     frsprite = copy(FR_STAGE)
     frsprite.variables = {
         "ZkrFaN(VCdWk,nAAs*L*": ("some var", 55),
@@ -119,7 +119,7 @@ def test_FRTarget_step_variables_lists():
     frsprite.lists = {
         "S}|FmMKusDx]ogbnuxIa": ("some list", ["a", "b", "c", "$$$"]),
     }
-    sprite_only_variables, sprite_only_lists = frsprite._step_variables_lists()
+    sprite_only_variables, sprite_only_lists = frsprite._to_second_variables_lists()
     assert sprite_only_variables == [
         SRVariable(name="some var", current_value=55),
         SRCloudVariable(name="some cloud var", current_value="https://needgod.net/"),
@@ -128,16 +128,16 @@ def test_FRTarget_step_variables_lists():
         SRList(name="some list", current_value=["a", "b", "c", "$$$"]),
     ]
 
-def test_FRTarget_step_variables_lists_invalid():
+def test_FRTarget_to_second_variables_lists_invalid():
     frsprite = copy(FR_STAGE)
     frsprite.variables = {"b-bPdkv!fE]yunTdvpQi": ("some other var", None, None)}
     with raises(ConversionError):
-        frsprite._step_variables_lists()
+        frsprite._to_second_variables_lists()
 
     frsprite = copy(FR_STAGE)
     frsprite.variables = {"LSfpvIEwXe-upUsR|ypy": ("some other list", None, None)}
     with raises(ConversionError):
-        frsprite._step_variables_lists()
+        frsprite._to_second_variables_lists()
 
 
 
@@ -154,8 +154,8 @@ def test_FRStage_from_data_missing_id():
     assert frstage == target_stage
 
 
-def test_FRStage_step():
-    srstage, _, _ = FR_STAGE.step(PROJECT_ASSET_FILES, info_api)
+def test_FRStage_to_second():
+    srstage, _, _ = FR_STAGE.to_second(PROJECT_ASSET_FILES, info_api)
     assert srstage == SR_STAGE
 
 
@@ -173,8 +173,8 @@ def test_FRSprite_from_data_missing_id():
     assert frsprite == target_sprite
 
 
-def test_FRSprite_step():
-    srsprite, _, _ = FR_SPRITE.step(PROJECT_ASSET_FILES, info_api)
+def test_FRSprite_to_second():
+    srsprite, _, _ = FR_SPRITE.to_second(PROJECT_ASSET_FILES, info_api)
     assert srsprite == SR_SPRITE
 
 

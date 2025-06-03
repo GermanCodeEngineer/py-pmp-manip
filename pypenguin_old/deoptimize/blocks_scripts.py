@@ -1,9 +1,9 @@
 import json, copy
 
-from pypenguin.utility import numberToLiteral, BlockSelector, generateRandomToken, parseCustomOpcode, string_to_sha256, LocalStringToToken, Platform, getSelectors, editDataStructure, removeDuplicates, pp
-from pypenguin.deoptimize.options import translateOptions
-from pypenguin.deoptimize.comments import translateComment
-from pypenguin.database import *
+from pypenguin_old.utility import numberToLiteral, BlockSelector, generateRandomToken, parseCustomOpcode, string_to_sha256, LocalStringToToken, Platform, getSelectors, editDataStructure, removeDuplicates, pp
+from pypenguin_old.deoptimize.options import translateOptions
+from pypenguin_old.deoptimize.comments import translateComment
+from pypenguin_old.database import *
 
 def standardizeScripts(data):
     pp(data)

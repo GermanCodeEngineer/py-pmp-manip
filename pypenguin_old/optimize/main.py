@@ -1,4 +1,4 @@
-from pypenguin.utility import Platform
+from pypenguin_old.utility import Platform
 
 from optimize.costumes_sounds  import translateCostumes, translateSounds
 from optimize.variables_lists  import translateVariables, translateLists
@@ -88,7 +88,7 @@ def optimizeProjectJSON(projectData, sourcePlatform):
         "monitors"            : newMonitorDatas,
         "extensionData"       : projectData["extensionData"],
         "extensions"          : projectData["extensions"],
-        "credit"              : "Made using https://github.com/Fritzforcode/PyPenguin"
+        "credit"              : "Made using https://github.com/Fritzforcode/pypenguin_old"
     }
     if projectData.get("extensionURLs", {}) != {}:
         newData["extensionURLs"] = projectData["extensionURLs"]

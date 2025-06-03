@@ -1,4 +1,4 @@
-from pypenguin.utility import string_to_sha256
+from pypenguin_old.utility import string_to_sha256
 
 
 def translateVariables(data, spriteNames):

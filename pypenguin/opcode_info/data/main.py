@@ -242,7 +242,7 @@ info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
     function=_PRE__CB_CALL,
 ))
 
-def _FR_STEP__CB_PROTOTYPE(block: "FRBlock", ficapi: "FIConversionAPI") -> "IRBlock":
+def _FR_TO_SECOND__CB_PROTOTYPE(block: "FRBlock", ficapi: "FIConversionAPI") -> "IRBlock":
     # Return an empty, temporary block
     from pypenguin.core.block import IRBlock
     return IRBlock(
@@ -258,7 +258,7 @@ def _FR_STEP__CB_PROTOTYPE(block: "FRBlock", ficapi: "FIConversionAPI") -> "IRBl
 
 info_api.add_opcode_case(OPCODE_CB_PROTOTYPE, SpecialCase(
     type=SpecialCaseType.FR_STEP,
-    function=_FR_STEP__CB_PROTOTYPE,
+    function=_FR_TO_SECOND__CB_PROTOTYPE,
 ))
 
 def _GET_ALL_INPUT_TYPES__CB_CALL(
@@ -269,7 +269,7 @@ def _GET_ALL_INPUT_TYPES__CB_CALL(
     if isinstance(block, FRBlock):
         old_mutation: FRCustomBlockCallMutation = block.mutation
         assert ficapi is not None, "When a FRBlock is given, ficapi mustn't be None"
-        mutation: SRCustomBlockCallMutation = old_mutation.step(ficapi=ficapi)
+        mutation: SRCustomBlockCallMutation = old_mutation.to_second(ficapi=ficapi)
     else:
         mutation: SRCustomBlockCallMutation = block.mutation
     

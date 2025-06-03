@@ -1,5 +1,5 @@
-from pypenguin.validate.constants import validateSchema, formatError, commentSchema
-from pypenguin.validate.errors import commentSizeError
+from pypenguin_old.validate.constants import validateSchema, formatError, commentSchema
+from pypenguin_old.validate.errors import commentSizeError
 
 def validateComment(path, data):
     validateSchema(pathToData=path, data=data, schema=commentSchema)

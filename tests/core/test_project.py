@@ -57,20 +57,20 @@ def test_FRProject_post_init():
         )
 
 
-def test_FRProject_step():
-    a = FR_PROJECT.step(info_api)
+def test_FRProject_to_second():
+    a = FR_PROJECT.to_second(info_api)
     b = SR_PROJECT
     
     assert a.stage.costumes == b.stage.costumes
     assert a == b
 
-def test_FRProject_step_tts():
+def test_FRProject_to_second_tts():
     frproject = deepcopy(FR_PROJECT)
     frstage: FRStage = frproject.targets[0]
     frstage.text_to_speech_language = "de"
     target_srproject = copy(SR_PROJECT)
     target_srproject.text_to_speech_language = SRTTSLanguage.GERMAN
-    assert frproject.step(info_api) == target_srproject
+    assert frproject.to_second(info_api) == target_srproject
 
 
 

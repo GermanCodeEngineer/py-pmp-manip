@@ -1,4 +1,4 @@
-from typing      import Any
+from typing import Any
 
 from pypenguin.opcode_info.api   import OpcodeInfoAPI
 from pypenguin.utility           import (
@@ -92,7 +92,7 @@ class FRMonitor:
         if not valid:
             raise ThanksError()
 
-    def step(self, info_api: OpcodeInfoAPI, sprite_names: list[str]) -> tuple[str | None, "SRMonitor | None"]:
+    def to_second(self, info_api: OpcodeInfoAPI, sprite_names: list[str]) -> tuple[str | None, "SRMonitor | None"]:
         """
         Converts a FRMonitor into a SRMonitor
         

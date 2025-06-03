@@ -1,5 +1,5 @@
-from pypenguin.utility import string_to_sha256
-from pypenguin.database import getDeoptimizedOpcode, getDeoptimizedOptionId
+from pypenguin_old.utility import string_to_sha256
+from pypenguin_old.database import getDeoptimizedOpcode, getDeoptimizedOptionId
 
 def translateMonitor(data):
     opcode = getDeoptimizedOpcode(opcode=data["opcode"])

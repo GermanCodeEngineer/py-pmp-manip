@@ -46,7 +46,7 @@ class FRMutation(ABC):
             raise ThanksError()
 
     @abstractmethod
-    def step(self, ficapi: "FIConversionAPI") -> "SRMutation":
+    def to_second(self, ficapi: "FIConversionAPI") -> "SRMutation":
         """
         Convert a mutation from first into second representation
         
@@ -106,7 +106,7 @@ class FRCustomBlockArgumentMutation(FRMutation):
         """
         self._argument_name = name
     
-    def step(self, ficapi: "FIConversionAPI") -> "SRCustomBlockArgumentMutation":
+    def to_second(self, ficapi: "FIConversionAPI") -> "SRCustomBlockArgumentMutation":
         """
         Convert a custom block argument mutation from first into second representation
         
@@ -171,7 +171,7 @@ class FRCustomBlockMutation(FRMutation):
             color             = tuple(loads(data["color"])) if "color" in data else ("#FF6680", "#FF4D6A", "#FF3355"),
         )
     
-    def step(self, ficapi: "FIConversionAPI") -> "SRCustomBlockMutation":
+    def to_second(self, ficapi: "FIConversionAPI") -> "SRCustomBlockMutation":
         """
         Convert a custom block definition mutation from first into second representation
         
@@ -235,7 +235,7 @@ class FRCustomBlockCallMutation(FRMutation):
             color  = tuple(loads(data["color"  ])),
         )
     
-    def step(self, ficapi: "FIConversionAPI") -> "SRCustomBlockCallMutation":
+    def to_second(self, ficapi: "FIConversionAPI") -> "SRCustomBlockCallMutation":
         """
         Convert a custom block call mutation from first into second representation
         
@@ -278,7 +278,7 @@ class FRStopScriptMutation(FRMutation):
             has_next = loads(data["hasnext"]),
         )
     
-    def step(self, ficapi: "FIConversionAPI") -> "SRStopScriptMutation":
+    def to_second(self, ficapi: "FIConversionAPI") -> "SRStopScriptMutation":
         """
         Convert a stop script mutation from first into second representation
         

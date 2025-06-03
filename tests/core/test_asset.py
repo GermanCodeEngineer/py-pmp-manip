@@ -1,13 +1,13 @@
-from copy      import copy
-from io        import BytesIO
-from lxml      import etree
-from PIL       import Image
-from pydub     import AudioSegment
-from pytest    import fixture, raises
+from copy   import copy
+from io     import BytesIO
+from lxml   import etree
+from PIL    import Image
+from pydub  import AudioSegment
+from pytest import fixture, raises
 
 from pypenguin.utility import (
-    ValidationConfig, TypeValidationError, InvalidValueError, ThanksError,
-    xml_equal, image_equal,
+    xml_equal, image_equal, generate_md5, ValidationConfig,
+    TypeValidationError, InvalidValueError, ThanksError,
 )
 
 from pypenguin.core.asset import (
@@ -91,7 +91,7 @@ def test_FRCostume_from_data_missing_bitmap_resolution():
     assert srcostume.bitmap_resolution == None
 
 
-def test_FRCostume_step_vector():
+def test_FRCostume_to_second_vector():
     frcostume = FRCostume(
         name="my costume",
         asset_id="051321321c93ae7b61222de62e77ae40",
@@ -101,7 +101,7 @@ def test_FRCostume_step_vector():
         rotation_center_y=197.11651651651664,
         bitmap_resolution=1,
     )
-    srcostume = frcostume.step(asset_files={"051321321c93ae7b61222de62e77ae40.svg": SIMPLE_SVG_EXAMPLE})
+    srcostume = frcostume.to_second(asset_files={"051321321c93ae7b61222de62e77ae40.svg": SIMPLE_SVG_EXAMPLE})
     assert isinstance(srcostume, SRVectorCostume)
     assert srcostume.name == frcostume.name
     assert srcostume.file_extension == frcostume.data_format
@@ -109,7 +109,7 @@ def test_FRCostume_step_vector():
     assert isinstance(srcostume.content, etree._Element)
     assert xml_equal(srcostume.content, etree.fromstring(SIMPLE_SVG_EXAMPLE))
 
-def test_FRCostume_step_bitmap():
+def test_FRCostume_to_second_bitmap():
     frcostume = FRCostume(
         name="Puppy Back",
         asset_id="05630bfa94501a3e5d61ce443a0cea70",
@@ -119,7 +119,7 @@ def test_FRCostume_step_bitmap():
         rotation_center_y=94,
         bitmap_resolution=2,
     )
-    srcostume = frcostume.step(asset_files={"05630bfa94501a3e5d61ce443a0cea70.png": SIMPLE_BITMAP_EXAMPLE})
+    srcostume = frcostume.to_second(asset_files={"05630bfa94501a3e5d61ce443a0cea70.png": SIMPLE_BITMAP_EXAMPLE})
     assert isinstance(srcostume, SRBitmapCostume)
     assert srcostume.name == frcostume.name
     assert srcostume.file_extension == frcostume.data_format
@@ -130,7 +130,7 @@ def test_FRCostume_step_bitmap():
     expected.load()
     assert image_equal(srcostume.content, expected)
 
-"""def test_FRCostume_step_bitmap_no_bitmap_resolution():
+"""def test_FRCostume_to_second_bitmap_no_bitmap_resolution():
     frcostume = FRCostume(
         name="Puppy Back",
         asset_id="05630bfa94501a3e5d61ce443a0cea70",
@@ -140,11 +140,11 @@ def test_FRCostume_step_bitmap():
         rotation_center_y=94,
         bitmap_resolution=None,
     )
-    srcostume = frcostume.step(asset_files={"05630bfa94501a3e5d61ce443a0cea70.png": SIMPLE_bitmap_example})
+    srcostume = frcostume.to_second(asset_files={"05630bfa94501a3e5d61ce443a0cea70.png": SIMPLE_bitmap_example})
     assert isinstance(srcostume, SRBitmapCostume)
     assert srcostume.bitmap_resolution == 1""" # paused because of TODO
 
-def test_FRCostume_step_invalid_format():
+def test_FRCostume_to_second_invalid_format():
     frcostume = FRCostume(
         name="Puppy Back",
         asset_id="05630bfa94501a3e5d61ce443a0cea70",
@@ -155,7 +155,7 @@ def test_FRCostume_step_invalid_format():
         bitmap_resolution=2,
     )
     with raises(ThanksError):
-        frcostume.step(asset_files={
+        frcostume.to_second(asset_files={
             "05630bfa94501a3e5d61ce443a0cea70.png": b"\xc4;#\xb2\xff \xa2e\xa6hJc#*>\x02\x01V\x1c#\x8e)\xe0sZ\x16S_B\xad\xb2p\xfd\xe0\x96\xe0\x06\xc9)mKu\x17\x08jmq\xf9\x83\xe0U\xee\xe5a\xb6'xC\x9e8S\xcbgeq\x1f\x0b\r\x115~\x8d\xd0\x0e\xc5",
         })
 
@@ -180,7 +180,7 @@ def test_FRSound_from_data():
     assert frsound.sample_count == sound_data["sampleCount"]
 
 
-def test_FRSound_step():
+def test_FRSound_to_second():
     frsound = FRSound(
         name="pop",
         asset_id="83a9787d4cb6f3b7632b4ddfebf74367",
@@ -189,7 +189,7 @@ def test_FRSound_step():
         rate=48000,
         sample_count=1123,
     )
-    srsound = frsound.step(asset_files={"83a9787d4cb6f3b7632b4ddfebf74367.wav": SIMPLE_SOUND_EXAMPLE})
+    srsound = frsound.to_second(asset_files={"83a9787d4cb6f3b7632b4ddfebf74367.wav": SIMPLE_SOUND_EXAMPLE})
     assert isinstance(srsound, SRSound)
     assert srsound.name == frsound.name
     assert srsound.file_extension == frsound.data_format
@@ -199,7 +199,7 @@ def test_FRSound_step():
 
 
 def test_SRCostume_init():
-    with raises(NotImplementedError):
+    with raises(TypeError):
         SRCostume(
             name="my costume",
             file_extension="png",
@@ -257,6 +257,26 @@ def test_SRVectorCostume_validate(config):
         validate_func=SRVectorCostume.validate,
         func_args=[[], config],
     )
+
+
+def test_SRVectorCostume_to_first():
+    srcostume = SRVectorCostume(
+        name="my costume",
+        file_extension="svg",
+        rotation_center=(381.2306306306307, 197.11651651651664),
+        content=etree.fromstring(SIMPLE_SVG_EXAMPLE),
+    )
+    frcostume, file_bytes = srcostume.to_first()
+    md5 = generate_md5(file_bytes)
+    assert isinstance(frcostume, FRCostume)
+    assert frcostume.name == frcostume.name
+    assert frcostume.asset_id == md5
+    assert frcostume.data_format == srcostume.file_extension
+    assert frcostume.md5ext == f"{md5}.svg"
+    assert frcostume.rotation_center_x == srcostume.rotation_center[0]
+    assert frcostume.rotation_center_y == srcostume.rotation_center[1]
+    assert frcostume.bitmap_resolution is None
+    assert file_bytes == bytes(SIMPLE_SVG_EXAMPLE)
 
 
 

@@ -1,3 +1,4 @@
+from abc    import ABC, abstractmethod
 from io     import BytesIO
 from lxml   import etree
 from PIL    import Image, UnidentifiedImageError
@@ -5,7 +6,7 @@ from pydub  import AudioSegment
 from typing import Any
 
 from pypenguin.utility import (
-    grepr_dataclass, xml_equal, image_equal, ValidationConfig,
+    grepr_dataclass, xml_equal, image_equal, generate_md5, ValidationConfig,
     AA_TYPE, AA_COORD_PAIR, AA_EQUAL,
     ThanksError,
 )
@@ -51,12 +52,12 @@ class FRCostume:
             bitmap_resolution = data.get("bitmapResolution", None),
         )
 
-    def step(self, asset_files: dict[str, bytes]) -> "SRVectorCostume|SRBitmapCostume": 
+    def to_second(self, asset_files: dict[str, bytes]) -> "SRVectorCostume|SRBitmapCostume": 
         """
-        Converts a FRComment into a SRComment
+        Converts a FRCostume into a SRCostume
         
         Returns:
-            the SRComment
+            the SRCostume
         """
         rotation_center = (self.rotation_center_x, self.rotation_center_y)
         content_bytes = asset_files[self.md5ext]
@@ -120,7 +121,7 @@ class FRSound:
             sample_count = data["sampleCount"],
         )
 
-    def step(self, asset_files: dict[str, bytes]) -> "SRSound":
+    def to_second(self, asset_files: dict[str, bytes]) -> "SRSound":
         """
         Converts a FRSound into a SRSound
         
@@ -138,7 +139,7 @@ class FRSound:
         )
 
 @grepr_dataclass(grepr_fields=["name", "file_extension", "rotation_center"], init=False)
-class SRCostume:
+class SRCostume(ABC):
     """
     The second representation for a costume. It is more user friendly then the first representation.
     **Please use the subclasses SRVectorCostume and SRBitmapCostume for actual data**
@@ -148,19 +149,6 @@ class SRCostume:
     file_extension: str
     rotation_center: tuple[int | float, int | float]
 
-    def __init__(self, name: str, file_extension: str, rotation_center: tuple[int | float, int | float]) -> None:
-        """
-        Create a SRInputValue. 
-        **Please use the subclasses SRVectorCostume and SRBitmapCostume for concrete data. This method will raise a NotImplementedError.**
-
-        Returns:
-            None
-
-        Raises:
-            NotImplementedError: always
-        """
-        raise NotImplementedError("Please use the subclasses SRVectorCostume and SRBitmapCostume for concrete data")
-    
     def validate(self, path: list, config: ValidationConfig) -> None:
         """
         Ensure a SRCostume is valid, raise ValidationError if not
@@ -178,6 +166,15 @@ class SRCostume:
         AA_TYPE(self, path, "name", str)
         AA_TYPE(self, path, "file_extension", str)
         AA_COORD_PAIR(self, path, "rotation_center")
+
+    @abstractmethod
+    def to_first(self) -> tuple["FRCostume", bytes]: 
+        """
+        Converts a SRCostume into a FRCostume 
+        
+        Returns:
+            the FRCostume
+        """
 
 @grepr_dataclass(grepr_fields=["content"], parent_cls=SRCostume, eq=False)
 class SRVectorCostume(SRCostume):
@@ -230,6 +227,25 @@ class SRVectorCostume(SRCostume):
         
         AA_EQUAL(self, path, "file_extension", "svg")
         AA_TYPE(self, path, "content", etree._Element)
+    
+    def to_first(self) -> tuple["FRCostume", bytes]: # TODO: test
+        """
+        Converts a SRVectorCostume into a FRCostume 
+        
+        Returns:
+            the FRCostume
+        """
+        file_bytes: bytes = etree.tostring(self.content)
+        md5 = generate_md5(file_bytes)
+        return (FRCostume(
+            name              = self.name,
+            asset_id          = md5, 
+            data_format       = self.file_extension, 
+            md5ext            = f"{md5}.{self.file_extension}", 
+            rotation_center_x = self.rotation_center[0], 
+            rotation_center_y = self.rotation_center[1], 
+            bitmap_resolution = None, 
+        ), file_bytes)
 
 @grepr_dataclass(grepr_fields=["content", "has_double_resolution"], parent_cls=SRCostume, eq=False)
 class SRBitmapCostume(SRCostume):
@@ -278,6 +294,28 @@ class SRBitmapCostume(SRCostume):
         
         AA_TYPE(self, path, "content", Image.Image)
         AA_TYPE(self, path, "has_double_resolution", bool)
+
+    def to_first(self) -> tuple["FRCostume", bytes]: # TODO: test
+        """
+        Converts a SRBitmapCostume into a FRCostume 
+        
+        Returns:
+            the FRCostume
+        """
+        bytes_io = BytesIO()
+        self.content.save(bytes_io, format=self.file_extension)
+        file_bytes = bytes_io.getvalue()
+        md5 = generate_md5(file_bytes)
+
+        return (FRCostume(
+            name              = self.name,
+            asset_id          = md5, 
+            data_format       = self.file_extension, 
+            md5ext            = f"{md5}.{self.file_extension}", 
+            rotation_center_x = self.rotation_center[0], 
+            rotation_center_y = self.rotation_center[1], 
+            bitmap_resolution = 2 if self.has_double_resolution else 1, 
+        ), file_bytes)
 
 
 @grepr_dataclass(grepr_fields=["name", "file_extension", "content"])

@@ -463,9 +463,9 @@ def test_FRMonitor_post_init_mode():
         FRMonitor.from_data(ALL_FR_MONITOR_DATAS[8] | {"mode": "invalid"})
 
 
-def test_FRMonitor_step():
+def test_FRMonitor_to_second():
     frmonitor = ALL_FR_MONITORS[7]
-    sprite_name, srmonitor = frmonitor.step(
+    sprite_name, srmonitor = frmonitor.to_second(
         info_api=info_api,
         sprite_names=SPRITE_NAMES,
     )
@@ -473,10 +473,10 @@ def test_FRMonitor_step():
     assert isinstance(srmonitor, SRMonitor)
     assert srmonitor == ALL_GLOBAL_SR_MONITORS[3]
 
-def test_FRMonitor_step_unnecessary():
+def test_FRMonitor_to_second_unnecessary():
     frmonitor = copy(ALL_FR_MONITORS[7])
     frmonitor.sprite_name = "A non-existing sprite"
-    result = frmonitor.step(
+    result = frmonitor.to_second(
         info_api=info_api,
         sprite_names=SPRITE_NAMES,
     )

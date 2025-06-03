@@ -1,7 +1,7 @@
 import json, copy
 from enum import Enum
-from pypenguin.utility import editDataStructure, BlockSelector, LocalStringToToken, getDataAtPath, pp
-from pypenguin.database import getBlockType
+from pypenguin_old.utility import editDataStructure, BlockSelector, LocalStringToToken, getDataAtPath, pp
+from pypenguin_old.database import getBlockType
 
 class PathConstant(Enum):
     CB_PROTOTYPE_ARGS = "CB_PROTOTYPE_ARGS"

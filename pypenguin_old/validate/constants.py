@@ -307,7 +307,7 @@ from jsonschema import validate, exceptions
 
 
 def validateSchema(pathToData, data, schema):
-    from pypenguin.utility import pp
+    from pypenguin_old.utility import pp
 
     try:
         validate(instance=data, schema=schema)
@@ -334,7 +334,7 @@ OPCODE_DOCS          = "(SOON)"
 
 def getHelpLink(path):
     def combine(file, section):
-        #string = f"github.com/Fritzforcode/PyPenguin/blob/main/docs/{file}.md"
+        #string = f"github.com/Fritzforcode/pypenguin_old/blob/main/docs/{file}.md"
         string = f"docs/{file}.md"
         if section != None:
             string += "#" + section

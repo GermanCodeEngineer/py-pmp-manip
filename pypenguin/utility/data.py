@@ -1,5 +1,5 @@
 from difflib import SequenceMatcher
-from hashlib import sha256
+from hashlib import sha256, md5
 
 _TOKEN_CHARSET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!#%()*+,-./:;=?@[]^_`{|}~"
 
@@ -55,9 +55,23 @@ def string_to_sha256(primary: str, secondary: str|None=None) -> str:
     else:
         return _string_to_sha256(primary, digits=16) + _string_to_sha256(secondary, digits=4)
 
+def generate_md5(data: bytes) -> str:
+    """
+    Generate an MD5 hash for a given bytes object.
+
+    Args:
+        data: the input data in bytes
+
+    Returns:
+        A hexadecimal MD5 hash string
+    """
+    md5_hash = md5()
+    for i in range(0, len(data), 4096):
+        md5_hash.update(data[i:i+4096])
+    return md5_hash.hexdigest()
 
 __all__ = [
-    "remove_duplicates", "lists_equal_ignore_order",
-    "get_closest_matches", "tuplify", "string_to_sha256"
+    "remove_duplicates", "lists_equal_ignore_order", "get_closest_matches", "tuplify", 
+    "string_to_sha256", "generate_md5",
 ]
 

@@ -109,7 +109,7 @@ class FRProject:
         """
         if self.extension_data != {}: raise ThanksError()
 
-    def step(self, info_api: OpcodeInfoAPI):
+    def to_second(self, info_api: OpcodeInfoAPI) -> "SRProject":
         """
         Converts a FRProject into a SRProject
         
@@ -126,13 +126,13 @@ class FRProject:
         for target in self.targets:
             if  target.is_stage:
                 old_stage: FRStage = target
-                new_stage, all_sprite_variables, all_sprite_lists = old_stage.step(
+                new_stage, all_sprite_variables, all_sprite_lists = old_stage.to_second(
                     asset_files=self.asset_files, 
                     info_api=info_api,
                 )
             else:
                 target: FRSprite
-                new_sprite, _, _ = target.step(
+                new_sprite, _, _ = target.to_second(
                     asset_files=self.asset_files, 
                     info_api=info_api,
                 )
@@ -143,7 +143,7 @@ class FRProject:
         global_monitors = []
         sprite_names = [sprite.name for sprite in new_sprites]
         for monitor in self.monitors:
-            monitor_sprite_name, new_monitor = monitor.step(info_api=info_api, sprite_names=sprite_names)
+            monitor_sprite_name, new_monitor = monitor.to_second(info_api=info_api, sprite_names=sprite_names)
             if new_monitor is None: 
                 continue
             if monitor_sprite_name is None:

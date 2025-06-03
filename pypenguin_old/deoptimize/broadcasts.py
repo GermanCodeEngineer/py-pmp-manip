@@ -1,6 +1,6 @@
-from pypenguin.utility import removeDuplicates, string_to_sha256
+from pypenguin_old.utility import removeDuplicates, string_to_sha256
 
-from pypenguin.database import inputDefault, inputTextDefault, optionDefault, deoptimizeOptionValue, getDeoptimizedOpcode, getInputType, getOptionType
+from pypenguin_old.database import inputDefault, inputTextDefault, optionDefault, deoptimizeOptionValue, getDeoptimizedOpcode, getInputType, getOptionType
 
 
 def findBlockBroadcastMessages(data):

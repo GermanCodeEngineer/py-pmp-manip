@@ -1,6 +1,6 @@
-from pypenguin.utility import generateRandomToken, string_to_sha256, LocalStringToToken
+from pypenguin_old.utility import generateRandomToken, string_to_sha256, LocalStringToToken
 
-from pypenguin.database import getOptionType, getBlockType, getDeoptimizedOptionId
+from pypenguin_old.database import getOptionType, getBlockType, getDeoptimizedOptionId
 
 
 def translateOptions(data, opcode, spriteName):

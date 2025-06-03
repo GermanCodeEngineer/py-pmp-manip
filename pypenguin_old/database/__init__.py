@@ -1,31 +1,31 @@
-from pypenguin.database.beautiful.motion                   import opcodes as motion
-from pypenguin.database.beautiful.looks                    import opcodes as looks
-from pypenguin.database.beautiful.sounds                   import opcodes as sounds
-from pypenguin.database.beautiful.events                   import opcodes as events
-from pypenguin.database.beautiful.control                  import opcodes as control
-from pypenguin.database.beautiful.sensing                  import opcodes as sensing
-from pypenguin.database.beautiful.operators                import opcodes as operators
-from pypenguin.database.beautiful.variables                import opcodes as variables
-from pypenguin.database.beautiful.lists                    import opcodes as lists
+from pypenguin_old.database.beautiful.motion                   import opcodes as motion
+from pypenguin_old.database.beautiful.looks                    import opcodes as looks
+from pypenguin_old.database.beautiful.sounds                   import opcodes as sounds
+from pypenguin_old.database.beautiful.events                   import opcodes as events
+from pypenguin_old.database.beautiful.control                  import opcodes as control
+from pypenguin_old.database.beautiful.sensing                  import opcodes as sensing
+from pypenguin_old.database.beautiful.operators                import opcodes as operators
+from pypenguin_old.database.beautiful.variables                import opcodes as variables
+from pypenguin_old.database.beautiful.lists                    import opcodes as lists
 
-from pypenguin.database.beautiful.special                  import opcodes as special
-from pypenguin.database.beautiful.extension_music          import opcodes as extension_music
-from pypenguin.database.beautiful.extension_pen            import opcodes as extension_pen
-from pypenguin.database.beautiful.extension_text           import opcodes as extension_text
-from pypenguin.database.beautiful.extension_video_sensing  import opcodes as extension_video_sensing
-from pypenguin.database.beautiful.extension_text_to_speech import opcodes as extension_text_to_speech
-from pypenguin.database.beautiful.extension_translate      import opcodes as extension_translate
-from pypenguin.database.beautiful.extension_makey_makey    import opcodes as extension_makey_makey
+from pypenguin_old.database.beautiful.special                  import opcodes as special
+from pypenguin_old.database.beautiful.extension_music          import opcodes as extension_music
+from pypenguin_old.database.beautiful.extension_pen            import opcodes as extension_pen
+from pypenguin_old.database.beautiful.extension_text           import opcodes as extension_text
+from pypenguin_old.database.beautiful.extension_video_sensing  import opcodes as extension_video_sensing
+from pypenguin_old.database.beautiful.extension_text_to_speech import opcodes as extension_text_to_speech
+from pypenguin_old.database.beautiful.extension_translate      import opcodes as extension_translate
+from pypenguin_old.database.beautiful.extension_makey_makey    import opcodes as extension_makey_makey
 
-from pypenguin.database.beautiful.tw_files                 import opcodes as tw_files
-from pypenguin.database.beautiful.tw_temporary_variables   import opcodes as tw_temporary_variables
+from pypenguin_old.database.beautiful.tw_files                 import opcodes as tw_files
+from pypenguin_old.database.beautiful.tw_temporary_variables   import opcodes as tw_temporary_variables
 
-from pypenguin.database.beautiful.link_bitwise             import opcodes as link_bitwise
+from pypenguin_old.database.beautiful.link_bitwise             import opcodes as link_bitwise
 
-from pypenguin.database.beautiful.pm_json                  import opcodes as pm_json
+from pypenguin_old.database.beautiful.pm_json                  import opcodes as pm_json
 
-#from pypenguin.utility                           import flipKeysAndValues, removeDuplicates
-from pypenguin.utility import flipKeysAndValues, removeDuplicates
+#from pypenguin_old.utility                           import flipKeysAndValues, removeDuplicates
+from pypenguin_old.utility import flipKeysAndValues, removeDuplicates
 
 import functools, re
 

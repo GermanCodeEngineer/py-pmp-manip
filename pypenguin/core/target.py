@@ -105,7 +105,7 @@ class FRTarget(ABC):
         """
         if self.custom_vars != []: raise ThanksError()
 
-    def _step_common(self, asset_files: dict[str, bytes], info_api: OpcodeInfoAPI) -> tuple[
+    def _to_second_common(self, asset_files: dict[str, bytes], info_api: OpcodeInfoAPI) -> tuple[
         list[SRScript], 
         list[SRComment], 
         list[SRCostume], 
@@ -125,7 +125,7 @@ class FRTarget(ABC):
         floating_comments = []
         attached_comments = {}
         for comment_id, comment in self.comments.items():
-            is_attached, new_comment = comment.step()
+            is_attached, new_comment = comment.to_second()
             if is_attached:
                 attached_comments[comment_id] = new_comment
             else:
@@ -139,7 +139,7 @@ class FRTarget(ABC):
         ficapi = FIConversionAPI(blocks=blocks, block_comments=attached_comments)
         new_blocks: dict["str", "IRBlock"] = {}
         for block_reference, block in blocks.items():
-            new_block = block.step(
+            new_block = block.to_inter(
                 ficapi = ficapi,
                 info_api  = info_api,
                 own_id    = block_reference,
@@ -170,7 +170,7 @@ class FRTarget(ABC):
         new_scripts = []
         for top_level_block_ref in top_level_block_refs:
             block = new_blocks[top_level_block_ref]
-            position, script_blocks = block.step(
+            position, script_blocks = block.to_second(
                 all_blocks    = new_blocks,
                 info_api      = info_api,
             )
@@ -179,17 +179,17 @@ class FRTarget(ABC):
                 blocks   = script_blocks,
             ))
         
-        new_variables, new_lists = self._step_variables_lists()
+        new_variables, new_lists = self._to_second_variables_lists()
         return (
             new_scripts,
             floating_comments,
-            [costume.step(asset_files) for costume in self.costumes],
-            [sound  .step(asset_files) for sound   in self.sounds  ],
+            [costume.to_second(asset_files) for costume in self.costumes],
+            [sound  .to_second(asset_files) for sound   in self.sounds  ],
             new_variables,
             new_lists,
         )
     
-    def _step_variables_lists(self) -> tuple[list[SRVariable], list[SRList]]:
+    def _to_second_variables_lists(self) -> tuple[list[SRVariable], list[SRList]]:
         """
         *[Helper Method]* Converts the variables and lists of a FRProject into second representation and returns them
         
@@ -256,7 +256,7 @@ class FRStage(FRTarget):
             text_to_speech_language=data["textToSpeechLanguage"],
         )
     
-    def step(self, 
+    def to_second(self, 
         asset_files: dict[str, bytes],
         info_api: OpcodeInfoAPI,
     ) -> tuple["SRStage", list[SRVariable],  list[SRList]]:
@@ -276,7 +276,7 @@ class FRStage(FRTarget):
             sounds,
             all_sprite_variables,
             all_sprite_lists,
-        ) = super()._step_common(asset_files, info_api)
+        ) = super()._to_second_common(asset_files, info_api)
         return (SRStage(
             scripts       = scripts,
             comments      = comments,
@@ -332,7 +332,7 @@ class FRSprite(FRTarget):
             rotation_style=data["rotationStyle"],
         )
 
-    def step(self, 
+    def to_second(self, 
         asset_files: dict[str, bytes],
         info_api: OpcodeInfoAPI,
     ) -> tuple["SRSprite", None, None]:
@@ -352,7 +352,7 @@ class FRSprite(FRTarget):
             sounds,
             sprite_only_variables,
             sprite_only_lists,
-        ) = super()._step_common(asset_files, info_api)
+        ) = super()._to_second_common(asset_files, info_api)
         return (SRSprite(
             name                  = self.name,
             scripts               = scripts,

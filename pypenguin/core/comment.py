@@ -38,7 +38,7 @@ class FRComment:
             text      = data["text"     ],
         )
     
-    def step(self) -> tuple[bool, "SRComment"]:
+    def to_second(self) -> tuple[bool, "SRComment"]:
         """
         Converts a FRComment into a SRComment
         

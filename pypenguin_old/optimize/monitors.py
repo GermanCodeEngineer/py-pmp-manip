@@ -1,4 +1,4 @@
-from pypenguin.database import getOptimizedOpcode, getOptimizedOptionId, optimizeOptionValue, getOptionType
+from pypenguin_old.database import getOptimizedOpcode, getOptimizedOptionId, optimizeOptionValue, getOptionType
 
 def translateMonitors(data, spriteNames):
     newMonitorDatas = []

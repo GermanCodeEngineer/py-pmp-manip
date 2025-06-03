@@ -1,14 +1,14 @@
-from pypenguin.utility import BlockSelector, string_to_sha256, Platform, pformat, pp, writeJSONFile, readJSONFile, ensureCorrectPath
+from pypenguin_old.utility import BlockSelector, string_to_sha256, Platform, pformat, pp, writeJSONFile, readJSONFile, ensureCorrectPath
 
-from pypenguin.deoptimize.variables_lists import translateVariables, translateLists
-from pypenguin.deoptimize.blocks_scripts import prepareScripts, flattenScripts, restoreBlocks, unprepareBlocks, makeJsonCompatible, standardizeScripts, removeTemporaryAttrs
-from pypenguin.deoptimize.broadcasts import generateBroadcasts
-from pypenguin.deoptimize.costumes_sounds import translateCostumes, translateSounds
-from pypenguin.deoptimize.comments import translateComment
-from pypenguin.deoptimize.monitors import translateMonitor
-from pypenguin.deoptimize.scratch_adaption import adaptProject
-from pypenguin.deoptimize.precompilation import exportBlocks, findMatchingScript
-from pypenguin.database import deoptimizeOptionValue
+from pypenguin_old.deoptimize.variables_lists import translateVariables, translateLists
+from pypenguin_old.deoptimize.blocks_scripts import prepareScripts, flattenScripts, restoreBlocks, unprepareBlocks, makeJsonCompatible, standardizeScripts, removeTemporaryAttrs
+from pypenguin_old.deoptimize.broadcasts import generateBroadcasts
+from pypenguin_old.deoptimize.costumes_sounds import translateCostumes, translateSounds
+from pypenguin_old.deoptimize.comments import translateComment
+from pypenguin_old.deoptimize.monitors import translateMonitor
+from pypenguin_old.deoptimize.scratch_adaption import adaptProject
+from pypenguin_old.deoptimize.precompilation import exportBlocks, findMatchingScript
+from pypenguin_old.database import deoptimizeOptionValue
 
 import os
 
@@ -25,7 +25,7 @@ def translateVariablesLists(data):
     return translatedVariableDatas, translatedListDatas
 
 def deoptimizeProject(projectData, targetPlatform):
-    precompiledFilePath = ensureCorrectPath("precompiled.json", "PyPenguin")
+    precompiledFilePath = ensureCorrectPath("precompiled.json", "pypenguin_old")
     if os.path.exists(precompiledFilePath):
         precompiledScriptDatas = readJSONFile(precompiledFilePath)
     else:
@@ -173,7 +173,7 @@ def deoptimizeProject(projectData, targetPlatform):
                 "version": "stable",
             },
         }, # Hardcoded because there is no use in changing it
-        "credit": "Made using https://github.com/Fritzforcode/PyPenguin",
+        "credit": "Made using https://github.com/Fritzforcode/pypenguin_old",
     }
     if targetPlatform == Platform.SCRATCH:
         newProjectData = adaptProject(newProjectData)

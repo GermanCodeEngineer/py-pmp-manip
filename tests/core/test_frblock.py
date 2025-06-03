@@ -124,10 +124,10 @@ def test_FRBlock_from_tuple_invalid():
         FRBlock.from_tuple([77, ..., ...], parent_id="qqq")
 
 
-def test_FRBlock_step(ficapi: FIConversionAPI):
+def test_FRBlock_to_inter(ficapi: FIConversionAPI):
     # TODO: next
     frblock = ALL_FR_BLOCKS_CLEAN["f"]
-    trblock = frblock.step(
+    trblock = frblock.to_inter(
         ficapi=ficapi,
         info_api=info_api,
         own_id="f",
@@ -166,9 +166,9 @@ def test_FRBlock_step(ficapi: FIConversionAPI):
     assert trblock.next         is None
     assert trblock.is_top_level is True
 
-def test_FRBlock_step_cb_def(ficapi: FIConversionAPI):
+def test_FRBlock_to_inter_cb_def(ficapi: FIConversionAPI):
     frblock = ALL_FR_BLOCKS_CLEAN["h"]
-    trblock = frblock.step(
+    trblock = frblock.to_inter(
         ficapi=ficapi,
         info_api=info_api,
         own_id="h",
@@ -197,9 +197,9 @@ def test_FRBlock_step_cb_def(ficapi: FIConversionAPI):
     assert trblock.next         is None
     assert trblock.is_top_level is True
 
-def test_FRBlock_step_cb_prototype(ficapi: FIConversionAPI):
+def test_FRBlock_to_inter_cb_prototype(ficapi: FIConversionAPI):
     frblock = ALL_FR_BLOCKS_CLEAN["a"]
-    trblock = frblock.step(
+    trblock = frblock.to_inter(
         ficapi=ficapi,
         info_api=info_api,
         own_id="a",
@@ -214,9 +214,9 @@ def test_FRBlock_step_cb_prototype(ficapi: FIConversionAPI):
     assert trblock.next         == ...
     assert trblock.is_top_level == ...
 
-def test_FRBlock_step_cb_arg(ficapi: FIConversionAPI):
+def test_FRBlock_to_inter_cb_arg(ficapi: FIConversionAPI):
     frblock = ALL_FR_BLOCKS_CLEAN["i"]
-    trblock = frblock.step(
+    trblock = frblock.to_inter(
         ficapi=ficapi,
         info_api=info_api,
         own_id="i",
@@ -236,9 +236,9 @@ def test_FRBlock_step_cb_arg(ficapi: FIConversionAPI):
     assert trblock.next         is None
     assert trblock.is_top_level is False
 
-def test_FRBlock_step_cb_call(ficapi: FIConversionAPI):    
+def test_FRBlock_to_inter_cb_call(ficapi: FIConversionAPI):    
     frblock = ALL_FR_BLOCKS_CLEAN["c"]
-    trblock = frblock.step(
+    trblock = frblock.to_inter(
         ficapi=ficapi,
         info_api=info_api,
         own_id="t",

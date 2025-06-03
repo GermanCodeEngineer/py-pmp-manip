@@ -17,8 +17,10 @@ project = FRProject.from_file(file_path, info_api=info_api)
 
 
 
-new_project = project.step(info_api=info_api)
+new_project = project.to_second(info_api=info_api)
 project.asset_files = ...
 print(project)
 #print(new_project)
 new_project.validate(info_api=info_api, config=ValidationConfig())
+
+

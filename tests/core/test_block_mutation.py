@@ -65,7 +65,7 @@ def test_FRMutation_from_data_and_post_init():
                 tag_name = data["tagName" ],
                 children = data["children"],
             )
-        def step(self, ficapi): pass
+        def to_second(self, ficapi): pass
 
     data = {
         "tagName": "mutation",
@@ -89,7 +89,7 @@ def test_FRMutation_from_data_and_post_init():
         })
 
 
-def test_FRCustomBlockArgumentMutation_from_data_and_step(api: DummyAPI):
+def test_FRCustomBlockArgumentMutation_from_data_and_to_second(api: DummyAPI):
     colors = ["#FF6680", "#FF4D6A", "#FF3355"]
     data = {
         "tagName": "mutation", 
@@ -100,14 +100,14 @@ def test_FRCustomBlockArgumentMutation_from_data_and_step(api: DummyAPI):
     assert frmutation.color == tuple(colors)
     
     frmutation.store_argument_name("my_arg")
-    srmutation = frmutation.step(api)
+    srmutation = frmutation.to_second(api)
     assert isinstance(srmutation, SRCustomBlockArgumentMutation)
     assert srmutation.argument_name == "my_arg"
     assert srmutation.main_color == colors[0]
     assert srmutation.prototype_color == colors[1]
     assert srmutation.outline_color == colors[2]
 
-def test_FRCustomBlockArgumentMutation_step_without_storing_argument(api: DummyAPI):
+def test_FRCustomBlockArgumentMutation_to_second_without_storing_argument(api: DummyAPI):
     data = {
         "tagName": "mutation",
         "children": [],
@@ -116,10 +116,10 @@ def test_FRCustomBlockArgumentMutation_step_without_storing_argument(api: DummyA
     frmutation = FRCustomBlockArgumentMutation.from_data(data)
 
     with raises(ConversionError):
-        frmutation.step(api)
+        frmutation.to_second(api)
 
 
-def test_FRCustomBlockMutation_from_data_and_step(api: DummyAPI):
+def test_FRCustomBlockMutation_from_data_and_to_second(api: DummyAPI):
     warp = False
     returns = None
     edited = True
@@ -149,7 +149,7 @@ def test_FRCustomBlockMutation_from_data_and_step(api: DummyAPI):
     assert frmutation.optype == optype
     assert frmutation.color == tuple(colors)
     
-    srmutation = frmutation.step(api)
+    srmutation = frmutation.to_second(api)
     assert isinstance(srmutation, SRCustomBlockMutation)
     custom_opcode = SRCustomBlockOpcode.from_proccode_argument_names(
         proccode=frmutation.proccode,
@@ -163,7 +163,7 @@ def test_FRCustomBlockMutation_from_data_and_step(api: DummyAPI):
     assert srmutation.outline_color == frmutation.color[2]
 
 
-def test_FRCustomBlockCallMutation_from_data_and_step(api: DummyAPI):
+def test_FRCustomBlockCallMutation_from_data_and_to_second(api: DummyAPI):
     warp = False
     returns = None
     edited = True
@@ -189,7 +189,7 @@ def test_FRCustomBlockCallMutation_from_data_and_step(api: DummyAPI):
     assert frmutation.optype == optype
     assert frmutation.color == tuple(colors)
     
-    srmutation = frmutation.step(api)
+    srmutation = frmutation.to_second(api)
     assert isinstance(srmutation, SRCustomBlockCallMutation)
     custom_opcode = SRCustomBlockOpcode.from_proccode_argument_names(
         proccode=frmutation.proccode,
@@ -226,7 +226,7 @@ def test_FRCustomBlockMutation_warp():
         FRCustomBlockCallMutation.from_data(data | {"warp": []})
     
 
-def test_FRStopScriptMutation_from_data_and_step(api: DummyAPI):
+def test_FRStopScriptMutation_from_data_and_to_second(api: DummyAPI):
     has_next = False
     data = {
         "tagName": "mutation",
@@ -236,7 +236,7 @@ def test_FRStopScriptMutation_from_data_and_step(api: DummyAPI):
     frmutation = FRStopScriptMutation.from_data(data)
     assert frmutation.has_next == has_next
     
-    srmutation = frmutation.step(api)
+    srmutation = frmutation.to_second(api)
     assert isinstance(srmutation, SRStopScriptMutation)
     assert srmutation.is_ending_statement == (not frmutation.has_next)
 

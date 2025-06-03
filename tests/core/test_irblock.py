@@ -10,44 +10,44 @@ from tests.core.constants import ALL_IR_BLOCKS, ALL_SR_SCRIPTS
 
 
 
-def test_IRBlock_step_block_and_text_block_only():
+def test_IRBlock_to_second_block_and_text_block_only():
     irblock = ALL_IR_BLOCKS["c"]
-    _, values = irblock.step(
+    _, values = irblock.to_second(
         all_blocks=ALL_IR_BLOCKS,
         info_api=info_api,
     )
     assert values == ALL_SR_SCRIPTS[4].blocks
 
-def test_IRBlock_step_script():
+def test_IRBlock_to_second_script():
     irblock = ALL_IR_BLOCKS["d"]
-    _, values = irblock.step(
+    _, values = irblock.to_second(
         all_blocks=ALL_IR_BLOCKS,
         info_api=info_api,
     )
     assert values == ALL_SR_SCRIPTS[0].blocks
 
-def test_IRBlock_step_menu():
+def test_IRBlock_to_second_menu():
     irblock = ALL_IR_BLOCKS["e"]
-    _, values = irblock.step(
+    _, values = irblock.to_second(
         all_blocks=ALL_IR_BLOCKS,
         info_api=info_api,
     )
     assert values == ["_random_"]
 
-def test_IRBlock_step_invalid_script_count():
+def test_IRBlock_to_second_invalid_script_count():
     irblock = deepcopy(ALL_IR_BLOCKS["c"])
     irblock.inputs["a text arg"].references = ["b", "d", "e"]
     with raises(ConversionError):
-        irblock.step(
+        irblock.to_second(
             all_blocks=ALL_IR_BLOCKS,
             info_api=info_api,
         )
 
-def test_IRBlock_step_missing_input():
+def test_IRBlock_to_second_missing_input():
     irblock = deepcopy(ALL_IR_BLOCKS["o"])
     del irblock.inputs["VALUE"]
     with raises(ConversionError):
-        irblock.step(
+        irblock.to_second(
             all_blocks=ALL_IR_BLOCKS,
             info_api=info_api,
         )

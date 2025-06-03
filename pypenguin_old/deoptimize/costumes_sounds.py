@@ -1,4 +1,4 @@
-from pypenguin.database import defaultCostumeDeoptimized
+from pypenguin_old.database import defaultCostumeDeoptimized
 
 def translateCostumes(data):
     newCostumeDatas = []

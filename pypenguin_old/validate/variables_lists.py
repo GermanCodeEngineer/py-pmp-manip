@@ -1,5 +1,5 @@
-from pypenguin.validate.constants import validateSchema, formatError, variableSchema, listSchema
-from pypenguin.validate.errors import missingVariableAttributeError
+from pypenguin_old.validate.constants import validateSchema, formatError, variableSchema, listSchema
+from pypenguin_old.validate.errors import missingVariableAttributeError
 
 def validateVariable(path, data, isGlobal):    
     # Check variable format

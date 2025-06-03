@@ -134,7 +134,7 @@ class FRBlock:
             )
         else: raise DeserializationError(f"Invalid constant(first element) for FRBlock conversion: {data[0]}")
 
-    def step(self, 
+    def to_inter(self, 
         ficapi: "FIConversionAPI", 
         info_api: OpcodeInfoAPI, 
         own_id: str
@@ -156,7 +156,7 @@ class FRBlock:
         
         instead_handler = opcode_info.get_special_case(SpecialCaseType.FR_STEP)
         if instead_handler is None:
-            new_inputs = self._step_inputs(
+            new_inputs = self._to_second_inputs(
                 ficapi  = ficapi,
                 info_api   = info_api,
                 opcode_info = opcode_info,
@@ -172,7 +172,7 @@ class FRBlock:
                 dropdowns    = new_dropdowns,
                 position     = (self.x, self.y) if self.top_level else None,
                 comment      = None if self.comment  is None else ficapi.get_comment(self.comment),
-                mutation     = None if self.mutation is None else self.mutation.step(
+                mutation     = None if self.mutation is None else self.mutation.to_second(
                     ficapi = ficapi,
                 ),
                 next         = self.next,
@@ -182,7 +182,7 @@ class FRBlock:
             new_block = instead_handler.call(ficapi=ficapi, block=self)
         return new_block
 
-    def _step_inputs(self, 
+    def _to_second_inputs(self, 
         ficapi: "FIConversionAPI", 
         info_api: OpcodeInfoAPI,
         opcode_info: OpcodeInfo,
@@ -215,7 +215,7 @@ class FRBlock:
                     text = item[1]
                 elif isinstance(item, tuple) and item[0] in {12, 13}:
                     immediate_fr_block = FRBlock.from_tuple(item, parent_id=own_id)
-                    immediate_block = immediate_fr_block.step(
+                    immediate_block = immediate_fr_block.to_inter(
                         ficapi = ficapi,
                         info_api  = info_api,
                         own_id    = None, # None is fine, because tuple blocks can't possibly contain more tuple blocks 
@@ -261,7 +261,7 @@ class IRBlock:
     next: "str | None"
     is_top_level: bool
 
-    def step(self, 
+    def to_second(self, 
         all_blocks: dict[str, "IRBlock"],
         info_api: OpcodeInfoAPI,
     ) -> tuple[tuple[int|float,int|float] | None, list["SRBlock | str"]]:
@@ -293,7 +293,7 @@ class IRBlock:
         for input_id, input_value in self.inputs.items():
             sub_scripts: list[list[SRBlock|str]] = []
             if input_value.immediate_block is not None:
-                _, sub_blocks = input_value.immediate_block.step(
+                _, sub_blocks = input_value.immediate_block.to_second(
                     all_blocks = all_blocks,
                     info_api   = info_api,
                 )
@@ -301,7 +301,7 @@ class IRBlock:
             
             for sub_reference in input_value.references: 
                 sub_block = all_blocks[sub_reference]
-                _, sub_blocks = sub_block.step(
+                _, sub_blocks = sub_block.to_second(
                     all_blocks    = all_blocks,
                     info_api      = info_api,
                 )
@@ -399,7 +399,7 @@ class IRBlock:
         new_blocks = [new_block]
         if self.next is not None:
             next_block = all_blocks[self.next]
-            _, next_blocks = next_block.step(
+            _, next_blocks = next_block.to_second(
                 all_blocks    = all_blocks,
                 info_api      = info_api,
             )

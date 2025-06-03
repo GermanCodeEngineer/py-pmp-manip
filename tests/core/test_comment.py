@@ -43,9 +43,9 @@ def test_FRComment_from_data():
     assert comment.minimized == data["minimized"]
     assert comment.text == data["text"]
 
-def test_FRComment_step_attached():
+def test_FRComment_to_second_attached():
     frcomment = FRComment.from_data(RAW_COMMENT_DATA_ATTACHED)
-    is_attached, srcomment = frcomment.step()
+    is_attached, srcomment = frcomment.to_second()
     assert is_attached is True
     assert isinstance(srcomment, SRComment)
     assert srcomment.position == (frcomment.x, frcomment.y)
@@ -53,9 +53,9 @@ def test_FRComment_step_attached():
     assert srcomment.is_minimized == frcomment.minimized
     assert srcomment.text == frcomment.text
 
-def test_FRComment_step_floating():
+def test_FRComment_to_second_floating():
     frcomment = FRComment.from_data(RAW_COMMENT_DATA_FLOATING)
-    is_attached, srcomment = frcomment.step()
+    is_attached, srcomment = frcomment.to_second()
     assert is_attached is False
     assert isinstance(srcomment, SRComment)
     assert srcomment.position == (frcomment.x, frcomment.y)
