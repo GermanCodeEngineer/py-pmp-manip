@@ -3,6 +3,7 @@ TODOs:
     - maybe replace _copymodify_
     - rename Internal Methods
     - todos + go over code
+    - test and document utility
+    - test and document opcode_info
     - add specific reasons for ThanksError
     - complete deoptimization
-    - reorganize utility

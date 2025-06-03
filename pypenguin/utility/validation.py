@@ -3,8 +3,8 @@ import re
 from typing       import Any
 from urllib.parse import urlparse
 
-from pypenguin.utility.errors  import TypeValidationError, RangeValidationError, InvalidValueError
-from pypenguin.utility.general import grepr_dataclass
+from pypenguin.utility.errors import TypeValidationError, RangeValidationError, InvalidValueError
+from pypenguin.utility.repr   import grepr_dataclass
 
 
 def _value_and_descr(obj, attr: str) -> tuple[Any, str]:

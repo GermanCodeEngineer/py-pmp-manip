@@ -1,8 +1,8 @@
-from io        import BytesIO
-from lxml      import etree
-from PIL       import Image, UnidentifiedImageError
-from pydub     import AudioSegment
-from typing    import Any
+from io     import BytesIO
+from lxml   import etree
+from PIL    import Image, UnidentifiedImageError
+from pydub  import AudioSegment
+from typing import Any
 
 from pypenguin.utility import (
     grepr_dataclass, xml_equal, image_equal, ValidationConfig,
