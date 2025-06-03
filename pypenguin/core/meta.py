@@ -2,6 +2,7 @@ from typing import Any
 
 from pypenguin.utility import grepr_dataclass, ThanksError
 
+
 SCRATCH_SEMVER = "3.0.0"
 
 SCRATCH_VM = "11.1.0"

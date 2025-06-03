@@ -1,12 +1,12 @@
 from json        import loads
 from uuid        import UUID
 
-from pypenguin.utility     import (
-    read_all_files_of_zip, string_to_sha256, ThanksError, grepr_dataclass, ValidationConfig, 
+from pypenguin.opcode_info.api import OpcodeInfoAPI, DropdownValueKind
+from pypenguin.utility         import (
+    grepr_dataclass, read_all_files_of_zip, string_to_sha256, ValidationConfig, 
     AA_TYPE, AA_NONE_OR_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_RANGE, AA_EXACT_LEN,
-    SameValueTwiceError, SpriteLayerStackError,
+    ThanksError, SameValueTwiceError, SpriteLayerStackError,
 )
-from pypenguin.opcode_info import OpcodeInfoAPI, DropdownValueKind
 
 from pypenguin.core.context       import PartialContext
 from pypenguin.core.extension     import SRExtension, SRCustomExtension, SRBuiltinExtension
@@ -15,6 +15,7 @@ from pypenguin.core.monitor       import FRMonitor, SRMonitor
 from pypenguin.core.enums         import SRTTSLanguage, SRVideoState
 from pypenguin.core.target        import FRTarget, FRStage, FRSprite, SRStage, SRSprite
 from pypenguin.core.vars_lists    import SRVariable, SRList
+
 
 @grepr_dataclass(grepr_fields=["targets", "monitors", "extension_data", "extensions", "extension_urls", "meta", "asset_files"])
 class FRProject: 
@@ -237,8 +238,18 @@ class SRProject:
         """
         if not isinstance(other, SRProject):
             return NotImplemented
-
-        if self.sprites != other.sprites:
+        
+        if (
+            self.stage != other.stage or
+            self.sprites != other.sprites or
+            self.all_sprite_variables != other.all_sprite_variables or
+            self.all_sprite_lists != other.all_sprite_lists or
+            self.tempo != other.tempo or
+            self.video_transparency != other.video_transparency or
+            self.text_to_speech_language != other.text_to_speech_language or
+            self.global_monitors != other.global_monitors or
+            self.extensions != other.extensions
+        ):
             return False
 
         if len(self.sprite_layer_stack) != len(other.sprite_layer_stack):
@@ -251,16 +262,7 @@ class SRProject:
             if self_uuid_to_sprite.get(self_uuid) != other_uuid_to_sprite.get(other_uuid):
                 return False
 
-        return (
-            self.stage == other.stage and
-            self.all_sprite_variables == other.all_sprite_variables and
-            self.all_sprite_lists == other.all_sprite_lists and
-            self.tempo == other.tempo and
-            self.video_transparency == other.video_transparency and
-            self.text_to_speech_language == other.text_to_speech_language and
-            self.global_monitors == other.global_monitors and
-            self.extensions == other.extensions
-        ) # TODO: optimize (move this up for performance)
+        return True
 
     def validate(self, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
         """

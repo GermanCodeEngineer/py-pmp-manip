@@ -1,10 +1,8 @@
 TODOs:
     - complete tests
-    - maybe remove IRBlockReference
     - maybe replace _copymodify_
     - rename Internal Methods
     - todos + go over code
     - add specific reasons for ThanksError
     - complete deoptimization
     - reorganize utility
-    - sort imports

@@ -31,9 +31,6 @@ class DeserializationError(PypenguinError):
 ###############################################################
 
 class ConversionError(PypenguinError): pass
-class FirstToSecondConversionError(ConversionError): pass
-class FirstToInterConversionError(FirstToSecondConversionError): pass
-class InterToSecondConversionError(FirstToSecondConversionError): pass
 
 ###############################################################
 #                    ERRORS FOR VALIDATION                    #
@@ -95,8 +92,7 @@ class SameValueTwiceError(ValidationError):
 __all__ = [
     "PypenguinError", "BlameDevsError", "ThanksError", 
     "OpcodeInfoError", "UnknownOpcodeError", "SameOpcodeTwiceError", 
-    "DeserializationError", "ConversionError", "FirstToSecondConversionError",
-    "FirstToInterConversionError", "InterToSecondConversionError", 
+    "DeserializationError", "ConversionError",
     "ValidationError", "PathValidationError", "TypeValidationError", "InvalidValueError",
     "RangeValidationError", "MissingInputError", "UnnecessaryInputError", 
     "MissingDropdownError", "UnnecessaryDropdownError", "InvalidDropdownValueError", 

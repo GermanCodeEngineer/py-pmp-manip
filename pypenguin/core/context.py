@@ -1,9 +1,7 @@
-from typing      import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any
 
+if TYPE_CHECKING: from pypenguin.opcode_info.api import DropdownValueKind
 from pypenguin.utility import grepr_dataclass
-
-if TYPE_CHECKING:
-    from pypenguin.opcode_info import DropdownValueKind
 
 
 @grepr_dataclass(grepr_fields=["scope_variables", "scope_lists", "all_sprite_variables", "sprite_only_variables", "sprite_only_lists", "other_sprites", "backdrops"])

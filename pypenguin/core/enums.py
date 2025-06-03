@@ -1,4 +1,5 @@
-from pypenguin.utility import PypenguinEnum, FirstToSecondConversionError
+from pypenguin.utility import PypenguinEnum, ConversionError
+
 
 class SRTTSLanguage(PypenguinEnum):    
     """
@@ -18,7 +19,7 @@ class SRTTSLanguage(PypenguinEnum):
         """
         if code in cls._value2member_map_:
             return cls._value2member_map_[code]
-        raise FirstToSecondConversionError(f"Couldn't find language enum for language code: {repr(code)}")
+        raise ConversionError(f"Couldn't find language enum for language code: {repr(code)}")
         
     ARABIC                 = "ar"
     CHINESE_MANDARIN       = "zh-cn"
@@ -62,7 +63,7 @@ class SRVideoState(PypenguinEnum):
         """
         if code in cls._value2member_map_:
             return cls._value2member_map_[code]
-        raise FirstToSecondConversionError(f"Couldn't find video state enum for video state code: {repr(code)}")
+        raise ConversionError(f"Couldn't find video state enum for video state code: {repr(code)}")
     
     ON         = "on"
     ON_FLIPPED = "on flipped"
@@ -86,7 +87,7 @@ class SRSpriteRotationStyle(PypenguinEnum):
         """
         if code in cls._value2member_map_:
             return cls._value2member_map_[code]
-        raise FirstToSecondConversionError(f"Couldn't find rotation style enum for rotation style code: {repr(code)}")
+        raise ConversionError(f"Couldn't find rotation style enum for rotation style code: {repr(code)}")
 
     ALL_AROUND  = "all around"
     LEFT_RIGHT  = "left-right"
@@ -110,7 +111,7 @@ class SRVariableMonitorReadoutMode(PypenguinEnum):
         """
         if code in cls._value2member_map_:
             return cls._value2member_map_[code]
-        raise FirstToSecondConversionError(f"Couldn't find readout mode enum for readout mode code: {repr(code)}")
+        raise ConversionError(f"Couldn't find readout mode enum for readout mode code: {repr(code)}")
     
     NORMAL = "default"
     LARGE  = "large"

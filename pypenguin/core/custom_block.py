@@ -1,12 +1,11 @@
 from re import split 
 
-from pypenguin.utility import (
+from pypenguin.opcode_info.api import InputType, OpcodeType
+from pypenguin.utility         import (
     grepr_dataclass, PypenguinEnum, ValidationConfig,
-    SameValueTwiceError, FirstToInterConversionError,
     AA_TYPE, AA_TUPLE_OF_TYPES, AA_MIN_LEN,
+    SameValueTwiceError, ConversionError,
 )
-
-from pypenguin.opcode_info import InputType, OpcodeType
 
 @grepr_dataclass(grepr_fields=["segments"], frozen=True, unsafe_hash=True)
 class SRCustomBlockOpcode:
@@ -179,7 +178,7 @@ class SRCustomBlockOptype(PypenguinEnum):
         for value, optype_candidate in cls._value2member_map_.items():
             if value[1] == code:
                 return optype_candidate
-        raise FirstToInterConversionError(f"Couldn't find video state enum for video state code: {repr(code)}")
+        raise ConversionError(f"Couldn't find video state enum for video state code: {repr(code)}")
 
     def is_reporter(self) -> bool:
         """

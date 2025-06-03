@@ -1,8 +1,8 @@
-from pytest import fixture, raises
 from json   import dumps
+from pytest import fixture, raises
 
 from pypenguin.utility import (
-    DeserializationError, FirstToSecondConversionError, ThanksError, 
+    DeserializationError, ConversionError, ThanksError, 
     ValidationConfig, TypeValidationError, InvalidValueError
 )
 
@@ -16,6 +16,7 @@ from pypenguin.core.block_mutation import (
 from pypenguin.core.custom_block import SRCustomBlockOpcode, SRCustomBlockOptype
 
 from tests.utility import execute_attr_validation_tests
+
 
 class DummyAPI:
     argument_ids: list[str]
@@ -114,7 +115,7 @@ def test_FRCustomBlockArgumentMutation_step_without_storing_argument(api: DummyA
     }
     frmutation = FRCustomBlockArgumentMutation.from_data(data)
 
-    with raises(FirstToSecondConversionError):
+    with raises(ConversionError):
         frmutation.step(api)
 
 

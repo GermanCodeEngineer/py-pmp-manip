@@ -2,6 +2,7 @@ from pypenguin.utility import DualKeyDict
 
 from pypenguin.opcode_info.api import OpcodeInfoGroup, OpcodeInfo, OpcodeType, InputInfo, InputType, DropdownInfo, DropdownType, MenuInfo
 
+
 extension_video_sensing = OpcodeInfoGroup(name="extension_video_sensing", opcode_info=DualKeyDict({
     ("videoSensing_whenMotionGreaterThan", "when video motion > (THRESHOLD)"): OpcodeInfo(
         opcode_type=OpcodeType.HAT,

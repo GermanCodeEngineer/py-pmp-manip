@@ -1,22 +1,22 @@
-from pytest import fixture, raises
 from copy   import copy
 from uuid   import UUID
 from pydub  import AudioSegment
+from pytest import fixture, raises
 
+from pypenguin.opcode_info.api    import DropdownValueKind
+from pypenguin.opcode_info.data   import info_api
 from pypenguin.utility            import (
     string_to_sha256,
     ValidationConfig, 
-    ThanksError, FirstToSecondConversionError, TypeValidationError, RangeValidationError, 
+    ThanksError, ConversionError, TypeValidationError, RangeValidationError, 
     SameValueTwiceError, InvalidValueError
 )
-from pypenguin.opcode_info import info_api, DropdownValueKind
 
 from pypenguin.core.asset          import SRVectorCostume, SRSound
-from pypenguin.core.block          import SRScript, SRBlock
 from pypenguin.core.block_mutation import SRCustomBlockMutation
+from pypenguin.core.block          import SRScript, SRBlock
 from pypenguin.core.context        import PartialContext
 from pypenguin.core.custom_block   import SRCustomBlockOptype, SRCustomBlockOpcode, SRCustomBlockArgument, SRCustomBlockArgumentType
-from pypenguin.core.dropdown       import SRDropdownValue
 from pypenguin.core.enums          import SRSpriteRotationStyle
 from pypenguin.core.target         import FRTarget, FRStage, FRSprite, SRTarget, SRSprite
 from pypenguin.core.vars_lists     import SRVariable, SRCloudVariable, SRList
@@ -24,6 +24,7 @@ from pypenguin.core.vars_lists     import SRVariable, SRCloudVariable, SRList
 from tests.core.constants import SPRITE_DATA, STAGE_DATA, FR_SPRITE, FR_STAGE, SR_SPRITE, SR_STAGE, PROJECT_ASSET_FILES
 
 from tests.utility import execute_attr_validation_tests
+
 
 @fixture
 def config():
@@ -130,12 +131,12 @@ def test_FRTarget_step_variables_lists():
 def test_FRTarget_step_variables_lists_invalid():
     frsprite = copy(FR_STAGE)
     frsprite.variables = {"b-bPdkv!fE]yunTdvpQi": ("some other var", None, None)}
-    with raises(FirstToSecondConversionError):
+    with raises(ConversionError):
         frsprite._step_variables_lists()
 
     frsprite = copy(FR_STAGE)
     frsprite.variables = {"LSfpvIEwXe-upUsR|ypy": ("some other list", None, None)}
-    with raises(FirstToSecondConversionError):
+    with raises(ConversionError):
         frsprite._step_variables_lists()
 
 

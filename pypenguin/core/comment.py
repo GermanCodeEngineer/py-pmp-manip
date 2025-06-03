@@ -2,6 +2,7 @@ from typing import Any
 
 from pypenguin.utility import grepr_dataclass, ValidationConfig, AA_COORD_PAIR, AA_TYPE, InvalidValueError
 
+
 @grepr_dataclass(grepr_fields=["block_id", "x", "y", "width", "height", "minimized", "text"])
 class FRComment:
     """

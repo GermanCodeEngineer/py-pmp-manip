@@ -2,6 +2,7 @@ from pypenguin.utility import grepr_dataclass, PypenguinEnum
 
 from pypenguin.opcode_info.api.dropdown import DropdownType
 
+
 @grepr_dataclass(grepr_fields=["type", "menu"])
 class InputInfo:
     """

@@ -1,9 +1,10 @@
+from dataclasses import field
 from typing      import Any
-from dataclasses import dataclass, field
 
-from pypenguin.utility import PypenguinEnum, grepr_dataclass, remove_duplicates, BlameDevsError
+from pypenguin.utility import grepr_dataclass, remove_duplicates, PypenguinEnum, BlameDevsError
 
 from pypenguin.core.context import PartialContext, CompleteContext
+
 
 class DropdownValueKind(PypenguinEnum):
     """

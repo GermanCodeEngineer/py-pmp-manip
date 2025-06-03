@@ -2,6 +2,7 @@ from pypenguin.utility import DualKeyDict
 
 from pypenguin.opcode_info.api import OpcodeInfoGroup, OpcodeInfo, OpcodeType, InputInfo, InputType, DropdownInfo, DropdownType, MenuInfo
 
+
 sounds = OpcodeInfoGroup(name="sounds", opcode_info=DualKeyDict({
     ("sound_playuntildone", "play sound ([SOUND]) until done"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,

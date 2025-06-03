@@ -1,6 +1,6 @@
-from pytest import fixture, raises
+from pytest import fixture
 
-from pypenguin.utility import ValidationConfig, TypeValidationError, InvalidValueError
+from pypenguin.utility import ValidationConfig, TypeValidationError
 
 from pypenguin.core.vars_lists import SRVariable, SRList
 

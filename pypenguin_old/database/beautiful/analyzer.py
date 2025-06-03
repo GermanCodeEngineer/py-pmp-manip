@@ -140,8 +140,8 @@ for cat in ["motion", "looks", "sounds", "events", "control", "sensing", "operat
     elif cat == "lists": block_cat = "data"
     else:
         block_cat = cat
-    string = "from pypenguin.utility import DualKeyDict\n\nfrom pypenguin.opcode_info.api import OpcodeInfoGroup, OpcodeInfo, OpcodeType, InputInfo, InputType, DropdownInfo, DropdownType, MenuInfo\n\n" + cat + ' = OpcodeInfoGroup(name="' + cat + '", opcode_info=DualKeyDict({\n'
-    for opcode, block in opcodes.items():
+    string = "from pypenguin.utility import DualKeyDict\n\nfrom pypenguin.opcode_info.api import OpcodeInfoGroup, OpcodeInfo, OpcodeType, InputInfo, InputType, DropdownInfo, DropdownType, MenuInfo\n\n\n" + cat + ' = OpcodeInfoGroup(name="' + cat + '", opcode_info=DualKeyDict({\n'
+    for opcode, block in opcodes.items(): # type: ignore
         block_string = '    ("'+opcode+'", "'+block["newOpcode"]+'"): OpcodeInfo(\n'
         
         block["inputs"] = {}
@@ -175,12 +175,8 @@ for cat in ["motion", "looks", "sounds", "events", "control", "sensing", "operat
         del block["optionTypes"]
         if "optionTranslation" in block: del block["optionTranslation"]
         
-        if opcode == "event_whenkeypressed":
-            print(block)
-        
         #print(block)
         for attr, value in block.items():
-            if opcode == "event_whenkeypressed": print("HERE", attr)
             match attr:
                 case "type": 
                     block_string += '        opcode_type=OpcodeType.' + bt_translation[value] + ',\n'
@@ -199,7 +195,6 @@ for cat in ["motion", "looks", "sounds", "events", "control", "sensing", "operat
                     block_string += "        }),\n"
                 case "dropdowns":
                     if value == {}: continue
-                    if opcode == "event_whenkeypressed": print("HERE")
                     block_string += '        dropdowns=DualKeyDict({\n'
                     for old_input_id, input_data in value.items():
                         block_string += f'            ("{input_data["old"]}", "{old_input_id}"): DropdownInfo(DropdownType.{input_data["type"]}'
@@ -215,8 +210,6 @@ for cat in ["motion", "looks", "sounds", "events", "control", "sensing", "operat
                 case "fromPenguinMod": pass
                 case _: raise AttributeError(attr)
         block_string += "    ),\n"
-        if opcode == "event_whenkeypressed":
-            print(block_string)
         
         string += block_string
     

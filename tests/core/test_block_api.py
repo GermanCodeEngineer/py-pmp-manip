@@ -1,7 +1,7 @@
-from pytest import fixture, raises
 from copy   import deepcopy
+from pytest import fixture, raises
 
-from pypenguin.utility import FirstToInterConversionError, lists_equal_ignore_order
+from pypenguin.utility import ConversionError, lists_equal_ignore_order
 
 from pypenguin.core.block_api      import FIConversionAPI, ValidationAPI
 from pypenguin.core.block_mutation import (
@@ -14,6 +14,7 @@ from pypenguin.core.custom_block   import (
 from tests.core.constants import (
     ALL_FR_BLOCKS_CLEAN, ALL_SR_COMMENTS, ALL_SR_SCRIPTS, ALL_SR_BLOCKS, SR_BLOCK_CUSTOM_OPCODE,
 )
+
 
 @fixture
 def ficapi():
@@ -44,7 +45,7 @@ def test_FIConversionAPI_schedule_block_deletion(ficapi: FIConversionAPI):
 
 def test_FIConversionAPI_get_cb_mutation(ficapi: FIConversionAPI):
     assert ficapi.get_cb_mutation("do sth text %s and bool %b") == ALL_FR_BLOCKS_CLEAN["a"].mutation
-    with raises(FirstToInterConversionError):
+    with raises(ConversionError):
         ficapi.get_cb_mutation("some %s proccode")
 
 

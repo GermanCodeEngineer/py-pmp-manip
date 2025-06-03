@@ -1,4 +1,4 @@
-from pytest import fixture, raises
+from pytest import fixture
 
 from pypenguin.utility import ValidationConfig, TypeValidationError, InvalidValueError
 
@@ -6,11 +6,10 @@ from pypenguin.core.comment import FRComment, SRComment
 
 from tests.utility import execute_attr_validation_tests
 
+
 @fixture
 def config():
     return ValidationConfig()
-
-# FRComment
 
 RAW_COMMENT_DATA_ATTACHED = {
     "blockId": "a",
@@ -31,6 +30,7 @@ RAW_COMMENT_DATA_FLOATING = {
     "minimized": True,
     "text": "Floating comment here",
 }
+
 
 def test_FRComment_from_data():
     data = RAW_COMMENT_DATA_ATTACHED

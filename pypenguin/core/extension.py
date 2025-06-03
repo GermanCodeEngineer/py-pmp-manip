@@ -1,6 +1,5 @@
-from dataclasses import dataclass
-
 from pypenguin.utility import grepr_dataclass, ValidationConfig, AA_TYPE, AA_ALNUM, is_valid_js_data_uri, is_valid_url, InvalidValueError
+
 
 @grepr_dataclass(grepr_fields=["id"])
 class SRExtension:

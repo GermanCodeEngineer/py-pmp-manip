@@ -1,5 +1,5 @@
-from pytest import fixture, raises
 from copy   import copy, deepcopy
+from pytest import fixture, raises
 from uuid   import uuid4
 
 from pypenguin.utility            import (
@@ -7,7 +7,7 @@ from pypenguin.utility            import (
     ThanksError, TypeValidationError, RangeValidationError, 
     SameValueTwiceError, SpriteLayerStackError,
 )
-from pypenguin.opcode_info import info_api
+from pypenguin.opcode_info.data import info_api
 
 from pypenguin.core.enums      import SRTTSLanguage, SRVideoState
 from pypenguin.core.project    import FRProject, SRProject

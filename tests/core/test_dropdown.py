@@ -1,7 +1,7 @@
-from pytest import fixture, raises
+from pytest import fixture
 
-from pypenguin.utility     import ValidationConfig, TypeValidationError, InvalidDropdownValueError
-from pypenguin.opcode_info import DropdownType, DropdownValueKind
+from pypenguin.opcode_info.api import DropdownType, DropdownValueKind
+from pypenguin.utility         import ValidationConfig, TypeValidationError, InvalidDropdownValueError
 
 from pypenguin.core.context  import PartialContext
 from pypenguin.core.dropdown import SRDropdownValue
@@ -30,7 +30,6 @@ def context():
         other_sprites=[(DropdownValueKind.SPRITE, "Sprite2"), (DropdownValueKind.SPRITE, "Player")],
         backdrops=[(DropdownValueKind.BACKDROP, "intro"), (DropdownValueKind.BACKDROP, "scene1")],
     )
-
 
 
 

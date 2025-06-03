@@ -1,6 +1,5 @@
 # Utility functions
-
-def grepr(obj, annotate_fields=True, include_attributes=False, *, indent=4):
+def grepr(obj, /, annotate_fields=True, include_attributes=False, *, indent=4):
     def _grepr(obj, level=0):
         is_compatible = bool(getattr(obj, "_grepr", False))
         if indent is not None:
@@ -32,26 +31,25 @@ def grepr(obj, annotate_fields=True, include_attributes=False, *, indent=4):
             return f'"{obj.replace('"', '\\"')}"', True
         elif isinstance(obj, DualKeyDict):
             if not obj:
-                return 'DKD{}', True
+                return 'DualKeyDict{}', True
             args = []
             for key1, key2, value in obj.items_key1_key2():
                 key1_str, _ = _grepr(key1, level)
                 key2_str, _ = _grepr(key2, level)
                 value_str, _ = _grepr(value, level)
                 args.append(f'{key1_str} / {key2_str}: {value_str}')
-            return 'DKD{%s%s%s}' % (prefix, sep.join(args), end_sep), False
+            return 'DualKeyDict{%s%s%s}' % (prefix, sep.join(args), end_sep), False
         elif is_compatible:
             cls = type(obj)
             args = []
             allsimple = True
-            keywords = annotate_fields
             for name in obj._grepr_fields:
                 if not hasattr(obj, name):
                     continue
                 value = getattr(obj, name)
                 value, simple = _grepr(value, level)
                 allsimple = allsimple and simple
-                if keywords:
+                if annotate_fields:
                     args.append('%s=%s' % (name, value))
                 else:
                     args.append(value)
@@ -80,8 +78,9 @@ def grepr(obj, annotate_fields=True, include_attributes=False, *, indent=4):
     return _grepr(obj)[0]
 
 # Files
-import zipfile
 import os
+import zipfile
+
 from pypenguin.utility.errors import PathError
 
 def read_all_files_of_zip(zip_path: str) -> dict[str, bytes]:
@@ -115,9 +114,9 @@ def ensure_correct_path(_path: str, target_folder_name: str = "pypenguin") -> st
         return final_path
 
 # Utility Classes
+from dataclasses import dataclass
 from enum        import Enum
 from typing      import TypeVar, Generic, Iterator
-from dataclasses import dataclass
 
 class PypenguinEnum(Enum):
     def __repr__(self) -> str:
@@ -216,6 +215,7 @@ class DualKeyDict(Generic[K1, K2, V]):
     def __contains__(self, key: object) -> bool:
         raise NotImplementedError("Don't check whether a DualKeyDict contains something like a normal dict. Use has_key1 or has_key2 instead")
 
+    # Dict-like behavior
     def __len__(self) -> int:
         return len(self._values)
 
@@ -267,7 +267,6 @@ def lists_equal_ignore_order(a: list, b: list) -> bool:
         try:
             b_copy.remove(item)  # uses __eq__, safe for mutable objects
         except ValueError:
-            raise Exception(item)
             return False
     return not b_copy
 
@@ -304,24 +303,21 @@ def string_to_sha256(primary: str, secondary: str|None=None) -> str:
 
 
 # Special Comparers
-from lxml        import etree
-from PIL         import Image
-from pydub       import AudioSegment
+from lxml import etree
+from PIL  import Image
 
-def xml_equal(xml1: str, xml2: str) -> bool:
+def xml_equal(xml1: etree._Element, xml2: etree._Element) -> bool:
     """
-    Compare two xml strings for equality
+    Compare two xml elements for equality
     
     Args:
-        xml1: the first xml string
-        xml2: the second xml string
+        xml1: the first xml element
+        xml2: the second xml element
     
     Returns:
-        wether the two xml strings are equal
+        wether the two xml elements are equal
     """
-    a = etree.fromstring(xml1)
-    b = etree.fromstring(xml2)
-    return etree.tostring(a) == etree.tostring(b)
+    return etree.tostring(xml1, method="c14n") == etree.tostring(xml2, method="c14n")
 
 def image_equal(img1: Image.Image, img2: Image.Image) -> bool:
     """

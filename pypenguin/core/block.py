@@ -1,23 +1,24 @@
-from typing      import Any, TYPE_CHECKING
-from dataclasses import field
 from abc         import ABC, abstractmethod
+from dataclasses import field
+from typing      import Any, TYPE_CHECKING
 
+from pypenguin.important_opcodes import *
+from pypenguin.opcode_info.api   import (
+    OpcodeInfoAPI, OpcodeInfo, InputType, InputMode, OpcodeType, SpecialCaseType,
+)
 from pypenguin.utility           import (
-    grepr_dataclass, ValidationConfig, get_closest_matches, tuplify,
+    grepr_dataclass, get_closest_matches, tuplify, ValidationConfig,
     AA_TYPE, AA_NONE, AA_NONE_OR_TYPE, AA_COORD_PAIR, AA_LIST_OF_TYPE, AA_DICT_OF_TYPE, AA_MIN_LEN,
-    DeserializationError, FirstToInterConversionError, InterToSecondConversionError,
+    DeserializationError, ConversionError,
     UnnecessaryInputError, MissingInputError, UnnecessaryDropdownError, MissingDropdownError, InvalidOpcodeError, InvalidBlockShapeError,
 )
-from pypenguin.opcode_info       import OpcodeInfoAPI, OpcodeInfo, InputType, InputMode, OpcodeType, SpecialCaseType
-from pypenguin.important_opcodes import *
 
+if TYPE_CHECKING: from pypenguin.core.block_api import FIConversionAPI, ValidationAPI
 from pypenguin.core.block_mutation import FRMutation, SRMutation
 from pypenguin.core.comment        import SRComment
 from pypenguin.core.context        import CompleteContext
 from pypenguin.core.dropdown       import SRDropdownValue
 
-if TYPE_CHECKING:
-    from pypenguin.core.block_api      import FIConversionAPI, ValidationAPI
 
 @grepr_dataclass(grepr_fields=["opcode", "next", "parent", "inputs", "fields", "shadow", "top_level", "x", "y", "comment", "mutation"])
 class FRBlock:
@@ -174,7 +175,7 @@ class FRBlock:
                 mutation     = None if self.mutation is None else self.mutation.step(
                     ficapi = ficapi,
                 ),
-                next         = None if self.next     is None else IRBlockReference(self.next),
+                next         = self.next,
                 is_top_level = self.top_level,
             )
         else:
@@ -209,7 +210,7 @@ class FRBlock:
             text            = None
             for item in input_value[1:]: # ignore first item(some irrelevant number)
                 if isinstance(item, str):
-                    references.append(IRBlockReference(item))
+                    references.append(item)
                 elif isinstance(item, tuple) and item[0] in {4, 5, 6, 7, 8, 9, 10, 11}:
                     text = item[1]
                 elif isinstance(item, tuple) and item[0] in {12, 13}:
@@ -219,7 +220,7 @@ class FRBlock:
                         info_api  = info_api,
                         own_id    = None, # None is fine, because tuple blocks can't possibly contain more tuple blocks 
                     )
-                else: raise FirstToInterConversionError(f"Invalid input value {input_value} for input {repr(input_id)}")
+                else: raise ConversionError(f"Invalid input value {input_value} for input {repr(input_id)}")
 
             new_inputs[input_id] = IRInputValue(
                 mode            = input_mode,
@@ -239,7 +240,7 @@ class FRBlock:
                     immediate_block = None,
                     text            = None,
                 )
-            else: raise FirstToInterConversionError(f"Didn't expect input {repr(input_id)} missing")
+            else: raise ConversionError(f"Didn't expect input {repr(input_id)} missing")
         
         return new_inputs
 
@@ -257,7 +258,7 @@ class IRBlock:
     comment: SRComment | None
     mutation: "SRMutation | None"
     position: tuple[int | float, int | float] | None
-    next: "IRBlockReference | None"
+    next: "str | None"
     is_top_level: bool
 
     def step(self, 
@@ -319,7 +320,7 @@ class IRBlock:
                 sub_script  = []
                 sub_block_a = None
                 sub_block_b = None
-            else: raise InterToSecondConversionError(f"Invalid script count {script_count}")
+            else: raise ConversionError(f"Invalid script count {script_count}")
             
             input_blocks   = []
             input_block    = None
@@ -380,7 +381,7 @@ class IRBlock:
                 if input_mode.can_be_missing():
                     new_inputs[new_input_id] = SRInputValue.from_mode(mode=input_mode)
                 else:
-                    raise InterToSecondConversionError(f"For a block with opcode {repr(self.opcode)}, input {repr(new_input_id)} is missing")
+                    raise ConversionError(f"For a block with opcode {repr(self.opcode)}, input {repr(new_input_id)} is missing")
         
         new_dropdowns = {}
         for dropdown_id, dropdown_value in self.dropdowns.items():
@@ -413,17 +414,9 @@ class IRInputValue:
     """
     
     mode: InputMode
-    references: list["IRBlockReference"]
+    references: list["str"]
     immediate_block: IRBlock | None
     text: str | None
-
-@grepr_dataclass(grepr_fields=["id"], frozen=True, unsafe_hash=True)
-class IRBlockReference:
-    """
-    A block reference in intermediate representation. Basis for the temporary id system
-    """
-    
-    id: str
 
 
 
@@ -983,7 +976,7 @@ class SRScriptInputValue(SRInputValue):
 
 
 __all__ = [
-    "FRBlock", "IRBlock", "IRInputValue", "IRBlockReference", 
+    "FRBlock", "IRBlock", "IRInputValue", 
     "SRScript", "SRBlock", "SRInputValue", "SRBlockAndTextInputValue", 
     "SRBlockAndDropdownInputValue", "SRBlockOnlyInputValue", "SRScriptInputValue",
 ]

@@ -2,6 +2,7 @@ from pypenguin.utility import DualKeyDict
 
 from pypenguin.opcode_info.api import OpcodeInfoGroup, OpcodeInfo, OpcodeType, InputInfo, InputType, DropdownInfo, DropdownType, MenuInfo
 
+
 looks = OpcodeInfoGroup(name="looks", opcode_info=DualKeyDict({
     ("looks_sayforsecs", "say (MESSAGE) for (SECONDS) seconds"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,

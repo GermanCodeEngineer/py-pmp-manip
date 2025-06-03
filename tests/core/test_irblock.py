@@ -1,16 +1,17 @@
-from pytest import raises
 from copy   import deepcopy
+from pytest import raises
 
-from pypenguin.utility            import InterToSecondConversionError
-from pypenguin.opcode_info import info_api
 from pypenguin.important_opcodes  import *
+from pypenguin.opcode_info.data   import info_api
+from pypenguin.utility            import ConversionError
 
-from pypenguin.core.block import IRBlockReference
 
 from tests.core.constants import ALL_IR_BLOCKS, ALL_SR_SCRIPTS
 
+
+
 def test_IRBlock_step_block_and_text_block_only():
-    irblock = ALL_IR_BLOCKS[IRBlockReference(id="c")]
+    irblock = ALL_IR_BLOCKS["c"]
     _, values = irblock.step(
         all_blocks=ALL_IR_BLOCKS,
         info_api=info_api,
@@ -18,7 +19,7 @@ def test_IRBlock_step_block_and_text_block_only():
     assert values == ALL_SR_SCRIPTS[4].blocks
 
 def test_IRBlock_step_script():
-    irblock = ALL_IR_BLOCKS[IRBlockReference(id="d")]
+    irblock = ALL_IR_BLOCKS["d"]
     _, values = irblock.step(
         all_blocks=ALL_IR_BLOCKS,
         info_api=info_api,
@@ -26,7 +27,7 @@ def test_IRBlock_step_script():
     assert values == ALL_SR_SCRIPTS[0].blocks
 
 def test_IRBlock_step_menu():
-    irblock = ALL_IR_BLOCKS[IRBlockReference(id="e")]
+    irblock = ALL_IR_BLOCKS["e"]
     _, values = irblock.step(
         all_blocks=ALL_IR_BLOCKS,
         info_api=info_api,
@@ -34,13 +35,9 @@ def test_IRBlock_step_menu():
     assert values == ["_random_"]
 
 def test_IRBlock_step_invalid_script_count():
-    irblock = deepcopy(ALL_IR_BLOCKS[IRBlockReference(id="c")])
-    irblock.inputs["a text arg"].references = [
-        IRBlockReference(id="b"),
-        IRBlockReference(id="d"),
-        IRBlockReference(id="e"),
-    ]
-    with raises(InterToSecondConversionError):
+    irblock = deepcopy(ALL_IR_BLOCKS["c"])
+    irblock.inputs["a text arg"].references = ["b", "d", "e"]
+    with raises(ConversionError):
         irblock.step(
             all_blocks=ALL_IR_BLOCKS,
             info_api=info_api,
@@ -49,7 +46,7 @@ def test_IRBlock_step_invalid_script_count():
 def test_IRBlock_step_missing_input():
     irblock = deepcopy(ALL_IR_BLOCKS["o"])
     del irblock.inputs["VALUE"]
-    with raises(InterToSecondConversionError):
+    with raises(ConversionError):
         irblock.step(
             all_blocks=ALL_IR_BLOCKS,
             info_api=info_api,

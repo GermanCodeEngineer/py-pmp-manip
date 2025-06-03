@@ -2,7 +2,7 @@ import sys, os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 
 from pypenguin.core import *
-from pypenguin.opcode_info import info_api
+from pypenguin.opcode_info.data import info_api
 from pypenguin.utility import ValidationConfig
 
 #file_path = "../assets/from_online/my 1st platformer.pmp"

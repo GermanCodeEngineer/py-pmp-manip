@@ -1,8 +1,7 @@
-from typing    import Any
-from PIL       import Image, UnidentifiedImageError
 from copy      import copy
-from lxml      import etree
 from io        import BytesIO
+from lxml      import etree
+from PIL       import Image
 from pydub     import AudioSegment
 from pytest    import fixture, raises
 
@@ -17,6 +16,7 @@ from pypenguin.core.asset import (
 )
 
 from tests.utility import execute_attr_validation_tests
+
 
 SIMPLE_BITMAP_EXAMPLE = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\rIDATx\x9cc\xf8\xcf\xc0\xf0\x1f\x00\x05\x00\x01\xff\x89\x99=\x1d\x00\x00\x00\x00IEND\xaeB`\x82"
 
@@ -41,6 +41,7 @@ def sound_example():
         BytesIO(SIMPLE_SOUND_EXAMPLE),
         format="wav",
     )
+
 
 
 def test_FRCostume_from_data():
@@ -106,7 +107,7 @@ def test_FRCostume_step_vector():
     assert srcostume.file_extension == frcostume.data_format
     assert srcostume.rotation_center == (frcostume.rotation_center_x, frcostume.rotation_center_y)
     assert isinstance(srcostume.content, etree._Element)
-    assert xml_equal(etree.tostring(srcostume.content), SIMPLE_SVG_EXAMPLE)
+    assert xml_equal(srcostume.content, etree.fromstring(SIMPLE_SVG_EXAMPLE))
 
 def test_FRCostume_step_bitmap():
     frcostume = FRCostume(
@@ -214,8 +215,7 @@ def test_SRVectorCostume_create_empty(config):
     assert srcostume.file_extension == "svg"
     assert srcostume.rotation_center == EMPTY_SVG_COSTUME_ROTATION_CENTER
     assert isinstance(srcostume.content, etree._Element)
-    produced = etree.tostring(srcostume.content, encoding="unicode")
-    assert xml_equal(produced, EMPTY_SVG_COSTUME_XML)
+    assert xml_equal(srcostume.content, etree.fromstring(EMPTY_SVG_COSTUME_XML))
 
 
 def test_SRVectorCostume_eq_equal():

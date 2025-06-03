@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 from pypenguin.utility.errors  import TypeValidationError, RangeValidationError, InvalidValueError
 from pypenguin.utility.general import grepr_dataclass
 
+
 def _value_and_descr(obj, attr: str) -> tuple[Any, str]:
     return getattr(obj, attr), f"{attr} of a {_repr_type(obj.__class__)}"
 

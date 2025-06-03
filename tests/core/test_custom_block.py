@@ -1,14 +1,17 @@
 from pytest import fixture, raises
 
-from pypenguin.utility import ValidationConfig, TypeValidationError, RangeValidationError, SameValueTwiceError, FirstToInterConversionError
-
-from pypenguin.opcode_info import InputType, OpcodeType
+from pypenguin.opcode_info.api import InputType, OpcodeType
+from pypenguin.utility         import (
+    ValidationConfig, 
+    TypeValidationError, RangeValidationError, SameValueTwiceError, ConversionError,
+)
 
 from pypenguin.core.custom_block import (
     SRCustomBlockOpcode, SRCustomBlockArgument, SRCustomBlockArgumentType, SRCustomBlockOptype,
 )
 
 from tests.utility import execute_attr_validation_tests
+
 
 @fixture
 def segments():
@@ -100,7 +103,7 @@ def test_SRCustomBlockOptype_from_code():
     assert SRCustomBlockOptype.from_code("string"   ) == SRCustomBlockOptype.STRING_REPORTER
     assert SRCustomBlockOptype.from_code("number"   ) == SRCustomBlockOptype.NUMBER_REPORTER
     assert SRCustomBlockOptype.from_code("boolean"  ) == SRCustomBlockOptype.BOOLEAN_REPORTER
-    with raises(FirstToInterConversionError):
+    with raises(ConversionError):
         SRCustomBlockOptype.from_code("something else")
 
 def test_SRCustomBlockOptype_is_reporter():

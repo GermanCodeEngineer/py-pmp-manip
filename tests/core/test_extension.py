@@ -6,6 +6,7 @@ from pypenguin.core.extension import SRExtension, SRCustomExtension
 
 from tests.utility import execute_attr_validation_tests
 
+
 @fixture
 def config():
     return ValidationConfig()

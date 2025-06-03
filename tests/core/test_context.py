@@ -1,6 +1,7 @@
-from pypenguin.opcode_info import DropdownValueKind
+from pypenguin.opcode_info.api import DropdownValueKind
 
-from pypenguin.core.context  import PartialContext, CompleteContext
+from pypenguin.core.context import PartialContext, CompleteContext
+
 
 def test_CompleteContext_from_partial():
     my_variable = (DropdownValueKind.VARIABLE, "my variable")

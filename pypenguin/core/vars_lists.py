@@ -1,6 +1,5 @@
-from dataclasses import dataclass
-
 from pypenguin.utility import grepr_dataclass, ValidationConfig, AA_TYPE, AA_TYPES, AA_LIST_OF_TYPES
+
 
 @grepr_dataclass(grepr_fields=["name", "current_value"])
 class SRVariable:

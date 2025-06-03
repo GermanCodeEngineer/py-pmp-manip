@@ -22,10 +22,13 @@ from pypenguin.opcode_info.data.c_variables import variables
 from pypenguin.opcode_info.data.c_lists     import lists
 
 if TYPE_CHECKING:
-    from pypenguin.core.block          import FRBlock, IRBlock, SRBlock
-    from pypenguin.core.block_api   import FIConversionAPI, ValidationAPI
+    from pypenguin.core.block_api import FIConversionAPI, ValidationAPI
+    from pypenguin.core.block     import FRBlock, IRBlock, SRBlock
 
-from pypenguin.core.block_mutation import FRCustomBlockMutation, FRCustomBlockArgumentMutation, FRCustomBlockCallMutation, FRStopScriptMutation, SRCustomBlockMutation, SRCustomBlockArgumentMutation, SRCustomBlockCallMutation, SRStopScriptMutation
+from pypenguin.core.block_mutation import (
+    FRCustomBlockMutation, FRCustomBlockArgumentMutation, FRCustomBlockCallMutation, FRStopScriptMutation, 
+    SRCustomBlockMutation, SRCustomBlockArgumentMutation, SRCustomBlockCallMutation, SRStopScriptMutation,
+)
 
 motion.add_opcode("motion_goto_menu", "#REACHABLE TARGET MENU (GO)", OpcodeInfo(
     opcode_type=OpcodeType.MENU,
@@ -164,18 +167,17 @@ info_api.set_opcodes_mutation_class(ANY_OPCODE_CB_ARG, old_cls=FRCustomBlockArgu
 info_api.set_opcode_mutation_class(OPCODE_CB_CALL, old_cls=FRCustomBlockCallMutation, new_cls=SRCustomBlockCallMutation)
 
 # Special Cases
-
-def GET_OPCODE_TYPE__STOP_SCRIPT(block: "SRBlock|IRBlock", validation_api: "ValidationAPI") -> OpcodeType:
+def _GET_OPCODE_TYPE__STOP_SCRIPT(block: "SRBlock|IRBlock", validation_api: "ValidationAPI") -> OpcodeType:
     from pypenguin.core.block_mutation import SRStopScriptMutation
     mutation: SRStopScriptMutation = block.mutation
     return OpcodeType.ENDING_STATEMENT if mutation.is_ending_statement else OpcodeType.STATEMENT
 
 info_api.add_opcode_case(OPCODE_STOP_SCRIPT, SpecialCase(
     type=SpecialCaseType.GET_OPCODE_TYPE,
-    function=GET_OPCODE_TYPE__STOP_SCRIPT,
+    function=_GET_OPCODE_TYPE__STOP_SCRIPT,
 ))
 
-def GET_OPCODE_TYPE__CB_CALL(block: "SRBlock|IRBlock", validation_api: "ValidationAPI") -> OpcodeType:
+def _GET_OPCODE_TYPE__CB_CALL(block: "SRBlock|IRBlock", validation_api: "ValidationAPI") -> OpcodeType:
     # Get the complete mutation and derive OpcodeType from optype
     from pypenguin.core.block_mutation import SRCustomBlockCallMutation
     partial_mutation: SRCustomBlockCallMutation = block.mutation
@@ -184,10 +186,10 @@ def GET_OPCODE_TYPE__CB_CALL(block: "SRBlock|IRBlock", validation_api: "Validati
     
 info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
     type=SpecialCaseType.GET_OPCODE_TYPE,
-    function=GET_OPCODE_TYPE__CB_CALL,
+    function=_GET_OPCODE_TYPE__CB_CALL,
 ))
 
-def PRE__CB_DEF(block: "FRBlock", ficapi: "FIConversionAPI") -> "FRBlock":
+def _PRE__CB_DEF(block: "FRBlock", ficapi: "FIConversionAPI") -> "FRBlock":
     # Transfer mutation from prototype block to definition block
     # Order deletion of the prototype block and its argument blocks
     # Delete "custom_block" input, which references the prototype
@@ -204,10 +206,10 @@ def PRE__CB_DEF(block: "FRBlock", ficapi: "FIConversionAPI") -> "FRBlock":
 
 info_api.add_opcodes_case(ANY_OPCODE_CB_DEF, SpecialCase(
     type=SpecialCaseType.PRE_FR_STEP, 
-    function=PRE__CB_DEF,
+    function=_PRE__CB_DEF,
 ))
 
-def PRE__CB_ARG(block: "FRBlock", ficapi: "FIConversionAPI") -> "FRBlock":
+def _PRE__CB_ARG(block: "FRBlock", ficapi: "FIConversionAPI") -> "FRBlock":
     # Transfer argument name from a field into the mutation
     # because only real dropdowns should be listed in "fields"
     from pypenguin.core.block_mutation import FRCustomBlockArgumentMutation
@@ -219,10 +221,10 @@ def PRE__CB_ARG(block: "FRBlock", ficapi: "FIConversionAPI") -> "FRBlock":
 
 info_api.add_opcodes_case(ANY_OPCODE_CB_ARG, SpecialCase(
     type=SpecialCaseType.PRE_FR_STEP, 
-    function=PRE__CB_ARG,
+    function=_PRE__CB_ARG,
 ))
 
-def PRE__CB_CALL(block: "FRBlock", ficapi: "FIConversionAPI") -> "FRBlock":
+def _PRE__CB_CALL(block: "FRBlock", ficapi: "FIConversionAPI") -> "FRBlock":
     from pypenguin.core.block_mutation import FRCustomBlockCallMutation
     block = copy(block)
     partial_mutation: FRCustomBlockCallMutation = block.mutation
@@ -237,10 +239,10 @@ def PRE__CB_CALL(block: "FRBlock", ficapi: "FIConversionAPI") -> "FRBlock":
 
 info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
     type=SpecialCaseType.PRE_FR_STEP, 
-    function=PRE__CB_CALL,
+    function=_PRE__CB_CALL,
 ))
 
-def FR_STEP__CB_PROTOTYPE(block: "FRBlock", ficapi: "FIConversionAPI") -> "IRBlock":
+def _FR_STEP__CB_PROTOTYPE(block: "FRBlock", ficapi: "FIConversionAPI") -> "IRBlock":
     # Return an empty, temporary block
     from pypenguin.core.block import IRBlock
     return IRBlock(
@@ -256,10 +258,10 @@ def FR_STEP__CB_PROTOTYPE(block: "FRBlock", ficapi: "FIConversionAPI") -> "IRBlo
 
 info_api.add_opcode_case(OPCODE_CB_PROTOTYPE, SpecialCase(
     type=SpecialCaseType.FR_STEP,
-    function=FR_STEP__CB_PROTOTYPE,
+    function=_FR_STEP__CB_PROTOTYPE,
 ))
 
-def GET_ALL_INPUT_TYPES__CB_CALL(
+def _GET_ALL_INPUT_TYPES__CB_CALL(
     block: "FRBlock|IRBlock|SRBlock", ficapi: "FIConversionAPI|None"
 ) -> DualKeyDict[str, str, InputType]:
     from pypenguin.core.block_mutation import FRCustomBlockCallMutation, SRCustomBlockCallMutation
@@ -275,11 +277,11 @@ def GET_ALL_INPUT_TYPES__CB_CALL(
 
 info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
     type=SpecialCaseType.GET_ALL_INPUT_IDS_TYPES,
-    function=GET_ALL_INPUT_TYPES__CB_CALL,
+    function=_GET_ALL_INPUT_TYPES__CB_CALL,
 ))
 
 
-def POST_VALIDATION__CB_DEF(path:list, block: "SRBlock") -> None:
+def _POST_VALIDATION__CB_DEF(path:list, block: "SRBlock") -> None:
     from pypenguin.core.block_mutation import SRCustomBlockMutation
     mutation: SRCustomBlockMutation = block.mutation
     if block.opcode == NEW_OPCODE_CB_DEF:
@@ -292,7 +294,7 @@ def POST_VALIDATION__CB_DEF(path:list, block: "SRBlock") -> None:
 
 info_api.add_opcodes_case(ANY_OPCODE_CB_DEF, SpecialCase(
     type=SpecialCaseType.POST_VALIDATION,
-    function=POST_VALIDATION__CB_DEF,
+    function=_POST_VALIDATION__CB_DEF,
 ))
 
 

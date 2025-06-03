@@ -1,16 +1,15 @@
-from typing    import Any
-from PIL       import Image, UnidentifiedImageError
-from lxml      import etree
 from io        import BytesIO
+from lxml      import etree
+from PIL       import Image, UnidentifiedImageError
 from pydub     import AudioSegment
-from pytest    import fixture
+from typing    import Any
 
 from pypenguin.utility import (
-    grepr_dataclass, ValidationConfig, 
-    AA_TYPE, AA_COORD_PAIR, AA_MIN, AA_EQUAL,
+    grepr_dataclass, xml_equal, image_equal, ValidationConfig,
+    AA_TYPE, AA_COORD_PAIR, AA_EQUAL,
     ThanksError,
-    xml_equal, image_equal,
 )
+
 
 EMPTY_SVG_COSTUME_XML = '<svg version="1.1" width="2" height="2" viewBox="-1 -1 2 2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">\n  <!-- Exported by Scratch - http://scratch.mit.edu/ -->\n</svg>'
 EMPTY_SVG_COSTUME_ROTATION_CENTER = (240, 180)
@@ -211,7 +210,7 @@ class SRVectorCostume(SRCostume):
         if not super().__eq__(other):
             return False
         other: SRVectorCostume = other
-        return xml_equal(etree.tostring(self.content), etree.tostring(other.content))
+        return xml_equal(self.content, other.content)
         
     def validate(self, path: list, config: ValidationConfig) -> None:
         """

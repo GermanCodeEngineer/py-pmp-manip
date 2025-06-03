@@ -1,21 +1,23 @@
 from pytest import fixture, raises
 
-from pypenguin.utility            import DeserializationError
-from pypenguin.opcode_info        import InputMode, info_api
 from pypenguin.important_opcodes  import *
+from pypenguin.opcode_info.api    import InputMode
+from pypenguin.opcode_info.data   import info_api
+from pypenguin.utility            import DeserializationError
 
-from pypenguin.core.block          import FRBlock, IRBlock, IRBlockReference, IRInputValue
 from pypenguin.core.block_api      import FIConversionAPI
 from pypenguin.core.block_mutation import (
     FRCustomBlockMutation,
     SRCustomBlockMutation, SRCustomBlockCallMutation, SRCustomBlockArgumentMutation,
 )
+from pypenguin.core.block          import FRBlock, IRBlock, IRInputValue
 from pypenguin.core.custom_block   import (
     SRCustomBlockOpcode, SRCustomBlockArgument, SRCustomBlockArgumentType,
     SRCustomBlockOptype
 )
 
 from tests.core.constants import ALL_FR_BLOCKS_CLEAN, ALL_FR_BLOCK_DATAS, ALL_SR_COMMENTS
+
 
 @fixture
 def ficapi():
@@ -24,7 +26,8 @@ def ficapi():
         block_comments=ALL_SR_COMMENTS,
     )
 
-# FRBlock
+
+
 def test_FRBlock_from_data():
     data = ALL_FR_BLOCK_DATAS["d"]
     frblock = FRBlock.from_data(data, info_api=info_api)
@@ -151,7 +154,7 @@ def test_FRBlock_step(ficapi: FIConversionAPI):
         ),
         "TO": IRInputValue(
             mode=InputMode.BLOCK_AND_TEXT,
-            references=[IRBlockReference(id="g")],
+            references=["g"],
             immediate_block=None,
             text="10",
         ),
@@ -245,13 +248,13 @@ def test_FRBlock_step_cb_call(ficapi: FIConversionAPI):
     assert trblock.inputs       == {
         "a text arg": IRInputValue(
             mode=InputMode.BLOCK_AND_TEXT,
-            references=[IRBlockReference(id="k")],
+            references=["k"],
             immediate_block=None,
             text="",
         ),
         "a bool arg": IRInputValue(
             mode=InputMode.BLOCK_ONLY,
-            references=[IRBlockReference(id="l")],
+            references=["l"],
             immediate_block=None,
             text=None,
         ),

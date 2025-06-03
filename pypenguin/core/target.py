@@ -1,27 +1,27 @@
 from typing      import Any
 from copy        import deepcopy
 from dataclasses import field
-from abc         import ABC, abstractmethod
+from abc         import abstractmethod, ABC
 from uuid        import uuid4, UUID
 
-from pypenguin.utility     import (
-    string_to_sha256,
-    grepr_dataclass, ThanksError, ValidationConfig, 
+from pypenguin.opcode_info.api import OpcodeInfoAPI, DropdownValueKind
+from pypenguin.utility         import (
+    string_to_sha256, grepr_dataclass, ThanksError, ValidationConfig, 
     AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_MIN_LEN, AA_MIN, AA_RANGE, AA_COORD_PAIR, AA_NOT_ONE_OF, 
-    SameValueTwiceError, FirstToSecondConversionError,
+    SameValueTwiceError, ConversionError,
 )
-from pypenguin.opcode_info import OpcodeInfoAPI, DropdownValueKind
 
 from pypenguin.core.asset          import FRCostume, FRSound, SRCostume, SRVectorCostume, SRSound
-from pypenguin.core.block          import FRBlock, IRBlock, SRScript, IRBlockReference
+from pypenguin.core.block_api      import FIConversionAPI, ValidationAPI
 from pypenguin.core.block_mutation import SRCustomBlockMutation
+from pypenguin.core.block          import FRBlock, IRBlock, SRScript
 from pypenguin.core.comment        import FRComment, SRComment
 from pypenguin.core.context        import PartialContext, CompleteContext
 from pypenguin.core.enums          import SRSpriteRotationStyle
-from pypenguin.core.block_api      import FIConversionAPI, ValidationAPI
 from pypenguin.core.monitor        import SRMonitor
 from pypenguin.core.vars_lists     import SRVariable, SRVariable, SRVariable, SRCloudVariable
 from pypenguin.core.vars_lists     import SRList, SRList, SRList
+
 
 @grepr_dataclass(grepr_fields=["is_stage", "name", "variables", "lists", "broadcasts", "custom_vars", "blocks", "comments", "current_costume", "costumes", "sounds", "id", "volume", "layer_order"])
 class FRTarget(ABC):
@@ -137,20 +137,20 @@ class FRTarget(ABC):
                 blocks[block_reference] = FRBlock.from_tuple(block, parent_id=None)
 
         ficapi = FIConversionAPI(blocks=blocks, block_comments=attached_comments)
-        new_blocks: dict["IRBlockReference", "IRBlock"] = {}
+        new_blocks: dict["str", "IRBlock"] = {}
         for block_reference, block in blocks.items():
             new_block = block.step(
                 ficapi = ficapi,
                 info_api  = info_api,
                 own_id    = block_reference,
             )
-            new_blocks[IRBlockReference(id=block_reference)] = new_block
+            new_blocks[block_reference] = new_block
 
         for block_reference in ficapi.scheduled_block_deletions:
-            del new_blocks[IRBlockReference(id=block_reference)]
+            del new_blocks[block_reference]
         
         # Get all top level block ids
-        top_level_block_refs: list[IRBlockReference] = []
+        top_level_block_refs: list[str] = []
         [
             top_level_block_refs.append(block_reference) 
             if block.is_top_level else None for block_reference, block in new_blocks.items()
@@ -204,7 +204,7 @@ class FRTarget(ABC):
                 new_variables.append(SRVariable(name, current_value))
             elif self.is_stage and (len(variable) == 3) and (variable[2] == True):
                 new_variables.append(SRCloudVariable(name, current_value))
-            else: raise FirstToSecondConversionError(f"Invalid variable data {variable}")
+            else: raise ConversionError(f"Invalid variable data {variable}")
         
         new_lists = []
         for list_ in self.lists.values():
@@ -212,7 +212,7 @@ class FRTarget(ABC):
             current_value = list_[1]
             if len(list_) == 2:
                 new_lists.append(SRList(name, current_value))
-            else: raise FirstToSecondConversionError(f"Invalid list data {list_}")
+            else: raise ConversionError(f"Invalid list data {list_}")
         
         return new_variables, new_lists
 

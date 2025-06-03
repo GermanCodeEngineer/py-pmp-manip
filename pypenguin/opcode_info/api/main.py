@@ -11,9 +11,10 @@ from pypenguin.opcode_info.api.dropdown     import DropdownInfo
 from pypenguin.opcode_info.api.special_case import SpecialCase, SpecialCaseType
 
 if TYPE_CHECKING:
-    from pypenguin.core.block import FRBlock, IRBlock, SRBlock
-    from pypenguin.core.block_api import FIConversionAPI, ValidationAPI
+    from pypenguin.core.block_api      import FIConversionAPI, ValidationAPI
     from pypenguin.core.block_mutation import FRMutation, SRMutation
+    from pypenguin.core.block          import FRBlock, IRBlock, SRBlock
+
 
 class OpcodeType(PypenguinEnum):
     """

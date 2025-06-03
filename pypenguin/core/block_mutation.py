@@ -1,15 +1,17 @@
-from json        import loads
 from abc         import ABC, abstractmethod
+from json        import loads
 from typing      import Any, TYPE_CHECKING
-from dataclasses import dataclass, field
+from dataclasses import field
 
-from pypenguin.utility import grepr_dataclass, ThanksError, ValidationConfig, FirstToSecondConversionError, DeserializationError
-from pypenguin.utility import AA_TYPE, AA_HEX_COLOR
+from pypenguin.utility import (
+    grepr_dataclass, ValidationConfig,
+    AA_TYPE, AA_HEX_COLOR,
+    ThanksError, ConversionError, DeserializationError, 
+)
 
+
+if TYPE_CHECKING: from pypenguin.core.block_api import FIConversionAPI
 from pypenguin.core.custom_block import SRCustomBlockOpcode, SRCustomBlockOptype
-
-if TYPE_CHECKING:
-    from pypenguin.core.block_api import FIConversionAPI
 
 @grepr_dataclass(grepr_fields=["tag_name", "children"])
 class FRMutation(ABC):
@@ -115,7 +117,7 @@ class FRCustomBlockArgumentMutation(FRMutation):
             the second representation of the mutation
         """
         if getattr(self, "_argument_name", None) is None:
-            raise FirstToSecondConversionError("Argument name must be set before SR conversion")
+            raise ConversionError("Argument name must be set before SR conversion")
         return SRCustomBlockArgumentMutation(
             argument_name = self._argument_name,
             main_color        = self.color[0],

@@ -1,19 +1,19 @@
 from copy import deepcopy
 
-from pypenguin.opcode_info import DropdownValueKind, InputMode
-from pypenguin.utility     import read_all_files_of_zip
+from pypenguin.opcode_info.api import DropdownValueKind, InputMode
+from pypenguin.utility         import read_all_files_of_zip
 
 from pypenguin.core.asset          import FRCostume, FRSound, SRVectorCostume, SRSound
-from pypenguin.core.block          import (
-    FRBlock, IRBlock, IRBlockReference, IRInputValue,
-    SRBlock, SRScript,
-    SRBlockAndTextInputValue, SRBlockAndDropdownInputValue, SRBlockOnlyInputValue, SRScriptInputValue,
-    SRDropdownValue,
-)
 from pypenguin.core.block_mutation import (
     FRCustomBlockMutation, FRCustomBlockCallMutation,
     FRCustomBlockArgumentMutation,
     SRCustomBlockMutation, SRCustomBlockCallMutation,
+)
+from pypenguin.core.block          import (
+    FRBlock, IRBlock, IRInputValue,
+    SRBlock, SRScript,
+    SRBlockAndTextInputValue, SRBlockAndDropdownInputValue, SRBlockOnlyInputValue, SRScriptInputValue,
+    SRDropdownValue,
 )
 from pypenguin.core.comment        import FRComment, SRComment
 from pypenguin.core.custom_block   import (
@@ -30,8 +30,8 @@ from pypenguin.core.vars_lists     import SRVariable, SRList
 from lxml      import etree
 from io        import BytesIO
 from pydub     import AudioSegment
-from PIL       import Image
 from lxml      import etree
+
 
 ALL_FR_BLOCK_DATAS = {
     "d": {
@@ -485,7 +485,7 @@ ALL_FR_BLOCKS_CLEAN: dict[str, FRBlock] = ALL_FR_BLOCKS | {
 }
 
 ALL_IR_BLOCKS = {
-    IRBlockReference(id="d"): IRBlock(
+    "d": IRBlock(
         opcode="event_broadcast",
         inputs={
             "BROADCAST_INPUT": IRInputValue(
@@ -499,10 +499,10 @@ ALL_IR_BLOCKS = {
         comment=None,
         mutation=None,
         position=(268, 220),
-        next=IRBlockReference(id="b"),
+        next="b",
         is_top_level=True,
     ),
-    IRBlockReference(id="b"): IRBlock(
+    "b": IRBlock(
         opcode="motion_glideto",
         inputs={
             "SECS": IRInputValue(
@@ -513,9 +513,7 @@ ALL_IR_BLOCKS = {
             ),
             "TO": IRInputValue(
                 mode=InputMode.BLOCK_AND_DROPDOWN,
-                references=[
-                    IRBlockReference(id="e"),
-                ],
+                references=["e"],
                 immediate_block=None,
                 text=None,
             ),
@@ -532,7 +530,7 @@ ALL_IR_BLOCKS = {
         next=None,
         is_top_level=False,
     ),
-    IRBlockReference(id="e"): IRBlock(
+    "e": IRBlock(
         opcode="motion_glideto_menu",
         inputs={},
         dropdowns={
@@ -544,7 +542,7 @@ ALL_IR_BLOCKS = {
         next=None,
         is_top_level=False,
     ),
-    IRBlockReference(id="f"): IRBlock(
+    "f": IRBlock(
         opcode="operator_random",
         inputs={
             "FROM": IRInputValue(
@@ -566,9 +564,7 @@ ALL_IR_BLOCKS = {
             ),
             "TO": IRInputValue(
                 mode=InputMode.BLOCK_AND_TEXT,
-                references=[
-                    IRBlockReference(id="g"),
-                ],
+                references=["g"],
                 immediate_block=None,
                 text="10",
             ),
@@ -580,7 +576,7 @@ ALL_IR_BLOCKS = {
         next=None,
         is_top_level=True,
     ),
-    IRBlockReference(id="m"): IRBlock(
+    "m": IRBlock(
         opcode="data_variable",
         inputs={},
         dropdowns={
@@ -592,7 +588,7 @@ ALL_IR_BLOCKS = {
         next=None,
         is_top_level=True,
     ),
-    IRBlockReference(id="h"): IRBlock(
+    "h": IRBlock(
         opcode="procedures_definition_return",
         inputs={},
         dropdowns={},
@@ -616,7 +612,7 @@ ALL_IR_BLOCKS = {
         next=None,
         is_top_level=True,
     ),
-    IRBlockReference(id="g"): IRBlock(
+    "g": IRBlock(
         opcode="operator_join",
         inputs={
             "STRING1": IRInputValue(
@@ -639,22 +635,18 @@ ALL_IR_BLOCKS = {
         next=None,
         is_top_level=False,
     ),
-    IRBlockReference(id="c"): IRBlock(
+    "c": IRBlock(
         opcode="procedures_call",
         inputs={
             "a text arg": IRInputValue(
                 mode=InputMode.BLOCK_AND_TEXT,
-                references=[
-                    IRBlockReference(id="k"),
-                ],
+                references=["k"],
                 immediate_block=None,
                 text="",
             ),
             "a bool arg": IRInputValue(
                 mode=InputMode.BLOCK_ONLY,
-                references=[
-                    IRBlockReference(id="l"),
-                ],
+                references=["l"],
                 immediate_block=None,
                 text=None,
             ),
@@ -675,7 +667,7 @@ ALL_IR_BLOCKS = {
         next=None,
         is_top_level=True,
     ),
-    IRBlockReference(id="l"): IRBlock(
+    "l": IRBlock(
         opcode="operator_falseBoolean",
         inputs={},
         dropdowns={},
@@ -685,7 +677,7 @@ ALL_IR_BLOCKS = {
         next=None,
         is_top_level=False,
     ),
-    IRBlockReference(id="k"): IRBlock(
+    "k": IRBlock(
         opcode="operator_length",
         inputs={
             "STRING": IRInputValue(
@@ -702,7 +694,7 @@ ALL_IR_BLOCKS = {
         next=None,
         is_top_level=False,
     ),
-    IRBlockReference(id="p"): IRBlock(
+    "p": IRBlock(
         opcode="data_listcontents",
         inputs={},
         dropdowns={
@@ -719,7 +711,7 @@ ALL_IR_BLOCKS = {
         inputs={
             "SUBSTACK": IRInputValue(
                 mode=InputMode.SCRIPT,
-                references=[IRBlockReference(id="o")],
+                references=["o"],
                 immediate_block=None,
                 text=None,
             ),

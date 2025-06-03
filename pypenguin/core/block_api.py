@@ -1,12 +1,12 @@
 from dataclasses import field
 
-from pypenguin.utility import grepr_dataclass, FirstToInterConversionError, ValidationError
+from pypenguin.utility import grepr_dataclass, ConversionError, ValidationError
 
-from pypenguin.core.custom_block import SRCustomBlockOpcode
-
-from pypenguin.core.block          import FRBlock, SRBlock, SRScript
 from pypenguin.core.comment        import SRComment
 from pypenguin.core.block_mutation import FRCustomBlockMutation, SRCustomBlockMutation
+from pypenguin.core.block          import FRBlock, SRBlock, SRScript
+from pypenguin.core.custom_block   import SRCustomBlockOpcode
+
 
 @grepr_dataclass(grepr_fields=["blocks", "scheduled_block_deletions"])
 class FIConversionAPI:
@@ -40,7 +40,7 @@ class FIConversionAPI:
         """
         if block_id in self.blocks:
             return self.blocks[block_id]
-        raise FirstToInterConversionError(f"Block with id {repr(block_id)} not found")
+        raise ConversionError(f"Block with id {repr(block_id)} not found")
     
     def schedule_block_deletion(self, block_id: str) -> None:
         """
@@ -69,7 +69,7 @@ class FIConversionAPI:
             if not isinstance(block.mutation, FRCustomBlockMutation): continue
             if block.mutation.proccode == proccode:
                 return block.mutation
-        raise FirstToInterConversionError(f"Mutation of proccode {repr(proccode)} not found")
+        raise ConversionError(f"Mutation of proccode {repr(proccode)} not found")
 
     def get_comment(self, comment_id: str) -> SRComment:
         """
@@ -83,7 +83,7 @@ class FIConversionAPI:
         """
         if comment_id in self.block_comments:
             return self.block_comments[comment_id]
-        raise FirstToInterConversionError(f"Comment with id {repr(comment_id)} not found")
+        raise ConversionError(f"Comment with id {repr(comment_id)} not found")
 
 @grepr_dataclass(grepr_fields=["scripts", "cb_mutations:"])
 class ValidationAPI:

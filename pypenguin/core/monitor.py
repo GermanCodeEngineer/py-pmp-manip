@@ -1,17 +1,17 @@
 from typing      import Any
-from dataclasses import dataclass
 
+from pypenguin.opcode_info.api   import OpcodeInfoAPI
 from pypenguin.utility           import (
     grepr_dataclass, ValidationConfig,
     AA_TYPE, AA_TYPES, AA_DICT_OF_TYPE, AA_COORD_PAIR, AA_BOXED_COORD_PAIR, AA_EQUAL, AA_BIGGER_OR_EQUAL, 
     InvalidOpcodeError, MissingDropdownError, UnnecessaryDropdownError, ThanksError,
 )
-from pypenguin.opcode_info       import OpcodeInfoAPI
 from pypenguin.important_opcodes import *
 
 from pypenguin.core.context  import PartialContext, CompleteContext
 from pypenguin.core.dropdown import SRDropdownValue
 from pypenguin.core.enums    import SRVariableMonitorReadoutMode
+
 
 # TODO: create global config
 STAGE_WIDTH : int = 480

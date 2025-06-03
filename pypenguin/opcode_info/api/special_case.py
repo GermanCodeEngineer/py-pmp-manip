@@ -2,6 +2,7 @@ from typing import Callable
 
 from pypenguin.utility import grepr_dataclass, PypenguinEnum
 
+
 class SpecialCaseType(PypenguinEnum):
     """
     Currently impletented kinds of Special Cases. Documentation is included in the source code

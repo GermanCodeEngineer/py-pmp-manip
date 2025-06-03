@@ -1,18 +1,19 @@
-from pytest import fixture, raises
 from copy   import copy, deepcopy
+from pytest import fixture, raises
 
-from pypenguin.utility            import (
+from pypenguin.opcode_info.api  import DropdownValueKind, OpcodeType, InputType
+from pypenguin.opcode_info.data import info_api
+from pypenguin.utility          import (
     ValidationConfig, 
     TypeValidationError, RangeValidationError, InvalidOpcodeError, InvalidBlockShapeError,
     UnnecessaryInputError, MissingInputError, UnnecessaryDropdownError, MissingDropdownError,
 )
-from pypenguin.opcode_info import info_api, DropdownValueKind, OpcodeType, InputType
 
+from pypenguin.core.block_api import ValidationAPI
 from pypenguin.core.block     import (
     SRScript, SRBlock, SRInputValue, 
     SRBlockAndTextInputValue, SRBlockOnlyInputValue, SRBlockAndDropdownInputValue, SRScriptInputValue,
 )
-from pypenguin.core.block_api import ValidationAPI
 from pypenguin.core.context   import CompleteContext
 from pypenguin.core.dropdown  import SRDropdownValue
 
@@ -20,6 +21,7 @@ from pypenguin.core.dropdown  import SRDropdownValue
 from tests.core.constants import ALL_SR_SCRIPTS
 
 from tests.utility import execute_attr_validation_tests
+
 
 @fixture
 def config():

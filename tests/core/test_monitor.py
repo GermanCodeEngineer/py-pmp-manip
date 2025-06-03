@@ -1,13 +1,14 @@
-from pytest import fixture, raises
 from copy   import copy
+from pytest import fixture, raises
 
+from pypenguin.important_opcodes  import NEW_OPCODE_VAR_VALUE, NEW_OPCODE_LIST_VALUE
+from pypenguin.opcode_info.api    import DropdownValueKind
+from pypenguin.opcode_info.data   import info_api
 from pypenguin.utility            import (
     ValidationConfig, 
     ThanksError, TypeValidationError, InvalidOpcodeError, UnnecessaryDropdownError, 
     MissingDropdownError, RangeValidationError, InvalidValueError,
 )
-from pypenguin.opcode_info        import DropdownValueKind, info_api
-from pypenguin.important_opcodes  import NEW_OPCODE_VAR_VALUE, NEW_OPCODE_LIST_VALUE
 
 from pypenguin.core.context  import PartialContext
 from pypenguin.core.dropdown import SRDropdownValue
@@ -16,28 +17,6 @@ from pypenguin.core.monitor  import FRMonitor, SRMonitor, SRVariableMonitor, SRL
 
 from tests.utility import execute_attr_validation_tests
 
-@fixture
-def config():
-    return ValidationConfig()
-
-@fixture
-def context():
-    my_variable = (DropdownValueKind.VARIABLE, "globl")
-    my_sprite_variable = (DropdownValueKind.VARIABLE, "locl")
-    my_list = (DropdownValueKind.LIST, "globl")
-    my_sprite_list = (DropdownValueKind.LIST, "locl")
-    return PartialContext(
-        scope_variables=[my_variable, my_sprite_variable],
-        scope_lists=[my_list, my_sprite_list],
-
-        all_sprite_variables=[my_variable],
-
-        sprite_only_variables=[my_sprite_variable],
-        sprite_only_lists=[my_sprite_list],
-
-        other_sprites=[(DropdownValueKind.SPRITE, "Sprite1")],
-        backdrops=[(DropdownValueKind.BACKDROP, "intro"), (DropdownValueKind.BACKDROP, "scene1")],
-    )
 
 ALL_FR_MONITOR_DATAS = [
     { # [0]
@@ -422,6 +401,28 @@ ALL_GLOBAL_SR_MONITORS: list[SRMonitor] = [
 
 SPRITE_NAMES = ["Sprite1"]
 
+@fixture
+def config():
+    return ValidationConfig()
+
+@fixture
+def context():
+    my_variable = (DropdownValueKind.VARIABLE, "globl")
+    my_sprite_variable = (DropdownValueKind.VARIABLE, "locl")
+    my_list = (DropdownValueKind.LIST, "globl")
+    my_sprite_list = (DropdownValueKind.LIST, "locl")
+    return PartialContext(
+        scope_variables=[my_variable, my_sprite_variable],
+        scope_lists=[my_list, my_sprite_list],
+
+        all_sprite_variables=[my_variable],
+
+        sprite_only_variables=[my_sprite_variable],
+        sprite_only_lists=[my_sprite_list],
+
+        other_sprites=[(DropdownValueKind.SPRITE, "Sprite1")],
+        backdrops=[(DropdownValueKind.BACKDROP, "intro"), (DropdownValueKind.BACKDROP, "scene1")],
+    )
 
 
 

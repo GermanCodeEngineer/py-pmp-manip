@@ -1,8 +1,7 @@
-from typing      import Any
-from dataclasses import dataclass
+from typing import Any
 
-from pypenguin.utility     import grepr_dataclass, ValidationConfig, AA_TYPE, AA_JSON_COMPATIBLE, InvalidDropdownValueError
-from pypenguin.opcode_info import DropdownType, DropdownValueKind
+from pypenguin.opcode_info.api import DropdownType, DropdownValueKind
+from pypenguin.utility         import grepr_dataclass, ValidationConfig, AA_TYPE, AA_JSON_COMPATIBLE, InvalidDropdownValueError
 
 from pypenguin.core.context import PartialContext, CompleteContext
 
