@@ -235,8 +235,12 @@ class SRVectorCostume(SRCostume):
         Returns:
             the FRCostume
         """
-        file_bytes: bytes = etree.tostring(self.content)
-        md5 = generate_md5(file_bytes)
+        file_bytes: bytes = etree.tostring(self.content, method="c14n")
+        md5 = generate_md5(file_bytes) 
+        # I am using the md5 hash here(guessed by "md5ext"). 
+        # I do not know which hashing method Scratch uses. 
+        # Scratch md5ext and mine do NOT match. I have uploaded generated project multiple times
+        # and there don't seem to be any consequences.
         return (FRCostume(
             name              = self.name,
             asset_id          = md5, 
@@ -306,7 +310,10 @@ class SRBitmapCostume(SRCostume):
         self.content.save(bytes_io, format=self.file_extension)
         file_bytes = bytes_io.getvalue()
         md5 = generate_md5(file_bytes)
-
+        # I am using the md5 hash here(guessed by "md5ext"). 
+        # I do not know which hashing method Scratch uses. 
+        # Scratch md5ext and mine do NOT match. I have uploaded generated project multiple times
+        # and there don't seem to be any consequences.
         return (FRCostume(
             name              = self.name,
             asset_id          = md5, 
@@ -327,25 +334,6 @@ class SRSound:
     name: str
     file_extension: str # i've only seen "wav", "mp3", "ogg"; others might work
     content: AudioSegment
-    
-    #def __eq__(self, other) -> bool:
-    #    """
-    #    Checks whether a SRSound is equal to another.
-    #    Requires same audio segment bytes. Ignores wrong identity of content.
-    #
-    #    Args:
-    #        other: the object to compare to
-    #
-    #    Returns:
-    #        bool: wether self is equal to other
-    #    """
-    #    if not isinstance(other, SRSound):
-    #        return NotImplemented
-    #    return (
-    #            (self.name == other.name)
-    #        and (self.file_extension == other.file_extension)
-    #        and audio_segment_equal(self.content, other.content)
-    #    )
     
     def validate(self, path: list, config: ValidationConfig) -> None:
         """
