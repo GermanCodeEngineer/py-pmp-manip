@@ -228,9 +228,9 @@ class SRVectorCostume(SRCostume):
         AA_EQUAL(self, path, "file_extension", "svg")
         AA_TYPE(self, path, "content", etree._Element)
     
-    def to_first(self) -> tuple["FRCostume", bytes]: # TODO: test
+    def to_first(self) -> tuple["FRCostume", bytes]:
         """
-        Converts a SRVectorCostume into a FRCostume 
+        Converts a SRVectorCostume into a FRCostume
         
         Returns:
             the FRCostume
@@ -299,9 +299,9 @@ class SRBitmapCostume(SRCostume):
         AA_TYPE(self, path, "content", Image.Image)
         AA_TYPE(self, path, "has_double_resolution", bool)
 
-    def to_first(self) -> tuple["FRCostume", bytes]: # TODO: test
+    def to_first(self) -> tuple["FRCostume", bytes]:
         """
-        Converts a SRBitmapCostume into a FRCostume 
+        Converts a SRBitmapCostume into a FRCostume
         
         Returns:
             the FRCostume
@@ -352,6 +352,30 @@ class SRSound:
         AA_TYPE(self, path, "name", str)
         AA_TYPE(self, path, "file_extension", str)
         AA_TYPE(self, path, "content", AudioSegment)
+    
+    def to_first(self) -> tuple["FRSound", bytes]:
+        """
+        Converts a SRSound into a FRSound
+        
+        Returns:
+            the FRSound
+        """
+        bytes_io = BytesIO()
+        self.content.export(bytes_io, format=self.file_extension)
+        file_bytes = bytes_io.getvalue()
+        md5 = generate_md5(file_bytes)
+        # I am using the md5 hash here(guessed by "md5ext"). 
+        # I do not know which hashing method Scratch uses. 
+        # Scratch md5ext and mine do NOT match. I have uploaded generated project multiple times
+        # and there don't seem to be any consequences.
+        return (FRSound(
+            name              = self.name,
+            asset_id          = md5, 
+            data_format       = self.file_extension, 
+            md5ext            = f"{md5}.{self.file_extension}", 
+            rate              = self.content.frame_rate,
+            sample_count      = len(self.content.get_array_of_samples()),
+        ), file_bytes)
  
 
 __all__ = ["FRCostume", "SRVectorCostume", "SRBitmapCostume", "FRSound", "SRCostume", "SRSound"]

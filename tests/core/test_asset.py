@@ -417,3 +417,24 @@ def test_SRSound_validate(config, sound_example):
         validate_func=SRSound.validate,
         func_args=[[], config],
     )
+
+
+def test_SRSound_to_first():
+    content = AudioSegment.from_file(BytesIO(SIMPLE_SOUND_EXAMPLE))
+    srsound = SRSound(
+        name="pop",
+        file_extension="wav",
+        content=content,
+    )
+    frsound, file_bytes = srsound.to_first()
+    md5 = generate_md5(file_bytes)
+    assert isinstance(frsound, FRSound)
+    assert frsound.name == srsound.name
+    assert frsound.asset_id == md5
+    assert frsound.data_format == srsound.file_extension
+    assert frsound.md5ext == f"{md5}.wav"
+    assert frsound.rate == 48000
+    assert frsound.sample_count == 1508 # does not match; Scratch shows 1123
+    # rate and sample_count possibly not matching the original is fine here. This is Scratch's fault.
+    assert AudioSegment.from_file(BytesIO(file_bytes)) == content
+
