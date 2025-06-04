@@ -1,6 +1,6 @@
 opcodes = {
     "looks_sayforsecs": {
-        "type": "intruction",
+        "type": "instruction",
         "category": "Looks",
         "newOpcode": "say (MESSAGE) for (SECONDS) seconds",
         "inputTypes": {"MESSAGE": "text", "SECONDS": "number"},
@@ -15,7 +15,7 @@ opcodes = {
         "optionTypes": {},
     },
     "looks_thinkforsecs": {
-        "type": "intruction",
+        "type": "instruction",
         "category": "Looks",
         "newOpcode": "think (MESSAGE) for (SECONDS) seconds",
         "inputTypes": {"MESSAGE": "text", "SECONDS": "number"},
@@ -190,7 +190,7 @@ opcodes = {
     },
     "looks_getEffectValue": {
         "type": "stringReporter",
-        "catgory": "Looks",
+        "category": "Looks",
         "newOpcode": "[EFFECT] sprite effect",
         "inputTypes": {},
         "optionTypes": {"EFFECT": "sprite effect"},
@@ -198,7 +198,7 @@ opcodes = {
     },
     "looks_tintColor": {
         "type": "stringReporter",
-        "catgeory": "Looks",
+        "category": "Looks",
         "newOpcode": "tint color",
         "inputTypes": {},
         "optionTypes": {},

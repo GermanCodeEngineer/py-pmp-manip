@@ -1,12 +1,12 @@
 from pypenguin_old.utility import Platform
 
-from optimize.costumes_sounds  import translateCostumes, translateSounds
-from optimize.variables_lists  import translateVariables, translateLists
-from optimize.blocks_scripts   import getCustomBlockMutations, prepareBlocks, nestScripts, finishScripts
-from optimize.comments         import translateComment
-from optimize.monitors         import translateMonitors
-from optimize.scratch_adaption import adaptProject
-from database                  import optimizeOptionValue
+from pypenguin_old.optimize.costumes_sounds  import translateCostumes, translateSounds
+from pypenguin_old.optimize.variables_lists  import translateVariables, translateLists
+from pypenguin_old.optimize.blocks_scripts   import getCustomBlockMutations, prepareBlocks, nestScripts, finishScripts
+from pypenguin_old.optimize.comments         import translateComment
+from pypenguin_old.optimize.monitors         import translateMonitors
+from pypenguin_old.optimize.scratch_adaption import adaptProject
+from pypenguin_old.database                  import optimizeOptionValue
 
 def optimizeProjectJSON(projectData, sourcePlatform):
     if sourcePlatform == Platform.SCRATCH:
@@ -21,7 +21,7 @@ def optimizeProjectJSON(projectData, sourcePlatform):
         floatingCommentDatas = [] # The comments that aren't connected to any blocks
         attachedCommentDatas = {}
         for commentId, commentData in commentDatas.items():
-            if commentData["blockId"] is None: # No Block connection
+            if commentData["blockId"] == None: # No Block connection
                 floatingCommentDatas.append(translateComment(data=commentData))
             else:
                 attachedCommentDatas[commentId] = translateComment(data=commentData)
@@ -69,7 +69,7 @@ def optimizeProjectJSON(projectData, sourcePlatform):
         data=projectData["monitors"],
         spriteNames=spriteNames,
     )
-    if stageData["textToSpeechLanguage"] is None:
+    if stageData["textToSpeechLanguage"] == None:
         newTextToSpeechLanguage = None
     else:
         newTextToSpeechLanguage = optimizeOptionValue(
@@ -88,7 +88,7 @@ def optimizeProjectJSON(projectData, sourcePlatform):
         "monitors"            : newMonitorDatas,
         "extensionData"       : projectData["extensionData"],
         "extensions"          : projectData["extensions"],
-        "credit"              : "Made using https://github.com/Fritzforcode/pypenguin_old"
+        "credit"              : "Made using https://github.com/Fritzforcode/PyPenguin"
     }
     if projectData.get("extensionURLs", {}) != {}:
         newData["extensionURLs"] = projectData["extensionURLs"]

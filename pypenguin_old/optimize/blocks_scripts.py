@@ -36,9 +36,9 @@ def finishBlock(data):
     newInputDatas = {}
     for inputId, inputData in data["inputs"].items():
         newInputData = copy.deepcopy(inputData)
-        if inputData.get("block") is not None:
+        if inputData.get("block") != None:
             newInputData["block"]  = finishBlock(data=inputData["block"])
-        if inputData.get("blocks") is not None:
+        if inputData.get("blocks") != None:
             newInputData["blocks"] = [finishBlock(data=subBlockData) for subBlockData in inputData["blocks"]]
         if   isinstance(inputData.get("option"), dict):
             newInputData["option"] = finishBlock(data=inputData["option"])
@@ -137,7 +137,7 @@ def nestBlockRecursively(blockDatas, blockId):
                 blockId=reference,
             ))
 
-        if inputData["listBlock"] is not None:
+        if inputData["listBlock"] != None:
             subBlockDatas.insert(0, [inputData["listBlock"]])
         
         blockCount = len(subBlockDatas)
@@ -179,7 +179,7 @@ def nestBlockRecursively(blockDatas, blockId):
     
     newBlockData = blockData | {"inputs": newInputDatas}
     newBlockDatas = [newBlockData]
-    if blockData["_info_"]["next"] is not None:
+    if blockData["_info_"]["next"] != None:
         newBlockDatas += nestBlockRecursively(
             blockDatas=blockDatas,
             blockId=blockData["_info_"]["next"],
@@ -333,7 +333,7 @@ def prepareBlocks(data, commentDatas, mutationDatas):
             newBlockData["_info_"]["position"] = [blockData["x"], blockData["y"]]
         if not isListBlock and "comment" in blockData:
             newBlockData["comment"] = commentDatas[blockData["comment"]]
-        if newBlockData is not None:
+        if newBlockData != None:
             newBlockDatas[blockId] = newBlockData
     blockDatas = newBlockDatas
     newBlockDatas = {}
@@ -482,7 +482,7 @@ def prepareListBlock(data, blockId, commentDatas):
         if commentData["_info_"]["block"] == blockId:
             blockCommentData = commentData
             break
-    if blockCommentData is not None:
+    if blockCommentData != None:
         newData["comment"] = blockCommentData
         
     return newData

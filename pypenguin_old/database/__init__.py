@@ -24,7 +24,7 @@ from pypenguin_old.database.beautiful.link_bitwise             import opcodes as
 
 from pypenguin_old.database.beautiful.pm_json                  import opcodes as pm_json
 
-#from pypenguin_old.utility                           import flipKeysAndValues, removeDuplicates
+#from pypenguin_old.pypenguin_old.utility                           import flipKeysAndValues, removeDuplicates
 from pypenguin_old.utility import flipKeysAndValues, removeDuplicates
 
 import functools, re
@@ -521,48 +521,48 @@ optionTypeDatabase = {
         "valueSegments"  : [],
     },
     "video sensing target": {
-        "directValues"   : ["this sprite", "stage"],
         "oldDirectValues": ["this sprite", "Stage"],
+        "directValues"   : ["this sprite", "stage"],
         "valueSegments"  : [],
     },
     "video state": {
-        "directValues"   : ["on", "off", "on flipped"],
         "oldDirectValues": ["on", "off", "on-flipped"],
+        "directValues"   : ["on", "off", "on flipped"],
         "valueSegments"  : [],
     },
     "text to speech voice": {
-        "directValues"   : ["alto", "tenor", "squeak", "giant", "kitten", "google"],
         "oldDirectValues": ["ALTO", "TENOR", "SQUEAK", "GIANT", "KITTEN", "GOOGLE"],
+        "directValues"   : ["alto", "tenor", "squeak", "giant", "kitten", "google"],
         "valueSegments"  : [],
     },
     "text to speech language": {
-        "directValues"   : ["Arabic (ar)", "Chinese (Mandarin) (zh-cn)", "Danish (da)", "Dutch (nl)", "English (en)", "French (fr)", "German (de)", "Hindi (hi)", "Icelandic (is)", "Italian (it)", "Japanese (ja)", "Korean (ko)", "Norwegian (nb)", "Polish (pl)", "Portuguese (Brazilian) (pt-br)", "Portuguese (pt)", "Romanian (ro)", "Russian (ru)", "Spanish (es)", "Spanish (Latin American) (es-419)", "Swedish (sv)", "Turkish (tr)", "Welsh (cy)"],
         "oldDirectValues": ["ar", "zh-cn", "da", "nl", "en", "fr", "de", "hi", "is", "it", "ja", "ko", "nb", "pl", "pt-br", "pt", "ro", "ru", "es", "es-419", "sv", "tr", "cy"],
+        "directValues"   : ["Arabic (ar)", "Chinese (Mandarin) (zh-cn)", "Danish (da)", "Dutch (nl)", "English (en)", "French (fr)", "German (de)", "Hindi (hi)", "Icelandic (is)", "Italian (it)", "Japanese (ja)", "Korean (ko)", "Norwegian (nb)", "Polish (pl)", "Portuguese (Brazilian) (pt-br)", "Portuguese (pt)", "Romanian (ro)", "Russian (ru)", "Spanish (es)", "Spanish (Latin American) (es-419)", "Swedish (sv)", "Turkish (tr)", "Welsh (cy)"],
         "valueSegments"  : [],
     },
     "translate language": {
-        "directValues"   : ["Amharic (am)", "Arabic (ar)", "Azerbaijani (az)", "Basque (eu)", "Bulgarian (bg)", "Catalan (ca)", "Chinese (Mandarin) (zh-cn)", "Chinese (Traditional) (zh-tw)", "Croatian (hr)", "Czech (cs)", "Danish (da)", "Dutch (nl)", "English (en)", "Estonian (en)", "Finnish (fi)", "French (fr)", "Galician (gl)", "German (de)", "Greek (el)", "Hebrew (he)", "Hungarian (hu)", "Icelandic (is)", "Indonesian (id)", "Irish (ga)", "Italian (it)", "Japanese (ja)", "Korean (ko)", "Lativan (lv)", "Lithuanian (lt)", "Maori (mi)", "Norwegian (nb)", "Persian (fa)", "Polish (pl)", "Portuguese (pt)", "Romanian (ro)", "Russian (ru)", "Scots Gaelic (gd)", "Serbian (sr)", "Slovak (sk)", "Slovenian (sl)", "Spanish (es)", "Swedish (sv)", "Thai (th)", "Turkish (tr)", "Ukrainian (uk)", "Viatnamese (vi)",  "Welsh (cy)", "Zulu (zu)"],
         "oldDirectValues": ["am", "ar", "az", "eu", "bg", "ca", "zh-cn", "zh-tw", "hr", "cs", "da", "nl", "en", "et", "fi", "fr", "gl", "de", "el", "he", "hu", "is", "id", "ga", "it", "ja", "ko", "lv", "lt", "mi", "nb", "fa", "pl", "pt", "ro", "ru", "gd", "sr", "sk", "sl", "es", "sv", "th", "tr", "uk", "vi", "cy", "zu"],
+        "directValues"   : ["Amharic (am)", "Arabic (ar)", "Azerbaijani (az)", "Basque (eu)", "Bulgarian (bg)", "Catalan (ca)", "Chinese (Mandarin) (zh-cn)", "Chinese (Traditional) (zh-tw)", "Croatian (hr)", "Czech (cs)", "Danish (da)", "Dutch (nl)", "English (en)", "Estonian (en)", "Finnish (fi)", "French (fr)", "Galician (gl)", "German (de)", "Greek (el)", "Hebrew (he)", "Hungarian (hu)", "Icelandic (is)", "Indonesian (id)", "Irish (ga)", "Italian (it)", "Japanese (ja)", "Korean (ko)", "Lativan (lv)", "Lithuanian (lt)", "Maori (mi)", "Norwegian (nb)", "Persian (fa)", "Polish (pl)", "Portuguese (pt)", "Romanian (ro)", "Russian (ru)", "Scots Gaelic (gd)", "Serbian (sr)", "Slovak (sk)", "Slovenian (sl)", "Spanish (es)", "Swedish (sv)", "Thai (th)", "Turkish (tr)", "Ukrainian (uk)", "Viatnamese (vi)",  "Welsh (cy)", "Zulu (zu)"],
         "valueSegments"  : [],
     },
     "makey key": {
-        "directValues"   : ["space", "up arrow", "down arrow", "right arrow", "left arrow", "w", "a", "s", "d", "f", "g"],
         "oldDirectValues": ["SPACE", "UP",       "DOWN",       "RIGHT",       "LEFT",       "w", "a", "s", "d", "f", "g"],
+        "directValues"   : ["space", "up arrow", "down arrow", "right arrow", "left arrow", "w", "a", "s", "d", "f", "g"],
         "valueSegments"  : [],
     },
     "makey sequence": {
-        "directValues"   : ["left up right", "right up left", "left right", "right left", "up down", "down up", "up right down left", "up left down right", "up up down down left right left right"],
         "oldDirectValues": ["LEFT UP RIGHT", "RIGHT UP LEFT", "LEFT RIGHT", "RIGHT LEFT", "UP DOWN", "DOWN UP", "UP RIGHT DOWN LEFT", "UP LEFT DOWN RIGHT", "UP UP DOWN DOWN LEFT RIGHT LEFT RIGHT"],
+        "directValues"   : ["left up right", "right up left", "left right", "right left", "up down", "down up", "up right down left", "up left down right", "up up down down left right left right"],
         "valueSegments"  : [],
     },
     "read file mode": {
-        "directValues"   : ["text", "data: URL", "array buffer"],
         "oldDirectValues": ["text", "url",       "buffer"      ],
+        "directValues"   : ["text", "data: URL", "array buffer"],
         "valueSegments"  : [],
     },
     "file selector mode": {
-        "directValues"   : ["show modal", "open selector immediately"],
         "oldDirectValues": ["modal",      "selector"                 ],
+        "directValues"   : ["show modal", "open selector immediately"],
         "valueSegments"  : [],
     },
 }

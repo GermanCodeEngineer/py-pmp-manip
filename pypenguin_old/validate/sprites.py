@@ -1,9 +1,9 @@
-from database import defaultCostume
-from validate.errors import spriteNameError, layerOrderError, equalCostumeName, equalSoundName, currentCostumeError, doubleCustomBlockDefinitionError
-from validate.constants import validateSchema, formatError, stageSchema, spriteSchema
-from validate.costumes_sounds import validateCostume, validateSound
-from validate.blocks_scripts import validateScript, validateScriptCustomBlocks
-from validate.comments import validateComment
+from pypenguin_old.database import defaultCostume
+from pypenguin_old.validate.errors import spriteNameError, layerOrderError, equalCostumeName, equalSoundName, currentCostumeError, doubleCustomBlockDefinitionError
+from pypenguin_old.validate.constants import validateSchema, formatError, stageSchema, spriteSchema
+from pypenguin_old.validate.costumes_sounds import validateCostume, validateSound
+from pypenguin_old.validate.blocks_scripts import validateScript, validateScriptCustomBlocks
+from pypenguin_old.validate.comments import validateComment
 
 def validateSprite(path, data, context):
     i = path[-1]

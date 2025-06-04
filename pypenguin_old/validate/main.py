@@ -1,9 +1,9 @@
-from validate.constants import validateSchema, formatError, projectSchema
-from validate.errors import doubleVariableDefinitionError, doubleListDefinitionError, equalSpriteNameError
-from validate.variables_lists import validateVariable, validateList
-from validate.sprites import validateSprite
-from validate.monitors import validateMonitor
-from database import defaultCostume
+from pypenguin_old.validate.constants import validateSchema, formatError, projectSchema
+from pypenguin_old.validate.errors import doubleVariableDefinitionError, doubleListDefinitionError, equalSpriteNameError
+from pypenguin_old.validate.variables_lists import validateVariable, validateList
+from pypenguin_old.validate.sprites import validateSprite
+from pypenguin_old.validate.monitors import validateMonitor
+from pypenguin_old.database import defaultCostume
 import copy
 
 def validateProject(projectData):

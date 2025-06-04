@@ -1,4 +1,4 @@
-from pypenguin_old.utility import removeDuplicates, string_to_sha256
+from pypenguin_old.utility import removeDuplicates, stringToToken
 
 from pypenguin_old.database import inputDefault, inputTextDefault, optionDefault, deoptimizeOptionValue, getDeoptimizedOpcode, getInputType, getOptionType
 
@@ -22,7 +22,7 @@ def findBlockBroadcastMessages(data):
                 broadcastMessages.append(inputData["text"])
 
         if "block" in inputData:
-            if inputData["block"] is not None:
+            if inputData["block"] != None:
                 broadcastMessages += findBlockBroadcastMessages(data=inputData["block"])
     
     if "options" not in data:
@@ -46,6 +46,6 @@ def generateBroadcasts(data):
             optionValue=broadcastMessage,
             optionType="broadcast",
         )
-        newDatas[broadcastMessage] = string_to_sha256(broadcastMessage)
+        newDatas[broadcastMessage] = stringToToken(broadcastMessage)
     # Because all broadcast messages are for all sprites (None=Stage)
     return newDatas

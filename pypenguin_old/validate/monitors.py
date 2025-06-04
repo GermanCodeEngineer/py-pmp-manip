@@ -1,7 +1,7 @@
-from validate.constants import validateSchema, monitorSchema, formatError
-from validate.blocks_scripts import validateOptions
-from database import getDeoptimizedOpcode
-from validate.errors import monitorSpriteNameError, missingMonitorAttributeError, monitorSliderRangeError
+from pypenguin_old.validate.constants import validateSchema, monitorSchema, formatError
+from pypenguin_old.validate.blocks_scripts import validateOptions
+from pypenguin_old.database import getDeoptimizedOpcode
+from pypenguin_old.validate.errors import monitorSpriteNameError, missingMonitorAttributeError, monitorSliderRangeError
 
 def validateMonitor(path, data, contexts):
     validateSchema(pathToData=path, data=data, schema=monitorSchema)

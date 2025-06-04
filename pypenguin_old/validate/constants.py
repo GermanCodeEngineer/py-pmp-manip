@@ -1,5 +1,5 @@
-from database import getAllMonitorOpcodes
-from validate.errors import *
+from pypenguin_old.database import getAllMonitorOpcodes
+from pypenguin_old.validate.errors import *
 
 allowedMenuOpcodes = getAllMonitorOpcodes()
 textToSpeechLanguages = [
@@ -334,7 +334,7 @@ OPCODE_DOCS          = "(SOON)"
 
 def getHelpLink(path):
     def combine(file, section):
-        #string = f"github.com/Fritzforcode/pypenguin_old/blob/main/docs/{file}.md"
+        #string = f"github.com/Fritzforcode/PyPenguin/blob/main/docs/{file}.md"
         string = f"docs/{file}.md"
         if section != None:
             string += "#" + section

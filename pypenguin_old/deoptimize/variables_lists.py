@@ -1,4 +1,4 @@
-from pypenguin_old.utility import string_to_sha256
+from pypenguin_old.utility import stringToToken
 
 
 def translateVariables(data, spriteNames):
@@ -12,7 +12,7 @@ def translateVariables(data, spriteNames):
             localVariableDatas = spriteData["localVariables"]
         for variableData in localVariableDatas:
             newVariableData = translateVariable(data=variableData, spriteName=spriteName)
-            token = string_to_sha256(variableData["name"], secondary=spriteName)
+            token = stringToToken(variableData["name"], spriteName=spriteName)
             newData[spriteName][token] = newVariableData
     return newData
 
@@ -20,7 +20,7 @@ def translateVariable(data, spriteName):
     name = data["name"]
     newData = [name, data["currentValue"]]
 
-    if spriteName is None: # stage
+    if spriteName == None: # stage
         if data["isCloudVariable"]: # cloud var
             newData.append(True)
     return newData
@@ -36,7 +36,7 @@ def translateLists(data, spriteNames):
             localListDatas = spriteData["localLists"]
         for listData in localListDatas:
             newListData = translateList(data=listData)
-            token = string_to_sha256(listData["name"], secondary=spriteName)
+            token = stringToToken(listData["name"], spriteName=spriteName)
             newData[spriteName][token] = newListData
     return newData
 

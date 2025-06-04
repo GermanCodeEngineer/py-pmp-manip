@@ -1,4 +1,4 @@
-from pypenguin_old.utility import string_to_sha256
+from pypenguin_old.utility import stringToToken
 from pypenguin_old.database import getDeoptimizedOpcode, getDeoptimizedOptionId
 
 def translateMonitor(data):
@@ -22,10 +22,10 @@ def translateMonitor(data):
 
     opcodeMainPart     = "_".join(opcode.split("_")[1:]) # e.g. "motion_xposition" -> "xposition"
 
-    if data["spriteName"] is None:
-        spriteToken = string_to_sha256("_stage_")
+    if data["spriteName"] == None:
+        spriteToken = stringToToken("_stage_")
     else:
-        spriteToken = string_to_sha256(data["spriteName"])
+        spriteToken = stringToToken(data["spriteName"])
 
     match opcode:
         case "motion_xposition"|"motion_yposition"|"motion_direction"|"looks_sayWidth"|"looks_sayHeight"|"looks_stretchGetX"|"looks_stretchGetY"|"looks_getSpriteVisible"|"getSpriteVisible"|"looks_layersGetLayer"|"looks_size"|"looks_tintColor"|"sound_volume"|"sensing_getdragmode":
@@ -65,9 +65,9 @@ def translateMonitor(data):
         case 6:
             id =               f"{opcode}"
         case "variable":
-            id = string_to_sha256(parameter, secondary=data["spriteName"])
+            id = stringToToken(parameter, spriteName=data["spriteName"])
         case "list":
-            id = string_to_sha256(parameter, secondary=data["spriteName"])
+            id = stringToToken(parameter, spriteName=data["spriteName"])
 
     if opcode == "data_listcontents": width, height = data["size"]
     else                            : width, height = [0, 0]

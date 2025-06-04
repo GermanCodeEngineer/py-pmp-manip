@@ -50,7 +50,7 @@ opcodes = {
         "category": "Sensing",
         "newOpcode": "[COORDINATE] of touching ([OBJECT]) point",
         "inputTypes": {"OBJECT": "mouse || other sprite"},
-        "optionTypes": {"COORDINATE": "coordinate"},
+        "optionTypes": {"COORDINATE": "x|y"},
         "optionTranslation": {"XY": "COORDINATE"},
         "menus": [{"new": "OBJECT", "outer": "SPRITE", "inner": "DISTANCETOMENU", "menuOpcode": "sensing_distancetomenu"}],
     },

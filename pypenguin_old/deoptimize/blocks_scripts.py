@@ -1,12 +1,11 @@
 import json, copy
 
-from pypenguin_old.utility import numberToLiteral, BlockSelector, generateRandomToken, parseCustomOpcode, string_to_sha256, LocalStringToToken, Platform, getSelectors, editDataStructure, removeDuplicates, pp
+from pypenguin_old.utility import numberToLiteral, BlockSelector, generateRandomToken, parseCustomOpcode, stringToToken, LocalStringToToken, Platform, getSelectors, editDataStructure, removeDuplicates, pp
 from pypenguin_old.deoptimize.options import translateOptions
 from pypenguin_old.deoptimize.comments import translateComment
 from pypenguin_old.database import *
 
 def standardizeScripts(data):
-    pp(data)
     def standardizeBlock(data):
         opcode = getDeoptimizedOpcode(opcode=data["opcode"])
         if opcode == "procedures_call":
@@ -156,19 +155,19 @@ def prepareBlock(data, parentOpcode, context, position=None, isOption=False, inp
             inputData["option"] = ["value", inputData["text"]]
             del inputData["text"]
         newInputData = copy.deepcopy(inputData)
-        if inputData.get("block") is not None:
+        if inputData.get("block") != None:
             newInputData["block"]  = prepareBlock(
                 data=inputData["block"],
                 parentOpcode=data["opcode"],
                 context=context,
             )
-        if inputData.get("blocks") is not None:
+        if inputData.get("blocks") != None:
             newInputData["blocks"] = [prepareBlock(
                 data=subBlockData,
                 parentOpcode=data["opcode"],
                 context=context,
             ) for subBlockData in inputData["blocks"]]
-        if inputData.get("option") is not None:
+        if inputData.get("option") != None:
             if opcode == "procedures_call":
                 inputType = "text" if arguments[inputId]==str else ("boolean" if arguments[inputId]==bool else None)
             else:
@@ -211,7 +210,7 @@ def prepareBlock(data, parentOpcode, context, position=None, isOption=False, inp
         "options": newOptionDatas,
         "_info_" : {
             "position": position,
-            "topLevel": position is not None,
+            "topLevel": position != None,
         },
     }
     return newData
@@ -229,7 +228,7 @@ def flattenScripts(data):
 def flattenBlocks(data, placementPath, parentId=None, firstId=None):
     range_ = range(len(data))
     blockIds = [BlockSelector() for i in range_]
-    if firstId is not None:
+    if firstId != None:
         blockIds[0] = firstId
     newBlockDatas = {}
     for i, blockData in enumerate(data):
@@ -259,7 +258,7 @@ def flattenBlock(data, blockId, parentId, nextId, placementPath):
     for inputId, inputData in data["inputs"].items():
         references = []
         listBlock = None
-        if inputData.get("block") is not None:
+        if inputData.get("block") != None:
             if inputData["block"]["opcode"] in [
                 getOptimizedOpcode(opcode="special_variable_value"),
                 getOptimizedOpcode(opcode="special_list_value"),
@@ -290,7 +289,7 @@ def flattenBlock(data, blockId, parentId, nextId, placementPath):
                 parentId=blockId,
                 firstId=subBlockId,
             )
-        if inputData.get("option") is not None:
+        if inputData.get("option") != None:
             subBlockId = BlockSelector()
             references.append(subBlockId)
             newBlockDatas |= flattenBlock(
@@ -358,7 +357,7 @@ def restoreProcedureDefinitionBlock(data, blockId, commentId):
         "y": position[1],
         "_placementPath_": data["_placementPath_"],
     }
-    if commentId is not None:
+    if commentId != None:
         definitionData["comment"] = commentId
     prototypeData = {
         "opcode"  : "procedures_prototype",
@@ -413,7 +412,7 @@ def restoreBlocks(data, spriteName):
     for blockId, blockData in data.items():
         opcode = getDeoptimizedOpcode(opcode=blockData["opcode"])
         
-        if blockData.get("comment") is None:
+        if blockData.get("comment") == None:
             newCommentId = None
         else:
             newCommentData = translateComment(
@@ -464,12 +463,12 @@ def restoreBlocks(data, spriteName):
                 "topLevel": blockData["_info_"]["topLevel"],
                 "_placementPath_": blockData["_placementPath_"],
             }
-            if blockData["_info_"]["position"] is not None:
+            if blockData["_info_"]["position"] != None:
                 position = blockData["_info_"]["position"]
                 newBlockData |= {"x": position[0], "y": position[1]}
         
-        if newBlockData is not None:
-            if newCommentId is not None:
+        if newBlockData != None:
+            if newCommentId != None:
                 newBlockData["comment"] = newCommentId
             newBlockDatas[blockId] = newBlockData
     return newBlockDatas, newCommentDatas
@@ -498,7 +497,7 @@ def restoreInputs(data, opcode, spriteName, blockData):
             )
         
         subBlocks     = inputData["references"]
-        if inputData["listBlock"] is not None:
+        if inputData["listBlock"] != None:
             subBlocks.insert(0, restoreListBlock(
                 data=inputData["listBlock"],
                 spriteName=spriteName,
@@ -509,7 +508,7 @@ def restoreInputs(data, opcode, spriteName, blockData):
                 magicNumber = getInputMagicNumber(inputType=inputType)
                 if inputMode == "block-and-broadcast-option":
                     text = inputData["text"][1]
-                    token = string_to_sha256(text)
+                    token = stringToToken(text)
                     textData = [magicNumber, text, token]
                 else:
                     textData = [magicNumber, inputData["text"]]
@@ -534,7 +533,7 @@ def restoreInputs(data, opcode, spriteName, blockData):
             opcode=opcode,
             inputId=inputId,
         )
-        if newInputData is not None:
+        if newInputData != None:
             newInputDatas[newInputId] = newInputData
     return newInputDatas
 

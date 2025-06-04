@@ -1,4 +1,4 @@
-from pypenguin_old.utility import BlockSelector, string_to_sha256, Platform, pformat, pp, writeJSONFile, readJSONFile, ensureCorrectPath
+from pypenguin_old.utility import BlockSelector, stringToToken, Platform, pformat, pp, writeJSONFile, readJSONFile, ensureCorrectPath
 
 from pypenguin_old.deoptimize.variables_lists import translateVariables, translateLists
 from pypenguin_old.deoptimize.blocks_scripts import prepareScripts, flattenScripts, restoreBlocks, unprepareBlocks, makeJsonCompatible, standardizeScripts, removeTemporaryAttrs
@@ -25,7 +25,7 @@ def translateVariablesLists(data):
     return translatedVariableDatas, translatedListDatas
 
 def deoptimizeProject(projectData, targetPlatform):
-    precompiledFilePath = ensureCorrectPath("precompiled.json", "pypenguin_old")
+    precompiledFilePath = ensureCorrectPath("precompiled.json", "PyPenguin")
     if os.path.exists(precompiledFilePath):
         precompiledScriptDatas = readJSONFile(precompiledFilePath)
     else:
@@ -45,7 +45,7 @@ def deoptimizeProject(projectData, targetPlatform):
         for scriptData in standardizedScriptDatas:
             precompiledBlockDatas, precompiledCommentDatas, usedScriptData = findMatchingScript(scriptData, precompiledScriptDatas, spriteName=spriteName)
             #print(100*"*")
-            if precompiledBlockDatas is None:
+            if precompiledBlockDatas == None:
                 unfinishedScriptDatas.append(scriptData)
                 #print("MANUAL", scriptData)
             else:
@@ -101,9 +101,9 @@ def deoptimizeProject(projectData, targetPlatform):
         )
 
         if i == 0:
-            token = string_to_sha256("_stage_")
+            token = stringToToken("_stage_")
         else:
-            token = string_to_sha256(spriteData["name"])
+            token = stringToToken(spriteData["name"])
         
         
         newSpriteData = {
@@ -122,7 +122,7 @@ def deoptimizeProject(projectData, targetPlatform):
             "volume"        : spriteData["volume"],
         }
         if spriteData["isStage"]:
-            if projectData.get("textToSpeechLanguage", None) is None:
+            if projectData.get("textToSpeechLanguage", None) == None:
                 newTextToSpeechLanguage = None
             else:
                 newTextToSpeechLanguage = deoptimizeOptionValue(
@@ -173,7 +173,7 @@ def deoptimizeProject(projectData, targetPlatform):
                 "version": "stable",
             },
         }, # Hardcoded because there is no use in changing it
-        "credit": "Made using https://github.com/Fritzforcode/pypenguin_old",
+        "credit": "Made using https://github.com/Fritzforcode/PyPenguin",
     }
     if targetPlatform == Platform.SCRATCH:
         newProjectData = adaptProject(newProjectData)

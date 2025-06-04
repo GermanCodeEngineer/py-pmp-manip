@@ -1,0 +1,5 @@
+- research pen.setHue not matching
+- research looks_nextbackdrop
+- research control_if(_else)
+- research variable and list reporters
+- see what happens to text children in other langs or representations

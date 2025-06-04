@@ -1,0 +1,10 @@
+
+when flag clicked
+show sprite
+go to x: [0] y: [150]
+set font to [Monospace]
+set text color to [#000000]
+set width to [450] aligned [left v]
+
+when i receive [refresh v]
+show text (.CONSOLE)
