@@ -4,14 +4,14 @@ from pypenguin.utility import grepr_dataclass, ConversionError, ValidationError
 
 from pypenguin.core.comment        import SRComment
 from pypenguin.core.block_mutation import FRCustomBlockMutation, SRCustomBlockMutation
-from pypenguin.core.block          import FRBlock, SRBlock, SRScript
+from pypenguin.core.block          import FRBlock, IRBlock, SRBlock, SRScript
 from pypenguin.core.custom_block   import SRCustomBlockOpcode
 
 
 @grepr_dataclass(grepr_fields=["blocks", "scheduled_block_deletions"])
-class FIConversionAPI:
+class ToInterConversionAPI:
     """
-    An API which allows the access to other blocks in the same target during **conversion** from **f**irst to **i**ntermediate representation
+    An API which allows the access to other blocks in the same target during conversion from first to intermediate representation
     """
 
     blocks: dict[str, FRBlock]
@@ -33,10 +33,10 @@ class FIConversionAPI:
 
     def get_block(self, block_id: str) -> FRBlock:
         """
-        Get a block in the same target by block id
+        Get a FRBlock in the same target by block id
         
         Returns:
-            the requested block
+            the requested FRBlock
         """
         if block_id in self.blocks:
             return self.blocks[block_id]
@@ -44,11 +44,11 @@ class FIConversionAPI:
     
     def schedule_block_deletion(self, block_id: str) -> None:
         """
-        Order a block to be deleted. 
+        Order a FRBlock to be deleted. 
         It will no longer be present in Temporary and Second Representation
         
         Args:
-            block_id: the id of the block to be deleted
+            block_id: the id of the FRBlock to be deleted
         
         Returns:
             None
@@ -57,10 +57,10 @@ class FIConversionAPI:
 
     def get_cb_mutation(self, proccode: str) -> "FRCustomBlockMutation":
         """
-        Get a custom block mutation by its procedure code
+        Get a FRCustomBlockMutation by its procedure code
         
         Args:
-            proccode: the procedure code of the desired mutation
+            proccode: the procedure code of the desired FRCustomBlockMutation
         
         Returns:
             the custom block mutation
@@ -85,7 +85,31 @@ class FIConversionAPI:
             return self.block_comments[comment_id]
         raise ConversionError(f"Comment with id {repr(comment_id)} not found")
 
-@grepr_dataclass(grepr_fields=["scripts", "cb_mutations:"])
+class ToFirstConversionAPI:
+    """
+    An API which allows the access to other blocks in the same target during conversion from intermediate to first representation
+    """
+
+    blocks: dict[str, IRBlock]
+
+    def get_cb_mutation(self, custom_opcode: SRCustomBlockOpcode) -> "SRCustomBlockMutation":
+        """
+        Get a SRCustomBlockMutation by its SRCustomBlockOpcode
+        
+        Args:
+            custom_opcode: the SRCustomBlockOpcode of the desired SRCustomBlockMutation
+        
+        Returns:
+            the SRCustomBlockMutation
+        """
+        for block in self.blocks.values():
+            if not isinstance(block.mutation, SRCustomBlockMutation): continue
+            if block.mutation.custom_opcode == custom_opcode:
+                return block.mutation
+        raise ConversionError(f"Mutation of proccode {repr(custom_opcode)} not found")
+
+
+@grepr_dataclass(grepr_fields=["scripts", "cb_mutations"])
 class ValidationAPI:
     """
     An API which allows the access to other blocks in the same target during validation
@@ -97,7 +121,7 @@ class ValidationAPI:
     
     def __post_init__(self) -> None:
         """
-        Fetch and store custom block mutations for later
+        Fetch and store SRCustomBlockMutation's for later
         
         Returns:
             None
@@ -141,18 +165,18 @@ class ValidationAPI:
     
     def get_cb_mutation(self, custom_opcode: SRCustomBlockOpcode) -> "SRCustomBlockMutation":
         """
-        Get a custom block mutation by its custom opcode
+        Get a SRCustomBlockMutation by its SRCustomBlockOpcode
         
         Args:
-            custom_opcode: the custom opcode of the desired mutation
+            custom_opcode: the SRCustomBlockOpcode of the desired SRCustomBlockMutation
         
         Returns:
-            the custom block mutation
+            the SRCustomBlockMutation
         """
         if custom_opcode in self.cb_mutations:
             return self.cb_mutations[custom_opcode]
         raise ValidationError(f"Mutation of custom_opcode {custom_opcode} not found")
 
 
-__all__ = ["FIConversionAPI", "ValidationAPI"]
+__all__ = ["ToInterConversionAPI", "ValidationAPI"]
 

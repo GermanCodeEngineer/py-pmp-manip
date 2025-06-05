@@ -7,3 +7,4 @@ TODOs:
     - test and document opcode_info
     - add specific reasons for ThanksError
     - complete deoptimization
+    - use typing.Self for from_data and alternate constructors

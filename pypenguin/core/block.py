@@ -13,7 +13,7 @@ from pypenguin.utility           import (
     UnnecessaryInputError, MissingInputError, UnnecessaryDropdownError, MissingDropdownError, InvalidOpcodeError, InvalidBlockShapeError,
 )
 
-if TYPE_CHECKING: from pypenguin.core.block_api import FIConversionAPI, ValidationAPI
+if TYPE_CHECKING: from pypenguin.core.block_api import ToInterConversionAPI, ValidationAPI
 from pypenguin.core.block_mutation import FRMutation, SRMutation
 from pypenguin.core.comment        import SRComment
 from pypenguin.core.context        import CompleteContext
@@ -135,7 +135,7 @@ class FRBlock:
         else: raise DeserializationError(f"Invalid constant(first element) for FRBlock conversion: {data[0]}")
 
     def to_inter(self, 
-        ficapi: "FIConversionAPI", 
+        ticapi: "ToInterConversionAPI", 
         info_api: OpcodeInfoAPI, 
         own_id: str
     ) -> "IRBlock":
@@ -143,7 +143,7 @@ class FRBlock:
         Converts a FRBlock into a IRBlock
         
         Args:
-            ficapi: API used to fetch information about other blocks
+            ticapi: API used to fetch information about other blocks
             info_api: the opcode info api used to fetch information about opcodes
         
         Returns:
@@ -152,12 +152,12 @@ class FRBlock:
         opcode_info = info_api.get_info_by_old(self.opcode)
         pre_handler = opcode_info.get_special_case(SpecialCaseType.PRE_FR_STEP)
         if pre_handler is not None:
-            self = pre_handler.call(ficapi=ficapi, block=self)
+            self = pre_handler.call(ticapi=ticapi, block=self)
         
         instead_handler = opcode_info.get_special_case(SpecialCaseType.FR_STEP)
         if instead_handler is None:
             new_inputs = self._to_second_inputs(
-                ficapi  = ficapi,
+                ticapi  = ticapi,
                 info_api   = info_api,
                 opcode_info = opcode_info,
                 own_id     = own_id,
@@ -171,19 +171,19 @@ class FRBlock:
                 inputs       = new_inputs,
                 dropdowns    = new_dropdowns,
                 position     = (self.x, self.y) if self.top_level else None,
-                comment      = None if self.comment  is None else ficapi.get_comment(self.comment),
+                comment      = None if self.comment  is None else ticapi.get_comment(self.comment),
                 mutation     = None if self.mutation is None else self.mutation.to_second(
-                    ficapi = ficapi,
+                    ticapi = ticapi,
                 ),
                 next         = self.next,
                 is_top_level = self.top_level,
             )
         else:
-            new_block = instead_handler.call(ficapi=ficapi, block=self)
+            new_block = instead_handler.call(ticapi=ticapi, block=self)
         return new_block
 
     def _to_second_inputs(self, 
-        ficapi: "FIConversionAPI", 
+        ticapi: "ToInterConversionAPI", 
         info_api: OpcodeInfoAPI,
         opcode_info: OpcodeInfo,
         own_id: str
@@ -192,14 +192,14 @@ class FRBlock:
         *[Internal Method]* Converts the inputs of a FRBlock into the IR Fromat
         
         Args:
-            ficapi: API used to fetch information about other blocks
+            ticapi: API used to fetch information about other blocks
             info_api: the opcode info api used to fetch information about opcodes
             opcode_info: the Information about the block's opcode
         
         Returns:
             the inputs in IR Format
         """
-        input_modes = opcode_info.get_old_input_ids_modes(block=self, ficapi=ficapi)
+        input_modes = opcode_info.get_old_input_ids_modes(block=self, ticapi=ticapi)
         
         new_inputs = {}
         for input_id, input_value in self.inputs.items():
@@ -216,7 +216,7 @@ class FRBlock:
                 elif isinstance(item, tuple) and item[0] in {12, 13}:
                     immediate_fr_block = FRBlock.from_tuple(item, parent_id=own_id)
                     immediate_block = immediate_fr_block.to_inter(
-                        ficapi = ficapi,
+                        ticapi = ticapi,
                         info_api  = info_api,
                         own_id    = None, # None is fine, because tuple blocks can't possibly contain more tuple blocks 
                     )
@@ -286,8 +286,8 @@ class IRBlock:
             }
             --> "_mouse_" """
         
-        old_new_input_ids = opcode_info.get_old_new_input_ids(block=self, ficapi=None)
-        # maps old input ids to new input ids # ficapi isn't necessary for a IRBlock 
+        old_new_input_ids = opcode_info.get_old_new_input_ids(block=self, ticapi=None)
+        # maps old input ids to new input ids # ticapi isn't necessary for a IRBlock 
         
         new_inputs = {}
         for input_id, input_value in self.inputs.items():
@@ -373,8 +373,8 @@ class IRBlock:
                 dropdown = input_dropdown,
             )
         
-        input_types = opcode_info.get_new_input_ids_types(block=self, ficapi=None) 
-        # maps input ids to their types # ficapi isn't necessary for a IRBlock
+        input_types = opcode_info.get_new_input_ids_types(block=self, ticapi=None) 
+        # maps input ids to their types # ticapi isn't necessary for a IRBlock
         for new_input_id in input_types.keys():
             if new_input_id not in new_inputs:
                 input_mode = input_types[new_input_id].get_mode()
@@ -547,8 +547,8 @@ class SRBlock:
             AA_TYPE(self, path, "mutation", opcode_info.new_mutation_cls, condition="For this opcode")
             self.mutation.validate(path+["mutation"], config)
 
-        input_types = opcode_info.get_new_input_ids_types(block=self, ficapi=None) 
-        # maps input ids to their types # ficapi isn't necessary for a IRBlock
+        input_types = opcode_info.get_new_input_ids_types(block=self, ticapi=None) 
+        # maps input ids to their types # ticapi isn't necessary for a IRBlock
         
         for new_input_id, input in self.inputs.items():
             if new_input_id not in input_types.keys():

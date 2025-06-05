@@ -12,7 +12,7 @@ from pypenguin.utility         import (
 )
 
 from pypenguin.core.asset          import FRCostume, FRSound, SRCostume, SRVectorCostume, SRSound
-from pypenguin.core.block_api      import FIConversionAPI, ValidationAPI
+from pypenguin.core.block_api      import ToInterConversionAPI, ValidationAPI
 from pypenguin.core.block_mutation import SRCustomBlockMutation
 from pypenguin.core.block          import FRBlock, IRBlock, SRScript
 from pypenguin.core.comment        import FRComment, SRComment
@@ -136,17 +136,17 @@ class FRTarget(ABC):
             if isinstance(block, tuple):
                 blocks[block_reference] = FRBlock.from_tuple(block, parent_id=None)
 
-        ficapi = FIConversionAPI(blocks=blocks, block_comments=attached_comments)
+        ticapi = ToInterConversionAPI(blocks=blocks, block_comments=attached_comments)
         new_blocks: dict["str", "IRBlock"] = {}
         for block_reference, block in blocks.items():
             new_block = block.to_inter(
-                ficapi = ficapi,
+                ticapi = ticapi,
                 info_api  = info_api,
                 own_id    = block_reference,
             )
             new_blocks[block_reference] = new_block
 
-        for block_reference in ficapi.scheduled_block_deletions:
+        for block_reference in ticapi.scheduled_block_deletions:
             del new_blocks[block_reference]
         
         # Get all top level block ids

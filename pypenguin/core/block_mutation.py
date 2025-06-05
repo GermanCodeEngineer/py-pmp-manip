@@ -10,7 +10,7 @@ from pypenguin.utility import (
 )
 
 
-if TYPE_CHECKING: from pypenguin.core.block_api import FIConversionAPI
+if TYPE_CHECKING: from pypenguin.core.block_api import ToInterConversionAPI
 from pypenguin.core.custom_block import SRCustomBlockOpcode, SRCustomBlockOptype
 
 @grepr_dataclass(grepr_fields=["tag_name", "children"])
@@ -26,13 +26,13 @@ class FRMutation(ABC):
     @abstractmethod
     def from_data(cls, data: dict[str, Any]) -> "FRMutation":
         """
-        Create a mutation from raw data
+        Create a FRMutation from raw data
         
         Args:
             data: the raw data
         
         Returns:
-            the mutation
+            the FRMutation
         """
 
     def __post_init__(self) -> None:
@@ -46,15 +46,15 @@ class FRMutation(ABC):
             raise ThanksError()
 
     @abstractmethod
-    def to_second(self, ficapi: "FIConversionAPI") -> "SRMutation":
+    def to_second(self, ticapi: "ToInterConversionAPI") -> "SRMutation":
         """
-        Convert a mutation from first into second representation
+        Convert a FRMutation into a SRMutation
         
         Args:
-            ficapi: API used to fetch information about other blocks
+            ticapi: API used to fetch information about other blocks
         
         Returns:
-            the second representation of the mutation
+            the SRMutation
         """
 
 @grepr_dataclass(grepr_fields=["color"], parent_cls=FRMutation)
@@ -69,13 +69,13 @@ class FRCustomBlockArgumentMutation(FRMutation):
     @classmethod
     def from_data(cls, data: dict[str, str]) -> "FRCustomBlockArgumentMutation":
         """
-        Create a custom block argument mutation from raw data
+        Create a FRCustomBlockArgumentMutation from raw data
         
         Args:
             data: the raw data
         
         Returns:
-            the mutation
+            the FRCustomBlockArgumentMutation
         """
         return cls(
             tag_name = data["tagName" ],
@@ -106,15 +106,15 @@ class FRCustomBlockArgumentMutation(FRMutation):
         """
         self._argument_name = name
     
-    def to_second(self, ficapi: "FIConversionAPI") -> "SRCustomBlockArgumentMutation":
+    def to_second(self, ticapi: "ToInterConversionAPI") -> "SRCustomBlockArgumentMutation":
         """
-        Convert a custom block argument mutation from first into second representation
+        Convert a FRCustomBlockArgumentMutation into a SRCustomBlockArgumentMutation
         
         Args:
-            ficapi: API used to fetch information about other blocks
+            ticapi: API used to fetch information about other blocks
         
         Returns:
-            the second representation of the mutation
+            the SRCustomBlockArgumentMutation
         """
         if getattr(self, "_argument_name", None) is None:
             raise ConversionError("Argument name must be set before SR conversion")
@@ -144,13 +144,13 @@ class FRCustomBlockMutation(FRMutation):
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRCustomBlockMutation":
         """
-        Create a custom block definition mutation from raw data
+        Create a FRCustomBlockMutation from raw data
         
         Args:
             data: the raw data
         
         Returns:
-            the mutation
+            the FRCustomBlockMutation
         """
         if isinstance(data["warp"], bool):
             warp = data["warp"]
@@ -171,15 +171,15 @@ class FRCustomBlockMutation(FRMutation):
             color             = tuple(loads(data["color"])) if "color" in data else ("#FF6680", "#FF4D6A", "#FF3355"),
         )
     
-    def to_second(self, ficapi: "FIConversionAPI") -> "SRCustomBlockMutation":
+    def to_second(self, ticapi: "ToInterConversionAPI") -> "SRCustomBlockMutation":
         """
-        Convert a custom block definition mutation from first into second representation
+        Convert a FRCustomBlockMutation into a SRCustomBlockMutation
         
         Args:
-            ficapi: API used to fetch information about other blocks
+            ticapi: API used to fetch information about other blocks
         
         Returns:
-            the second representation of the mutation
+            the SRCustomBlockMutation
         """
         return SRCustomBlockMutation(
             custom_opcode     = SRCustomBlockOpcode.from_proccode_argument_names(
@@ -210,13 +210,13 @@ class FRCustomBlockCallMutation(FRMutation):
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRCustomBlockCallMutation":
         """
-        Create a custom block call mutation from raw data
+        Create a FRCustomBlockCallMutation from raw data
         
         Args:
             data: the raw data
         
         Returns:
-            the mutation
+            the FRCustomBlockCallMutation
         """
         if isinstance(data["warp"], bool):
             warp = data["warp"]
@@ -235,17 +235,17 @@ class FRCustomBlockCallMutation(FRMutation):
             color  = tuple(loads(data["color"  ])),
         )
     
-    def to_second(self, ficapi: "FIConversionAPI") -> "SRCustomBlockCallMutation":
+    def to_second(self, ticapi: "ToInterConversionAPI") -> "SRCustomBlockCallMutation":
         """
-        Convert a custom block call mutation from first into second representation
+        Convert a FRCustomBlockCallMutation into a SRCustomBlockCallMutation
         
         Args:
-            ficapi: API used to fetch information about other blocks
+            ticapi: API used to fetch information about other blocks
         
         Returns:
-            the second representation of the mutation
+            the SRCustomBlockCallMutation
         """
-        complete_mutation = ficapi.get_cb_mutation(self.proccode) # Get complete mutation
+        complete_mutation = ticapi.get_cb_mutation(self.proccode) # Get complete mutation
         return SRCustomBlockCallMutation(
             custom_opcode      = SRCustomBlockOpcode.from_proccode_argument_names(
                 proccode          = self.proccode,
@@ -264,13 +264,13 @@ class FRStopScriptMutation(FRMutation):
     @classmethod
     def from_data(cls, data: dict[str, bool]) -> "FRStopScriptMutation":
         """
-        Create a mutation for the "stop [this script v]" block from raw data
+        Create a FRCustomBlockCallMutation(for the "stop [this script v]" block) from raw data
         
         Args:
             data: the raw data
         
         Returns:
-            the mutation
+            the FRCustomBlockCallMutation
         """
         return cls(
             tag_name = data["tagName" ],
@@ -278,15 +278,15 @@ class FRStopScriptMutation(FRMutation):
             has_next = loads(data["hasnext"]),
         )
     
-    def to_second(self, ficapi: "FIConversionAPI") -> "SRStopScriptMutation":
+    def to_second(self, ticapi: "ToInterConversionAPI") -> "SRStopScriptMutation":
         """
-        Convert a stop script mutation from first into second representation
+        Convert a FRStopScriptMutation into a SRStopScriptMutation
         
         Args:
-            ficapi: API used to fetch information about other blocks
+            ticapi: API used to fetch information about other blocks
         
         Returns:
-            the second representation of the mutation
+            the SRStopScriptMutation
         """
         return SRStopScriptMutation(
             is_ending_statement = not(self.has_next),
@@ -302,7 +302,7 @@ class SRMutation(ABC):
     @abstractmethod
     def validate(self, path: list, config: ValidationConfig) -> None:
         """
-        Ensure the mutation is valid, raise ValidationError if not
+        Ensure the SRMutation is valid, raise ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -313,6 +313,18 @@ class SRMutation(ABC):
         
         Raises:
             ValidationError: if the SRMutation is invalid
+        """
+
+    #@abstractmethod
+    def to_first(self, ticapi: "ToInterConversionAPI") -> "FRMutation":
+        """
+        Convert a FRMutation into a SRMutation
+        
+        Args:
+            ticapi: API used to fetch information about other blocks
+        
+        Returns:
+            the SRMutation
         """
 
 @grepr_dataclass(grepr_fields=["argument_name", "main_color", "prototype_color", "outline_color"], parent_cls=SRMutation)
@@ -330,7 +342,7 @@ class SRCustomBlockArgumentMutation(SRMutation):
 
     def validate(self, path: list, config: ValidationConfig) -> None:
         """
-        Ensure the custom block argument mutation is valid, raise ValidationError if not
+        Ensure the SRCustomBlockArgumentMutation is valid, raise ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -365,7 +377,7 @@ class SRCustomBlockMutation(SRMutation):
     
     def validate(self, path: list, config: ValidationConfig) -> None:
         """
-        Ensure the custom block definition mutation is valid, raise ValidationError if not
+        Ensure the SRCustomBlockMutation is valid, raise ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -396,7 +408,7 @@ class SRCustomBlockCallMutation(SRMutation):
     
     def validate(self, path: list, config: ValidationConfig) -> None:
         """
-        Ensure the custom block call mutation is valid, raise ValidationError if not
+        Ensure the SRCustomBlockCallMutation is valid, raise ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -422,7 +434,7 @@ class SRStopScriptMutation(SRMutation):
 
     def validate(self, path: list, config: ValidationConfig) -> None:
         """
-        Ensure the stop script mutation is valid, raise ValidationError if not
+        Ensure the SRStopScriptMutation is valid, raise ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages

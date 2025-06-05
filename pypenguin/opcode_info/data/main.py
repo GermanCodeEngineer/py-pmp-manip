@@ -22,7 +22,7 @@ from pypenguin.opcode_info.data.c_variables import variables
 from pypenguin.opcode_info.data.c_lists     import lists
 
 if TYPE_CHECKING:
-    from pypenguin.core.block_api import FIConversionAPI, ValidationAPI
+    from pypenguin.core.block_api import ToInterConversionAPI, ValidationAPI
     from pypenguin.core.block     import FRBlock, IRBlock, SRBlock
 
 from pypenguin.core.block_mutation import (
@@ -189,19 +189,19 @@ info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
     function=_GET_OPCODE_TYPE__CB_CALL,
 ))
 
-def _PRE__CB_DEF(block: "FRBlock", ficapi: "FIConversionAPI") -> "FRBlock":
+def _PRE__CB_DEF(block: "FRBlock", ticapi: "ToInterConversionAPI") -> "FRBlock":
     # Transfer mutation from prototype block to definition block
     # Order deletion of the prototype block and its argument blocks
     # Delete "custom_block" input, which references the prototype
     block = deepcopy(block)
     prototype_id    = block.inputs["custom_block"][1]
-    prototype_block = ficapi.get_block(prototype_id)
+    prototype_block = ticapi.get_block(prototype_id)
     block.mutation  = prototype_block.mutation
-    ficapi.schedule_block_deletion(prototype_id)
+    ticapi.schedule_block_deletion(prototype_id)
     del block.inputs["custom_block"]
     
-    target_ids = ficapi.get_block_ids_by_parent_id(prototype_id)
-    [ficapi.schedule_block_deletion(target_id) for target_id in target_ids]
+    target_ids = ticapi.get_block_ids_by_parent_id(prototype_id)
+    [ticapi.schedule_block_deletion(target_id) for target_id in target_ids]
     return block
 
 info_api.add_opcodes_case(ANY_OPCODE_CB_DEF, SpecialCase(
@@ -209,7 +209,7 @@ info_api.add_opcodes_case(ANY_OPCODE_CB_DEF, SpecialCase(
     function=_PRE__CB_DEF,
 ))
 
-def _PRE__CB_ARG(block: "FRBlock", ficapi: "FIConversionAPI") -> "FRBlock":
+def _PRE__CB_ARG(block: "FRBlock", ticapi: "ToInterConversionAPI") -> "FRBlock":
     # Transfer argument name from a field into the mutation
     # because only real dropdowns should be listed in "fields"
     from pypenguin.core.block_mutation import FRCustomBlockArgumentMutation
@@ -224,11 +224,11 @@ info_api.add_opcodes_case(ANY_OPCODE_CB_ARG, SpecialCase(
     function=_PRE__CB_ARG,
 ))
 
-def _PRE__CB_CALL(block: "FRBlock", ficapi: "FIConversionAPI") -> "FRBlock":
+def _PRE__CB_CALL(block: "FRBlock", ticapi: "ToInterConversionAPI") -> "FRBlock":
     from pypenguin.core.block_mutation import FRCustomBlockCallMutation
     block = copy(block)
     partial_mutation: FRCustomBlockCallMutation = block.mutation
-    complete_mutation = ficapi.get_cb_mutation(partial_mutation.proccode)
+    complete_mutation = ticapi.get_cb_mutation(partial_mutation.proccode)
     new_inputs = {}
     for argument_id, input_value in block.inputs.items():
         argument_index = complete_mutation.argument_ids.index(argument_id)
@@ -242,7 +242,7 @@ info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
     function=_PRE__CB_CALL,
 ))
 
-def _FR_TO_SECOND__CB_PROTOTYPE(block: "FRBlock", ficapi: "FIConversionAPI") -> "IRBlock":
+def _FR_TO_SECOND__CB_PROTOTYPE(block: "FRBlock", ticapi: "ToInterConversionAPI") -> "IRBlock":
     # Return an empty, temporary block
     from pypenguin.core.block import IRBlock
     return IRBlock(
@@ -262,14 +262,14 @@ info_api.add_opcode_case(OPCODE_CB_PROTOTYPE, SpecialCase(
 ))
 
 def _GET_ALL_INPUT_TYPES__CB_CALL(
-    block: "FRBlock|IRBlock|SRBlock", ficapi: "FIConversionAPI|None"
+    block: "FRBlock|IRBlock|SRBlock", ticapi: "ToInterConversionAPI|None"
 ) -> DualKeyDict[str, str, InputType]:
     from pypenguin.core.block_mutation import FRCustomBlockCallMutation, SRCustomBlockCallMutation
     from pypenguin.core.block import FRBlock
     if isinstance(block, FRBlock):
         old_mutation: FRCustomBlockCallMutation = block.mutation
-        assert ficapi is not None, "When a FRBlock is given, ficapi mustn't be None"
-        mutation: SRCustomBlockCallMutation = old_mutation.to_second(ficapi=ficapi)
+        assert ticapi is not None, "When a FRBlock is given, ticapi mustn't be None"
+        mutation: SRCustomBlockCallMutation = old_mutation.to_second(ticapi=ticapi)
     else:
         mutation: SRCustomBlockCallMutation = block.mutation
     

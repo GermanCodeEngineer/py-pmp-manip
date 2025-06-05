@@ -3,7 +3,7 @@ from pytest import fixture, raises
 
 from pypenguin.utility import ConversionError, lists_equal_ignore_order
 
-from pypenguin.core.block_api      import FIConversionAPI, ValidationAPI
+from pypenguin.core.block_api      import ToInterConversionAPI, ValidationAPI
 from pypenguin.core.block_mutation import (
     SRCustomBlockMutation
 )
@@ -17,8 +17,8 @@ from tests.core.constants import (
 
 
 @fixture
-def ficapi():
-    return FIConversionAPI(
+def ticapi():
+    return ToInterConversionAPI(
         blocks=ALL_FR_BLOCKS_CLEAN,
         block_comments=ALL_SR_COMMENTS,
     )
@@ -29,28 +29,28 @@ def validation_api():
 
 
 
-def test_FIConversionAPI_get_block_id_by_parent_id(ficapi: FIConversionAPI):
-    assert ficapi.get_block_ids_by_parent_id("c") == {"l", "k"}
+def test_FIConversionAPI_get_block_id_by_parent_id(ticapi: ToInterConversionAPI):
+    assert ticapi.get_block_ids_by_parent_id("c") == {"l", "k"}
 
 
-def test_FIConversionAPI_get_block(ficapi: FIConversionAPI):
-    assert ficapi.get_block("d") == ALL_FR_BLOCKS_CLEAN["d"]
+def test_FIConversionAPI_get_block(ticapi: ToInterConversionAPI):
+    assert ticapi.get_block("d") == ALL_FR_BLOCKS_CLEAN["d"]
 
 
-def test_FIConversionAPI_schedule_block_deletion(ficapi: FIConversionAPI):
-    ficapi_copy = deepcopy(ficapi)
+def test_FIConversionAPI_schedule_block_deletion(ticapi: ToInterConversionAPI):
+    ficapi_copy = deepcopy(ticapi)
     ficapi_copy.schedule_block_deletion("z")
     assert ficapi_copy.scheduled_block_deletions == ["z"]
 
 
-def test_FIConversionAPI_get_cb_mutation(ficapi: FIConversionAPI):
-    assert ficapi.get_cb_mutation("do sth text %s and bool %b") == ALL_FR_BLOCKS_CLEAN["a"].mutation
+def test_FIConversionAPI_get_cb_mutation(ticapi: ToInterConversionAPI):
+    assert ticapi.get_cb_mutation("do sth text %s and bool %b") == ALL_FR_BLOCKS_CLEAN["a"].mutation
     with raises(ConversionError):
-        ficapi.get_cb_mutation("some %s proccode")
+        ticapi.get_cb_mutation("some %s proccode")
 
 
-def test_FIConversionAPI_get_comment(ficapi: FIConversionAPI):
-    assert ficapi.get_comment("j") == ALL_SR_COMMENTS["j"]
+def test_FIConversionAPI_get_comment(ticapi: ToInterConversionAPI):
+    assert ticapi.get_comment("j") == ALL_SR_COMMENTS["j"]
 
 
 

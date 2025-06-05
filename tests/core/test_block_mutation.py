@@ -65,7 +65,7 @@ def test_FRMutation_from_data_and_post_init():
                 tag_name = data["tagName" ],
                 children = data["children"],
             )
-        def to_second(self, ficapi): pass
+        def to_second(self, ticapi): pass
 
     data = {
         "tagName": "mutation",

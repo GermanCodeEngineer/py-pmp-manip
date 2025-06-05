@@ -5,7 +5,7 @@ from pypenguin.opcode_info.api    import InputMode
 from pypenguin.opcode_info.data   import info_api
 from pypenguin.utility            import DeserializationError
 
-from pypenguin.core.block_api      import FIConversionAPI
+from pypenguin.core.block_api      import ToInterConversionAPI
 from pypenguin.core.block_mutation import (
     FRCustomBlockMutation,
     SRCustomBlockMutation, SRCustomBlockCallMutation, SRCustomBlockArgumentMutation,
@@ -20,8 +20,8 @@ from tests.core.constants import ALL_FR_BLOCKS_CLEAN, ALL_FR_BLOCK_DATAS, ALL_SR
 
 
 @fixture
-def ficapi():
-    return FIConversionAPI(
+def ticapi():
+    return ToInterConversionAPI(
         blocks=ALL_FR_BLOCKS_CLEAN,
         block_comments=ALL_SR_COMMENTS,
     )
@@ -124,11 +124,11 @@ def test_FRBlock_from_tuple_invalid():
         FRBlock.from_tuple([77, ..., ...], parent_id="qqq")
 
 
-def test_FRBlock_to_inter(ficapi: FIConversionAPI):
+def test_FRBlock_to_inter(ticapi: ToInterConversionAPI):
     # TODO: next
     frblock = ALL_FR_BLOCKS_CLEAN["f"]
     trblock = frblock.to_inter(
-        ficapi=ficapi,
+        ticapi=ticapi,
         info_api=info_api,
         own_id="f",
     )
@@ -166,10 +166,10 @@ def test_FRBlock_to_inter(ficapi: FIConversionAPI):
     assert trblock.next         is None
     assert trblock.is_top_level is True
 
-def test_FRBlock_to_inter_cb_def(ficapi: FIConversionAPI):
+def test_FRBlock_to_inter_cb_def(ticapi: ToInterConversionAPI):
     frblock = ALL_FR_BLOCKS_CLEAN["h"]
     trblock = frblock.to_inter(
-        ficapi=ficapi,
+        ticapi=ticapi,
         info_api=info_api,
         own_id="h",
     )
@@ -197,10 +197,10 @@ def test_FRBlock_to_inter_cb_def(ficapi: FIConversionAPI):
     assert trblock.next         is None
     assert trblock.is_top_level is True
 
-def test_FRBlock_to_inter_cb_prototype(ficapi: FIConversionAPI):
+def test_FRBlock_to_inter_cb_prototype(ticapi: ToInterConversionAPI):
     frblock = ALL_FR_BLOCKS_CLEAN["a"]
     trblock = frblock.to_inter(
-        ficapi=ficapi,
+        ticapi=ticapi,
         info_api=info_api,
         own_id="a",
     )
@@ -214,10 +214,10 @@ def test_FRBlock_to_inter_cb_prototype(ficapi: FIConversionAPI):
     assert trblock.next         == ...
     assert trblock.is_top_level == ...
 
-def test_FRBlock_to_inter_cb_arg(ficapi: FIConversionAPI):
+def test_FRBlock_to_inter_cb_arg(ticapi: ToInterConversionAPI):
     frblock = ALL_FR_BLOCKS_CLEAN["i"]
     trblock = frblock.to_inter(
-        ficapi=ficapi,
+        ticapi=ticapi,
         info_api=info_api,
         own_id="i",
     )
@@ -236,10 +236,10 @@ def test_FRBlock_to_inter_cb_arg(ficapi: FIConversionAPI):
     assert trblock.next         is None
     assert trblock.is_top_level is False
 
-def test_FRBlock_to_inter_cb_call(ficapi: FIConversionAPI):    
+def test_FRBlock_to_inter_cb_call(ticapi: ToInterConversionAPI):    
     frblock = ALL_FR_BLOCKS_CLEAN["c"]
     trblock = frblock.to_inter(
-        ficapi=ficapi,
+        ticapi=ticapi,
         info_api=info_api,
         own_id="t",
     )
