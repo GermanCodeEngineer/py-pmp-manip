@@ -11,7 +11,7 @@ from pypenguin.opcode_info.api.dropdown     import DropdownInfo
 from pypenguin.opcode_info.api.special_case import SpecialCase, SpecialCaseType
 
 if TYPE_CHECKING:
-    from pypenguin.core.block_api      import ToInterConversionAPI, ValidationAPI
+    from pypenguin.core.block_api      import ToInterConversionAPI, ValidationAPI, ToFirstConversionAPI
     from pypenguin.core.block_mutation import FRMutation, SRMutation
     from pypenguin.core.block          import FRBlock, IRBlock, SRBlock
 
@@ -290,12 +290,11 @@ class OpcodeInfo:
             for old_id, input_type in self.get_input_ids_types(block, ticapi).items_key1()
         }
     
-    # Get new input id
     def get_old_new_input_ids(self, 
         block: "FRBlock|IRBlock|SRBlock", ticapi: "ToInterConversionAPI|None",
     ) -> dict[str, str]:
         """
-        Get all the old and new inputs id
+        Get all the old and new input ids
         
         Args:
             block: To determine the ids and types e.g. Custom Blocks need the block as context
@@ -305,6 +304,21 @@ class OpcodeInfo:
             dict mapping old input id to new input id
         """
         return dict(self.get_input_ids_types(block, ticapi).keys_key1_key2())
+    
+    def get_new_old_input_ids(self, 
+        block: "FRBlock|IRBlock|SRBlock",
+    ) -> dict[str, str]:
+        """
+        Get all the new and old input ids
+        
+        Args:
+            block: To determine the ids and types e.g. Custom Blocks need the block as context
+        
+        Returns:
+            dict mapping new input id to old input id
+        """
+        return {new: old for old, new in self.get_input_ids_types(block, None).keys_key1_key2()}
+    
 
 @grepr_dataclass(grepr_fields=["name", "opcode_info"])
 class OpcodeInfoGroup:

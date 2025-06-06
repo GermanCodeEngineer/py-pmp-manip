@@ -638,6 +638,48 @@ class SRBlock:
             elif not(is_first and is_last):
                 raise InvalidBlockShapeError(path, "If contained in a substack, a block of type ...REPORTER must be the only block in that substack")
 
+    def to_inter(self, 
+        info_api: OpcodeInfoAPI, 
+        next: str | None, 
+        position: tuple[int | float, int | float] | None,
+        is_top_level: bool, 
+    ) -> IRBlock:
+        """
+        Converts a SRBlock into a IRBlock
+        
+        Args:
+            info_api: the opcode info api used to fetch information about opcodes
+            next: the id of the next block in the same script or substack
+            position: the position of the block if is_top_level is True
+            is_top_level: wether the block is the first block in a script
+        
+        Returns:
+            the IRBlock
+        """
+        opcode_info = info_api.get_info_by_old(self.opcode)
+        
+        new_old_input_ids = opcode_info.get_new_old_input_ids(block=self, ticapi=None)
+        old_input_id_modes = opcode_info.get_old_input_ids_modes(block=self, ticapi=None)
+        old_inputs = {}
+        for input_id, input_value in self.inputs.items():
+            old_input_id = new_old_input_ids[input_id]
+            old_inputs[old_input_id] = IRInputValue(
+                mode            = old_input_id_modes[old_input_id],
+                references      = [], # TODO
+                immediate_block = None, # TODO
+                text            = None, # TODO
+            )
+        
+        return IRBlock(
+            opcode       = info_api.get_old_by_new(self.opcode),
+            inputs       = old_inputs,
+            dropdowns    = {}, # TODO
+            comment      = self.comment,
+            mutation     = self.mutation,
+            position     = position,
+            next         = next,
+            is_top_level = is_top_level,
+        )
 
 @grepr_dataclass(grepr_fields=[], eq=False, init=False)
 class SRInputValue(ABC):
@@ -791,7 +833,7 @@ class SRBlockAndTextInputValue(SRInputValue):
 
     block: SRBlock | None
     text : str
-    
+
     def validate(self, 
         path: list, 
         config: ValidationConfig,
