@@ -18,7 +18,7 @@ class SpecialCaseType(PypenguinEnum):
     # should NEVER return MENU (or any other pseudo opcode type)
     """
     def example(
-        block: "SRBlock|TRBlock", validation_api: "ValidationAPI"
+        block: "SRBlock|TRBlock", validation_if: "ValidationIF"
     ) -> OpcodeType:
         ...
     """
@@ -26,10 +26,10 @@ class SpecialCaseType(PypenguinEnum):
     GET_ALL_INPUT_IDS_TYPES = 1
     # map new and old input id to input type
     # -> DualKeyDict[old, new, InpuType]
-    # ticapi will be None for a TRBlock or SRBlock and the block api for a FRBlock
+    # fti_if will be None for a TRBlock or SRBlock and the block api for a FRBlock
     """
     def example(
-        block: "FRBlock|TRBlock|SRBlock", ticapi: "ToInterConversionAPI|None"
+        block: "FRBlock|TRBlock|SRBlock", fti_if: "FirstToInterIF|None"
     ) -> DualKeyDict[str, str, InputType]:
         ...
     """
@@ -41,13 +41,13 @@ class SpecialCaseType(PypenguinEnum):
     
     PRE_FR_STEP = 2 # execure before FRBlock.step
     """
-    def example(block: "FRBlock", ticapi: "ToInterConversionAPI") -> "FRBlock":
+    def example(block: "FRBlock", fti_if: "FirstToInterIF") -> "FRBlock":
         ...
     """
      
     FR_STEP = 3 # execute instead of FRBlock.step
     """
-    def example(block: "FRBlock", ticapi: "ToInterConversionAPI") -> "TRBlock":
+    def example(block: "FRBlock", fti_if: "FirstToInterIF") -> "TRBlock":
         ...
     """
     

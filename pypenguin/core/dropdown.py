@@ -31,6 +31,17 @@ class SRDropdownValue:
             value=data[1],
         )
 
+    def to_tuple(self) -> tuple[DropdownValueKind, Any]:
+        """
+        # TODO: add tests
+        # TODO: use where possible
+        Serializes a SRDropdownValue into a tuple
+        
+        Returns:
+            the tuple of (kind, value)
+        """
+        return (self.kind, self.value)
+
     def validate(self, path: list, config: ValidationConfig) -> None:
         """
         Ensure a SRDropdownValue is structurally valid, raise ValidationError if not

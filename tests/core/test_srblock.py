@@ -9,13 +9,13 @@ from pypenguin.utility          import (
     UnnecessaryInputError, MissingInputError, UnnecessaryDropdownError, MissingDropdownError,
 )
 
-from pypenguin.core.block_api import ValidationAPI
-from pypenguin.core.block     import (
+from pypenguin.core.block_interface import ValidationIF
+from pypenguin.core.block           import (
     SRScript, SRBlock, SRInputValue, 
     SRBlockAndTextInputValue, SRBlockOnlyInputValue, SRBlockAndDropdownInputValue, SRScriptInputValue,
 )
-from pypenguin.core.context   import CompleteContext
-from pypenguin.core.dropdown  import SRDropdownValue
+from pypenguin.core.context         import CompleteContext
+from pypenguin.core.dropdown        import SRDropdownValue
 
 
 from tests.core.constants import ALL_SR_SCRIPTS
@@ -28,8 +28,8 @@ def config():
     return ValidationConfig()
 
 @fixture
-def validation_api():
-    return ValidationAPI(
+def validation_if():
+    return ValidationIF(
         scripts=ALL_SR_SCRIPTS,
     )
 
@@ -54,15 +54,9 @@ def context():
 
 
 
-def test_SRScript_validate(config, validation_api, context):        
+def test_SRScript_validate(config, validation_if, context):        
     srscript = ALL_SR_SCRIPTS[0]
-    srscript.validate(
-        path=[],
-        config=config,
-        info_api=info_api,
-        validation_api=validation_api,
-        context=context,
-    )
+    srscript.validate([], config, info_api, validation_if, context)
 
     execute_attr_validation_tests(
         obj=srscript,
@@ -73,14 +67,14 @@ def test_SRScript_validate(config, validation_api, context):
             ("blocks", [], RangeValidationError),
         ],
         validate_func=SRScript.validate,
-        func_args=[[], config, info_api, validation_api, context],
+        func_args=[[], config, info_api, validation_if, context],
     )
 
 
 
-def test_SRBlock_validate(config, validation_api, context):
+def test_SRBlock_validate(config, validation_if, context):
     srblock = ALL_SR_SCRIPTS[0].blocks[0]
-    srblock.validate([], config, info_api, validation_api, context, expects_reporter=False)
+    srblock.validate([], config, info_api, validation_if, context, expects_reporter=False)
 
     execute_attr_validation_tests(
         obj=srblock,
@@ -93,57 +87,57 @@ def test_SRBlock_validate(config, validation_api, context):
             ("mutation", "hi", TypeValidationError),
         ],
         validate_func=SRBlock.validate,
-        func_args=[[], config, info_api, validation_api, context, False],
+        func_args=[[], config, info_api, validation_if, context, False],
     )
 
-def test_SRBlock_validate_reporter(config, validation_api, context):
+def test_SRBlock_validate_reporter(config, validation_if, context):
     srblock = ALL_SR_SCRIPTS[1].blocks[0]
-    srblock.validate([], config, info_api, validation_api, context, expects_reporter=True)
+    srblock.validate([], config, info_api, validation_if, context, expects_reporter=True)
 
-def test_SRBlock_validate_cb_def(config, validation_api, context):
+def test_SRBlock_validate_cb_def(config, validation_if, context):
     srblock = ALL_SR_SCRIPTS[4].blocks[0]
-    srblock.validate([], config, info_api, validation_api, context, expects_reporter=False)    
+    srblock.validate([], config, info_api, validation_if, context, expects_reporter=False)    
 
-def test_SRBlock_validate_unexpected_mutation(config, validation_api, context):
+def test_SRBlock_validate_unexpected_mutation(config, validation_if, context):
     srblock = copy(ALL_SR_SCRIPTS[0].blocks[1])
     srblock.mutation = {...}
     with raises(TypeValidationError):
-        srblock.validate([], config, info_api, validation_api, context, expects_reporter=False)
+        srblock.validate([], config, info_api, validation_if, context, expects_reporter=False)
 
-def test_SRBlock_validate_missing_mutation(config, validation_api, context):
+def test_SRBlock_validate_missing_mutation(config, validation_if, context):
     srblock = copy(ALL_SR_SCRIPTS[4].blocks[0])
     srblock.mutation = None
     with raises(TypeValidationError):
-        srblock.validate([], config, info_api, validation_api, context, expects_reporter=False)
+        srblock.validate([], config, info_api, validation_if, context, expects_reporter=False)
 
-def test_SRBlock_validate_invalid_reporter_shape(config, validation_api, context):
+def test_SRBlock_validate_invalid_reporter_shape(config, validation_if, context):
     srblock = ALL_SR_SCRIPTS[0].blocks[0]
     with raises(InvalidBlockShapeError):
-        srblock.validate([], config, info_api, validation_api, context, expects_reporter=True)
+        srblock.validate([], config, info_api, validation_if, context, expects_reporter=True)
 
-def test_SRBlock_validate_unexpected_input(config, validation_api, context):
+def test_SRBlock_validate_unexpected_input(config, validation_if, context):
     srblock = deepcopy(ALL_SR_SCRIPTS[6].blocks[0])
     srblock.inputs["SOME_ID"] = SRBlockOnlyInputValue(block=None)
     with raises(UnnecessaryInputError):
-        srblock.validate([], config, info_api, validation_api, context, expects_reporter=False)
+        srblock.validate([], config, info_api, validation_if, context, expects_reporter=False)
 
-def test_SRBlock_validate_missing_input(config, validation_api, context):
+def test_SRBlock_validate_missing_input(config, validation_if, context):
     srblock = deepcopy(ALL_SR_SCRIPTS[6].blocks[0])
     del srblock.inputs["CONDITION"]
     with raises(MissingInputError):
-        srblock.validate([], config, info_api, validation_api, context, expects_reporter=False) # 1
+        srblock.validate([], config, info_api, validation_if, context, expects_reporter=False) # 1
 
-def test_SRBlock_validate_unexpected_dropdown(config, validation_api, context):
+def test_SRBlock_validate_unexpected_dropdown(config, validation_if, context):
     srblock = deepcopy(ALL_SR_SCRIPTS[2].blocks[0])
     srblock.dropdowns["SOME_ID"] = SRDropdownValue(kind=DropdownValueKind.STANDARD, value="something")
     with raises(UnnecessaryDropdownError):
-        srblock.validate([], config, info_api, validation_api, context, expects_reporter=True)
+        srblock.validate([], config, info_api, validation_if, context, expects_reporter=True)
 
-def test_SRBlock_validate_missing_dropdown(config, validation_api, context):
+def test_SRBlock_validate_missing_dropdown(config, validation_if, context):
     srblock = deepcopy(ALL_SR_SCRIPTS[2].blocks[0])
     del srblock.dropdowns["VARIABLE"]
     with raises(MissingDropdownError):
-        srblock.validate([], config, info_api, validation_api, context, expects_reporter=True)
+        srblock.validate([], config, info_api, validation_if, context, expects_reporter=True)
 
 
 def test_SRBlock_validate_opcode_type():
@@ -226,21 +220,21 @@ def test_SRInputValue_eq():
     b = SRBlockOnlyInputValue(block=None)
     
 
-def test_SRInputValue_validate_block(config, validation_api, context):
+def test_SRInputValue_validate_block(config, validation_if, context):
     input_value = SRBlockAndDropdownInputValue(
         block=ALL_SR_SCRIPTS[5].blocks[0],
         dropdown=SRDropdownValue(kind=DropdownValueKind.BROADCAST_MSG, value="my message"),
     )
-    input_value._validate_block([], config, info_api, validation_api, context)
+    input_value._validate_block([], config, info_api, validation_if, context)
 
 
-def test_SRBlockAndTextInputValue_validate(config, validation_api, context):
+def test_SRBlockAndTextInputValue_validate(config, validation_if, context):
     input_type = InputType.TEXT
     input_value = SRBlockAndTextInputValue(
         block=ALL_SR_SCRIPTS[1].blocks[0],
         text="some random text",
     )
-    input_value.validate([], config, info_api, validation_api, context, input_type)
+    input_value.validate([], config, info_api, validation_if, context, input_type)
     
     execute_attr_validation_tests(
         obj=input_value,
@@ -249,16 +243,16 @@ def test_SRBlockAndTextInputValue_validate(config, validation_api, context):
             ("text", {}, TypeValidationError),
         ],
         validate_func=SRBlockAndTextInputValue.validate,
-        func_args=[[], config, info_api, validation_api, context, input_type],
+        func_args=[[], config, info_api, validation_if, context, input_type],
     )
 
-def test_SRBlockAndDropdownInputValue_validate(config, validation_api, context):
+def test_SRBlockAndDropdownInputValue_validate(config, validation_if, context):
     input_type = InputType.MOUSE_OR_OTHER_SPRITE
     input_value = SRBlockAndDropdownInputValue(
         block=ALL_SR_SCRIPTS[5].blocks[0],
         dropdown=SRDropdownValue(kind=DropdownValueKind.OBJECT, value="mouse-pointer"),
     )
-    input_value.validate([], config, info_api, validation_api, context, input_type)
+    input_value.validate([], config, info_api, validation_if, context, input_type)
     
     execute_attr_validation_tests(
         obj=input_value,
@@ -267,15 +261,15 @@ def test_SRBlockAndDropdownInputValue_validate(config, validation_api, context):
             ("dropdown", {}, TypeValidationError),
         ],
         validate_func=SRBlockAndDropdownInputValue.validate,
-        func_args=[[], config, info_api, validation_api, context, input_type],
+        func_args=[[], config, info_api, validation_if, context, input_type],
     )
 
-def test_SRBlockOnlyInputValue_validate(config, validation_api, context):
+def test_SRBlockOnlyInputValue_validate(config, validation_if, context):
     input_type = InputType.BOOLEAN
     input_value = SRBlockOnlyInputValue(
         block=None,
     )
-    input_value.validate([], config, info_api, validation_api, context, input_type)
+    input_value.validate([], config, info_api, validation_if, context, input_type)
     
     execute_attr_validation_tests(
         obj=input_value,
@@ -283,15 +277,15 @@ def test_SRBlockOnlyInputValue_validate(config, validation_api, context):
             ("block", 5, TypeValidationError),
         ],
         validate_func=SRBlockOnlyInputValue.validate,
-        func_args=[[], config, info_api, validation_api, context, input_type],
+        func_args=[[], config, info_api, validation_if, context, input_type],
     )
 
-def test_SRScriptInputValue_validate(config, validation_api, context):
+def test_SRScriptInputValue_validate(config, validation_if, context):
     input_type = InputType.SCRIPT
     input_value = SRScriptInputValue(
         blocks=ALL_SR_SCRIPTS[0].blocks,
     )
-    input_value.validate([], config, info_api, validation_api, context, input_type)
+    input_value.validate([], config, info_api, validation_if, context, input_type)
     
     execute_attr_validation_tests(
         obj=input_value,
@@ -300,6 +294,6 @@ def test_SRScriptInputValue_validate(config, validation_api, context):
             ("blocks", [{}], TypeValidationError),
         ],
         validate_func=SRScriptInputValue.validate,
-        func_args=[[], config, info_api, validation_api, context, input_type],
+        func_args=[[], config, info_api, validation_if, context, input_type],
     )
 

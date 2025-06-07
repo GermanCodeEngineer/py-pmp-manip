@@ -11,9 +11,9 @@ from pypenguin.opcode_info.api.dropdown     import DropdownInfo
 from pypenguin.opcode_info.api.special_case import SpecialCase, SpecialCaseType
 
 if TYPE_CHECKING:
-    from pypenguin.core.block_api      import ToInterConversionAPI, ValidationAPI, ToFirstConversionAPI
-    from pypenguin.core.block_mutation import FRMutation, SRMutation
-    from pypenguin.core.block          import FRBlock, IRBlock, SRBlock
+    from pypenguin.core.block_interface import FirstToInterIF, ValidationIF, SecondToInterIF
+    from pypenguin.core.block_mutation  import FRMutation, SRMutation
+    from pypenguin.core.block           import FRBlock, IRBlock, SRBlock
 
 
 class OpcodeType(PypenguinEnum):
@@ -225,25 +225,25 @@ class OpcodeInfo:
     ##############################################################
     
     # Get the opcode type. Avoid OpcodeType.DYNAMIC
-    def get_opcode_type(self, block: "IRBlock|SRBlock", validation_api: "ValidationAPI") -> OpcodeType:
+    def get_opcode_type(self, block: "IRBlock|SRBlock", validation_if: "ValidationIF") -> OpcodeType:
         instead_case = self.get_special_case(SpecialCaseType.GET_OPCODE_TYPE)
         if self.opcode_type == OpcodeType.DYNAMIC:
             assert instead_case is not None, "If opcode_type is DYNAMIC, a special case with type GET_OPCODE_TYPE must be defined"
-            return instead_case.call(block, validation_api)
+            return instead_case.call(block, validation_if)
         else:
             assert instead_case is None, "If opcode_type is not DYNAMIC, no special case with type GET_OPCODE_TYPE should be defined"
             return self.opcode_type
     
     # Get input ids, types, modes
     def get_input_ids_types(self, 
-        block: "FRBlock|IRBlock|SRBlock", ticapi: "ToInterConversionAPI|None",
+        block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None",
     ) -> DualKeyDict[str, str, InputType]:
         """
         Get all the old and new inputs ids and their input types
         
         Args:
             block: To determine the ids and types e.g. Custom Blocks need the block as context
-            ticapi: only necessary if block is a FRBlock
+            fti_if: only necessary if block is a FRBlock
         
         Returns:
             DualKeyDict mapping old input id and new input id to input type
@@ -255,55 +255,55 @@ class OpcodeInfo:
                 for old_id, new_id, input_info in self.inputs.items_key1_key2()
             })
         else:
-            return instead_case.call(block=block, ticapi=ticapi)
+            return instead_case.call(block=block, fti_if=fti_if)
     
     def get_new_input_ids_types(self, 
-        block: "FRBlock|IRBlock|SRBlock", ticapi: "ToInterConversionAPI|None",
+        block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None",
     ) -> dict[str, InputType]:
         """
         Get all the new inputs ids and their input types
         
         Args:
             block: To determine the ids and types e.g. Custom Blocks need the block as context
-            ticapi: only necessary if block is a FRBlock
+            fti_if: only necessary if block is a FRBlock
         
         Returns:
             dict mapping new input id to input type
         """
-        return dict(self.get_input_ids_types(block, ticapi).items_key2())
+        return dict(self.get_input_ids_types(block, fti_if).items_key2())
     
     def get_old_input_ids_modes(self, 
-        block: "FRBlock|IRBlock|SRBlock", ticapi: "ToInterConversionAPI|None",
+        block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None",
     ) -> dict[str, InputMode]:
         """
         Get all the old inputs ids and their input modes
         
         Args:
             block: To determine the ids and types e.g. Custom Blocks need the block as context
-            ticapi: only necessary if block is a FRBlock
+            fti_if: only necessary if block is a FRBlock
         
         Returns:
             dict mapping old input id to input mode
         """
         return {
             old_id: input_type.get_mode() 
-            for old_id, input_type in self.get_input_ids_types(block, ticapi).items_key1()
+            for old_id, input_type in self.get_input_ids_types(block, fti_if).items_key1()
         }
     
     def get_old_new_input_ids(self, 
-        block: "FRBlock|IRBlock|SRBlock", ticapi: "ToInterConversionAPI|None",
+        block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None",
     ) -> dict[str, str]:
         """
         Get all the old and new input ids
         
         Args:
             block: To determine the ids and types e.g. Custom Blocks need the block as context
-            ticapi: only necessary if block is a FRBlock
+            fti_if: only necessary if block is a FRBlock
         
         Returns:
             dict mapping old input id to new input id
         """
-        return dict(self.get_input_ids_types(block, ticapi).keys_key1_key2())
+        return dict(self.get_input_ids_types(block, fti_if).keys_key1_key2())
     
     def get_new_old_input_ids(self, 
         block: "FRBlock|IRBlock|SRBlock",

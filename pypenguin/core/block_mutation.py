@@ -10,7 +10,7 @@ from pypenguin.utility import (
 )
 
 
-if TYPE_CHECKING: from pypenguin.core.block_api import ToInterConversionAPI
+if TYPE_CHECKING: from pypenguin.core.block_interface import FirstToInterIF
 from pypenguin.core.custom_block import SRCustomBlockOpcode, SRCustomBlockOptype
 
 @grepr_dataclass(grepr_fields=["tag_name", "children"])
@@ -46,12 +46,12 @@ class FRMutation(ABC):
             raise ThanksError()
 
     @abstractmethod
-    def to_second(self, ticapi: "ToInterConversionAPI") -> "SRMutation":
+    def to_second(self, fti_if: "FirstToInterIF") -> "SRMutation":
         """
         Convert a FRMutation into a SRMutation
         
         Args:
-            ticapi: API used to fetch information about other blocks
+            fti_if: API used to fetch information about other blocks
         
         Returns:
             the SRMutation
@@ -106,12 +106,12 @@ class FRCustomBlockArgumentMutation(FRMutation):
         """
         self._argument_name = name
     
-    def to_second(self, ticapi: "ToInterConversionAPI") -> "SRCustomBlockArgumentMutation":
+    def to_second(self, fti_if: "FirstToInterIF") -> "SRCustomBlockArgumentMutation":
         """
         Convert a FRCustomBlockArgumentMutation into a SRCustomBlockArgumentMutation
         
         Args:
-            ticapi: API used to fetch information about other blocks
+            fti_if: API used to fetch information about other blocks
         
         Returns:
             the SRCustomBlockArgumentMutation
@@ -171,12 +171,12 @@ class FRCustomBlockMutation(FRMutation):
             color             = tuple(loads(data["color"])) if "color" in data else ("#FF6680", "#FF4D6A", "#FF3355"),
         )
     
-    def to_second(self, ticapi: "ToInterConversionAPI") -> "SRCustomBlockMutation":
+    def to_second(self, fti_if: "FirstToInterIF") -> "SRCustomBlockMutation":
         """
         Convert a FRCustomBlockMutation into a SRCustomBlockMutation
         
         Args:
-            ticapi: API used to fetch information about other blocks
+            fti_if: API used to fetch information about other blocks
         
         Returns:
             the SRCustomBlockMutation
@@ -235,17 +235,17 @@ class FRCustomBlockCallMutation(FRMutation):
             color  = tuple(loads(data["color"  ])),
         )
     
-    def to_second(self, ticapi: "ToInterConversionAPI") -> "SRCustomBlockCallMutation":
+    def to_second(self, fti_if: "FirstToInterIF") -> "SRCustomBlockCallMutation":
         """
         Convert a FRCustomBlockCallMutation into a SRCustomBlockCallMutation
         
         Args:
-            ticapi: API used to fetch information about other blocks
+            fti_if: API used to fetch information about other blocks
         
         Returns:
             the SRCustomBlockCallMutation
         """
-        complete_mutation = ticapi.get_cb_mutation(self.proccode) # Get complete mutation
+        complete_mutation = fti_if.get_cb_mutation(self.proccode) # Get complete mutation
         return SRCustomBlockCallMutation(
             custom_opcode      = SRCustomBlockOpcode.from_proccode_argument_names(
                 proccode          = self.proccode,
@@ -278,12 +278,12 @@ class FRStopScriptMutation(FRMutation):
             has_next = loads(data["hasnext"]),
         )
     
-    def to_second(self, ticapi: "ToInterConversionAPI") -> "SRStopScriptMutation":
+    def to_second(self, fti_if: "FirstToInterIF") -> "SRStopScriptMutation":
         """
         Convert a FRStopScriptMutation into a SRStopScriptMutation
         
         Args:
-            ticapi: API used to fetch information about other blocks
+            fti_if: API used to fetch information about other blocks
         
         Returns:
             the SRStopScriptMutation
@@ -316,12 +316,12 @@ class SRMutation(ABC):
         """
 
     #@abstractmethod
-    def to_first(self, ticapi: "ToInterConversionAPI") -> "FRMutation":
+    def to_first(self, fti_if: "FirstToInterIF") -> "FRMutation":
         """
         Convert a FRMutation into a SRMutation
         
         Args:
-            ticapi: API used to fetch information about other blocks
+            fti_if: API used to fetch information about other blocks
         
         Returns:
             the SRMutation

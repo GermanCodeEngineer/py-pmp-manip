@@ -55,6 +55,15 @@ def string_to_sha256(primary: str, secondary: str|None=None) -> str:
     else:
         return _string_to_sha256(primary, digits=16) + _string_to_sha256(secondary, digits=4)
 
+def number_to_token(number: int) -> str:
+    base = len(_TOKEN_CHARSET)
+    result = []
+    while number > 0:
+        number -= 1
+        result.insert(0, _TOKEN_CHARSET[number % base])
+        number //= base
+    return ''.join(result)
+
 def generate_md5(data: bytes) -> str:
     """
     Generate an MD5 hash for a given bytes object.
@@ -70,8 +79,9 @@ def generate_md5(data: bytes) -> str:
         md5_hash.update(data[i:i+4096])
     return md5_hash.hexdigest()
 
+
 __all__ = [
     "remove_duplicates", "lists_equal_ignore_order", "get_closest_matches", "tuplify", 
-    "string_to_sha256", "generate_md5",
+    "string_to_sha256", "number_to_token", "generate_md5",
 ]
 

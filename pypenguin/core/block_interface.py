@@ -1,6 +1,6 @@
 from dataclasses import field
 
-from pypenguin.utility import grepr_dataclass, ConversionError, ValidationError
+from pypenguin.utility import grepr_dataclass, number_to_token, ConversionError, ValidationError
 
 from pypenguin.core.comment        import SRComment
 from pypenguin.core.block_mutation import FRCustomBlockMutation, SRCustomBlockMutation
@@ -9,9 +9,9 @@ from pypenguin.core.custom_block   import SRCustomBlockOpcode
 
 
 @grepr_dataclass(grepr_fields=["blocks", "scheduled_block_deletions"])
-class ToInterConversionAPI:
+class FirstToInterIF:
     """
-    An API which allows the access to other blocks in the same target during conversion from first to intermediate representation
+    An interface which allows the access to other blocks in the same target during conversion from first to intermediate representation
     """
 
     blocks: dict[str, FRBlock]
@@ -45,7 +45,7 @@ class ToInterConversionAPI:
     def schedule_block_deletion(self, block_id: str) -> None:
         """
         Order a FRBlock to be deleted. 
-        It will no longer be present in Temporary and Second Representation
+        It will no longer be present in intermediate and second representation
         
         Args:
             block_id: the id of the FRBlock to be deleted
@@ -85,15 +85,46 @@ class ToInterConversionAPI:
             return self.block_comments[comment_id]
         raise ConversionError(f"Comment with id {repr(comment_id)} not found")
 
-class ToFirstConversionAPI:
+@grepr_dataclass(grepr_fields=["blocks", "added_blocks", "_next_block_id_num"])
+class SecondToInterIF:
     """
-    An API which allows the access to other blocks in the same target during conversion from intermediate to first representation
+    An interface which allows the access to other blocks in the same target during conversion from second to intermediate representation
     """
 
     blocks: dict[str, IRBlock]
+    added_blocks: dict[str, FRBlock] = field(default_factory=dict)
+    _next_block_id_num: int = field(init=False)
 
-    def get_cb_mutation(self, custom_opcode: SRCustomBlockOpcode) -> "SRCustomBlockMutation":
+    def __post_init__(self) -> None: # TODO: add tests
         """
+        Calculate and store next unused block id
+        
+        Returns:
+            None
+        """
+        self._next_block_id_num = len(self.blocks)
+        while number_to_token(self._next_block_id_num) in self.blocks:
+            self._next_block_id_num += 1
+        
+    def schedule_block_addition(self, block: FRBlock) -> str # TODO: add tests
+        """
+        Order a FRBlock to be added. 
+        It will be present in first representation
+        
+        Args:
+            block: the FRBlock to add
+        
+        Returns:
+            the new block's reference id
+        """
+        block_id = number_to_token(self._next_block_id_num)
+        added_blocks[block_id] = block
+        self._next_block_id_num += 1
+        return block_id
+
+    def get_cb_mutation(self, custom_opcode: SRCustomBlockOpcode) -> "SRCustomBlockMutation": 
+        """
+        # TODO: add tests
         Get a SRCustomBlockMutation by its SRCustomBlockOpcode
         
         Args:
@@ -106,13 +137,13 @@ class ToFirstConversionAPI:
             if not isinstance(block.mutation, SRCustomBlockMutation): continue
             if block.mutation.custom_opcode == custom_opcode:
                 return block.mutation
-        raise ConversionError(f"Mutation of proccode {repr(custom_opcode)} not found")
+        raise ConversionError(f"Mutation of custom opcode {repr(custom_opcode)} not found")
 
 
 @grepr_dataclass(grepr_fields=["scripts", "cb_mutations"])
-class ValidationAPI:
+class ValidationIF:
     """
-    An API which allows the access to other blocks in the same target during validation
+    An interface which allows the access to other blocks in the same target during validation
     """
 
     scripts: list["SRScript"]
@@ -178,5 +209,5 @@ class ValidationAPI:
         raise ValidationError(f"Mutation of custom_opcode {custom_opcode} not found")
 
 
-__all__ = ["ToInterConversionAPI", "ValidationAPI"]
+__all__ = ["FirstToInterIF", "SecondToInterIF", "ValidationIF"]
 

@@ -1,5 +1,5 @@
 from pypenguin.core.asset          import *
-from pypenguin.core.block_api      import *
+from pypenguin.core.block_interface      import *
 from pypenguin.core.block_mutation import *
 from pypenguin.core.block          import *
 from pypenguin.core.comment        import *

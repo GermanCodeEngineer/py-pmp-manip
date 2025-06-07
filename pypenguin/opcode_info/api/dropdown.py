@@ -531,13 +531,13 @@ class DropdownType(PypenguinEnum):
         Translate a dropdown value from first representation into a SRDropdownValue expressed as a tuple
 
         Args:
-            old_value: dropdown value in first representation
+            old_value: the dropdown value in first representation
         
         Returns:
             the SRDropdownValue as a tuple => (kind, value)
         """
         # TODO: add special case for this
-        if self == DropdownType.EXPANDED_MINIMIZED and old_value == "FALSE": # To patch a mistake of the pen extension dev
+        if self == DropdownType.EXPANDED_MINIMIZED and old_value == "FALSE": # To patch a mistake of the pen extension devs
             old_value = False
         new_values = self.guess_possible_new_dropdown_values(include_behaviours=True)
         old_values = self.guess_possible_old_dropdown_values()
@@ -550,6 +550,29 @@ class DropdownType(PypenguinEnum):
         else:
             assert default_kind is not None
             return (default_kind, old_value)
+
+    def translate_new_to_old_value(self, new_value: tuple[DropdownValueKind, Any]) -> Any:
+        """
+        # TODO: add tests
+        Translate a SRDropdownValue expressed as a tuple info a dropdown value from first representation
+
+        Args:
+            new_value: the SRDropdownValue as a tuple => (kind, value)
+        
+        Returns:
+            the dropdown value in first representation
+        """
+        new_values = self.guess_possible_new_dropdown_values(include_behaviours=True)
+        old_values = self.guess_possible_old_dropdown_values()
+        default_kind = self.get_default_kind_for_guess()
+        
+        assert len(new_values) == len(old_values)
+        
+        if new_value in new_values:
+            return old_values[new_values.index(new_value)]
+        else:
+            assert default_kind is not None
+            return new_value[1]
 
 
 __all__ = ["DropdownValueKind", "DropdownInfo", "DropdownValueRule", "DropdownTypeInfo", "DropdownType"]

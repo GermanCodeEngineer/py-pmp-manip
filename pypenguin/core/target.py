@@ -11,16 +11,16 @@ from pypenguin.utility         import (
     SameValueTwiceError, ConversionError,
 )
 
-from pypenguin.core.asset          import FRCostume, FRSound, SRCostume, SRVectorCostume, SRSound
-from pypenguin.core.block_api      import ToInterConversionAPI, ValidationAPI
-from pypenguin.core.block_mutation import SRCustomBlockMutation
-from pypenguin.core.block          import FRBlock, IRBlock, SRScript
-from pypenguin.core.comment        import FRComment, SRComment
-from pypenguin.core.context        import PartialContext, CompleteContext
-from pypenguin.core.enums          import SRSpriteRotationStyle
-from pypenguin.core.monitor        import SRMonitor
-from pypenguin.core.vars_lists     import SRVariable, SRVariable, SRVariable, SRCloudVariable
-from pypenguin.core.vars_lists     import SRList, SRList, SRList
+from pypenguin.core.asset           import FRCostume, FRSound, SRCostume, SRVectorCostume, SRSound
+from pypenguin.core.block_interface import FirstToInterIF, ValidationIF
+from pypenguin.core.block_mutation  import SRCustomBlockMutation
+from pypenguin.core.block           import FRBlock, IRBlock, SRScript
+from pypenguin.core.comment         import FRComment, SRComment
+from pypenguin.core.context         import PartialContext, CompleteContext
+from pypenguin.core.enums           import SRSpriteRotationStyle
+from pypenguin.core.monitor         import SRMonitor
+from pypenguin.core.vars_lists      import SRVariable, SRVariable, SRVariable, SRCloudVariable
+from pypenguin.core.vars_lists      import SRList, SRList, SRList
 
 
 @grepr_dataclass(grepr_fields=["is_stage", "name", "variables", "lists", "broadcasts", "custom_vars", "blocks", "comments", "current_costume", "costumes", "sounds", "id", "volume", "layer_order"])
@@ -136,17 +136,17 @@ class FRTarget(ABC):
             if isinstance(block, tuple):
                 blocks[block_reference] = FRBlock.from_tuple(block, parent_id=None)
 
-        ticapi = ToInterConversionAPI(blocks=blocks, block_comments=attached_comments)
+        fti_if = FirstToInterIF(blocks=blocks, block_comments=attached_comments)
         new_blocks: dict["str", "IRBlock"] = {}
         for block_reference, block in blocks.items():
             new_block = block.to_inter(
-                ticapi = ticapi,
+                fti_if = fti_if,
                 info_api  = info_api,
                 own_id    = block_reference,
             )
             new_blocks[block_reference] = new_block
 
-        for block_reference in ticapi.scheduled_block_deletions:
+        for block_reference in fti_if.scheduled_block_deletions:
             del new_blocks[block_reference]
         
         # Get all top level block ids
@@ -474,14 +474,14 @@ class SRTarget:
             SameValueTwiceError(ValidationError): if two custom blocks have the same custom_opcode.
         """
         context = self._get_complete_context(partial_context=context)
-        validation_api = ValidationAPI(scripts=self.scripts)
+        validation_if = ValidationIF(scripts=self.scripts)
         cb_custom_opcodes = {}
         for i, script in enumerate(self.scripts):
             script.validate(
                 path           = path+["scripts", i],
                 config         = config,
                 info_api       = info_api,
-                validation_api = validation_api,
+                validation_if = validation_if,
                 context        = context,
             )
             for j, block in enumerate(script.blocks):
