@@ -1,10 +1,15 @@
 # Variables & Lists
-OPCODE_VAR_VALUE      = "data_variable"
-OPCODE_LIST_VALUE     = "data_listcontents"
-NEW_OPCODE_VAR_VALUE  = "value of [VARIABLE]"
-NEW_OPCODE_LIST_VALUE = "value of [LIST]"
-OPCODE_VAR_VALUE_NUM  = 12
-OPCODE_LIST_VALUE_NUM = 13
+OPCODE_VAR_VALUE               = "data_variable"
+OPCODE_LIST_VALUE              = "data_listcontents"
+NEW_OPCODE_VAR_VALUE           = "value of [VARIABLE]"
+NEW_OPCODE_LIST_VALUE          = "value of [LIST]"
+ANY_OPCODE_IMMEDIATE_BLOCK     = {OPCODE_VAR_VALUE, OPCODE_LIST_VALUE}
+ANY_NEW_OPCODE_IMMEDIATE_BLOCK = {NEW_OPCODE_VAR_VALUE, NEW_OPCODE_LIST_VALUE}
+
+OPCODE_NUM_VAR_VALUE           = 12
+OPCODE_NUM_LIST_VALUE          = 13
+ANY_OPCODE_NUM_IMMEDIATE_BLOCK = {OPCODE_NUM_VAR_VALUE, OPCODE_NUM_LIST_VALUE}
+ANY_TEXT_INPUT_NUM             = {4, 5, 6, 7, 8, 9, 10, 11}
 
 # Custom Block Definitions
 OPCODE_CB_DEF         = "procedures_definition"

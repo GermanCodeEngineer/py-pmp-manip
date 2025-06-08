@@ -231,11 +231,22 @@ ALL_FR_BLOCK_DATAS = {
     },
     "o": {
         "opcode": "data_changevariableby",
-        "next": None,
+        "next": "q",
         "parent": "n",
         "inputs": {
             "VALUE": [1, [4, "1"]],
         },
+        "fields": {
+            "VARIABLE": ["my variable", "`jEk@4|i[#Fk?(8x)AV.-my variable", ""],
+        },
+        "shadow": False,
+        "topLevel": False,
+    },
+    "q": {
+        "opcode": "data_showvariable",
+        "next": None,
+        "parent": "o",
+        "inputs": {},
         "fields": {
             "VARIABLE": ["my variable", "`jEk@4|i[#Fk?(8x)AV.-my variable", ""],
         },
@@ -442,11 +453,22 @@ ALL_FR_BLOCKS = {
     ),
     "o": FRBlock(
         opcode="data_changevariableby",
-        next=None,
+        next="q",
         parent="n",
         inputs={
             "VALUE": (1, (4, "1")),
         },
+        fields={
+            "VARIABLE": ("my variable", "`jEk@4|i[#Fk?(8x)AV.-my variable", ""),
+        },
+        shadow=False,
+        top_level=False,
+    ),
+    "q": FRBlock(
+        opcode="data_showvariable",
+        next=None,
+        parent="o",
+        inputs={},
         fields={
             "VARIABLE": ("my variable", "`jEk@4|i[#Fk?(8x)AV.-my variable", ""),
         },
@@ -739,6 +761,18 @@ ALL_IR_BLOCKS = {
         comment=None,
         mutation=None,
         position=None,
+        next="q",
+        is_top_level=False,
+    ),
+    "q": IRBlock(
+        opcode="data_showvariable",
+        inputs={},
+        dropdowns={
+            "VARIABLE": "my variable",
+        },
+        comment=None,
+        mutation=None,
+        position=None,
         next=None,
         is_top_level=False,
     ),
@@ -836,7 +870,7 @@ ALL_SR_SCRIPTS = [
             ),
         ],
      ),
-     SRScript( # [2]
+    SRScript( # [2]
         position=(446, 652),
         blocks=[
             SRBlock(
@@ -947,6 +981,15 @@ ALL_SR_SCRIPTS = [
                                 inputs={
                                     "VALUE": SRBlockAndTextInputValue(block=None, text="1"),
                                 },
+                                dropdowns={
+                                    "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="my variable"),
+                                },
+                                comment=None,
+                                mutation=None,
+                            ),
+                            SRBlock(
+                                opcode="show variable [VARIABLE]",
+                                inputs={},
                                 dropdowns={
                                     "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="my variable"),
                                 },

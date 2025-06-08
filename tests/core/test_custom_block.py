@@ -1,6 +1,6 @@
 from pytest import fixture, raises
 
-from pypenguin.opcode_info.api import InputType, OpcodeType
+from pypenguin.opcode_info.api import InputType, InputInfo, OpcodeType
 from pypenguin.utility         import (
     ValidationConfig, 
     TypeValidationError, RangeValidationError, SameValueTwiceError, ConversionError,
@@ -38,12 +38,12 @@ def test_SRCustomBlockOpcode_from_proccode_argument_names(segments):
     assert isinstance(custom_opcode, SRCustomBlockOpcode)
     assert custom_opcode.segments == segments
 
-def test_SRCustomBlockOpcode_get_corresponding_input_types(segments):
+def test_SRCustomBlockOpcode_get_corresponding_input_info(segments):
     custom_opcode = SRCustomBlockOpcode(segments=segments)
-    assert custom_opcode.get_corresponding_input_types() == {
-        "thing name": InputType.TEXT,
-        "do backwards?": InputType.BOOLEAN,
-        "repetitions": InputType.TEXT,
+    assert custom_opcode.get_corresponding_input_info() == {
+        "thing name": InputInfo(InputType.TEXT, menu=None),
+        "do backwards?": InputInfo(InputType.BOOLEAN, menu=None),
+        "repetitions": InputInfo(InputType.TEXT, menu=None),
     }
 
 def test_SRCustomBlockOpcode_validate(config, segments):

@@ -126,8 +126,10 @@ class OpcodeInfo:
     
     
     # Info by New Id
-    def get_input_info_by_new(self, new: str) -> InputInfo:
+    def get_input_info_by_new(self, new: str, block: "SRBlock") -> InputInfo:
         """
+        # TODO: ensure works
+        # TODO: make parallell methods work; possibly allow for FRBlock and IRBlock as well
         Get information about an input by its new id
         
         Args:
@@ -225,7 +227,7 @@ class OpcodeInfo:
     ##############################################################
     
     # Get the opcode type. Avoid OpcodeType.DYNAMIC
-    def get_opcode_type(self, block: "IRBlock|SRBlock", validation_if: "ValidationIF") -> OpcodeType:
+    def get_opcode_type(self, block: "IRBlock|SRBlock", validation_if: "ValidationIF") -> OpcodeType: # TODO: docs
         instead_case = self.get_special_case(SpecialCaseType.GET_OPCODE_TYPE)
         if self.opcode_type == OpcodeType.DYNAMIC:
             assert instead_case is not None, "If opcode_type is DYNAMIC, a special case with type GET_OPCODE_TYPE must be defined"
@@ -234,61 +236,55 @@ class OpcodeInfo:
             assert instead_case is None, "If opcode_type is not DYNAMIC, no special case with type GET_OPCODE_TYPE should be defined"
             return self.opcode_type
     
-    # Get input ids, types, modes
-    def get_input_ids_types(self, 
+    # Get input ids, info, types, modes
+    def get_input_ids_infos(self, 
         block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None",
-    ) -> DualKeyDict[str, str, InputType]:
+    ) -> DualKeyDict[str, str, InputInfo]:
         """
-        Get all the old and new inputs ids and their input types
+        Get all the old and new inputs ids and their input information
         
         Args:
-            block: To determine the ids and types e.g. Custom Blocks need the block as context
+            block: needed as context to determine the ids and information e.g. for Custom Blocks
             fti_if: only necessary if block is a FRBlock
         
         Returns:
-            DualKeyDict mapping old input id and new input id to input type
+            DualKeyDict mapping old input id and new input id to input information
         """
-        instead_case = self.get_special_case(SpecialCaseType.GET_ALL_INPUT_IDS_TYPES)
+        instead_case = self.get_special_case(SpecialCaseType.GET_ALL_INPUT_IDS_INFO)
         if instead_case is None:
-            return DualKeyDict({
-                (old_id, new_id): input_info.type
-                for old_id, new_id, input_info in self.inputs.items_key1_key2()
-            })
+            return self.inputs
         else:
             return instead_case.call(block=block, fti_if=fti_if)
-    
-    def get_new_input_ids_types(self, 
+
+    def get_old_input_ids_infos(self, 
         block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None",
-    ) -> dict[str, InputType]:
+    ) -> dict[str, InputInfo]: # currently unused
         """
-        Get all the new inputs ids and their input types
+        Get all the old inputs ids and their input information
         
         Args:
-            block: To determine the ids and types e.g. Custom Blocks need the block as context
+            block: needed as context to determine the ids and information e.g. for Custom Blocks
             fti_if: only necessary if block is a FRBlock
         
         Returns:
-            dict mapping new input id to input type
+            dict mapping old input id to input information
         """
-        return dict(self.get_input_ids_types(block, fti_if).items_key2())
-    
-    def get_old_input_ids_modes(self, 
+        return dict(self.get_input_ids_infos(block, fti_if).items_key1())
+
+    def get_new_input_ids_infos(self, 
         block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None",
-    ) -> dict[str, InputMode]:
+    ) -> dict[str, InputInfo]:
         """
-        Get all the old inputs ids and their input modes
+        Get all the new inputs ids and their input information
         
         Args:
-            block: To determine the ids and types e.g. Custom Blocks need the block as context
+            block: needed as context to determine the ids and information e.g. for Custom Blocks
             fti_if: only necessary if block is a FRBlock
         
         Returns:
-            dict mapping old input id to input mode
+            dict mapping new input id to input information
         """
-        return {
-            old_id: input_type.get_mode() 
-            for old_id, input_type in self.get_input_ids_types(block, fti_if).items_key1()
-        }
+        return dict(self.get_input_ids_infos(block, fti_if).items_key2())
     
     def get_old_new_input_ids(self, 
         block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None",
@@ -297,27 +293,28 @@ class OpcodeInfo:
         Get all the old and new input ids
         
         Args:
-            block: To determine the ids and types e.g. Custom Blocks need the block as context
+            block: needed as context to determine the ids and information e.g. for Custom Blocks
             fti_if: only necessary if block is a FRBlock
         
         Returns:
             dict mapping old input id to new input id
         """
-        return dict(self.get_input_ids_types(block, fti_if).keys_key1_key2())
+        return dict(self.get_input_ids_infos(block, fti_if).keys_key1_key2())
     
     def get_new_old_input_ids(self, 
-        block: "FRBlock|IRBlock|SRBlock",
+        block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None",
     ) -> dict[str, str]:
         """
         Get all the new and old input ids
         
         Args:
-            block: To determine the ids and types e.g. Custom Blocks need the block as context
+            block: needed as context to determine the ids and information e.g. for Custom Blocks
+            fti_if: only necessary if block is a FRBlock
         
         Returns:
             dict mapping new input id to old input id
         """
-        return {new: old for old, new in self.get_input_ids_types(block, None).keys_key1_key2()}
+        return dict(self.get_input_ids_infos(block, fti_if).keys_key2_key1())
     
 
 @grepr_dataclass(grepr_fields=["name", "opcode_info"])

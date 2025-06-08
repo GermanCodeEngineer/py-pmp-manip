@@ -1,16 +1,18 @@
-from copy   import copy, deepcopy
-from pytest import fixture, raises
+from copy        import copy, deepcopy
+from dataclasses import field
+from pytest      import fixture, raises
 
-from pypenguin.opcode_info.api  import DropdownValueKind, OpcodeType, InputType
+from pypenguin.opcode_info.api  import DropdownValueKind, OpcodeType, InputType, InputMode
 from pypenguin.opcode_info.data import info_api
 from pypenguin.utility          import (
-    ValidationConfig, 
+    grepr_dataclass, ValidationConfig, 
     TypeValidationError, RangeValidationError, InvalidOpcodeError, InvalidBlockShapeError,
     UnnecessaryInputError, MissingInputError, UnnecessaryDropdownError, MissingDropdownError,
 )
 
-from pypenguin.core.block_interface import ValidationIF
+from pypenguin.core.block_interface import SecondToInterIF, ValidationIF
 from pypenguin.core.block           import (
+    IRInputValue,
     SRScript, SRBlock, SRInputValue, 
     SRBlockAndTextInputValue, SRBlockOnlyInputValue, SRBlockAndDropdownInputValue, SRScriptInputValue,
 )
@@ -18,7 +20,7 @@ from pypenguin.core.context         import CompleteContext
 from pypenguin.core.dropdown        import SRDropdownValue
 
 
-from tests.core.constants import ALL_SR_SCRIPTS
+from tests.core.constants import ALL_IR_BLOCKS, ALL_SR_SCRIPTS
 
 from tests.utility import execute_attr_validation_tests
 
@@ -29,9 +31,7 @@ def config():
 
 @fixture
 def validation_if():
-    return ValidationIF(
-        scripts=ALL_SR_SCRIPTS,
-    )
+    return ValidationIF(scripts=ALL_SR_SCRIPTS)
 
 @fixture
 def context():
@@ -51,6 +51,17 @@ def context():
 
         is_stage=False,
     )
+
+@grepr_dataclass(grepr_fields=["_block_ids"], parent_cls=SecondToInterIF)
+class TEST_SecondToInterIF(SecondToInterIF):
+    _block_ids: list[str] = field(default_factory=list)
+
+    def get_next_block_id(self) -> str:
+        block_id = self._block_ids[self._next_block_id_num - 1]
+        self._next_block_id_num += 1
+        return block_id
+
+
 
 
 
@@ -188,6 +199,81 @@ def test_SRBlock_validate_opcode_type():
                 )
 
 
+def test_SRBlock_to_inter_block_and_text_block_only():
+    sti_if = TEST_SecondToInterIF(scripts=ALL_SR_SCRIPTS, _block_ids=["k", "l"])
+    script = ALL_SR_SCRIPTS[4]
+    srblock = script.blocks[0]
+    irblock = srblock.to_inter(
+        sti_if=sti_if,
+        info_api=info_api,
+        next=None,
+        position=script.position,
+        is_top_level=True,
+    )
+    assert irblock == ALL_IR_BLOCKS["c"]
+    assert sti_if.added_blocks == {
+        id: ALL_IR_BLOCKS[id]
+        for id in {"k", "l"}
+    }
+
+def test_SRBlock_to_inter_script_block1():
+    sti_if = TEST_SecondToInterIF(scripts=ALL_SR_SCRIPTS, _block_ids=[])
+    script = ALL_SR_SCRIPTS[0]
+    srblock = script.blocks[0]
+    irblock = srblock.to_inter(
+        sti_if=sti_if,
+        info_api=info_api,
+        next="b",
+        position=script.position,
+        is_top_level=True,
+    )
+    assert irblock == ALL_IR_BLOCKS["d"]
+    assert sti_if.added_blocks == {
+        id: ALL_IR_BLOCKS[id]
+        for id in {}
+    }
+
+def test_SRBlock_to_inter_script_block2_and_menu():
+    sti_if = TEST_SecondToInterIF(scripts=ALL_SR_SCRIPTS, _block_ids=["e"])
+    script = ALL_SR_SCRIPTS[0]
+    srblock = script.blocks[1]
+    irblock = srblock.to_inter(
+        sti_if=sti_if,
+        info_api=info_api,
+        next=None,
+        position=None,
+        is_top_level=False,
+    )
+    assert irblock == ALL_IR_BLOCKS["b"]
+    assert sti_if.added_blocks == {
+        id: ALL_IR_BLOCKS[id]
+        for id in {"e"}
+    }
+
+
+def test_SRBlock_to_inter_substack():
+    sti_if = TEST_SecondToInterIF(scripts=ALL_SR_SCRIPTS, _block_ids=["o", "q"])
+    script = ALL_SR_SCRIPTS[6]
+    srblock = script.blocks[0]
+    irblock = srblock.to_inter(
+        sti_if=sti_if,
+        info_api=info_api,
+        next=None,
+        position=script.position,
+        is_top_level=True,
+    )
+    expected = deepcopy(ALL_IR_BLOCKS["n"])
+    expected.inputs["CONDITION"] = IRInputValue(
+        mode=InputMode.BLOCK_ONLY, references=[], immediate_block=None, text=None,
+    )
+    assert irblock == expected
+    assert sti_if.added_blocks == {
+        id: ALL_IR_BLOCKS[id]
+        for id in {"o", "q"}
+    }
+ 
+# TODO: test immediate var block
+raise Exception()
 
 def test_SRInputValue_init():
     class DummyInputValue(SRInputValue):

@@ -106,7 +106,7 @@ class FRBlock:
             y = data[4]
         else: raise DeserializationError(f"Invalid data for FRBlock conversion: {data}")
         
-        if data[0] == OPCODE_VAR_VALUE_NUM:
+        if data[0] == OPCODE_NUM_VAR_VALUE:
             return FRBlock(
                 opcode    = OPCODE_VAR_VALUE,
                 next      = None,
@@ -120,7 +120,7 @@ class FRBlock:
                 comment   = None,
                 mutation  = None,
             )
-        elif data[0] == OPCODE_LIST_VALUE_NUM:
+        elif data[0] == OPCODE_NUM_LIST_VALUE:
            return FRBlock(
                 opcode    = OPCODE_LIST_VALUE,
                 next      = None,
@@ -201,11 +201,11 @@ class FRBlock:
         Returns:
             the inputs in IR Format
         """
-        input_modes = opcode_info.get_old_input_ids_modes(block=self, fti_if=fti_if)
+        input_infos = opcode_info.get_old_input_ids_infos(block=self, fti_if=fti_if)
         
         new_inputs = {}
         for input_id, input_value in self.inputs.items():
-            input_mode = input_modes[input_id]
+            input_info = input_infos[input_id].type.get_mode()
 
             references      = []
             immediate_block = None
@@ -213,9 +213,9 @@ class FRBlock:
             for item in input_value[1:]: # ignore first item(some irrelevant number)
                 if isinstance(item, str):
                     references.append(item)
-                elif isinstance(item, tuple) and item[0] in {4, 5, 6, 7, 8, 9, 10, 11}:
+                elif isinstance(item, tuple) and item[0] in ANY_TEXT_INPUT_NUM:
                     text = item[1]
-                elif isinstance(item, tuple) and item[0] in {12, 13}:
+                elif isinstance(item, tuple) and item[0] in ANY_OPCODE_NUM_IMMEDIATE_BLOCK:
                     immediate_fr_block = FRBlock.from_tuple(item, parent_id=own_id)
                     immediate_block = immediate_fr_block.to_inter(
                         fti_if = fti_if,
@@ -225,16 +225,17 @@ class FRBlock:
                 else: raise ConversionError(f"Invalid input value {input_value} for input {repr(input_id)}")
 
             new_inputs[input_id] = IRInputValue(
-                mode            = input_mode,
+                mode            = input_info,
                 references      = references,
                 immediate_block = immediate_block,
                 text            = text,
             )
         
         # Check for missing inputs and give a default value where possible otherwise raise
-        for input_id, input_mode in input_modes.items():
+        for input_id, input_info in input_infos.items():
             if input_id in new_inputs:
                 continue
+            input_mode = input_info.type.get_mode()
             if input_mode.can_be_missing():
                 new_inputs[input_id] = IRInputValue(
                     mode            = input_mode,
@@ -280,8 +281,7 @@ class IRBlock:
             opcode       = input_info.menu.opcode,
             inputs       = {},
             dropdowns    = {
-                input_info.menu.inner: 
-                dropdown_type.translate_new_to_old_value(dropdown_value.to_tuple())
+                input_info.menu.inner: dropdown_value,
             },
             comment      = None,
             mutation     = None,
@@ -403,11 +403,11 @@ class IRBlock:
                 dropdown = input_dropdown,
             )
         
-        input_types = opcode_info.get_new_input_ids_types(block=self, fti_if=None) 
+        input_infos = opcode_info.get_new_input_ids_infos(block=self, fti_if=None) 
         # maps input ids to their types # fti_if isn't necessary for a IRBlock
-        for new_input_id in input_types.keys():
+        for new_input_id in input_infos.keys():
             if new_input_id not in new_inputs:
-                input_mode = input_types[new_input_id].get_mode()
+                input_mode = input_infos[new_input_id].type.get_mode()
                 if input_mode.can_be_missing():
                     new_inputs[new_input_id] = SRInputValue.from_mode(mode=input_mode)
                 else:
@@ -577,11 +577,11 @@ class SRBlock:
             AA_TYPE(self, path, "mutation", opcode_info.new_mutation_cls, condition="For this opcode")
             self.mutation.validate(path+["mutation"], config)
 
-        input_types = opcode_info.get_new_input_ids_types(block=self, fti_if=None) 
+        input_infos = opcode_info.get_new_input_ids_infos(block=self, fti_if=None) 
         # maps input ids to their types # fti_if isn't necessary for a IRBlock
         
         for new_input_id, input in self.inputs.items():
-            if new_input_id not in input_types.keys():
+            if new_input_id not in input_infos.keys():
                 raise UnnecessaryInputError(path, 
                     f"inputs of {cls_name} with opcode {repr(self.opcode)} includes unnecessary input {repr(new_input_id)}",
                 )
@@ -591,9 +591,9 @@ class SRBlock:
                 info_api       = info_api,
                 validation_if = validation_if,
                 context        = context,
-                input_type     = input_types[new_input_id],
+                input_type     = input_infos[new_input_id].type,
             )
-        for new_input_id in input_types.keys():
+        for new_input_id in input_infos.keys():
             if new_input_id not in self.inputs:
                 raise MissingInputError(path, 
                     f"inputs of {cls_name} with opcode {repr(self.opcode)} is missing input {repr(new_input_id)}",
@@ -674,7 +674,7 @@ class SRBlock:
         next: str | None, 
         position: tuple[int | float, int | float] | None,
         is_top_level: bool, 
-    ) -> dict[str, IRBlock]:
+    ) -> IRBlock:
         """
         Converts a SRBlock into a IRBlock
         
@@ -690,16 +690,16 @@ class SRBlock:
         """
         opcode_info = info_api.get_info_by_new(self.opcode)
         
-        # Map new input IDs to old input IDs
-        new_old_input_ids = opcode_info.get_new_old_input_ids(block=self, fti_if=None)
+        # Map new input Ids to old input Ids
+        new_old_input_ids = opcode_info.get_new_old_input_ids  (block=self, fti_if=None) # not needed for a SRBlock
+        input_infos       = opcode_info.get_new_input_ids_infos(block=self, fti_if=None)
         old_inputs = {}
-
         for input_id, input_value in self.inputs.items():
-            input_info = opcode_info.get_input_info_by_new(input_id)
+            input_info = input_infos[input_id]
             input_mode = input_info.type.get_mode()
             old_input_id = new_old_input_ids[input_id]
             
-            input_sub_scripts: list[SRBlock | IRBlock] = []
+            input_sub_scripts: list[list[SRBlock | IRBlock]] = []
             input_text     = None
             input_dropdown = None
             
@@ -716,7 +716,8 @@ class SRBlock:
                     if input_value.block is not None:
                         input_sub_scripts.append([input_value.block])
                 case InputMode.SCRIPT:
-                    input_sub_scripts.append(input_value.blocks)
+                    if input_value.blocks:
+                        input_sub_scripts.append(input_value.blocks)
                 case InputMode.BLOCK_AND_DROPDOWN:
                     if input_value.block is not None:
                         input_sub_scripts.append([input_value.block])
@@ -729,20 +730,52 @@ class SRBlock:
                 input_dropdown = dropdown_type.translate_new_to_old_value(input_dropdown.to_tuple())
                 input_sub_scripts.append([IRBlock.from_menu_dropdown_value(input_dropdown, input_info)])
 
-            #old_inputs[old_input_id] = IRInputValue(
-            #    mode=mode,
-            #    references=references,
-            #    immediate_block=immediate_block,
-            #    text=input_text,
-            #)
+            references      = []
+            immediate_block = None
+
+            for sub_blocks in input_sub_scripts:
+                first_block = sub_blocks[0]
+                if   isinstance(first_block, IRBlock) and (len(sub_blocks) == 1):
+                    block_id = sti_if.get_next_block_id()
+                    sti_if.schedule_block_addition(block_id, first_block)
+                    references.append(block_id)
+                elif isinstance(first_block, SRBlock) and (len(sub_blocks) == 1) and (first_block.opcode in ANY_NEW_OPCODE_IMMEDIATE_BLOCK):
+                    immediate_block  = first_block.to_inter(
+                        sti_if       = sti_if,
+                        info_api     = info_api,
+                        next         = None,
+                        position     = None,
+                        is_top_level = False,
+                    )
+                elif isinstance(first_block, SRBlock):
+                    sub_blocks: list[SRBlock]
+                    block_ids = [sti_if.get_next_block_id() for i in range(len(sub_blocks))]
+                    for i, sub_block in enumerate(sub_blocks):
+                        next_id = block_ids[i+1] if i+1 < len(sub_blocks) else None
+                        irblock = sub_block.to_inter(
+                            sti_if       = sti_if,
+                            info_api     = info_api,
+                            next         = next_id,
+                            position     = None,
+                            is_top_level = False,
+                        )
+                        sti_if.schedule_block_addition(block_ids[i], irblock)
+                    references.append(block_ids[0])
+                else: raise ConversionError(f"Invalid input sub script: {sub_blocks}")
+
+            old_inputs[old_input_id] = IRInputValue(
+                mode            = input_mode,
+                references      = references,
+                immediate_block = immediate_block,
+                text            = input_text,
+            )
 
         # Map new dropdown IDs to old dropdown IDs and values
         old_dropdowns = {}
         for dropdown_id, dropdown_value in self.dropdowns.items():
             dropdown_info = opcode_info.get_dropdown_info_by_new(dropdown_id)
             old_dropdown_id = opcode_info.get_old_dropdown_id(dropdown_id)
-            old_value = dropdown_info.type.translate_new_to_old_value(dropdown_value.to_tuple())
-            old_dropdowns[old_dropdown_id] = old_value
+            old_dropdowns[old_dropdown_id] = dropdown_info.type.translate_new_to_old_value(dropdown_value.to_tuple())
 
         return IRBlock(
             opcode       = info_api.get_old_by_new(self.opcode),

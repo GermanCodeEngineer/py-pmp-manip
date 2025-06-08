@@ -81,7 +81,7 @@ def test_FRBlock_from_data_valid_mutation():
 
 
 def test_FRBlock_from_tuple_not_top_level():
-    data = [OPCODE_VAR_VALUE_NUM, "a variable", ",fe+c/836;:I2j}Z3N_D"]
+    data = [OPCODE_NUM_VAR_VALUE, "a variable", ",fe+c/836;:I2j}Z3N_D"]
     parent_id = "m"
     frblock = FRBlock.from_tuple(data, parent_id=parent_id)
     assert isinstance(frblock, FRBlock)
@@ -101,7 +101,7 @@ def test_FRBlock_from_tuple_not_top_level():
         FRBlock.from_tuple(data, parent_id=None)
 
 def test_FRBlock_from_tuple_list_top_level():
-    data = [OPCODE_LIST_VALUE_NUM, "a list", "FAp;aT9l%(^4R:g]NHc7", 460, 628]
+    data = [OPCODE_NUM_LIST_VALUE, "a list", "FAp;aT9l%(^4R:g]NHc7", 460, 628]
     frblock = FRBlock.from_tuple(data, parent_id=None)
     assert isinstance(frblock, FRBlock)
     assert frblock.opcode    == OPCODE_LIST_VALUE

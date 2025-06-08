@@ -1,6 +1,6 @@
 from re import split 
 
-from pypenguin.opcode_info.api import InputType, OpcodeType
+from pypenguin.opcode_info.api import InputType, InputInfo, OpcodeType
 from pypenguin.utility         import (
     grepr_dataclass, PypenguinEnum, ValidationConfig,
     AA_TYPE, AA_TUPLE_OF_TYPES, AA_MIN_LEN,
@@ -44,15 +44,18 @@ class SRCustomBlockOpcode:
             i += 2
         return cls(segments=tuple(segments))
     
-    def get_corresponding_input_types(self) -> dict[str, InputType]:
+    def get_corresponding_input_info(self) -> dict[str, InputInfo]:
         """
-        Fetches the argument ids and types
+        Fetches the argument ids and information
         
         Returns:
-            a dict mapping the argument ids to their types
+            a dict mapping the argument ids to their information
         """
         return {
-            segment.name: segment.type.get_corresponding_input_type() 
+            segment.name: InputInfo(
+                type = segment.type.get_corresponding_input_type(),
+                menu = None,
+            ) 
             for segment in self.segments if isinstance(segment, SRCustomBlockArgument)
         }
     
