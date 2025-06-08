@@ -8,3 +8,4 @@ TODOs:
     - add specific reasons for ThanksError
     - complete deoptimization
     - use typing.Self for from_data and alternate constructors
+    - grepr_dataclass: auto recognize parent_cls

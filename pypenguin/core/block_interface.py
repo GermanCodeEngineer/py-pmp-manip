@@ -85,46 +85,58 @@ class FirstToInterIF:
             return self.block_comments[comment_id]
         raise ConversionError(f"Comment with id {repr(comment_id)} not found")
 
-@grepr_dataclass(grepr_fields=["blocks", "added_blocks", "_next_block_id_num"])
-class SecondToInterIF:
-    """
-    An interface which allows the access to other blocks in the same target during conversion from second to intermediate representation
-    """
-
-    blocks: dict[str, IRBlock]
-    added_blocks: dict[str, FRBlock] = field(default_factory=dict)
-    _next_block_id_num: int = field(init=False)
-
-    def __post_init__(self) -> None: # TODO: add tests
+@grepr_dataclass(grepr_fields=["scripts", "cb_mutations"])
+class SecondReprIF:
+    scripts: list["SRScript"]
+    cb_mutations: dict[SRCustomBlockOpcode, "SRCustomBlockMutation"] = field(init=False)
+    # Safe access is needed because blocks haven't actually been validated yet (see get_all_blocks)
+    
+    def __post_init__(self) -> None:
         """
-        Calculate and store next unused block id
+        Fetch and store SRCustomBlockMutation's for later
         
         Returns:
             None
         """
-        self._next_block_id_num = len(self.blocks)
-        while number_to_token(self._next_block_id_num) in self.blocks:
-            self._next_block_id_num += 1
-        
-    def schedule_block_addition(self, block: FRBlock) -> str # TODO: add tests
+        all_blocks = self._get_all_blocks()
+        self.cb_mutations = {}
+        for block in all_blocks:
+            if not isinstance(getattr(block, "mutation", None), SRCustomBlockMutation):
+                continue
+            mutation: SRCustomBlockMutation = block.mutation
+            if not isinstance(getattr(mutation, "custom_opcode", None), SRCustomBlockOpcode):
+                continue
+            self.cb_mutations[mutation.custom_opcode] = mutation
+
+    def _get_all_blocks(self) -> list["SRBlock"]:
         """
-        Order a FRBlock to be added. 
-        It will be present in first representation
-        
-        Args:
-            block: the FRBlock to add
+        *[Internal Method]* Get all blocks in the same target
         
         Returns:
-            the new block's reference id
+            all blocks in the target 
         """
-        block_id = number_to_token(self._next_block_id_num)
-        added_blocks[block_id] = block
-        self._next_block_id_num += 1
-        return block_id
+        def recursive_block_search(block: "SRBlock") -> None:
+            blocks.append(block)
+            if not isinstance(getattr(block, "inputs", None), dict):
+                return
+            for input in block.inputs.values(): 
+                if isinstance(getattr(input, "block", None), SRBlock):
+                    recursive_block_search(input.block)
+                if isinstance(getattr(input, "blocks", None), list):
+                    [recursive_block_search(sub_block) for sub_block in input.blocks if isinstance(sub_block, SRBlock)]
+        
+        blocks = []
+        for script in self.scripts:
+            if not isinstance(getattr(script, "blocks", None), list):
+                continue
+            for block in script.blocks:
+                if not isinstance(block, SRBlock):
+                    continue
+                recursive_block_search(block)
+        return blocks
 
-    def get_cb_mutation(self, custom_opcode: SRCustomBlockOpcode) -> "SRCustomBlockMutation": 
+    def get_cb_mutation(self, custom_opcode: SRCustomBlockOpcode) -> "SRCustomBlockMutation":
         """
-        # TODO: add tests
         Get a SRCustomBlockMutation by its SRCustomBlockOpcode
         
         Args:
@@ -133,11 +145,40 @@ class SecondToInterIF:
         Returns:
             the SRCustomBlockMutation
         """
-        for block in self.blocks.values():
-            if not isinstance(block.mutation, SRCustomBlockMutation): continue
-            if block.mutation.custom_opcode == custom_opcode:
-                return block.mutation
-        raise ConversionError(f"Mutation of custom opcode {repr(custom_opcode)} not found")
+        if custom_opcode in self.cb_mutations:
+            return self.cb_mutations[custom_opcode]
+        raise ValidationError(f"Mutation of custom_opcode {custom_opcode} not found")
+
+@grepr_dataclass(grepr_fields=["added_blocks", "_next_block_id_num"], parent_cls=SecondReprIF)
+class SecondToInterIF(SecondReprIF):
+    """
+    An interface which allows the access to other blocks in the same target during conversion from second to intermediate representation
+    """
+
+    added_blocks: dict[str, IRBlock] = field(default_factory=dict)
+    _next_block_id_num: int = 0
+
+    def schedule_block_addition(self, block: IRBlock) -> str: # TODO: add tests
+        """
+        Order a IRBlock to be added and get its reference id. 
+        It will be present in first representation
+        
+        Args:
+            block: the IRBlock to add
+        
+        Returns:
+            the new block's reference id
+        """
+        block_id = number_to_token(self._next_block_id_num)
+        self.added_blocks[block_id] = block
+        self._next_block_id_num += 1
+        return block_id
+
+
+class ValidationIF(SecondReprIF):
+    """
+    An interface which allows the access to other blocks in the same target during validation
+    """
 
 
 @grepr_dataclass(grepr_fields=["scripts", "cb_mutations"])

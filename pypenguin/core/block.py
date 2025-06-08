@@ -4,7 +4,7 @@ from typing      import Any, TYPE_CHECKING
 
 from pypenguin.important_opcodes import *
 from pypenguin.opcode_info.api   import (
-    OpcodeInfoAPI, OpcodeInfo, InputType, InputMode, OpcodeType, SpecialCaseType,
+    OpcodeInfoAPI, OpcodeInfo, InputInfo, InputType, InputMode, OpcodeType, SpecialCaseType,
 )
 from pypenguin.utility           import (
     grepr_dataclass, get_closest_matches, tuplify, ValidationConfig,
@@ -263,6 +263,33 @@ class IRBlock:
     next: "str | None"
     is_top_level: bool
 
+    @classmethod
+    def from_menu_dropdown_value(cls, dropdown_value: Any, input_info: InputInfo) -> "IRBlock": # TODO: add tests
+        """
+        Creates a IRBlock which only contains a menu SRDropdownValue
+
+        Args:
+            dropdown_value: the SRDropdownValue to contain in the block
+            input_info: information about the input, that the created menu block will be used for
+
+        Returns:
+            the IRBlock
+        """
+        dropdown_type = input_info.type.get_corresponding_dropdown_type()
+        return IRBlock(
+            opcode       = input_info.menu.opcode,
+            inputs       = {},
+            dropdowns    = {
+                input_info.menu.inner: 
+                dropdown_type.translate_new_to_old_value(dropdown_value.to_tuple())
+            },
+            comment      = None,
+            mutation     = None,
+            position     = None,
+            next         = None,
+            is_top_level = False,
+        )
+
     def to_second(self, 
         all_blocks: dict[str, "IRBlock"],
         info_api: OpcodeInfoAPI,
@@ -316,7 +343,7 @@ class IRBlock:
                 sub_block_b = sub_scripts[1][0] # first block of second script
             elif script_count == 1:
                 sub_script  = sub_scripts[0] # blocks of first script
-                sub_block_a = sub_scripts[0][0] # first block of frist script
+                sub_block_a = sub_scripts[0][0] # first block of first script
                 sub_block_b = None
             elif script_count == 0:
                 sub_script  = []
@@ -353,13 +380,14 @@ class IRBlock:
                         input_block    = sub_block_a
                         input_dropdown = sub_block_b
                 case InputMode.BLOCK_AND_MENU_TEXT:
-                    assert script_count in {1, 2}
-                    if   script_count == 1:
-                        input_block  = None
-                        input_text   = sub_block_a
-                    elif script_count == 2:
-                        input_block  = sub_block_a
-                        input_text   = sub_block_b
+                    raise NotImplementedError() # TODO
+                    #assert script_count in {1, 2}
+                    #if   script_count == 1:
+                    #    input_block  = None
+                    #    input_text   = sub_block_a
+                    #elif script_count == 2:
+                    #    input_block  = sub_block_a
+                    #    input_text   = sub_block_b
 
             if input_dropdown is not None:
                 input_type = opcode_info.get_input_info_by_old(input_id).type
@@ -646,7 +674,7 @@ class SRBlock:
         next: str | None, 
         position: tuple[int | float, int | float] | None,
         is_top_level: bool, 
-    ) -> IRBlock:
+    ) -> dict[str, IRBlock]:
         """
         Converts a SRBlock into a IRBlock
         
@@ -662,50 +690,64 @@ class SRBlock:
         """
         opcode_info = info_api.get_info_by_new(self.opcode)
         
+        # Map new input IDs to old input IDs
         new_old_input_ids = opcode_info.get_new_old_input_ids(block=self, fti_if=None)
-        old_input_id_modes = opcode_info.get_old_input_ids_modes(block=self, fti_if=None)
         old_inputs = {}
+
         for input_id, input_value in self.inputs.items():
             input_info = opcode_info.get_input_info_by_new(input_id)
-            
-            if input_info.menu is None:
-                sub_scripts = []
-                immediate_block = None
-                text = None
-            else:
-                dropdown_type = input_info.type.get_corresponding_dropdown_type()
-                sub_scripts  = [[IRBlock(
-                    opcode       = input_info.menu.opcode,
-                    inputs       = {},
-                    dropdowns    = {
-                        input_info.inner: 
-                        dropdown_type.translate_new_to_old_value(input_value.droprown.to_tuple())
-                    },
-                    comment      = None,
-                    mutation     = None,
-                    position     = None,
-                    next         = None,
-                    is_top_level = False,
-                )]]
-                immediate_block = None
-                text            = None
-            
-            references = []
-            for sub_script in sub_scripts:
-                references.append(sti_if.schedule_block_addition(sub_script[0]))
-                [sti_if.schedule_block_addition(sub_block) for sub_block in sub_script[1:]]
+            input_mode = input_info.type.get_mode()
             old_input_id = new_old_input_ids[input_id]
-            old_inputs[old_input_id] = IRInputValue(
-                mode            = old_input_id_modes[old_input_id],
-                references      = references,
-                immediate_block = immediate_block,
-                text            = text,
-            )
-        
+            
+            input_sub_scripts: list[SRBlock | IRBlock] = []
+            input_text     = None
+            input_dropdown = None
+            
+            match input_mode:
+                case InputMode.BLOCK_AND_TEXT:
+                    if input_value.block is not None:
+                        input_sub_scripts.append([input_value.block])
+                    input_text = input_value.text
+                case InputMode.BLOCK_AND_BROADCAST_DROPDOWN:
+                    if input_value.block is not None:
+                        input_sub_scripts.append([input_value.block])
+                    input_text = input_value.dropdown.value
+                case InputMode.BLOCK_ONLY:
+                    if input_value.block is not None:
+                        input_sub_scripts.append([input_value.block])
+                case InputMode.SCRIPT:
+                    input_sub_scripts.append(input_value.blocks)
+                case InputMode.BLOCK_AND_DROPDOWN:
+                    if input_value.block is not None:
+                        input_sub_scripts.append([input_value.block])
+                    input_dropdown = input_value.dropdown
+                case InputMode.BLOCK_AND_MENU_TEXT:
+                    raise NotImplementedError() # TODO
+
+            if input_dropdown is not None:
+                dropdown_type = input_info.type.get_corresponding_dropdown_type()
+                input_dropdown = dropdown_type.translate_new_to_old_value(input_dropdown.to_tuple())
+                input_sub_scripts.append([IRBlock.from_menu_dropdown_value(input_dropdown, input_info)])
+
+            #old_inputs[old_input_id] = IRInputValue(
+            #    mode=mode,
+            #    references=references,
+            #    immediate_block=immediate_block,
+            #    text=input_text,
+            #)
+
+        # Map new dropdown IDs to old dropdown IDs and values
+        old_dropdowns = {}
+        for dropdown_id, dropdown_value in self.dropdowns.items():
+            dropdown_info = opcode_info.get_dropdown_info_by_new(dropdown_id)
+            old_dropdown_id = opcode_info.get_old_dropdown_id(dropdown_id)
+            old_value = dropdown_info.type.translate_new_to_old_value(dropdown_value.to_tuple())
+            old_dropdowns[old_dropdown_id] = old_value
+
         return IRBlock(
             opcode       = info_api.get_old_by_new(self.opcode),
             inputs       = old_inputs,
-            dropdowns    = {}, # TODO
+            dropdowns    = old_dropdowns,
             comment      = self.comment,
             mutation     = self.mutation,
             position     = position,
@@ -907,7 +949,7 @@ class SRBlockAndDropdownInputValue(SRInputValue):
     """
     
     block   : SRBlock         | None
-    dropdown: SRDropdownValue | None
+    dropdown: SRDropdownValue | None # TODO: check if this makes sense
 
     def validate(self, 
         path: list, 
