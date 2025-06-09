@@ -82,6 +82,20 @@ def test_SRScript_validate(config, validation_if, context):
     )
 
 
+def test_SRScript_to_inter():
+    sti_if = TEST_SecondToInterIF(scripts=ALL_SR_SCRIPTS, _block_ids=["d", "b", "e"])
+    srscript = ALL_SR_SCRIPTS[0]
+    top_level_id = srscript.to_inter(
+        sti_if=sti_if,
+        info_api=info_api,
+    )
+    assert top_level_id == "d"
+    assert sti_if.added_blocks == {
+        id: ALL_IR_BLOCKS[id]
+        for id in {"d", "b", "e"}
+    }
+
+
 
 def test_SRBlock_validate(config, validation_if, context):
     srblock = ALL_SR_SCRIPTS[0].blocks[0]

@@ -9,3 +9,5 @@ TODOs:
     - complete deoptimization
     - use typing.Self for from_data and alternate constructors
     - grepr_dataclass: auto recognize parent_cls
+    - add all errors to docstrings
+    - rename special cases

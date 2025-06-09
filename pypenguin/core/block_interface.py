@@ -8,10 +8,10 @@ from pypenguin.core.block          import FRBlock, IRBlock, SRBlock, SRScript
 from pypenguin.core.custom_block   import SRCustomBlockOpcode
 
 
-@grepr_dataclass(grepr_fields=["blocks", "scheduled_block_deletions"])
+@grepr_dataclass(grepr_fields=["blocks", "block_comments", "scheduled_block_deletions"])
 class FirstToInterIF:
     """
-    An interface which allows the access to other blocks in the same target during conversion from first to intermediate representation
+    An interface which allows the management of other block in the same target during conversion from first to intermediate representation
     """
 
     blocks: dict[str, FRBlock]
@@ -85,6 +85,58 @@ class FirstToInterIF:
             return self.block_comments[comment_id]
         raise ConversionError(f"Comment with id {repr(comment_id)} not found")
 
+@grepr_dataclass(grepr_fields=["blocks", "added_blocks", "added_comments", "_next_block_id_num"])
+class InterToFirstIF:
+    """
+    An interface which allows the management of other block in the same target during conversion from first to intermediate representation
+    """
+
+    blocks: dict[str, IRBlock]
+    added_blocks: dict[str, FRBlock] = field(default_factory=dict)
+    added_comments: dict[str, FRComment] = field(default_factory=dict)
+    _next_block_id_num: int = 1
+
+    def get_next_block_id(self) -> str: # TODO: add tests
+        """
+        Get the next available block reference id
+        
+        Returns:
+            the next available block reference id
+        """
+        block_id = number_to_token(self._next_block_id_num)
+        self._next_block_id_num += 1
+        return block_id
+
+    def schedule_block_addition(self, block_id: str, block: FRBlock) -> None: # TODO: add tests
+        """
+        Order a FRBlock to be added by its reference id. 
+        It will be present in first representation
+        
+        Args:
+            block_id: the reference id for the block
+            block: the FRBlock to add
+        
+        Returns:
+            None
+        """
+        self.added_blocks[block_id] = block
+
+    def add_comment(self, comment: FRComment) -> str: # TODO: add tests
+        """
+        Order a FRComment to be added and return it's reference id.
+        It will be present in first representation
+        
+        Args:
+            comment: the FRComment to add
+        
+        Returns:
+            the reference id of the added FRComment
+        """
+        comment_id = number_to_token(self._next_block_id_num)
+        self._next_block_id_num += 1
+        self.added_comments[comment_id] = comment
+        return comment_id
+
 @grepr_dataclass(grepr_fields=["scripts", "cb_mutations"])
 class SecondReprIF:
     scripts: list["SRScript"]
@@ -152,7 +204,7 @@ class SecondReprIF:
 @grepr_dataclass(grepr_fields=["added_blocks", "_next_block_id_num"], parent_cls=SecondReprIF)
 class SecondToInterIF(SecondReprIF):
     """
-    An interface which allows the access to other blocks in the same target during conversion from second to intermediate representation
+    An interface which allows the management of other block in the same target during conversion from second to intermediate representation
     """
 
     added_blocks: dict[str, IRBlock] = field(default_factory=dict)
@@ -186,7 +238,7 @@ class SecondToInterIF(SecondReprIF):
 
 class ValidationIF(SecondReprIF):
     """
-    An interface which allows the access to other blocks in the same target during validation
+    An interface which allows the management of other block in the same target during validation
     """
 
 

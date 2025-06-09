@@ -39,13 +39,13 @@ class SpecialCaseType(PypenguinEnum):
     #                 Behaviour Handlers                 # 
     ######################################################
     
-    PRE_FR_STEP = 2 # execure before FRBlock.step
+    PRE_FIRST_TO_INTER = 2 # execure before FRBlock.to_inter
     """
     def example(block: "FRBlock", fti_if: "FirstToInterIF") -> "FRBlock":
         ...
     """
      
-    FR_STEP = 3 # execute instead of FRBlock.step
+    FIRST_TO_INTER = 3 # execute instead of FRBlock.to_inter
     """
     def example(block: "FRBlock", fti_if: "FirstToInterIF") -> "IRBlock":
         ...

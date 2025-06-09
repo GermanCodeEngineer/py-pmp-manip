@@ -152,11 +152,11 @@ class FRBlock:
             the IRBlock
         """
         opcode_info = info_api.get_info_by_old(self.opcode)
-        pre_handler = opcode_info.get_special_case(SpecialCaseType.PRE_FR_STEP)
+        pre_handler = opcode_info.get_special_case(SpecialCaseType.PRE_FIRST_TO_INTER)
         if pre_handler is not None:
             self = pre_handler.call(fti_if=fti_if, block=self)
         
-        instead_handler = opcode_info.get_special_case(SpecialCaseType.FR_STEP)
+        instead_handler = opcode_info.get_special_case(SpecialCaseType.FIRST_TO_INTER)
         if instead_handler is None:
             new_inputs = self._to_second_inputs(
                 fti_if  = fti_if,
@@ -277,7 +277,7 @@ class IRBlock:
             the IRBlock
         """
         dropdown_type = input_info.type.get_corresponding_dropdown_type()
-        return IRBlock(
+        return cls(
             opcode       = input_info.menu.opcode,
             inputs       = {},
             dropdowns    = {
@@ -290,6 +290,31 @@ class IRBlock:
             is_top_level = False,
         )
 
+    def to_first(self, parent_id: str|None) -> FRBlock: # TODO: add tests
+        """
+        Converts a IRBlock into a FRBlock
+        
+        Args:
+            parent_id: the reference id of the parent block or None
+        
+        Returns:
+            the FRBlock
+        """
+        comment_id = None if self.comment is None else itf_if.add_comment(self.comment)
+        return FRBlock(
+            opcode    = self.opcode,
+            next      = self.next,
+            parent    = parent_id,
+            inputs    = {}, # TODO
+            fields    = {}, # TODO
+            shadow    = False, # TODO
+            top_level = self.is_top_level,
+            x         = self.position[0],
+            y         = self.position[1],
+            comment   = comment_id,
+            mutation  = None, # TODO
+        )
+    
     def to_second(self, 
         all_blocks: dict[str, "IRBlock"],
         info_api: OpcodeInfoAPI,
@@ -507,6 +532,35 @@ class SRScript:
                 is_first     = (i == 0),
                 is_last      = ((i+1) == len(self.blocks)),
             )
+    
+    def to_inter(self, 
+        sti_if: "SecondToInterIF",
+        info_api: OpcodeInfoAPI, 
+    ) -> str:
+        """
+        Converts a SRBlock into intermediate representation. 
+        Adds the blocks in intermediate representation to the interface.
+        Returns the reference id of the top level block
+        
+        Args:
+            sti_if: interface used to manage blocks
+            info_api: the opcode info api used to fetch information about opcodes
+        
+        Returns:
+            None
+        """
+        block_ids = [sti_if.get_next_block_id() for i in range(len(self.blocks))]
+        for i, block in enumerate(self.blocks):
+            next_id = block_ids[i+1] if i+1 < len(self.blocks) else None
+            irblock = block.to_inter(
+                sti_if       = sti_if,
+                info_api     = info_api,
+                next         = next_id,
+                position     = self.position if i==0 else None,
+                is_top_level = i == 0,
+            )
+            sti_if.schedule_block_addition(block_ids[i], irblock)
+        return block_ids[0]
 
 @grepr_dataclass(grepr_fields=["opcode", "inputs", "dropdowns", "comment", "mutation"])
 class SRBlock:
@@ -679,7 +733,7 @@ class SRBlock:
         Converts a SRBlock into a IRBlock
         
         Args:
-            sti_if: API used to fetch information about other blocks
+            sti_if: interface used to manage blocks
             info_api: the opcode info api used to fetch information about opcodes
             next: the id of the next block in the same script or substack
             position: the position of the block if is_top_level is True

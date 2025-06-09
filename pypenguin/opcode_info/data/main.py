@@ -205,7 +205,7 @@ def _3(block: "FRBlock", fti_if: "FirstToInterIF") -> "FRBlock":
     return block
 
 info_api.add_opcodes_case(ANY_OPCODE_CB_DEF, SpecialCase(
-    type=SpecialCaseType.PRE_FR_STEP, 
+    type=SpecialCaseType.PRE_FIRST_TO_INTER, 
     function=_3,
 ))
 
@@ -220,7 +220,7 @@ def _4(block: "FRBlock", fti_if: "FirstToInterIF") -> "FRBlock":
     return block
 
 info_api.add_opcodes_case(ANY_OPCODE_CB_ARG, SpecialCase(
-    type=SpecialCaseType.PRE_FR_STEP, 
+    type=SpecialCaseType.PRE_FIRST_TO_INTER, 
     function=_4,
 ))
 
@@ -238,7 +238,7 @@ def _5(block: "FRBlock", fti_if: "FirstToInterIF") -> "FRBlock":
     return block
 
 info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
-    type=SpecialCaseType.PRE_FR_STEP, 
+    type=SpecialCaseType.PRE_FIRST_TO_INTER, 
     function=_5,
 ))
 
@@ -257,7 +257,7 @@ def _6(block: "FRBlock", fti_if: "FirstToInterIF") -> "IRBlock":
     )
 
 info_api.add_opcode_case(OPCODE_CB_PROTOTYPE, SpecialCase(
-    type=SpecialCaseType.FR_STEP,
+    type=SpecialCaseType.FIRST_TO_INTER,
     function=_6,
 ))
 
