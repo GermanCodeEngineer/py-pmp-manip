@@ -7,9 +7,25 @@ class SpecialCaseType(PypenguinEnum):
     """
     Currently impletented kinds of Special Cases. Documentation is included in the source code
     """
+
+    ######################################################
+    #                 General Information                #
+    ######################################################
+    """
+    Function Arguments explained:
+        block: the block to convert, edit or use as context
+        block_id: the reference id of the block
+        ...if: an interface used to manage or get information about other blocks
+        path: the path to the block from the project root
+    
+    Tipps:
+        if the given block is modified it should first be copied using copy.copy/copy.deepcopy
+    """
+    
+
     
     ######################################################
-    #                    Data Handlers                   # 
+    #                    Data Handlers                   #
     ######################################################
     
     GET_OPCODE_TYPE = 0
@@ -36,22 +52,38 @@ class SpecialCaseType(PypenguinEnum):
     
     
     ######################################################
-    #                 Behaviour Handlers                 # 
+    #         Representation Conversion Handlers         #
     ######################################################
     
-    PRE_FIRST_TO_INTER = 2 # execure before FRBlock.to_inter
+    PRE_FIRST_TO_INTER = 2
+    # execure before FRBlock.to_inter
     """
-    def example(block: "FRBlock", fti_if: "FirstToInterIF") -> "FRBlock":
+    def example(block: "FRBlock", block_id: str, fti_if: "FirstToInterIF") -> "FRBlock":
         ...
     """
      
-    FIRST_TO_INTER = 3 # execute instead of FRBlock.to_inter
+    INSTEAD_FIRST_TO_INTER = 3
+    # execute instead of FRBlock.to_inter
     """
-    def example(block: "FRBlock", fti_if: "FirstToInterIF") -> "IRBlock":
+    def example(block: "FRBlock", block_id: str, fti_if: "FirstToInterIF") -> "IRBlock":
+        ...
+    """
+
+    POST_INTER_TO_FIRST = 4
+    # execure after IRBlock.to_first
+    """
+    def example(block: "FRBlock", block_id: str, itf_if: "InterToFirstIF") -> "FRBlock":
         ...
     """
     
-    POST_VALIDATION = 4 # execute after SRBlock.validate
+
+    ######################################################
+    #                   Static Handlers                  #
+    ######################################################
+
+    POST_VALIDATION = 6
+    # execute after SRBlock.validate
+    # should raise subclass of ValidationError if invalid
     """
     def example(path: list, block: "SRBlock") -> None:
         ...

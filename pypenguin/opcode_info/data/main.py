@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 from copy   import copy, deepcopy
 
-from pypenguin.utility           import DualKeyDict, InvalidValueError
+from pypenguin.utility           import string_to_sha256, DualKeyDict, InvalidValueError
 from pypenguin.important_opcodes import *
 
 from pypenguin.opcode_info.api import (
@@ -22,7 +22,7 @@ from pypenguin.opcode_info.data.c_variables import variables
 from pypenguin.opcode_info.data.c_lists     import lists
 
 if TYPE_CHECKING:
-    from pypenguin.core.block_interface import FirstToInterIF, ValidationIF
+    from pypenguin.core.block_interface import FirstToInterIF, InterToFirstIF, ValidationIF
     from pypenguin.core.block           import FRBlock, IRBlock, SRBlock
 
 from pypenguin.core.block_mutation import (
@@ -167,32 +167,49 @@ info_api.set_opcodes_mutation_class(ANY_OPCODE_CB_ARG, old_cls=FRCustomBlockArgu
 info_api.set_opcode_mutation_class(OPCODE_CB_CALL, old_cls=FRCustomBlockCallMutation, new_cls=SRCustomBlockCallMutation)
 
 # Special Cases
-def _1(block: "SRBlock|IRBlock", validation_if: "ValidationIF") -> OpcodeType:
+def _149c_e47b(block: "SRBlock|IRBlock", validation_if: "ValidationIF") -> OpcodeType:
     from pypenguin.core.block_mutation import SRStopScriptMutation
     mutation: SRStopScriptMutation = block.mutation
     return OpcodeType.ENDING_STATEMENT if mutation.is_ending_statement else OpcodeType.STATEMENT
-
 info_api.add_opcode_case(OPCODE_STOP_SCRIPT, SpecialCase(
     type=SpecialCaseType.GET_OPCODE_TYPE,
-    function=_1,
+    function=_149c_e47b,
 ))
 
-def _2(block: "SRBlock|IRBlock", validation_if: "ValidationIF") -> OpcodeType:
+def _bd30_2f8b(block: "SRBlock|IRBlock", validation_if: "ValidationIF") -> OpcodeType:
     # Get the complete mutation and derive OpcodeType from optype
     from pypenguin.core.block_mutation import SRCustomBlockCallMutation
     partial_mutation: SRCustomBlockCallMutation = block.mutation
     complete_mutation = validation_if.get_cb_mutation(partial_mutation.custom_opcode)
     return complete_mutation.optype.get_corresponding_opcode_type()
-    
 info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
     type=SpecialCaseType.GET_OPCODE_TYPE,
-    function=_2,
+    function=_bd30_2f8b,
 ))
 
-def _3(block: "FRBlock", fti_if: "FirstToInterIF") -> "FRBlock":
+
+
+def _f9c8_6ab0(block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None") -> DualKeyDict[str, str, InputType]:
+    from pypenguin.core.block_mutation import FRCustomBlockCallMutation, SRCustomBlockCallMutation
+    from pypenguin.core.block import FRBlock
+    if isinstance(block, FRBlock):
+        old_mutation: FRCustomBlockCallMutation = block.mutation
+        assert fti_if is not None, "When a FRBlock is given, fti_if mustn't be None"
+        mutation: SRCustomBlockCallMutation = old_mutation.to_second(fti_if=fti_if)
+    else:
+        mutation: SRCustomBlockCallMutation = block.mutation
+    
+    return DualKeyDict.from_same_keys(mutation.custom_opcode.get_corresponding_input_info())
+info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
+    type=SpecialCaseType.GET_ALL_INPUT_IDS_INFO,
+    function=_f9c8_6ab0,
+))
+
+
+def _2841_608f(block: "FRBlock", block_id: str, fti_if: "FirstToInterIF") -> "FRBlock":
     # Transfer mutation from prototype block to definition block
     # Order deletion of the prototype block and its argument blocks
-    # Delete "custom_block" input, which references the prototype
+    # Delete "custom_block" input, which references the prototype block
     block = deepcopy(block)
     prototype_id    = block.inputs["custom_block"][1]
     prototype_block = fti_if.get_block(prototype_id)
@@ -203,13 +220,12 @@ def _3(block: "FRBlock", fti_if: "FirstToInterIF") -> "FRBlock":
     target_ids = fti_if.get_block_ids_by_parent_id(prototype_id)
     [fti_if.schedule_block_deletion(target_id) for target_id in target_ids]
     return block
-
 info_api.add_opcodes_case(ANY_OPCODE_CB_DEF, SpecialCase(
     type=SpecialCaseType.PRE_FIRST_TO_INTER, 
-    function=_3,
+    function=_2841_608f,
 ))
 
-def _4(block: "FRBlock", fti_if: "FirstToInterIF") -> "FRBlock":
+def _1a40_d676(block: "FRBlock", block_id: str, fti_if: "FirstToInterIF") -> "FRBlock":
     # Transfer argument name from a field into the mutation
     # because only real dropdowns should be listed in "fields"
     from pypenguin.core.block_mutation import FRCustomBlockArgumentMutation
@@ -218,13 +234,13 @@ def _4(block: "FRBlock", fti_if: "FirstToInterIF") -> "FRBlock":
     mutation.store_argument_name(block.fields["VALUE"][0])
     del block.fields["VALUE"]
     return block
-
 info_api.add_opcodes_case(ANY_OPCODE_CB_ARG, SpecialCase(
     type=SpecialCaseType.PRE_FIRST_TO_INTER, 
-    function=_4,
+    function=_1a40_d676,
 ))
 
-def _5(block: "FRBlock", fti_if: "FirstToInterIF") -> "FRBlock":
+def _4548_6eb6(block: "FRBlock", block_id: str, fti_if: "FirstToInterIF") -> "FRBlock":
+    # => Store input values by argument names instead of argument ids
     from pypenguin.core.block_mutation import FRCustomBlockCallMutation
     block = copy(block)
     partial_mutation: FRCustomBlockCallMutation = block.mutation
@@ -236,13 +252,12 @@ def _5(block: "FRBlock", fti_if: "FirstToInterIF") -> "FRBlock":
         new_inputs[argument_name] = input_value
     block.inputs = new_inputs
     return block
-
 info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
     type=SpecialCaseType.PRE_FIRST_TO_INTER, 
-    function=_5,
+    function=_4548_6eb6,
 ))
 
-def _6(block: "FRBlock", fti_if: "FirstToInterIF") -> "IRBlock":
+def _d0e6_50e9(block: "FRBlock", block_id: str, fti_if: "FirstToInterIF") -> "IRBlock":
     # Return an empty, temporary block
     from pypenguin.core.block import IRBlock
     return IRBlock(
@@ -255,33 +270,103 @@ def _6(block: "FRBlock", fti_if: "FirstToInterIF") -> "IRBlock":
         next         = ...,
         is_top_level = ...,
     )
-
 info_api.add_opcode_case(OPCODE_CB_PROTOTYPE, SpecialCase(
-    type=SpecialCaseType.FIRST_TO_INTER,
-    function=_6,
+    type=SpecialCaseType.INSTEAD_FIRST_TO_INTER,
+    function=_d0e6_50e9,
 ))
 
-def _7(
-    block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None"
-) -> DualKeyDict[str, str, InputType]:
-    from pypenguin.core.block_mutation import FRCustomBlockCallMutation, SRCustomBlockCallMutation
-    from pypenguin.core.block import FRBlock
-    if isinstance(block, FRBlock):
-        old_mutation: FRCustomBlockCallMutation = block.mutation
-        assert fti_if is not None, "When a FRBlock is given, fti_if mustn't be None"
-        mutation: SRCustomBlockCallMutation = old_mutation.to_second(fti_if=fti_if)
+
+def _f5d7_e3e2(block: "FRBlock", block_id: str, itf_if: "InterToFirstIF") -> "FRBlock":
+    # Transfer mutation from definition block to prototype block
+    # Create the prototype block and its argument blocks
+    # Create the "custom_block" input, which references the prototype block
+    from pypenguin.core.block_mutation import FRCustomBlockMutation, FRCustomBlockArgumentMutation
+    from pypenguin.core.block          import FRBlock
+
+    mutation: FRCustomBlockMutation = block.mutation
+    prototype_id         = itf_if.get_next_block_id()
+    argument_block_ids   = [itf_if.get_next_block_id() for i in range(len(mutation.argument_names))]
+
+
+    block.inputs["custom_block"] = (1, prototype_id)
+    prototype_inputs = {
+        argument_id: (1, argument_block_id) 
+        for argument_id, argument_block_id in zip(mutation.argument_ids, argument_block_ids)
+    }
+    prototype_block = FRBlock(
+        opcode    = "procedures_prototype",
+        next      = None,
+        parent    = block_id,
+        inputs    = prototype_inputs, 
+        fields    = {},
+        shadow    = True,
+        top_level = False,
+        mutation  = mutation,
+    )
+    itf_if.schedule_block_addition(prototype_id, prototype_block)
+    for argument_name, argument_default, argument_block_id in zip(
+        mutation.argument_names, argument_default, argument_block_ids
+    ):
+        argument_opcode = OPCODE_CB_ARG_TEXT if argument_default == "" else OPCODE_CB_ARG_BOOL
+        argument_block = FRBlock(
+            opcode   = argument_opcode,
+            next     = None,
+            parent   = prototype_id,
+            inputs   = {},
+            fields   = {"VALUE": (argument_name, string_to_sha256(argument_name))},
+            shadow   = True,
+            topLevel = False,
+            mutation = FRCustomBlockArgumentMutation(color=mutation.color), # use the same colors as the prototype,
+        )
+        itf_if.schedule_block_addition(argument_block_id, argument_block)
+    return block
+
+    """ kept temporarily for block mutation to_first implementation:
+    proccode = mutation.proccode
+    optype = SRCustomBlockOptype.from_code(mutation.optype)
+    if optype is SRCustomBlockOptype.ENDING_STATEMENT:
+        returns = None
     else:
-        mutation: SRCustomBlockCallMutation = block.mutation
-    
-    return DualKeyDict.from_same_keys(mutation.custom_opcode.get_corresponding_input_info())
+        returns = optype.is_reporter()
+    mutation = { 
+        "tagName"         : "mutation",
+        "children"        : [],
+        "proccode"        : proccode,
+        "argumentids"     : json.dumps(mutation.argument_ids),
+        "argumentnames"   : json.dumps(mutation.argument_names),
+        "argumentdefaults": json.dumps(mutation.argument_defaults),
+        "warp"            : json.dumps(data["options"]["noScreenRefresh"]),
+        "returns"         : json.dumps(returns),
+        "edited"          : json.dumps(True),
+        "optype"          : json.dumps(mutation.optype),
+        "color"           : json.dumps(["#FF6680", "#eb3d5b", "#df2847"]),
+    }"""
+info_api.add_opcodes_case(ANY_OPCODE_CB_DEF, SpecialCase(
+    type=SpecialCaseType.POST_INTER_TO_FIRST,
+    function=_f5d7_e3e2,
+))
 
+def _61f9_4fd5(block: "FRBlock", block_id: str, itf_if: "InterToFirstIF") -> "FRBlock":
+    # => Store input values by argument ids instead of argument names
+    from pypenguin.core.block_mutation import FRCustomBlockCallMutation
+    block = copy(block)
+    partial_mutation: FRCustomBlockCallMutation = block.mutation
+    complete_mutation = itf_if.get_added_cb_mutation(partial_mutation.proccode)
+    new_inputs = {}
+    for argument_name, input_value in block.inputs.items():
+        argument_index = complete_mutation.argument_names.index(argument_name)
+        argument_id    = complete_mutation.argument_ids[argument_index]
+        new_inputs[argument_id] = input_value
+    block.inputs = new_inputs
+    return block
 info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
-    type=SpecialCaseType.GET_ALL_INPUT_IDS_INFO,
-    function=_7,
+    type=SpecialCaseType.POST_INTER_TO_FIRST, 
+    function=_61f9_4fd5,
 ))
 
 
-def _8(path:list, block: "SRBlock") -> None:
+
+def _26f9_8217(path:list, block: "SRBlock") -> None:
     from pypenguin.core.block_mutation import SRCustomBlockMutation
     mutation: SRCustomBlockMutation = block.mutation
     if block.opcode == NEW_OPCODE_CB_DEF:
@@ -291,10 +376,9 @@ def _8(path:list, block: "SRBlock") -> None:
         if not mutation.optype.is_reporter():
             raise InvalidValueError(path, f"If mutation.optype of a {block.__class__.__name__} is NOT ...REPORTER, opcode should be {repr(NEW_OPCODE_CB_DEF)}")
     else: raise ValueError()
-
 info_api.add_opcodes_case(ANY_OPCODE_CB_DEF, SpecialCase(
     type=SpecialCaseType.POST_VALIDATION,
-    function=_8,
+    function=_26f9_8217,
 ))
 
 

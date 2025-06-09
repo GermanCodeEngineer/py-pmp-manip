@@ -2,7 +2,7 @@ from dataclasses import field
 
 from pypenguin.utility import grepr_dataclass, number_to_token, ConversionError, ValidationError
 
-from pypenguin.core.comment        import SRComment
+from pypenguin.core.comment        import FRComment, SRComment
 from pypenguin.core.block_mutation import FRCustomBlockMutation, SRCustomBlockMutation
 from pypenguin.core.block          import FRBlock, IRBlock, SRBlock, SRScript
 from pypenguin.core.custom_block   import SRCustomBlockOpcode
@@ -11,7 +11,7 @@ from pypenguin.core.custom_block   import SRCustomBlockOpcode
 @grepr_dataclass(grepr_fields=["blocks", "block_comments", "scheduled_block_deletions"])
 class FirstToInterIF:
     """
-    An interface which allows the management of other block in the same target during conversion from first to intermediate representation
+    An interface which allows the management of other blocks in the same target during conversion from first to intermediate representation
     """
 
     blocks: dict[str, FRBlock]
@@ -63,7 +63,7 @@ class FirstToInterIF:
             proccode: the procedure code of the desired FRCustomBlockMutation
         
         Returns:
-            the custom block mutation
+            the FRCustomBlockMutation
         """
         for block in self.blocks.values():
             if not isinstance(block.mutation, FRCustomBlockMutation): continue
@@ -88,7 +88,7 @@ class FirstToInterIF:
 @grepr_dataclass(grepr_fields=["blocks", "added_blocks", "added_comments", "_next_block_id_num"])
 class InterToFirstIF:
     """
-    An interface which allows the management of other block in the same target during conversion from first to intermediate representation
+    An interface which allows the management of other blocks in the same target during conversion from first to intermediate representation
     """
 
     blocks: dict[str, IRBlock]
@@ -136,6 +136,22 @@ class InterToFirstIF:
         self._next_block_id_num += 1
         self.added_comments[comment_id] = comment
         return comment_id
+
+    def get_added_cb_mutation(self, proccode: str) -> "FRCustomBlockMutation":
+        """
+        Get a FRCustomBlockMutation of the added blocks by its procedure code
+        
+        Args:
+            proccode: the procedure code of the desired FRCustomBlockMutation
+        
+        Returns:
+            the FRCustomBlockMutation
+        """
+        for block in self.added_blocks.values():
+            if not isinstance(block.mutation, FRCustomBlockMutation): continue
+            if block.mutation.proccode == proccode:
+                return block.mutation
+        raise ConversionError(f"Mutation of proccode {repr(proccode)} not found")
 
 @grepr_dataclass(grepr_fields=["scripts", "cb_mutations"])
 class SecondReprIF:
@@ -204,7 +220,7 @@ class SecondReprIF:
 @grepr_dataclass(grepr_fields=["added_blocks", "_next_block_id_num"], parent_cls=SecondReprIF)
 class SecondToInterIF(SecondReprIF):
     """
-    An interface which allows the management of other block in the same target during conversion from second to intermediate representation
+    An interface which allows the management of other blocks in the same target during conversion from second to intermediate representation
     """
 
     added_blocks: dict[str, IRBlock] = field(default_factory=dict)
@@ -238,9 +254,9 @@ class SecondToInterIF(SecondReprIF):
 
 class ValidationIF(SecondReprIF):
     """
-    An interface which allows the management of other block in the same target during validation
+    An interface which allows the management of other blocks in the same target during validation
     """
 
 
-__all__ = ["FirstToInterIF", "SecondToInterIF", "ValidationIF"]
+__all__ = ["FirstToInterIF", "InterToFirstIF", "SecondReprIF", "SecondToInterIF", "ValidationIF"]
 

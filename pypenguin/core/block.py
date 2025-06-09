@@ -7,14 +7,15 @@ from pypenguin.opcode_info.api   import (
     OpcodeInfoAPI, OpcodeInfo, InputInfo, InputType, InputMode, OpcodeType, SpecialCaseType,
 )
 from pypenguin.utility           import (
-    grepr_dataclass, get_closest_matches, tuplify, ValidationConfig,
+    grepr_dataclass, get_closest_matches, tuplify, string_to_sha256, ValidationConfig,
     AA_TYPE, AA_NONE, AA_NONE_OR_TYPE, AA_COORD_PAIR, AA_LIST_OF_TYPE, AA_DICT_OF_TYPE, AA_MIN_LEN,
     DeserializationError, ConversionError,
     UnnecessaryInputError, MissingInputError, UnnecessaryDropdownError, MissingDropdownError, InvalidOpcodeError, InvalidBlockShapeError,
 )
 
 if TYPE_CHECKING: from pypenguin.core.block_interface import (
-    FirstToInterIF, SecondToInterIF, ValidationIF,
+    FirstToInterIF, InterToFirstIF, SecondToInterIF, ValidationIF,
+    #                       InterToSecondIF,
 )
 from pypenguin.core.block_mutation import FRMutation, SRMutation
 from pypenguin.core.comment        import SRComment
@@ -107,7 +108,7 @@ class FRBlock:
         else: raise DeserializationError(f"Invalid data for FRBlock conversion: {data}")
         
         if data[0] == OPCODE_NUM_VAR_VALUE:
-            return FRBlock(
+            return cls(
                 opcode    = OPCODE_VAR_VALUE,
                 next      = None,
                 parent    = parent_id,
@@ -145,8 +146,9 @@ class FRBlock:
         Converts a FRBlock into a IRBlock
         
         Args:
-            fti_if: API used to fetch information about other blocks
+            fti_if: interface which allows the management of other blocks
             info_api: the opcode info api used to fetch information about opcodes
+            own_id: the reference id of this FRBlock
         
         Returns:
             the IRBlock
@@ -154,11 +156,11 @@ class FRBlock:
         opcode_info = info_api.get_info_by_old(self.opcode)
         pre_handler = opcode_info.get_special_case(SpecialCaseType.PRE_FIRST_TO_INTER)
         if pre_handler is not None:
-            self = pre_handler.call(fti_if=fti_if, block=self)
+            self = pre_handler.call(block=self, block_id=own_id, fti_if=fti_if)
         
-        instead_handler = opcode_info.get_special_case(SpecialCaseType.FIRST_TO_INTER)
+        instead_handler = opcode_info.get_special_case(SpecialCaseType.INSTEAD_FIRST_TO_INTER)
         if instead_handler is None:
-            new_inputs = self._to_second_inputs(
+            new_inputs = self._to_inter_inputs(
                 fti_if  = fti_if,
                 info_api   = info_api,
                 opcode_info = opcode_info,
@@ -181,20 +183,21 @@ class FRBlock:
                 is_top_level = self.top_level,
             )
         else:
-            new_block = instead_handler.call(fti_if=fti_if, block=self)
+            new_block = instead_handler.call(block=self, block_id=own_id, fti_if=fti_if)
         return new_block
 
-    def _to_second_inputs(self, 
+    def _to_inter_inputs(self, 
         fti_if: "FirstToInterIF", 
         info_api: OpcodeInfoAPI,
         opcode_info: OpcodeInfo,
         own_id: str
     ) -> dict[str, "IRInputValue"]:
         """
+        # TODO: add tests
         *[Internal Method]* Converts the inputs of a FRBlock into the IR Fromat
         
         Args:
-            fti_if: API used to fetch information about other blocks
+            fti_if: interface which allows the management of other blocks
             info_api: the opcode info api used to fetch information about opcodes
             opcode_info: the Information about the block's opcode
         
@@ -276,7 +279,6 @@ class IRBlock:
         Returns:
             the IRBlock
         """
-        dropdown_type = input_info.type.get_corresponding_dropdown_type()
         return cls(
             opcode       = input_info.menu.opcode,
             inputs       = {},
@@ -290,30 +292,79 @@ class IRBlock:
             is_top_level = False,
         )
 
-    def to_first(self, parent_id: str|None) -> FRBlock: # TODO: add tests
+    def to_first(self, 
+        itf_if: "InterToFirstIF", 
+        info_api: OpcodeInfoAPI,
+        parent_id: str|None,
+        own_id: str,
+    ) -> FRBlock:
         """
         Converts a IRBlock into a FRBlock
         
         Args:
+            itf_if: interface which allows the management of other blocks
+            info_api: the opcode info api used to fetch information about opcodes
             parent_id: the reference id of the parent block or None
+            own_id: the reference id of this FRBlock
         
         Returns:
             the FRBlock
         """
+        opcode_info = info_api.get_info_by_old(self.opcode)
+
         comment_id = None if self.comment is None else itf_if.add_comment(self.comment)
-        return FRBlock(
+        input_infos = opcode_info.get_old_input_ids_infos(block=self, fti_if=None) # not needed for a IRBlock
+
+        old_inputs = {}
+        for input_id, input_value in self.inputs.items():
+            input_type = input_infos[input_id].type
+            input_mode = input_type.get_mode()
+
+            elements = input_value.references.copy()
+            if input_value.immediate_block is not None:
+                elements.insert(0, input_value.immediate_block)
+            match input_mode:
+                case InputMode.BLOCK_AND_TEXT:
+                    magic_text_number = input_type.get_magic_number()
+                    elements.append((magic_text_number, input_value.text))
+                case InputMode.BLOCK_AND_BROADCAST_DROPDOWN:
+                    magic_text_number = input_type.get_magic_number()
+                    elements.append((magic_text_number, input_value.text, string_to_sha256(input_value.text)))
+                case _:
+                    if input_mode.can_be_missing() and not elements:
+                        continue # don't include the input if its empty
+            
+            if input_mode.can_be_missing():
+                magic_number = 2
+            else:
+                match len(elements):
+                    case 1: magic_number = 1
+                    case 2: magic_number = 3
+            old_inputs[input_id] = (magic_number, *elements)
+
+        old_mutation = self.mutation.to_first(
+            
+        )
+
+        old_block = FRBlock(
             opcode    = self.opcode,
             next      = self.next,
             parent    = parent_id,
-            inputs    = {}, # TODO
+            inputs    = old_inputs,
             fields    = {}, # TODO
             shadow    = False, # TODO
             top_level = self.is_top_level,
             x         = self.position[0],
             y         = self.position[1],
             comment   = comment_id,
-            mutation  = None, # TODO
+            mutation  = old_mutation,
         )
+
+        post_handler = opcode_info.get_special_case(SpecialCaseType.POST_INTER_TO_FIRST)
+        if post_handler is not None:
+            old_block = post_handler.call(block=old_block, block_id=own_id, itf_if=itf_if)
+        return old_block
+
     
     def to_second(self, 
         all_blocks: dict[str, "IRBlock"],
@@ -499,7 +550,7 @@ class SRScript:
             path: the path from the project to itself. Used for better error messages
             config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
-            validation_if: API used to fetch information about other blocks 
+            validation_if: interface which allows the management of other blocks 
             context: Context about parts of the project. Used to validate the values of dropdowns
         
         Returns:
@@ -590,7 +641,7 @@ class SRBlock:
             path: the path from the project to itself. Used for better error messages
             config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
-            validation_if: API used to fetch information about other blocks 
+            validation_if: interface which allows the management of other blocks 
             context: Context about parts of the project. Used to validate dropdowns
             expects_reporter: Wether this block should be a reporter
         
@@ -940,7 +991,7 @@ class SRInputValue(ABC):
             path: the path from the project to itself. Used for better error messages
             config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
-            validation_if: API used to fetch information about other blocks 
+            validation_if: interface which allows the management of other blocks 
             context: Context about parts of the project. Used to validate dropdowns
             input_type: the type of this input. Used to valdiate dropdowns
         
@@ -965,7 +1016,7 @@ class SRInputValue(ABC):
             path: the path from the project to itself. Used for better error messages
             config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
-            validation_if: API used to fetch information about other blocks 
+            validation_if: interface which allows the management of other blocks 
             context: Context about parts of the project. Used to validate dropdowns
         
         Returns:
@@ -1010,7 +1061,7 @@ class SRBlockAndTextInputValue(SRInputValue):
             path: the path from the project to itself. Used for better error messages
             config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
-            validation_if: API used to fetch information about other blocks 
+            validation_if: interface which allows the management of other blocks 
             context: Context about parts of the project. Used to validate dropdowns
             input_type: the type of this input. Used to valdiate dropdowns
         
@@ -1053,7 +1104,7 @@ class SRBlockAndDropdownInputValue(SRInputValue):
             path: the path from the project to itself. Used for better error messages
             config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
-            validation_if: API used to fetch information about other blocks 
+            validation_if: interface which allows the management of other blocks 
             context: Context about parts of the project. Used to validate dropdowns
             input_type: the type of this input. Used to valdiate dropdowns
         
@@ -1104,7 +1155,7 @@ class SRBlockOnlyInputValue(SRInputValue):
             path: the path from the project to itself. Used for better error messages
             config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
-            validation_if: API used to fetch information about other blocks 
+            validation_if: interface which allows the management of other blocks 
             context: Context about parts of the project. Used to validate dropdowns
             input_type: the type of this input. Used to valdiate dropdowns
         
@@ -1145,7 +1196,7 @@ class SRScriptInputValue(SRInputValue):
             path: the path from the project to itself. Used for better error messages
             config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
-            validation_if: API used to fetch information about other blocks 
+            validation_if: interface which allows the management of other blocks 
             context: Context about parts of the project. Used to validate dropdowns
             input_type: the type of this input. Used to valdiate dropdowns
         

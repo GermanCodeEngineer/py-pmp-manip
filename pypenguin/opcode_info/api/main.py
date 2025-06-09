@@ -231,7 +231,7 @@ class OpcodeInfo:
         instead_case = self.get_special_case(SpecialCaseType.GET_OPCODE_TYPE)
         if self.opcode_type == OpcodeType.DYNAMIC:
             assert instead_case is not None, "If opcode_type is DYNAMIC, a special case with type GET_OPCODE_TYPE must be defined"
-            return instead_case.call(block, validation_if)
+            return instead_case.call(block=block, validation_if=validation_if)
         else:
             assert instead_case is None, "If opcode_type is not DYNAMIC, no special case with type GET_OPCODE_TYPE should be defined"
             return self.opcode_type

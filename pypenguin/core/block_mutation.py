@@ -10,7 +10,7 @@ from pypenguin.utility import (
 )
 
 
-if TYPE_CHECKING: from pypenguin.core.block_interface import FirstToInterIF
+if TYPE_CHECKING: from pypenguin.core.block_interface import FirstToInterIF, InterToFirstIF
 from pypenguin.core.custom_block import SRCustomBlockOpcode, SRCustomBlockOptype
 
 @grepr_dataclass(grepr_fields=["tag_name", "children"])
@@ -51,7 +51,7 @@ class FRMutation(ABC):
         Convert a FRMutation into a SRMutation
         
         Args:
-            fti_if: API used to fetch information about other blocks
+            fti_if: interface which allows the management of other blocks
         
         Returns:
             the SRMutation
@@ -111,7 +111,7 @@ class FRCustomBlockArgumentMutation(FRMutation):
         Convert a FRCustomBlockArgumentMutation into a SRCustomBlockArgumentMutation
         
         Args:
-            fti_if: API used to fetch information about other blocks
+            fti_if: interface which allows the management of other blocks
         
         Returns:
             the SRCustomBlockArgumentMutation
@@ -176,7 +176,7 @@ class FRCustomBlockMutation(FRMutation):
         Convert a FRCustomBlockMutation into a SRCustomBlockMutation
         
         Args:
-            fti_if: API used to fetch information about other blocks
+            fti_if: interface which allows the management of other blocks
         
         Returns:
             the SRCustomBlockMutation
@@ -188,9 +188,9 @@ class FRCustomBlockMutation(FRMutation):
             ),
             no_screen_refresh = self.warp,
             optype            = SRCustomBlockOptype.from_code(self.optype),
-            main_color            = self.color[0],
-            prototype_color            = self.color[1],
-            outline_color            = self.color[2],
+            main_color        = self.color[0],
+            prototype_color   = self.color[1],
+            outline_color     = self.color[2],
         )
 
 @grepr_dataclass(grepr_fields=["proccode", "argument_ids", "warp", "returns", "edited", "optype", "color"], parent_cls=FRMutation)
@@ -240,7 +240,7 @@ class FRCustomBlockCallMutation(FRMutation):
         Convert a FRCustomBlockCallMutation into a SRCustomBlockCallMutation
         
         Args:
-            fti_if: API used to fetch information about other blocks
+            fti_if: interface which allows the management of other blocks
         
         Returns:
             the SRCustomBlockCallMutation
@@ -283,7 +283,7 @@ class FRStopScriptMutation(FRMutation):
         Convert a FRStopScriptMutation into a SRStopScriptMutation
         
         Args:
-            fti_if: API used to fetch information about other blocks
+            fti_if: interface which allows the management of other blocks
         
         Returns:
             the SRStopScriptMutation
@@ -315,16 +315,16 @@ class SRMutation(ABC):
             ValidationError: if the SRMutation is invalid
         """
 
-    #@abstractmethod
-    def to_first(self, fti_if: "FirstToInterIF") -> "FRMutation":
+    @abstractmethod
+    def to_first(self, itf_if: "InterToFirstIF") -> "FRMutation":
         """
-        Convert a FRMutation into a SRMutation
+        Convert a SRMutation into a FRMutation
         
         Args:
-            fti_if: API used to fetch information about other blocks
+            fti_if: interface which allows the management of other blocks
         
         Returns:
-            the SRMutation
+            the FRMutation
         """
 
 @grepr_dataclass(grepr_fields=["argument_name", "main_color", "prototype_color", "outline_color"], parent_cls=SRMutation)
@@ -358,6 +358,20 @@ class SRCustomBlockArgumentMutation(SRMutation):
         AA_HEX_COLOR(self, path, "main_color")
         AA_HEX_COLOR(self, path, "prototype_color")
         AA_HEX_COLOR(self, path, "outline_color")
+    
+    def to_first(self, itf_if: "InterToFirstIF") -> FRCustomBlockArgumentMutation: # TODO: add tests
+        """
+        Convert a SRCustomBlockArgumentMutation into a FRCustomBlockArgumentMutation
+        
+        Args:
+            fti_if: interface which allows the management of other blocks
+        
+        Returns:
+            the FRCustomBlockArgumentMutation
+        """
+        return FRCustomBlockArgumentMutation(
+            # LEFT OFF HERE
+        )
     
 @grepr_dataclass(grepr_fields=["custom_opcode", "no_screen_refresh", "optype", "main_color", "prototype_color", "outline_color"], parent_cls=SRMutation)
 class SRCustomBlockMutation(SRMutation):

@@ -25,14 +25,15 @@ class InputMode(PypenguinEnum):
         Returns:
             wether an input of this mode is allowed to be missing
         """
-        return self in {InputMode.BLOCK_ONLY, InputMode.SCRIPT}        
+        return self.value[0]  
     
-    BLOCK_AND_TEXT               = 0
-    BLOCK_AND_MENU_TEXT          = 1
-    BLOCK_ONLY                   = 2
-    SCRIPT                       = 3
-    BLOCK_AND_BROADCAST_DROPDOWN = 4
-    BLOCK_AND_DROPDOWN           = 5
+    # (magic number, index)
+    BLOCK_AND_TEXT               = (False, 0)
+    BLOCK_AND_MENU_TEXT          = (False, 1)
+    BLOCK_ONLY                   = (True , 2)
+    SCRIPT                       = (True , 3)
+    BLOCK_AND_BROADCAST_DROPDOWN = (False, 4)
+    BLOCK_AND_DROPDOWN           = (False, 5)
 
 class InputType(PypenguinEnum):
     """
@@ -49,7 +50,8 @@ class InputType(PypenguinEnum):
             the input mode
         """
         return self.value[0]
-    
+
+
     def get_corresponding_dropdown_type(self) -> "DropdownType":
         """
         Get the corresponding dropdown type
@@ -63,6 +65,15 @@ class InputType(PypenguinEnum):
             InputMode.BLOCK_AND_DROPDOWN,
         }
         return DropdownType._member_map_[self.name]
+
+    def get_magic_number(self) -> int | None:
+        """
+        Get the magic number used in first representation of inputs
+
+        Returns:
+            the magic number
+        """
+        return self.value[1]
 
     @classmethod
     def get_by_cb_default(cls, default: str) -> "InputType":
@@ -78,59 +89,60 @@ class InputType(PypenguinEnum):
             case "false":
                 return cls.BOOLEAN
     
+    # (InputMode, magic number, index)
     # BLOCK_AND_TEXT
-    DIRECTION           = (InputMode.BLOCK_AND_TEXT, 0)
-    INTEGER             = (InputMode.BLOCK_AND_TEXT, 1)
-    POSITIVE_INTEGER    = (InputMode.BLOCK_AND_TEXT, 2)
-    POSITIVE_NUMBER     = (InputMode.BLOCK_AND_TEXT, 3)
-    NUMBER              = (InputMode.BLOCK_AND_TEXT, 4)
-    TEXT                = (InputMode.BLOCK_AND_TEXT, 5)
-    COLOR               = (InputMode.BLOCK_AND_TEXT, 6)
+    TEXT                = (InputMode.BLOCK_AND_TEXT, 10, 0)
+    COLOR               = (InputMode.BLOCK_AND_TEXT,  9, 1)
+    DIRECTION           = (InputMode.BLOCK_AND_TEXT,  8, 2)
+    INTEGER             = (InputMode.BLOCK_AND_TEXT,  7, 3)
+    POSITIVE_INTEGER    = (InputMode.BLOCK_AND_TEXT,  6, 4)
+    POSITIVE_NUMBER     = (InputMode.BLOCK_AND_TEXT,  5, 5)
+    NUMBER              = (InputMode.BLOCK_AND_TEXT,  4, 6)
 
     # BLOCK_AND_MENU_TEXT
-    NOTE                = (InputMode.BLOCK_AND_MENU_TEXT, 0)
+    NOTE                = (InputMode.BLOCK_AND_MENU_TEXT, None, 0)
 
     # BLOCK_ONLY
-    BOOLEAN             = (InputMode.BLOCK_ONLY, 0)
-    ROUND               = (InputMode.BLOCK_ONLY, 1)
-    EMBEDDED_MENU       = (InputMode.BLOCK_ONLY, 2)
+    BOOLEAN             = (InputMode.BLOCK_ONLY, None, 0)
+    ROUND               = (InputMode.BLOCK_ONLY, None, 1)
+    EMBEDDED_MENU       = (InputMode.BLOCK_ONLY, None, 2)
 
     # SCRIPT
-    SCRIPT              = (InputMode.SCRIPT, 0)
+    SCRIPT              = (InputMode.SCRIPT, None, 0)
 
     # BLOCK_AND_BROADCAST_DROPDOWN
-    BROADCAST           = (InputMode.BLOCK_AND_BROADCAST_DROPDOWN, 0)
+    BROADCAST           = (InputMode.BLOCK_AND_BROADCAST_DROPDOWN, 11, 0)
 
     # BLOCK_AND_DROPDOWN
-    STAGE_OR_OTHER_SPRITE               = (InputMode.BLOCK_AND_DROPDOWN,  0)
-    CLONING_TARGET                      = (InputMode.BLOCK_AND_DROPDOWN,  1)
-    MOUSE_OR_OTHER_SPRITE               = (InputMode.BLOCK_AND_DROPDOWN,  2)
-    MOUSE_EDGE_OR_OTHER_SPRITE          = (InputMode.BLOCK_AND_DROPDOWN,  3)
-    MOUSE_EDGE_MYSELF_OR_OTHER_SPRITE   = (InputMode.BLOCK_AND_DROPDOWN,  4)
-    KEY                                 = (InputMode.BLOCK_AND_DROPDOWN,  5)
-    UP_DOWN                             = (InputMode.BLOCK_AND_DROPDOWN,  6)
-    FINGER_INDEX                        = (InputMode.BLOCK_AND_DROPDOWN,  7)
-    RANDOM_MOUSE_OR_OTHER_SPRITE        = (InputMode.BLOCK_AND_DROPDOWN,  8)
-    COSTUME                             = (InputMode.BLOCK_AND_DROPDOWN,  9)
-    COSTUME_PROPERTY                    = (InputMode.BLOCK_AND_DROPDOWN, 10)
-    BACKDROP                            = (InputMode.BLOCK_AND_DROPDOWN, 11)
-    BACKDROP_PROPERTY                   = (InputMode.BLOCK_AND_DROPDOWN, 12)
-    MYSELF_OR_OTHER_SPRITE              = (InputMode.BLOCK_AND_DROPDOWN, 13)
-    SOUND                               = (InputMode.BLOCK_AND_DROPDOWN, 14)
-    DRUM                                = (InputMode.BLOCK_AND_DROPDOWN, 15)
-    INSTRUMENT                          = (InputMode.BLOCK_AND_DROPDOWN, 16)
-    FONT                                = (InputMode.BLOCK_AND_DROPDOWN, 17)
-    PEN_PROPERTY                        = (InputMode.BLOCK_AND_DROPDOWN, 18)
-    VIDEO_SENSING_PROPERTY              = (InputMode.BLOCK_AND_DROPDOWN, 19)
-    VIDEO_SENSING_TARGET                = (InputMode.BLOCK_AND_DROPDOWN, 20)
-    VIDEO_STATE                         = (InputMode.BLOCK_AND_DROPDOWN, 21)
-    TEXT_TO_SPEECH_VOICE                = (InputMode.BLOCK_AND_DROPDOWN, 22)
-    TEXT_TO_SPEECH_LANGUAGE             = (InputMode.BLOCK_AND_DROPDOWN, 23)
-    TRANSLATE_LANGUAGE                  = (InputMode.BLOCK_AND_DROPDOWN, 24)
-    MAKEY_KEY                           = (InputMode.BLOCK_AND_DROPDOWN, 25)
-    MAKEY_SEQUENCE                      = (InputMode.BLOCK_AND_DROPDOWN, 26)
-    READ_FILE_MODE                      = (InputMode.BLOCK_AND_DROPDOWN, 27)
-    FILE_SELECTOR_MODE                  = (InputMode.BLOCK_AND_DROPDOWN, 28)
+    STAGE_OR_OTHER_SPRITE               = (InputMode.BLOCK_AND_DROPDOWN, None,  0)
+    CLONING_TARGET                      = (InputMode.BLOCK_AND_DROPDOWN, None,  1)
+    MOUSE_OR_OTHER_SPRITE               = (InputMode.BLOCK_AND_DROPDOWN, None,  2)
+    MOUSE_EDGE_OR_OTHER_SPRITE          = (InputMode.BLOCK_AND_DROPDOWN, None,  3)
+    MOUSE_EDGE_MYSELF_OR_OTHER_SPRITE   = (InputMode.BLOCK_AND_DROPDOWN, None,  4)
+    KEY                                 = (InputMode.BLOCK_AND_DROPDOWN, None,  5)
+    UP_DOWN                             = (InputMode.BLOCK_AND_DROPDOWN, None,  6)
+    FINGER_INDEX                        = (InputMode.BLOCK_AND_DROPDOWN, None,  7)
+    RANDOM_MOUSE_OR_OTHER_SPRITE        = (InputMode.BLOCK_AND_DROPDOWN, None,  8)
+    COSTUME                             = (InputMode.BLOCK_AND_DROPDOWN, None,  9)
+    COSTUME_PROPERTY                    = (InputMode.BLOCK_AND_DROPDOWN, None, 10)
+    BACKDROP                            = (InputMode.BLOCK_AND_DROPDOWN, None, 11)
+    BACKDROP_PROPERTY                   = (InputMode.BLOCK_AND_DROPDOWN, None, 12)
+    MYSELF_OR_OTHER_SPRITE              = (InputMode.BLOCK_AND_DROPDOWN, None, 13)
+    SOUND                               = (InputMode.BLOCK_AND_DROPDOWN, None, 14)
+    DRUM                                = (InputMode.BLOCK_AND_DROPDOWN, None, 15)
+    INSTRUMENT                          = (InputMode.BLOCK_AND_DROPDOWN, None, 16)
+    FONT                                = (InputMode.BLOCK_AND_DROPDOWN, None, 17)
+    PEN_PROPERTY                        = (InputMode.BLOCK_AND_DROPDOWN, None, 18)
+    VIDEO_SENSING_PROPERTY              = (InputMode.BLOCK_AND_DROPDOWN, None, 19)
+    VIDEO_SENSING_TARGET                = (InputMode.BLOCK_AND_DROPDOWN, None, 20)
+    VIDEO_STATE                         = (InputMode.BLOCK_AND_DROPDOWN, None, 21)
+    TEXT_TO_SPEECH_VOICE                = (InputMode.BLOCK_AND_DROPDOWN, None, 22)
+    TEXT_TO_SPEECH_LANGUAGE             = (InputMode.BLOCK_AND_DROPDOWN, None, 23)
+    TRANSLATE_LANGUAGE                  = (InputMode.BLOCK_AND_DROPDOWN, None, 24)
+    MAKEY_KEY                           = (InputMode.BLOCK_AND_DROPDOWN, None, 25)
+    MAKEY_SEQUENCE                      = (InputMode.BLOCK_AND_DROPDOWN, None, 26)
+    READ_FILE_MODE                      = (InputMode.BLOCK_AND_DROPDOWN, None, 27)
+    FILE_SELECTOR_MODE                  = (InputMode.BLOCK_AND_DROPDOWN, None, 28)
 
 @grepr_dataclass(grepr_fields=["opcode", "inner"])
 class MenuInfo:
