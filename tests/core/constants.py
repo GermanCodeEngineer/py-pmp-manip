@@ -253,6 +253,21 @@ ALL_FR_BLOCK_DATAS = {
         "shadow": False,
         "topLevel": False,
     },
+    "r": {
+        "opcode": "event_whengreaterthan",
+        "next": None,
+        "parent": None,
+        "inputs": {
+            "VALUE": (1, (4, "50")),
+        },
+        "fields": {
+            "WHENGREATERTHANMENU": ("LOUDNESS", "%{)~Kh%S#)D`a*L,KavE", ""),
+        },
+        "shadow": False,
+        "top_level": True,
+        "x": 1784, 
+        "y": -890,
+    },
 }
 
 ALL_FR_BLOCKS = {
@@ -474,6 +489,21 @@ ALL_FR_BLOCKS = {
         },
         shadow=False,
         top_level=False,
+    ),
+    "r": FRBlock(
+        opcode="event_whengreaterthan",
+        next=None,
+        parent=None,
+        inputs={
+            "VALUE": (1, (4, "50")),
+        },
+        fields={
+            "WHENGREATERTHANMENU": ("LOUDNESS", "%{)~Kh%S#)D`a*L,KavE", ""),
+        },
+        shadow=False,
+        top_level=True,
+        x=1784, 
+        y=-890,
     ),
 }
 
@@ -776,6 +806,25 @@ ALL_IR_BLOCKS = {
         next=None,
         is_top_level=False,
     ),
+    "r": IRBlock(
+        opcode="event_whengreaterthan",
+        inputs={
+            "VALUE": IRInputValue(
+                mode=InputMode.BLOCK_AND_TEXT,
+                references=[],
+                immediate_block=None,
+                text="50",
+            ),
+        },
+        dropdowns={
+            "WHENGREATERTHANMENU": "LOUDNESS",
+        },
+        comment=None,
+        mutation=None,
+        position=(1784, -890),
+        next=None,
+        is_top_level=True,
+    ),
 }
 
 SR_BLOCK_CUSTOM_OPCODE = SRCustomBlockOpcode(
@@ -1005,6 +1054,22 @@ ALL_SR_SCRIPTS = [
             ),
         ],
     ),
+    SRScript( # [7]
+        position=(1784, -890),
+        blocks=[
+            SRBlock(
+                opcode="when [OPTION] > (VALUE)",
+                inputs={
+                    "VALUE": SRBlockAndTextInputValue(block=None, text="50")
+                },
+                dropdowns={
+                    "OPTION": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="loudness"),
+                },
+                comment=None,
+                mutation=None,
+            )
+        ],
+    )
 ]
 
 ALL_SR_BLOCKS = [
@@ -1020,6 +1085,7 @@ ALL_SR_BLOCKS = [
     *ALL_SR_SCRIPTS[5].blocks,
     *ALL_SR_SCRIPTS[6].blocks,
     *ALL_SR_SCRIPTS[6].blocks[0].inputs["THEN"].blocks,
+    *ALL_SR_SCRIPTS[7].blocks,
 ]
 
 

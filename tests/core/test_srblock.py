@@ -271,9 +271,42 @@ def test_SRBlock_to_inter_substack():
         id: ALL_IR_BLOCKS[id]
         for id in {"o", "q"}
     }
- 
-# TODO: test immediate var block
-raise Exception()
+
+def test_SRBlock_to_inter_immediate_block():
+    sti_if = TEST_SecondToInterIF(scripts=ALL_SR_SCRIPTS, _block_ids=["g"])
+    script = ALL_SR_SCRIPTS[1]
+    srblock = script.blocks[0]
+    irblock = srblock.to_inter(
+        sti_if=sti_if,
+        info_api=info_api,
+        next=None,
+        position=script.position,
+        is_top_level=True,
+    )
+    assert irblock == ALL_IR_BLOCKS["f"]
+    assert sti_if.added_blocks == {
+        id: ALL_IR_BLOCKS[id]
+        for id in {"g"}
+    }
+
+def test_SRBlock_to_inter_dropdown():
+    sti_if = TEST_SecondToInterIF(scripts=ALL_SR_SCRIPTS, _block_ids=[])
+    script = ALL_SR_SCRIPTS[7]
+    srblock = script.blocks[0]
+    irblock = srblock.to_inter(
+        sti_if=sti_if,
+        info_api=info_api,
+        next=None,
+        position=script.position,
+        is_top_level=True,
+    )
+    assert irblock == ALL_IR_BLOCKS["r"]
+    assert sti_if.added_blocks == {
+        id: ALL_IR_BLOCKS[id]
+        for id in {}
+    }
+
+
 
 def test_SRInputValue_init():
     class DummyInputValue(SRInputValue):
