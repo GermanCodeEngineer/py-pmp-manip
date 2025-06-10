@@ -149,6 +149,11 @@ def AA_EQUAL(obj, path, attr, value, condition=None):
     if attr_value != value:
         raise InvalidValueError(path, f"{descr} must be {repr(value)}", condition)
 
+def AA_NOT_EQUAL(obj, path, attr, value, condition=None):
+    attr_value, descr = _value_and_descr(obj, attr)
+    if attr_value == value:
+        raise InvalidValueError(path, f"{descr} must NOT be {repr(value)}", condition)
+
 def AA_BIGGER_OR_EQUAL(obj, path, attr1, attr2, condition=None):
     attr1_value, attr1_descr = _value_and_descr(obj, attr1)
     attr2_value, attr2_descr = _value_and_descr(obj, attr2)
@@ -199,7 +204,8 @@ __all__ = [
     "AA_TYPE", "AA_TYPES", "AA_NONE", "AA_NONE_OR_TYPE", 
     "AA_LIST_OF_TYPE", "AA_LIST_OF_TYPES", "AA_TUPLE_OF_TYPES", "AA_DICT_OF_TYPE",
     "AA_MIN", "AA_MAX", "AA_RANGE", "AA_MIN_LEN", "AA_EXACT_LEN", "AA_COORD_PAIR", "AA_BOXED_COORD_PAIR",
-    "AA_JSON_COMPATIBLE", "AA_EQUAL", "AA_BIGGER_OR_EQUAL", "AA_NOT_ONE_OF", "AA_HEX_COLOR", "AA_ALNUM",
+    "AA_JSON_COMPATIBLE", "AA_HEX_COLOR", "AA_ALNUM",
+    "AA_EQUAL", "AA_NOT_EQUAL", "AA_BIGGER_OR_EQUAL", "AA_NOT_ONE_OF", 
     "is_valid_js_data_uri", "is_valid_url", "ValidationConfig",
 ]
 

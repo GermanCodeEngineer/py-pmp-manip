@@ -24,6 +24,8 @@ def test_IRBlock_to_first_block_and_text():
     assert itf_if.added_blocks == {id: ALL_FR_BLOCKS[id] for id in {}}
     assert itf_if.added_comments == {}
 
+# LEFT OFF HERE
+
 
 def test_IRBlock_to_second_block_and_text_block_only():
     irblock = ALL_IR_BLOCKS["c"]

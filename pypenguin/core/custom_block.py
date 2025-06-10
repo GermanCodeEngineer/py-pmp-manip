@@ -3,7 +3,7 @@ from re import split
 from pypenguin.opcode_info.api import InputType, InputInfo, OpcodeType
 from pypenguin.utility         import (
     grepr_dataclass, PypenguinEnum, ValidationConfig,
-    AA_TYPE, AA_TUPLE_OF_TYPES, AA_MIN_LEN,
+    AA_TYPE, AA_TUPLE_OF_TYPES, AA_MIN_LEN, AA_NOT_EQUAL,
     SameValueTwiceError, ConversionError,
 )
 
@@ -38,11 +38,38 @@ class SRCustomBlockOpcode:
                 segments.append(text_piece)
             if splitter is not None: 
                 segments.append(SRCustomBlockArgument(
-                    type = SRCustomBlockArgumentType.BOOLEAN if splitter == "%b" else SRCustomBlockArgumentType.STRING_NUMBER,
+                    type = (
+                        SRCustomBlockArgumentType.BOOLEAN 
+                        if splitter == "%b" else 
+                        SRCustomBlockArgumentType.STRING_NUMBER
+                    ),
                     name = argument_names[i//2],
                 ))
             i += 2
         return cls(segments=tuple(segments))
+    
+    def to_proccode_argument_names_defaults(self) -> tuple[str, list[str]]: # TODO: add tests
+        """
+        Generates procedure code, argument names and defaults from a SRCustomBlockOpcode
+        
+        Returns:
+            the procedure code, list of argument names and list of argument defaults
+        """
+        parts             = []
+        argument_names    = []
+        argument_defaults = []
+        for segment in self.segments:
+            if   isinstance(segment, str):
+                parts.append(segment)
+            elif isinstance(segment, SRCustomBlockArgument):
+                if segment.type is SRCustomBlockArgumentType.BOOLEAN:
+                    parts.append("%b")
+                    argument_defaults.append("false")
+                else:
+                    parts.append("%s")
+                    argument_defaults.append("")
+                argument_names.append(segment.name)
+        return (" ".join(parts), argument_names, argument_defaults)
     
     def get_corresponding_input_info(self) -> dict[str, InputInfo]:
         """
@@ -127,6 +154,7 @@ class SRCustomBlockArgument:
             ValidationError: if the SRCustomBlockArgument is invalid
         """
         AA_TYPE(self, path, "name", str)
+        AA_NOT_EQUAL(self, path, "name", value="")
         AA_TYPE(self, path, "type", SRCustomBlockArgumentType)
     
     def _copymodify_(self, attr: str, value) -> "SRCustomBlockArgument":
@@ -158,7 +186,7 @@ class SRCustomBlockArgumentType(PypenguinEnum):
         """
         return self.value[0]
 
-    STRING_NUMBER = (InputType.TEXT   , 0)
+    STRING_NUMBER = (InputType.TEXT   , 0) # TODO: split into STRING and NUMBER
     BOOLEAN       = (InputType.BOOLEAN, 1)
 
 class SRCustomBlockOptype(PypenguinEnum):
@@ -168,13 +196,13 @@ class SRCustomBlockOptype(PypenguinEnum):
     @classmethod
     def from_code(cls, code: str | None) -> "SRCustomBlockOptype":
         """
-        Gets the argument type based on its equivalent code
+        Gets the SRCustomBlockOptype based on its equivalent code
         
         Args:
             code: the equivalent code
         
         Returns:
-            the optype
+            the SRCustomBlockOptype
         """
         if code == None:
             return cls.STATEMENT
@@ -182,6 +210,15 @@ class SRCustomBlockOptype(PypenguinEnum):
             if value[1] == code:
                 return optype_candidate
         raise ConversionError(f"Couldn't find video state enum for video state code: {repr(code)}")
+
+    def to_code(self) -> str: # TODO: add tests
+        """
+        Gets the optype code based on its equivalent SRCustomBlockOptype
+        
+        Returns:
+            the optype code
+        """
+        return self.value[1]
 
     def is_reporter(self) -> bool:
         """

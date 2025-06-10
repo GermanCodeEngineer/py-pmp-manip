@@ -320,27 +320,6 @@ def _f5d7_e3e2(block: "FRBlock", block_id: str, itf_if: "InterToFirstIF") -> "FR
         )
         itf_if.schedule_block_addition(argument_block_id, argument_block)
     return block
-
-    """ kept temporarily for block mutation to_first implementation:
-    proccode = mutation.proccode
-    optype = SRCustomBlockOptype.from_code(mutation.optype)
-    if optype is SRCustomBlockOptype.ENDING_STATEMENT:
-        returns = None
-    else:
-        returns = optype.is_reporter()
-    mutation = { 
-        "tagName"         : "mutation",
-        "children"        : [],
-        "proccode"        : proccode,
-        "argumentids"     : json.dumps(mutation.argument_ids),
-        "argumentnames"   : json.dumps(mutation.argument_names),
-        "argumentdefaults": json.dumps(mutation.argument_defaults),
-        "warp"            : json.dumps(data["options"]["noScreenRefresh"]),
-        "returns"         : json.dumps(returns),
-        "edited"          : json.dumps(True),
-        "optype"          : json.dumps(mutation.optype),
-        "color"           : json.dumps(["#FF6680", "#eb3d5b", "#df2847"]),
-    }"""
 info_api.add_opcodes_case(ANY_OPCODE_CB_DEF, SpecialCase(
     type=SpecialCaseType.POST_INTER_TO_FIRST,
     function=_f5d7_e3e2,
@@ -351,7 +330,7 @@ def _61f9_4fd5(block: "FRBlock", block_id: str, itf_if: "InterToFirstIF") -> "FR
     from pypenguin.core.block_mutation import FRCustomBlockCallMutation
     block = copy(block)
     partial_mutation: FRCustomBlockCallMutation = block.mutation
-    complete_mutation = itf_if.get_added_cb_mutation(partial_mutation.proccode)
+    complete_mutation = itf_if.get_fr_cb_mutation(partial_mutation.proccode)
     new_inputs = {}
     for argument_name, input_value in block.inputs.items():
         argument_index = complete_mutation.argument_names.index(argument_name)

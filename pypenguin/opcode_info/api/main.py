@@ -45,7 +45,7 @@ class OpcodeType(PypenguinEnum):
     DYNAMIC           = (False, 9)
 # TODO: find solution for draw polygon block
 
-@grepr_dataclass(grepr_fields=["opcode_type", "inputs", "dropdowns", "can_have_monitor", "old_mutation_cls", "new_mutation_cls"])
+@grepr_dataclass(grepr_fields=["opcode_type", "inputs", "dropdowns", "can_have_monitor", "has_shadow", "old_mutation_cls", "new_mutation_cls"])
 class OpcodeInfo:
     """
     The information about all the blocks with a certain opcode
@@ -55,9 +55,20 @@ class OpcodeInfo:
     inputs: DualKeyDict[str, str, InputInfo] = field(default_factory=DualKeyDict)
     dropdowns: DualKeyDict[str, str, DropdownInfo] = field(default_factory=DualKeyDict)
     can_have_monitor: bool = False
+    has_shadow: bool = None
     special_cases: dict[SpecialCaseType, SpecialCase] = field(default_factory=dict)
     old_mutation_cls: Type["FRMutation"] | None = field(init=False, default_factory=type(None))
     new_mutation_cls: Type["SRMutation"] | None = field(init=False, default_factory=type(None))
+    
+    def __post_init__(self) -> None:
+        """
+        Initialize has_shadow correctly
+        
+        Returns:
+            None
+        """
+        if self.has_shadow is None:
+            self.has_shadow = (self.opcode_type is OpcodeType.MENU)
     
     # Special Cases
     def add_special_case(self, special_case: SpecialCase) -> None:

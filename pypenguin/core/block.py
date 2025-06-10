@@ -4,7 +4,9 @@ from typing      import Any, TYPE_CHECKING
 
 from pypenguin.important_opcodes import *
 from pypenguin.opcode_info.api   import (
-    OpcodeInfoAPI, OpcodeInfo, InputInfo, InputType, InputMode, OpcodeType, SpecialCaseType,
+    OpcodeInfoAPI, OpcodeInfo, 
+    InputInfo, InputType, InputMode, DropdownType,
+    OpcodeType, SpecialCaseType,
 )
 from pypenguin.utility           import (
     grepr_dataclass, get_closest_matches, tuplify, string_to_sha256, ValidationConfig,
@@ -342,22 +344,32 @@ class IRBlock:
                     case 2: magic_number = 3
             old_inputs[input_id] = (magic_number, *elements)
 
-        old_mutation = self.mutation.to_first(
-            
-        )
+        old_fields = {}
+        for dropdown_id, dropdown_value in self.dropdowns:
+            dropdown_type = opcode_info.get_dropdown_info_by_old(dropdown_id).type
+            match dropdown_type:
+                case DropdownType.VARIABLE     : suffix = ""
+                case DropdownType.LIST         : suffix = "list"
+                case DropdownType.BROADCAST_MSG: suffix = "broadcast_msg"
+                case _                         : suffix = None
+            sha256 = string_to_sha256(dropdown_value)
+            if suffix is None:
+                old_fields[dropdown_id] = (dropdown_value, sha256)
+            else:
+                old_fields[dropdown_id] = (dropdown_value, sha256, suffix)
 
         old_block = FRBlock(
             opcode    = self.opcode,
             next      = self.next,
             parent    = parent_id,
             inputs    = old_inputs,
-            fields    = {}, # TODO
-            shadow    = False, # TODO
+            fields    = old_fields,
+            shadow    = opcode_info.has_shadow,
             top_level = self.is_top_level,
             x         = self.position[0],
             y         = self.position[1],
             comment   = comment_id,
-            mutation  = old_mutation,
+            mutation  = self.mutation.to_first(itf_if=itf_if),
         )
 
         post_handler = opcode_info.get_special_case(SpecialCaseType.POST_INTER_TO_FIRST)

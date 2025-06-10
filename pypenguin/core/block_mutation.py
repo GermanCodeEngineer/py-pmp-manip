@@ -4,7 +4,7 @@ from typing      import Any, TYPE_CHECKING
 from dataclasses import field
 
 from pypenguin.utility import (
-    grepr_dataclass, ValidationConfig,
+    grepr_dataclass, string_to_sha256, ValidationConfig,
     AA_TYPE, AA_HEX_COLOR,
     ThanksError, ConversionError, DeserializationError, 
 )
@@ -119,10 +119,10 @@ class FRCustomBlockArgumentMutation(FRMutation):
         if getattr(self, "_argument_name", None) is None:
             raise ConversionError("Argument name must be set before SR conversion")
         return SRCustomBlockArgumentMutation(
-            argument_name = self._argument_name,
-            main_color        = self.color[0],
-            prototype_color        = self.color[1],
-            outline_color        = self.color[2],
+            argument_name   = self._argument_name,
+            main_color      = self.color[0],
+            prototype_color = self.color[1],
+            outline_color   = self.color[2],
         )
 
 @grepr_dataclass(grepr_fields=["proccode", "argument_ids", "argument_names", "argument_defaults", "warp", "returns", "edited", "optype", "color"], parent_cls=FRMutation)
@@ -248,8 +248,8 @@ class FRCustomBlockCallMutation(FRMutation):
         complete_mutation = fti_if.get_cb_mutation(self.proccode) # Get complete mutation
         return SRCustomBlockCallMutation(
             custom_opcode      = SRCustomBlockOpcode.from_proccode_argument_names(
-                proccode          = self.proccode,
-                argument_names    = complete_mutation.argument_names,
+                proccode       = self.proccode,
+                argument_names = complete_mutation.argument_names,
             ),
         )
 
@@ -370,7 +370,9 @@ class SRCustomBlockArgumentMutation(SRMutation):
             the FRCustomBlockArgumentMutation
         """
         return FRCustomBlockArgumentMutation(
-            # LEFT OFF HERE
+            tag_name = "mutation",
+            children = [],
+            color    = (self.main_color, self.prototype_color, self.outline_color),
         )
     
 @grepr_dataclass(grepr_fields=["custom_opcode", "no_screen_refresh", "optype", "main_color", "prototype_color", "outline_color"], parent_cls=SRMutation)
@@ -412,6 +414,38 @@ class SRCustomBlockMutation(SRMutation):
 
         self.custom_opcode.validate(path+["custom_opcode"], config)
 
+    
+    def to_first(self, itf_if: "InterToFirstIF") -> FRCustomBlockMutation: # TODO: add tests
+        """
+        Convert a SRCustomBlockMutation into a FRCustomBlockMutation
+        
+        Args:
+            fti_if: interface which allows the management of other blocks
+        
+        Returns:
+            the FRCustomBlockMutation
+        """
+        (proccode, argument_names, argument_defaults
+        ) = self.custom_opcode.to_proccode_argument_names_defaults()
+        argument_ids = [string_to_sha256(argument_name) for argument_name in argument_names]
+        if self.optype is SRCustomBlockOptype.ENDING_STATEMENT:
+            returns = None
+        else:
+            returns = self.optype.is_reporter()
+        return FRCustomBlockMutation(
+            tag_name          = "mutation",
+            children          = [],
+            proccode          = proccode,
+            argument_ids      = argument_ids,
+            argument_names    = argument_names,
+            argument_defaults = argument_defaults,
+            warp              = self.no_screen_refresh,
+            returns           = returns,
+            edited            = True, # seems to always be true
+            optype            = self.optype.to_code(),
+            color             = (self.main_color, self.prototype_color, self.outline_color),
+        )
+
 @grepr_dataclass(grepr_fields=["custom_opcode"], parent_cls=SRMutation)    
 class SRCustomBlockCallMutation(SRMutation):
     """
@@ -437,6 +471,39 @@ class SRCustomBlockCallMutation(SRMutation):
         AA_TYPE(self, path, "custom_opcode", SRCustomBlockOpcode)
 
         self.custom_opcode.validate(path+["custom_opcode"], config)
+    
+    def to_first(self, itf_if: "InterToFirstIF") -> FRCustomBlockCallMutation: # TODO: add tests
+        """
+        Convert a SRCustomBlockCallMutation into a FRCustomBlockCallMutation
+        
+        Args:
+            fti_if: interface which allows the management of other blocks
+        
+        Returns:
+            the FRCustomBlockCallMutation
+        """
+        complete_mutation = itf_if.get_sr_cb_mutation(self.custom_opcode)
+        proccode, argument_names, _ = self.custom_opcode.to_proccode_argument_names_defaults()
+        argument_ids = [string_to_sha256(argument_name) for argument_name in argument_names]
+        if complete_mutation.optype is SRCustomBlockOptype.ENDING_STATEMENT:
+            returns = None
+        else:
+            returns = complete_mutation.optype.is_reporter()
+        return FRCustomBlockCallMutation(
+            tag_name     = "mutation",
+            children     = [],
+            proccode     = proccode,
+            argument_ids = argument_ids,
+            warp         = complete_mutation.no_screen_refresh,
+            returns      = returns,
+            edited       = True, # seems to always be true
+            optype       = complete_mutation.optype.to_code(),
+            color        = (
+                complete_mutation.main_color, 
+                complete_mutation.prototype_color, 
+                complete_mutation.outline_color,
+            ),
+        )
 
 @grepr_dataclass(grepr_fields=["is_ending_statement"], parent_cls=SRMutation)
 class SRStopScriptMutation(SRMutation):
@@ -461,6 +528,22 @@ class SRStopScriptMutation(SRMutation):
             ValidationError: if the SRStopScriptMutation is invalid
         """
         AA_TYPE(self, path, "is_ending_statement", bool)
+
+    def to_first(self, itf_if: "InterToFirstIF") -> FRStopScriptMutation: # TODO: add tests
+        """
+        Convert a SRStopScriptMutation into a FRStopScriptMutation
+        
+        Args:
+            fti_if: interface which allows the management of other blocks
+        
+        Returns:
+            the FRStopScriptMutation
+        """
+        return FRStopScriptMutation(
+            tag_name = "mutation",
+            children = [],
+            has_next = not(self.is_ending_statement),
+        )
 
 
 __all__ = [

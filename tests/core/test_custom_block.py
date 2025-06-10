@@ -3,7 +3,7 @@ from pytest import fixture, raises
 from pypenguin.opcode_info.api import InputType, InputInfo, OpcodeType
 from pypenguin.utility         import (
     ValidationConfig, 
-    TypeValidationError, RangeValidationError, SameValueTwiceError, ConversionError,
+    TypeValidationError, RangeValidationError, SameValueTwiceError, InvalidValueError, ConversionError,
 )
 
 from pypenguin.core.custom_block import (
@@ -82,6 +82,7 @@ def test_SRCustomBlockArgument_validate(config):
         obj=argument,
         attr_tests=[
             ("name", [], TypeValidationError),
+            ("name", "", InvalidValueError),
             ("type", True, TypeValidationError),
         ],
         validate_func=SRCustomBlockArgument.validate,

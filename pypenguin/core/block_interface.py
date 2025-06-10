@@ -95,7 +95,20 @@ class InterToFirstIF:
     added_blocks: dict[str, FRBlock] = field(default_factory=dict)
     added_comments: dict[str, FRComment] = field(default_factory=dict)
     _next_block_id_num: int = 1
+    _cb_mutations: dict[str, "FRCustomBlockMutation"] = field(default_factory=dict)
 
+    def __post_init__(self) -> None:
+        """
+        Fetch and store SRCustomBlockMutation's for later
+        
+        Returns:
+            None
+        """
+        for block in self.blocks.values():
+            if isinstance(getattr(block, "mutation", None), SRCustomBlockMutation):
+                frmutation = block.mutation.to_first(itf_if=self)
+                self._cb_mutations[frmutation.proccode] = frmutation
+        
     def get_next_block_id(self) -> str: # TODO: add tests
         """
         Get the next available block reference id
@@ -137,9 +150,9 @@ class InterToFirstIF:
         self.added_comments[comment_id] = comment
         return comment_id
 
-    def get_added_cb_mutation(self, proccode: str) -> "FRCustomBlockMutation":
+    def get_fr_cb_mutation(self, proccode: str) -> "FRCustomBlockMutation":
         """
-        Get a FRCustomBlockMutation of the added blocks by its procedure code
+        Get a SRCustomBlockMutation of the blocks by its procedure code
         
         Args:
             proccode: the procedure code of the desired FRCustomBlockMutation
@@ -147,16 +160,30 @@ class InterToFirstIF:
         Returns:
             the FRCustomBlockMutation
         """
-        for block in self.added_blocks.values():
-            if not isinstance(block.mutation, FRCustomBlockMutation): continue
-            if block.mutation.proccode == proccode:
-                return block.mutation
+        if proccode in self._cb_mutations:
+            return self._cb_mutations[proccode]
         raise ConversionError(f"Mutation of proccode {repr(proccode)} not found")
+
+    def get_sr_cb_mutation(self, custom_opcode: SRCustomBlockOpcode) -> "SRCustomBlockMutation":
+        """
+        Get a SRCustomBlockMutation of the blocks by its SRCustomBlockOpcode
+        
+        Args:
+            custom_opcode: the SRCustomBlockOpcode of the desired SRCustomBlockMutation
+        
+        Returns:
+            the SRCustomBlockMutation
+        """
+        for block in self.blocks.values():
+            if not isinstance(block.mutation, SRCustomBlockMutation): continue
+            if block.mutation.custom_opcode == custom_opcode:
+                return block.mutation
+        raise ConversionError(f"Mutation of custom opcode {custom_opcode} not found")
 
 @grepr_dataclass(grepr_fields=["scripts", "cb_mutations"])
 class SecondReprIF:
     scripts: list["SRScript"]
-    cb_mutations: dict[SRCustomBlockOpcode, "SRCustomBlockMutation"] = field(init=False)
+    cb_mutations: dict[SRCustomBlockOpcode, "SRCustomBlockMutation"] = field(default_factory=dict)
     # Safe access is needed because blocks haven't actually been validated yet (see get_all_blocks)
     
     def __post_init__(self) -> None:
@@ -167,7 +194,6 @@ class SecondReprIF:
             None
         """
         all_blocks = self._get_all_blocks()
-        self.cb_mutations = {}
         for block in all_blocks:
             if not isinstance(getattr(block, "mutation", None), SRCustomBlockMutation):
                 continue

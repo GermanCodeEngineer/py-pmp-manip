@@ -69,7 +69,7 @@ def test_FRBlock_from_data_valid_mutation():
         tag_name="mutation",
         children=[],
         proccode="do sth text %s and bool %b",
-        argument_ids=["?+wI)AquGQlzMnn5I8tA", "1OrbjF=wjT?D$)m|0N=X"],
+        argument_ids=["U%lSP^BnDmp!m?g.~p^h", "n]Ks[d*hysQu,K@rpm({"],
         argument_names=["a text arg", "a bool arg"],
         argument_defaults=["", "false"],
         warp=False,

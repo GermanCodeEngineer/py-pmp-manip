@@ -59,7 +59,11 @@ class DropdownValueRule(PypenguinEnum):
             return self.value[0]
         return None
 
-    # ("default dropdown value kind", "should keep dropdown value kind for exact calculation?", "index for uniqueness")
+    # (
+    #    "default dropdown value kind", 
+    #    "should keep dropdown value kind for exact calculation?", 
+    #    "index for uniqueness"
+    #)
     STAGE                     = (None                           , None ,  0)
     OTHER_SPRITE              = (DropdownValueKind.SPRITE       , False,  1)
     OTHER_SPRITE_EXCEPT_STAGE = (DropdownValueKind.SPRITE       , False,  2)
