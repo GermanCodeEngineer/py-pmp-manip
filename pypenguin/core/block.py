@@ -2,13 +2,17 @@ from abc         import ABC, abstractmethod
 from dataclasses import field
 from typing      import Any, TYPE_CHECKING
 
-from pypenguin.important_opcodes import *
-from pypenguin.opcode_info.api   import (
+from pypenguin.important_consts import (
+    OPCODE_NUM_VAR_VALUE, OPCODE_VAR_VALUE, OPCODE_NUM_LIST_VALUE, OPCODE_LIST_VALUE,
+    ANY_TEXT_INPUT_NUM, ANY_OPCODE_NUM_IMMEDIATE_BLOCK, ANY_NEW_OPCODE_IMMEDIATE_BLOCK,
+    SHA256_SEC_VARIABLE, SHA256_SEC_LIST, SHA256_SEC_BROADCAST_MSG, SHA256_SEC_DROPDOWN_VALUE,
+)
+from pypenguin.opcode_info.api  import (
     OpcodeInfoAPI, OpcodeInfo, 
     InputInfo, InputType, InputMode, DropdownType,
     OpcodeType, SpecialCaseType,
 )
-from pypenguin.utility           import (
+from pypenguin.utility          import (
     grepr_dataclass, get_closest_matches, tuplify, string_to_sha256, ValidationConfig,
     AA_TYPE, AA_NONE, AA_NONE_OR_TYPE, AA_COORD_PAIR, AA_LIST_OF_TYPE, AA_DICT_OF_TYPE, AA_MIN_LEN,
     DeserializationError, ConversionError,
@@ -331,7 +335,9 @@ class IRBlock:
                     elements.append((magic_text_number, input_value.text))
                 case InputMode.BLOCK_AND_BROADCAST_DROPDOWN:
                     magic_text_number = input_type.get_magic_number()
-                    elements.append((magic_text_number, input_value.text, string_to_sha256(input_value.text)))
+                    elements.append((magic_text_number, input_value.text, 
+                        string_to_sha256(input_value.text, secondary=SHA256_SEC_BROADCAST_MSG)
+                    ))
                 case _:
                     if input_mode.can_be_missing() and not elements:
                         continue # don't include the input if its empty
@@ -348,11 +354,19 @@ class IRBlock:
         for dropdown_id, dropdown_value in self.dropdowns:
             dropdown_type = opcode_info.get_dropdown_info_by_old(dropdown_id).type
             match dropdown_type:
-                case DropdownType.VARIABLE     : suffix = ""
-                case DropdownType.LIST         : suffix = "list"
-                case DropdownType.BROADCAST_MSG: suffix = "broadcast_msg"
-                case _                         : suffix = None
-            sha256 = string_to_sha256(dropdown_value)
+                case DropdownType.VARIABLE:
+                    suffix    = ""
+                    secondary = SHA256_SEC_VARIABLE
+                case DropdownType.LIST:
+                    suffix    = "list"
+                    secondary = SHA256_SEC_LIST
+                case DropdownType.BROADCAST:
+                    suffix    = "broadcast_msg"
+                    secondary = SHA256_SEC_BROADCAST_MSG
+                case _:
+                    suffix    = None
+                    secondary = SHA256_SEC_DROPDOWN_VALUE
+            sha256 = string_to_sha256(dropdown_value, secondary=secondary)
             if suffix is None:
                 old_fields[dropdown_id] = (dropdown_value, sha256)
             else:

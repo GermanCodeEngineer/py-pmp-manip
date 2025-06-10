@@ -3,9 +3,10 @@ from uuid   import UUID
 from pydub  import AudioSegment
 from pytest import fixture, raises
 
-from pypenguin.opcode_info.api    import DropdownValueKind
-from pypenguin.opcode_info.data   import info_api
-from pypenguin.utility            import (
+from pypenguin.important_consts import SHA256_SEC_TARGET_NAME
+from pypenguin.opcode_info.api  import DropdownValueKind
+from pypenguin.opcode_info.data import info_api
+from pypenguin.utility          import (
     string_to_sha256,
     ValidationConfig, 
     ThanksError, ConversionError, TypeValidationError, RangeValidationError, 
@@ -150,7 +151,7 @@ def test_FRStage_from_data_missing_id():
     del stage_data["id"]
     frstage = FRStage.from_data(stage_data, info_api)
     target_stage = copy(FR_STAGE)
-    target_stage.id = string_to_sha256("_stage_") # constant default value
+    target_stage.id = string_to_sha256("_stage_", secondary=SHA256_SEC_TARGET_NAME) # constant default value
     assert frstage == target_stage
 
 
@@ -169,7 +170,7 @@ def test_FRSprite_from_data_missing_id():
     del sprite_data["id"]
     frsprite = FRSprite.from_data(sprite_data, info_api)
     target_sprite = copy(FR_SPRITE)
-    target_sprite.id = string_to_sha256(target_sprite.name) # constant default value
+    target_sprite.id = string_to_sha256(target_sprite.name, SHA256_SEC_TARGET_NAME)
     assert frsprite == target_sprite
 
 

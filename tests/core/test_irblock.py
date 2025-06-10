@@ -1,9 +1,8 @@
 from copy   import deepcopy
 from pytest import raises
 
-from pypenguin.important_opcodes  import *
-from pypenguin.opcode_info.data   import info_api
-from pypenguin.utility            import ConversionError
+from pypenguin.opcode_info.data import info_api
+from pypenguin.utility          import ConversionError
 
 from pypenguin.core.block_interface import InterToFirstIF
 
@@ -23,6 +22,7 @@ def test_IRBlock_to_first_block_and_text():
     assert frblock == ALL_FR_BLOCKS["c"]
     assert itf_if.added_blocks == {id: ALL_FR_BLOCKS[id] for id in {}}
     assert itf_if.added_comments == {}
+
 
 # LEFT OFF HERE
 

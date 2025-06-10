@@ -1,8 +1,9 @@
 from json        import loads
 from uuid        import UUID
 
-from pypenguin.opcode_info.api import OpcodeInfoAPI, DropdownValueKind
-from pypenguin.utility         import (
+from pypenguin.important_consts import SHA256_SEC_TARGET_NAME
+from pypenguin.opcode_info.api  import OpcodeInfoAPI, DropdownValueKind
+from pypenguin.utility          import (
     grepr_dataclass, read_all_files_of_zip, string_to_sha256, ValidationConfig, 
     AA_TYPE, AA_NONE_OR_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_RANGE, AA_EXACT_LEN,
     ThanksError, SameValueTwiceError, SpriteLayerStackError,
@@ -77,7 +78,7 @@ class FRProject:
         """
         for i, sprite_data in enumerate(project_data["targets"]):
             sprite_name = "_stage_" if i == 0 else sprite_data["name"]
-            sprite_data["id"] = string_to_sha256(primary=sprite_name)
+            sprite_data["id"] = string_to_sha256(sprite_name, secondary=SHA256_SEC_TARGET_NAME)
         return project_data
 
     @classmethod

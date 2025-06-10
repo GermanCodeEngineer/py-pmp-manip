@@ -1,8 +1,14 @@
 from typing import TYPE_CHECKING
 from copy   import copy, deepcopy
 
-from pypenguin.utility           import string_to_sha256, DualKeyDict, InvalidValueError
-from pypenguin.important_opcodes import *
+from pypenguin.important_consts import (
+    OPCODE_VAR_VALUE, NEW_OPCODE_VAR_VALUE, OPCODE_LIST_VALUE, NEW_OPCODE_LIST_VALUE, 
+    OPCODE_STOP_SCRIPT, OPCODE_CB_PROTOTYPE, ANY_OPCODE_CB_DEF, ANY_OPCODE_CB_ARG, 
+    OPCODE_CB_CALL, NEW_OPCODE_CB_CALL, OPCODE_CB_ARG_TEXT, OPCODE_CB_ARG_BOOL, 
+    OPCODE_CB_DEF, NEW_OPCODE_CB_DEF, OPCODE_CB_DEF_RET, NEW_OPCODE_CB_DEF_REP,
+    SHA256_SEC_LOCAL_ARGUMENT_NAME,
+)
+from pypenguin.utility          import string_to_sha256, DualKeyDict, InvalidValueError
 
 from pypenguin.opcode_info.api import (
     OpcodeInfo, OpcodeType, OpcodeInfoGroup, OpcodeInfoAPI, 
@@ -313,7 +319,9 @@ def _f5d7_e3e2(block: "FRBlock", block_id: str, itf_if: "InterToFirstIF") -> "FR
             next     = None,
             parent   = prototype_id,
             inputs   = {},
-            fields   = {"VALUE": (argument_name, string_to_sha256(argument_name))},
+            fields   = {
+                "VALUE": (argument_name, string_to_sha256(argument_name, secondary=SHA256_SEC_LOCAL_ARGUMENT_NAME))
+            },
             shadow   = True,
             topLevel = False,
             mutation = FRCustomBlockArgumentMutation(color=mutation.color), # use the same colors as the prototype,

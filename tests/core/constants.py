@@ -1,7 +1,13 @@
 from copy import deepcopy
+from json import dumps
 
-from pypenguin.opcode_info.api import DropdownValueKind, InputMode
-from pypenguin.utility         import read_all_files_of_zip
+from pypenguin.important_consts import (
+    SHA256_SEC_MAIN_ARGUMENT_NAME, SHA256_SEC_LOCAL_ARGUMENT_NAME,
+    SHA256_SEC_VARIABLE, SHA256_SEC_LIST, SHA256_SEC_BROADCAST_MSG,
+    SHA256_SEC_DROPDOWN_VALUE, SHA256_SEC_TARGET_NAME,
+)
+from pypenguin.opcode_info.api  import DropdownValueKind, InputMode
+from pypenguin.utility          import read_all_files_of_zip, string_to_sha256
 
 from pypenguin.core.asset          import FRCostume, FRSound, SRVectorCostume, SRSound
 from pypenguin.core.block_mutation import (
@@ -39,7 +45,9 @@ ALL_FR_BLOCK_DATAS = {
         "next": "b",
         "parent": None,
         "inputs": {
-            "BROADCAST_INPUT": [1, [11, "my message", "]zYMvs0rF)-eOEt26c|,"]],
+            "BROADCAST_INPUT": [
+                1, [11, "my message", string_to_sha256("my message", secondary=SHA256_SEC_BROADCAST_MSG)]
+            ],
         },
         "fields": {},
         "shadow": False,
@@ -66,7 +74,7 @@ ALL_FR_BLOCK_DATAS = {
         "parent": "b",
         "inputs": {},
         "fields": {
-            "TO": ["_random_", "@86dYv/6h#d_V/%rK3/M"],
+            "TO": ["_random_", string_to_sha256("_random_", secondary=SHA256_SEC_DROPDOWN_VALUE)],
         },
         "shadow": True,
         "topLevel": False,
@@ -77,7 +85,8 @@ ALL_FR_BLOCK_DATAS = {
         "parent": None,
         "inputs": {
             "FROM": [
-                3, [12, "my variable", "`jEk@4|i[#Fk?(8x)AV.-my variable"], [4, "1"],
+                3, [12, "my variable", string_to_sha256("my variable", secondary=SHA256_SEC_VARIABLE)], 
+                [4, "1"],
             ],
             "TO": [3, "g", [4, "10"]],
         },
@@ -87,7 +96,7 @@ ALL_FR_BLOCK_DATAS = {
         "x": 304,
         "y": 424,
     },
-    "m": [12, "my variable", "`jEk@4|i[#Fk?(8x)AV.-my variable", 446, 652],
+    "m": [12, "my variable", string_to_sha256("my variable", secondary=SHA256_SEC_VARIABLE), 446, 652],
     "h": {
         "opcode": "procedures_definition_return",
         "next": None,
@@ -106,8 +115,8 @@ ALL_FR_BLOCK_DATAS = {
         "next": None,
         "parent": "h",
         "inputs": {
-            "U%lSP^BnDmp!m?g.~p^h": [1, "i"],
-            "n]Ks[d*hysQu,K@rpm({": [1, "j"],
+            string_to_sha256("a text arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME): [1, "i"],
+            string_to_sha256("a bool arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME): [1, "j"],
         },
         "fields": {},
         "shadow": True,
@@ -116,7 +125,10 @@ ALL_FR_BLOCK_DATAS = {
             "tagName": "mutation",
             "children": [],
             "proccode": "do sth text %s and bool %b",
-            "argumentids": "[\"U%lSP^BnDmp!m?g.~p^h\",\"n]Ks[d*hysQu,K@rpm({\"]",
+            "argumentids": dumps([
+                string_to_sha256("a text arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME), 
+                string_to_sha256("a bool arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME),
+            ]),
             "argumentnames": "[\"a text arg\",\"a bool arg\"]",
             "argumentdefaults": "[\"\",\"false\"]",
             "warp": "false",
@@ -132,7 +144,7 @@ ALL_FR_BLOCK_DATAS = {
         "parent": "a",
         "inputs": {},
         "fields": {
-            "VALUE": ["a text arg",";jX/UwBwE{CX@UdiwnJd"],
+            "VALUE": ["a text arg", string_to_sha256("a text arg", secondary=SHA256_SEC_LOCAL_ARGUMENT_NAME)],
         },
         "shadow": True,
         "topLevel": False,
@@ -148,7 +160,7 @@ ALL_FR_BLOCK_DATAS = {
         "parent": "a",
         "inputs": {},
         "fields": {
-            "VALUE": ["a bool arg", "WM*d_x(VPqmUl[4GOC({"],
+            "VALUE": ["a bool arg", string_to_sha256("a bool arg", secondary=SHA256_SEC_LOCAL_ARGUMENT_NAME)],
         },
         "shadow": True,
         "topLevel": False,
@@ -175,8 +187,8 @@ ALL_FR_BLOCK_DATAS = {
         "next": None,
         "parent": None,
         "inputs": {
-            "U%lSP^BnDmp!m?g.~p^h": [3, "k", [10, ""]],
-            "n]Ks[d*hysQu,K@rpm({": [2, "l"],
+            string_to_sha256("a text arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME): [3, "k", [10, ""]],
+            string_to_sha256("a bool arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME): [2, "l"],
         },
         "fields": {},
         "shadow": False,
@@ -187,7 +199,10 @@ ALL_FR_BLOCK_DATAS = {
             "tagName": "mutation",
             "children": [],
             "proccode": "do sth text %s and bool %b",
-            "argumentids": "[\"U%lSP^BnDmp!m?g.~p^h\",\"n]Ks[d*hysQu,K@rpm({\"]",
+            "argumentids": dumps([
+                string_to_sha256("a text arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME), 
+                string_to_sha256("a bool arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME),
+            ]),
             "warp": "false",
             "returns": "true",
             "edited": "true",
@@ -215,7 +230,7 @@ ALL_FR_BLOCK_DATAS = {
         "shadow": False,
         "topLevel": False,
     },
-    "p": [13, "my list", "ta`eJd|abk.):i6vI0u}", 646, 561],
+    "p": [13, "my list", string_to_sha256("my list", secondary=SHA256_SEC_LIST), 646, 561],
     "n": {
         "opcode": "control_if",
         "next": None,
@@ -237,7 +252,7 @@ ALL_FR_BLOCK_DATAS = {
             "VALUE": [1, [4, "1"]],
         },
         "fields": {
-            "VARIABLE": ["my variable", "`jEk@4|i[#Fk?(8x)AV.-my variable", ""],
+            "VARIABLE": ["my variable", string_to_sha256("my variable", secondary=SHA256_SEC_VARIABLE), ""],
         },
         "shadow": False,
         "topLevel": False,
@@ -248,7 +263,7 @@ ALL_FR_BLOCK_DATAS = {
         "parent": "o",
         "inputs": {},
         "fields": {
-            "VARIABLE": ["my variable", "`jEk@4|i[#Fk?(8x)AV.-my variable", ""],
+            "VARIABLE": ["my variable", string_to_sha256("my variable", secondary=SHA256_SEC_VARIABLE), ""],
         },
         "shadow": False,
         "topLevel": False,
@@ -261,7 +276,7 @@ ALL_FR_BLOCK_DATAS = {
             "VALUE": (1, (4, "50")),
         },
         "fields": {
-            "WHENGREATERTHANMENU": ("LOUDNESS", "%{)~Kh%S#)D`a*L,KavE", ""),
+            "WHENGREATERTHANMENU": ("LOUDNESS", string_to_sha256("LOUDNESS", secondary=SHA256_SEC_DROPDOWN_VALUE), ""),
         },
         "shadow": False,
         "topLevel": True,
@@ -276,7 +291,9 @@ ALL_FR_BLOCKS = {
         next="b",
         parent=None,
         inputs={
-            "BROADCAST_INPUT": (1, (11, "my message", "]zYMvs0rF)-eOEt26c|,")),
+            "BROADCAST_INPUT": (
+                1, (11, "my message", string_to_sha256("my message", secondary=SHA256_SEC_BROADCAST_MSG)),
+            ),
         },
         fields={},
         shadow=False,
@@ -303,7 +320,7 @@ ALL_FR_BLOCKS = {
         parent="b",
         inputs={},
         fields={
-            "TO": ("_random_", "@86dYv/6h#d_V/%rK3/M"),
+            "TO": ("_random_", string_to_sha256("_random_", secondary=SHA256_SEC_DROPDOWN_VALUE)),
         },
         shadow=True,
         top_level=False,
@@ -314,7 +331,7 @@ ALL_FR_BLOCKS = {
         parent=None,
         inputs={
             "FROM": (
-                3, (12, "my variable", "`jEk@4|i[#Fk?(8x)AV.-my variable"), (4, "1"),
+                3, (12, "my variable", string_to_sha256("my variable", secondary=SHA256_SEC_VARIABLE)), (4, "1"),
             ),
             "TO": (3, "g", (4, "10")),
         },
@@ -324,7 +341,7 @@ ALL_FR_BLOCKS = {
         x=304,
         y=424,
     ),
-    "m": (12, "my variable", "`jEk@4|i[#Fk?(8x)AV.-my variable", 446, 652),
+    "m": (12, "my variable", string_to_sha256("my variable", secondary=SHA256_SEC_VARIABLE), 446, 652),
     "h": FRBlock(
         opcode="procedures_definition_return",
         next=None,
@@ -343,8 +360,8 @@ ALL_FR_BLOCKS = {
         next=None,
         parent="h",
         inputs={
-            "U%lSP^BnDmp!m?g.~p^h": (1, "i"),
-            "n]Ks[d*hysQu,K@rpm({": (1, "j"),
+            string_to_sha256("a text arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME): (1, "i"),
+            string_to_sha256("a bool arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME): (1, "j"),
         },
         fields={},
         shadow=True,
@@ -353,7 +370,10 @@ ALL_FR_BLOCKS = {
             tag_name="mutation",
             children=[],
             proccode="do sth text %s and bool %b",
-            argument_ids=["U%lSP^BnDmp!m?g.~p^h", "n]Ks[d*hysQu,K@rpm({"],
+            argument_ids=[
+                string_to_sha256("a text arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME), 
+                string_to_sha256("a bool arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME),
+            ],
             argument_names=["a text arg", "a bool arg"],
             argument_defaults=["", "false"],
             warp=False,
@@ -369,7 +389,7 @@ ALL_FR_BLOCKS = {
         parent="a",
         inputs={},
         fields={
-            "VALUE": ("a text arg", ";jX/UwBwE{CX@UdiwnJd"),
+            "VALUE": ("a text arg", string_to_sha256("a text arg", secondary=SHA256_SEC_LOCAL_ARGUMENT_NAME)),
         },
         shadow=True,
         top_level=False,
@@ -385,7 +405,7 @@ ALL_FR_BLOCKS = {
         parent="a",
         inputs={},
         fields={
-            "VALUE": ("a bool arg", "WM*d_x(VPqmUl[4GOC({"),
+            "VALUE": ("a bool arg", string_to_sha256("a bool arg", secondary=SHA256_SEC_LOCAL_ARGUMENT_NAME)),
         },
         shadow=True,
         top_level=False,
@@ -412,8 +432,8 @@ ALL_FR_BLOCKS = {
         next=None,
         parent=None,
         inputs={
-            "U%lSP^BnDmp!m?g.~p^h": (3, "k", (10, "")),
-            "n]Ks[d*hysQu,K@rpm({": (2, "l"),
+            string_to_sha256("a text arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME): (3, "k", (10, "")),
+            string_to_sha256("a bool arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME): (2, "l"),
         },
         fields={},
         shadow=False,
@@ -424,7 +444,10 @@ ALL_FR_BLOCKS = {
             tag_name="mutation",
             children=[],
             proccode="do sth text %s and bool %b",
-            argument_ids=["U%lSP^BnDmp!m?g.~p^h", "n]Ks[d*hysQu,K@rpm({"],
+            argument_ids=[
+                string_to_sha256("a text arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME), 
+                string_to_sha256("a bool arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME),
+            ],
             warp=False,
             returns=True,
             edited=True,
@@ -452,7 +475,7 @@ ALL_FR_BLOCKS = {
         shadow=False,
         top_level=False,
     ),
-    "p": (13, "my list", "ta`eJd|abk.):i6vI0u}", 646, 561),
+    "p": (13, "my list", string_to_sha256("my list", secondary=SHA256_SEC_LIST), 646, 561),
     "n": FRBlock(
         opcode="control_if",
         next=None,
@@ -474,7 +497,7 @@ ALL_FR_BLOCKS = {
             "VALUE": (1, (4, "1")),
         },
         fields={
-            "VARIABLE": ("my variable", "`jEk@4|i[#Fk?(8x)AV.-my variable", ""),
+            "VARIABLE": ("my variable", string_to_sha256("my variable", secondary=SHA256_SEC_VARIABLE), ""),
         },
         shadow=False,
         top_level=False,
@@ -485,7 +508,7 @@ ALL_FR_BLOCKS = {
         parent="o",
         inputs={},
         fields={
-            "VARIABLE": ("my variable", "`jEk@4|i[#Fk?(8x)AV.-my variable", ""),
+            "VARIABLE": ("my variable", string_to_sha256("my variable", secondary=SHA256_SEC_VARIABLE), ""),
         },
         shadow=False,
         top_level=False,
@@ -498,7 +521,7 @@ ALL_FR_BLOCKS = {
             "VALUE": (1, (4, "50")),
         },
         fields={
-            "WHENGREATERTHANMENU": ("LOUDNESS", "%{)~Kh%S#)D`a*L,KavE", ""),
+            "WHENGREATERTHANMENU": ("LOUDNESS", string_to_sha256("LOUDNESS", secondary=SHA256_SEC_DROPDOWN_VALUE), ""),
         },
         shadow=False,
         top_level=True,
@@ -514,7 +537,7 @@ ALL_FR_BLOCKS_CLEAN: dict[str, FRBlock] = ALL_FR_BLOCKS | {
         parent=None,
         inputs={},
         fields={
-            "VARIABLE": ("my variable", "`jEk@4|i[#Fk?(8x)AV.-my variable", ""),
+            "VARIABLE": ("my variable", string_to_sha256("my variable", secondary=SHA256_SEC_VARIABLE), ""),
         },
         shadow=False,
         top_level=True,
@@ -527,7 +550,7 @@ ALL_FR_BLOCKS_CLEAN: dict[str, FRBlock] = ALL_FR_BLOCKS | {
         parent=None,
         inputs={},
         fields={
-            "LIST": ("my list", "ta`eJd|abk.):i6vI0u}", ""),
+            "LIST": ("my list", string_to_sha256("my list", secondary=SHA256_SEC_LIST), "list"),
         },
         shadow=False,
         top_level=True,
@@ -1097,19 +1120,19 @@ STAGE_DATA = {
     "isStage": True,
     "name": "Stage",
     "variables": {
-        "`jEk@4|i[#Fk?(8x)AV.-my variable": [
+        string_to_sha256("my variable", secondary=SHA256_SEC_VARIABLE): [
             "my variable",
             0,
         ],
     },
     "lists": {
-        "ta`eJd|abk.):i6vI0u}": [
+        string_to_sha256("my list", secondary=SHA256_SEC_LIST): [
             "my list",
             [],
         ],
     },
     "broadcasts": {
-        "]zYMvs0rF)-eOEt26c|,": "my message",
+        string_to_sha256("my message", secondary=SHA256_SEC_BROADCAST_MSG): "my message",
     },
     "customVars": [],
     "blocks": {},
@@ -1139,13 +1162,13 @@ FR_STAGE = FRStage(
     is_stage=True,
     name="Stage",
     variables={
-        "`jEk@4|i[#Fk?(8x)AV.-my variable": ("my variable", 0),
+        string_to_sha256("my variable", secondary=SHA256_SEC_VARIABLE): ("my variable", 0),
     },
     lists={
-        "ta`eJd|abk.):i6vI0u}": ("my list", []),
+        string_to_sha256("my list", secondary=SHA256_SEC_LIST): ("my list", []),
     },
     broadcasts={
-        "]zYMvs0rF)-eOEt26c|,": "my message",
+        string_to_sha256("my message", secondary=SHA256_SEC_BROADCAST_MSG): "my message",
     },
     custom_vars=[],
     blocks={},
@@ -1293,7 +1316,7 @@ FR_PROJECT = FRProject(
     ],
     monitors=[
         FRMonitor(
-            id="ta`eJd|abk.):i6vI0u}",
+            id=string_to_sha256("my list", secondary=SHA256_SEC_LIST),
             mode="list",
             opcode="data_listcontents",
             params={
@@ -1334,7 +1357,7 @@ PROJECT_DATA = {
     ],
     "monitors": [
         {
-            "id": "ta`eJd|abk.):i6vI0u}",
+            "id": string_to_sha256("my list", secondary=SHA256_SEC_LIST),
             "mode": "list",
             "opcode": "data_listcontents",
             "params": {
@@ -1455,7 +1478,7 @@ SB3_PROJECT_DATA_ORGINAL = {
             "isStage": True,
             "name": "Stage",
             "variables": {
-                "`jEk@4|i[#Fk?(8x)AV.-my variable": [
+                string_to_sha256("my variable", secondary=SHA256_SEC_VARIABLE): [
                     "my variable",
                     0,
                 ],
@@ -1608,5 +1631,9 @@ SB3_PROJECT_DATA_ORGINAL = {
 }
 
 SB3_PROJECT_DATA_CONVERTED = deepcopy(SB3_PROJECT_DATA_ORGINAL)
-SB3_PROJECT_DATA_CONVERTED["targets"][0]["id"] = "nAkI`?tY/Vqn|(Xh.]zf"
-SB3_PROJECT_DATA_CONVERTED["targets"][1]["id"] = "oTDHQbL~wA;YdpAys^y/"
+SB3_PROJECT_DATA_CONVERTED["targets"][0]["id"] = string_to_sha256(
+    "_stage_", secondary=SHA256_SEC_TARGET_NAME,
+)
+SB3_PROJECT_DATA_CONVERTED["targets"][1]["id"] = string_to_sha256(
+    SB3_PROJECT_DATA_ORGINAL["targets"][1]["name"], secondary=SHA256_SEC_TARGET_NAME,
+)

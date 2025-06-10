@@ -1,10 +1,10 @@
 from copy   import copy
 from pytest import fixture, raises
 
-from pypenguin.important_opcodes  import NEW_OPCODE_VAR_VALUE, NEW_OPCODE_LIST_VALUE
-from pypenguin.opcode_info.api    import DropdownValueKind
-from pypenguin.opcode_info.data   import info_api
-from pypenguin.utility            import (
+from pypenguin.important_consts import NEW_OPCODE_VAR_VALUE, NEW_OPCODE_LIST_VALUE
+from pypenguin.opcode_info.api  import DropdownValueKind
+from pypenguin.opcode_info.data import info_api
+from pypenguin.utility          import (
     ValidationConfig, 
     ThanksError, TypeValidationError, InvalidOpcodeError, UnnecessaryDropdownError, 
     MissingDropdownError, RangeValidationError, InvalidValueError,

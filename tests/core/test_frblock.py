@@ -1,9 +1,13 @@
 from pytest import fixture, raises
 
-from pypenguin.important_opcodes  import *
-from pypenguin.opcode_info.api    import InputMode
-from pypenguin.opcode_info.data   import info_api
-from pypenguin.utility            import DeserializationError
+from pypenguin.important_consts import (
+    OPCODE_NUM_VAR_VALUE, OPCODE_VAR_VALUE, OPCODE_NUM_LIST_VALUE, OPCODE_LIST_VALUE,
+    SHA256_SEC_VARIABLE, SHA256_SEC_LIST, SHA256_SEC_BROADCAST_MSG,
+    SHA256_SEC_MAIN_ARGUMENT_NAME,
+)
+from pypenguin.opcode_info.api  import InputMode
+from pypenguin.opcode_info.data import info_api
+from pypenguin.utility          import string_to_sha256, DeserializationError
 
 from pypenguin.core.block_interface import FirstToInterIF
 from pypenguin.core.block_mutation  import (
@@ -36,7 +40,9 @@ def test_FRBlock_from_data():
     assert frblock.next      == data["next"]
     assert frblock.parent    == data["parent"]
     assert frblock.inputs    == {
-        "BROADCAST_INPUT": (1, (11, "my message", "]zYMvs0rF)-eOEt26c|,")),
+        "BROADCAST_INPUT": (1, 
+            (11, "my message", string_to_sha256("my message", secondary=SHA256_SEC_BROADCAST_MSG)),
+        ),
     }
     assert frblock.fields    == {}
     assert frblock.shadow    == data["shadow"]
@@ -69,7 +75,10 @@ def test_FRBlock_from_data_valid_mutation():
         tag_name="mutation",
         children=[],
         proccode="do sth text %s and bool %b",
-        argument_ids=["U%lSP^BnDmp!m?g.~p^h", "n]Ks[d*hysQu,K@rpm({"],
+        argument_ids=[
+            string_to_sha256("a text arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME), 
+            string_to_sha256("a bool arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME),
+        ],
         argument_names=["a text arg", "a bool arg"],
         argument_defaults=["", "false"],
         warp=False,
@@ -81,7 +90,7 @@ def test_FRBlock_from_data_valid_mutation():
 
 
 def test_FRBlock_from_tuple_not_top_level():
-    data = [OPCODE_NUM_VAR_VALUE, "a variable", ",fe+c/836;:I2j}Z3N_D"]
+    data = [OPCODE_NUM_VAR_VALUE, "a variable", string_to_sha256("my variable", secondary=SHA256_SEC_VARIABLE)]
     parent_id = "m"
     frblock = FRBlock.from_tuple(data, parent_id=parent_id)
     assert isinstance(frblock, FRBlock)
@@ -89,7 +98,9 @@ def test_FRBlock_from_tuple_not_top_level():
     assert frblock.next      is None
     assert frblock.parent    == parent_id
     assert frblock.inputs    == {}
-    assert frblock.fields    == {"VARIABLE": ("a variable", ",fe+c/836;:I2j}Z3N_D", "")}
+    assert frblock.fields    == {
+        "VARIABLE": ("a variable", string_to_sha256("my variable", secondary=SHA256_SEC_VARIABLE), ""),
+    }
     assert frblock.shadow    is False
     assert frblock.top_level is False
     assert frblock.x         is None
@@ -101,14 +112,14 @@ def test_FRBlock_from_tuple_not_top_level():
         FRBlock.from_tuple(data, parent_id=None)
 
 def test_FRBlock_from_tuple_list_top_level():
-    data = [OPCODE_NUM_LIST_VALUE, "a list", "FAp;aT9l%(^4R:g]NHc7", 460, 628]
+    data = [OPCODE_NUM_LIST_VALUE, "a list", string_to_sha256("my list", secondary=SHA256_SEC_LIST), 460, 628]
     frblock = FRBlock.from_tuple(data, parent_id=None)
     assert isinstance(frblock, FRBlock)
     assert frblock.opcode    == OPCODE_LIST_VALUE
     assert frblock.next      is None
     assert frblock.parent    is None
     assert frblock.inputs    == {}
-    assert frblock.fields    == {"LIST": ("a list", "FAp;aT9l%(^4R:g]NHc7", "")}
+    assert frblock.fields    == {"LIST": ("a list", string_to_sha256("my list", secondary=SHA256_SEC_LIST), "")}
     assert frblock.shadow    is False
     assert frblock.top_level is True
     assert frblock.x         == data[3]

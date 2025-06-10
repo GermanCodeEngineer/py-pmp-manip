@@ -37,7 +37,8 @@ def test_FRProject_from_data():
 
 
 def test_FRProject_data_sb3_to_pmp():
-    assert FRProject._data_sb3_to_pmp(SB3_PROJECT_DATA_ORGINAL) == SB3_PROJECT_DATA_CONVERTED
+    frproject = FRProject._data_sb3_to_pmp(SB3_PROJECT_DATA_ORGINAL)
+    assert frproject == SB3_PROJECT_DATA_CONVERTED
 
 
 def test_FRProject_from_file():

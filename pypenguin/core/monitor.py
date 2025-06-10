@@ -1,12 +1,12 @@
 from typing import Any
 
-from pypenguin.opcode_info.api   import OpcodeInfoAPI
-from pypenguin.utility           import (
+from pypenguin.opcode_info.api  import OpcodeInfoAPI
+from pypenguin.utility          import (
     grepr_dataclass, ValidationConfig,
     AA_TYPE, AA_TYPES, AA_DICT_OF_TYPE, AA_COORD_PAIR, AA_BOXED_COORD_PAIR, AA_EQUAL, AA_BIGGER_OR_EQUAL, 
     InvalidOpcodeError, MissingDropdownError, UnnecessaryDropdownError, ThanksError,
 )
-from pypenguin.important_opcodes import *
+from pypenguin.important_consts import OPCODE_VAR_VALUE, OPCODE_LIST_VALUE, NEW_OPCODE_VAR_VALUE, NEW_OPCODE_LIST_VALUE
 
 from pypenguin.core.context  import PartialContext, CompleteContext
 from pypenguin.core.dropdown import SRDropdownValue

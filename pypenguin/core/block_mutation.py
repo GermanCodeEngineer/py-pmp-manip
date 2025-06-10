@@ -3,7 +3,8 @@ from json        import loads
 from typing      import Any, TYPE_CHECKING
 from dataclasses import field
 
-from pypenguin.utility import (
+from pypenguin.important_consts import SHA256_SEC_MAIN_ARGUMENT_NAME
+from pypenguin.utility          import (
     grepr_dataclass, string_to_sha256, ValidationConfig,
     AA_TYPE, AA_HEX_COLOR,
     ThanksError, ConversionError, DeserializationError, 
@@ -427,7 +428,10 @@ class SRCustomBlockMutation(SRMutation):
         """
         (proccode, argument_names, argument_defaults
         ) = self.custom_opcode.to_proccode_argument_names_defaults()
-        argument_ids = [string_to_sha256(argument_name) for argument_name in argument_names]
+        argument_ids = [
+            string_to_sha256(argument_name, secondary=SHA256_SEC_MAIN_ARGUMENT_NAME) 
+            for argument_name in argument_names
+        ]
         if self.optype is SRCustomBlockOptype.ENDING_STATEMENT:
             returns = None
         else:
@@ -484,7 +488,10 @@ class SRCustomBlockCallMutation(SRMutation):
         """
         complete_mutation = itf_if.get_sr_cb_mutation(self.custom_opcode)
         proccode, argument_names, _ = self.custom_opcode.to_proccode_argument_names_defaults()
-        argument_ids = [string_to_sha256(argument_name) for argument_name in argument_names]
+        argument_ids = [
+            string_to_sha256(argument_name, secondary=SHA256_SEC_MAIN_ARGUMENT_NAME) 
+            for argument_name in argument_names
+        ]
         if complete_mutation.optype is SRCustomBlockOptype.ENDING_STATEMENT:
             returns = None
         else:

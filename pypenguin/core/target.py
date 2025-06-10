@@ -4,8 +4,9 @@ from dataclasses import field
 from abc         import abstractmethod, ABC
 from uuid        import uuid4, UUID
 
-from pypenguin.opcode_info.api import OpcodeInfoAPI, DropdownValueKind
-from pypenguin.utility         import (
+from pypenguin.important_consts import SHA256_SEC_TARGET_NAME
+from pypenguin.opcode_info.api  import OpcodeInfoAPI, DropdownValueKind
+from pypenguin.utility          import (
     string_to_sha256, grepr_dataclass, ThanksError, ValidationConfig, 
     AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_MIN_LEN, AA_MIN, AA_RANGE, AA_COORD_PAIR, AA_NOT_ONE_OF, 
     SameValueTwiceError, ConversionError,
@@ -246,7 +247,7 @@ class FRStage(FRTarget):
         if "id" in data:
             id = data["id"]
         else:
-            id = string_to_sha256(primary="_stage_") # "nAkI`?tY/Vqn|(Xh.]zf"
+            id = string_to_sha256("_stage_", secondary=SHA256_SEC_TARGET_NAME)
         return cls(
             **common_fields,
             id=id,
@@ -319,7 +320,7 @@ class FRSprite(FRTarget):
         if "id" in data:
             id = data["id"]
         else:
-            id = string_to_sha256(primary=data["name"])
+            id = string_to_sha256(data["name"], secondary=SHA256_SEC_TARGET_NAME)
         return cls(
             **common_fields,
             id=id,

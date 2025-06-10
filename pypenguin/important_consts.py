@@ -1,0 +1,63 @@
+# Opcodes: Variables & Lists
+OPCODE_VAR_VALUE               = "data_variable"
+OPCODE_LIST_VALUE              = "data_listcontents"
+NEW_OPCODE_VAR_VALUE           = "value of [VARIABLE]"
+NEW_OPCODE_LIST_VALUE          = "value of [LIST]"
+ANY_OPCODE_IMMEDIATE_BLOCK     = {OPCODE_VAR_VALUE, OPCODE_LIST_VALUE}
+ANY_NEW_OPCODE_IMMEDIATE_BLOCK = {NEW_OPCODE_VAR_VALUE, NEW_OPCODE_LIST_VALUE}
+
+# Opcodes: Custom Block Definitions
+OPCODE_CB_DEF                  = "procedures_definition"
+OPCODE_CB_DEF_RET              = "procedures_definition_return"
+ANY_OPCODE_CB_DEF              =  {OPCODE_CB_DEF, OPCODE_CB_DEF_RET}
+
+OPCODE_CB_PROTOTYPE            = "procedures_prototype"
+
+OPCODE_CB_ARG_TEXT             = "argument_reporter_string_number"
+OPCODE_CB_ARG_BOOL             = "argument_reporter_boolean"
+ANY_OPCODE_CB_ARG              = {OPCODE_CB_ARG_TEXT, OPCODE_CB_ARG_BOOL}
+
+NEW_OPCODE_CB_DEF              = "define custom block"
+NEW_OPCODE_CB_DEF_REP          = "define custom block reporter"
+ANY_NEW_OPCODE_CB_DEF          = {NEW_OPCODE_CB_DEF, NEW_OPCODE_CB_DEF_REP}
+
+# Opcodes: Custom Block Calls
+OPCODE_CB_CALL                 = "procedures_call"
+NEW_OPCODE_CB_CALL             = "call custom block"
+
+# Opcodes: Other Special Blocks
+OPCODE_STOP_SCRIPT             = "control_stop"
+
+# Magic Numbers
+OPCODE_NUM_VAR_VALUE           = 12
+OPCODE_NUM_LIST_VALUE          = 13
+ANY_OPCODE_NUM_IMMEDIATE_BLOCK = {OPCODE_NUM_VAR_VALUE, OPCODE_NUM_LIST_VALUE}
+ANY_TEXT_INPUT_NUM             = {4, 5, 6, 7, 8, 9, 10, 11}
+
+
+# SHA256 Secondary Values
+SHA256_SEC_MAIN_ARGUMENT_NAME  = "MAIN_ARGUMENT_NAME"
+SHA256_SEC_LOCAL_ARGUMENT_NAME = "LOCAL_ARGUMENT_NAME"
+SHA256_SEC_VARIABLE            = "VARIABLE"
+SHA256_SEC_LIST                = "LIST"
+SHA256_SEC_BROADCAST_MSG       = "BROADCAST_MSG"
+SHA256_SEC_DROPDOWN_VALUE      = "DROPDOWN_VALUE"
+SHA256_SEC_TARGET_NAME         = "TARGET_NAME"
+
+
+__all__ = [
+    "OPCODE_VAR_VALUE", "OPCODE_LIST_VALUE", "NEW_OPCODE_VAR_VALUE", "NEW_OPCODE_LIST_VALUE",
+    "ANY_OPCODE_IMMEDIATE_BLOCK", "ANY_NEW_OPCODE_IMMEDIATE_BLOCK",
+    "OPCODE_CB_DEF", "OPCODE_CB_DEF_RET", "ANY_OPCODE_CB_DEF",
+    "OPCODE_CB_PROTOTYPE", 
+    "OPCODE_CB_ARG_TEXT", "OPCODE_CB_ARG_BOOL", "ANY_OPCODE_CB_ARG",
+    "NEW_OPCODE_CB_DEF", "NEW_OPCODE_CB_DEF_REP", "ANY_NEW_OPCODE_CB_DEF",
+    "OPCODE_CB_CALL", "NEW_OPCODE_CB_CALL",
+    "OPCODE_STOP_SCRIPT",
+    "OPCODE_NUM_VAR_VALUE", "OPCODE_NUM_LIST_VALUE", "ANY_OPCODE_NUM_IMMEDIATE_BLOCK",
+    "ANY_TEXT_INPUT_NUM",
+    "SHA256_SEC_MAIN_ARGUMENT_NAME", "SHA256_SEC_LOCAL_ARGUMENT_NAME",
+    "SHA256_SEC_VARIABLE", "SHA256_SEC_LIST", "SHA256_SEC_BROADCAST_MSG",
+    "SHA256_SEC_DROPDOWN_VALUE", "SHA256_SEC_TARGET_NAME",
+]
+
