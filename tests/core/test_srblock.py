@@ -64,7 +64,6 @@ class TEST_SecondToInterIF(SecondToInterIF):
 
 
 
-
 def test_SRScript_validate(config, validation_if, context):        
     srscript = ALL_SR_SCRIPTS[0]
     srscript.validate([], config, info_api, validation_if, context)

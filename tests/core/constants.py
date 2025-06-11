@@ -57,7 +57,7 @@ ALL_FR_BLOCK_DATAS = {
     },
     "b": {
         "opcode": "motion_glideto",
-        "next": None,
+        "next": "t",
         "parent": "d",
         "inputs": {
             "SECS": [1, [4, "1"]],
@@ -66,7 +66,7 @@ ALL_FR_BLOCK_DATAS = {
         "fields": {},
         "shadow": False,
         "topLevel": False,
-        "comment": "j",
+        "comment": "s",
     },
     "e": {
         "opcode": "motion_glideto_menu",
@@ -283,6 +283,29 @@ ALL_FR_BLOCK_DATAS = {
         "x": 1784, 
         "y": -890,
     },
+    "t": {
+        "opcode": "motion_glideto",
+        "next": None,
+        "parent": "b",
+        "inputs": {
+            "SECS": [1, [4, "1"]],
+            "TO": [1, "t"],
+        },
+        "fields": {},
+        "shadow": False,
+        "topLevel": False,
+    },
+    "u": {
+        "opcode": "motion_glideto_menu",
+        "next": None,
+        "parent": "t",
+        "inputs": {},
+        "fields": {
+            "TO": ["_mouse_", string_to_sha256("_mouse_", secondary=SHA256_SEC_DROPDOWN_VALUE)],
+        },
+        "shadow": True,
+        "topLevel": False,
+    },
 }
 
 ALL_FR_BLOCKS = {
@@ -303,7 +326,7 @@ ALL_FR_BLOCKS = {
     ),
     "b": FRBlock(
         opcode="motion_glideto",
-        next=None,
+        next="t",
         parent="d",
         inputs={
             "SECS": (1, (4, "1")),
@@ -312,7 +335,7 @@ ALL_FR_BLOCKS = {
         fields={},
         shadow=False,
         top_level=False,
-        comment="j",
+        comment="s",
     ),
     "e": FRBlock(
         opcode="motion_glideto_menu",
@@ -558,6 +581,19 @@ ALL_FR_BLOCKS_CLEAN: dict[str, FRBlock] = ALL_FR_BLOCKS | {
         y=561,
     ),
 }
+
+ALL_FR_COMMENTS = {
+    "s": FRComment(
+        block_id  = "b",
+        x         = 1031,
+        y         = 348,
+        width     = 200,
+        height    = 200,
+        minimized = False,
+        text      = "hi from attached comment",
+    )
+}
+
 
 ALL_IR_BLOCKS = {
     "d": IRBlock(
@@ -860,7 +896,7 @@ SR_BLOCK_CUSTOM_OPCODE = SRCustomBlockOpcode(
 )
 
 ALL_SR_COMMENTS = {
-    "j": SRComment(
+    "s": SRComment(
         position=(1031, 348),
         size=(200, 200),
         is_minimized=False,
@@ -1195,6 +1231,7 @@ FR_STAGE = FRStage(
     text_to_speech_language=None,
 )
 
+
 SPRITE_DATA = {
     "isStage": False,
     "name": "Sprite1",
@@ -1204,7 +1241,7 @@ SPRITE_DATA = {
     "customVars": [],
     "blocks": ALL_FR_BLOCK_DATAS,
     "comments": {
-        "j": {
+        "s": {
             "blockId": "b",
             "x": 1031,
             "y": 348,
@@ -1256,17 +1293,7 @@ FR_SPRITE = FRSprite(
     broadcasts={},
     custom_vars=[],
     blocks=ALL_FR_BLOCKS,
-    comments={
-        "j": FRComment(
-            block_id="b",
-            x=1031,
-            y=348,
-            width=200,
-            height=200,
-            minimized=False,
-            text="hi from attached comment",
-        ),
-    },
+    comments=ALL_FR_COMMENTS,
     current_costume=0,
     costumes=[
         FRCostume(
@@ -1307,6 +1334,42 @@ PROJECT_ASSET_FILES = {
     file_name: content 
     for file_name, content in read_all_files_of_zip("../tests/assets/testing_blocks.pmp").items() 
     if file_name != "project.json"
+}
+
+PROJECT_DATA = {
+    "targets": [
+        STAGE_DATA,
+        SPRITE_DATA,
+    ],
+    "monitors": [
+        {
+            "id": string_to_sha256("my list", secondary=SHA256_SEC_LIST),
+            "mode": "list",
+            "opcode": "data_listcontents",
+            "params": {
+                "LIST": "my list",
+            },
+            "spriteName": None,
+            "value": [],
+            "width": 0,
+            "height": 0,
+            "x": 5,
+            "y": 5,
+            "visible": True,
+        },
+    ],
+    "extensionData": {},
+    "extensions": [],
+    "meta": {
+        "semver": "3.0.0",
+        "vm": "0.2.0",
+        "agent": "",
+        "platform": {
+            "name": "PenguinMod",
+            "url": "https://penguinmod.com/",
+            "version": "stable",
+        },
+    },
 }
 
 FR_PROJECT = FRProject(
@@ -1350,41 +1413,6 @@ FR_PROJECT = FRProject(
     asset_files=PROJECT_ASSET_FILES,
 )
 
-PROJECT_DATA = {
-    "targets": [
-        STAGE_DATA,
-        SPRITE_DATA,
-    ],
-    "monitors": [
-        {
-            "id": string_to_sha256("my list", secondary=SHA256_SEC_LIST),
-            "mode": "list",
-            "opcode": "data_listcontents",
-            "params": {
-                "LIST": "my list",
-            },
-            "spriteName": None,
-            "value": [],
-            "width": 0,
-            "height": 0,
-            "x": 5,
-            "y": 5,
-            "visible": True,
-        },
-    ],
-    "extensionData": {},
-    "extensions": [],
-    "meta": {
-        "semver": "3.0.0",
-        "vm": "0.2.0",
-        "agent": "",
-        "platform": {
-            "name": "PenguinMod",
-            "url": "https://penguinmod.com/",
-            "version": "stable",
-        },
-    },
-}
 
 
 BACKDROP1_CONTENT = etree.fromstring(PROJECT_ASSET_FILES["cd21514d0531fdffb22204e0ec5ed84a.svg"])

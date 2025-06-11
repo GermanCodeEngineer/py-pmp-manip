@@ -7,7 +7,7 @@ from pypenguin.important_consts import (
 )
 from pypenguin.opcode_info.api  import InputMode
 from pypenguin.opcode_info.data import info_api
-from pypenguin.utility          import string_to_sha256, DeserializationError
+from pypenguin.utility          import string_to_sha256, DeserializationError, ConversionError
 
 from pypenguin.core.block_interface import FirstToInterIF
 from pypenguin.core.block_mutation  import (
@@ -108,7 +108,7 @@ def test_FRBlock_from_tuple_not_top_level():
     assert frblock.comment   is None
     assert frblock.mutation  is None
 
-    with raises(DeserializationError):
+    with raises(ConversionError):
         FRBlock.from_tuple(data, parent_id=None)
 
 def test_FRBlock_from_tuple_list_top_level():
@@ -127,11 +127,11 @@ def test_FRBlock_from_tuple_list_top_level():
     assert frblock.comment   is None
     assert frblock.mutation  is None
 
-    with raises(DeserializationError):
+    with raises(ConversionError):
         FRBlock.from_tuple(data, parent_id="qqq")
 
 def test_FRBlock_from_tuple_invalid():
-    with raises(DeserializationError):
+    with raises(ConversionError):
         FRBlock.from_tuple([77, ..., ...], parent_id="qqq")
 
 

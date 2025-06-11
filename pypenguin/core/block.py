@@ -90,9 +90,9 @@ class FRBlock:
     
     @classmethod
     def from_tuple(cls, 
-            data: tuple[str, str, str] | tuple[str, str, str, int|float, int|float],
-            parent_id: str | None,
-        ) -> "FRBlock":
+        data: tuple[str, str, str] | tuple[str, str, str, int|float, int|float],
+        parent_id: str | None,
+    ) -> "FRBlock":
         """
         Deserializes a tuple into a FRBlock with a variable or list value opcode
         
@@ -142,7 +142,7 @@ class FRBlock:
                 comment   = None,
                 mutation  = None,
             )
-        else: raise DeserializationError(f"Invalid constant(first element) for FRBlock conversion: {data[0]}")
+        else: raise ConversionError(f"Invalid constant(first element) for FRBlock conversion: {data[0]}")
     
     def to_tuple(self) -> tuple[str, str, str] | tuple[str, str, str, int|float, int|float]:
         """
@@ -152,14 +152,14 @@ class FRBlock:
         Returns:
             the raw data
         """
-        if opcode not in ANY_OPCODE_IMMEDIATE_BLOCK:
+        if self.opcode not in ANY_OPCODE_IMMEDIATE_BLOCK:
             raise ConversionError("To convert a FRBlock into a tuple it must have one of these opcodes: {ANY_OPCODE_IMMEDIATE_BLOCK}")
         
-        if   opcode == OPCODE_VAR_VALUE:
+        if   self.opcode == OPCODE_VAR_VALUE:
             magic_number = OPCODE_NUM_VAR_VALUE
-            secondary    = SHA256_SEC_VAR
+            secondary    = SHA256_SEC_VARIABLE
             name         = self.fields["VARIABLE"][0]
-        elif opcode == OPCODE_LIST_VALUE:
+        elif self.opcode == OPCODE_LIST_VALUE:
             magic_number = OPCODE_NUM_LIST_VALUE
             secondary    = SHA256_SEC_LIST
             name         = self.fields["LIST"][0]
@@ -329,7 +329,7 @@ class IRBlock:
         itf_if: "InterToFirstIF", 
         info_api: OpcodeInfoAPI,
         parent_id: str|None,
-        own_id: str,
+        own_id: str|None,
     ) -> FRBlock:
         """
         Converts a IRBlock into a FRBlock
@@ -338,14 +338,18 @@ class IRBlock:
             itf_if: interface which allows the management of other blocks
             info_api: the opcode info api used to fetch information about opcodes
             parent_id: the reference id of the parent block or None
-            own_id: the reference id of this FRBlock
+            own_id: the reference id of this FRBlock or None for immediate blocks
         
         Returns:
             the FRBlock
         """
         opcode_info = info_api.get_info_by_old(self.opcode)
 
-        comment_id = None if self.comment is None else itf_if.add_comment(self.comment)
+        if self.comment is None:
+            comment_id = None
+        else:
+            frcomment = self.comment.to_first(block_id=own_id)
+            comment_id = itf_if.add_comment(frcomment)
         input_infos = opcode_info.get_old_input_ids_infos(block=self, fti_if=None) 
         # fti_if is not needed for a IRBlock
 
@@ -356,7 +360,13 @@ class IRBlock:
 
             elements = input_value.references.copy()
             if input_value.immediate_block is not None:
-                elements.insert(0, input_value.immediate_block)
+                frblock = input_value.immediate_block.to_first(
+                    itf_if    = itf_if,
+                    info_api  = info_api,
+                    parent_id = own_id,
+                    own_id    = None,
+                )
+                elements.insert(0, frblock.to_tuple())
             match input_mode:
                 case InputMode.BLOCK_AND_TEXT:
                     magic_text_number = input_type.get_magic_number()
@@ -379,7 +389,7 @@ class IRBlock:
             old_inputs[input_id] = (magic_number, *elements)
 
         old_fields = {}
-        for dropdown_id, dropdown_value in self.dropdowns:
+        for dropdown_id, dropdown_value in self.dropdowns.items():
             dropdown_type = opcode_info.get_dropdown_info_by_old(dropdown_id).type
             match dropdown_type:
                 case DropdownType.VARIABLE:
@@ -408,10 +418,10 @@ class IRBlock:
             fields    = old_fields,
             shadow    = opcode_info.has_shadow,
             top_level = self.is_top_level,
-            x         = self.position[0],
-            y         = self.position[1],
+            x         = self.position[0] if self.is_top_level else None,
+            y         = self.position[1] if self.is_top_level else None,
             comment   = comment_id,
-            mutation  = self.mutation.to_first(itf_if=itf_if),
+            mutation  = None if self.mutation is None else self.mutation.to_first(itf_if=itf_if),
         )
 
         post_handler = opcode_info.get_special_case(SpecialCaseType.POST_INTER_TO_FIRST)

@@ -46,7 +46,7 @@ def test_FirstToInterIF_get_cb_mutation(fti_if: FirstToInterIF):
 
 
 def test_FirstToInterIF_get_comment(fti_if: FirstToInterIF):
-    assert fti_if.get_comment("j") == ALL_SR_COMMENTS["j"]
+    assert fti_if.get_comment("s") == ALL_SR_COMMENTS["s"]
 
 
 

@@ -87,6 +87,27 @@ class SRComment:
         AA_TYPE(self, path, "is_minimized", bool)
         AA_TYPE(self, path, "text", str)
 
+    def to_first(self, block_id: str | None) -> FRComment:
+        """
+        # TODO: add tests
+        Converts a SRComment into a FRComment
+        
+        Args:
+            the reference id of the parent block or None if it is a floating comment
+
+        Returns:
+            the FRComment
+        """
+        return FRComment(
+            block_id  = block_id,
+            x         = self.position[0],
+            y         = self.position[1],
+            width     = self.size[0],
+            height    = self.size[1],
+            minimized = self.is_minimized,
+            text      = self.text,
+        )
+
 
 __all__ = ["FRComment", "SRComment"]
 

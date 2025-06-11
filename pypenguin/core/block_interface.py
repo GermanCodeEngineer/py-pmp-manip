@@ -106,7 +106,7 @@ class InterToFirstIF:
         """
         for block in self.blocks.values():
             if isinstance(getattr(block, "mutation", None), SRCustomBlockMutation):
-                frmutation = block.mutation.to_first(itf_if=self)
+                frmutation: "FRCustomBlockMutation" = block.mutation.to_first(itf_if=self)
                 self._cb_mutations[frmutation.proccode] = frmutation
         
     def get_next_block_id(self) -> str: # TODO: add tests
@@ -145,8 +145,9 @@ class InterToFirstIF:
         Returns:
             the reference id of the added FRComment
         """
-        comment_id = number_to_token(self._next_block_id_num)
-        self._next_block_id_num += 1
+        print("pre", self._next_block_id_num)
+        comment_id = self.get_next_block_id()
+        print("comment_id", repr(comment_id), self._next_block_id_num)
         self.added_comments[comment_id] = comment
         return comment_id
 
