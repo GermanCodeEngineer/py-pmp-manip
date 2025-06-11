@@ -4,7 +4,8 @@ from typing      import Any, TYPE_CHECKING
 
 from pypenguin.important_consts import (
     OPCODE_NUM_VAR_VALUE, OPCODE_VAR_VALUE, OPCODE_NUM_LIST_VALUE, OPCODE_LIST_VALUE,
-    ANY_TEXT_INPUT_NUM, ANY_OPCODE_NUM_IMMEDIATE_BLOCK, ANY_NEW_OPCODE_IMMEDIATE_BLOCK,
+    ANY_TEXT_INPUT_NUM, 
+    ANY_OPCODE_NUM_IMMEDIATE_BLOCK, ANY_OPCODE_IMMEDIATE_BLOCK, ANY_NEW_OPCODE_IMMEDIATE_BLOCK,
     SHA256_SEC_VARIABLE, SHA256_SEC_LIST, SHA256_SEC_BROADCAST_MSG, SHA256_SEC_DROPDOWN_VALUE,
 )
 from pypenguin.opcode_info.api  import (
@@ -93,7 +94,7 @@ class FRBlock:
             parent_id: str | None,
         ) -> "FRBlock":
         """
-        Deserializes a tuple into a FRBlock
+        Deserializes a tuple into a FRBlock with a variable or list value opcode
         
         Args:
             data: the raw data
@@ -103,15 +104,15 @@ class FRBlock:
         """
         if   len(data) == 3:
             if parent_id is None:
-                raise DeserializationError(f"Invalid parent_id for FRBlock conversion of {data}: {parent_id}")
+                raise ConversionError(f"Invalid parent_id for FRBlock conversion of {data}: {parent_id}")
             x = None
             y = None
         elif len(data) == 5: 
             if parent_id is not None:
-                raise DeserializationError(f"Invalid parent_id for FRBlock conversion of {data}: {parent_id}")
+                raise ConversionError(f"Invalid parent_id for FRBlock conversion of {data}: {parent_id}")
             x = data[3]
             y = data[4]
-        else: raise DeserializationError(f"Invalid data for FRBlock conversion: {data}")
+        else: raise ConversionError(f"Invalid data for FRBlock conversion: {data}")
         
         if data[0] == OPCODE_NUM_VAR_VALUE:
             return cls(
@@ -142,6 +143,32 @@ class FRBlock:
                 mutation  = None,
             )
         else: raise DeserializationError(f"Invalid constant(first element) for FRBlock conversion: {data[0]}")
+    
+    def to_tuple(self) -> tuple[str, str, str] | tuple[str, str, str, int|float, int|float]:
+        """
+        # TODO: add tests
+        Serializes a FRBlock with a variable or list value opcode into a tuple
+        
+        Returns:
+            the raw data
+        """
+        if opcode not in ANY_OPCODE_IMMEDIATE_BLOCK:
+            raise ConversionError("To convert a FRBlock into a tuple it must have one of these opcodes: {ANY_OPCODE_IMMEDIATE_BLOCK}")
+        
+        if   opcode == OPCODE_VAR_VALUE:
+            magic_number = OPCODE_NUM_VAR_VALUE
+            secondary    = SHA256_SEC_VAR
+            name         = self.fields["VARIABLE"][0]
+        elif opcode == OPCODE_LIST_VALUE:
+            magic_number = OPCODE_NUM_LIST_VALUE
+            secondary    = SHA256_SEC_LIST
+            name         = self.fields["LIST"][0]
+        
+        sha256 = string_to_sha256(name, secondary=secondary)
+        if self.top_level:
+            return (magic_number, name, sha256, self.x, self.y)
+        else:
+            return (magic_number, name, sha256)
 
     def to_inter(self, 
         fti_if: "FirstToInterIF", 
@@ -319,7 +346,8 @@ class IRBlock:
         opcode_info = info_api.get_info_by_old(self.opcode)
 
         comment_id = None if self.comment is None else itf_if.add_comment(self.comment)
-        input_infos = opcode_info.get_old_input_ids_infos(block=self, fti_if=None) # not needed for a IRBlock
+        input_infos = opcode_info.get_old_input_ids_infos(block=self, fti_if=None) 
+        # fti_if is not needed for a IRBlock
 
         old_inputs = {}
         for input_id, input_value in self.inputs.items():
@@ -615,7 +643,7 @@ class SRScript:
         info_api: OpcodeInfoAPI, 
     ) -> str:
         """
-        Converts a SRBlock into intermediate representation. 
+        Converts a SRScript into intermediate representation. 
         Adds the blocks in intermediate representation to the interface.
         Returns the reference id of the top level block
         
@@ -624,7 +652,7 @@ class SRScript:
             info_api: the opcode info api used to fetch information about opcodes
         
         Returns:
-            None
+            the reference id of the top level block
         """
         block_ids = [sti_if.get_next_block_id() for i in range(len(self.blocks))]
         for i, block in enumerate(self.blocks):
@@ -822,12 +850,13 @@ class SRBlock:
         opcode_info = info_api.get_info_by_new(self.opcode)
         
         # Map new input Ids to old input Ids
-        new_old_input_ids = opcode_info.get_new_old_input_ids  (block=self, fti_if=None) # not needed for a SRBlock
+        new_old_input_ids = opcode_info.get_new_old_input_ids  (block=self, fti_if=None) 
         input_infos       = opcode_info.get_new_input_ids_infos(block=self, fti_if=None)
+        # fti_if is not needed for a SRBlock
         old_inputs = {}
         for input_id, input_value in self.inputs.items():
-            input_info = input_infos[input_id]
-            input_mode = input_info.type.get_mode()
+            input_info   = input_infos[input_id]
+            input_mode   = input_info.type.get_mode()
             old_input_id = new_old_input_ids[input_id]
             
             input_sub_scripts: list[list[SRBlock | IRBlock]] = []
