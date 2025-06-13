@@ -5,22 +5,14 @@ from pypenguin.important_consts import (
     SHA256_SEC_VARIABLE, SHA256_SEC_LIST, SHA256_SEC_BROADCAST_MSG,
     SHA256_SEC_MAIN_ARGUMENT_NAME,
 )
-from pypenguin.opcode_info.api  import InputMode
 from pypenguin.opcode_info.data import info_api
 from pypenguin.utility          import string_to_sha256, DeserializationError, ConversionError
 
 from pypenguin.core.block_interface import FirstToInterIF
-from pypenguin.core.block_mutation  import (
-    FRCustomBlockMutation,
-    SRCustomBlockMutation, SRCustomBlockCallMutation, SRCustomBlockArgumentMutation,
-)
-from pypenguin.core.block           import FRBlock, IRBlock, IRInputValue
-from pypenguin.core.custom_block    import (
-    SRCustomBlockOpcode, SRCustomBlockArgument, SRCustomBlockArgumentType,
-    SRCustomBlockOptype
-)
+from pypenguin.core.block_mutation  import FRCustomBlockMutation, SRCustomBlockArgumentMutation
+from pypenguin.core.block           import FRBlock, IRBlock
 
-from tests.core.constants import ALL_FR_BLOCKS_CLEAN, ALL_FR_BLOCK_DATAS, ALL_SR_COMMENTS
+from tests.core.constants import ALL_FR_BLOCK_DATAS, ALL_FR_BLOCKS, ALL_FR_BLOCKS_CLEAN, ALL_IR_BLOCKS, ALL_SR_COMMENTS
 
 
 @fixture
@@ -119,7 +111,7 @@ def test_FRBlock_from_tuple_list_top_level():
     assert frblock.next      is None
     assert frblock.parent    is None
     assert frblock.inputs    == {}
-    assert frblock.fields    == {"LIST": ("a list", string_to_sha256("my list", secondary=SHA256_SEC_LIST), "")}
+    assert frblock.fields    == {"LIST": ("a list", string_to_sha256("my list", secondary=SHA256_SEC_LIST), "list")}
     assert frblock.shadow    is False
     assert frblock.top_level is True
     assert frblock.x         == data[3]
@@ -135,154 +127,101 @@ def test_FRBlock_from_tuple_invalid():
         FRBlock.from_tuple([77, ..., ...], parent_id="qqq")
 
 
+def test_FRBlock_to_tuple_invalid_opcode():
+    frblock = ALL_FR_BLOCKS_CLEAN["g"]
+    with raises(ConversionError):
+        frblock.to_tuple()
+
+def test_FRBlock_to_tuple_variable_top_level():
+    frblock = ALL_FR_BLOCKS_CLEAN["m"]
+    assert frblock.to_tuple() == ALL_FR_BLOCKS["m"]
+
+def test_FRBlock_to_tuple_list():
+    frblock = ALL_FR_BLOCKS_CLEAN["p"]
+    assert frblock.to_tuple() == ALL_FR_BLOCKS["p"]
+
+def test_FRBlock_to_tuple_variable_not_top_level():
+    sha256 = string_to_sha256("my variable", secondary=SHA256_SEC_VARIABLE)
+    frblock = FRBlock(
+        opcode    = OPCODE_VAR_VALUE,
+        next      = None,
+        parent    = "f",
+        inputs    = {},
+        fields    = {"VARIABLE": ("my variable", sha256, "")},
+        shadow    = False,
+        top_level = False,
+        x         = None,
+        y         = None,
+        comment   = None,
+        mutation  = None,
+    )
+    assert frblock.to_tuple() == (OPCODE_NUM_VAR_VALUE, "my variable", sha256)
+
+
+
 def test_FRBlock_to_inter(fti_if: FirstToInterIF):
-    # TODO: next
-    frblock = ALL_FR_BLOCKS_CLEAN["f"]
-    trblock = frblock.to_inter(
+    frblock: FRBlock = ALL_FR_BLOCKS["f"]
+    irblock = frblock.to_inter(
         fti_if=fti_if,
         info_api=info_api,
         own_id="f",
     )
-    assert isinstance(trblock, IRBlock)
-    assert trblock.opcode       == frblock.opcode
-    assert trblock.inputs       == {
-        "FROM": IRInputValue(
-            mode=InputMode.BLOCK_AND_TEXT,
-            references=[],
-            immediate_block=IRBlock(
-                opcode="data_variable",
-                inputs={},
-                dropdowns={
-                    "VARIABLE": "my variable",
-                },
-                position=None,
-                comment=None,
-                mutation=None,
-                next=None,
-                is_top_level=False,
-            ),
-            text="1",
-        ),
-        "TO": IRInputValue(
-            mode=InputMode.BLOCK_AND_TEXT,
-            references=["g"],
-            immediate_block=None,
-            text="10",
-        ),
-    }
-    assert trblock.dropdowns    == {}
-    assert trblock.position     == (304, 424)
-    assert trblock.comment      is None
-    assert trblock.mutation     is None
-    assert trblock.next         is None
-    assert trblock.is_top_level is True
+    assert irblock == ALL_IR_BLOCKS["f"]
 
-def test_FRBlock_to_inter_cb_def(fti_if: FirstToInterIF):
-    frblock = ALL_FR_BLOCKS_CLEAN["h"]
-    trblock = frblock.to_inter(
+def test_FRBlock_to_inter_cb_def_pre_and_instead_handler(fti_if: FirstToInterIF):
+    frblock: FRBlock = ALL_FR_BLOCKS["h"]
+    irblock = frblock.to_inter(
         fti_if=fti_if,
         info_api=info_api,
         own_id="h",
     )
-    assert isinstance(trblock, IRBlock)
-    assert trblock.opcode       == frblock.opcode
-    assert trblock.inputs       == {}
-    assert trblock.dropdowns    == {}
-    assert trblock.position     == (344, 799)
-    assert trblock.comment      is None
-    assert trblock.mutation     == SRCustomBlockMutation(
-        custom_opcode=SRCustomBlockOpcode(
-            segments=(
-                "do sth text",
-                SRCustomBlockArgument(name="a text arg", type=SRCustomBlockArgumentType.STRING_NUMBER),
-                "and bool",
-                SRCustomBlockArgument(name="a bool arg", type=SRCustomBlockArgumentType.BOOLEAN),
-            ),
-        ),
-        no_screen_refresh=False,
-        optype=SRCustomBlockOptype.NUMBER_REPORTER,
-        main_color="#FF6680",
-        prototype_color="#FF4D6A", 
-        outline_color="#FF3355",
-    )
-    assert trblock.next         is None
-    assert trblock.is_top_level is True
+    assert irblock == ALL_IR_BLOCKS["h"]
 
 def test_FRBlock_to_inter_cb_prototype(fti_if: FirstToInterIF):
-    frblock = ALL_FR_BLOCKS_CLEAN["a"]
-    trblock = frblock.to_inter(
+    frblock: FRBlock = ALL_FR_BLOCKS["a"]
+    irblock = frblock.to_inter(
         fti_if=fti_if,
         info_api=info_api,
         own_id="a",
     )
-    assert isinstance(trblock, IRBlock) # An empty block which will be deleted in the next step
-    assert trblock.opcode       == frblock.opcode
-    assert trblock.inputs       == ...
-    assert trblock.dropdowns    == ...
-    assert trblock.position     == ...
-    assert trblock.comment      == ...
-    assert trblock.mutation     == ...
-    assert trblock.next         == ...
-    assert trblock.is_top_level == ...
+    assert isinstance(irblock, IRBlock) # An empty block which will be deleted in the next step
+    assert irblock.opcode       == frblock.opcode
+    assert irblock.inputs       == ...
+    assert irblock.dropdowns    == ...
+    assert irblock.position     == ...
+    assert irblock.comment      == ...
+    assert irblock.mutation     == ...
+    assert irblock.next         == ...
+    assert irblock.is_top_level == ...
 
 def test_FRBlock_to_inter_cb_arg(fti_if: FirstToInterIF):
-    frblock = ALL_FR_BLOCKS_CLEAN["i"]
-    trblock = frblock.to_inter(
+    frblock: FRBlock = ALL_FR_BLOCKS["i"]
+    irblock = frblock.to_inter(
         fti_if=fti_if,
         info_api=info_api,
         own_id="i",
     )
-    assert isinstance(trblock, IRBlock)
-    assert trblock.opcode       == frblock.opcode
-    assert trblock.inputs       == {}
-    assert trblock.dropdowns    == {}
-    assert trblock.position     is None
-    assert trblock.comment      is None
-    assert trblock.mutation     == SRCustomBlockArgumentMutation(
+    assert isinstance(irblock, IRBlock)
+    assert irblock.opcode       == frblock.opcode
+    assert irblock.inputs       == {}
+    assert irblock.dropdowns    == {}
+    assert irblock.position     is None
+    assert irblock.comment      is None
+    assert irblock.mutation     == SRCustomBlockArgumentMutation(
         argument_name="a text arg",
         main_color="#FF6680",
         prototype_color="#FF4D6A",
         outline_color="#FF3355",
     )
-    assert trblock.next         is None
-    assert trblock.is_top_level is False
+    assert irblock.next         is None
+    assert irblock.is_top_level is False
 
 def test_FRBlock_to_inter_cb_call(fti_if: FirstToInterIF):    
-    frblock = ALL_FR_BLOCKS_CLEAN["c"]
-    trblock = frblock.to_inter(
+    frblock: FRBlock = ALL_FR_BLOCKS["c"]
+    irblock = frblock.to_inter(
         fti_if=fti_if,
         info_api=info_api,
-        own_id="t",
+        own_id="c",
     )
-    assert isinstance(trblock, IRBlock)
-    assert trblock.opcode       == frblock.opcode
-    assert trblock.inputs       == {
-        "a text arg": IRInputValue(
-            mode=InputMode.BLOCK_AND_TEXT,
-            references=["k"],
-            immediate_block=None,
-            text="",
-        ),
-        "a bool arg": IRInputValue(
-            mode=InputMode.BLOCK_ONLY,
-            references=["l"],
-            immediate_block=None,
-            text=None,
-        ),
-    }
-    assert trblock.dropdowns    == {}
-    assert trblock.position     == (499, 933)
-    assert trblock.comment      is None
-    assert trblock.mutation     == SRCustomBlockCallMutation(
-        custom_opcode=SRCustomBlockOpcode(
-            segments=(
-                "do sth text",
-                SRCustomBlockArgument(name="a text arg", type=SRCustomBlockArgumentType.STRING_NUMBER),
-                "and bool",
-                SRCustomBlockArgument(name="a bool arg", type=SRCustomBlockArgumentType.BOOLEAN),
-            ),
-        ),
-    )
-    assert trblock.next         is None
-    assert trblock.is_top_level is True
+    assert irblock == ALL_IR_BLOCKS["c"]
 

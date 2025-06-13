@@ -18,44 +18,6 @@ from pypenguin.core.custom_block import SRCustomBlockOpcode, SRCustomBlockOptype
 from tests.utility import execute_attr_validation_tests
 
 
-class DummyAPI:
-    argument_ids: list[str]
-    argument_names: list[str]
-    argument_defaults: list[str]
-    
-    def __init__(self, 
-        argument_ids: list[str], 
-        argument_names: list[str], 
-        argument_defaults: list[str],
-    ):
-        self.argument_ids = argument_ids
-        self.argument_names = argument_names
-        self.argument_defaults = argument_defaults
-    
-    def get_cb_mutation(self, proccode: str) -> FRCustomBlockMutation:
-        return FRCustomBlockMutation(
-            tag_name="mutation",
-            children=[],
-            proccode=proccode,
-            argument_ids=self.argument_ids,
-            argument_names=self.argument_names,
-            argument_defaults=self.argument_defaults,
-            warp=False,
-            returns=True,
-            edited=True,
-            optype="statement",
-            color=("#ffffff", "#aaaaaa", "#000000"),
-        )
-
-
-@fixture
-def api() -> DummyAPI:
-    return DummyAPI(
-        argument_ids=["|%aQk0nd}|c.tVn$e}ST"],
-        argument_names=["boolean"],
-        argument_defaults=[dumps(False)],
-    )
-
 
 def test_FRMutation_from_data_and_post_init():
     class DummyFRMutation(FRMutation):
