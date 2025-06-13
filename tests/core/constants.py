@@ -289,13 +289,22 @@ ALL_FR_BLOCK_DATAS = {
         "parent": "b",
         "inputs": {
             "SECS": [1, [4, "1"]],
-            "TO": [1, "t"],
+            "TO": [3, "u", "v"],
         },
         "fields": {},
         "shadow": False,
         "topLevel": False,
     },
     "u": {
+        "opcode": "operator_falseBoolean",
+        "next": None,
+        "parent": "t",
+        "inputs": {},
+        "fields": {},
+        "shadow": False,
+        "topLevel": False,
+    },
+    "v": {
         "opcode": "motion_glideto_menu",
         "next": None,
         "parent": "t",
@@ -305,6 +314,23 @@ ALL_FR_BLOCK_DATAS = {
         },
         "shadow": True,
         "topLevel": False,
+    },
+    "w": {
+        "opcode": "event_whenbroadcastreceived",
+        "next": None,
+        "parent": None,
+        "inputs": {},
+        "fields": {
+            "BROADCAST_OPTION": (
+                "my message",
+                string_to_sha256("my message", secondary=SHA256_SEC_BROADCAST_MSG),
+                "broadcast_msg",
+            ),
+        },
+        "shadow": False,
+        "topLevel": True,
+        "x": 184,
+        "y": 1430,
     },
 }
 
@@ -551,6 +577,57 @@ ALL_FR_BLOCKS = {
         x=1784, 
         y=-890,
     ),
+    "t": FRBlock(
+        opcode="motion_glideto",
+        next=None,
+        parent="b",
+        inputs={
+            "SECS": (1, (4, "1")),
+            "TO": (3, "u", "v"),
+        },
+        fields={},
+        shadow=False,
+        top_level=False,
+    ),
+    "u": FRBlock(
+        opcode="operator_falseBoolean",
+        next=None,
+        parent="t",
+        inputs={},
+        fields={},
+        shadow=False,
+        top_level=False,
+    ),
+    "v": FRBlock(
+        opcode="motion_glideto_menu",
+        next=None,
+        parent="t",
+        inputs={},
+        fields={
+            "TO": ("_mouse_", string_to_sha256("_mouse_", secondary=SHA256_SEC_DROPDOWN_VALUE)),
+        },
+        shadow=True,
+        top_level=False,
+    ),
+    "w": FRBlock(
+        opcode="event_whenbroadcastreceived",
+        next=None,
+        parent=None,
+        inputs={},
+        fields={
+            "BROADCAST_OPTION": (
+                "my message",
+                string_to_sha256("my message", secondary=SHA256_SEC_BROADCAST_MSG),
+                "broadcast_msg",
+            ),
+        },
+        shadow=False,
+        top_level=True,
+        x=184,
+        y=1430,
+        comment=None,
+        mutation=None,
+    ),
 }
 
 ALL_FR_BLOCKS_CLEAN: dict[str, FRBlock] = ALL_FR_BLOCKS | {
@@ -638,7 +715,7 @@ ALL_IR_BLOCKS = {
         ),
         mutation=None,
         position=None,
-        next=None,
+        next="t",
         is_top_level=False,
     ),
     "e": IRBlock(
@@ -884,6 +961,63 @@ ALL_IR_BLOCKS = {
         next=None,
         is_top_level=True,
     ),
+    "t": IRBlock(
+        opcode="motion_glideto",
+        inputs={
+            "SECS": IRInputValue(
+                mode=InputMode.BLOCK_AND_TEXT,
+                references=[],
+                immediate_block=None,
+                text="1",
+            ),
+            "TO": IRInputValue(
+                mode=InputMode.BLOCK_AND_DROPDOWN,
+                references=["u", "v"],
+                immediate_block=None,
+                text=None,
+            )
+        },
+        dropdowns={},
+        comment=None,
+        mutation=None,
+        position=None,
+        next=None,
+        is_top_level=False,
+    ),
+    "u": IRBlock(
+        opcode="operator_falseBoolean",
+        inputs={},
+        dropdowns={},
+        comment=None,
+        mutation=None,
+        position=None,
+        next=None,
+        is_top_level=False,
+    ),
+    "v": IRBlock(
+        opcode="motion_glideto_menu",
+        inputs={},
+        dropdowns={
+            "TO": "_mouse_",
+        },
+        comment=None,
+        mutation=None,
+        position=None,
+        next=None,
+        is_top_level=False,
+    ),
+    "w": IRBlock(
+        opcode="event_whenbroadcastreceived",
+        inputs={},
+        dropdowns={
+            "BROADCAST_OPTION": "my message",
+        },
+        comment=None,
+        mutation=None,
+        position=(184, 1430),
+        next=None,
+        is_top_level=True,
+    ),
 }
 
 SR_BLOCK_CUSTOM_OPCODE = SRCustomBlockOpcode(
@@ -936,6 +1070,25 @@ ALL_SR_SCRIPTS = [
                     is_minimized=False,
                     text="hi from attached comment"
                 ),
+                mutation=None,
+            ),
+            SRBlock(
+                opcode="glide (SECONDS) secs to ([TARGET])",
+                inputs={
+                    "SECONDS": SRBlockAndTextInputValue(block=None, text="1"),
+                    "TARGET": SRBlockAndDropdownInputValue(
+                        block=SRBlock(
+                            opcode="false",
+                            inputs={},
+                            dropdowns={},
+                            comment=None,
+                            mutation=None,
+                        ),
+                        dropdown=SRDropdownValue(kind=DropdownValueKind.OBJECT, value="mouse-pointer"),
+                    ),
+                },
+                dropdowns={},
+                comment=None,
                 mutation=None,
             ),
         ],
@@ -1119,32 +1272,48 @@ ALL_SR_SCRIPTS = [
             SRBlock(
                 opcode="when [OPTION] > (VALUE)",
                 inputs={
-                    "VALUE": SRBlockAndTextInputValue(block=None, text="50")
+                    "VALUE": SRBlockAndTextInputValue(block=None, text="50"),
                 },
                 dropdowns={
                     "OPTION": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="loudness"),
                 },
                 comment=None,
                 mutation=None,
-            )
+            ),   
         ],
-    )
+    ),
+    SRScript( # [8]
+        position=(184, 1430),
+        blocks=[
+            SRBlock(
+                opcode="when I receive [MESSAGE]",
+                inputs={},
+                dropdowns={
+                    "MESSAGE": SRDropdownValue(kind=DropdownValueKind.BROADCAST_MSG, value="my message"),
+                },
+                comment=None,
+                mutation=None,
+            ),
+        ],
+    ),
 ]
 
 ALL_SR_BLOCKS = [
     *ALL_SR_SCRIPTS[0].blocks,
+     ALL_SR_SCRIPTS[0].blocks[2].inputs["TARGET"].block,
     *ALL_SR_SCRIPTS[1].blocks,
-    ALL_SR_SCRIPTS[1].blocks[0].inputs["OPERAND1"].block,
-    ALL_SR_SCRIPTS[1].blocks[0].inputs["OPERAND2"].block,
+     ALL_SR_SCRIPTS[1].blocks[0].inputs["OPERAND1"].block,
+     ALL_SR_SCRIPTS[1].blocks[0].inputs["OPERAND2"].block,
     *ALL_SR_SCRIPTS[2].blocks,
     *ALL_SR_SCRIPTS[3].blocks,
     *ALL_SR_SCRIPTS[4].blocks,
-    ALL_SR_SCRIPTS[4].blocks[0].inputs["a text arg"].block,
-    ALL_SR_SCRIPTS[4].blocks[0].inputs["a bool arg"].block,
+     ALL_SR_SCRIPTS[4].blocks[0].inputs["a text arg"].block,
+     ALL_SR_SCRIPTS[4].blocks[0].inputs["a bool arg"].block,
     *ALL_SR_SCRIPTS[5].blocks,
     *ALL_SR_SCRIPTS[6].blocks,
     *ALL_SR_SCRIPTS[6].blocks[0].inputs["THEN"].blocks,
     *ALL_SR_SCRIPTS[7].blocks,
+    *ALL_SR_SCRIPTS[8].blocks,
 ]
 
 

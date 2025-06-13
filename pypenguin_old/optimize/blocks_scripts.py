@@ -174,7 +174,7 @@ def nestBlockRecursively(blockDatas, blockId):
                 newInputData |= {
                     "block" : None          if blockCount == 1 else subBlockData0,
                     "option": subBlockData0 if blockCount == 1 else subBlockData1,
-               }
+                }
         newInputDatas[inputId] = newInputData
     
     newBlockData = blockData | {"inputs": newInputDatas}

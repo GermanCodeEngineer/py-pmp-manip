@@ -11,3 +11,4 @@ TODOs:
     - grepr_dataclass: auto recognize parent_cls
     - add all errors to docstrings
     - use @property instead of some get... methods
+    - possibly remove mode attribute of IRInputValue

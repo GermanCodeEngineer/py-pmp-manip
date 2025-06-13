@@ -90,7 +90,7 @@ class FRBlock:
     
     @classmethod
     def from_tuple(cls, 
-        data: tuple[str, str, str] | tuple[str, str, str, int|float, int|float],
+        data: tuple[int, str, str] | tuple[int, str, str, int|float, int|float],
         parent_id: str | None,
     ) -> "FRBlock":
         """
@@ -144,7 +144,7 @@ class FRBlock:
             )
         else: raise ConversionError(f"Invalid constant(first element) for FRBlock conversion: {data[0]}")
     
-    def to_tuple(self) -> tuple[str, str, str] | tuple[str, str, str, int|float, int|float]:
+    def to_tuple(self) -> tuple[int, str, str] | tuple[int, str, str, int|float, int|float]:
         """
         # TODO: add tests
         Serializes a FRBlock with a variable or list value opcode into a tuple
@@ -330,7 +330,7 @@ class IRBlock:
         info_api: OpcodeInfoAPI,
         parent_id: str|None,
         own_id: str|None,
-    ) -> FRBlock:
+    ) -> FRBlock | tuple[int, str, str] | tuple[int, str, str, int|float, int|float]:
         """
         Converts a IRBlock into a FRBlock
         
@@ -366,7 +366,7 @@ class IRBlock:
                     parent_id = own_id,
                     own_id    = None,
                 )
-                elements.insert(0, frblock.to_tuple())
+                elements.insert(0, frblock)
             match input_mode:
                 case InputMode.BLOCK_AND_TEXT:
                     magic_text_number = input_type.get_magic_number()
@@ -402,13 +402,10 @@ class IRBlock:
                     suffix    = "broadcast_msg"
                     secondary = SHA256_SEC_BROADCAST_MSG
                 case _:
-                    suffix    = None
+                    suffix    = "" # TODO: test if always present and empty
                     secondary = SHA256_SEC_DROPDOWN_VALUE
             sha256 = string_to_sha256(dropdown_value, secondary=secondary)
-            if suffix is None:
-                old_fields[dropdown_id] = (dropdown_value, sha256)
-            else:
-                old_fields[dropdown_id] = (dropdown_value, sha256, suffix)
+            old_fields[dropdown_id] = (dropdown_value, sha256, suffix)
 
         old_block = FRBlock(
             opcode    = self.opcode,
@@ -427,8 +424,10 @@ class IRBlock:
         post_handler = opcode_info.get_special_case(SpecialCaseType.POST_INTER_TO_FIRST)
         if post_handler is not None:
             old_block = post_handler.call(block=old_block, block_id=own_id, itf_if=itf_if)
-        return old_block
-
+        if self.opcode in ANY_OPCODE_IMMEDIATE_BLOCK:
+            return old_block.to_tuple()
+        else:
+            return old_block
     
     def to_second(self, 
         all_blocks: dict[str, "IRBlock"],
@@ -521,13 +520,6 @@ class IRBlock:
                         input_dropdown = sub_block_b
                 case InputMode.BLOCK_AND_MENU_TEXT:
                     raise NotImplementedError() # TODO
-                    #assert script_count in {1, 2}
-                    #if   script_count == 1:
-                    #    input_block  = None
-                    #    input_text   = sub_block_a
-                    #elif script_count == 2:
-                    #    input_block  = sub_block_a
-                    #    input_text   = sub_block_b
 
             if input_dropdown is not None:
                 input_type = opcode_info.get_input_info_by_old(input_id).type

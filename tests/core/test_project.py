@@ -59,11 +59,7 @@ def test_FRProject_post_init():
 
 
 def test_FRProject_to_second():
-    a = FR_PROJECT.to_second(info_api)
-    b = SR_PROJECT
-    
-    assert a.stage.costumes == b.stage.costumes
-    assert a == b
+    assert FR_PROJECT.to_second(info_api) == SR_PROJECT
 
 def test_FRProject_to_second_tts():
     frproject = deepcopy(FR_PROJECT)
