@@ -360,7 +360,7 @@ class SRCustomBlockArgumentMutation(SRMutation):
         AA_HEX_COLOR(self, path, "prototype_color")
         AA_HEX_COLOR(self, path, "outline_color")
     
-    def to_first(self, itf_if: "InterToFirstIF") -> FRCustomBlockArgumentMutation: # TODO: add tests
+    def to_first(self, itf_if: "InterToFirstIF") -> FRCustomBlockArgumentMutation:
         """
         Convert a SRCustomBlockArgumentMutation into a FRCustomBlockArgumentMutation
         
@@ -416,7 +416,7 @@ class SRCustomBlockMutation(SRMutation):
         self.custom_opcode.validate(path+["custom_opcode"], config)
 
     
-    def to_first(self, itf_if: "InterToFirstIF") -> FRCustomBlockMutation: # TODO: add tests
+    def to_first(self, itf_if: "InterToFirstIF") -> FRCustomBlockMutation:
         """
         Convert a SRCustomBlockMutation into a FRCustomBlockMutation
         
@@ -476,7 +476,7 @@ class SRCustomBlockCallMutation(SRMutation):
 
         self.custom_opcode.validate(path+["custom_opcode"], config)
     
-    def to_first(self, itf_if: "InterToFirstIF") -> FRCustomBlockCallMutation: # TODO: add tests
+    def to_first(self, itf_if: "InterToFirstIF") -> FRCustomBlockCallMutation:
         """
         Convert a SRCustomBlockCallMutation into a FRCustomBlockCallMutation
         
@@ -536,7 +536,7 @@ class SRStopScriptMutation(SRMutation):
         """
         AA_TYPE(self, path, "is_ending_statement", bool)
 
-    def to_first(self, itf_if: "InterToFirstIF") -> FRStopScriptMutation: # TODO: add tests
+    def to_first(self, itf_if: "InterToFirstIF") -> FRStopScriptMutation:
         """
         Convert a SRStopScriptMutation into a FRStopScriptMutation
         

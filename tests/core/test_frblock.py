@@ -1,3 +1,4 @@
+from copy   import deepcopy
 from pytest import fixture, raises
 
 from pypenguin.important_consts import (
@@ -124,6 +125,9 @@ def test_FRBlock_from_tuple_list_top_level():
 
 def test_FRBlock_from_tuple_invalid():
     with raises(ConversionError):
+        FRBlock.from_tuple([1, 2], parent_id="qqq")
+
+    with raises(ConversionError):
         FRBlock.from_tuple([77, ..., ...], parent_id="qqq")
 
 
@@ -216,7 +220,7 @@ def test_FRBlock_to_inter_cb_arg(fti_if: FirstToInterIF):
     assert irblock.next         is None
     assert irblock.is_top_level is False
 
-def test_FRBlock_to_inter_cb_call(fti_if: FirstToInterIF):    
+def test_FRBlock_to_inter_cb_call(fti_if: FirstToInterIF):
     frblock: FRBlock = ALL_FR_BLOCKS["c"]
     irblock = frblock.to_inter(
         fti_if=fti_if,
@@ -224,4 +228,14 @@ def test_FRBlock_to_inter_cb_call(fti_if: FirstToInterIF):
         own_id="c",
     )
     assert irblock == ALL_IR_BLOCKS["c"]
+
+def test_FRBlock_to_inter_invalid_input_element(fti_if: FirstToInterIF):
+    frblock: FRBlock = deepcopy(ALL_FR_BLOCKS["g"])
+    frblock.inputs["STRING1"] = (1, (10, "apple "), (40, "abc"))
+    with raises(ConversionError):
+        frblock.to_inter(
+            fti_if=fti_if,
+            info_api=info_api,
+            own_id="g",
+        )
 

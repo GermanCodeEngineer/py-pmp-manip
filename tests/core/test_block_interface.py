@@ -283,16 +283,22 @@ def test_SecondToInterIF_get_cb_mutation(sti_if: SecondToInterIF):
     assert sti_if_copy == sti_if
 
 def test_SecondToInterIF_get_cb_mutation_invalid_custom_opcode(sti_if: SecondToInterIF):
+    sti_if_copy = deepcopy(sti_if)
     with raises(ConversionError):
-        sti_if.get_cb_mutation(SRCustomBlockOpcode(segments=("hi")))
+        sti_if_copy.get_cb_mutation(SRCustomBlockOpcode(segments=("hi")))
+    assert sti_if_copy == sti_if
 
 
 
 def test_ValidationIF_get_cb_mutation(validation_if: ValidationIF):
-    assert validation_if.get_cb_mutation(SR_BLOCK_CUSTOM_OPCODE) == validation_if.cb_mutations[SR_BLOCK_CUSTOM_OPCODE]
+    validation_if_copy = deepcopy(validation_if)
+    assert validation_if_copy.get_cb_mutation(SR_BLOCK_CUSTOM_OPCODE) == validation_if.cb_mutations[SR_BLOCK_CUSTOM_OPCODE]
+    assert validation_if_copy == validation_if
 
 def test_ValidationIF_get_cb_mutation_invalid_custom_opcode(validation_if: ValidationIF):
+    validation_if_copy = deepcopy(validation_if)
     with raises(ValidationError):
-        validation_if.get_cb_mutation(SRCustomBlockOpcode(segments=("hi")))
+        validation_if_copy.get_cb_mutation(SRCustomBlockOpcode(segments=("hi")))
+    assert validation_if_copy == validation_if
 
 

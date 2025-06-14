@@ -22,7 +22,6 @@ from pypenguin.utility          import (
 
 if TYPE_CHECKING: from pypenguin.core.block_interface import (
     FirstToInterIF, InterToFirstIF, SecondToInterIF, ValidationIF,
-    #                       InterToSecondIF,
 )
 from pypenguin.core.block_mutation import FRMutation, SRMutation
 from pypenguin.core.comment        import SRComment
