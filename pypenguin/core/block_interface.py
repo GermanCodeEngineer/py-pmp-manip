@@ -107,9 +107,11 @@ class InterToFirstIF:
         for block in self.blocks.values():
             if isinstance(getattr(block, "mutation", None), SRCustomBlockMutation):
                 frmutation: "FRCustomBlockMutation" = block.mutation.to_first(itf_if=self)
+                if frmutation.proccode in self._cb_mutations:
+                    raise ConversionError(f"Two custom blocks cannot be defined with the same proccode(essentially custom opcode text): {repr(frmutation.proccode)}")
                 self._cb_mutations[frmutation.proccode] = frmutation
         
-    def get_next_block_id(self) -> str: # TODO: add tests
+    def get_next_block_id(self) -> str:
         """
         Get the next available block reference id
         
@@ -120,7 +122,7 @@ class InterToFirstIF:
         self._next_block_id_num += 1
         return block_id
 
-    def schedule_block_addition(self, block_id: str, block: FRBlock) -> None: # TODO: add tests
+    def schedule_block_addition(self, block_id: str, block: FRBlock) -> None:
         """
         Order a FRBlock to be added by its reference id. 
         It will be present in first representation
@@ -134,7 +136,7 @@ class InterToFirstIF:
         """
         self.added_blocks[block_id] = block
 
-    def add_comment(self, comment: FRComment) -> str: # TODO: add tests
+    def add_comment(self, comment: FRComment) -> str:
         """
         Order a FRComment to be added and return it's reference id.
         It will be present in first representation
@@ -145,9 +147,7 @@ class InterToFirstIF:
         Returns:
             the reference id of the added FRComment
         """
-        print("pre", self._next_block_id_num)
         comment_id = self.get_next_block_id()
-        print("comment_id", repr(comment_id), self._next_block_id_num)
         self.added_comments[comment_id] = comment
         return comment_id
 
@@ -230,20 +230,6 @@ class SecondReprIF:
                 recursive_block_search(block)
         return blocks
 
-    def get_cb_mutation(self, custom_opcode: SRCustomBlockOpcode) -> "SRCustomBlockMutation":
-        """
-        Get a SRCustomBlockMutation by its SRCustomBlockOpcode
-        
-        Args:
-            custom_opcode: the SRCustomBlockOpcode of the desired SRCustomBlockMutation
-        
-        Returns:
-            the SRCustomBlockMutation
-        """
-        if custom_opcode in self.cb_mutations:
-            return self.cb_mutations[custom_opcode]
-        raise ValidationError(f"Mutation of custom_opcode {custom_opcode} not found")
-
 @grepr_dataclass(grepr_fields=["added_blocks", "_next_block_id_num"], parent_cls=SecondReprIF)
 class SecondToInterIF(SecondReprIF):
     """
@@ -253,7 +239,7 @@ class SecondToInterIF(SecondReprIF):
     added_blocks: dict[str, IRBlock] = field(default_factory=dict)
     _next_block_id_num: int = 1
 
-    def get_next_block_id(self) -> str: # TODO: add tests
+    def get_next_block_id(self) -> str:
         """
         Get the next available block reference id
         
@@ -264,7 +250,7 @@ class SecondToInterIF(SecondReprIF):
         self._next_block_id_num += 1
         return block_id
 
-    def schedule_block_addition(self, block_id: str, block: IRBlock) -> None: # TODO: add tests
+    def schedule_block_addition(self, block_id: str, block: IRBlock) -> None:
         """
         Order a IRBlock to be added by its reference id. 
         It will be present in intermediate representation
@@ -278,11 +264,39 @@ class SecondToInterIF(SecondReprIF):
         """
         self.added_blocks[block_id] = block
 
+    def get_cb_mutation(self, custom_opcode: SRCustomBlockOpcode) -> "SRCustomBlockMutation":
+        """
+        Get a SRCustomBlockMutation by its SRCustomBlockOpcode
+        
+        Args:
+            custom_opcode: the SRCustomBlockOpcode of the desired SRCustomBlockMutation
+        
+        Returns:
+            the SRCustomBlockMutation
+        """
+        if custom_opcode in self.cb_mutations:
+            return self.cb_mutations[custom_opcode]
+        raise ConversionError(f"Mutation of custom_opcode {custom_opcode} not found")
+
 
 class ValidationIF(SecondReprIF):
     """
     An interface which allows the management of other blocks in the same target during validation
     """
+
+    def get_cb_mutation(self, custom_opcode: SRCustomBlockOpcode) -> "SRCustomBlockMutation":
+        """
+        Get a SRCustomBlockMutation by its SRCustomBlockOpcode
+        
+        Args:
+            custom_opcode: the SRCustomBlockOpcode of the desired SRCustomBlockMutation
+        
+        Returns:
+            the SRCustomBlockMutation
+        """
+        if custom_opcode in self.cb_mutations:
+            return self.cb_mutations[custom_opcode]
+        raise ValidationError(f"Mutation of custom_opcode {custom_opcode} not found")
 
 
 __all__ = ["FirstToInterIF", "InterToFirstIF", "SecondReprIF", "SecondToInterIF", "ValidationIF"]

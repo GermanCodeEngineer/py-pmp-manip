@@ -109,7 +109,7 @@ def test_FRCostume_to_second_vector():
     assert isinstance(srcostume.content, etree._Element)
     assert xml_equal(srcostume.content, etree.fromstring(SIMPLE_SVG_EXAMPLE))
 
-def test_FRCostume_to_second_bitmap():
+def test_FRCostume_to_second_double_resolution():
     frcostume = FRCostume(
         name="Puppy Back",
         asset_id="05630bfa94501a3e5d61ce443a0cea70",
@@ -130,7 +130,7 @@ def test_FRCostume_to_second_bitmap():
     expected.load()
     assert image_equal(srcostume.content, expected)
 
-"""def test_FRCostume_to_second_bitmap_no_bitmap_resolution():
+def test_FRCostume_to_second_simple_resolution():
     frcostume = FRCostume(
         name="Puppy Back",
         asset_id="05630bfa94501a3e5d61ce443a0cea70",
@@ -138,11 +138,24 @@ def test_FRCostume_to_second_bitmap():
         md5ext="05630bfa94501a3e5d61ce443a0cea70.png",
         rotation_center_x=234,
         rotation_center_y=94,
-        bitmap_resolution=None,
+        bitmap_resolution=1,
     )
-    srcostume = frcostume.to_second(asset_files={"05630bfa94501a3e5d61ce443a0cea70.png": SIMPLE_bitmap_example})
+    srcostume = frcostume.to_second(asset_files={"05630bfa94501a3e5d61ce443a0cea70.png": SIMPLE_BITMAP_EXAMPLE})
     assert isinstance(srcostume, SRBitmapCostume)
-    assert srcostume.bitmap_resolution == 1""" # paused because of TODO
+    assert not srcostume.has_double_resolution
+
+def test_FRCostume_to_second_other_resolution():
+    frcostume = FRCostume(
+        name="Puppy Back",
+        asset_id="05630bfa94501a3e5d61ce443a0cea70",
+        data_format="png",
+        md5ext="05630bfa94501a3e5d61ce443a0cea70.png",
+        rotation_center_x=234,
+        rotation_center_y=94,
+        bitmap_resolution=3,
+    )
+    with raises(ThanksError):
+        frcostume.to_second(asset_files={"05630bfa94501a3e5d61ce443a0cea70.png": SIMPLE_BITMAP_EXAMPLE})
 
 def test_FRCostume_to_second_invalid_format():
     frcostume = FRCostume(

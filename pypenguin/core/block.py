@@ -22,7 +22,6 @@ from pypenguin.utility          import (
 
 if TYPE_CHECKING: from pypenguin.core.block_interface import (
     FirstToInterIF, InterToFirstIF, SecondToInterIF, ValidationIF,
-    #                       InterToSecondIF,
 )
 from pypenguin.core.block_mutation import FRMutation, SRMutation
 from pypenguin.core.comment        import SRComment
@@ -134,7 +133,7 @@ class FRBlock:
                 next      = None,
                 parent    = parent_id,
                 inputs    = {},
-                fields    = {"LIST": (data[1], data[2], "")},
+                fields    = {"LIST": (data[1], data[2], "list")},
                 shadow    = False,
                 top_level = x is not None,
                 x         = x,
@@ -146,7 +145,6 @@ class FRBlock:
     
     def to_tuple(self) -> tuple[int, str, str] | tuple[int, str, str, int|float, int|float]:
         """
-        # TODO: add tests
         Serializes a FRBlock with a variable or list value opcode into a tuple
         
         Returns:
@@ -157,14 +155,13 @@ class FRBlock:
         
         if   self.opcode == OPCODE_VAR_VALUE:
             magic_number = OPCODE_NUM_VAR_VALUE
-            secondary    = SHA256_SEC_VARIABLE
             name         = self.fields["VARIABLE"][0]
+            sha256       = self.fields["VARIABLE"][1]
         elif self.opcode == OPCODE_LIST_VALUE:
             magic_number = OPCODE_NUM_LIST_VALUE
-            secondary    = SHA256_SEC_LIST
             name         = self.fields["LIST"][0]
+            sha256       = self.fields["LIST"][1]
         
-        sha256 = string_to_sha256(name, secondary=secondary)
         if self.top_level:
             return (magic_number, name, sha256, self.x, self.y)
         else:

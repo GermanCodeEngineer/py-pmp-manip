@@ -12,3 +12,4 @@ TODOs:
     - add all errors to docstrings
     - use @property instead of some get... methods
     - possibly remove mode attribute of IRInputValue
+    - check uses of ALL_FR_BLOCKS_CLEAN vs. ALL_FR_BLOCKS
