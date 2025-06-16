@@ -1,4 +1,4 @@
-from pytest import fixture
+from pytest import fixture, raises
 
 from pypenguin.opcode_info.api import DropdownType, DropdownValueKind
 from pypenguin.utility         import ValidationConfig, TypeValidationError, InvalidDropdownValueError
@@ -71,6 +71,10 @@ def test_SRDropdownValue_validate_value(config, context):
         validate_func=SRDropdownValue.validate_value,
         func_args=[[], config, DropdownType.MOUSE_OR_OTHER_SPRITE, context],
     )
+
+    dropdown_value = SRDropdownValue(kind=DropdownValueKind.SOUND, value="a message")
+    with raises(InvalidDropdownValueError):
+        dropdown_value.validate_value([], config, DropdownType.BROADCAST, context)
 
 
 

@@ -144,13 +144,13 @@ class FRProject:
         global_monitors = []
         sprite_names = [sprite.name for sprite in new_sprites]
         for monitor in self.monitors:
-            monitor_sprite_name, new_monitor = monitor.to_second(info_api=info_api, sprite_names=sprite_names)
+            new_monitor = monitor.to_second(info_api=info_api, sprite_names=sprite_names)
             if new_monitor is None: 
                 continue
-            if monitor_sprite_name is None:
+            if monitor.sprite_name is None:
                 global_monitors.append(new_monitor)
             else:
-                sprite_index = sprite_names.index(monitor_sprite_name)
+                sprite_index = sprite_names.index(monitor.sprite_name)
                 new_sprites[sprite_index].local_monitors.append(new_monitor)
        
         if old_stage.text_to_speech_language is None:

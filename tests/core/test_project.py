@@ -61,6 +61,13 @@ def test_FRProject_post_init():
 def test_FRProject_to_second():
     assert FR_PROJECT.to_second(info_api) == SR_PROJECT
 
+def test_FRProject_to_second_empty_monitor():
+    frproject = deepcopy(FR_PROJECT)
+    frmonitor = deepcopy(frproject.monitors[0])
+    frmonitor.sprite_name = "a non existing sprite"
+    frproject.monitors.append(frmonitor)
+    assert frproject.to_second(info_api) == SR_PROJECT # means its not included in second representation
+
 def test_FRProject_to_second_tts():
     frproject = deepcopy(FR_PROJECT)
     frstage: FRStage = frproject.targets[0]

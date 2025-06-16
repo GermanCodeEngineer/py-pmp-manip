@@ -2,7 +2,7 @@ from pytest import raises
 
 from pypenguin.utility import ConversionError
 
-from pypenguin.core.enums import SRTTSLanguage, SRVideoState, SRSpriteRotationStyle
+from pypenguin.core.enums import SRTTSLanguage, SRVideoState, SRSpriteRotationStyle, SRVariableMonitorReadoutMode
 
 
 
@@ -30,5 +30,14 @@ def test_SRSpriteRotationStyle_from_code():
 def test_SRSpriteRotationStyle_from_code_invalid():
     with raises(ConversionError):
         SRSpriteRotationStyle.from_code("something undefined")
+
+
+
+def test_SRVariableMonitorReadoutMode_from_code():
+    assert SRVariableMonitorReadoutMode.from_code("default") == SRVariableMonitorReadoutMode.NORMAL
+
+def test_SRVariableMonitorReadoutMode_from_code_invalid():
+    with raises(ConversionError):
+        SRVariableMonitorReadoutMode.from_code("something undefined")
 
 
