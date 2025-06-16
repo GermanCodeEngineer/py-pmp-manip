@@ -39,6 +39,12 @@ def test_SRDropdownValue_from_tuple():
     assert dropdown_value.kind == DropdownValueKind.SPRITE
     assert dropdown_value.value == "Player"
 
+def test_SRDropdownValue_to_tuple():
+    dropdown_value = SRDropdownValue(kind=DropdownValueKind.SPRITE, value="Player")
+    assert dropdown_value.to_tuple() == (DropdownValueKind.SPRITE, "Player")
+
+
+
 def test_SRDropdownValue_validate(config):
     dropdown_value = SRDropdownValue(kind=DropdownValueKind.SPRITE, value="Player")
     
@@ -52,6 +58,7 @@ def test_SRDropdownValue_validate(config):
         func_args=[[], config],
     )
 
+
 def test_SRDropdownValue_validate_value(config, context):
     dropdown_value = SRDropdownValue(kind=DropdownValueKind.SPRITE, value="Player")
     dropdown_value.validate_value([], config, DropdownType.MOUSE_OR_OTHER_SPRITE, context)
@@ -64,5 +71,6 @@ def test_SRDropdownValue_validate_value(config, context):
         validate_func=SRDropdownValue.validate_value,
         func_args=[[], config, DropdownType.MOUSE_OR_OTHER_SPRITE, context],
     )
+
 
 

@@ -33,8 +33,6 @@ class SRDropdownValue:
 
     def to_tuple(self) -> tuple[DropdownValueKind, Any]:
         """
-        # TODO: add tests
-        # TODO: use where possible
         Serializes a SRDropdownValue into a tuple
         
         Returns:
@@ -90,7 +88,7 @@ class SRDropdownValue:
             "No possible values" if possible_values == [] else
             "".join(["\n- "+repr(value) for value in possible_values])
         )
-        if (self.kind, self.value) not in possible_values:
+        if self.to_tuple() not in possible_values:
             if default_kind is None:
                 raise InvalidDropdownValueError(path, f"In this case must be one of these: {possible_values_string}")
             elif self.kind is not default_kind:

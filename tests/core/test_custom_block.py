@@ -32,11 +32,20 @@ def config():
 
 def test_SRCustomBlockOpcode_from_proccode_argument_names(segments):
     custom_opcode = SRCustomBlockOpcode.from_proccode_argument_names(
-        proccode="do sth with name %s backwards? %b times %n",
+        proccode="do sth with name %s backwards? %b times %s",
         argument_names=["thing name", "do backwards?", "repetitions"],
     )
     assert isinstance(custom_opcode, SRCustomBlockOpcode)
     assert custom_opcode.segments == segments
+
+
+def test_SRCustomBlockOpcode_to_proccode_argument_names_defaults(segments):
+    custom_opcode = SRCustomBlockOpcode(segments=segments)
+    proccode, argument_names, argument_defaults = custom_opcode.to_proccode_argument_names_defaults()
+    assert proccode == "do sth with name %s backwards? %b times %s"
+    assert argument_names == ["thing name", "do backwards?", "repetitions"]
+    assert argument_defaults == ["", "false", ""]
+
 
 def test_SRCustomBlockOpcode_get_corresponding_input_info(segments):
     custom_opcode = SRCustomBlockOpcode(segments=segments)
@@ -93,6 +102,7 @@ def test_SRCustomBlockArgument_validate(config):
 
 def test_SRCustomBlockArgumentType_get_corresponding_input_type():
     assert SRCustomBlockArgumentType.STRING_NUMBER.get_corresponding_input_type() == InputType.TEXT
+    assert SRCustomBlockArgumentType.STRING_NUMBER.get_corresponding_input_type() == InputType.TEXT
     assert SRCustomBlockArgumentType.BOOLEAN.get_corresponding_input_type() == InputType.BOOLEAN
 
 
@@ -107,12 +117,22 @@ def test_SRCustomBlockOptype_from_code():
     with raises(ConversionError):
         SRCustomBlockOptype.from_code("something else")
 
+
+def test_SRCustomBlockOptype_to_code():
+    assert SRCustomBlockOptype.STATEMENT       .to_code() == "statement"
+    assert SRCustomBlockOptype.ENDING_STATEMENT.to_code() == "end"
+    assert SRCustomBlockOptype.STRING_REPORTER .to_code() == "string"
+    assert SRCustomBlockOptype.NUMBER_REPORTER .to_code() == "number"
+    assert SRCustomBlockOptype.BOOLEAN_REPORTER.to_code() == "boolean"
+
+
 def test_SRCustomBlockOptype_is_reporter():
     assert not SRCustomBlockOptype.STATEMENT       .is_reporter()
     assert not SRCustomBlockOptype.ENDING_STATEMENT.is_reporter()
     assert     SRCustomBlockOptype.STRING_REPORTER .is_reporter()
     assert     SRCustomBlockOptype.NUMBER_REPORTER .is_reporter()
     assert     SRCustomBlockOptype.BOOLEAN_REPORTER.is_reporter()
+
 
 def test_SRCustomBlockOptype_get_corresponding_opcode_type():
     assert SRCustomBlockOptype.STATEMENT       .get_corresponding_opcode_type() == OpcodeType.STATEMENT       
