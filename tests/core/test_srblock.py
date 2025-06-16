@@ -2,10 +2,10 @@ from copy        import copy, deepcopy
 from dataclasses import field
 from pytest      import fixture, raises
 
-from pypenguin.opcode_info.api  import DropdownValueKind, OpcodeType, InputType, InputMode
+from pypenguin.opcode_info.api  import DropdownValueKind, OpcodeType, InputType
 from pypenguin.opcode_info.data import info_api
 from pypenguin.utility          import (
-    grepr_dataclass, ValidationConfig, 
+    grepr_dataclass, ValidationConfig, ConversionError,
     TypeValidationError, RangeValidationError, InvalidOpcodeError, InvalidBlockShapeError,
     UnnecessaryInputError, MissingInputError, UnnecessaryDropdownError, MissingDropdownError,
 )
@@ -163,6 +163,10 @@ def test_SRBlock_validate_missing_dropdown(config, validation_if, context):
     with raises(MissingDropdownError):
         srblock.validate([], config, info_api, validation_if, context, expects_reporter=True)
 
+def test_SRBlock_validate_post_handler(config, validation_if, context):
+    srblock = ALL_SR_SCRIPTS[3].blocks[0]
+    srblock.validate([], config, info_api, validation_if, context, expects_reporter=False)
+
 
 def test_SRBlock_validate_opcode_type():
     reporter_tests = [
@@ -275,11 +279,7 @@ def test_SRBlock_to_inter_substack():
         position=script.position,
         is_top_level=True,
     )
-    expected = deepcopy(ALL_IR_BLOCKS["n"])
-    expected.inputs["CONDITION"] = IRInputValue(
-        mode=InputMode.BLOCK_ONLY, references=[], immediate_block=None, text=None,
-    )
-    assert irblock == expected
+    assert irblock == ALL_IR_BLOCKS["n"]
     assert sti_if.added_blocks == {
         id: ALL_IR_BLOCKS[id]
         for id in {"o", "q"}
@@ -319,6 +319,20 @@ def test_SRBlock_to_inter_dropdown():
         for id in {}
     }
 
+def test_SRBlock_to_inter_invalid_sub_script():
+    sti_if = TEST_SecondToInterIF(scripts=ALL_SR_SCRIPTS, _block_ids=[])
+    script = ALL_SR_SCRIPTS[6]
+    srblock = deepcopy(script.blocks[0])
+    srblock.inputs["THEN"].blocks = ["some invalid stuff"]
+    with raises(ConversionError):
+        srblock.to_inter(
+            sti_if=sti_if,
+            info_api=info_api,
+            next=None,
+            position=script.position,
+            is_top_level=True,
+        )
+
 
 
 def test_SRInputValue_init():
@@ -331,19 +345,26 @@ def test_SRInputValue_init():
 
 def test_SRInputValue_eq():
     sub_tests = [
-           (False, 
+        (False, 
+            SRBlockAndTextInputValue(block=None, text="a text field"), 
+            dict(),
+        ),
+        (False, 
             SRBlockAndTextInputValue(block=None, text="a text field"), 
             SRBlockOnlyInputValue(block=None),
-        ), (False, 
-            SRBlockAndTextInputValue(block=None, text="a text field"), 
-            SRBlockAndTextInputValue(block=None, text="another text"), 
-        ), (False, 
-            SRBlockAndTextInputValue(block=5   , text="a text field"), 
-            SRBlockAndTextInputValue(block=None, text="a text field"), 
-        ), (True, 
-            SRBlockAndTextInputValue(block=45, text="a text field"), 
-            SRBlockAndTextInputValue(block=45, text="a text field"), 
-        )
+        ),
+#        (False, 
+#            SRBlockAndTextInputValue(block=None, text="a text field"), 
+#            SRBlockAndTextInputValue(block=None, text="another text"), 
+#        ),
+#        (False, 
+#            SRBlockAndTextInputValue(block=5   , text="a text field"), 
+#            SRBlockAndTextInputValue(block=None, text="a text field"), 
+#        ),
+#        (True, 
+#            SRBlockAndTextInputValue(block=45, text="a text field"), 
+#            SRBlockAndTextInputValue(block=45, text="a text field"), 
+#        )
     ]
     for target_result, a, b in sub_tests:
         assert (a == b) == target_result

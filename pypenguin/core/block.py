@@ -223,7 +223,6 @@ class FRBlock:
         own_id: str
     ) -> dict[str, "IRInputValue"]:
         """
-        # TODO: add tests
         *[Internal Method]* Converts the inputs of a FRBlock into the IR Fromat
         
         Args:
@@ -262,22 +261,7 @@ class FRBlock:
                 references      = references,
                 immediate_block = immediate_block,
                 text            = text,
-            )
-        
-        # Check for missing inputs and give a default value where possible otherwise raise
-        for input_id, input_info in input_infos.items():
-            if input_id in new_inputs:
-                continue
-            input_mode = input_info.type.get_mode()
-            if input_mode.can_be_missing():
-                new_inputs[input_id] = IRInputValue(
-                    mode            = input_mode,
-                    references      = [],
-                    immediate_block = None,
-                    text            = None,
-                )
-            else: raise ConversionError(f"Didn't expect input {repr(input_id)} missing")
-        
+            )        
         return new_inputs
 
 
@@ -298,7 +282,7 @@ class IRBlock:
     is_top_level: bool
 
     @classmethod
-    def from_menu_dropdown_value(cls, dropdown_value: Any, input_info: InputInfo) -> "IRBlock": # TODO: add tests
+    def from_menu_dropdown_value(cls, dropdown_value: Any, input_info: InputInfo) -> "IRBlock":
         """
         Creates a IRBlock which only contains a menu SRDropdownValue
 
@@ -373,9 +357,6 @@ class IRBlock:
                     elements.append((magic_text_number, input_value.text, 
                         string_to_sha256(input_value.text, secondary=SHA256_SEC_BROADCAST_MSG)
                     ))
-                case _:
-                    if input_mode.can_be_missing() and not elements:
-                        continue # don't include the input if its empty
             
             if input_mode.can_be_missing():
                 magic_number = 2
@@ -444,11 +425,11 @@ class IRBlock:
         if opcode_info.opcode_type == OpcodeType.MENU: # The attribute is fine because DYNAMIC should never generate MENU
             return (None, [list(self.dropdowns.values())[0]])
             """ example:
-            {
+            IRBlock(
                 opcode="#TOUCHING OBJECT MENU",
-                options={"TOUCHINGOBJECTMENU": ["object", "_mouse_"]},
+                dropdowns={"TOUCHINGOBJECTMENU": "_mouse_"},
                 ...
-            }
+            )
             --> "_mouse_" """
         
         old_new_input_ids = opcode_info.get_old_new_input_ids(block=self, fti_if=None)
@@ -515,8 +496,8 @@ class IRBlock:
                     elif script_count == 2:
                         input_block    = sub_block_a
                         input_dropdown = sub_block_b
-                case InputMode.BLOCK_AND_MENU_TEXT:
-                    raise NotImplementedError() # TODO
+                case InputMode.BLOCK_AND_MENU_TEXT:  # pragma: no cover
+                    raise NotImplementedError() # TODO  # pragma: no cover
 
             if input_dropdown is not None:
                 input_type = opcode_info.get_input_info_by_old(input_id).type
@@ -534,6 +515,7 @@ class IRBlock:
         
         input_infos = opcode_info.get_new_input_ids_infos(block=self, fti_if=None) 
         # maps input ids to their types # fti_if isn't necessary for a IRBlock
+        # Check for missing inputs and give a default value where possible otherwise raise
         for new_input_id in input_infos.keys():
             if new_input_id not in new_inputs:
                 input_mode = input_infos[new_input_id].type.get_mode()
@@ -861,28 +843,23 @@ class SRBlock:
             input_sub_scripts: list[list[SRBlock | IRBlock]] = []
             input_text     = None
             input_dropdown = None
-            
+
+            if isinstance(getattr(input_value, "block", None), SRBlock):
+                input_sub_scripts.append([input_value.block])
             match input_mode:
                 case InputMode.BLOCK_AND_TEXT:
-                    if input_value.block is not None:
-                        input_sub_scripts.append([input_value.block])
                     input_text = input_value.text
                 case InputMode.BLOCK_AND_BROADCAST_DROPDOWN:
-                    if input_value.block is not None:
-                        input_sub_scripts.append([input_value.block])
                     input_text = input_value.dropdown.value
                 case InputMode.BLOCK_ONLY:
-                    if input_value.block is not None:
-                        input_sub_scripts.append([input_value.block])
+                    pass
                 case InputMode.SCRIPT:
                     if input_value.blocks:
                         input_sub_scripts.append(input_value.blocks)
                 case InputMode.BLOCK_AND_DROPDOWN:
-                    if input_value.block is not None:
-                        input_sub_scripts.append([input_value.block])
                     input_dropdown = input_value.dropdown
-                case InputMode.BLOCK_AND_MENU_TEXT:
-                    raise NotImplementedError() # TODO
+                case InputMode.BLOCK_AND_MENU_TEXT: # pragma: no cover
+                    raise NotImplementedError() # TODO # pragma: no cover
 
             if input_dropdown is not None:
                 dropdown_type = input_info.type.get_corresponding_dropdown_type()
@@ -922,12 +899,17 @@ class SRBlock:
                     references.append(block_ids[0])
                 else: raise ConversionError(f"Invalid input sub script: {sub_blocks}")
 
-            old_inputs[old_input_id] = IRInputValue(
+            old_input_value = IRInputValue(
                 mode            = input_mode,
                 references      = references,
                 immediate_block = immediate_block,
                 text            = input_text,
             )
+            if (
+                not(input_mode.can_be_missing()) or old_input_value.references
+                or (old_input_value.immediate_block is not None) or (old_input_value.text is not None)
+            ):
+                old_inputs[old_input_id] = old_input_value
 
         # Map new dropdown IDs to old dropdown IDs and values
         old_dropdowns = {}
@@ -987,16 +969,14 @@ class SRInputValue(ABC):
         """
         if not isinstance(other, SRInputValue):
             return NotImplemented
-        if type(self) != type(other):
+        if type(self) is not type(other):
             return NotImplemented
-        if len(self._grepr_fields) != len(other._grepr_fields):
-            return False
-        for attr in self._grepr_fields:
-            if attr not in other._grepr_fields:
-                return False
-            if getattr(self, attr) != getattr(other, attr):
-                return False
-        return True
+        return (
+                getattr(self, "blocks"  , None) == getattr(other, "blocks"  , None)
+            and getattr(self, "block"   , None) == getattr(other, "block"   , None)
+            and getattr(self, "text"    , None) == getattr(other, "text"    , None)
+            and getattr(self, "dropdown", None) == getattr(other, "dropdown", None)
+        )
 
     @classmethod
     def from_mode(cls,

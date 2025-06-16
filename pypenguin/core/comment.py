@@ -89,7 +89,6 @@ class SRComment:
 
     def to_first(self, block_id: str | None) -> FRComment:
         """
-        # TODO: add tests
         Converts a SRComment into a FRComment
         
         Args:

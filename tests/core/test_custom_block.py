@@ -38,6 +38,14 @@ def test_SRCustomBlockOpcode_from_proccode_argument_names(segments):
     assert isinstance(custom_opcode, SRCustomBlockOpcode)
     assert custom_opcode.segments == segments
 
+def test_SRCustomBlockOpcode_to_proccode_argument_names_defaults(segments):
+    custom_opcode = SRCustomBlockOpcode(segments=segments)
+    proccode, argument_names, argument_defaults = custom_opcode.to_proccode_argument_names_defaults()
+    assert proccode == "do sth with name %s backwards? %b times "
+    assert argument_names == ["thing name", "do backwards?", "repetitions"]
+    assert argument_defaults == []
+
+
 def test_SRCustomBlockOpcode_get_corresponding_input_info(segments):
     custom_opcode = SRCustomBlockOpcode(segments=segments)
     assert custom_opcode.get_corresponding_input_info() == {
@@ -92,6 +100,7 @@ def test_SRCustomBlockArgument_validate(config):
 
 
 def test_SRCustomBlockArgumentType_get_corresponding_input_type():
+    assert SRCustomBlockArgumentType.STRING_NUMBER.get_corresponding_input_type() == InputType.TEXT
     assert SRCustomBlockArgumentType.STRING_NUMBER.get_corresponding_input_type() == InputType.TEXT
     assert SRCustomBlockArgumentType.BOOLEAN.get_corresponding_input_type() == InputType.BOOLEAN
 
