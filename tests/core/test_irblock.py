@@ -153,9 +153,18 @@ def test_IRBlock_to_first_standard_dropdown():
     assert itf_if.added_blocks == {}
     assert itf_if.added_comments == {}
 
-
-
-# LEFT OFF HERE
+def test_IRBlock_to_first_empty_input():
+    itf_if = TEST_InterToFirstIF(blocks=ALL_IR_BLOCKS, _block_ids=[])
+    irblock = ALL_IR_BLOCKS["r"]
+    frblock = irblock.to_first(
+        itf_if=itf_if,
+        info_api=info_api,
+        parent_id=None,
+        own_id="r",
+    )
+    assert frblock == ALL_FR_BLOCKS["r"]
+    assert itf_if.added_blocks == {}
+    assert itf_if.added_comments == {}
 
 
 def test_IRBlock_to_second_block_and_text_block_only():
@@ -174,6 +183,14 @@ def test_IRBlock_to_second_script():
     )
     assert values == ALL_SR_SCRIPTS[0].blocks
 
+def test_IRBlock_to_second_substack():
+    irblock = ALL_IR_BLOCKS["n"]
+    _, values = irblock.to_second(
+        all_blocks=ALL_IR_BLOCKS,
+        info_api=info_api,
+    )
+    assert values == ALL_SR_SCRIPTS[6].blocks
+
 def test_IRBlock_to_second_menu():
     irblock = ALL_IR_BLOCKS["e"]
     _, values = irblock.to_second(
@@ -181,6 +198,14 @@ def test_IRBlock_to_second_menu():
         info_api=info_api,
     )
     assert values == ["_random_"]
+
+def test_IRBlock_to_second_immediate_block():
+    irblock = ALL_IR_BLOCKS["f"]
+    _, values = irblock.to_second(
+        all_blocks=ALL_IR_BLOCKS,
+        info_api=info_api,
+    )
+    assert values == ALL_SR_SCRIPTS[1].blocks
 
 def test_IRBlock_to_second_invalid_script_count():
     irblock = deepcopy(ALL_IR_BLOCKS["c"])
