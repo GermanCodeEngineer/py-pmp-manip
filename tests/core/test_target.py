@@ -1,4 +1,4 @@
-from copy   import copy
+from copy   import copy, deepcopy
 from uuid   import UUID
 from pydub  import AudioSegment
 from pytest import fixture, raises
@@ -16,6 +16,7 @@ from pypenguin.utility          import (
 from pypenguin.core.asset          import SRVectorCostume, SRSound
 from pypenguin.core.block_mutation import SRCustomBlockMutation
 from pypenguin.core.block          import SRScript, SRBlock
+from pypenguin.core.comment        import FRComment, SRComment
 from pypenguin.core.context        import PartialContext
 from pypenguin.core.custom_block   import SRCustomBlockOptype, SRCustomBlockOpcode, SRCustomBlockArgument, SRCustomBlockArgumentType
 from pypenguin.core.enums          import SRSpriteRotationStyle
@@ -110,6 +111,29 @@ def test_FRTarget_to_second_common():
     assert costumes == SR_SPRITE.costumes
     assert sounds == SR_SPRITE.sounds
 
+def test_FRTarget_to_second_common_floating_comment():
+    frsprite = deepcopy(FR_SPRITE)
+    frsprite.blocks !
+    scripts, _, _, _, _, _ = frsprite._to_second_common(PROJECT_ASSET_FILES, info_api)
+    expected_scripts =  SR_SPRITE.comments + [SRComment(
+        position=(0, 0),
+        size=(200, 200),
+        is_minimized=False,
+        text="a comment",
+    )]
+    assert scripts == expected_scripts
+
+def test_FRTarget_to_second_common_floating_comment():
+    frsprite = deepcopy(FR_SPRITE)
+    _, comments, _, _, _, _ = frsprite._to_second_common(PROJECT_ASSET_FILES, info_api)
+    expected_comments =  SR_SPRITE.comments + [SRComment(
+        position=(0, 0),
+        size=(200, 200),
+        is_minimized=False,
+        text="a comment",
+    )]
+    assert comments == expected_comments
+
 
 def test_FRTarget_to_second_variables_lists():
     frsprite = copy(FR_STAGE)
@@ -176,7 +200,9 @@ def test_FRSprite_from_data_missing_id():
 
 def test_FRSprite_to_second():
     srsprite, _, _ = FR_SPRITE.to_second(PROJECT_ASSET_FILES, info_api)
-    assert srsprite == SR_SPRITE
+    expected = copy(SR_SPRITE)
+    expected.local_monitors = [] # would be added later
+    assert srsprite == expected
 
 
 

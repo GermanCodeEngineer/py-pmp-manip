@@ -406,7 +406,7 @@ class SRProject:
         for i, uuid in enumerate(self.sprite_layer_stack):
             current_path = path+["sprite_layer_stack", i]
             if uuid in stack_uuid_paths:
-                other_path = stack_uuid_paths[sprite.uuid]
+                other_path = stack_uuid_paths[uuid]
                 raise SameValueTwiceError(other_path, current_path, "The same UUID mustn't be included twice")
             if uuid not in sprite_uuid_paths:
                 raise SpriteLayerStackError(current_path, "Must be the UUID of an existing sprite")
