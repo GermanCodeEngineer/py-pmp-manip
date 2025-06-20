@@ -353,18 +353,6 @@ def test_SRInputValue_eq():
             SRBlockAndTextInputValue(block=None, text="a text field"), 
             SRBlockOnlyInputValue(block=None),
         ),
-#        (False, 
-#            SRBlockAndTextInputValue(block=None, text="a text field"), 
-#            SRBlockAndTextInputValue(block=None, text="another text"), 
-#        ),
-#        (False, 
-#            SRBlockAndTextInputValue(block=5   , text="a text field"), 
-#            SRBlockAndTextInputValue(block=None, text="a text field"), 
-#        ),
-#        (True, 
-#            SRBlockAndTextInputValue(block=45, text="a text field"), 
-#            SRBlockAndTextInputValue(block=45, text="a text field"), 
-#        )
     ]
     for target_result, a, b in sub_tests:
         assert (a == b) == target_result

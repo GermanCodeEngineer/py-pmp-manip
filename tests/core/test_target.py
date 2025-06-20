@@ -15,7 +15,7 @@ from pypenguin.utility          import (
 
 from pypenguin.core.asset          import SRVectorCostume, SRSound
 from pypenguin.core.block_mutation import SRCustomBlockMutation
-from pypenguin.core.block          import SRScript, SRBlock
+from pypenguin.core.block          import FRBlock, SRScript, SRBlock
 from pypenguin.core.comment        import FRComment, SRComment
 from pypenguin.core.context        import PartialContext
 from pypenguin.core.custom_block   import SRCustomBlockOptype, SRCustomBlockOpcode, SRCustomBlockArgument, SRCustomBlockArgumentType
@@ -111,28 +111,32 @@ def test_FRTarget_to_second_common():
     assert costumes == SR_SPRITE.costumes
     assert sounds == SR_SPRITE.sounds
 
-def test_FRTarget_to_second_common_floating_comment():
+def test_FRTarget_to_second_common_false_independent_block():
     frsprite = deepcopy(FR_SPRITE)
-    frsprite.blocks !
+    frblock: FRBlock = frsprite.blocks["e"]
+    frblock.top_level = True
+    frblock.position = (77, 777)
     scripts, _, _, _, _, _ = frsprite._to_second_common(PROJECT_ASSET_FILES, info_api)
-    expected_scripts =  SR_SPRITE.comments + [SRComment(
-        position=(0, 0),
-        size=(200, 200),
-        is_minimized=False,
-        text="a comment",
-    )]
-    assert scripts == expected_scripts
+    assert scripts == SR_SPRITE.scripts # still same output expected
 
 def test_FRTarget_to_second_common_floating_comment():
     frsprite = deepcopy(FR_SPRITE)
-    _, comments, _, _, _, _ = frsprite._to_second_common(PROJECT_ASSET_FILES, info_api)
-    expected_comments =  SR_SPRITE.comments + [SRComment(
+    frsprite.comments["qqq"] = FRComment(
+        block_id=None,
+        x=0,
+        y=0,
+        width=200,
+        height=200,
+        minimized=False,
+        text="a floating comment",
+    )
+    _, floating_comments, _, _, _, _ = frsprite._to_second_common(PROJECT_ASSET_FILES, info_api)
+    assert floating_comments == [SRComment(
         position=(0, 0),
         size=(200, 200),
         is_minimized=False,
-        text="a comment",
+        text="a floating comment",
     )]
-    assert comments == expected_comments
 
 
 def test_FRTarget_to_second_variables_lists():
@@ -160,7 +164,7 @@ def test_FRTarget_to_second_variables_lists_invalid():
         frsprite._to_second_variables_lists()
 
     frsprite = copy(FR_STAGE)
-    frsprite.variables = {"LSfpvIEwXe-upUsR|ypy": ("some other list", None, None)}
+    frsprite.lists = {"LSfpvIEwXe-upUsR|ypy": ("some other list", None, None)}
     with raises(ConversionError):
         frsprite._to_second_variables_lists()
 
@@ -241,6 +245,16 @@ def test_SRTarget_validate(config):
         validate_func=SRTarget.validate,
         func_args=[[], config, info_api],
     )
+
+def test_SRTarget_validate_same_comment(config):
+    srtarget = SRTarget.create_empty()
+    srtarget.comments = [SRComment(
+        position=(10, 10),
+        size=(52, 32),
+        is_minimized=False,
+        text="Comment text",
+    )]
+    srtarget.validate([], config, info_api)
 
 def test_SRTarget_validate_same_costume_name(config):
     srtarget = SRTarget.create_empty()
@@ -362,6 +376,16 @@ def test_SRSprite_validate(config):
         validate_func=SRSprite.validate,
         func_args=[[], config, info_api],
     )
+
+def test_SRSprite_validate_vars_lists(config):
+    srsprite = SRSprite.create_empty(name="my sprite")
+    srsprite.sprite_only_variables = [
+        SRVariable(name="my var", current_value="Günther Jauch")
+    ]
+    srsprite.sprite_only_lists = [
+        SRList(name="my var", current_value=["Günther Jauch", "Dieter Bohlen"])
+    ]
+    srsprite.validate([], config, info_api)
 
 def test_SRSprite_validate_uuid(config):
     srsprite = SRSprite.create_empty(name="my sprite")
