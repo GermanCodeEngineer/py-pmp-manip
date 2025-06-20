@@ -37,18 +37,19 @@ class SRCustomBlockOpcode:
             if text_piece != "":
                 segments.append(text_piece)
             if splitter is not None: 
+                match splitter:
+                    case "%s":
+                        argument_type = SRCustomBlockArgumentType.STRING_NUMBER
+                    case "%b":
+                        argument_type = SRCustomBlockArgumentType.BOOLEAN
                 segments.append(SRCustomBlockArgument(
-                    type = (
-                        SRCustomBlockArgumentType.BOOLEAN 
-                        if splitter == "%b" else 
-                        SRCustomBlockArgumentType.STRING_NUMBER
-                    ),
-                    name = argument_names[i//2],
+                    name=argument_names[i//2], 
+                    type=argument_type,
                 ))
             i += 2
         return cls(segments=tuple(segments))
     
-    def to_proccode_argument_names_defaults(self) -> tuple[str, list[str]]: # TODO: add tests
+    def to_proccode_argument_names_defaults(self) -> tuple[str, list[str], list[str]]:
         """
         Generates procedure code, argument names and defaults from a SRCustomBlockOpcode
         
@@ -186,7 +187,7 @@ class SRCustomBlockArgumentType(PypenguinEnum):
         """
         return self.value[0]
 
-    STRING_NUMBER = (InputType.TEXT   , 0) # TODO: split into STRING and NUMBER
+    STRING_NUMBER = (InputType.TEXT   , 0)
     BOOLEAN       = (InputType.BOOLEAN, 1)
 
 class SRCustomBlockOptype(PypenguinEnum):
@@ -211,7 +212,7 @@ class SRCustomBlockOptype(PypenguinEnum):
                 return optype_candidate
         raise ConversionError(f"Couldn't find video state enum for video state code: {repr(code)}")
 
-    def to_code(self) -> str: # TODO: add tests
+    def to_code(self) -> str:
         """
         Gets the optype code based on its equivalent SRCustomBlockOptype
         

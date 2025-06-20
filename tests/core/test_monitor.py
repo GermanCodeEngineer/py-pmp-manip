@@ -170,8 +170,8 @@ ALL_FR_MONITORS: list[FRMonitor] = [
         x=5,
         y=5,
         visible=True,
-        width=100,
-        height=120,
+        width=0,
+        height=0,
         slider_min=0,
         slider_max=100,
         is_discrete=True,
@@ -186,8 +186,8 @@ ALL_FR_MONITORS: list[FRMonitor] = [
         x=5,
         y=31,
         visible=True,
-        width=100,
-        height=120,
+        width=0,
+        height=0,
         slider_min=0,
         slider_max=100,
         is_discrete=True,
@@ -292,8 +292,8 @@ ALL_FR_MONITORS: list[FRMonitor] = [
         x=255,
         y=220,
         visible=True,
-        width=100,
-        height=120,
+        width=0,
+        height=0,
         slider_min=0,
         slider_max=100,
         is_discrete=True,
@@ -308,8 +308,8 @@ ALL_FR_MONITORS: list[FRMonitor] = [
         x=205,
         y=5,
         visible=True,
-        width=100,
-        height=120,
+        width=0,
+        height=0,
         slider_min=0,
         slider_max=100,
         is_discrete=True,
@@ -353,19 +353,19 @@ ALL_LOCAL_SR_MONITORS: list[SRMonitor] = [
 ]
 
 ALL_GLOBAL_SR_MONITORS: list[SRMonitor] = [
-    SRVariableMonitor( # [0]
+    SRVariableMonitor( # [0] for [2]
         opcode="value of [VARIABLE]",
         dropdowns={
             "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="globl"),
         },
         position=(-130, -104),
         is_visible=True,
-        readout_mode=SRVariableMonitorReadoutMode.LARGE,
+        readout_mode=SRVariableMonitorReadoutMode.SLIDER,
         slider_min=-50.3,
         slider_max=100,
         allow_only_integers=False,
     ),
-    SRVariableMonitor( # [1]
+    SRVariableMonitor( # [1] for [3]
         opcode="value of [VARIABLE]",
         dropdowns={
             "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="globl2"),
@@ -377,7 +377,7 @@ ALL_GLOBAL_SR_MONITORS: list[SRMonitor] = [
         slider_max=100,
         allow_only_integers=True,
     ),
-    SRListMonitor( # [2]
+    SRListMonitor( # [2] for [5]
         opcode="value of [LIST]",
         dropdowns={
             "LIST": SRDropdownValue(kind=DropdownValueKind.LIST, value="globl"),
@@ -465,22 +465,36 @@ def test_FRMonitor_post_init_mode():
 
 def test_FRMonitor_to_second():
     frmonitor = ALL_FR_MONITORS[7]
-    sprite_name, srmonitor = frmonitor.to_second(
+    srmonitor = frmonitor.to_second(
         info_api=info_api,
         sprite_names=SPRITE_NAMES,
     )
-    assert sprite_name == frmonitor.sprite_name
-    assert isinstance(srmonitor, SRMonitor)
     assert srmonitor == ALL_GLOBAL_SR_MONITORS[3]
 
 def test_FRMonitor_to_second_unnecessary():
     frmonitor = copy(ALL_FR_MONITORS[7])
     frmonitor.sprite_name = "A non-existing sprite"
-    result = frmonitor.to_second(
+    srmonitor = frmonitor.to_second(
         info_api=info_api,
         sprite_names=SPRITE_NAMES,
     )
-    assert result == (None, None)
+    assert srmonitor is None
+
+def test_FRMonitor_to_second_dropdowns():
+    frmonitor = ALL_FR_MONITORS[2]
+    srmonitor = frmonitor.to_second(
+        info_api=info_api,
+        sprite_names=SPRITE_NAMES,
+    )
+    assert srmonitor == ALL_GLOBAL_SR_MONITORS[0]
+
+def test_FRMonitor_to_second_list_monitor():
+    frmonitor = ALL_FR_MONITORS[4]
+    srmonitor = frmonitor.to_second(
+        info_api=info_api,
+        sprite_names=SPRITE_NAMES,
+    )
+    assert srmonitor == ALL_LOCAL_SR_MONITORS[2]
 
 
 
@@ -545,8 +559,7 @@ def test_SRMonitor_validate_dropdown_values(context):
 
 
 def test_SRVariableMonitor_validate_all_numbers(config):
-    srmonitor = ALL_GLOBAL_SR_MONITORS[0]
-    srmonitor: SRVariableMonitor
+    srmonitor: SRVariableMonitor = ALL_GLOBAL_SR_MONITORS[0]
     srmonitor.validate([], config, info_api)
     
     execute_attr_validation_tests(
@@ -563,8 +576,7 @@ def test_SRVariableMonitor_validate_all_numbers(config):
     )
 
 def test_SRVariableMonitor_validate_only_integers(config):
-    srmonitor = ALL_GLOBAL_SR_MONITORS[1]
-    srmonitor: SRVariableMonitor
+    srmonitor: SRVariableMonitor = ALL_GLOBAL_SR_MONITORS[1]
     srmonitor.validate([], config, info_api)
     
     execute_attr_validation_tests(
@@ -578,12 +590,17 @@ def test_SRVariableMonitor_validate_only_integers(config):
     )
 
 def test_SRVariableMonitor_validate_invalid_opcode(config):
-    srmonitor = copy(ALL_GLOBAL_SR_MONITORS[0])
-    srmonitor: SRVariableMonitor
+    srmonitor: SRVariableMonitor= copy(ALL_GLOBAL_SR_MONITORS[0])
     srmonitor.opcode = "x position"
     srmonitor.dropdowns = {}
     with raises(InvalidValueError):
         srmonitor.validate([], config, info_api)
+
+
+def test_SRVariableMonitor_validate_dont_raise_when_monitor_position_outside_stage():
+    srmonitor: SRVariableMonitor = ALL_GLOBAL_SR_MONITORS[0]
+    config = ValidationConfig(raise_when_monitor_position_outside_stage=False)
+    srmonitor.validate([], config, info_api)
 
 
 

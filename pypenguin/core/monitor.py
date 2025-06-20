@@ -92,7 +92,7 @@ class FRMonitor:
         if not valid:
             raise ThanksError()
 
-    def to_second(self, info_api: OpcodeInfoAPI, sprite_names: list[str]) -> tuple[str | None, "SRMonitor | None"]:
+    def to_second(self, info_api: OpcodeInfoAPI, sprite_names: list[str]) -> "SRMonitor | None":
         """
         Converts a FRMonitor into a SRMonitor
         
@@ -104,7 +104,7 @@ class FRMonitor:
             the SRMonitor
         """
         if (self.sprite_name is not None) and (self.sprite_name not in sprite_names):
-            return (None, None) # Delete monitors of non-existing sprites: possibly not needed anymore
+            return None # Delete monitors of non-existing sprites: possibly not needed anymore
         
         opcode_info = info_api.get_info_by_old(self.opcode)
         
@@ -112,12 +112,13 @@ class FRMonitor:
         for dropdown_id, dropdown_value in self.params.items():
             new_dropdown_id = opcode_info.get_new_dropdown_id(dropdown_id)
             dropdown_type   = opcode_info.get_dropdown_info_by_old(dropdown_id).type
-            new_dropdowns[new_dropdown_id] = SRDropdownValue.from_tuple(dropdown_type.translate_old_to_new_value(dropdown_value))
+            new_dropdown_value = dropdown_type.translate_old_to_new_value(dropdown_value)
+            new_dropdowns[new_dropdown_id] = SRDropdownValue.from_tuple(new_dropdown_value)
         
         new_opcode = info_api.get_new_by_old(self.opcode)
         position   = (self.x - (STAGE_WIDTH//2), self.y - (STAGE_HEIGHT//2)) # this lets the center of stage be the origin        
         if   self.opcode == OPCODE_VAR_VALUE:
-            return (self.sprite_name, SRVariableMonitor(
+            return SRVariableMonitor(
                 opcode              = new_opcode,
                 dropdowns           = new_dropdowns,
                 position            = position,
@@ -126,9 +127,9 @@ class FRMonitor:
                 slider_min          = self.slider_min,
                 slider_max          = self.slider_max,
                 allow_only_integers = self.is_discrete,
-            ))
+            )
         elif self.opcode == OPCODE_LIST_VALUE:
-            return (self.sprite_name, SRListMonitor(
+            return SRListMonitor(
                 opcode      = new_opcode,
                 dropdowns   = new_dropdowns,
                 position    = position,
@@ -137,14 +138,14 @@ class FRMonitor:
                     LIST_MONITOR_DEFAULT_WIDTH  if self.width  == 0 else self.width,
                     LIST_MONITOR_DEFAULT_HEIGHT if self.height == 0 else self.height,
                 )
-            ))
+            )
         else:
-            return (self.sprite_name, SRMonitor(
+            return SRMonitor(
                 opcode      = new_opcode,
                 dropdowns   = new_dropdowns,
                 position    = position,
                 is_visible  = self.visible,
-            ))
+            )
 
 @grepr_dataclass(grepr_fields=["opcode", "dropdowns", "sprite", "position", "is_visible"])
 class SRMonitor:

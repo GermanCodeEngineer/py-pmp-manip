@@ -28,7 +28,7 @@ from pypenguin.core.custom_block   import (
 )
 from pypenguin.core.enums          import SRSpriteRotationStyle, SRVideoState
 from pypenguin.core.meta           import FRMeta, FRPenguinModPlatformMeta
-from pypenguin.core.monitor        import FRMonitor, SRListMonitor
+from pypenguin.core.monitor        import FRMonitor, SRMonitor, SRListMonitor
 from pypenguin.core.project        import FRProject, SRProject
 from pypenguin.core.target         import FRStage, FRSprite, SRStage, SRSprite
 from pypenguin.core.vars_lists     import SRVariable, SRList
@@ -1526,6 +1526,22 @@ PROJECT_DATA = {
             "y": 5,
             "visible": True,
         },
+        {
+            "height": 0,
+            "id": "5I9nI;7P)jdiR-_X;/%l_xposition",
+            "isDiscrete": True,
+            "mode": "default",
+            "opcode": "motion_xposition",
+            "params": {},
+            "sliderMax": 100,
+            "sliderMin": 0,
+            "spriteName": "Sprite1",
+            "value": 0,
+            "visible": True,
+            "width": 0,
+            "x": 5,
+            "y": 5,
+        },
     ],
     "extensionData": {},
     "extensions": [],
@@ -1564,6 +1580,22 @@ FR_PROJECT = FRProject(
             slider_min=None,
             slider_max=None,
             is_discrete=None,
+        ),
+        FRMonitor(
+            id="5I9nI;7P)jdiR-_X;/%l_xposition",
+            mode="default",
+            opcode="motion_xposition",
+            params={},
+            sprite_name="Sprite1",
+            value=0,
+            x=5,
+            y=5,
+            visible=True,
+            width=0,
+            height=0,
+            slider_min=0,
+            slider_max=100,
+            is_discrete=True,
         ),
     ],
     extension_data={},
@@ -1629,7 +1661,14 @@ SR_SPRITE = SRSprite(
     volume=100,
     sprite_only_variables=[],
     sprite_only_lists=[],
-    local_monitors=[],
+    local_monitors=[
+        SRMonitor( # [0] for [0]
+            opcode="x position",
+            dropdowns={},
+            position=(-235, -175),
+            is_visible=True,
+        ),
+    ],
     is_visible=True,
     position=(0, 0),
     size=100,

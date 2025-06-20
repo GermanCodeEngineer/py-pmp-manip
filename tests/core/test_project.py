@@ -10,6 +10,7 @@ from pypenguin.utility            import (
 from pypenguin.opcode_info.data import info_api
 
 from pypenguin.core.enums      import SRTTSLanguage, SRVideoState
+from pypenguin.core.extension  import SRBuiltinExtension, SRCustomExtension
 from pypenguin.core.project    import FRProject, SRProject
 from pypenguin.core.target     import FRStage, SRSprite, SRStage
 from pypenguin.core.vars_lists import SRVariable, SRList
@@ -61,6 +62,13 @@ def test_FRProject_post_init():
 def test_FRProject_to_second():
     assert FR_PROJECT.to_second(info_api) == SR_PROJECT
 
+def test_FRProject_to_second_empty_monitor():
+    frproject = deepcopy(FR_PROJECT)
+    frmonitor = deepcopy(frproject.monitors[0])
+    frmonitor.sprite_name = "a non existing sprite"
+    frproject.monitors.append(frmonitor)
+    assert frproject.to_second(info_api) == SR_PROJECT # means its not included in second representation
+
 def test_FRProject_to_second_tts():
     frproject = deepcopy(FR_PROJECT)
     frstage: FRStage = frproject.targets[0]
@@ -68,6 +76,17 @@ def test_FRProject_to_second_tts():
     target_srproject = copy(SR_PROJECT)
     target_srproject.text_to_speech_language = SRTTSLanguage.GERMAN
     assert frproject.to_second(info_api) == target_srproject
+
+def test_FRProject_to_second_extensions():
+    frproject = copy(FR_PROJECT)
+    frproject.extensions = ["jgJSON", "skyhigh173object"]
+    frproject.extension_urls = {"skyhigh173object": "https://extensions.penguinmod.com/extensions/skyhigh173/object.js"}
+    srproject = frproject.to_second(info_api)
+    assert srproject.extensions == [
+        SRBuiltinExtension(id="jgJSON"), 
+        SRCustomExtension(id="skyhigh173object", url="https://extensions.penguinmod.com/extensions/skyhigh173/object.js"),
+    ]
+
 
 
 
@@ -86,6 +105,10 @@ def test_SRProject_create_empty():
     assert srproject.extensions == []
 
 
+def test_SRProject_eq_other_class():
+    srproject_a = SRProject.create_empty()
+    assert srproject_a != 5
+
 def test_SRProject_eq_empty():
     srproject_a = SRProject.create_empty()
     srproject_b = SRProject.create_empty()
@@ -102,7 +125,6 @@ def test_SRProject_eq_different():
     srproject_b.all_sprite_variables = [SRVariable(name="an additional var", current_value="some value")]
     assert srproject_a != srproject_b
 
-
 def test_SRProject_eq_same_sprites():
     srproject_a = SRProject.create_empty()
     sprite_a1 = SRSprite.create_empty(name="sprite1")
@@ -118,6 +140,11 @@ def test_SRProject_eq_same_sprites():
     srproject_b.sprite_layer_stack = [sprite_b2.uuid, sprite_b1.uuid]
     assert srproject_a == srproject_b
 
+    srproject_a.sprite_layer_stack = [sprite_a2.uuid, sprite_a1.uuid]
+    srproject_b.sprite_layer_stack = [sprite_b1.uuid]
+    assert srproject_a != srproject_b
+
+    srproject_a.sprite_layer_stack = [sprite_a2.uuid, sprite_a1.uuid]
     srproject_b.sprite_layer_stack = [sprite_b1.uuid, sprite_b2.uuid] # reversed
     assert srproject_a != srproject_b
 
@@ -154,6 +181,12 @@ def test_SRProject_validate(config):
         func_args=[config, info_api],
     )
 
+def test_SRProject_validate_extensions(config):
+    srproject = SRProject.create_empty()
+    srproject.extensions.append(SRBuiltinExtension("jgJSON"))
+    srproject.validate(config, info_api)
+
+
 def test_SRProject_validate_same_sprite_name(config):
     srproject = SRProject.create_empty()
     sprite1 = SRSprite.create_empty(name="sprite1")
@@ -163,7 +196,18 @@ def test_SRProject_validate_same_sprite_name(config):
     with raises(SameValueTwiceError):
         srproject.validate(config, info_api)
 
-def test_SRProject_validate_sprites_layer_order(config):
+def test_SRProject_validate_sprites_same_sprite_uuid(config):
+    srproject = SRProject.create_empty()
+    sprite1 = SRSprite.create_empty(name="sprite1")
+    sprite2 = SRSprite.create_empty(name="sprite2")
+    uuid = sprite1.uuid
+    sprite2.__dict__["uuid"] = uuid
+    srproject.sprites = [sprite1, sprite2]
+    srproject.sprite_layer_stack = [uuid, uuid]
+    with raises(SameValueTwiceError):
+        srproject._validate_sprites([], config, info_api)
+
+def test_SRProject_validate_sprites_invalid_layer_stack(config):
     srproject = SRProject.create_empty()
     sprite1 = SRSprite.create_empty(name="sprite1")
     sprite2 = SRSprite.create_empty(name="sprite2")
@@ -174,8 +218,22 @@ def test_SRProject_validate_sprites_layer_order(config):
     srproject.sprite_layer_stack = [sprite1.uuid, uuid4()]
     with raises(SpriteLayerStackError):
         srproject._validate_sprites([], config, info_api)
+
+    srproject.sprite_layer_stack = [sprite1.uuid, sprite1.uuid]
+    with raises(SameValueTwiceError):
+        srproject._validate_sprites([], config, info_api)
     
 
+def test_SRProject_validate_var_names(config):
+    srproject = SRProject.create_empty()
+    sprite = SRSprite.create_empty(name="Sprite1")
+    sprite.sprite_only_variables = [
+        SRVariable(name="var1", current_value=")="),
+        SRVariable(name="var2", current_value="(="),
+    ]
+    srproject.sprites = [sprite]
+    srproject.sprite_layer_stack = [sprite.uuid]
+    srproject._validate_var_names([], config)
 
 def test_SRProject_validate_var_names_same_global(config):
     srproject = SRProject.create_empty()
@@ -195,7 +253,19 @@ def test_SRProject_validate_var_names_same_inter(config):
     with raises(SameValueTwiceError):
         srproject._validate_var_names([], config)
 
-def test_SRProject_validate_var_list_same_global(config):
+
+def test_SRProject_validate_list_names(config):
+    srproject = SRProject.create_empty()
+    sprite = SRSprite.create_empty(name="Sprite1")
+    sprite.sprite_only_lists = [
+        SRList(name="list1", current_value=[")="]),
+        SRList(name="list2", current_value=["(="]),
+    ]
+    srproject.sprites = [sprite]
+    srproject.sprite_layer_stack = [sprite.uuid]
+    srproject._validate_list_names([], config)
+
+def test_SRProject_validate_list_names_same_global(config):
     srproject = SRProject.create_empty()
     srproject.all_sprite_lists = [
         SRList(name="same list", current_value=[5]),
@@ -204,7 +274,7 @@ def test_SRProject_validate_var_list_same_global(config):
     with raises(SameValueTwiceError):
         srproject._validate_list_names([], config)
 
-def test_SRProject_validate_var_list_same_inter(config):
+def test_SRProject_validate_list_names_same_inter(config):
     srproject = SRProject.create_empty()
     srproject.all_sprite_lists = [SRList(name="same var", current_value=["(;", ");"])]
     sprite = SRSprite.create_empty(name="Sprite1")

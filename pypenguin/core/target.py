@@ -199,21 +199,26 @@ class FRTarget(ABC):
         """
         new_variables = []
         for variable in self.variables.values():
-            name = variable[0]
-            current_value = variable[1]
-            if len(variable) == 2:
-                new_variables.append(SRVariable(name, current_value))
-            elif self.is_stage and (len(variable) == 3) and (variable[2] == True):
-                new_variables.append(SRCloudVariable(name, current_value))
-            else: raise ConversionError(f"Invalid variable data {variable}")
+            if    len(variable) == 2:
+                new_variables.append(
+                    SRVariable(name=variable[0], current_value=variable[1])
+                )
+            elif (len(variable) == 3) and (variable[2] is True) and self.is_stage:
+                new_variables.append(
+                    SRCloudVariable(name=variable[0], current_value=variable[1])
+                )
+            else:
+                raise ConversionError(f"Invalid variable data {variable}")
         
         new_lists = []
         for list_ in self.lists.values():
-            name = list_[0]
-            current_value = list_[1]
+            print("-", list_, len(list_))
             if len(list_) == 2:
-                new_lists.append(SRList(name, current_value))
-            else: raise ConversionError(f"Invalid list data {list_}")
+                new_lists.append(
+                    SRList(name=list_[0], current_value=list_[1])
+                )
+            else:
+                raise ConversionError(f"Invalid list data {list_}")
         
         return new_variables, new_lists
 

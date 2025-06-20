@@ -86,3 +86,22 @@ def test_SRComment_validate(config):
         validate_func=SRComment.validate,
         func_args=[[], config],
     )
+
+
+def test_SRComment_to_first():
+    srcomment = SRComment(
+        position=(100, 200),
+        size=(150, 80),
+        is_minimized=True,
+        text="hi :)",
+    )
+    assert srcomment.to_first(block_id="qqq") == FRComment(
+        block_id="qqq",
+        x=100,
+        y=200,
+        width=150,
+        height=80,
+        minimized=True,
+        text="hi :)",
+    )
+

@@ -1,3 +1,6 @@
 __pycache__/
 extracted.json
 pypenguin/extracted.json
+.vscode
+.coverage
+htmlcov
