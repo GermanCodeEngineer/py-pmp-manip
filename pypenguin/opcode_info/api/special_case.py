@@ -100,6 +100,7 @@ class SpecialCase:
     
     def call(self, *args, **kwargs):
         """
+        # TODO: create better handler, specific for each SpecialCaseType
         Call a special case and get its return value. Arguments depend on SpecialCaseType
         Parameters:
             *args: positional arguments forwarded to the function

@@ -39,7 +39,8 @@ class DropdownValueRule(PypenguinEnum):
     """
     A rule which determines which values are allowed for dropdowns under given circumstances(context)
     """
-    def get_default_kind_for_guess(self) -> "DropdownValueKind | None":
+    @property
+    def guess_default_kind(self) -> DropdownValueKind | None:
         """
         Gets the dropdown value kind for an approximate dropdown value guess, which is used as a default(optional)
 
@@ -48,7 +49,8 @@ class DropdownValueRule(PypenguinEnum):
         """
         return self.value[0]
     
-    def get_default_kind_for_calculation(self) -> "DropdownValueKind | None":
+    @property
+    def calculation_default_kind(self) -> "DropdownValueKind | None":
         """
         Gets the dropdown value kind for an exact dropdown value calculation, which is used as a default(optional)
 
@@ -114,7 +116,8 @@ class DropdownType(PypenguinEnum):
     """
     A dropdown type, which can be used for one or many opcodes
     """
-    def get_type_info(self) -> DropdownTypeInfo:
+    @property
+    def type_info(self) -> DropdownTypeInfo:
         """
         Get the dropdown type info of a dropdown type
 
@@ -123,7 +126,8 @@ class DropdownType(PypenguinEnum):
         """
         return self.value
     
-    def get_default_kind_for_guess(self) -> DropdownValueKind | None:
+    @property
+    def guess_default_kind(self) -> DropdownValueKind | None:
         """
         Gets the dropdown value kind if a dropdown type for an approximate dropdown value guess, which is used as a default(optional)
 
@@ -131,8 +135,8 @@ class DropdownType(PypenguinEnum):
             the default dropdown value kind for an approximate guess
         """
         default_kind = None
-        for behaviour in self.get_type_info().rules:
-            behaviour_default_kind = behaviour.get_default_kind_for_guess()
+        for behaviour in self.type_info.rules:
+            behaviour_default_kind = behaviour.guess_default_kind
             if behaviour_default_kind is not None:
                 if default_kind is None:
                     default_kind = behaviour_default_kind
@@ -140,7 +144,8 @@ class DropdownType(PypenguinEnum):
                     raise BlameDevsError(f"Got multiple default dropdown value kinds for {self}: {default_kind} and {behaviour_default_kind}")
         return default_kind
 
-    def get_default_kind_for_calculation(self) -> DropdownValueKind | None:
+    @property
+    def calculation_default_kind(self) -> DropdownValueKind | None:
         """
         Gets the dropdown value kind if a dropdown type for an approximate dropdown value guess, which is used as a default(optional)
 
@@ -148,8 +153,8 @@ class DropdownType(PypenguinEnum):
             the default dropdown value kind for an approximate guess
         """
         default_kind = None
-        for behaviour in self.get_type_info().rules:
-            behaviour_default_kind = behaviour.get_default_kind_for_calculation()
+        for behaviour in self.type_info.rules:
+            behaviour_default_kind = behaviour.calculation_default_kind
             if behaviour_default_kind is not None:
                 if default_kind is None:
                     default_kind = behaviour_default_kind
@@ -312,15 +317,14 @@ class DropdownType(PypenguinEnum):
         Returns:
             a list of possible values as tuples => (kind, value)
         """
-        dropdown_type_info = self.get_type_info()
         values: list = []
-        for value in dropdown_type_info.direct_values:
+        for value in self.type_info.direct_values:
             if   isinstance(value, tuple):
                 values.append(value)
             else:
                 values.append((DropdownValueKind.STANDARD, value))
         
-        for segment in dropdown_type_info.rules:
+        for segment in self.type_info.rules:
             match segment:
                 case DropdownValueRule.STAGE:
                     values.append((DropdownValueKind.STAGE, "stage"))
@@ -402,8 +406,8 @@ class DropdownType(PypenguinEnum):
                 case DropdownValueRule.BROADCAST_MSG | DropdownValueRule.FONT:
                     pass # Can't be guessed
 
-        if (values == []) and (dropdown_type_info.fallback is not None):
-            values.append(dropdown_type_info.fallback)
+        if (values == []) and (self.type_info.fallback is not None):
+            values.append(self.type_info.fallback)
         return remove_duplicates(values)
 
     def guess_possible_new_dropdown_values(self, include_behaviours: bool) -> list[tuple[DropdownValueKind, Any]]:
@@ -413,16 +417,15 @@ class DropdownType(PypenguinEnum):
         Returns:
             a list of possible values as tuples => (kind, value)
         """
-        dropdown_type_info = self.get_type_info()
         values             = []
-        for value in dropdown_type_info.direct_values:
+        for value in self.type_info.direct_values:
             if   isinstance(value, tuple):
                 values.append(value)
             else:
                 values.append((DropdownValueKind.STANDARD, value))
         
         if include_behaviours:
-            for behaviour in dropdown_type_info.rules:
+            for behaviour in self.type_info.rules:
                 match behaviour:
                     case DropdownValueRule.STAGE:
                         values.append((DropdownValueKind.STAGE, "stage"))
@@ -476,8 +479,8 @@ class DropdownType(PypenguinEnum):
                     case (DropdownValueRule.COSTUME  | DropdownValueRule.BACKDROP | DropdownValueRule.SOUND 
                         | DropdownValueRule.VARIABLE | DropdownValueRule.LIST     | DropdownValueRule.BROADCAST_MSG | DropdownValueRule.FONT):
                         pass # Can't be guessed
-        if dropdown_type_info.fallback is not None:
-            values.append((DropdownValueKind.FALLBACK, dropdown_type_info.fallback))
+        if self.type_info.fallback is not None:
+            values.append((DropdownValueKind.FALLBACK, self.type_info.fallback))
         return remove_duplicates(values)
 
     def guess_possible_old_dropdown_values(self) -> list[Any]:
@@ -487,14 +490,13 @@ class DropdownType(PypenguinEnum):
         Returns:
             a list of possible values
         """
-        dropdown_type_info = self.get_type_info()
         values = []
-        for value in dropdown_type_info.old_direct_values:
+        for value in self.type_info.old_direct_values:
             if isinstance(value, tuple):
                 values.append(value[0])
             else:
                 values.append(value)
-        for behaviour in dropdown_type_info.rules:
+        for behaviour in self.type_info.rules:
             match behaviour:
                 case DropdownValueRule.STAGE:
                     values.append("_stage_")
@@ -526,8 +528,8 @@ class DropdownType(PypenguinEnum):
                 case (DropdownValueRule.COSTUME  | DropdownValueRule.BACKDROP | DropdownValueRule.SOUND 
                     | DropdownValueRule.VARIABLE | DropdownValueRule.LIST     | DropdownValueRule.BROADCAST_MSG | DropdownValueRule.FONT):
                         pass # Can't be guessed
-        if dropdown_type_info.fallback is not None:
-            values.append((DropdownValueKind.FALLBACK, dropdown_type_info.fallback))
+        if self.type_info.fallback is not None:
+            values.append((DropdownValueKind.FALLBACK, self.type_info.fallback))
         return remove_duplicates(values)
 
     def translate_old_to_new_value(self, old_value: Any) -> tuple[DropdownValueKind, Any]:
@@ -545,19 +547,17 @@ class DropdownType(PypenguinEnum):
             old_value = False
         new_values = self.guess_possible_new_dropdown_values(include_behaviours=True)
         old_values = self.guess_possible_old_dropdown_values()
-        default_kind = self.get_default_kind_for_guess()
         
         assert len(new_values) == len(old_values)
         
         if old_value in old_values:
             return new_values[old_values.index(old_value)]
         else:
-            assert default_kind is not None
-            return (default_kind, old_value)
+            assert self.guess_default_kind is not None
+            return (self.guess_default_kind, old_value)
 
     def translate_new_to_old_value(self, new_value: tuple[DropdownValueKind, Any]) -> Any:
         """
-        # TODO: add tests
         Translate a SRDropdownValue expressed as a tuple info a dropdown value from first representation
 
         Args:
@@ -568,14 +568,13 @@ class DropdownType(PypenguinEnum):
         """
         new_values = self.guess_possible_new_dropdown_values(include_behaviours=True)
         old_values = self.guess_possible_old_dropdown_values()
-        default_kind = self.get_default_kind_for_guess()
         
         assert len(new_values) == len(old_values)
         
         if new_value in new_values:
             return old_values[new_values.index(new_value)]
         else:
-            assert default_kind is not None
+            assert self.guess_default_kind is not None
             return new_value[1]
 
 

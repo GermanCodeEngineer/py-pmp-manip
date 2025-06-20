@@ -17,6 +17,7 @@ class InputMode(PypenguinEnum):
     Mostly determines the behaviour of inputs
     """
 
+    @property
     def can_be_missing(self) -> bool:
         """
         Return wether an input of this mode is allowed to be missing. 
@@ -42,7 +43,8 @@ class InputType(PypenguinEnum):
     Its superior input mode mostly determines its behaviour
     """
 
-    def get_mode(self) -> InputMode:
+    @property
+    def mode(self) -> InputMode:
         """
         Get the superior input mode
 
@@ -51,22 +53,23 @@ class InputType(PypenguinEnum):
         """
         return self.value[0]
 
-
-    def get_corresponding_dropdown_type(self) -> "DropdownType":
+    @property
+    def corresponding_dropdown_type(self) -> "DropdownType":
         """
         Get the corresponding dropdown type
 
         Returns:
             the corresponding dropdown type
         """
-        assert self.get_mode() in {
+        assert self.mode in {
             InputMode.BLOCK_AND_MENU_TEXT, 
             InputMode.BLOCK_AND_BROADCAST_DROPDOWN,
             InputMode.BLOCK_AND_DROPDOWN,
         }
         return DropdownType._member_map_[self.name]
 
-    def get_magic_number(self) -> int | None:
+    @property
+    def magic_number(self) -> int | None:
         """
         Get the magic number used in first representation of inputs
 

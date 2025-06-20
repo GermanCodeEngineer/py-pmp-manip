@@ -6,12 +6,12 @@ from pypenguin.utility import (
     UnknownOpcodeError, SameOpcodeTwiceError,
 )
 
-from pypenguin.opcode_info.api.input        import InputInfo, InputType, InputMode
+from pypenguin.opcode_info.api.input        import InputInfo
 from pypenguin.opcode_info.api.dropdown     import DropdownInfo
 from pypenguin.opcode_info.api.special_case import SpecialCase, SpecialCaseType
 
 if TYPE_CHECKING:
-    from pypenguin.core.block_interface import FirstToInterIF, ValidationIF, SecondToInterIF
+    from pypenguin.core.block_interface import FirstToInterIF, ValidationIF
     from pypenguin.core.block_mutation  import FRMutation, SRMutation
     from pypenguin.core.block           import FRBlock, IRBlock, SRBlock
 
@@ -21,6 +21,7 @@ class OpcodeType(PypenguinEnum):
     Represents the shape of all blocks with a certain opcode
     """
     
+    @property
     def is_reporter(self) -> bool:
         """
         Return wether a OpcodeType is a reporter shape
@@ -456,7 +457,8 @@ class OpcodeInfoAPI:
     
     
     # Get all opcodes
-    def get_all_new(self) -> list[str]:
+    @property
+    def all_new(self) -> list[str]:
         """
         Get a list of all new opcodes
         
@@ -464,7 +466,8 @@ class OpcodeInfoAPI:
             a list of all new opcodes
         """
         return list(self.opcode_info.keys_key2())
-    def get_all_old(self) -> list[str]:
+    @property
+    def all_old(self) -> list[str]:
         """
         Get a list of all old opcodes
         

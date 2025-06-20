@@ -21,7 +21,7 @@ class SRDropdownValue:
         Deserializes a tuple into a SRDropdownValue
         
         Args:
-            data: the raw data
+            data: the tuple of (kind, value)
         
         Returns:
             the SRDropdownValue
@@ -83,7 +83,7 @@ class SRDropdownValue:
             InvalidDropdownValueError(ValidationError): if the value is invalid in the specific situation
         """
         possible_values = dropdown_type.calculate_possible_new_dropdown_values(context=context)
-        default_kind = dropdown_type.get_default_kind_for_calculation()
+        default_kind = dropdown_type.calculation_default_kind
         possible_values_string = (
             "No possible values" if possible_values == [] else
             "".join(["\n- "+repr(value) for value in possible_values])

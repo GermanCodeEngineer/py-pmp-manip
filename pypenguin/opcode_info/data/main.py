@@ -187,7 +187,7 @@ def _bd30_2f8b(block: "SRBlock|IRBlock", validation_if: "ValidationIF") -> Opcod
     from pypenguin.core.block_mutation import SRCustomBlockCallMutation
     partial_mutation: SRCustomBlockCallMutation = block.mutation
     complete_mutation = validation_if.get_cb_mutation(partial_mutation.custom_opcode)
-    return complete_mutation.optype.get_corresponding_opcode_type()
+    return complete_mutation.optype.corresponding_opcode_type
 info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
     type=SpecialCaseType.GET_OPCODE_TYPE,
     function=_bd30_2f8b,
@@ -205,7 +205,7 @@ def _f9c8_6ab0(block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None") 
     else:
         mutation: SRCustomBlockCallMutation = block.mutation
     
-    return DualKeyDict.from_same_keys(mutation.custom_opcode.get_corresponding_input_info())
+    return DualKeyDict.from_same_keys(mutation.custom_opcode.corresponding_input_info)
 info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
     type=SpecialCaseType.GET_ALL_INPUT_IDS_INFO,
     function=_f9c8_6ab0,

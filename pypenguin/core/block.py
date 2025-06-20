@@ -237,7 +237,7 @@ class FRBlock:
         
         new_inputs = {}
         for input_id, input_value in self.inputs.items():
-            input_info = input_infos[input_id].type.get_mode()
+            input_info = input_infos[input_id].type.mode
 
             references      = []
             immediate_block = None
@@ -337,7 +337,6 @@ class IRBlock:
         old_inputs = {}
         for input_id, input_value in self.inputs.items():
             input_type = input_infos[input_id].type
-            input_mode = input_type.get_mode()
 
             elements = input_value.references.copy()
             if input_value.immediate_block is not None:
@@ -348,17 +347,17 @@ class IRBlock:
                     own_id    = None,
                 )
                 elements.insert(0, frblock)
-            match input_mode:
+            match input_type.mode:
                 case InputMode.BLOCK_AND_TEXT:
-                    magic_text_number = input_type.get_magic_number()
+                    magic_text_number = input_type.magic_number
                     elements.append((magic_text_number, input_value.text))
                 case InputMode.BLOCK_AND_BROADCAST_DROPDOWN:
-                    magic_text_number = input_type.get_magic_number()
+                    magic_text_number = input_type.magic_number
                     elements.append((magic_text_number, input_value.text, 
                         string_to_sha256(input_value.text, secondary=SHA256_SEC_BROADCAST_MSG)
                     ))
             
-            if input_mode.can_be_missing():
+            if input_type.mode.can_be_missing:
                 magic_number = 2
             else:
                 match len(elements):
@@ -501,7 +500,7 @@ class IRBlock:
 
             if input_dropdown is not None:
                 input_type = opcode_info.get_input_info_by_old(input_id).type
-                dropdown_type = input_type.get_corresponding_dropdown_type()
+                dropdown_type = input_type.corresponding_dropdown_type
                 input_dropdown = SRDropdownValue.from_tuple(dropdown_type.translate_old_to_new_value(input_dropdown))
 
             new_input_id = old_new_input_ids[input_id]
@@ -518,8 +517,8 @@ class IRBlock:
         # Check for missing inputs and give a default value where possible otherwise raise
         for new_input_id in input_infos.keys():
             if new_input_id not in new_inputs:
-                input_mode = input_infos[new_input_id].type.get_mode()
-                if input_mode.can_be_missing():
+                input_mode = input_infos[new_input_id].type.mode
+                if input_mode.can_be_missing:
                     new_inputs[new_input_id] = SRInputValue.from_mode(mode=input_mode)
                 else:
                     raise ConversionError(f"For a block with opcode {repr(self.opcode)}, input {repr(new_input_id)} is missing")
@@ -701,7 +700,7 @@ class SRBlock:
         cls_name = self.__class__.__name__
         opcode_info = info_api.get_info_by_new_safe(self.opcode)
         if opcode_info is None:
-            closest_matches = get_closest_matches(self.opcode, info_api.get_all_new(), n=10)
+            closest_matches = get_closest_matches(self.opcode, info_api.all_new, n=10)
             msg = (
                 f"opcode of {cls_name} must be a defined opcode not {repr(self.opcode)}. "
                 f"The closest matches are: \n  - "+"\n  - ".join([repr(m) for m in closest_matches])
@@ -760,7 +759,7 @@ class SRBlock:
                 )
         
         opcode_type = opcode_info.get_opcode_type(block=self, validation_if=validation_if)
-        if expects_reporter and not(opcode_type.is_reporter()):
+        if expects_reporter and not(opcode_type.is_reporter):
             raise InvalidBlockShapeError(path, "Expected a reporter block here")
 
         post_case = opcode_info.get_special_case(SpecialCaseType.POST_VALIDATION)
@@ -802,7 +801,7 @@ class SRBlock:
                 raise InvalidBlockShapeError(path, "A block of type HAT is not allowed within a substack")
             elif not is_first:
                 raise InvalidBlockShapeError(path, "A block of type HAT must to be the first block in it's script or substack")
-        elif opcode_type.is_reporter():
+        elif opcode_type.is_reporter:
             if not is_top_level:
                 raise InvalidBlockShapeError(path, "A block of type ...REPORTER is not allowed within a substack")
             elif not(is_first and is_last):
@@ -837,7 +836,7 @@ class SRBlock:
         old_inputs = {}
         for input_id, input_value in self.inputs.items():
             input_info   = input_infos[input_id]
-            input_mode   = input_info.type.get_mode()
+            input_mode   = input_info.type.mode
             old_input_id = new_old_input_ids[input_id]
             
             input_sub_scripts: list[list[SRBlock | IRBlock]] = []
@@ -862,7 +861,7 @@ class SRBlock:
                     raise NotImplementedError() # TODO # pragma: no cover
 
             if input_dropdown is not None:
-                dropdown_type = input_info.type.get_corresponding_dropdown_type()
+                dropdown_type = input_info.type.corresponding_dropdown_type
                 input_dropdown = dropdown_type.translate_new_to_old_value(input_dropdown.to_tuple())
                 input_sub_scripts.append([IRBlock.from_menu_dropdown_value(input_dropdown, input_info)])
 
@@ -906,7 +905,7 @@ class SRBlock:
                 text            = input_text,
             )
             if (
-                not(input_mode.can_be_missing()) or old_input_value.references
+                not(input_mode.can_be_missing) or old_input_value.references
                 or (old_input_value.immediate_block is not None) or (old_input_value.text is not None)
             ):
                 old_inputs[old_input_id] = old_input_value
@@ -1162,7 +1161,7 @@ class SRBlockAndDropdownInputValue(SRInputValue):
             self.dropdown.validate_value(
                 path          = current_path,
                 config        = config,
-                dropdown_type = input_type.get_corresponding_dropdown_type(),
+                dropdown_type = input_type.corresponding_dropdown_type,
                 context       = context,
             )
 

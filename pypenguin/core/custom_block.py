@@ -72,7 +72,8 @@ class SRCustomBlockOpcode:
                 argument_names.append(segment.name)
         return (" ".join(parts), argument_names, argument_defaults)
     
-    def get_corresponding_input_info(self) -> dict[str, InputInfo]:
+    @property
+    def corresponding_input_info(self) -> dict[str, InputInfo]:
         """
         Fetches the argument ids and information
         
@@ -81,7 +82,7 @@ class SRCustomBlockOpcode:
         """
         return {
             segment.name: InputInfo(
-                type = segment.type.get_corresponding_input_type(),
+                type = segment.type.corresponding_input_type,
                 menu = None,
             ) 
             for segment in self.segments if isinstance(segment, SRCustomBlockArgument)
@@ -178,7 +179,8 @@ class SRCustomBlockArgumentType(PypenguinEnum):
     The second representation for a argument type of a custom opcode argument
     """        
     
-    def get_corresponding_input_type(self) -> InputType:
+    @property
+    def corresponding_input_type(self) -> InputType:
         """
         Gets the equivalent input type
         
@@ -230,7 +232,8 @@ class SRCustomBlockOptype(PypenguinEnum):
         """
         return self.value[0]
 
-    def get_corresponding_opcode_type(self) -> OpcodeType:
+    @property
+    def corresponding_opcode_type(self) -> OpcodeType:
         """
         Returns the corresponding opcode type
         

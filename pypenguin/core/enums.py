@@ -20,7 +20,7 @@ class SRTTSLanguage(PypenguinEnum):
         if code in cls._value2member_map_:
             return cls._value2member_map_[code]
         raise ConversionError(f"Couldn't find language enum for language code: {repr(code)}")
-        
+
     ARABIC                 = "ar"
     CHINESE_MANDARIN       = "zh-cn"
     DANISH                 = "da"
@@ -65,6 +65,7 @@ class SRVideoState(PypenguinEnum):
             return cls._value2member_map_[code]
         raise ConversionError(f"Couldn't find video state enum for video state code: {repr(code)}")
     
+
     ON         = "on"
     ON_FLIPPED = "on flipped"
     OFF        = "off"
