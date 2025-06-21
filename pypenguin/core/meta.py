@@ -57,7 +57,7 @@ class FRMeta:
                 if "platform" in data else None
             ),
         )
-    
+
     def __post_init__(self) -> None:
         """
         Ensure the metadata is valid
