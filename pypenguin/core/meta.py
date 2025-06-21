@@ -69,6 +69,51 @@ class FRMeta:
             # agent can be anything i don't care
             raise ThanksError() # project must be older or newer
 
+    @classmethod
+    def new_scratch_meta(cls) -> "FRMeta":
+        """
+        Generates a new instance of the scratch project meta
+        
+        Returns:
+            the scratch project meta
+        """
+        return FRMeta(
+            semver   = SCRATCH_SEMVER,
+            vm       = SCRATCH_VM,
+            agent    = "",
+            platform = None,
+        )
+    
+    @classmethod
+    def new_penguinmod_meta(cls) -> "FRMeta":
+        """
+        Generates a new instance of the penguinmod project meta
+        
+        Returns:
+            the penguinmod project meta
+        """
+        return FRMeta(
+            semver   = SCRATCH_SEMVER,
+            vm       = PENGUINMOD_VM,
+            agent    = "",
+            platform = FRPenguinModPlatformMeta(
+                name    = "PenguinMod",
+                url     = "https://penguinmod.com/",
+                version = "stable",
+            ),
+        )
+            
+    def __post_init__(self) -> None:
+        """
+        Ensure the metadata is valid
+        
+        Returns:
+            None
+        """
+        if (self.semver != SCRATCH_SEMVER) or (self.vm not in {SCRATCH_VM, PENGUINMOD_VM}):
+            # agent can be anything i don't care
+            raise ThanksError() # project must be older or newer
+
 @grepr_dataclass(grepr_fields=["name", "url", "version"])
 class FRPenguinModPlatformMeta:
     """

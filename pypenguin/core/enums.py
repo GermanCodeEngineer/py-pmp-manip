@@ -1,26 +1,39 @@
 from pypenguin.utility import PypenguinEnum, ConversionError
 
 
-class SRTTSLanguage(PypenguinEnum):    
+class SRCodeEnum(PypenguinEnum):
     """
-    The second representation for a text to speech language
+    The base class for an enum which is based on a string code
     """
 
     @classmethod
-    def from_code(cls, code: str) -> "SRTTSLanguage":
+    def from_code(cls, code: str) -> "SRCodeEnum":
         """
-        Gets the equivalent language enum by its scratch language code
+        Gets the equivalent enum by its string code
         
         Args:
-            code: the language code
+            code: the string code
         
         Returns:
-            the language enum
+            the equivalent enum
         """
         if code in cls._value2member_map_:
             return cls._value2member_map_[code]
-        raise ConversionError(f"Couldn't find language enum for language code: {repr(code)}")
+        raise ConversionError(f"Couldn't find an enum for code: {repr(code)}")
 
+    def to_code(self) -> str:
+        """
+        Gets the equivalent string code for the enum
+        
+        Returns:
+            the equivalent string code
+        """
+        return self.value
+
+class SRTTSLanguage(SRCodeEnum):
+    """
+    The second representation for a text to speech language
+    """
     ARABIC                 = "ar"
     CHINESE_MANDARIN       = "zh-cn"
     DANISH                 = "da"
@@ -50,22 +63,6 @@ class SRVideoState(PypenguinEnum):
     The second representation for the video state of a project
     """
 
-    @classmethod
-    def from_code(cls, code: str) -> "SRVideoState":
-        """
-        Gets the equivalent video state enum by its video state code
-        
-        Args:
-            code: the video state code
-        
-        Returns:
-            the video state enum
-        """
-        if code in cls._value2member_map_:
-            return cls._value2member_map_[code]
-        raise ConversionError(f"Couldn't find video state enum for video state code: {repr(code)}")
-    
-
     ON         = "on"
     ON_FLIPPED = "on flipped"
     OFF        = "off"
@@ -75,45 +72,11 @@ class SRSpriteRotationStyle(PypenguinEnum):
     The second representation for the rotation style of a sprite (e.g. "all around")
     """
 
-    @classmethod
-    def from_code(cls, code: str) -> "SRSpriteRotationStyle":
-        """
-        Gets the equivalent rotation style enum by its rotation style code
-        
-        Args:
-            code: the rotation style code
-        
-        Returns:
-            the rotation style enum
-        """
-        if code in cls._value2member_map_:
-            return cls._value2member_map_[code]
-        raise ConversionError(f"Couldn't find rotation style enum for rotation style code: {repr(code)}")
-
-    ALL_AROUND  = "all around"
-    LEFT_RIGHT  = "left-right"
-    DONT_ROTATE = "don't rotate"
-
 class SRVariableMonitorReadoutMode(PypenguinEnum):
     """
     The second representation for the readout mode of a sprite (e.g. "normal readout" or "slider")
     """
 
-    @classmethod
-    def from_code(cls, code: str) -> "SRVariableMonitorReadoutMode":
-        """
-        Gets the equivalent readout mode enum by its readout mode code
-        
-        Args:
-            code: the readout mode code
-        
-        Returns:
-            the readout mode enum
-        """
-        if code in cls._value2member_map_:
-            return cls._value2member_map_[code]
-        raise ConversionError(f"Couldn't find readout mode enum for readout mode code: {repr(code)}")
-    
     NORMAL = "default"
     LARGE  = "large"
     SLIDER = "slider"

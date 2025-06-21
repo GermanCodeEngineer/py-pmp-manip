@@ -337,7 +337,6 @@ class IRBlock:
         old_inputs = {}
         for input_id, input_value in self.inputs.items():
             input_type = input_infos[input_id].type
-
             elements = input_value.references.copy()
             if input_value.immediate_block is not None:
                 frblock = input_value.immediate_block.to_first(

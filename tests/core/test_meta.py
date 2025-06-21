@@ -24,13 +24,19 @@ def test_FRMeta_from_data_scratch():
     assert meta.agent == meta_data["agent"]
     assert meta.platform is None
 
-def test_FRMETA_from_data_invalid():
+def test_FRMeta_from_data_post_init_invalid():
     with raises(ThanksError):
         FRMeta.from_data(PENGUINMOD_META_DATA | {"semver": "2.0.0"})
     with raises(ThanksError):
         FRMeta.from_data(PENGUINMOD_META_DATA | {"vm": "5.0.0"})
 
 
+def test_FRMeta_new_scratch_meta():
+    assert FRMeta.new_scratch_meta() == FRMeta.from_data(SCRATCH_META_DATA)
+
+
+def test_FRMeta_new_penguinmod_meta():
+    assert FRMeta.new_penguinmod_meta() == FRMeta.from_data(PENGUINMOD_META_DATA)
 
 
 def test_FRPenguinModPlatformMeta_from_data():

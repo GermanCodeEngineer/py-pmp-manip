@@ -2,6 +2,30 @@ from pytest import raises
 
 from pypenguin.utility import ConversionError
 
+
+from pypenguin.core.enums import SRCodeEnum
+
+
+
+class DummyEnum(SRCodeEnum):
+    GÜNTHER_JAUCH = "gj"
+    DIETER_BOHLEN = "dibo"
+    
+
+
+def test_SRCodeEnum_from_code():
+    assert DummyEnum.from_code("gj"  ) == DummyEnum.GÜNTHER_JAUCH
+    assert DummyEnum.from_code("dibo") == DummyEnum.DIETER_BOHLEN
+
+def test_SRCodeEnum_from_code_invalid():
+    with raises(ConversionError):
+        DummyEnum.from_code("something undefined")
+
+
+def test_SRCodeEnum_to_code():
+    assert DummyEnum.GÜNTHER_JAUCH.to_code() == "gj"
+    assert DummyEnum.DIETER_BOHLEN.to_code() == "dibo"
+
 from pypenguin.core.enums import SRTTSLanguage, SRVideoState, SRSpriteRotationStyle, SRVariableMonitorReadoutMode
 
 

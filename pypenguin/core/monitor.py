@@ -253,6 +253,36 @@ class SRMonitor:
                 dropdown_type = dropdown_type, 
                 context       = context,
             )
+    
+    def to_first(self, info_api: OpcodeInfoAPI) -> FRMonitor:
+        """
+        Converts a SRMonitor into a FRMonitor
+        
+        Args:
+            info_api: the opcode info api used to fetch information about opcodes
+        
+        
+        Returns:
+            the FRMonitor
+        """
+        return FRMonitor(
+            id          = 0,
+            mode        = 0,
+            opcode      = 0,
+            params      = 0,
+            sprite_name = 0,
+            value       = 0,
+            x           = 0,
+            y           = 0,
+            visible     = 0,
+            
+            width       = 0,
+            height      = 0,
+            slider_min  = 0,
+            slider_max  = 0,
+            is_discrete = 0,
+        )
+        
 
 @grepr_dataclass(grepr_fields=["readout_mode", "slider_min", "slider_max", "allow_only_integers"], parent_cls=SRMonitor)
 class SRVariableMonitor(SRMonitor):
