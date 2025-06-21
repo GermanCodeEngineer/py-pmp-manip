@@ -58,7 +58,7 @@ class SRTTSLanguage(SRCodeEnum):
     TURKISH                = "tr"
     WELSH                  = "cy"
     
-class SRVideoState(PypenguinEnum):
+class SRVideoState(SRCodeEnum):
     """
     The second representation for the video state of a project
     """
@@ -67,12 +67,16 @@ class SRVideoState(PypenguinEnum):
     ON_FLIPPED = "on flipped"
     OFF        = "off"
 
-class SRSpriteRotationStyle(PypenguinEnum):
+class SRSpriteRotationStyle(SRCodeEnum):
     """
     The second representation for the rotation style of a sprite (e.g. "all around")
     """
 
-class SRVariableMonitorReadoutMode(PypenguinEnum):
+    ALL_AROUND  = "all around"
+    LEFT_RIGHT  = "left-right"
+    DONT_ROTATE = "don't rotate"
+
+class SRVariableMonitorReadoutMode(SRCodeEnum):
     """
     The second representation for the readout mode of a sprite (e.g. "normal readout" or "slider")
     """
