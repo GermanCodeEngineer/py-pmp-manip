@@ -17,15 +17,15 @@ from pypenguin.opcode_info.api import (
     SpecialCase, SpecialCaseType,
 )
 
-from pypenguin.opcode_info.data.c_motion    import motion
-from pypenguin.opcode_info.data.c_looks     import looks
-from pypenguin.opcode_info.data.c_sounds    import sounds
-from pypenguin.opcode_info.data.c_events    import events
-from pypenguin.opcode_info.data.c_control   import control
-from pypenguin.opcode_info.data.c_sensing   import sensing
-from pypenguin.opcode_info.data.c_operators import operators
-from pypenguin.opcode_info.data.c_variables import variables
-from pypenguin.opcode_info.data.c_lists     import lists
+from pypenguin.opcode_info.data.c_motion    import c_motion
+from pypenguin.opcode_info.data.c_looks     import c_looks
+from pypenguin.opcode_info.data.c_sounds    import c_sounds
+from pypenguin.opcode_info.data.c_events    import c_events
+from pypenguin.opcode_info.data.c_control   import c_control
+from pypenguin.opcode_info.data.c_sensing   import c_sensing
+from pypenguin.opcode_info.data.c_operators import c_operators
+from pypenguin.opcode_info.data.c_variables import c_variables
+from pypenguin.opcode_info.data.c_lists     import c_lists
 
 if TYPE_CHECKING:
     from pypenguin.core.block_interface import FirstToInterIF, InterToFirstIF, ValidationIF
@@ -36,79 +36,79 @@ from pypenguin.core.block_mutation import (
     SRCustomBlockMutation, SRCustomBlockArgumentMutation, SRCustomBlockCallMutation, SRStopScriptMutation,
 )
 
-motion.add_opcode("motion_goto_menu", "#REACHABLE TARGET MENU (GO)", OpcodeInfo(
+c_motion.add_opcode("motion_goto_menu", "#REACHABLE TARGET MENU (GO)", OpcodeInfo(
     opcode_type=OpcodeType.MENU,
 ))
-motion.add_opcode("motion_glideto_menu", "#REACHABLE TARGET MENU (GLIDE)", OpcodeInfo(
+c_motion.add_opcode("motion_glideto_menu", "#REACHABLE TARGET MENU (GLIDE)", OpcodeInfo(
     opcode_type=OpcodeType.MENU,
 ))
-motion.add_opcode("motion_pointtowards_menu", "#OBSERVABLE TARGET MENU", OpcodeInfo(
-    opcode_type=OpcodeType.MENU,
-))
-
-looks.add_opcode("looks_costume", "#COSTUME MENU", OpcodeInfo(
-    opcode_type=OpcodeType.MENU,
-))
-looks.add_opcode("looks_backdrops", "#BACKDROP MENU", OpcodeInfo(
-    opcode_type=OpcodeType.MENU,
-))
-looks.add_opcode("looks_getinput_menu", "#COSTUME PROPERTY MENU", OpcodeInfo(
-    opcode_type=OpcodeType.MENU,
-))
-looks.add_opcode("looks_changeVisibilityOfSprite_menu", "#SHOW/HIDE SPRITE MENU", OpcodeInfo(
-    opcode_type=OpcodeType.MENU,
-))
-looks.add_opcode("looks_getOtherSpriteVisible_menu", "#IS SPRITE VISIBLE MENU", OpcodeInfo(
+c_motion.add_opcode("motion_pointtowards_menu", "#OBSERVABLE TARGET MENU", OpcodeInfo(
     opcode_type=OpcodeType.MENU,
 ))
 
-sounds.add_opcode("sound_sounds_menu", "#SOUND MENU", OpcodeInfo( # this is certainly correct
+c_looks.add_opcode("looks_costume", "#COSTUME MENU", OpcodeInfo(
+    opcode_type=OpcodeType.MENU,
+))
+c_looks.add_opcode("looks_backdrops", "#BACKDROP MENU", OpcodeInfo(
+    opcode_type=OpcodeType.MENU,
+))
+c_looks.add_opcode("looks_getinput_menu", "#COSTUME PROPERTY MENU", OpcodeInfo(
+    opcode_type=OpcodeType.MENU,
+))
+c_looks.add_opcode("looks_changeVisibilityOfSprite_menu", "#SHOW/HIDE SPRITE MENU", OpcodeInfo(
+    opcode_type=OpcodeType.MENU,
+))
+c_looks.add_opcode("looks_getOtherSpriteVisible_menu", "#IS SPRITE VISIBLE MENU", OpcodeInfo(
     opcode_type=OpcodeType.MENU,
 ))
 
-control.add_opcode("control_stop_sprite_menu", "#STOP SPRITE MENU", OpcodeInfo(
-    opcode_type=OpcodeType.MENU,
-))
-control.add_opcode("control_create_clone_of_menu", "#CLONE TARGET MENU", OpcodeInfo(
-    opcode_type=OpcodeType.MENU,
-))
-control.add_opcode("control_run_as_sprite_menu", "#RUN AS SPRITE MENU", OpcodeInfo(
+c_sounds.add_opcode("sound_sounds_menu", "#SOUND MENU", OpcodeInfo( # this is certainly correct
     opcode_type=OpcodeType.MENU,
 ))
 
-sensing.add_opcode("sensing_touchingobjectmenu", "#TOUCHING OBJECT MENU", OpcodeInfo(
+c_control.add_opcode("control_stop_sprite_menu", "#STOP SPRITE MENU", OpcodeInfo(
     opcode_type=OpcodeType.MENU,
 ))
-sensing.add_opcode("sensing_fulltouchingobjectmenu", "#FULL TOUCHING OBJECT MENU", OpcodeInfo(
+c_control.add_opcode("control_create_clone_of_menu", "#CLONE TARGET MENU", OpcodeInfo(
     opcode_type=OpcodeType.MENU,
 ))
-sensing.add_opcode("sensing_touchingobjectmenusprites", "#TOUCHING OBJECT MENU SPRITES", OpcodeInfo(
-    opcode_type=OpcodeType.MENU,
-))
-sensing.add_opcode("sensing_distancetomenu", "#DISTANCE TO MENU", OpcodeInfo(
-    opcode_type=OpcodeType.MENU,
-))
-sensing.add_opcode("sensing_keyoptions", "#KEY MENU", OpcodeInfo(
-    opcode_type=OpcodeType.MENU,
-))
-sensing.add_opcode("sensing_scrolldirections", "#SCROLL DIRECTION MENU", OpcodeInfo(
-    opcode_type=OpcodeType.MENU,
-))
-sensing.add_opcode("sensing_of_object_menu", "#OJBECT PROPERTY MENU", OpcodeInfo(
-    opcode_type=OpcodeType.MENU,
-))
-sensing.add_opcode("sensing_fingeroptions", "#FINGER INDEX MENU", OpcodeInfo(
+c_control.add_opcode("control_run_as_sprite_menu", "#RUN AS SPRITE MENU", OpcodeInfo(
     opcode_type=OpcodeType.MENU,
 ))
 
-variables.add_opcode(OPCODE_VAR_VALUE, NEW_OPCODE_VAR_VALUE, OpcodeInfo(
+c_sensing.add_opcode("sensing_touchingobjectmenu", "#TOUCHING OBJECT MENU", OpcodeInfo(
+    opcode_type=OpcodeType.MENU,
+))
+c_sensing.add_opcode("sensing_fulltouchingobjectmenu", "#FULL TOUCHING OBJECT MENU", OpcodeInfo(
+    opcode_type=OpcodeType.MENU,
+))
+c_sensing.add_opcode("sensing_touchingobjectmenusprites", "#TOUCHING OBJECT MENU SPRITES", OpcodeInfo(
+    opcode_type=OpcodeType.MENU,
+))
+c_sensing.add_opcode("sensing_distancetomenu", "#DISTANCE TO MENU", OpcodeInfo(
+    opcode_type=OpcodeType.MENU,
+))
+c_sensing.add_opcode("sensing_keyoptions", "#KEY MENU", OpcodeInfo(
+    opcode_type=OpcodeType.MENU,
+))
+c_sensing.add_opcode("sensing_scrolldirections", "#SCROLL DIRECTION MENU", OpcodeInfo(
+    opcode_type=OpcodeType.MENU,
+))
+c_sensing.add_opcode("sensing_of_object_menu", "#OJBECT PROPERTY MENU", OpcodeInfo(
+    opcode_type=OpcodeType.MENU,
+))
+c_sensing.add_opcode("sensing_fingeroptions", "#FINGER INDEX MENU", OpcodeInfo(
+    opcode_type=OpcodeType.MENU,
+))
+
+c_variables.add_opcode(OPCODE_VAR_VALUE, NEW_OPCODE_VAR_VALUE, OpcodeInfo(
     opcode_type=OpcodeType.STRING_REPORTER,
     dropdowns=DualKeyDict({
         ("VARIABLE", "VARIABLE"): DropdownInfo(DropdownType.VARIABLE),
     }),
     can_have_monitor=True,
 ))
-lists.add_opcode(OPCODE_LIST_VALUE, NEW_OPCODE_LIST_VALUE, OpcodeInfo(
+c_lists.add_opcode(OPCODE_LIST_VALUE, NEW_OPCODE_LIST_VALUE, OpcodeInfo(
     opcode_type=OpcodeType.STRING_REPORTER,
     dropdowns=DualKeyDict({
         ("LIST", "LIST"): DropdownInfo(DropdownType.LIST),
@@ -116,7 +116,7 @@ lists.add_opcode(OPCODE_LIST_VALUE, NEW_OPCODE_LIST_VALUE, OpcodeInfo(
     can_have_monitor=True,
 ))
 
-custom_blocks = OpcodeInfoGroup(
+c_custom_blocks = OpcodeInfoGroup(
     name="Custom Opcodes",
     opcode_info=DualKeyDict({
         (OPCODE_CB_DEF, NEW_OPCODE_CB_DEF): OpcodeInfo(
@@ -154,16 +154,16 @@ custom_blocks = OpcodeInfoGroup(
 )
 
 info_api = OpcodeInfoAPI()
-info_api.add_group(motion       )
-info_api.add_group(looks        )
-info_api.add_group(sounds       )
-info_api.add_group(events       )
-info_api.add_group(control      )
-info_api.add_group(sensing      )
-info_api.add_group(operators    )
-info_api.add_group(variables    )
-info_api.add_group(lists        )
-info_api.add_group(custom_blocks)
+info_api.add_group(c_motion       )
+info_api.add_group(c_looks        )
+info_api.add_group(c_sounds       )
+info_api.add_group(c_events       )
+info_api.add_group(c_control      )
+info_api.add_group(c_sensing      )
+info_api.add_group(c_operators    )
+info_api.add_group(c_variables    )
+info_api.add_group(c_lists        )
+info_api.add_group(c_custom_blocks)
 
 # Mutations
 info_api.set_opcode_mutation_class(OPCODE_STOP_SCRIPT, old_cls=FRStopScriptMutation, new_cls=SRStopScriptMutation)

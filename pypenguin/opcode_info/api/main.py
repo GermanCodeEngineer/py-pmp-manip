@@ -46,6 +46,21 @@ class OpcodeType(PypenguinEnum):
     DYNAMIC           = (False, 9)
 # TODO: find solution for draw polygon block
 
+class MonitorIdBehaviour(PypenguinEnum):
+    """
+    The orientation basis for monitor id generation
+    """
+
+    SPRITE_MAINOPC       = 0
+    SPRITE_MAINOPC_PARAM = 1
+    MAINOPC_PARAM        = 2
+    MAINOPC_LOWERPARAM   = 3
+    MAINOPC              = 4
+    FULLOPC              = 5
+    VARIABLE             = 6
+    LIST                 = 7
+    
+
 @grepr_dataclass(grepr_fields=["opcode_type", "inputs", "dropdowns", "can_have_monitor", "has_shadow", "old_mutation_cls", "new_mutation_cls"])
 class OpcodeInfo:
     """
@@ -56,6 +71,7 @@ class OpcodeInfo:
     inputs: DualKeyDict[str, str, InputInfo] = field(default_factory=DualKeyDict)
     dropdowns: DualKeyDict[str, str, DropdownInfo] = field(default_factory=DualKeyDict)
     can_have_monitor: bool = False
+    monitor_id_behaviour: MonitorIdBehaviour | None = None
     has_shadow: bool = None
     special_cases: dict[SpecialCaseType, SpecialCase] = field(default_factory=dict)
     old_mutation_cls: Type["FRMutation"] | None = field(init=False, default_factory=type(None))
@@ -63,13 +79,17 @@ class OpcodeInfo:
     
     def __post_init__(self) -> None:
         """
-        Initialize has_shadow correctly
+        Initialize has_shadow correctly and ensure correct monitor information
         
         Returns:
             None
         """
         if self.has_shadow is None:
             self.has_shadow = (self.opcode_type is OpcodeType.MENU)
+        if self.can_have_monitor:
+            assert self.monitor_id_behaviour is not None
+        else:
+            assert self.monitor_id_behaviour is None
     
     # Special Cases
     def add_special_case(self, special_case: SpecialCase) -> None:
@@ -605,5 +625,5 @@ class OpcodeInfoAPI:
         raise UnknownOpcodeError(f"Could not find OpcodeInfo by new opcode {repr(new)}")
 
 
-__all__ = ["OpcodeType", "OpcodeInfo", "OpcodeInfoGroup", "OpcodeInfoAPI"]
+__all__ = ["OpcodeType", "MonitorIdBehaviour", "OpcodeInfo", "OpcodeInfoGroup", "OpcodeInfoAPI"]
 

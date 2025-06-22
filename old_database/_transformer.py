@@ -1,3 +1,15 @@
+import sys, os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
+
+import warnings
+warnings.warn("The database conversion was discontinued. If you continue, changes will be overwritten!", category=DeprecationWarning)
+proceed = input("Do you want to continue? [y/N]: ").strip().lower()
+if proceed != 'y':
+    print("Aborted.")
+    exit(1)
+print("Proceeding...")
+
+# Keep these unchanged
 original_to_enum_name = {
     "direction"                           : "DIRECTION",
     "integer"                             : "INTEGER",
@@ -130,90 +142,112 @@ bt_translation = {
     "embeddedMenu": "POLYGON_MENU"
 }
 
-for cat in ["motion", "looks", "sounds", "events", "control", "sensing", "operators", "variables", "lists", "extension_video_sensing"]:
-    exec(f"from {cat} import opcodes")
-    
-    if   cat == "sounds": block_cat = "sound"
-    elif cat == "events": block_cat = "event"
-    elif cat == "operators": block_cat = "operator"
-    elif cat == "variables": block_cat = "data"
-    elif cat == "lists": block_cat = "data"
+def format_inputs(block: dict) -> str:
+    input_translation = block.pop("inputTranslation", {})
+    inputs = block.pop("inputTypes", {})
+    menus = block.pop("menus", [])
+
+    input_lines = []
+    processed_inputs = {}
+
+    for new_id, input_type in inputs.items():
+        new_type = original_to_enum_name[input_type]
+        old_id = next((k for k, v in input_translation.items() if v == new_id), new_id)
+        processed_inputs[new_id] = {"type": new_type, "old": old_id}
+
+    for menu in menus:
+        entry = processed_inputs.get(menu["new"], {})
+        entry["menu"] = f'MenuInfo("{menu["menuOpcode"]}", inner="{menu["inner"]}")'
+        entry["old"] = menu["outer"]
+        processed_inputs[menu["new"]] = entry
+
+    if not processed_inputs:
+        return "", {}
+
+    input_lines.append("        inputs=DualKeyDict({")
+    for new_id, data in processed_inputs.items():
+        menu_str = f', menu={data["menu"]}' if "menu" in data else ""
+        input_lines.append(
+            f'            ("{data["old"]}", "{new_id}"): InputInfo(InputType.{data["type"]}{menu_str}),'
+        )
+    input_lines.append("        }),")
+
+    return "\n".join(input_lines), processed_inputs
+
+
+def format_dropdowns(block: dict) -> str:
+    option_translation = block.pop("optionTranslation", {})
+    dropdowns = block.pop("optionTypes", {})
+
+    if not dropdowns:
+        return ""
+
+    lines = ["        dropdowns=DualKeyDict({"]
+    for new_id, input_type in dropdowns.items():
+        new_type = old_option_type_name_to_enum[input_type]
+        old_id = next((k for k, v in option_translation.items() if v == new_id), new_id)
+        lines.append(
+            f'            ("{old_id}", "{new_id}"): DropdownInfo(DropdownType.{new_type}),'
+        )
+    lines.append("        }),")
+
+    return "\n".join(lines)
+
+
+def process_block(opcode: str, block: dict) -> str:
+    new_opcode = block["newOpcode"]
+    block_str = f'    ("{opcode}", "{new_opcode}"): OpcodeInfo(\n'
+
+    if "type" in block:
+        block_str += f'        opcode_type=OpcodeType.{bt_translation[block["type"]]},\n'
+
+    input_str, _ = format_inputs(block)
+    dropdown_str = format_dropdowns(block)
+
+    if input_str:
+        block_str += f"{input_str}\n"
+    if dropdown_str:
+        block_str += f"{dropdown_str}\n"
+
+    if block.get("canHaveMonitor") is not None:
+        block_str += f'        can_have_monitor="{block["canHaveMonitor"]}",\n'
+
+    block_str += "    ),\n"
+    return block_str
+
+
+def generate_file(cat: str, opcodes: dict) -> None:
+    if   cat.startswith("extension_"):
+        good_cat = f"scratch_{cat.removeprefix("extension_")}"
+    elif cat.startswith("tw_"):
+        good_cat = f"tw_{cat.removeprefix("tw_")}"
+    elif cat.startswith("pm_"):
+        good_cat = f"pm_{cat.removeprefix("pm_")}"
+    elif cat.startswith("link_"):
+        good_cat = f"link_{cat.removeprefix("link_")}"
     else:
-        block_cat = cat
-    string = "from pypenguin.utility import DualKeyDict\n\nfrom pypenguin.opcode_info.api import OpcodeInfoGroup, OpcodeInfo, OpcodeType, InputInfo, InputType, DropdownInfo, DropdownType, MenuInfo\n\n\n" + cat + ' = OpcodeInfoGroup(name="' + cat + '", opcode_info=DualKeyDict({\n'
-    for opcode, block in opcodes.items(): # type: ignore
-        block_string = '    ("'+opcode+'", "'+block["newOpcode"]+'"): OpcodeInfo(\n'
-        
-        block["inputs"] = {}
-        it = block.get("inputTranslation", {})
-        for new_input_id, input_type in block["inputTypes"].items():
-            new_input_type = original_to_enum_name[input_type]
-            if new_input_id in list(it.values()):
-                old_input_id = list(it.keys())[list(it.values()).index(new_input_id)]
-                block["inputs"][new_input_id] = {"type": new_input_type, "old": old_input_id}
-            else:
-                block["inputs"][new_input_id] = {"type": new_input_type, "old": new_input_id}
-        del block["inputTypes"]
-        if "inputTranslation" in block: del block["inputTranslation"]
-        
-        if "menus" in block:
-            for menu in block["menus"]:
-                block["inputs"][menu["new"]]["menu"] = f'MenuInfo("{menu["menuOpcode"]}", inner="{menu["inner"]}")'
-                block["inputs"][menu["new"]]["old"] = menu["outer"]
-            del block["menus"]
-        
-        block["dropdowns"] = {}
-        ot = block.get("optionTranslation", {})
-        for new_input_id, input_type in block["optionTypes"].items():
-            #print(opcode)
-            new_input_type = old_option_type_name_to_enum[input_type]
-            if new_input_id in list(ot.values()):
-                old_input_id = list(ot.keys())[list(ot.values()).index(new_input_id)]
-                block["dropdowns"][new_input_id] = {"type": new_input_type, "old": old_input_id}
-            else:
-                block["dropdowns"][new_input_id] = {"type": new_input_type, "old": new_input_id}
-        del block["optionTypes"]
-        if "optionTranslation" in block: del block["optionTranslation"]
-        
-        #print(block)
-        for attr, value in block.items():
-            match attr:
-                case "type": 
-                    block_string += '        opcode_type=OpcodeType.' + bt_translation[value] + ',\n'
-                case "category": pass
-                case "newOpcode": pass
-                case "inputs": 
-                    if value == {}: continue
-                    block_string += '        inputs=DualKeyDict({\n'
-                    for old_input_id, input_data in value.items():
-                        block_string += f'            ("{input_data["old"]}", "{old_input_id}"): InputInfo(InputType.{input_data["type"]}'
-                        if "menu" in input_data:
-                            block_string += f', menu={input_data["menu"]}'
-                        block_string += '),\n'
-                        
-                    #raise Exception()
-                    block_string += "        }),\n"
-                case "dropdowns":
-                    if value == {}: continue
-                    block_string += '        dropdowns=DualKeyDict({\n'
-                    for old_input_id, input_data in value.items():
-                        block_string += f'            ("{input_data["old"]}", "{old_input_id}"): DropdownInfo(DropdownType.{input_data["type"]}'
-                        block_string += '),\n'
-                        
-                    #raise Exception()
-                    block_string += "        }),\n"
-                #case "inputTypes": block_string += '        "' + value + '",n'
-                #case "inputTranslation": block_string += '        blockType="' + value + '",n'
-                #case "optionTypes": block_string += '        blockType="' + value + '",n'
-                #case "optionTranslation": block_string += '        blockType="' + value + '",n'
-                case "canHaveMonitor": block_string += '        can_have_monitor="' + str(value) + '",\n'
-                case "fromPenguinMod": pass
-                case _: raise AttributeError(attr)
-        block_string += "    ),\n"
-        
-        string += block_string
-    
-    string += "}))"
-    #print(string)
-    with open("pypenguin/opcode_info/data/c_"+cat+".py", "w") as file:
-        file.write(string)
+        good_cat =f"c_{cat}"
+    content = [
+        "from pypenguin.opcode_info.data_imports import *",
+        "",
+        f'{good_cat} = OpcodeInfoGroup(name="{good_cat}", opcode_info=DualKeyDict({{'
+    ]
+
+    for opcode, block in opcodes.items():  # type: ignore
+        content.append(process_block(opcode, block))
+
+    content.append("}))")
+    with open(f"pypenguin/opcode_info/data/{good_cat}.py", "w") as f:
+        f.write("\n".join(content))
+
+
+# Main execution
+for cat in [
+    "motion", "looks", "sounds", "events", "control", "sensing", "operators", "variables", "lists",
+    "extension_makey_makey", "extension_music", "extension_pen", "extension_text_to_speech", "extension_text", "extension_translate", "extension_video_sensing",
+    "tw_files", "tw_temporary_variables",
+    "pm_json",
+    "link_bitwise",
+]:
+    exec(f"from {cat} import opcodes")  # Imports dynamically
+    generate_file(cat, opcodes) # type: ignore
