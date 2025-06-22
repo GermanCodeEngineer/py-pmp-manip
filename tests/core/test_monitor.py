@@ -4,8 +4,9 @@ from pytest import fixture, raises
 from pypenguin.important_consts import NEW_OPCODE_VAR_VALUE, NEW_OPCODE_LIST_VALUE
 from pypenguin.opcode_info.api  import DropdownValueKind
 from pypenguin.opcode_info.data import info_api
+from pypenguin.important_consts import SHA256_SEC_TARGET_NAME
 from pypenguin.utility          import (
-    ValidationConfig, 
+    string_to_sha256, ValidationConfig, 
     ThanksError, TypeValidationError, InvalidOpcodeError, UnnecessaryDropdownError, 
     MissingDropdownError, RangeValidationError, InvalidValueError,
 )
@@ -21,7 +22,7 @@ from tests.utility import execute_attr_validation_tests
 ALL_FR_MONITOR_DATAS = [
     { # [0]
         "height": 0,
-        "id": "5I9nI;7P)jdiR-_X;/%l_xposition",
+        "id": f"{string_to_sha256("Sprite1", secondary=SHA256_SEC_TARGET_NAME)}_xposition",
         "isDiscrete": True,
         "mode": "default",
         "opcode": "motion_xposition",
@@ -37,7 +38,7 @@ ALL_FR_MONITOR_DATAS = [
     },
     { # [1]
         "height": 0,
-        "id": "5I9nI;7P)jdiR-_X;/%l_yposition",
+        "id": f"{string_to_sha256("Sprite1", secondary=SHA256_SEC_TARGET_NAME)}_yposition",
         "isDiscrete": True,
         "mode": "default",
         "opcode": "motion_yposition",
@@ -161,7 +162,7 @@ ALL_FR_MONITOR_DATAS = [
 
 ALL_FR_MONITORS: list[FRMonitor] = [
     FRMonitor( # [0]
-        id="5I9nI;7P)jdiR-_X;/%l_xposition",
+        id=f"{string_to_sha256("Sprite1", secondary=SHA256_SEC_TARGET_NAME)}_xposition",
         mode="default",
         opcode="motion_xposition",
         params={},
@@ -177,7 +178,7 @@ ALL_FR_MONITORS: list[FRMonitor] = [
         is_discrete=True,
     ),
     FRMonitor( # [1]
-        id="5I9nI;7P)jdiR-_X;/%l_yposition",
+        id=f"{string_to_sha256("Sprite1", secondary=SHA256_SEC_TARGET_NAME)}_yposition",
         mode="default",
         opcode="motion_yposition",
         params={},

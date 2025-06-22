@@ -58,17 +58,6 @@ class FRMeta:
             ),
         )
 
-    def __post_init__(self) -> None:
-        """
-        Ensure the metadata is valid
-        
-        Returns:
-            None
-        """
-        if (self.semver != SCRATCH_SEMVER) or (self.vm not in {SCRATCH_VM, PENGUINMOD_VM}):
-            # agent can be anything i don't care
-            raise ThanksError() # project must be older or newer
-
     @classmethod
     def new_scratch_meta(cls) -> "FRMeta":
         """

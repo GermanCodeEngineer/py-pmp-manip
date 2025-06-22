@@ -1,6 +1,6 @@
 from typing import Any
 
-from pypenguin.opcode_info.api  import OpcodeInfoAPI
+from pypenguin.opcode_info.api  import OpcodeInfoAPI, MonitorIdBehaviour
 from pypenguin.utility          import (
     grepr_dataclass, ValidationConfig,
     AA_TYPE, AA_TYPES, AA_DICT_OF_TYPE, AA_COORD_PAIR, AA_BOXED_COORD_PAIR, AA_EQUAL, AA_BIGGER_OR_EQUAL, 
@@ -254,19 +254,38 @@ class SRMonitor:
                 context       = context,
             )
     
-    def to_first(self, info_api: OpcodeInfoAPI) -> FRMonitor:
+    def _generate_id(self, info_api: OpcodeInfoAPI, sprite_name: str | None) -> str:
+        """
+        Generates the id needed for a FRMonitor
+
+        Args:
+            info_api: the opcode info api used to fetch information about opcodes
+            sprite_name: the name of the sprite the monitor belongs to or None
+        
+        Returns:
+            the monitor id
+        """
+        opcode_info = info_api.get_info_by_new(self.opcode)
+        monitor_id_behaviour: MonitorIdBehaviour = opcode_info.monitor_id_behaviour
+        sprite_sha256 = string_to_sha256()
+        match monitor_id_behaviour:
+            case MonitorIdBehaviour.SPRITE_MAINOPC:
+                return
+
+    def to_first(self, info_api: OpcodeInfoAPI, sprite_name: str | None) -> FRMonitor:
         """
         Converts a SRMonitor into a FRMonitor
         
         Args:
             info_api: the opcode info api used to fetch information about opcodes
-        
+            sprite_name: the name of the sprite the monitor belongs to or None
         
         Returns:
             the FRMonitor
         """
+        
         return FRMonitor(
-            id          = 0,
+            id          = self._generate_id(info_api, sprite_name),
             mode        = 0,
             opcode      = 0,
             params      = 0,

@@ -68,7 +68,7 @@ class FRProject:
     @staticmethod
     def _data_sb3_to_pmp(project_data: dict) -> dict:
         """
-        *[Internal Method]* Adapt sb3 project data to the pmp project data format
+        *[Helper Method]* Adapt sb3 project data to the pmp project data format
 
         Args:
             project_data: the project data in sb3 format
@@ -378,7 +378,7 @@ class SRProject:
 
     def _validate_sprites(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
         """
-        *[Internal Method]* Ensure the sprites of a SRProject are valid, raise ValidationError if not
+        *[Helper Method]* Ensure the sprites of a SRProject are valid, raise ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -418,7 +418,7 @@ class SRProject:
 
     def _validate_var_names(self, path: list, config: ValidationConfig) -> None:
         """
-        *[Internal Method]* Ensures no variables with the same name exist
+        *[Helper Method]* Ensures no variables with the same name exist
 
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -448,7 +448,7 @@ class SRProject:
         
     def _validate_list_names(self, path: list, config: ValidationConfig) -> None:
         """
-        *[Internal Method]* Ensures no lists with the same name exist
+        *[Helper Method]* Ensures no lists with the same name exist
 
         Args:
             path: the path from the project to itself. Used for better error messages

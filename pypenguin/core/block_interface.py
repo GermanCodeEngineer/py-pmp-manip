@@ -205,7 +205,7 @@ class SecondReprIF:
 
     def _get_all_blocks(self) -> list["SRBlock"]:
         """
-        *[Internal Method]* Get all blocks in the same target
+        *[Helper Method]* Get all blocks in the same target
         
         Returns:
             all blocks in the target 

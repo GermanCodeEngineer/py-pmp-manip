@@ -223,7 +223,7 @@ class FRBlock:
         own_id: str
     ) -> dict[str, "IRInputValue"]:
         """
-        *[Internal Method]* Converts the inputs of a FRBlock into the IR Fromat
+        *[Helper Method]* Converts the inputs of a FRBlock into the IR Fromat
         
         Args:
             fti_if: interface which allows the management of other blocks
@@ -1042,7 +1042,7 @@ class SRInputValue(ABC):
         context: CompleteContext, 
     ) -> None:
         """
-        *[Internal Method]* Ensures the block of this input is valid, raise ValidationError if not
+        *[Helper Method]* Ensures the block of this input is valid, raise ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages

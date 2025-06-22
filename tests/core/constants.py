@@ -1020,6 +1020,7 @@ ALL_IR_BLOCKS = {
     ),
 }
 
+
 SR_BLOCK_CUSTOM_OPCODE = SRCustomBlockOpcode(
     segments=(
         "do sth text",
@@ -1354,7 +1355,7 @@ STAGE_DATA = {
         },
     ],
     "sounds": [],
-    "id": "p]_uD8#0^Q=ryfqeQLud",
+    "id": string_to_sha256("_stage_", secondary=SHA256_SEC_TARGET_NAME),
     "volume": 100,
     "layerOrder": 0,
     "tempo": 60,
@@ -1391,7 +1392,7 @@ FR_STAGE = FRStage(
         ),
     ],
     sounds=[],
-    id="p]_uD8#0^Q=ryfqeQLud",
+    id=string_to_sha256("_stage_", secondary=SHA256_SEC_TARGET_NAME),
     volume=100,
     layer_order=0,
     tempo=60,
@@ -1442,7 +1443,7 @@ SPRITE_DATA = {
             "md5ext": "e140d7ff07de8fa35c3d1595bba835ac.wav",
         },
     ],
-    "id": "5I9nI;7P)jdiR-_X;/%l",
+    "id": string_to_sha256("Sprite1", secondary=SHA256_SEC_TARGET_NAME),
     "volume": 100,
     "layerOrder": 1,
     "visible": True,
@@ -1485,7 +1486,7 @@ FR_SPRITE = FRSprite(
             sample_count=17867,
         ),
     ],
-    id="5I9nI;7P)jdiR-_X;/%l",
+    id=string_to_sha256("Sprite1", secondary=SHA256_SEC_TARGET_NAME),
     volume=100,
     layer_order=1,
     visible=True,
@@ -1528,7 +1529,7 @@ PROJECT_DATA = {
         },
         {
             "height": 0,
-            "id": "5I9nI;7P)jdiR-_X;/%l_xposition",
+            "id": f"{string_to_sha256("Sprite1", secondary=SHA256_SEC_TARGET_NAME)}_xposition",
             "isDiscrete": True,
             "mode": "default",
             "opcode": "motion_xposition",
@@ -1582,7 +1583,7 @@ FR_PROJECT = FRProject(
             is_discrete=None,
         ),
         FRMonitor(
-            id="5I9nI;7P)jdiR-_X;/%l_xposition",
+            id=f"{string_to_sha256("Sprite1", secondary=SHA256_SEC_TARGET_NAME)}_xposition",
             mode="default",
             opcode="motion_xposition",
             params={},

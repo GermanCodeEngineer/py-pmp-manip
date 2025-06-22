@@ -120,7 +120,7 @@ class SRCustomBlockOpcode:
 
     def _copymodify_(self, attr: str, value) -> "SRCustomBlockOpcode":
         """
-        *[Internal Method]* Creates a copy with one attribute set to a new value
+        *[Helper Method]* Creates a copy with one attribute set to a new value
 
         Args:
             attr: the attribute to set in the copy
@@ -161,7 +161,7 @@ class SRCustomBlockArgument:
     
     def _copymodify_(self, attr: str, value) -> "SRCustomBlockArgument":
         """
-        *[Internal Method]* Creates a copy with one attribute set to a new value
+        *[Helper Method]* Creates a copy with one attribute set to a new value
 
         Args:
             attr: the attribute to set in the copy
