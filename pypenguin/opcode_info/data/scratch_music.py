@@ -47,7 +47,7 @@ scratch_music = OpcodeInfoGroup(name="scratch_music", opcode_info=DualKeyDict({
 
     ("music_getTempo", "tempo"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
-        can_have_monitor="True",
+        can_have_monitor=True,
     ),
 
 }))

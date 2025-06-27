@@ -51,12 +51,12 @@ class MonitorIdBehaviour(PypenguinEnum):
     The orientation basis for monitor id generation
     """
 
-    SPRITE_MAINOPC       = 0
-    SPRITE_MAINOPC_PARAM = 1
-    MAINOPC_PARAM        = 2
-    MAINOPC_LOWERPARAM   = 3
-    MAINOPC              = 4
-    FULLOPC              = 5
+    SPRITE_OPCMAIN       = 0
+    SPRITE_OPCMAIN_PARAM = 1
+    OPCMAIN_PARAM        = 2
+    OPCMAIN_LOWERPARAM   = 3
+    OPCMAIN              = 4
+    OPCFULL              = 5
     VARIABLE             = 6
     LIST                 = 7
     
@@ -87,9 +87,9 @@ class OpcodeInfo:
         if self.has_shadow is None:
             self.has_shadow = (self.opcode_type is OpcodeType.MENU)
         if self.can_have_monitor:
-            assert self.monitor_id_behaviour is not None
+            assert self.monitor_id_behaviour is not None, repr(self)
         else:
-            assert self.monitor_id_behaviour is None
+            assert self.monitor_id_behaviour is None, repr(self)
     
     # Special Cases
     def add_special_case(self, special_case: SpecialCase) -> None:

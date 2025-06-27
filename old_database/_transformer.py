@@ -210,7 +210,7 @@ def process_block(opcode: str, block: dict) -> str:
         block_str += f"{dropdown_str}\n"
 
     if block.get("canHaveMonitor") is not None:
-        block_str += f'        can_have_monitor="{block["canHaveMonitor"]}",\n'
+        block_str += f'        can_have_monitor={block["canHaveMonitor"]},\n'
 
     block_str += "    ),\n"
     return block_str

@@ -76,27 +76,27 @@ scratch_text = OpcodeInfoGroup(name="scratch_text", opcode_info=DualKeyDict({
 
     ("text_getVisible", "is text visible?"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
-        can_have_monitor="True",
+        can_have_monitor=True,
     ),
 
     ("text_getWidth", "get width of the text"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
-        can_have_monitor="True",
+        can_have_monitor=True,
     ),
 
     ("text_getHeight", "get height of the text"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
-        can_have_monitor="True",
+        can_have_monitor=True,
     ),
 
     ("text_getDisplayedText", "displayed text"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
-        can_have_monitor="True",
+        can_have_monitor=True,
     ),
 
     ("text_getRender", "get data uri of last rendered text"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
-        can_have_monitor="True",
+        can_have_monitor=True,
     ),
 
 }))

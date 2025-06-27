@@ -212,7 +212,6 @@ class FRTarget(ABC):
         
         new_lists = []
         for list_ in self.lists.values():
-            print("-", list_, len(list_))
             if len(list_) == 2:
                 new_lists.append(
                     SRList(name=list_[0], current_value=list_[1])

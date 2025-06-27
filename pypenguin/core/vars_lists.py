@@ -22,10 +22,29 @@ class SRVariable:
             ValidationError: if the SRVariable is invalid
         """
         AA_TYPE(self, path, "name", str)
-        AA_TYPES(self, path, "current_value", (int, float, str, bool)) # Only these can be saved in Scratch Projects
+        AA_TYPES(self, path, "current_value", (int, float, str, bool))
+        # Only the above types can be saved in Scratch Projects
+    
+    def to_tuple(self) -> tuple[str, str]:
+        """
+        Converts a SRVariable into a variable tuple
+        # TODO: add tests
+        
+        Returns:
+            the variable tuple
+        """
+        return (self.name, self.current_value)
 
 class SRCloudVariable(SRVariable):
-    pass
+    def to_tuple(self) -> tuple[str, str]:
+        """
+        Converts a SRCloudVariable into a variable tuple
+        # TODO: add tests
+        
+        Returns:
+            the variable tuple
+        """
+        return (self.name, self.current_value, True)
 
 @grepr_dataclass(grepr_fields=["name", "current_value"])
 class SRList:
@@ -48,7 +67,18 @@ class SRList:
             ValidationError: if the SRList is invalid
         """
         AA_TYPE(self, path, "name", str)
-        AA_LIST_OF_TYPES(self, path, "current_value", (int, float, str, bool)) # Only these can be saved in Scratch Projects
+        AA_LIST_OF_TYPES(self, path, "current_value", (int, float, str, bool))
+        # Only the above types can be saved in Scratch Projects
+
+    def to_tuple(self) -> tuple[str, str]:
+        """
+        Converts a SRList into a list tuple
+        # TODO: add tests
+        
+        Returns:
+            the list tuple
+        """
+        return (self.name, self.current_value)
 
 
 __all__ = ["SRVariable", "SRCloudVariable", "SRList"]

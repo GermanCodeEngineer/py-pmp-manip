@@ -11,7 +11,7 @@ scratch_translate = OpcodeInfoGroup(name="scratch_translate", opcode_info=DualKe
 
     ("translate_getViewerLanguage", "language"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
-        can_have_monitor="True",
+        can_have_monitor=True,
     ),
 
 }))

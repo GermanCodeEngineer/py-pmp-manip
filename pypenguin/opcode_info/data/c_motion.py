@@ -160,18 +160,20 @@ c_motion = OpcodeInfoGroup(name="c_motion", opcode_info=DualKeyDict({
 
     ("motion_xposition", "x position"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
-        can_have_monitor="True",
-        
+        can_have_monitor=True,
+        monitor_id_behaviour=MonitorIdBehaviour.SPRITE_OPCMAIN,
     ),
 
     ("motion_yposition", "y position"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
-        can_have_monitor="True",
+        can_have_monitor=True,
+        monitor_id_behaviour=MonitorIdBehaviour.SPRITE_OPCMAIN,
     ),
 
     ("motion_direction", "direction"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
-        can_have_monitor="True",
+        can_have_monitor=True,
+        monitor_id_behaviour=MonitorIdBehaviour.SPRITE_OPCMAIN,
     ),
 
 }))

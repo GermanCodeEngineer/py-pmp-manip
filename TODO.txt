@@ -13,3 +13,4 @@ TODOs:
     - possibly remove mode attribute of IRInputValue
     - check uses of ALL_FR_BLOCKS_CLEAN vs. ALL_FR_BLOCKS
     - change monitor ids
+    - find solution for string_to_sha256 of local variables and lists

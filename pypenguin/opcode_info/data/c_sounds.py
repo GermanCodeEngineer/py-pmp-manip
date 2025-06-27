@@ -82,7 +82,7 @@ c_sounds = OpcodeInfoGroup(name="c_sounds", opcode_info=DualKeyDict({
         dropdowns=DualKeyDict({
             ("EFFECT", "EFFECT"): DropdownInfo(DropdownType.SOUND_EFFECT),
         }),
-        can_have_monitor="True",
+        can_have_monitor=True,
     ),
 
     ("sound_changevolumeby", "change volume by (AMOUNT)"): OpcodeInfo(
@@ -101,7 +101,7 @@ c_sounds = OpcodeInfoGroup(name="c_sounds", opcode_info=DualKeyDict({
 
     ("sound_volume", "volume"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
-        can_have_monitor="True",
+        can_have_monitor=True,
     ),
 
 }))

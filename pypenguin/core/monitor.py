@@ -2,11 +2,14 @@ from typing import Any
 
 from pypenguin.opcode_info.api  import OpcodeInfoAPI, MonitorIdBehaviour
 from pypenguin.utility          import (
-    grepr_dataclass, ValidationConfig,
+    grepr_dataclass, string_to_sha256, ValidationConfig,
     AA_TYPE, AA_TYPES, AA_DICT_OF_TYPE, AA_COORD_PAIR, AA_BOXED_COORD_PAIR, AA_EQUAL, AA_BIGGER_OR_EQUAL, 
     InvalidOpcodeError, MissingDropdownError, UnnecessaryDropdownError, ThanksError,
 )
-from pypenguin.important_consts import OPCODE_VAR_VALUE, OPCODE_LIST_VALUE, NEW_OPCODE_VAR_VALUE, NEW_OPCODE_LIST_VALUE
+from pypenguin.important_consts import (
+    OPCODE_VAR_VALUE, OPCODE_LIST_VALUE, NEW_OPCODE_VAR_VALUE, NEW_OPCODE_LIST_VALUE, 
+    SHA256_SEC_TARGET_NAME, SHA256_SEC_VARIABLE, SHA256_SEC_LIST,
+)
 
 from pypenguin.core.context  import PartialContext, CompleteContext
 from pypenguin.core.dropdown import SRDropdownValue
@@ -170,7 +173,10 @@ class SRMonitor:
         elif self.opcode == NEW_OPCODE_LIST_VALUE:
             assert isinstance(self, SRListMonitor), f"Must be a SRListMonitor instance if opcode is {repr(NEW_OPCODE_LIST_VALUE)}"
         else:
-            assert not isinstance(self, (SRVariableMonitor, SRListMonitor)), f"Mustn't be a SRVariableMonitor or SRListMonitor if opcode is neither {repr(NEW_OPCODE_VAR_VALUE)} nor {repr(NEW_OPCODE_LIST_VALUE)}"
+            assert not isinstance(self, (SRVariableMonitor, SRListMonitor)), (
+                f"Mustn't be a SRVariableMonitor or SRListMonitor if opcode "
+                f"is neither {repr(NEW_OPCODE_VAR_VALUE)} nor {repr(NEW_OPCODE_LIST_VALUE)}")
+            
     
     def validate(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
         """
@@ -254,27 +260,50 @@ class SRMonitor:
                 context       = context,
             )
     
-    def _generate_id(self, info_api: OpcodeInfoAPI, sprite_name: str | None) -> str:
+    def _generate_id(self, 
+        info_api: OpcodeInfoAPI, 
+        sprite_name: str | None,
+        old_dropdown_value: Any | None,
+    ) -> str:
         """
         Generates the id needed for a FRMonitor
+        # TODO: add tests
 
         Args:
             info_api: the opcode info api used to fetch information about opcodes
             sprite_name: the name of the sprite the monitor belongs to or None
+            old_dropdown_value: the first(probably only) dropdown value of the monitor in first representation
         
         Returns:
             the monitor id
         """
         opcode_info = info_api.get_info_by_new(self.opcode)
         monitor_id_behaviour: MonitorIdBehaviour = opcode_info.monitor_id_behaviour
-        sprite_sha256 = string_to_sha256()
+        sprite_sha256 = None if sprite_name is None else string_to_sha256(sprite_name, secondary=SHA256_SEC_TARGET_NAME)
+        opcode_full = info_api.get_old_by_new(self.opcode)
+        opcode_main = opcode_full[opcode_full.index("_")+1:] # e.g. "motion_xposition" -> "xposition"
         match monitor_id_behaviour:
-            case MonitorIdBehaviour.SPRITE_MAINOPC:
-                return
+            case MonitorIdBehaviour.SPRITE_OPCMAIN:
+                return f"{sprite_sha256}_{opcode_main}"
+            case MonitorIdBehaviour.SPRITE_OPCMAIN_PARAM:
+                return f"{sprite_sha256}_{opcode_main}_{old_dropdown_value}"
+            case MonitorIdBehaviour.OPCMAIN_PARAM:
+                return f"{opcode_main}_{old_dropdown_value}"
+            case MonitorIdBehaviour.OPCMAIN_LOWERPARAM:
+                return f"{opcode_main}_{old_dropdown_value.lower()}"
+            case MonitorIdBehaviour.OPCMAIN:
+                return opcode_main
+            case MonitorIdBehaviour.OPCFULL:
+                return opcode_full
+            case MonitorIdBehaviour.VARIABLE:
+                return string_to_sha256(old_dropdown_value, secondary=SHA256_SEC_VARIABLE)
+            case MonitorIdBehaviour.LIST:
+                return string_to_sha256(old_dropdown_value, secondary=SHA256_SEC_LIST    )
 
     def to_first(self, info_api: OpcodeInfoAPI, sprite_name: str | None) -> FRMonitor:
         """
         Converts a SRMonitor into a FRMonitor
+        # TODO: add tests
         
         Args:
             info_api: the opcode info api used to fetch information about opcodes
@@ -282,24 +311,53 @@ class SRMonitor:
         
         Returns:
             the FRMonitor
-        """
+        """        
+        opcode_info = info_api.get_info_by_new(self.opcode)
+        if   isinstance(self, SRVariableMonitor): # opcode = NEW_OPCODE_VAR_VALUE
+            mode          = self.readout_mode.to_code()
+            value         = 0
+            width, height = 0, 0
+            slider_min    = self.slider_min
+            slider_max    = self.slider_max
+            is_discrete   = self.allow_only_integers
+        elif isinstance(self, SRListMonitor): # opcode = NEW_OPCODE_LIST_VALUE
+            mode          = "list"
+            value         = []
+            width, height = self.size
+            slider_min    = None
+            slider_max    = None
+            is_discrete   = None
+        else:
+            mode          = "default"
+            value         = 0
+            width, height = 0, 0
+            slider_min    = None
+            slider_max    = None
+            is_discrete   = None
         
+        old_dropdowns = {}
+        for dropdown_id, dropdown_value in self.dropdowns.items():
+            old_dropdown_id    = opcode_info.get_old_dropdown_id(dropdown_id)
+            dropdown_type      = opcode_info.get_dropdown_info_by_new(dropdown_id).type
+            old_dropdown_value = dropdown_type.translate_new_to_old_value(dropdown_value)
+            old_dropdowns[old_dropdown_id] = old_dropdown_value
+        
+        old_dropdown_value = next(iter(old_dropdowns.values())) if self.dropdowns else None
         return FRMonitor(
-            id          = self._generate_id(info_api, sprite_name),
-            mode        = 0,
-            opcode      = 0,
-            params      = 0,
-            sprite_name = 0,
-            value       = 0,
-            x           = 0,
-            y           = 0,
-            visible     = 0,
-            
-            width       = 0,
-            height      = 0,
-            slider_min  = 0,
-            slider_max  = 0,
-            is_discrete = 0,
+            id          = self._generate_id(info_api, sprite_name, old_dropdown_value),
+            mode        = mode,
+            opcode      = info_api.get_old_by_new(self.opcode),
+            params      = old_dropdowns,
+            sprite_name = sprite_name,
+            value       = value,
+            x           = self.position[0],
+            y           = self.position[1],
+            visible     = self.is_visible,
+            width       = width,
+            height      = height,
+            slider_min  = slider_min,
+            slider_max  = slider_max,
+            is_discrete = is_discrete,
         )
         
 
@@ -384,4 +442,3 @@ __all__ = [
     "STAGE_WIDTH", "STAGE_HEIGHT", 
     "FRMonitor", "SRMonitor", "SRVariableMonitor", "SRListMonitor",
 ]
-
