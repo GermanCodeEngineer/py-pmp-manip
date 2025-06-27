@@ -15,6 +15,7 @@ from pypenguin.opcode_info.api import (
     InputInfo, InputType, 
     DropdownInfo, DropdownType, 
     SpecialCase, SpecialCaseType,
+    MonitorIdBehaviour,
 )
 
 from pypenguin.opcode_info.data.c_motion    import c_motion
@@ -107,6 +108,7 @@ c_variables.add_opcode(OPCODE_VAR_VALUE, NEW_OPCODE_VAR_VALUE, OpcodeInfo(
         ("VARIABLE", "VARIABLE"): DropdownInfo(DropdownType.VARIABLE),
     }),
     can_have_monitor=True,
+    monitor_id_behaviour=MonitorIdBehaviour.VARIABLE,
 ))
 c_lists.add_opcode(OPCODE_LIST_VALUE, NEW_OPCODE_LIST_VALUE, OpcodeInfo(
     opcode_type=OpcodeType.STRING_REPORTER,
@@ -114,6 +116,7 @@ c_lists.add_opcode(OPCODE_LIST_VALUE, NEW_OPCODE_LIST_VALUE, OpcodeInfo(
         ("LIST", "LIST"): DropdownInfo(DropdownType.LIST),
     }),
     can_have_monitor=True,
+    monitor_id_behaviour=MonitorIdBehaviour.LIST,
 ))
 
 c_custom_blocks = OpcodeInfoGroup(

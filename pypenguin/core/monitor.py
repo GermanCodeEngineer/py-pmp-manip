@@ -266,8 +266,7 @@ class SRMonitor:
         old_dropdown_value: Any | None,
     ) -> str:
         """
-        Generates the id needed for a FRMonitor
-        # TODO: add tests
+        *[Helper Method]* Generates the id needed for a FRMonitor
 
         Args:
             info_api: the opcode info api used to fetch information about opcodes
@@ -303,7 +302,6 @@ class SRMonitor:
     def to_first(self, info_api: OpcodeInfoAPI, sprite_name: str | None) -> FRMonitor:
         """
         Converts a SRMonitor into a FRMonitor
-        # TODO: add tests
         
         Args:
             info_api: the opcode info api used to fetch information about opcodes
@@ -331,15 +329,15 @@ class SRMonitor:
             mode          = "default"
             value         = 0
             width, height = 0, 0
-            slider_min    = None
-            slider_max    = None
-            is_discrete   = None
+            slider_min    = 0
+            slider_max    = 100
+            is_discrete   = True
         
         old_dropdowns = {}
         for dropdown_id, dropdown_value in self.dropdowns.items():
             old_dropdown_id    = opcode_info.get_old_dropdown_id(dropdown_id)
             dropdown_type      = opcode_info.get_dropdown_info_by_new(dropdown_id).type
-            old_dropdown_value = dropdown_type.translate_new_to_old_value(dropdown_value)
+            old_dropdown_value = dropdown_type.translate_new_to_old_value(dropdown_value.to_tuple())
             old_dropdowns[old_dropdown_id] = old_dropdown_value
         
         old_dropdown_value = next(iter(old_dropdowns.values())) if self.dropdowns else None
@@ -350,8 +348,8 @@ class SRMonitor:
             params      = old_dropdowns,
             sprite_name = sprite_name,
             value       = value,
-            x           = self.position[0],
-            y           = self.position[1],
+            x           = self.position[0] + (STAGE_WIDTH //2),
+            y           = self.position[1] + (STAGE_HEIGHT//2),
             visible     = self.is_visible,
             width       = width,
             height      = height,

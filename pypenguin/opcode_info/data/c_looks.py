@@ -66,11 +66,13 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
     ("looks_sayWidth", "bubble width"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         can_have_monitor=True,
+        monitor_id_behaviour=MonitorIdBehaviour.SPRITE_OPCMAIN,
     ),
 
     ("looks_sayHeight", "bubble height"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         can_have_monitor=True,
+        monitor_id_behaviour=MonitorIdBehaviour.SPRITE_OPCMAIN,
     ),
 
     ("looks_switchcostumeto", "switch costume to ([COSTUME])"): OpcodeInfo(
@@ -128,11 +130,13 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
     ("looks_stretchGetX", "x stretch"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         can_have_monitor=True,
+        monitor_id_behaviour=MonitorIdBehaviour.SPRITE_OPCMAIN,
     ),
 
     ("looks_stretchGetY", "y stretch"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         can_have_monitor=True,
+        monitor_id_behaviour=MonitorIdBehaviour.SPRITE_OPCMAIN,
     ),
 
     ("looks_changeeffectby", "change [EFFECT] sprite effect by (AMOUNT)"): OpcodeInfo(
@@ -172,11 +176,13 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
             ("EFFECT", "EFFECT"): DropdownInfo(DropdownType.SPRITE_EFFECT),
         }),
         can_have_monitor=True,
+        monitor_id_behaviour=MonitorIdBehaviour.SPRITE_OPCMAIN_PARAM,
     ),
 
     ("looks_tintColor", "tint color"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         can_have_monitor=True,
+        monitor_id_behaviour=MonitorIdBehaviour.SPRITE_OPCMAIN,
     ),
 
     ("looks_show", "show"): OpcodeInfo(
@@ -190,6 +196,7 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
     ("looks_getSpriteVisible", "visible?"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         can_have_monitor=True,
+        monitor_id_behaviour=MonitorIdBehaviour.SPRITE_OPCMAIN,
     ),
 
     ("looks_changeVisibilityOfSpriteShow", "show ([TARGET])"): OpcodeInfo(
@@ -250,6 +257,7 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
     ("looks_layersGetLayer", "layer"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         can_have_monitor=True,
+        monitor_id_behaviour=MonitorIdBehaviour.SPRITE_OPCMAIN,
     ),
 
     ("looks_costumenumbername", "costume [PROPERTY]"): OpcodeInfo(
@@ -258,6 +266,7 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
             ("NUMBER_NAME", "PROPERTY"): DropdownInfo(DropdownType.NUMBER_NAME),
         }),
         can_have_monitor=True,
+        monitor_id_behaviour=MonitorIdBehaviour.SPRITE_OPCMAIN_PARAM,
     ),
 
     ("looks_backdropnumbername", "backdrop [PROPERTY]"): OpcodeInfo(
@@ -266,11 +275,13 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
             ("NUMBER_NAME", "PROPERTY"): DropdownInfo(DropdownType.NUMBER_NAME),
         }),
         can_have_monitor=True,
+        monitor_id_behaviour=MonitorIdBehaviour.OPCMAIN_PARAM,
     ),
 
     ("looks_size", "size"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         can_have_monitor=True,
+        monitor_id_behaviour=MonitorIdBehaviour.SPRITE_OPCMAIN,
     ),
 
 }))

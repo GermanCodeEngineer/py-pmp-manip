@@ -1,7 +1,7 @@
 from copy   import copy
 from pytest import fixture, raises
 
-from pypenguin.important_consts import NEW_OPCODE_VAR_VALUE, NEW_OPCODE_LIST_VALUE
+from pypenguin.important_consts import NEW_OPCODE_VAR_VALUE, NEW_OPCODE_LIST_VALUE, SHA256_SEC_VARIABLE, SHA256_SEC_LIST
 from pypenguin.opcode_info.api  import DropdownValueKind
 from pypenguin.opcode_info.data import info_api
 from pypenguin.important_consts import SHA256_SEC_TARGET_NAME
@@ -54,7 +54,7 @@ ALL_FR_MONITOR_DATAS = [
     },
     { # [2]
         "height": 0,
-        "id": "$6=c?qlc|4Q*mK{XGC}z",
+        "id": string_to_sha256("globl", secondary=SHA256_SEC_VARIABLE),
         "isDiscrete": False,
         "mode": "slider",
         "opcode": "data_variable",
@@ -70,7 +70,7 @@ ALL_FR_MONITOR_DATAS = [
     },
     { # [3]
         "height": 0,
-        "id": "P4dp6h[X1|F3dYA4I?C`",
+        "id": string_to_sha256("globl2", secondary=SHA256_SEC_VARIABLE),
         "isDiscrete": True,
         "mode": "default",
         "opcode": "data_variable",
@@ -86,7 +86,7 @@ ALL_FR_MONITOR_DATAS = [
     },
     { # [4]
         "height": 198,
-        "id": "ru2NZobs(r+b[~|-rTCf",
+        "id": string_to_sha256("locl", secondary=SHA256_SEC_LIST),
         "mode": "list",
         "opcode": "data_listcontents",
         "params": {"LIST": "locl"},
@@ -99,7 +99,7 @@ ALL_FR_MONITOR_DATAS = [
     },
     { # [5]
        "height": 147,
-       "id": "Zc!aC=9=36YS+pEb?kWj",
+       "id": string_to_sha256("globl", secondary=SHA256_SEC_LIST),
        "mode": "list",
        "opcode": "data_listcontents",
        "params": {"LIST": "globl"},
@@ -112,7 +112,7 @@ ALL_FR_MONITOR_DATAS = [
     },
     { # [6]
         "height": 0,
-        "id": "8kv=.#:+,mIq:M5++hvu",
+        "id": string_to_sha256("locl", secondary=SHA256_SEC_VARIABLE),
         "isDiscrete": True,
         "mode": "default",
         "opcode": "data_variable",
@@ -158,6 +158,60 @@ ALL_FR_MONITOR_DATAS = [
         "x": 205,
         "y": 5,
     },
+    { # [9]
+        "height": 0,
+        "id": f"{string_to_sha256("Sprite1", secondary=SHA256_SEC_TARGET_NAME)}_costumenumbername_number",
+        "isDiscrete": True,
+        "mode": "default",
+        "opcode": "looks_costumenumbername",
+        "params": {
+            "NUMBER_NAME": "number",
+        },
+        "sliderMax": 100,
+        "sliderMin": 0,
+        "spriteName": "Sprite1",
+        "value": 0,
+        "visible": True,
+        "width": 0,
+        "x": 184,
+        "y": 136,
+    },
+    { # [10]
+        "height": 0,
+        "id": "backdropnumbername_number",
+        "isDiscrete": True,
+        "mode": "default",
+        "opcode": "looks_backdropnumbername",
+        "params": {
+            "NUMBER_NAME": "number",
+        },
+        "sliderMax": 100,
+        "sliderMin": 0,
+        "spriteName": None,
+        "value": 0,
+        "visible": True,
+        "width": 0,
+        "x": 2,
+        "y": 116,
+    },
+    { # [11]
+        "height": 0,
+        "id": "current_year",
+        "isDiscrete": True,
+        "mode": "default",
+        "opcode": "sensing_current",
+        "params": {
+            "CURRENTMENU": "YEAR",
+        },
+        "sliderMax": 100,
+        "sliderMin": 0,
+        "spriteName": None,
+        "value": 0,
+        "visible": True,
+        "width": 0,
+        "x": 52,
+        "y": 258,
+    },
 ]
 
 ALL_FR_MONITORS: list[FRMonitor] = [
@@ -194,7 +248,7 @@ ALL_FR_MONITORS: list[FRMonitor] = [
         is_discrete=True,
     ),
     FRMonitor( # [2]
-        id="$6=c?qlc|4Q*mK{XGC}z",
+        id=string_to_sha256("globl", secondary=SHA256_SEC_VARIABLE),
         mode="slider",
         opcode="data_variable",
         params={
@@ -205,14 +259,14 @@ ALL_FR_MONITORS: list[FRMonitor] = [
         x=110,
         y=76,
         visible=True,
-        width=100,
-        height=120,
+        width=0,
+        height=0,
         slider_min=-50.3,
         slider_max=100,
         is_discrete=False,
     ),
     FRMonitor( # [3]
-        id="P4dp6h[X1|F3dYA4I?C`",
+        id=string_to_sha256("globl2", secondary=SHA256_SEC_VARIABLE),
         mode="default",
         opcode="data_variable",
         params={
@@ -223,14 +277,14 @@ ALL_FR_MONITORS: list[FRMonitor] = [
         x=216,
         y=128,
         visible=True,
-        width=100,
-        height=120,
+        width=0,
+        height=0,
         slider_min=-20,
         slider_max=100,
         is_discrete=True,
     ),
     FRMonitor( # [4]
-        id="ru2NZobs(r+b[~|-rTCf",
+        id=string_to_sha256("locl", secondary=SHA256_SEC_LIST),
         mode="list",
         opcode="data_listcontents",
         params={
@@ -248,7 +302,7 @@ ALL_FR_MONITORS: list[FRMonitor] = [
         is_discrete=None,
     ),
     FRMonitor( # [5]
-        id="Zc!aC=9=36YS+pEb?kWj",
+        id=string_to_sha256("globl", secondary=SHA256_SEC_LIST),
         mode="list",
         opcode="data_listcontents",
         params={
@@ -266,7 +320,7 @@ ALL_FR_MONITORS: list[FRMonitor] = [
         is_discrete=None,
     ),
     FRMonitor( # [6]
-        id="8kv=.#:+,mIq:M5++hvu",
+        id=string_to_sha256("locl", secondary=SHA256_SEC_VARIABLE),
         mode="default",
         opcode="data_variable",
         params={
@@ -277,8 +331,8 @@ ALL_FR_MONITORS: list[FRMonitor] = [
         x=52,
         y=120,
         visible=True,
-        width=100,
-        height=120,
+        width=0,
+        height=0,
         slider_min=0,
         slider_max=100,
         is_discrete=True,
@@ -308,6 +362,60 @@ ALL_FR_MONITORS: list[FRMonitor] = [
         value=0,
         x=205,
         y=5,
+        visible=True,
+        width=0,
+        height=0,
+        slider_min=0,
+        slider_max=100,
+        is_discrete=True,
+    ),
+    FRMonitor( # [9]
+        id=f"{string_to_sha256("Sprite1", secondary=SHA256_SEC_TARGET_NAME)}_costumenumbername_number",
+        mode="default",
+        opcode="looks_costumenumbername",
+        params={
+            "NUMBER_NAME": "number",
+        },
+        sprite_name="Sprite1",
+        value=0,
+        x=184,
+        y=136,
+        visible=True,
+        width=0,
+        height=0,
+        slider_min=0,
+        slider_max=100,
+        is_discrete=True,
+    ),
+    FRMonitor( # [10]
+        id="backdropnumbername_number",
+        mode="default",
+        opcode="looks_backdropnumbername",
+        params={
+            "NUMBER_NAME": "number",
+        },
+        sprite_name=None,
+        value=0,
+        x=2,
+        y=116,
+        visible=True,
+        width=0,
+        height=0,
+        slider_min=0,
+        slider_max=100,
+        is_discrete=True,
+    ),
+    FRMonitor( # [11]
+        id="current_year",
+        mode="default",
+        opcode="sensing_current",
+        params={
+            "CURRENTMENU": "YEAR",
+        },
+        sprite_name=None,
+        value=0,
+        x=52,
+        y=258,
         visible=True,
         width=0,
         height=0,
@@ -350,6 +458,14 @@ ALL_LOCAL_SR_MONITORS: list[SRMonitor] = [
         slider_min=0,
         slider_max=100,
         allow_only_integers=True,
+    ),
+    SRMonitor( # [4] for [9]
+        opcode="costume [PROPERTY]",
+        dropdowns={
+            "PROPERTY": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="number"),
+        },
+        position=(-56, -44),
+        is_visible=True,
     ),
 ]
 
@@ -396,6 +512,22 @@ ALL_GLOBAL_SR_MONITORS: list[SRMonitor] = [
         opcode="answer",
         dropdowns={},
         position=(-35, -175),
+        is_visible=True,
+    ),
+    SRMonitor( # [5] for [10]
+        opcode="backdrop [PROPERTY]",
+        dropdowns={
+            "PROPERTY": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="number"),
+        },
+        position=(-238, -64),
+        is_visible=True,
+    ),
+    SRMonitor( # [6] for [11]
+        opcode="current [PROPERTY]",
+        dropdowns={
+            "PROPERTY": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="year"),
+        },
+        position=(-188, 78),
         is_visible=True,
     ),
 ]
@@ -556,6 +688,63 @@ def test_SRMonitor_validate_missing_dropdown(config):
 def test_SRMonitor_validate_dropdown_values(context):
     srmonitor = ALL_LOCAL_SR_MONITORS[3]
     srmonitor.validate_dropdown_values([], config, info_api, context)
+
+
+def test_SRMonitor_generate_id_sprite_opcmain():
+    srmonitor = ALL_LOCAL_SR_MONITORS[0]
+    monitor_id = srmonitor._generate_id(info_api, sprite_name="Sprite1", old_dropdown_value=None)
+    assert monitor_id == ALL_FR_MONITORS[0].id
+
+def test_SRMonitor_generate_id_sprite_opcmain_param():
+    srmonitor = ALL_LOCAL_SR_MONITORS[4]
+    monitor_id = srmonitor._generate_id(info_api, sprite_name="Sprite1", old_dropdown_value="number")
+    assert monitor_id == ALL_FR_MONITORS[9].id
+
+def test_SRMonitor_generate_id_opcmain_param():
+    srmonitor = ALL_GLOBAL_SR_MONITORS[5]
+    monitor_id = srmonitor._generate_id(info_api, sprite_name=None, old_dropdown_value="number")
+    assert monitor_id == ALL_FR_MONITORS[10].id
+
+def test_SRMonitor_generate_id_opcmain_lowerparam():
+    srmonitor = ALL_GLOBAL_SR_MONITORS[6]
+    monitor_id = srmonitor._generate_id(info_api, sprite_name=None, old_dropdown_value="year")
+    assert monitor_id == ALL_FR_MONITORS[11].id
+
+def test_SRMonitor_generate_id_opcmain():
+    srmonitor = ALL_GLOBAL_SR_MONITORS[4]
+    monitor_id = srmonitor._generate_id(info_api, sprite_name=None, old_dropdown_value=None)
+    assert monitor_id == ALL_FR_MONITORS[8].id
+
+def test_SRMonitor_generate_id_opcfull():
+    srmonitor = ALL_GLOBAL_SR_MONITORS[3]
+    monitor_id = srmonitor._generate_id(info_api, sprite_name=None, old_dropdown_value=None)
+    assert monitor_id == ALL_FR_MONITORS[7].id
+
+def test_SRMonitor_generate_id_variable():
+    srmonitor = ALL_GLOBAL_SR_MONITORS[0]
+    monitor_id = srmonitor._generate_id(info_api, sprite_name=None, old_dropdown_value="globl")
+    assert monitor_id == ALL_FR_MONITORS[2].id
+
+def test_SRMonitor_generate_id_list():
+    srmonitor = ALL_LOCAL_SR_MONITORS[2]
+    monitor_id = srmonitor._generate_id(info_api, sprite_name="Sprite1", old_dropdown_value="locl")
+    assert monitor_id == ALL_FR_MONITORS[4].id
+
+
+def test_SRMonitor_to_first_variable():
+    srmonitor = ALL_LOCAL_SR_MONITORS[3]
+    frmonitor = srmonitor.to_first(info_api, sprite_name="Sprite1")
+    assert frmonitor == ALL_FR_MONITORS[6]
+
+def test_SRMonitor_to_first_list():
+    srmonitor = ALL_GLOBAL_SR_MONITORS[2]
+    frmonitor = srmonitor.to_first(info_api, sprite_name=None)
+    assert frmonitor == ALL_FR_MONITORS[5]
+
+def test_SRMonitor_to_first_normal():
+    srmonitor = ALL_GLOBAL_SR_MONITORS[5]
+    frmonitor = srmonitor.to_first(info_api, sprite_name=None)
+    assert frmonitor == ALL_FR_MONITORS[10]
 
 
 

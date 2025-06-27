@@ -28,21 +28,21 @@ def translateMonitor(data):
         spriteToken = stringToToken(data["spriteName"])
 
     match opcode:
-        case "motion_xposition"|"motion_yposition"|"motion_direction"|"looks_sayWidth"|"looks_sayHeight"|"looks_stretchGetX"|"looks_stretchGetY"|"looks_getSpriteVisible"|"getSpriteVisible"|"looks_layersGetLayer"|"looks_size"|"looks_tintColor"|"sound_volume"|"sensing_getdragmode":
-            behaviour = 1
+        case "motion_xposition"|"motion_yposition"|"motion_direction"|"looks_sayWidth"|"looks_sayHeight"|"looks_stretchGetX"|"looks_stretchGetY"|"looks_getSpriteVisible"|"looks_layersGetLayer"|"looks_size"|"looks_tintColor"|"sound_volume"|"sensing_getdragmode":
+            behaviour = 1 # SPRITE_OPCMAIN
         case "looks_getEffectValue"|"looks_costumenumbername"|"sound_getEffectValue":
-            behaviour = 2
+            behaviour = 2 # SPRITE_OPCMAIN_PARAM
             parameter = list(data["options"].values())[0]
         case "looks_backdropnumbername":
-            behaviour = 3
+            behaviour = 3 # OPCMAIN_PARAM
             parameter = list(data["options"].values())[0]
         case "sensing_current":
-            behaviour = 4
+            behaviour = 4 # OPCMAIN_LOWERPARAM
             parameter = list(data["options"].values())[0]
         case "sensing_answer"|"sensing_loudness"|"sensing_loud"|"sensing_timer":
-            behaviour = 5
+            behaviour = 5 # OPCMAIN
         case "sensing_mousedown"|"sensing_mouseclicked"|"sensing_mousex"|"sensing_mousey"|"sensing_getclipboard"|"sensing_dayssince2000"|"sensing_username"|"sensing_loggedin":
-            behaviour = 6
+            behaviour = 6 # OPCFULL
         case "data_variable":
             behaviour = "variable"
             parameter = list(data["options"].values())[0]

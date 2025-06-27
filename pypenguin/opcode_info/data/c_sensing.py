@@ -86,6 +86,7 @@ c_sensing = OpcodeInfoGroup(name="c_sensing", opcode_info=DualKeyDict({
     ("sensing_answer", "answer"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         can_have_monitor=True,
+        monitor_id_behaviour=MonitorIdBehaviour.OPCMAIN,
     ),
 
     ("sensing_thing_is_text", "(STRING) is text?"): OpcodeInfo(
@@ -126,21 +127,25 @@ c_sensing = OpcodeInfoGroup(name="c_sensing", opcode_info=DualKeyDict({
     ("sensing_mousedown", "mouse down?"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         can_have_monitor=True,
+        monitor_id_behaviour=MonitorIdBehaviour.OPCFULL,
     ),
 
     ("sensing_mouseclicked", "mouse clicked?"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         can_have_monitor=True,
+        monitor_id_behaviour=MonitorIdBehaviour.OPCFULL,
     ),
 
     ("sensing_mousex", "mouse x"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         can_have_monitor=True,
+        monitor_id_behaviour=MonitorIdBehaviour.OPCFULL,
     ),
 
     ("sensing_mousey", "mouse y"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         can_have_monitor=True,
+        monitor_id_behaviour=MonitorIdBehaviour.OPCFULL,
     ),
 
     ("sensing_setclipboard", "add (TEXT) to clipboard"): OpcodeInfo(
@@ -153,6 +158,7 @@ c_sensing = OpcodeInfoGroup(name="c_sensing", opcode_info=DualKeyDict({
     ("sensing_getclipboard", "clipboard item"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         can_have_monitor=True,
+        monitor_id_behaviour=MonitorIdBehaviour.OPCFULL,
     ),
 
     ("sensing_setdragmode", "set drag mode [MODE]"): OpcodeInfo(
@@ -165,16 +171,19 @@ c_sensing = OpcodeInfoGroup(name="c_sensing", opcode_info=DualKeyDict({
     ("sensing_getdragmode", "draggable?"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         can_have_monitor=True,
+        monitor_id_behaviour=MonitorIdBehaviour.SPRITE_OPCMAIN,
     ),
 
     ("sensing_loudness", "loudness"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         can_have_monitor=True,
+        monitor_id_behaviour=MonitorIdBehaviour.OPCMAIN,
     ),
 
     ("sensing_loud", "loud?"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         can_have_monitor=True,
+        monitor_id_behaviour=MonitorIdBehaviour.OPCMAIN,
     ),
 
     ("sensing_resettimer", "reset timer"): OpcodeInfo(
@@ -184,6 +193,7 @@ c_sensing = OpcodeInfoGroup(name="c_sensing", opcode_info=DualKeyDict({
     ("sensing_timer", "timer"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         can_have_monitor=True,
+        monitor_id_behaviour=MonitorIdBehaviour.OPCMAIN,
     ),
 
     ("sensing_set_of", "set [PROPERTY] of ([TARGET]) to (VALUE)"): OpcodeInfo(
@@ -213,11 +223,13 @@ c_sensing = OpcodeInfoGroup(name="c_sensing", opcode_info=DualKeyDict({
             ("CURRENTMENU", "PROPERTY"): DropdownInfo(DropdownType.TIME_PROPERTY),
         }),
         can_have_monitor=True,
+        monitor_id_behaviour=MonitorIdBehaviour.OPCMAIN_LOWERPARAM,
     ),
 
     ("sensing_dayssince2000", "days since 2000"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         can_have_monitor=True,
+        monitor_id_behaviour=MonitorIdBehaviour.OPCFULL,
     ),
 
     ("sensing_mobile", "mobile?"): OpcodeInfo(
@@ -255,11 +267,13 @@ c_sensing = OpcodeInfoGroup(name="c_sensing", opcode_info=DualKeyDict({
     ("sensing_username", "username"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         can_have_monitor=True,
+        monitor_id_behaviour=MonitorIdBehaviour.OPCFULL,
     ),
 
     ("sensing_loggedin", "logged in?"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         can_have_monitor=True,
+        monitor_id_behaviour=MonitorIdBehaviour.OPCFULL,
     ),
 
 }))
