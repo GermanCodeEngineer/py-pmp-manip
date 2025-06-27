@@ -39,7 +39,7 @@ def tuplify(obj):
     else:
         return obj
 
-def string_to_sha256(primary: str, secondary: str|None=None) -> str:
+def string_to_sha256(primary: str, secondary: str|None=None, tertiary: str|None=None) -> str:
     def _string_to_sha256(input_string: str, digits: int) -> str:
         hex_hash = sha256(input_string.encode()).hexdigest()
 
@@ -50,10 +50,16 @@ def string_to_sha256(primary: str, secondary: str|None=None) -> str:
             result.append(_TOKEN_CHARSET[index])
         return ''.join(result)
 
-    if secondary is None:
-        return _string_to_sha256(primary, digits=20)
-    else:
-        return _string_to_sha256(primary, digits=16) + _string_to_sha256(secondary, digits=4)
+    if (secondary is None) and (tertiary is not None):
+        raise ValueError("secondary must NOT be None if tertiary is not None")
+
+    if   (secondary is     None) and (tertiary is     None):
+        return _string_to_sha256(primary  , digits=20)
+    elif (secondary is not None) and (tertiary is     None):
+        return _string_to_sha256(secondary, digits=4) + _string_to_sha256(primary  , digits=16)
+    elif (secondary is not None) and (tertiary is not None):
+        return _string_to_sha256(tertiary , digits=4) + _string_to_sha256(secondary, digits=4) + _string_to_sha256(primary, digits=12)
+        
 
 def number_to_token(number: int) -> str:
     base = len(_TOKEN_CHARSET)

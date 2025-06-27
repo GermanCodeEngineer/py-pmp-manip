@@ -31,6 +31,7 @@ def test_IRBlock_to_first_comment():
         info_api=info_api,
         parent_id="d",
         own_id="b",
+        sprite_name="Sprite1",
     )
     assert frblock == ALL_FR_BLOCKS["b"]
     assert itf_if.added_blocks == {}
@@ -44,6 +45,7 @@ def test_IRBlock_to_first_immediate_block_dropdowns_not_toplevel():
         info_api=info_api,
         parent_id=None,
         own_id="f",
+        sprite_name="Sprite1",
     )
     assert frblock == ALL_FR_BLOCKS["f"]
     assert itf_if.added_blocks == {}
@@ -57,6 +59,7 @@ def test_IRBlock_to_first_block_and_text_toplevel():
         info_api=info_api,
         parent_id=None,
         own_id="c",
+        sprite_name="Sprite1",
     )
     assert frblock == ALL_FR_BLOCKS["c"]
     assert itf_if.added_blocks == {}
@@ -70,6 +73,7 @@ def test_IRBlock_to_first_block_and_broadcast_dropdown_input():
         info_api=info_api,
         parent_id=None,
         own_id="d",
+        sprite_name="Sprite1",
     )
     assert frblock == ALL_FR_BLOCKS["d"]
     assert itf_if.added_blocks == {}
@@ -83,6 +87,7 @@ def test_IRBlock_to_first_missing_input():
         info_api=info_api,
         parent_id=None,
         own_id="n",
+        sprite_name="Sprite1",
     )
     assert frblock == ALL_FR_BLOCKS["n"]
     assert itf_if.added_blocks == {}
@@ -96,6 +101,7 @@ def test_IRBlock_to_first_2references():
         info_api=info_api,
         parent_id="b",
         own_id="t",
+        sprite_name="Sprite1",
     )
     assert frblock == ALL_FR_BLOCKS["t"]
     assert itf_if.added_blocks == {}
@@ -109,6 +115,7 @@ def test_IRBlock_to_first_variable_dropdown():
         info_api=info_api,
         parent_id="o",
         own_id="q",
+        sprite_name="Sprite1",
     )
     assert frblock == ALL_FR_BLOCKS["q"]
     assert itf_if.added_blocks == {}
@@ -122,6 +129,7 @@ def test_IRBlock_to_first_list_dropdown_tuple_block():
         info_api=info_api,
         parent_id=None,
         own_id="p",
+        sprite_name="Sprite1",
     )
     assert frblock == ALL_FR_BLOCKS["p"]
     assert itf_if.added_blocks == {}
@@ -135,6 +143,7 @@ def test_IRBlock_to_first_broadcast_dropdown():
         info_api=info_api,
         parent_id=None,
         own_id="w",
+        sprite_name="Sprite1",
     )
     assert frblock == ALL_FR_BLOCKS["w"]
     assert itf_if.added_blocks == {}
@@ -148,6 +157,7 @@ def test_IRBlock_to_first_standard_dropdown():
         info_api=info_api,
         parent_id=None,
         own_id="r",
+        sprite_name="Sprite1",
     )
     assert frblock == ALL_FR_BLOCKS["r"]
     assert itf_if.added_blocks == {}
@@ -161,6 +171,7 @@ def test_IRBlock_to_first_empty_input():
         info_api=info_api,
         parent_id=None,
         own_id="r",
+        sprite_name="Sprite1",
     )
     assert frblock == ALL_FR_BLOCKS["r"]
     assert itf_if.added_blocks == {}

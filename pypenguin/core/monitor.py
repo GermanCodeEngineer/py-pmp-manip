@@ -11,9 +11,10 @@ from pypenguin.important_consts import (
     SHA256_SEC_TARGET_NAME, SHA256_SEC_VARIABLE, SHA256_SEC_LIST,
 )
 
-from pypenguin.core.context  import PartialContext, CompleteContext
-from pypenguin.core.dropdown import SRDropdownValue
-from pypenguin.core.enums    import SRVariableMonitorReadoutMode
+from pypenguin.core.context    import PartialContext, CompleteContext
+from pypenguin.core.dropdown   import SRDropdownValue
+from pypenguin.core.enums      import SRVariableMonitorReadoutMode
+from pypenguin.core.vars_lists import variable_sha256, list_sha256
 
 
 # TODO: create global config
@@ -295,9 +296,9 @@ class SRMonitor:
             case MonitorIdBehaviour.OPCFULL:
                 return opcode_full
             case MonitorIdBehaviour.VARIABLE:
-                return string_to_sha256(old_dropdown_value, secondary=SHA256_SEC_VARIABLE)
+                return variable_sha256(old_dropdown_value, sprite_name)
             case MonitorIdBehaviour.LIST:
-                return string_to_sha256(old_dropdown_value, secondary=SHA256_SEC_LIST    )
+                return list_sha256    (old_dropdown_value, sprite_name)
 
     def to_first(self, info_api: OpcodeInfoAPI, sprite_name: str | None) -> FRMonitor:
         """

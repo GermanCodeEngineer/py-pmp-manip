@@ -31,7 +31,7 @@ from pypenguin.core.meta           import FRMeta, FRPenguinModPlatformMeta
 from pypenguin.core.monitor        import FRMonitor, SRMonitor, SRListMonitor
 from pypenguin.core.project        import FRProject, SRProject
 from pypenguin.core.target         import FRStage, FRSprite, SRStage, SRSprite
-from pypenguin.core.vars_lists     import SRVariable, SRList
+from pypenguin.core.vars_lists     import variable_sha256, list_sha256, SRVariable, SRList
 
 from lxml      import etree
 from io        import BytesIO
@@ -85,7 +85,7 @@ ALL_FR_BLOCK_DATAS = {
         "parent": None,
         "inputs": {
             "FROM": [
-                3, [12, "my variable", string_to_sha256("my variable", secondary=SHA256_SEC_VARIABLE)], 
+                3, [12, "my variable", variable_sha256("my variable", sprite_name="Sprite1")], 
                 [4, "1"],
             ],
             "TO": [3, "g", [4, "10"]],
@@ -96,7 +96,7 @@ ALL_FR_BLOCK_DATAS = {
         "x": 304,
         "y": 424,
     },
-    "m": [12, "my variable", string_to_sha256("my variable", secondary=SHA256_SEC_VARIABLE), 446, 652],
+    "m": [12, "my variable", variable_sha256("my variable", sprite_name="Sprite1"), 446, 652],
     "h": {
         "opcode": "procedures_definition_return",
         "next": None,
@@ -230,7 +230,7 @@ ALL_FR_BLOCK_DATAS = {
         "shadow": False,
         "topLevel": False,
     },
-    "p": [13, "my list", string_to_sha256("my list", secondary=SHA256_SEC_LIST), 646, 561],
+    "p": [13, "my list", list_sha256("my list", sprite_name=None), 646, 561],
     "n": {
         "opcode": "control_if",
         "next": None,
@@ -252,7 +252,7 @@ ALL_FR_BLOCK_DATAS = {
             "VALUE": [1, [4, "1"]],
         },
         "fields": {
-            "VARIABLE": ["my variable", string_to_sha256("my variable", secondary=SHA256_SEC_VARIABLE), ""],
+            "VARIABLE": ["my variable", variable_sha256("my variable", sprite_name="Sprite1"), ""],
         },
         "shadow": False,
         "topLevel": False,
@@ -263,7 +263,7 @@ ALL_FR_BLOCK_DATAS = {
         "parent": "o",
         "inputs": {},
         "fields": {
-            "VARIABLE": ["my variable", string_to_sha256("my variable", secondary=SHA256_SEC_VARIABLE), ""],
+            "VARIABLE": ["my variable", variable_sha256("my variable", sprite_name="Sprite1"), ""],
         },
         "shadow": False,
         "topLevel": False,
@@ -380,7 +380,7 @@ ALL_FR_BLOCKS = {
         parent=None,
         inputs={
             "FROM": (
-                3, (12, "my variable", string_to_sha256("my variable", secondary=SHA256_SEC_VARIABLE)), (4, "1"),
+                3, (12, "my variable", variable_sha256("my variable", sprite_name="Sprite1")), (4, "1"),
             ),
             "TO": (3, "g", (4, "10")),
         },
@@ -390,7 +390,7 @@ ALL_FR_BLOCKS = {
         x=304,
         y=424,
     ),
-    "m": (12, "my variable", string_to_sha256("my variable", secondary=SHA256_SEC_VARIABLE), 446, 652),
+    "m": (12, "my variable", variable_sha256("my variable", sprite_name="Sprite1"), 446, 652),
     "h": FRBlock(
         opcode="procedures_definition_return",
         next=None,
@@ -524,7 +524,7 @@ ALL_FR_BLOCKS = {
         shadow=False,
         top_level=False,
     ),
-    "p": (13, "my list", string_to_sha256("my list", secondary=SHA256_SEC_LIST), 646, 561),
+    "p": (13, "my list", list_sha256("my list", sprite_name=None), 646, 561),
     "n": FRBlock(
         opcode="control_if",
         next=None,
@@ -546,7 +546,7 @@ ALL_FR_BLOCKS = {
             "VALUE": (1, (4, "1")),
         },
         fields={
-            "VARIABLE": ("my variable", string_to_sha256("my variable", secondary=SHA256_SEC_VARIABLE), ""),
+            "VARIABLE": ("my variable", variable_sha256("my variable", sprite_name="Sprite1"), ""),
         },
         shadow=False,
         top_level=False,
@@ -557,7 +557,7 @@ ALL_FR_BLOCKS = {
         parent="o",
         inputs={},
         fields={
-            "VARIABLE": ("my variable", string_to_sha256("my variable", secondary=SHA256_SEC_VARIABLE), ""),
+            "VARIABLE": ("my variable", variable_sha256("my variable", sprite_name="Sprite1"), ""),
         },
         shadow=False,
         top_level=False,
@@ -637,7 +637,7 @@ ALL_FR_BLOCKS_CLEAN: dict[str, FRBlock] = ALL_FR_BLOCKS | {
         parent=None,
         inputs={},
         fields={
-            "VARIABLE": ("my variable", string_to_sha256("my variable", secondary=SHA256_SEC_VARIABLE), ""),
+            "VARIABLE": ("my variable", variable_sha256("my variable", sprite_name="Sprite1"), ""),
         },
         shadow=False,
         top_level=True,
@@ -650,7 +650,7 @@ ALL_FR_BLOCKS_CLEAN: dict[str, FRBlock] = ALL_FR_BLOCKS | {
         parent=None,
         inputs={},
         fields={
-            "LIST": ("my list", string_to_sha256("my list", secondary=SHA256_SEC_LIST), "list"),
+            "LIST": ("my list", list_sha256("my list", sprite_name=None), "list"),
         },
         shadow=False,
         top_level=True,
@@ -1326,13 +1326,13 @@ STAGE_DATA = {
     "isStage": True,
     "name": "Stage",
     "variables": {
-        string_to_sha256("my variable", secondary=SHA256_SEC_VARIABLE): [
+        variable_sha256("my variable", sprite_name="Sprite1"): [
             "my variable",
             0,
         ],
     },
     "lists": {
-        string_to_sha256("my list", secondary=SHA256_SEC_LIST): [
+        list_sha256("my list", sprite_name=None): [
             "my list",
             [],
         ],
@@ -1368,10 +1368,10 @@ FR_STAGE = FRStage(
     is_stage=True,
     name="Stage",
     variables={
-        string_to_sha256("my variable", secondary=SHA256_SEC_VARIABLE): ("my variable", 0),
+        variable_sha256("my variable", sprite_name="Sprite1"): ("my variable", 0),
     },
     lists={
-        string_to_sha256("my list", secondary=SHA256_SEC_LIST): ("my list", []),
+        list_sha256("my list", sprite_name=None): ("my list", []),
     },
     broadcasts={
         string_to_sha256("my message", secondary=SHA256_SEC_BROADCAST_MSG): "my message",
@@ -1513,7 +1513,7 @@ PROJECT_DATA = {
     ],
     "monitors": [
         {
-            "id": string_to_sha256("my list", secondary=SHA256_SEC_LIST),
+            "id": list_sha256("my list", sprite_name=None),
             "mode": "list",
             "opcode": "data_listcontents",
             "params": {
@@ -1565,7 +1565,7 @@ FR_PROJECT = FRProject(
     ],
     monitors=[
         FRMonitor(
-            id=string_to_sha256("my list", secondary=SHA256_SEC_LIST),
+            id=list_sha256("my list", sprite_name=None),
             mode="list",
             opcode="data_listcontents",
             params={
@@ -1715,7 +1715,7 @@ SB3_PROJECT_DATA_ORGINAL = {
             "isStage": True,
             "name": "Stage",
             "variables": {
-                string_to_sha256("my variable", secondary=SHA256_SEC_VARIABLE): [
+                variable_sha256("my variable", sprite_name="Sprite1"): [
                     "my variable",
                     0,
                 ],

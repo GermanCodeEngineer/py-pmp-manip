@@ -311,6 +311,7 @@ class IRBlock:
         info_api: OpcodeInfoAPI,
         parent_id: str|None,
         own_id: str|None,
+        sprite_name: str|None,
     ) -> FRBlock | tuple[int, str, str] | tuple[int, str, str, int|float, int|float]:
         """
         Converts a IRBlock into a FRBlock
@@ -320,6 +321,7 @@ class IRBlock:
             info_api: the opcode info api used to fetch information about opcodes
             parent_id: the reference id of the parent block or None
             own_id: the reference id of this FRBlock or None for immediate blocks
+            sprite_name: the name of the block's sprite
         
         Returns:
             the FRBlock
@@ -340,10 +342,11 @@ class IRBlock:
             elements = input_value.references.copy()
             if input_value.immediate_block is not None:
                 frblock = input_value.immediate_block.to_first(
-                    itf_if    = itf_if,
-                    info_api  = info_api,
-                    parent_id = own_id,
-                    own_id    = None,
+                    itf_if      = itf_if,
+                    info_api    = info_api,
+                    parent_id   = own_id,
+                    own_id      = None,
+                    sprite_name = sprite_name,
                 )
                 elements.insert(0, frblock)
             match input_type.mode:
@@ -371,16 +374,20 @@ class IRBlock:
                 case DropdownType.VARIABLE:
                     suffix    = ""
                     secondary = SHA256_SEC_VARIABLE
+                    tertiary  = sprite_name
                 case DropdownType.LIST:
                     suffix    = "list"
                     secondary = SHA256_SEC_LIST
+                    tertiary  = sprite_name
                 case DropdownType.BROADCAST:
                     suffix    = "broadcast_msg"
                     secondary = SHA256_SEC_BROADCAST_MSG
+                    tertiary  = None
                 case _:
                     suffix    = "" # TODO: test if always present and empty
                     secondary = SHA256_SEC_DROPDOWN_VALUE
-            sha256 = string_to_sha256(dropdown_value, secondary=secondary)
+                    tertiary  = None
+            sha256 = string_to_sha256(dropdown_value, secondary, tertiary)
             old_fields[dropdown_id] = (dropdown_value, sha256, suffix)
 
         old_block = FRBlock(
