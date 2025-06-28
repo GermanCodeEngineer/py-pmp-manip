@@ -1,7 +1,7 @@
 from copy   import copy
 from pytest import fixture, raises
 
-from pypenguin.important_consts import NEW_OPCODE_VAR_VALUE, NEW_OPCODE_LIST_VALUE, SHA256_SEC_VARIABLE, SHA256_SEC_LIST
+from pypenguin.important_consts import NEW_OPCODE_VAR_VALUE, NEW_OPCODE_LIST_VALUE
 from pypenguin.opcode_info.api  import DropdownValueKind
 from pypenguin.opcode_info.data import info_api
 from pypenguin.important_consts import SHA256_SEC_TARGET_NAME
@@ -11,13 +11,18 @@ from pypenguin.utility          import (
     MissingDropdownError, RangeValidationError, InvalidValueError,
 )
 
-from pypenguin.core.context    import PartialContext
-from pypenguin.core.dropdown   import SRDropdownValue
-from pypenguin.core.enums      import SRVariableMonitorReadoutMode
-from pypenguin.core.monitor    import FRMonitor, SRMonitor, SRVariableMonitor, SRListMonitor, STAGE_WIDTH, STAGE_HEIGHT
-from pypenguin.core.vars_lists import variable_sha256, list_sha256
+from pypenguin.core.block_interface import InterToFirstIF
+from pypenguin.core.context         import PartialContext
+from pypenguin.core.dropdown        import SRDropdownValue
+from pypenguin.core.enums           import SRVariableMonitorReadoutMode
+from pypenguin.core.monitor         import (
+    FRMonitor, SRMonitor, SRVariableMonitor, SRListMonitor, 
+    STAGE_WIDTH, STAGE_HEIGHT,
+)
+from pypenguin.core.vars_lists      import variable_sha256, list_sha256
 
 from tests.utility import execute_attr_validation_tests
+from tests.core.constants import ALL_IR_BLOCKS
 
 
 ALL_FR_MONITOR_DATAS = [
@@ -87,7 +92,7 @@ ALL_FR_MONITOR_DATAS = [
     },
     { # [4]
         "height": 198,
-        "id": list_sha256("locl", sprite_name="A Sprite"),
+        "id": list_sha256("locl", sprite_name="Sprite1"),
         "mode": "list",
         "opcode": "data_listcontents",
         "params": {"LIST": "locl"},
@@ -113,7 +118,7 @@ ALL_FR_MONITOR_DATAS = [
     },
     { # [6]
         "height": 0,
-        "id": variable_sha256("locl", sprite_name="A Sprite"),
+        "id": variable_sha256("locl", sprite_name="Sprite1"),
         "isDiscrete": True,
         "mode": "default",
         "opcode": "data_variable",
@@ -285,7 +290,7 @@ ALL_FR_MONITORS: list[FRMonitor] = [
         is_discrete=True,
     ),
     FRMonitor( # [4]
-        id=list_sha256("locl", sprite_name="A Sprite"),
+        id=list_sha256("locl", sprite_name="Sprite1"),
         mode="list",
         opcode="data_listcontents",
         params={
@@ -321,7 +326,7 @@ ALL_FR_MONITORS: list[FRMonitor] = [
         is_discrete=None,
     ),
     FRMonitor( # [6]
-        id=variable_sha256("locl", sprite_name="A Sprite"),
+        id=variable_sha256("locl", sprite_name="Sprite1"),
         mode="default",
         opcode="data_variable",
         params={
@@ -558,6 +563,24 @@ def context():
         backdrops=[(DropdownValueKind.BACKDROP, "intro"), (DropdownValueKind.BACKDROP, "scene1")],
     )
 
+@fixture
+def sprite_itf_if():
+    return InterToFirstIF(
+        blocks=ALL_IR_BLOCKS,
+        global_vars=["my variable", "globl"], global_lists=["my list", "globl"], 
+        local_vars=["locl"], local_lists=["locl"], # variables and lists are modified
+        sprite_name="Sprite1",
+    )
+
+@fixture
+def stage_itf_if():
+    return InterToFirstIF(
+        blocks=ALL_IR_BLOCKS,
+        global_vars=["my variable", "globl"], global_lists=["my list", "globl"], 
+        local_vars=["locl"], local_lists=["locl"], # variables and lists are modified
+        sprite_name=None,
+    )
+
 
 
 def test_FRMonitor_from_data():
@@ -686,65 +709,65 @@ def test_SRMonitor_validate_missing_dropdown(config):
         srmonitor.validate([], config, info_api)
 
 
-def test_SRMonitor_validate_dropdown_values(context):
+def test_SRMonitor_validate_dropdown_values(config, context):
     srmonitor = ALL_LOCAL_SR_MONITORS[3]
     srmonitor.validate_dropdown_values([], config, info_api, context)
 
 
-def test_SRMonitor_generate_id_sprite_opcmain():
+def test_SRMonitor_generate_id_sprite_opcmain(sprite_itf_if):
     srmonitor = ALL_LOCAL_SR_MONITORS[0]
-    monitor_id = srmonitor._generate_id(info_api, sprite_name="Sprite1", old_dropdown_value=None)
+    monitor_id = srmonitor._generate_id(sprite_itf_if, info_api, old_dropdown_value=None)
     assert monitor_id == ALL_FR_MONITORS[0].id
 
-def test_SRMonitor_generate_id_sprite_opcmain_param():
+def test_SRMonitor_generate_id_sprite_opcmain_param(sprite_itf_if):
     srmonitor = ALL_LOCAL_SR_MONITORS[4]
-    monitor_id = srmonitor._generate_id(info_api, sprite_name="Sprite1", old_dropdown_value="number")
+    monitor_id = srmonitor._generate_id(sprite_itf_if, info_api, old_dropdown_value="number")
     assert monitor_id == ALL_FR_MONITORS[9].id
 
-def test_SRMonitor_generate_id_opcmain_param():
+def test_SRMonitor_generate_id_opcmain_param(stage_itf_if):
     srmonitor = ALL_GLOBAL_SR_MONITORS[5]
-    monitor_id = srmonitor._generate_id(info_api, sprite_name=None, old_dropdown_value="number")
+    monitor_id = srmonitor._generate_id(stage_itf_if, info_api, old_dropdown_value="number")
     assert monitor_id == ALL_FR_MONITORS[10].id
 
-def test_SRMonitor_generate_id_opcmain_lowerparam():
+def test_SRMonitor_generate_id_opcmain_lowerparam(stage_itf_if):
     srmonitor = ALL_GLOBAL_SR_MONITORS[6]
-    monitor_id = srmonitor._generate_id(info_api, sprite_name=None, old_dropdown_value="year")
+    monitor_id = srmonitor._generate_id(stage_itf_if, info_api, old_dropdown_value="year")
     assert monitor_id == ALL_FR_MONITORS[11].id
 
-def test_SRMonitor_generate_id_opcmain():
+def test_SRMonitor_generate_id_opcmain(stage_itf_if):
     srmonitor = ALL_GLOBAL_SR_MONITORS[4]
-    monitor_id = srmonitor._generate_id(info_api, sprite_name=None, old_dropdown_value=None)
+    monitor_id = srmonitor._generate_id(stage_itf_if, info_api, old_dropdown_value=None)
     assert monitor_id == ALL_FR_MONITORS[8].id
 
-def test_SRMonitor_generate_id_opcfull():
+def test_SRMonitor_generate_id_opcfull(stage_itf_if):
     srmonitor = ALL_GLOBAL_SR_MONITORS[3]
-    monitor_id = srmonitor._generate_id(info_api, sprite_name=None, old_dropdown_value=None)
+    monitor_id = srmonitor._generate_id(stage_itf_if, info_api, old_dropdown_value=None)
     assert monitor_id == ALL_FR_MONITORS[7].id
 
-def test_SRMonitor_generate_id_variable():
+def test_SRMonitor_generate_id_variable(stage_itf_if):
     srmonitor = ALL_GLOBAL_SR_MONITORS[0]
-    monitor_id = srmonitor._generate_id(info_api, sprite_name=None, old_dropdown_value="globl")
+    monitor_id = srmonitor._generate_id(stage_itf_if, info_api, old_dropdown_value="globl")
     assert monitor_id == ALL_FR_MONITORS[2].id
 
-def test_SRMonitor_generate_id_list():
+def test_SRMonitor_generate_id_list(sprite_itf_if):
     srmonitor = ALL_LOCAL_SR_MONITORS[2]
-    monitor_id = srmonitor._generate_id(info_api, sprite_name="Sprite1", old_dropdown_value="locl")
+    monitor_id = srmonitor._generate_id(sprite_itf_if, info_api, old_dropdown_value="locl")
     assert monitor_id == ALL_FR_MONITORS[4].id
 
 
-def test_SRMonitor_to_first_variable():
+def test_SRMonitor_to_first_variable(sprite_itf_if):
     srmonitor = ALL_LOCAL_SR_MONITORS[3]
-    frmonitor = srmonitor.to_first(info_api, sprite_name="Sprite1")
+    frmonitor = srmonitor.to_first(sprite_itf_if, info_api)
     assert frmonitor == ALL_FR_MONITORS[6]
 
-def test_SRMonitor_to_first_list():
+def test_SRMonitor_to_first_list(stage_itf_if):
     srmonitor = ALL_GLOBAL_SR_MONITORS[2]
-    frmonitor = srmonitor.to_first(info_api, sprite_name=None)
+    frmonitor = srmonitor.to_first(stage_itf_if, info_api)
     assert frmonitor == ALL_FR_MONITORS[5]
 
-def test_SRMonitor_to_first_normal():
+def test_SRMonitor_to_first_normal(stage_itf_if):
     srmonitor = ALL_GLOBAL_SR_MONITORS[5]
-    frmonitor = srmonitor.to_first(info_api, sprite_name=None)
+    frmonitor = srmonitor.to_first(stage_itf_if, info_api)
     assert frmonitor == ALL_FR_MONITORS[10]
 
 

@@ -9,6 +9,7 @@ from pypenguin.core.block_mutation  import FRCustomBlockMutation, SRCustomBlockM
 from pypenguin.core.block           import FRBlock, IRBlock
 from pypenguin.core.comment         import FRComment
 from pypenguin.core.custom_block    import SRCustomBlockOptype, SRCustomBlockOpcode
+from pypenguin.core.vars_lists      import variable_sha256, list_sha256
 
 from tests.core.constants import (
     ALL_FR_BLOCKS_CLEAN, ALL_IR_BLOCKS, 
@@ -212,6 +213,32 @@ def test_InterToFirstIF_get_sr_cb_mutation(itf_if: InterToFirstIF):
     with raises(ConversionError):
         itf_if_copy.get_sr_cb_mutation(SRCustomBlockOpcode(segments=("hi")))
     assert itf_if_copy == itf_if
+
+
+def test_InterToFirstIF_get_variable_sha256_global(itf_if: InterToFirstIF):
+    sha256 = itf_if.get_variable_sha256("globvar")
+    assert sha256 == variable_sha256("globvar", sprite_name=None)
+
+def test_InterToFirstIF_get_variable_sha256_local(itf_if: InterToFirstIF):
+    sha256 = itf_if.get_variable_sha256("locvar")
+    assert sha256 == variable_sha256("locvar", sprite_name=itf_if.sprite_name)
+
+def test_InterToFirstIF_get_variable_sha256_undefined(itf_if: InterToFirstIF):
+    with raises(ConversionError):
+        itf_if.get_variable_sha256("some undefined var")
+
+
+def test_InterToFirstIF_get_list_sha256_global(itf_if: InterToFirstIF):
+    sha256 = itf_if.get_list_sha256("globlist")
+    assert sha256 == list_sha256("globlist", sprite_name=None)
+
+def test_InterToFirstIF_get_list_sha256_local(itf_if: InterToFirstIF):
+    sha256 = itf_if.get_list_sha256("loclist")
+    assert sha256 == list_sha256("loclist", sprite_name=itf_if.sprite_name)
+
+def test_InterToFirstIF_get_list_sha256_undefined(itf_if: InterToFirstIF):
+    with raises(ConversionError):
+        itf_if.get_list_sha256("some undefined list")
 
 
 

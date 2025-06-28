@@ -195,7 +195,6 @@ class InterToFirstIF:
     def get_variable_sha256(self, variable_name: str) -> str:
         """
         Get the sha256 hash of a global or local variable
-        # TODO: add tests
         
         Args:
             variable_name: the variable name
@@ -206,14 +205,13 @@ class InterToFirstIF:
         if   variable_name in self.global_vars:
             return variable_sha256(variable_name, sprite_name=None)
         elif variable_name in self.local_vars:
-            return variable_sha256(variabel_name, sprite_name=self.sprite_name)
+            return variable_sha256(variable_name, sprite_name=self.sprite_name)
         else:
             raise ConversionError(f"Variable {repr(variable_name)} not found")
 
     def get_list_sha256(self, list_name: str) -> str:
         """
         Get the sha256 hash of a global or local list
-        # TODO: add tests
         
         Args:
             list_name: the list name
@@ -226,10 +224,14 @@ class InterToFirstIF:
         elif list_name in self.local_lists:
             return list_sha256(list_name, sprite_name=self.sprite_name)
         else:
-            raise ConversionError(f"Variable {repr(list_name)} not found")
+            raise ConversionError(f"List {repr(list_name)} not found")
 
 @grepr_dataclass(grepr_fields=["scripts", "cb_mutations"])
 class SecondReprIF:
+    """
+    ABC for an interface which holds scripts in second representation
+    """
+
     scripts: list["SRScript"]
     cb_mutations: dict[SRCustomBlockOpcode, "SRCustomBlockMutation"] = field(default_factory=dict)
     # Safe access is needed because blocks haven't actually been validated yet (see get_all_blocks)

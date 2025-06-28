@@ -11,10 +11,11 @@ from pypenguin.important_consts import (
     SHA256_SEC_TARGET_NAME, SHA256_SEC_VARIABLE, SHA256_SEC_LIST,
 )
 
-from pypenguin.core.context    import PartialContext, CompleteContext
-from pypenguin.core.dropdown   import SRDropdownValue
-from pypenguin.core.enums      import SRVariableMonitorReadoutMode
-from pypenguin.core.vars_lists import variable_sha256, list_sha256
+from pypenguin.core.block_interface import InterToFirstIF
+from pypenguin.core.context         import PartialContext, CompleteContext
+from pypenguin.core.dropdown        import SRDropdownValue
+from pypenguin.core.enums           import SRVariableMonitorReadoutMode
+from pypenguin.core.vars_lists      import variable_sha256, list_sha256
 
 
 # TODO: create global config
@@ -261,17 +262,13 @@ class SRMonitor:
                 context       = context,
             )
     
-    def _generate_id(self, 
-        info_api: OpcodeInfoAPI, 
-        sprite_name: str | None,
-        old_dropdown_value: Any | None,
-    ) -> str:
+    def _generate_id(self, itf_if: InterToFirstIF, info_api: OpcodeInfoAPI, old_dropdown_value: Any | None) -> str:
         """
         *[Helper Method]* Generates the id needed for a FRMonitor
 
         Args:
+            itf_if: interface which allows the management of other blocks and more
             info_api: the opcode info api used to fetch information about opcodes
-            sprite_name: the name of the sprite the monitor belongs to or None
             old_dropdown_value: the first(probably only) dropdown value of the monitor in first representation
         
         Returns:
@@ -279,7 +276,7 @@ class SRMonitor:
         """
         opcode_info = info_api.get_info_by_new(self.opcode)
         monitor_id_behaviour: MonitorIdBehaviour = opcode_info.monitor_id_behaviour
-        sprite_sha256 = None if sprite_name is None else string_to_sha256(sprite_name, secondary=SHA256_SEC_TARGET_NAME)
+        sprite_sha256 = None if itf_if.sprite_name is None else string_to_sha256(itf_if.sprite_name, secondary=SHA256_SEC_TARGET_NAME)
         opcode_full = info_api.get_old_by_new(self.opcode)
         opcode_main = opcode_full[opcode_full.index("_")+1:] # e.g. "motion_xposition" -> "xposition"
         match monitor_id_behaviour:
@@ -296,17 +293,17 @@ class SRMonitor:
             case MonitorIdBehaviour.OPCFULL:
                 return opcode_full
             case MonitorIdBehaviour.VARIABLE:
-                return variable_sha256(old_dropdown_value, sprite_name)
+                return itf_if.get_variable_sha256(old_dropdown_value)
             case MonitorIdBehaviour.LIST:
-                return list_sha256    (old_dropdown_value, sprite_name)
+                return itf_if.get_list_sha256    (old_dropdown_value)
 
-    def to_first(self, info_api: OpcodeInfoAPI, sprite_name: str | None) -> FRMonitor:
+    def to_first(self, itf_if: InterToFirstIF, info_api: OpcodeInfoAPI) -> FRMonitor:
         """
         Converts a SRMonitor into a FRMonitor
         
         Args:
+            itf_if: interface which allows the management of other blocks and more
             info_api: the opcode info api used to fetch information about opcodes
-            sprite_name: the name of the sprite the monitor belongs to or None
         
         Returns:
             the FRMonitor
@@ -343,11 +340,11 @@ class SRMonitor:
         
         old_dropdown_value = next(iter(old_dropdowns.values())) if self.dropdowns else None
         return FRMonitor(
-            id          = self._generate_id(info_api, sprite_name, old_dropdown_value),
+            id          = self._generate_id(itf_if, info_api, old_dropdown_value),
             mode        = mode,
             opcode      = info_api.get_old_by_new(self.opcode),
             params      = old_dropdowns,
-            sprite_name = sprite_name,
+            sprite_name = itf_if.sprite_name,
             value       = value,
             x           = self.position[0] + (STAGE_WIDTH //2),
             y           = self.position[1] + (STAGE_HEIGHT//2),

@@ -317,7 +317,7 @@ class IRBlock:
         Converts a IRBlock into a FRBlock
         
         Args:
-            itf_if: interface which allows the management of other blocks
+            itf_if: interface which allows the management of other blocks and more
             info_api: the opcode info api used to fetch information about opcodes
             parent_id: the reference id of the parent block or None
             own_id: the reference id of this FRBlock or None for immediate blocks
@@ -382,7 +382,7 @@ class IRBlock:
                     suffix    = "" # TODO: test if always present and empty
                     sha256    = string_to_sha256(dropdown_value, secondary=SHA256_SEC_DROPDOWN_VALUE)
             old_fields[dropdown_id] = (dropdown_value, sha256, suffix)
-
+        
         old_block = FRBlock(
             opcode    = self.opcode,
             next      = self.next,
