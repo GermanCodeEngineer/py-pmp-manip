@@ -13,7 +13,7 @@ from pypenguin.core.context       import PartialContext
 from pypenguin.core.extension     import SRExtension, SRCustomExtension, SRBuiltinExtension
 from pypenguin.core.meta          import FRMeta
 from pypenguin.core.monitor       import FRMonitor, SRMonitor
-from pypenguin.core.enums         import SRTTSLanguage, SRVideoState
+from pypenguin.core.enums         import SRTTSLanguage, SRVideoState, TargetPlatform
 from pypenguin.core.target        import FRTarget, FRStage, FRSprite, SRStage, SRSprite
 from pypenguin.core.vars_lists    import SRVariable, SRList
 
@@ -414,8 +414,6 @@ class SRProject:
         # same length and uniqueness is assured and every UUID must have a partner sprite
         # => no sprite can possibly be missing a partner UUID
         
-            
-
     def _validate_var_names(self, path: list, config: ValidationConfig) -> None:
         """
         *[Helper Method]* Ensures no variables with the same name exist
@@ -475,6 +473,49 @@ class SRProject:
                     other_path = defined_lists[list_.name]
                     raise SameValueTwiceError(other_path, current_path, "Two lists mustn't have the same name")
                 defined_lists[list_.name] = current_path
+    
+    def to_first(self, info_api: OpcodeInfoAPI, target_platform: TargetPlatform) -> FRProject:
+        """
+        Converts a SRProject into a FRProject
+        
+        Args:
+            info_api: the opcode info api used to fetch information about opcodes
+        
+        Returns:
+            the FRProject
+        """
+
+        old_monitors = []
+        old_stage, old_global_monitors = self.stage.to_first(info_api, self.global_monitors)
+        old_targets = [old_stage]
+        old_monitors.extend(old_global_monitors)
+        for srsprite in self.sprites:
+            old_sprite, old_local_monitors = srsprite.to_first()
+            old_targets.append(old_sprite)
+            old_monitors.extend(old_local_monitors)
+
+        extensions     = []
+        extension_urls = []
+        for extension in self.extensions:
+            extensions.append(extension.id)
+            if isinstance(extension, SRCustomExtension):
+                extension_urls[extension.id] = extension.url
+
+        match target_platform:
+            case TargetPlatform.SCRATCH:
+                meta = FRMeta.new_scratch_meta()
+            case TargetPlatform.PENGUINMOD:
+                meta = FRMeta.new_penguinmod_meta()
+
+        return FRProject(
+            targets        = old_targets,
+            monitors       = old_monitors,
+            extension_data = {},
+            extensions     = extensions,
+            extension_urls = extension_urls,
+            meta           = meta,
+            asset_files    = 0, # TODO
+        )
 
 
 __all__ = ["FRProject", "SRProject"]

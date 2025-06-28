@@ -5,7 +5,6 @@ TODOs:
     - test and document opcode_info
     - add specific reasons for ThanksError
     - complete deoptimization
-    - use typing.Self for from_data and alternate constructors
     - add all errors to docstrings
     - possibly remove mode attribute of IRInputValue
     - check uses of ALL_FR_BLOCKS_CLEAN vs. ALL_FR_BLOCKS

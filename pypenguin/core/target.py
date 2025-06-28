@@ -13,13 +13,13 @@ from pypenguin.utility          import (
 )
 
 from pypenguin.core.asset           import FRCostume, FRSound, SRCostume, SRVectorCostume, SRSound
-from pypenguin.core.block_interface import FirstToInterIF, ValidationIF
+from pypenguin.core.block_interface import FirstToInterIF, InterToFirstIF, ValidationIF
 from pypenguin.core.block_mutation  import SRCustomBlockMutation
 from pypenguin.core.block           import FRBlock, IRBlock, SRScript
 from pypenguin.core.comment         import FRComment, SRComment
 from pypenguin.core.context         import PartialContext, CompleteContext
 from pypenguin.core.enums           import SRSpriteRotationStyle
-from pypenguin.core.monitor         import SRMonitor
+from pypenguin.core.monitor         import FRMonitor, SRMonitor
 from pypenguin.core.vars_lists      import SRVariable, SRVariable, SRVariable, SRCloudVariable
 from pypenguin.core.vars_lists      import SRList, SRList, SRList
 
@@ -105,6 +105,21 @@ class FRTarget(ABC):
             None
         """
         if self.custom_vars != []: raise ThanksError()
+
+    @abstractmethod
+    def to_second(self, 
+        asset_files: dict[str, bytes],
+        info_api: OpcodeInfoAPI,
+    ) -> tuple["SRTarget", list[SRVariable] | None,  list[SRList] | None]:
+        """
+        Converts a FRTarget into a SRTarget
+        
+        Args:
+            info_api: the opcode info api used to fetch information about opcodes
+        
+        Returns:
+            the SRTarget, a list of the global variables or None, a list of the global lists or None
+        """
 
     def _to_second_common(self, asset_files: dict[str, bytes], info_api: OpcodeInfoAPI) -> tuple[
         list[SRScript], 
@@ -515,6 +530,62 @@ class SRStage(SRTarget):
     """
     The second representation (SR) of the stage, which is much more user friendly
     """
+
+    def to_first(self, 
+        info_api: OpcodeInfoAPI,
+        global_monitors: list[SRMonitor],
+        tempo: int,
+        video_transparency: int | float,
+        video_state: str,
+        text_to_speech_language: str | None,
+    ) -> tuple[FRStage, list[FRMonitor]]:
+        """
+        Converts a SRStage into a FRStage
+        
+        Args:
+            info_api: the opcode info api used to fetch information about opcodes
+            tempo: the music extension tempo
+            video_transparency: the video extensions transparency
+            video_state: the state of the video extension
+            text_to_speech_language: the tts language of the tts extension
+            global_monitors: the non-local monitors
+        
+        Returns:
+            the FRStage and a list of global monitors
+        """
+        
+        old_variables = {}
+        old_lists = {}
+        old_broadcasts = {}
+        old_blocks = {}
+        old_comments = {}
+        old_costumes = []
+        old_sounds = []
+
+        itf_if = InterToFirstIF()
+
+        old_global_monitors = [monitor.to_first(itf_if, info_api) for monitor in global_monitors]
+        return (FRStage(
+            is_stage                = True,
+            name                    = "Stage",
+            variables               = old_variables,
+            lists                   = old_lists,
+            broadcasts              = old_broadcasts,
+            custom_vars             = {}, # Seems to have no purpose
+            blocks                  = old_blocks,
+            comments                = old_comments,
+            current_costume         = self.costume_index,
+            costumes                = old_costumes,
+            sounds                  = old_sounds,
+            volume                  = self.volume,
+            layer_order             = 0,
+            id                      = string_to_sha256("Stage", secondary=SHA256_SEC_TARGET_NAME),
+
+            tempo                   = tempo,
+            video_transparency      = video_transparency,
+            video_state             = video_state,
+            text_to_speech_language = text_to_speech_language,
+        ), old_global_monitors)
 
 @grepr_dataclass(grepr_fields=["name", "sprite_only_variables", "sprite_only_lists", "local_monitors", "is_visible", "position", "size", "direction", "is_draggable", " rotation_style", "uuid"])
 class SRSprite(SRTarget):

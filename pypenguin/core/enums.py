@@ -86,5 +86,13 @@ class SRVariableMonitorReadoutMode(SRCodeEnum):
     SLIDER = "slider"
 
 
-__all__ = ["SRTTSLanguage", "SRVideoState", "SRSpriteRotationStyle", "SRVariableMonitorReadoutMode"]
+class TargetPlatform(PypenguinEnum):
+    """
+    Represents a target platform for the conversion of a SRProject to a FRProject
+    """
+    SCRATCH    = 0
+    PENGUINMOD = 1
+
+
+__all__ = ["SRTTSLanguage", "SRVideoState", "SRSpriteRotationStyle", "SRVariableMonitorReadoutMode", "TargetPlatform"]
 
