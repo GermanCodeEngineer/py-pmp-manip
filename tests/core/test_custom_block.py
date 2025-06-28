@@ -57,18 +57,11 @@ def test_SRCustomBlockOpcode_corresponding_input_info(segments):
 
 def test_SRCustomBlockOpcode_validate(config, segments):
     custom_opcode = SRCustomBlockOpcode(segments=segments)
-    custom_opcode.validate(path=[], config=config)
-    
-    execute_attr_validation_tests(
-        obj=custom_opcode,
-        attr_tests=[
-            ("segments", 5, TypeValidationError),
-            ("segments", (), RangeValidationError),
-            ("segments", (-94,), TypeValidationError),
-        ],
-        validate_func=SRCustomBlockOpcode.validate,
-        func_args=[[], config],
-    )
+    custom_opcode.validate([], config)
+    # can't use execute_attr_validation_tests because frozen=True
+    with raises(TypeValidationError): SRCustomBlockOpcode(segments=5).validate([], config)
+    with raises(RangeValidationError): SRCustomBlockOpcode(segments=()).validate([], config)
+    with raises(TypeValidationError): SRCustomBlockOpcode(segments=(-94,)).validate([], config)
 
 def test_SRCustomBlockOpcode_validate_same_arg_name_twice(config):
     custom_opcode = SRCustomBlockOpcode(segments=(
@@ -86,17 +79,10 @@ def test_SRCustomBlockOpcode_validate_same_arg_name_twice(config):
 def test_SRCustomBlockArgument_validate(config):
     argument = SRCustomBlockArgument(name="some arg name", type=SRCustomBlockArgumentType.STRING_NUMBER)
     argument.validate(path=[], config=config)
-    
-    execute_attr_validation_tests(
-        obj=argument,
-        attr_tests=[
-            ("name", [], TypeValidationError),
-            ("name", "", InvalidValueError),
-            ("type", True, TypeValidationError),
-        ],
-        validate_func=SRCustomBlockArgument.validate,
-        func_args=[[], config],
-    )
+    # can't use execute_attr_validation_tests because frozen=True
+    with raises(TypeValidationError): SRCustomBlockArgument(name=[], type=argument.type).validate([], config)
+    with raises(InvalidValueError): SRCustomBlockArgument(name="", type=argument.type).validate([], config)
+    with raises(TypeValidationError): SRCustomBlockArgument(name=argument.name, type=True).validate([], config)
 
 
 

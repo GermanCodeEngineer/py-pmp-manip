@@ -118,20 +118,6 @@ class SRCustomBlockOpcode:
                     )
                 names[segment.name] = current_path
 
-    def _copymodify_(self, attr: str, value) -> "SRCustomBlockOpcode":
-        """
-        *[Helper Method]* Creates a copy with one attribute set to a new value
-
-        Args:
-            attr: the attribute to set in the copy
-            value: the value to set the attribute to
-        
-        Returns:
-            the modified copy
-        """
-        assert attr == "segments"
-        return SRCustomBlockOpcode(segments=value)
-
 @grepr_dataclass(grepr_fields=["name", "type"], frozen=True, unsafe_hash=True)
 class SRCustomBlockArgument:
     """
@@ -158,21 +144,6 @@ class SRCustomBlockArgument:
         AA_TYPE(self, path, "name", str)
         AA_NOT_EQUAL(self, path, "name", value="")
         AA_TYPE(self, path, "type", SRCustomBlockArgumentType)
-    
-    def _copymodify_(self, attr: str, value) -> "SRCustomBlockArgument":
-        """
-        *[Helper Method]* Creates a copy with one attribute set to a new value
-
-        Args:
-            attr: the attribute to set in the copy
-            value: the value to set the attribute to
-        
-        Returns:
-            the modified copy
-        """
-        assert attr in {"name", "type"}
-        if   attr == "name": return SRCustomBlockArgument(name=value, type=self.type)
-        elif attr == "type": return SRCustomBlockArgument(name=self.name, type=value)
 
 class SRCustomBlockArgumentType(PypenguinEnum):
     """

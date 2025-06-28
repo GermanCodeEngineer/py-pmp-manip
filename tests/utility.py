@@ -1,30 +1,26 @@
 from typing      import Any, Type, Callable, TypeVar
-from types       import MethodType
 from copy        import copy
 from pytest      import raises
-from io          import BytesIO
 
 from pypenguin.utility import ValidationError
 
-CPM = TypeVar("CPM")
+_CPMT = TypeVar("_CPMT")
 
-def copymodify(obj: CPM, attr: str, value: Any) -> CPM:
+def copymodify(obj: _CPMT, attr: str, value: Any) -> _CPMT:
     """
     Copy an object and modify an attribute
     `copymodify(x, 'y', z)` is equivalent to `x2 = copy.copy(x)\nx2.y = z`
     """
-    if isinstance(getattr(obj, "_copymodify_", None), MethodType):
-        return obj._copymodify_(attr, value)
     copied_obj = copy(obj)
     setattr(copied_obj, attr, value)
     return copied_obj
 
-_AVT = TypeVar("AVT")
+_AVTT = TypeVar("_AVTT")
 
 def execute_attr_validation_tests(
-        obj: _AVT, 
+        obj: _AVTT, 
         attr_tests: list[tuple[str, Any, Type[ValidationError]]], 
-        validate_func: Callable[[_AVT], None],
+        validate_func: Callable[[_AVTT], None],
         func_args: list[Any]=[],
     ) -> None:
     """

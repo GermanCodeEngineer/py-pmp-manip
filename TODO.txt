@@ -1,6 +1,5 @@
 TODOs:
     - complete tests
-    - maybe replace _copymodify_
     - rename Internal Methods
     - todos + go over code
     - test and document utility
