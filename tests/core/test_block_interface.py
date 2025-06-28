@@ -25,7 +25,14 @@ def fti_if():
 
 @fixture
 def itf_if():
-    return InterToFirstIF(blocks=ALL_IR_BLOCKS)
+    return InterToFirstIF(
+        blocks=ALL_IR_BLOCKS,
+        global_vars=["globvar"],
+        global_lists=["globlist"],
+        local_vars=["locvar"],
+        local_lists=["loclist"],
+        sprite_name="some sprite name",
+    )
 
 @fixture
 def sr_if():
@@ -83,7 +90,12 @@ def test_FirstToInterIF_get_comment_not_found(fti_if: FirstToInterIF):
 
 
 def test_InterToFirstIF_post_init():
-    itf_if = InterToFirstIF(blocks=ALL_IR_BLOCKS)
+    itf_if = InterToFirstIF(
+        blocks=ALL_IR_BLOCKS,
+        global_vars=["my variable"], global_lists=["my list"],
+        local_vars=[], local_lists=[],
+        sprite_name=None,
+    )
     cb_mutations = {
         "do sth text %s and bool %b": FRCustomBlockMutation(
             tag_name="mutation",
@@ -108,7 +120,12 @@ def test_InterToFirstIF_post_init_same_proccode_twice():
     blocks = deepcopy(ALL_IR_BLOCKS)
     blocks["qqq"] = ALL_IR_BLOCKS["h"]
     with raises(ConversionError):
-        InterToFirstIF(blocks=blocks)
+        InterToFirstIF(
+            blocks=blocks,
+            global_vars=[], global_lists=[],
+            local_vars=[], local_lists=[],
+            sprite_name=None,
+        )
 
 
 

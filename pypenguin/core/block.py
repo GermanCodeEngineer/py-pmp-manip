@@ -27,6 +27,7 @@ from pypenguin.core.block_mutation import FRMutation, SRMutation
 from pypenguin.core.comment        import SRComment
 from pypenguin.core.context        import CompleteContext
 from pypenguin.core.dropdown       import SRDropdownValue
+from pypenguin.core.vars_lists     import variable_sha256, list_sha256
 
 
 @grepr_dataclass(grepr_fields=["opcode", "next", "parent", "inputs", "fields", "shadow", "top_level", "x", "y", "comment", "mutation"])
@@ -311,7 +312,6 @@ class IRBlock:
         info_api: OpcodeInfoAPI,
         parent_id: str|None,
         own_id: str|None,
-        sprite_name: str|None,
     ) -> FRBlock | tuple[int, str, str] | tuple[int, str, str, int|float, int|float]:
         """
         Converts a IRBlock into a FRBlock
@@ -321,7 +321,6 @@ class IRBlock:
             info_api: the opcode info api used to fetch information about opcodes
             parent_id: the reference id of the parent block or None
             own_id: the reference id of this FRBlock or None for immediate blocks
-            sprite_name: the name of the block's sprite
         
         Returns:
             the FRBlock
@@ -346,7 +345,6 @@ class IRBlock:
                     info_api    = info_api,
                     parent_id   = own_id,
                     own_id      = None,
-                    sprite_name = sprite_name,
                 )
                 elements.insert(0, frblock)
             match input_type.mode:
@@ -373,21 +371,16 @@ class IRBlock:
             match dropdown_type:
                 case DropdownType.VARIABLE:
                     suffix    = ""
-                    secondary = SHA256_SEC_VARIABLE
-                    tertiary  = sprite_name
+                    sha256    = itf_if.get_variable_sha256(variable_name=dropdown_value)
                 case DropdownType.LIST:
                     suffix    = "list"
-                    secondary = SHA256_SEC_LIST
-                    tertiary  = sprite_name
+                    sha256    = itf_if.get_list_sha256(list_name=dropdown_value)
                 case DropdownType.BROADCAST:
                     suffix    = "broadcast_msg"
-                    secondary = SHA256_SEC_BROADCAST_MSG
-                    tertiary  = None
+                    sha256    = string_to_sha256(dropdown_value, secondary=SHA256_SEC_BROADCAST_MSG)
                 case _:
                     suffix    = "" # TODO: test if always present and empty
-                    secondary = SHA256_SEC_DROPDOWN_VALUE
-                    tertiary  = None
-            sha256 = string_to_sha256(dropdown_value, secondary, tertiary)
+                    sha256    = string_to_sha256(dropdown_value, secondary=SHA256_SEC_DROPDOWN_VALUE)
             old_fields[dropdown_id] = (dropdown_value, sha256, suffix)
 
         old_block = FRBlock(

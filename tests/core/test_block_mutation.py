@@ -33,7 +33,12 @@ def fti_if():
 
 @fixture
 def itf_if():
-    return InterToFirstIF(blocks=ALL_IR_BLOCKS)
+    return InterToFirstIF(
+        blocks=ALL_IR_BLOCKS,
+        global_vars=[], global_lists=[],
+        local_vars=[], local_lists=[],
+        sprite_name=None,
+    )
 
 @fixture
 def config():
@@ -373,7 +378,12 @@ def test_SRCustomBlockMutationCall_to_first(itf_if: InterToFirstIF):
             srmutation_copy = deepcopy(srmutation)
             srmutation_copy.optype = SRCustomBlockOptype.ENDING_STATEMENT
             return srmutation_copy
-    dummy_if = DummyIF(blocks=ALL_IR_BLOCKS)
+    dummy_if = DummyIF(
+        blocks=ALL_IR_BLOCKS,
+        global_vars=[], global_lists=[],
+        local_vars=[], local_lists=[],
+        sprite_name=None,
+    )
     assert srmutation.to_first(dummy_if).returns is None
 
 

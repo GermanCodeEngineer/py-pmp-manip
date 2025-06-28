@@ -6,6 +6,7 @@ from pypenguin.core.comment        import FRComment, SRComment
 from pypenguin.core.block_mutation import FRCustomBlockMutation, SRCustomBlockMutation
 from pypenguin.core.block          import FRBlock, IRBlock, SRBlock, SRScript
 from pypenguin.core.custom_block   import SRCustomBlockOpcode
+from pypenguin.core.vars_lists     import variable_sha256, list_sha256
 
 
 @grepr_dataclass(grepr_fields=["blocks", "block_comments", "scheduled_block_deletions"])
@@ -85,17 +86,27 @@ class FirstToInterIF:
             return self.block_comments[comment_id]
         raise ConversionError(f"Comment with id {repr(comment_id)} not found")
 
-@grepr_dataclass(grepr_fields=["blocks", "added_blocks", "added_comments", "_next_block_id_num"])
+@grepr_dataclass(grepr_fields=[
+    "blocks", 
+    "global_vars", "local_vars", "global_lists", "local_lists", "sprite_name",
+    "added_blocks", "added_comments", 
+    "_next_block_id_num", "_cb_mutations",
+])
 class InterToFirstIF:
     """
     An interface which allows the management of other blocks in the same target during conversion from first to intermediate representation
     """
 
     blocks: dict[str, IRBlock]
-    added_blocks: dict[str, FRBlock] = field(default_factory=dict)
-    added_comments: dict[str, FRComment] = field(default_factory=dict)
-    _next_block_id_num: int = 1
-    _cb_mutations: dict[str, "FRCustomBlockMutation"] = field(default_factory=dict)
+    global_vars: list[str]
+    global_lists: list[str]
+    local_vars: list[str]
+    local_lists: list[str]
+    sprite_name: str | None
+    added_blocks: dict[str, FRBlock] = field(init=False, default_factory=dict)
+    added_comments: dict[str, FRComment] = field(init=False, default_factory=dict)
+    _next_block_id_num: int = field(init=False, default_factory=lambda: 1)
+    _cb_mutations: dict[str, "FRCustomBlockMutation"] = field(init=False, default_factory=dict)
 
     def __post_init__(self) -> None:
         """
@@ -180,6 +191,42 @@ class InterToFirstIF:
             if block.mutation.custom_opcode == custom_opcode:
                 return block.mutation
         raise ConversionError(f"Mutation of custom opcode {custom_opcode} not found")
+
+    def get_variable_sha256(self, variable_name: str) -> str:
+        """
+        Get the sha256 hash of a global or local variable
+        # TODO: add tests
+        
+        Args:
+            variable_name: the variable name
+        
+        Returns:
+            the sha256 hash
+        """
+        if   variable_name in self.global_vars:
+            return variable_sha256(variable_name, sprite_name=None)
+        elif variable_name in self.local_vars:
+            return variable_sha256(variabel_name, sprite_name=self.sprite_name)
+        else:
+            raise ConversionError(f"Variable {repr(variable_name)} not found")
+
+    def get_list_sha256(self, list_name: str) -> str:
+        """
+        Get the sha256 hash of a global or local list
+        # TODO: add tests
+        
+        Args:
+            list_name: the list name
+        
+        Returns:
+            the sha256 hash
+        """
+        if   list_name in self.global_lists:
+            return list_sha256(list_name, sprite_name=None)
+        elif list_name in self.local_lists:
+            return list_sha256(list_name, sprite_name=self.sprite_name)
+        else:
+            raise ConversionError(f"Variable {repr(list_name)} not found")
 
 @grepr_dataclass(grepr_fields=["scripts", "cb_mutations"])
 class SecondReprIF:

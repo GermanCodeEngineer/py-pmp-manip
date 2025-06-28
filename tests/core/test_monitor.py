@@ -11,10 +11,11 @@ from pypenguin.utility          import (
     MissingDropdownError, RangeValidationError, InvalidValueError,
 )
 
-from pypenguin.core.context  import PartialContext
-from pypenguin.core.dropdown import SRDropdownValue
-from pypenguin.core.enums    import SRVariableMonitorReadoutMode
-from pypenguin.core.monitor  import FRMonitor, SRMonitor, SRVariableMonitor, SRListMonitor, STAGE_WIDTH, STAGE_HEIGHT
+from pypenguin.core.context    import PartialContext
+from pypenguin.core.dropdown   import SRDropdownValue
+from pypenguin.core.enums      import SRVariableMonitorReadoutMode
+from pypenguin.core.monitor    import FRMonitor, SRMonitor, SRVariableMonitor, SRListMonitor, STAGE_WIDTH, STAGE_HEIGHT
+from pypenguin.core.vars_lists import variable_sha256, list_sha256
 
 from tests.utility import execute_attr_validation_tests
 
@@ -54,7 +55,7 @@ ALL_FR_MONITOR_DATAS = [
     },
     { # [2]
         "height": 0,
-        "id": string_to_sha256("globl", secondary=SHA256_SEC_VARIABLE),
+        "id": variable_sha256("globl", sprite_name=None),
         "isDiscrete": False,
         "mode": "slider",
         "opcode": "data_variable",
@@ -70,7 +71,7 @@ ALL_FR_MONITOR_DATAS = [
     },
     { # [3]
         "height": 0,
-        "id": string_to_sha256("globl2", secondary=SHA256_SEC_VARIABLE),
+        "id": variable_sha256("globl2", sprite_name=None),
         "isDiscrete": True,
         "mode": "default",
         "opcode": "data_variable",
@@ -86,7 +87,7 @@ ALL_FR_MONITOR_DATAS = [
     },
     { # [4]
         "height": 198,
-        "id": string_to_sha256("locl", secondary=SHA256_SEC_LIST),
+        "id": list_sha256("locl", sprite_name="A Sprite"),
         "mode": "list",
         "opcode": "data_listcontents",
         "params": {"LIST": "locl"},
@@ -99,7 +100,7 @@ ALL_FR_MONITOR_DATAS = [
     },
     { # [5]
        "height": 147,
-       "id": string_to_sha256("globl", secondary=SHA256_SEC_LIST),
+       "id": list_sha256("globl", sprite_name=None),
        "mode": "list",
        "opcode": "data_listcontents",
        "params": {"LIST": "globl"},
@@ -112,7 +113,7 @@ ALL_FR_MONITOR_DATAS = [
     },
     { # [6]
         "height": 0,
-        "id": string_to_sha256("locl", secondary=SHA256_SEC_VARIABLE),
+        "id": variable_sha256("locl", sprite_name="A Sprite"),
         "isDiscrete": True,
         "mode": "default",
         "opcode": "data_variable",
@@ -248,7 +249,7 @@ ALL_FR_MONITORS: list[FRMonitor] = [
         is_discrete=True,
     ),
     FRMonitor( # [2]
-        id=string_to_sha256("globl", secondary=SHA256_SEC_VARIABLE),
+        id=variable_sha256("globl", sprite_name=None),
         mode="slider",
         opcode="data_variable",
         params={
@@ -266,7 +267,7 @@ ALL_FR_MONITORS: list[FRMonitor] = [
         is_discrete=False,
     ),
     FRMonitor( # [3]
-        id=string_to_sha256("globl2", secondary=SHA256_SEC_VARIABLE),
+        id=variable_sha256("globl2", sprite_name=None),
         mode="default",
         opcode="data_variable",
         params={
@@ -284,7 +285,7 @@ ALL_FR_MONITORS: list[FRMonitor] = [
         is_discrete=True,
     ),
     FRMonitor( # [4]
-        id=string_to_sha256("locl", secondary=SHA256_SEC_LIST),
+        id=list_sha256("locl", sprite_name="A Sprite"),
         mode="list",
         opcode="data_listcontents",
         params={
@@ -302,7 +303,7 @@ ALL_FR_MONITORS: list[FRMonitor] = [
         is_discrete=None,
     ),
     FRMonitor( # [5]
-        id=string_to_sha256("globl", secondary=SHA256_SEC_LIST),
+        id=list_sha256("globl", sprite_name=None),
         mode="list",
         opcode="data_listcontents",
         params={
@@ -320,7 +321,7 @@ ALL_FR_MONITORS: list[FRMonitor] = [
         is_discrete=None,
     ),
     FRMonitor( # [6]
-        id=string_to_sha256("locl", secondary=SHA256_SEC_VARIABLE),
+        id=variable_sha256("locl", sprite_name="A Sprite"),
         mode="default",
         opcode="data_variable",
         params={
