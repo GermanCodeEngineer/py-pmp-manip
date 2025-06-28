@@ -58,7 +58,7 @@ class FRMutation(ABC):
             the SRMutation
         """
 
-@grepr_dataclass(grepr_fields=["color"], parent_cls=FRMutation)
+@grepr_dataclass(grepr_fields=["color"])
 class FRCustomBlockArgumentMutation(FRMutation):
     """
     The first representation for the mutation of a custom block's argument reporter
@@ -126,7 +126,7 @@ class FRCustomBlockArgumentMutation(FRMutation):
             outline_color   = self.color[2],
         )
 
-@grepr_dataclass(grepr_fields=["proccode", "argument_ids", "argument_names", "argument_defaults", "warp", "returns", "edited", "optype", "color"], parent_cls=FRMutation)
+@grepr_dataclass(grepr_fields=["proccode", "argument_ids", "argument_names", "argument_defaults", "warp", "returns", "edited", "optype", "color"])
 class FRCustomBlockMutation(FRMutation):
     """
     The first representation for the mutation of a custom block definition
@@ -194,7 +194,7 @@ class FRCustomBlockMutation(FRMutation):
             outline_color     = self.color[2],
         )
 
-@grepr_dataclass(grepr_fields=["proccode", "argument_ids", "warp", "returns", "edited", "optype", "color"], parent_cls=FRMutation)
+@grepr_dataclass(grepr_fields=["proccode", "argument_ids", "warp", "returns", "edited", "optype", "color"])
 class FRCustomBlockCallMutation(FRMutation):
     """
     The first representation for the mutation of a custom block call
@@ -254,7 +254,7 @@ class FRCustomBlockCallMutation(FRMutation):
             ),
         )
 
-@grepr_dataclass(grepr_fields=["has_next"], parent_cls=FRMutation)
+@grepr_dataclass(grepr_fields=["has_next"])
 class FRStopScriptMutation(FRMutation):
     """
     The first representation for the mutation of a stop script mutation
@@ -328,7 +328,7 @@ class SRMutation(ABC):
             the FRMutation
         """
 
-@grepr_dataclass(grepr_fields=["argument_name", "main_color", "prototype_color", "outline_color"], parent_cls=SRMutation)
+@grepr_dataclass(grepr_fields=["argument_name", "main_color", "prototype_color", "outline_color"])
 class SRCustomBlockArgumentMutation(SRMutation):
     """
     The second representation for the mutation of a custom block argument reporter
@@ -376,7 +376,7 @@ class SRCustomBlockArgumentMutation(SRMutation):
             color    = (self.main_color, self.prototype_color, self.outline_color),
         )
     
-@grepr_dataclass(grepr_fields=["custom_opcode", "no_screen_refresh", "optype", "main_color", "prototype_color", "outline_color"], parent_cls=SRMutation)
+@grepr_dataclass(grepr_fields=["custom_opcode", "no_screen_refresh", "optype", "main_color", "prototype_color", "outline_color"])
 class SRCustomBlockMutation(SRMutation):
     """
     The second representation for the mutation of a custom block definition
@@ -450,7 +450,7 @@ class SRCustomBlockMutation(SRMutation):
             color             = (self.main_color, self.prototype_color, self.outline_color),
         )
 
-@grepr_dataclass(grepr_fields=["custom_opcode"], parent_cls=SRMutation)    
+@grepr_dataclass(grepr_fields=["custom_opcode"])    
 class SRCustomBlockCallMutation(SRMutation):
     """
     The second representation for the mutation of a custom block call
@@ -512,7 +512,7 @@ class SRCustomBlockCallMutation(SRMutation):
             ),
         )
 
-@grepr_dataclass(grepr_fields=["is_ending_statement"], parent_cls=SRMutation)
+@grepr_dataclass(grepr_fields=["is_ending_statement"])
 class SRStopScriptMutation(SRMutation):
     """
     The second representation for the mutation of a "stop [this script v] block

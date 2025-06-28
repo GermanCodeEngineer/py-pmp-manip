@@ -221,10 +221,7 @@ class FRTarget(ABC):
         
         return new_variables, new_lists
 
-@grepr_dataclass(
-    grepr_fields=["tempo", "video_transparency", "video_state", "text_to_speech_language"],
-    parent_cls=FRTarget,
-)          
+@grepr_dataclass(grepr_fields=["tempo", "video_transparency", "video_state", "text_to_speech_language"])
 class FRStage(FRTarget):
     """
     The first representation (FR) of the stage
@@ -291,10 +288,7 @@ class FRStage(FRTarget):
             volume        = self.volume,
         ), all_sprite_variables, all_sprite_lists)
 
-@grepr_dataclass(
-    grepr_fields=["visible", "x", "y", "size", "direction", "draggable", "rotation_style"],
-    parent_cls=FRTarget,
-)
+@grepr_dataclass(grepr_fields=["visible", "x", "y", "size", "direction", "draggable", "rotation_style"],)
 class FRSprite(FRTarget):
     """
     The first representation (FR) of a sprite
@@ -522,10 +516,7 @@ class SRStage(SRTarget):
     The second representation (SR) of the stage, which is much more user friendly
     """
 
-@grepr_dataclass(
-    grepr_fields=["name", "sprite_only_variables", "sprite_only_lists", "local_monitors", "is_visible", "position", "size", "direction", "is_draggable", " rotation_style", "uuid"],
-    parent_cls=SRTarget,
-)
+@grepr_dataclass(grepr_fields=["name", "sprite_only_variables", "sprite_only_lists", "local_monitors", "is_visible", "position", "size", "direction", "is_draggable", " rotation_style", "uuid"])
 class SRSprite(SRTarget):
     """
     The second representation (SR) of a sprite, which is much more user friendly

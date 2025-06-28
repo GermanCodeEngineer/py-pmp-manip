@@ -11,7 +11,7 @@ from pypenguin.core.block_interface import InterToFirstIF
 from tests.core.constants import ALL_FR_BLOCKS, ALL_FR_COMMENTS, ALL_IR_BLOCKS, ALL_SR_SCRIPTS
 
 
-@grepr_dataclass(grepr_fields=["_block_ids"], parent_cls=InterToFirstIF)
+@grepr_dataclass(grepr_fields=["_block_ids"])
 class TEST_InterToFirstIF(InterToFirstIF):
     _block_ids: list[str] = field(default_factory=list)
 

@@ -1,5 +1,4 @@
 TODOs:
-    - complete tests
     - rename Internal Methods
     - todos + go over code
     - test and document utility
@@ -7,7 +6,6 @@ TODOs:
     - add specific reasons for ThanksError
     - complete deoptimization
     - use typing.Self for from_data and alternate constructors
-    - grepr_dataclass: auto recognize parent_cls
     - add all errors to docstrings
     - possibly remove mode attribute of IRInputValue
     - check uses of ALL_FR_BLOCKS_CLEAN vs. ALL_FR_BLOCKS

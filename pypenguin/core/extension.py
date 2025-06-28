@@ -34,7 +34,7 @@ class SRBuiltinExtension(SRExtension):
     Builtin Extensions don't specify a url
     """
 
-@grepr_dataclass(grepr_fields=["url"], parent_cls=SRExtension)
+@grepr_dataclass(grepr_fields=["url"])
 class SRCustomExtension(SRExtension):
     """
     The second representation for a custom extension. 

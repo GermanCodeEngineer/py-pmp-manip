@@ -1069,7 +1069,7 @@ class SRInputValue(ABC):
                 expects_reporter = True,
             )
 
-@grepr_dataclass(grepr_fields=["block", "text"], parent_cls=SRInputValue, eq=False)
+@grepr_dataclass(grepr_fields=["block", "text"], eq=False)
 class SRBlockAndTextInputValue(SRInputValue):
     """
     The second representation for a block input, which has a text field and might contain a block
@@ -1112,7 +1112,7 @@ class SRBlockAndTextInputValue(SRInputValue):
         )
         AA_TYPE(self, path, "text", str)
 
-@grepr_dataclass(grepr_fields=["block", "dropdown"], parent_cls=SRInputValue, eq=False)
+@grepr_dataclass(grepr_fields=["block", "dropdown"], eq=False)
 class SRBlockAndDropdownInputValue(SRInputValue):
     """
     The second representation for a block input, which has a dropdown and might contain a block
@@ -1164,7 +1164,7 @@ class SRBlockAndDropdownInputValue(SRInputValue):
                 context       = context,
             )
 
-@grepr_dataclass(grepr_fields=["block"], parent_cls=SRInputValue, eq=False)
+@grepr_dataclass(grepr_fields=["block"], eq=False)
 class SRBlockOnlyInputValue(SRInputValue):
     """
     The second representation for a block input, which might contain a block
@@ -1205,7 +1205,7 @@ class SRBlockOnlyInputValue(SRInputValue):
             context        = context,
         )
 
-@grepr_dataclass(grepr_fields=["blocks"], parent_cls=SRInputValue, eq=False)
+@grepr_dataclass(grepr_fields=["blocks"], eq=False)
 class SRScriptInputValue(SRInputValue):
     """
     The second representation for a block input, which contains a substack of blocks

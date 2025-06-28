@@ -357,7 +357,7 @@ class SRMonitor:
         )
         
 
-@grepr_dataclass(grepr_fields=["readout_mode", "slider_min", "slider_max", "allow_only_integers"], parent_cls=SRMonitor)
+@grepr_dataclass(grepr_fields=["readout_mode", "slider_min", "slider_max", "allow_only_integers"])
 class SRVariableMonitor(SRMonitor):
     """
     The second representation exclusively for variable monitors
@@ -400,7 +400,7 @@ class SRVariableMonitor(SRMonitor):
 
         AA_BIGGER_OR_EQUAL(self, path, "slider_max", "slider_min")
 
-@grepr_dataclass(grepr_fields=["size"], parent_cls=SRMonitor)
+@grepr_dataclass(grepr_fields=["size"])
 class SRListMonitor(SRMonitor):
     """
     The second representation exclusively for list monitors

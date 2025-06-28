@@ -1,3 +1,4 @@
+from copy        import copy
 from dataclasses import dataclass
 from enum        import Enum
 
@@ -82,7 +83,7 @@ def grepr(obj, /, annotate_fields=True, include_attributes=False, *, indent=4):
         indent = ' ' * indent
     return _grepr(obj)[0]
 
-def grepr_dataclass(*, grepr_fields: list[str], parent_cls: type|None = None, 
+def grepr_dataclass(*, grepr_fields: list[str],
         init: bool = True, eq: bool = True, order: bool = False, 
         unsafe_hash: bool = False, frozen: bool = False, 
         match_args: bool = True, kw_only: bool = False, 
@@ -100,10 +101,14 @@ def grepr_dataclass(*, grepr_fields: list[str], parent_cls: type|None = None,
             return grepr(self)
         cls.__repr__ = __repr__
         cls._grepr = True
-        if parent_cls is None:
-            cls._grepr_fields = grepr_fields
-        else:
-            cls._grepr_fields = parent_cls._grepr_fields + grepr_fields
+        nonlocal grepr_fields
+        fields = copy(grepr_fields)
+        for base in cls.__bases__:
+            if not getattr(base, "_grepr", False): continue
+            for field in base._grepr_fields:
+                if field in fields: continue
+                fields.append(field)
+        cls._grepr_fields = fields
         cls = dataclass(cls, 
             init=init, repr=False, eq=eq,
             order=order, unsafe_hash=unsafe_hash, frozen=frozen,

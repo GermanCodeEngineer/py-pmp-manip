@@ -279,7 +279,7 @@ class SecondReprIF:
                 recursive_block_search(block)
         return blocks
 
-@grepr_dataclass(grepr_fields=["added_blocks", "_next_block_id_num"], parent_cls=SecondReprIF)
+@grepr_dataclass(grepr_fields=["added_blocks", "_next_block_id_num"])
 class SecondToInterIF(SecondReprIF):
     """
     An interface which allows the management of other blocks in the same target during conversion from second to intermediate representation

@@ -52,7 +52,7 @@ def context():
         is_stage=False,
     )
 
-@grepr_dataclass(grepr_fields=["_block_ids"], parent_cls=SecondToInterIF)
+@grepr_dataclass(grepr_fields=["_block_ids"])
 class TEST_SecondToInterIF(SecondToInterIF):
     _block_ids: list[str] = field(default_factory=list)
 
