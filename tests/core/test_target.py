@@ -75,8 +75,11 @@ def test_FRTarget_from_data_common():
 
 def test_FRTarget_post_init():
     class DummyFRTarget(FRTarget):
-        @classmethod # to fullfill the abstractmethod requirement
+        # to fullfill the abstractmethod requirements:
+        @classmethod
         def from_data(cls, data, info_api) -> "DummyFRTarget":
+            pass
+        def to_second(self, asset_files, info_api):
             pass
 
     with raises(ThanksError):

@@ -115,6 +115,7 @@ class FRTarget(ABC):
         Converts a FRTarget into a SRTarget
         
         Args:
+            asset_files: TODO: complete
             info_api: the opcode info api used to fetch information about opcodes
         
         Returns:
@@ -281,6 +282,7 @@ class FRStage(FRTarget):
         Converts a FRStage into a SRStage
         
         Args:
+            asset_files: TODO: complete
             info_api: the opcode info api used to fetch information about opcodes
         
         Returns:
@@ -354,6 +356,7 @@ class FRSprite(FRTarget):
         Converts a FRSprite into a SRSprite
         
         Args:
+            asset_files: TODO: complete
             info_api: the opcode info api used to fetch information about opcodes
         
         Returns:
