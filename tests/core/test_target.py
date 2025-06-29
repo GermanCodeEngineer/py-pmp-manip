@@ -23,7 +23,10 @@ from pypenguin.core.enums          import SRSpriteRotationStyle
 from pypenguin.core.target         import FRTarget, FRStage, FRSprite, SRTarget, SRSprite
 from pypenguin.core.vars_lists     import SRVariable, SRCloudVariable, SRList
 
-from tests.core.constants import SPRITE_DATA, STAGE_DATA, FR_SPRITE, FR_STAGE, SR_SPRITE, SR_STAGE, PROJECT_ASSET_FILES
+from tests.core.constants import (
+    SR_PROJECT, PROJECT_ASSET_FILES,
+    SPRITE_DATA, FR_SPRITE, SR_SPRITE, STAGE_DATA, FR_STAGE, SR_STAGE,
+)
 
 from tests.utility import execute_attr_validation_tests
 
@@ -321,6 +324,27 @@ def test_SRTarget_get_complete_context(context):
     assert complete_context.costumes == [(DropdownValueKind.COSTUME, "costume1")]
     assert complete_context.sounds == [(DropdownValueKind.SOUND, "Hello World!")]
     assert complete_context.is_stage == False
+
+
+def test_SRStage_to_first():
+    srstage = SR_STAGE
+    frstage, global_monitors = srstage.to_first(
+        info_api,
+        global_vars=SR_PROJECT.all_sprite_variables,
+        global_lists=SR_PROJECT.all_sprite_lists,
+        global_monitors=SR_PROJECT.global_monitors,
+        tempo=SR_PROJECT.tempo,
+        video_transparency=SR_PROJECT.video_transparency,
+        video_state=FR_STAGE.video_state,
+        text_to_speech_language=FR_STAGE.text_to_speech_language,
+    )
+    assert frstage.broadcasts == FR_STAGE.broadcasts
+    assert frstage.comments == 0#FR_STAGE.sounds
+    assert frstage.costumes == FR_STAGE.costumes
+    assert frstage.sounds == 0#FR_STAGE.costumes
+    assert frstage == FR_STAGE
+    raise Exception("SUCCES")
+    assert global_monitors == [] # TODO
 
 
 

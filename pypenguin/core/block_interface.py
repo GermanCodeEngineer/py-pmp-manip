@@ -1,11 +1,13 @@
 from dataclasses import field
 
+from pypenguin.opcode_info.api  import DropdownValueKind
 from pypenguin.utility import grepr_dataclass, number_to_token, ConversionError, ValidationError
 
-from pypenguin.core.comment        import FRComment, SRComment
 from pypenguin.core.block_mutation import FRCustomBlockMutation, SRCustomBlockMutation
-from pypenguin.core.block          import FRBlock, IRBlock, SRBlock, SRScript
+from pypenguin.core.block          import FRBlock, IRBlock, SRBlock, SRScript, SRInputValue
+from pypenguin.core.comment        import FRComment, SRComment
 from pypenguin.core.custom_block   import SRCustomBlockOpcode
+from pypenguin.core.dropdown       import SRDropdownValue
 from pypenguin.core.vars_lists     import variable_sha256, list_sha256
 
 
@@ -105,7 +107,7 @@ class InterToFirstIF:
     sprite_name: str | None
     added_blocks: dict[str, FRBlock] = field(init=False, default_factory=dict)
     added_comments: dict[str, FRComment] = field(init=False, default_factory=dict)
-    _next_block_id_num: int = field(init=False, default_factory=lambda: 1)
+    _next_block_id_num: int = field(init=False, default=1)
     _cb_mutations: dict[str, "FRCustomBlockMutation"] = field(init=False, default_factory=dict)
 
     def __post_init__(self) -> None:
@@ -203,7 +205,7 @@ class InterToFirstIF:
             the sha256 hash
         """
         if   variable_name in self.global_vars:
-            return variable_sha256(variable_name, sprite_name=None)
+            return variable_sha256(variable_name, sprite_name="_stage_")
         elif variable_name in self.local_vars:
             return variable_sha256(variable_name, sprite_name=self.sprite_name)
         else:
@@ -220,7 +222,7 @@ class InterToFirstIF:
             the sha256 hash
         """
         if   list_name in self.global_lists:
-            return list_sha256(list_name, sprite_name=None)
+            return list_sha256(list_name, sprite_name="_stage_")
         elif list_name in self.local_lists:
             return list_sha256(list_name, sprite_name=self.sprite_name)
         else:
@@ -233,12 +235,13 @@ class SecondReprIF:
     """
 
     scripts: list["SRScript"]
-    cb_mutations: dict[SRCustomBlockOpcode, "SRCustomBlockMutation"] = field(default_factory=dict)
+    cb_mutations: dict[SRCustomBlockOpcode, "SRCustomBlockMutation"] = field(init=False, default_factory=dict)
+    broadcast_messages: list[str] = field(init=False, default_factory=list)
     # Safe access is needed because blocks haven't actually been validated yet (see get_all_blocks)
     
     def __post_init__(self) -> None:
         """
-        Fetch and store SRCustomBlockMutation's for later
+        Fetch and store SRCustomBlockMutation's and broadcast messages for later
         
         Returns:
             None
@@ -251,6 +254,25 @@ class SecondReprIF:
             if not isinstance(getattr(mutation, "custom_opcode", None), SRCustomBlockOpcode):
                 continue
             self.cb_mutations[mutation.custom_opcode] = mutation
+        
+        for block in all_blocks:
+            if isinstance(getattr(block, "inputs", None), dict):
+                for input_value in block.inputs.values():
+                    if (
+                        isinstance(input_value, SRInputValue)
+                    and isinstance(getattr(input_value, "dropdown", None), SRDropdownValue)
+                    and getattr(input_value.dropdown, "kind", None) is DropdownValueKind.BROADCAST_MSG
+                    and isinstance(getattr(input_value.dropdown, "value", None), str)
+                    ):
+                        self.broadcast_messages.append(input_value.dropdown.value)
+            if isinstance(getattr(block, "dropdowns", None), dict):
+                for dropdown_value in block.dropdowns.values():
+                    if (
+                        isinstance(dropdown_value, SRDropdownValue)
+                    and getattr(dropdown_value, "kind", None) is DropdownValueKind.BROADCAST_MSG
+                    and isinstance(getattr(dropdown_value, "value", None), str)
+                    ):
+                        self.broadcast_messages.append(dropdown_value.value)
 
     def _get_all_blocks(self) -> list["SRBlock"]:
         """
@@ -285,7 +307,7 @@ class SecondToInterIF(SecondReprIF):
     An interface which allows the management of other blocks in the same target during conversion from second to intermediate representation
     """
 
-    added_blocks: dict[str, IRBlock] = field(default_factory=dict)
+    produced_blocks: dict[str, IRBlock] = field(default_factory=dict)
     _next_block_id_num: int = 1
 
     def get_next_block_id(self) -> str:
@@ -311,7 +333,7 @@ class SecondToInterIF(SecondReprIF):
         Returns:
             None
         """
-        self.added_blocks[block_id] = block
+        self.produced_blocks[block_id] = block
 
     def get_cb_mutation(self, custom_opcode: SRCustomBlockOpcode) -> "SRCustomBlockMutation":
         """

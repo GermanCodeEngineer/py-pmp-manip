@@ -4,7 +4,7 @@ from dataclasses import field
 from abc         import abstractmethod, ABC
 from uuid        import uuid4, UUID
 
-from pypenguin.important_consts import SHA256_SEC_TARGET_NAME
+from pypenguin.important_consts import SHA256_SEC_TARGET_NAME, SHA256_SEC_BROADCAST_MSG
 from pypenguin.opcode_info.api  import OpcodeInfoAPI, DropdownValueKind
 from pypenguin.utility          import (
     string_to_sha256, grepr_dataclass, ThanksError, ValidationConfig, 
@@ -13,7 +13,7 @@ from pypenguin.utility          import (
 )
 
 from pypenguin.core.asset           import FRCostume, FRSound, SRCostume, SRVectorCostume, SRSound
-from pypenguin.core.block_interface import FirstToInterIF, InterToFirstIF, ValidationIF
+from pypenguin.core.block_interface import SecondToInterIF, InterToFirstIF, FirstToInterIF, ValidationIF
 from pypenguin.core.block_mutation  import SRCustomBlockMutation
 from pypenguin.core.block           import FRBlock, IRBlock, SRScript
 from pypenguin.core.comment         import FRComment, SRComment
@@ -536,6 +536,8 @@ class SRStage(SRTarget):
 
     def to_first(self, 
         info_api: OpcodeInfoAPI,
+        global_vars: list[SRVariable],
+        global_lists: list[SRList],
         global_monitors: list[SRMonitor],
         tempo: int,
         video_transparency: int | float,
@@ -547,34 +549,56 @@ class SRStage(SRTarget):
         
         Args:
             info_api: the opcode info api used to fetch information about opcodes
+            global_vars: a list of global variables
+            global_lists: a list of global lists
+            global_monitors: the non-local monitors
             tempo: the music extension tempo
             video_transparency: the video extensions transparency
             video_state: the state of the video extension
             text_to_speech_language: the tts language of the tts extension
-            global_monitors: the non-local monitors
         
         Returns:
             the FRStage and a list of global monitors
         """
+        sti_if = SecondToInterIF(scripts=self.scripts)
+        for script in self.scripts:
+            top_level_id = script.to_inter(sti_if, info_api)
         
-        old_variables = {}
-        old_lists = {}
-        old_broadcasts = {}
+        itf_if = InterToFirstIF(
+            blocks=sti_if.produced_blocks,
+            global_vars=[variable.name for variable in global_vars],
+            global_lists=[list_.name for list_ in global_lists],
+            local_vars=[], # the stage can't have local variables and lists
+            local_lists=[],
+            sprite_name="_stage_",
+        )
         old_blocks = {}
+        
         old_comments = {}
         old_costumes = []
         old_sounds = []
-
-        itf_if = InterToFirstIF()
-
+        old_variables = {
+            itf_if.get_variable_sha256(variable.name): variable.to_tuple()
+            for variable in global_vars
+        }
+        old_lists = {
+            itf_if.get_list_sha256(list_.name): list_.to_tuple()
+            for list_ in global_lists
+        }
+        old_broadcasts = {
+            string_to_sha256(broadcast_name, secondary=SHA256_SEC_BROADCAST_MSG): broadcast_name
+            for broadcast_name in sti_if.broadcast_messages
+        }
+        print(sti_if.broadcast_messages, old_broadcasts)
         old_global_monitors = [monitor.to_first(itf_if, info_api) for monitor in global_monitors]
+        
         return (FRStage(
             is_stage                = True,
             name                    = "Stage",
             variables               = old_variables,
             lists                   = old_lists,
             broadcasts              = old_broadcasts,
-            custom_vars             = {}, # Seems to have no purpose
+            custom_vars             = [], # Seems to have no purpose
             blocks                  = old_blocks,
             comments                = old_comments,
             current_costume         = self.costume_index,
@@ -582,7 +606,7 @@ class SRStage(SRTarget):
             sounds                  = old_sounds,
             volume                  = self.volume,
             layer_order             = 0,
-            id                      = string_to_sha256("Stage", secondary=SHA256_SEC_TARGET_NAME),
+            id                      = string_to_sha256("_stage_", secondary=SHA256_SEC_TARGET_NAME),
 
             tempo                   = tempo,
             video_transparency      = video_transparency,

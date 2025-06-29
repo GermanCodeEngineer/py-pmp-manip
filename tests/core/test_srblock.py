@@ -89,7 +89,7 @@ def test_SRScript_to_inter():
         info_api=info_api,
     )
     assert top_level_id == "d"
-    assert sti_if.added_blocks == {
+    assert sti_if.produced_blocks == {
         id: ALL_IR_BLOCKS[id]
         for id in {"d", "b", "t", "e", "u", "v"}
     }
@@ -228,7 +228,7 @@ def test_SRBlock_to_inter_block_and_text_block_only():
         is_top_level=True,
     )
     assert irblock == ALL_IR_BLOCKS["c"]
-    assert sti_if.added_blocks == {
+    assert sti_if.produced_blocks == {
         id: ALL_IR_BLOCKS[id]
         for id in {"k", "l"}
     }
@@ -245,7 +245,7 @@ def test_SRBlock_to_inter_script_block1():
         is_top_level=True,
     )
     assert irblock == ALL_IR_BLOCKS["d"]
-    assert sti_if.added_blocks == {
+    assert sti_if.produced_blocks == {
         id: ALL_IR_BLOCKS[id]
         for id in {}
     }
@@ -262,7 +262,7 @@ def test_SRBlock_to_inter_script_block2_and_menu():
         is_top_level=False,
     )
     assert irblock == ALL_IR_BLOCKS["b"]
-    assert sti_if.added_blocks == {
+    assert sti_if.produced_blocks == {
         id: ALL_IR_BLOCKS[id]
         for id in {"e"}
     }
@@ -280,7 +280,7 @@ def test_SRBlock_to_inter_substack():
         is_top_level=True,
     )
     assert irblock == ALL_IR_BLOCKS["n"]
-    assert sti_if.added_blocks == {
+    assert sti_if.produced_blocks == {
         id: ALL_IR_BLOCKS[id]
         for id in {"o", "q"}
     }
@@ -297,7 +297,7 @@ def test_SRBlock_to_inter_immediate_block():
         is_top_level=True,
     )
     assert irblock == ALL_IR_BLOCKS["f"]
-    assert sti_if.added_blocks == {
+    assert sti_if.produced_blocks == {
         id: ALL_IR_BLOCKS[id]
         for id in {"g"}
     }
@@ -314,7 +314,7 @@ def test_SRBlock_to_inter_dropdown():
         is_top_level=True,
     )
     assert irblock == ALL_IR_BLOCKS["r"]
-    assert sti_if.added_blocks == {
+    assert sti_if.produced_blocks == {
         id: ALL_IR_BLOCKS[id]
         for id in {}
     }

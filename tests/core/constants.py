@@ -85,7 +85,7 @@ ALL_FR_BLOCK_DATAS = {
         "parent": None,
         "inputs": {
             "FROM": [
-                3, [12, "my variable", variable_sha256("my variable", sprite_name=None)], 
+                3, [12, "my variable", variable_sha256("my variable", sprite_name="_stage_")], 
                 [4, "1"],
             ],
             "TO": [3, "g", [4, "10"]],
@@ -96,7 +96,7 @@ ALL_FR_BLOCK_DATAS = {
         "x": 304,
         "y": 424,
     },
-    "m": [12, "my variable", variable_sha256("my variable", sprite_name=None), 446, 652],
+    "m": [12, "my variable", variable_sha256("my variable", sprite_name="_stage_"), 446, 652],
     "h": {
         "opcode": "procedures_definition_return",
         "next": None,
@@ -230,7 +230,7 @@ ALL_FR_BLOCK_DATAS = {
         "shadow": False,
         "topLevel": False,
     },
-    "p": [13, "my list", list_sha256("my list", sprite_name=None), 646, 561],
+    "p": [13, "my list", list_sha256("my list", sprite_name="_stage_"), 646, 561],
     "n": {
         "opcode": "control_if",
         "next": None,
@@ -252,7 +252,7 @@ ALL_FR_BLOCK_DATAS = {
             "VALUE": [1, [4, "1"]],
         },
         "fields": {
-            "VARIABLE": ["my variable", variable_sha256("my variable", sprite_name=None), ""],
+            "VARIABLE": ["my variable", variable_sha256("my variable", sprite_name="_stage_"), ""],
         },
         "shadow": False,
         "topLevel": False,
@@ -263,7 +263,7 @@ ALL_FR_BLOCK_DATAS = {
         "parent": "o",
         "inputs": {},
         "fields": {
-            "VARIABLE": ["my variable", variable_sha256("my variable", sprite_name=None), ""],
+            "VARIABLE": ["my variable", variable_sha256("my variable", sprite_name="_stage_"), ""],
         },
         "shadow": False,
         "topLevel": False,
@@ -380,7 +380,7 @@ ALL_FR_BLOCKS = {
         parent=None,
         inputs={
             "FROM": (
-                3, (12, "my variable", variable_sha256("my variable", sprite_name=None)), (4, "1"),
+                3, (12, "my variable", variable_sha256("my variable", sprite_name="_stage_")), (4, "1"),
             ),
             "TO": (3, "g", (4, "10")),
         },
@@ -390,7 +390,7 @@ ALL_FR_BLOCKS = {
         x=304,
         y=424,
     ),
-    "m": (12, "my variable", variable_sha256("my variable", sprite_name=None), 446, 652),
+    "m": (12, "my variable", variable_sha256("my variable", sprite_name="_stage_"), 446, 652),
     "h": FRBlock(
         opcode="procedures_definition_return",
         next=None,
@@ -524,7 +524,7 @@ ALL_FR_BLOCKS = {
         shadow=False,
         top_level=False,
     ),
-    "p": (13, "my list", list_sha256("my list", sprite_name=None), 646, 561),
+    "p": (13, "my list", list_sha256("my list", sprite_name="_stage_"), 646, 561),
     "n": FRBlock(
         opcode="control_if",
         next=None,
@@ -546,7 +546,7 @@ ALL_FR_BLOCKS = {
             "VALUE": (1, (4, "1")),
         },
         fields={
-            "VARIABLE": ("my variable", variable_sha256("my variable", sprite_name=None), ""),
+            "VARIABLE": ("my variable", variable_sha256("my variable", sprite_name="_stage_"), ""),
         },
         shadow=False,
         top_level=False,
@@ -557,7 +557,7 @@ ALL_FR_BLOCKS = {
         parent="o",
         inputs={},
         fields={
-            "VARIABLE": ("my variable", variable_sha256("my variable", sprite_name=None), ""),
+            "VARIABLE": ("my variable", variable_sha256("my variable", sprite_name="_stage_"), ""),
         },
         shadow=False,
         top_level=False,
@@ -637,7 +637,7 @@ ALL_FR_BLOCKS_CLEAN: dict[str, FRBlock] = ALL_FR_BLOCKS | {
         parent=None,
         inputs={},
         fields={
-            "VARIABLE": ("my variable", variable_sha256("my variable", sprite_name=None), ""),
+            "VARIABLE": ("my variable", variable_sha256("my variable", sprite_name="_stage_"), ""),
         },
         shadow=False,
         top_level=True,
@@ -650,7 +650,7 @@ ALL_FR_BLOCKS_CLEAN: dict[str, FRBlock] = ALL_FR_BLOCKS | {
         parent=None,
         inputs={},
         fields={
-            "LIST": ("my list", list_sha256("my list", sprite_name=None), "list"),
+            "LIST": ("my list", list_sha256("my list", sprite_name="_stage_"), "list"),
         },
         shadow=False,
         top_level=True,
@@ -1326,13 +1326,13 @@ STAGE_DATA = {
     "isStage": True,
     "name": "Stage",
     "variables": {
-        variable_sha256("my variable", sprite_name=None): [
+        variable_sha256("my variable", sprite_name="_stage_"): [
             "my variable",
             0,
         ],
     },
     "lists": {
-        list_sha256("my list", sprite_name=None): [
+        list_sha256("my list", sprite_name="_stage_"): [
             "my list",
             [],
         ],
@@ -1368,10 +1368,10 @@ FR_STAGE = FRStage(
     is_stage=True,
     name="Stage",
     variables={
-        variable_sha256("my variable", sprite_name=None): ("my variable", 0),
+        variable_sha256("my variable", sprite_name="_stage_"): ("my variable", 0),
     },
     lists={
-        list_sha256("my list", sprite_name=None): ("my list", []),
+        list_sha256("my list", sprite_name="_stage_"): ("my list", []),
     },
     broadcasts={
         string_to_sha256("my message", secondary=SHA256_SEC_BROADCAST_MSG): "my message",
@@ -1513,7 +1513,7 @@ PROJECT_DATA = {
     ],
     "monitors": [
         {
-            "id": list_sha256("my list", sprite_name=None),
+            "id": list_sha256("my list", sprite_name="_stage_"),
             "mode": "list",
             "opcode": "data_listcontents",
             "params": {
@@ -1565,7 +1565,7 @@ FR_PROJECT = FRProject(
     ],
     monitors=[
         FRMonitor(
-            id=list_sha256("my list", sprite_name=None),
+            id=list_sha256("my list", sprite_name="_stage_"),
             mode="list",
             opcode="data_listcontents",
             params={
@@ -1715,7 +1715,7 @@ SB3_PROJECT_DATA_ORGINAL = {
             "isStage": True,
             "name": "Stage",
             "variables": {
-                variable_sha256("my variable", sprite_name=None): [
+                variable_sha256("my variable", sprite_name="_stage_"): [
                     "my variable",
                     0,
                 ],

@@ -95,7 +95,7 @@ def test_InterToFirstIF_post_init():
         blocks=ALL_IR_BLOCKS,
         global_vars=["my variable"], global_lists=["my list"],
         local_vars=[], local_lists=[],
-        sprite_name=None,
+        sprite_name="_stage_",
     )
     cb_mutations = {
         "do sth text %s and bool %b": FRCustomBlockMutation(
@@ -125,7 +125,7 @@ def test_InterToFirstIF_post_init_same_proccode_twice():
             blocks=blocks,
             global_vars=[], global_lists=[],
             local_vars=[], local_lists=[],
-            sprite_name=None,
+            sprite_name="_stage_",
         )
 
 
@@ -217,7 +217,7 @@ def test_InterToFirstIF_get_sr_cb_mutation(itf_if: InterToFirstIF):
 
 def test_InterToFirstIF_get_variable_sha256_global(itf_if: InterToFirstIF):
     sha256 = itf_if.get_variable_sha256("globvar")
-    assert sha256 == variable_sha256("globvar", sprite_name=None)
+    assert sha256 == variable_sha256("globvar", sprite_name="_stage_")
 
 def test_InterToFirstIF_get_variable_sha256_local(itf_if: InterToFirstIF):
     sha256 = itf_if.get_variable_sha256("locvar")
@@ -230,7 +230,7 @@ def test_InterToFirstIF_get_variable_sha256_undefined(itf_if: InterToFirstIF):
 
 def test_InterToFirstIF_get_list_sha256_global(itf_if: InterToFirstIF):
     sha256 = itf_if.get_list_sha256("globlist")
-    assert sha256 == list_sha256("globlist", sprite_name=None)
+    assert sha256 == list_sha256("globlist", sprite_name="_stage_")
 
 def test_InterToFirstIF_get_list_sha256_local(itf_if: InterToFirstIF):
     sha256 = itf_if.get_list_sha256("loclist")
@@ -316,8 +316,8 @@ def test_SecondToInterIF_schedule_block_addition(sti_if: SecondToInterIF):
         is_top_level=False,
     ),
     sti_if_copy.schedule_block_addition("a", irblock)
-    assert sti_if_copy.added_blocks == {"a": irblock}
-    sti_if_copy.added_blocks = {}
+    assert sti_if_copy.produced_blocks == {"a": irblock}
+    sti_if_copy.produced_blocks = {}
     assert sti_if_copy == sti_if
 
 

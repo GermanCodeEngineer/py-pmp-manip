@@ -84,7 +84,7 @@ def test_FRBlock_from_data_valid_mutation():
 
 
 def test_FRBlock_from_tuple_not_top_level():
-    data = [OPCODE_NUM_VAR_VALUE, "a variable", variable_sha256("my variable", sprite_name=None)]
+    data = [OPCODE_NUM_VAR_VALUE, "a variable", variable_sha256("my variable", sprite_name="_stage_")]
     parent_id = "m"
     frblock = FRBlock.from_tuple(data, parent_id=parent_id)
     assert isinstance(frblock, FRBlock)
@@ -93,7 +93,7 @@ def test_FRBlock_from_tuple_not_top_level():
     assert frblock.parent    == parent_id
     assert frblock.inputs    == {}
     assert frblock.fields    == {
-        "VARIABLE": ("a variable", variable_sha256("my variable", sprite_name=None), ""),
+        "VARIABLE": ("a variable", variable_sha256("my variable", sprite_name="_stage_"), ""),
     }
     assert frblock.shadow    is False
     assert frblock.top_level is False
@@ -106,14 +106,14 @@ def test_FRBlock_from_tuple_not_top_level():
         FRBlock.from_tuple(data, parent_id=None)
 
 def test_FRBlock_from_tuple_list_top_level():
-    data = [OPCODE_NUM_LIST_VALUE, "a list", list_sha256("my list", sprite_name=None), 460, 628]
+    data = [OPCODE_NUM_LIST_VALUE, "a list", list_sha256("my list", sprite_name="_stage_"), 460, 628]
     frblock = FRBlock.from_tuple(data, parent_id=None)
     assert isinstance(frblock, FRBlock)
     assert frblock.opcode    == OPCODE_LIST_VALUE
     assert frblock.next      is None
     assert frblock.parent    is None
     assert frblock.inputs    == {}
-    assert frblock.fields    == {"LIST": ("a list", list_sha256("my list", sprite_name=None), "list")}
+    assert frblock.fields    == {"LIST": ("a list", list_sha256("my list", sprite_name="_stage_"), "list")}
     assert frblock.shadow    is False
     assert frblock.top_level is True
     assert frblock.x         == data[3]
@@ -146,7 +146,7 @@ def test_FRBlock_to_tuple_list():
     assert frblock.to_tuple() == ALL_FR_BLOCKS["p"]
 
 def test_FRBlock_to_tuple_variable_not_top_level():
-    sha256 = variable_sha256("my variable", sprite_name=None)
+    sha256 = variable_sha256("my variable", sprite_name="_stage_")
     frblock = FRBlock(
         opcode    = OPCODE_VAR_VALUE,
         next      = None,

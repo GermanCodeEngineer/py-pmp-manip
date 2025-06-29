@@ -21,7 +21,7 @@ def test_variable_sha256():
 
 
 def test_list_sha256():
-    result = list_sha256("a list", sprite_name=None)
+    result = list_sha256("a list", sprite_name="_stage_")
     expected = string_to_sha256("a list", secondary=SHA256_SEC_LIST, tertiary=None)
     assert result == expected
 

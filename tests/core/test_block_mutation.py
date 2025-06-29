@@ -37,7 +37,7 @@ def itf_if():
         blocks=ALL_IR_BLOCKS,
         global_vars=[], global_lists=[],
         local_vars=[], local_lists=[],
-        sprite_name=None,
+        sprite_name="_stage_",
     )
 
 @fixture
@@ -382,7 +382,7 @@ def test_SRCustomBlockMutationCall_to_first(itf_if: InterToFirstIF):
         blocks=ALL_IR_BLOCKS,
         global_vars=[], global_lists=[],
         local_vars=[], local_lists=[],
-        sprite_name=None,
+        sprite_name="_stage_",
     )
     assert srmutation.to_first(dummy_if).returns is None
 

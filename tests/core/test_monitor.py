@@ -60,7 +60,7 @@ ALL_FR_MONITOR_DATAS = [
     },
     { # [2]
         "height": 0,
-        "id": variable_sha256("globl", sprite_name=None),
+        "id": variable_sha256("globl", sprite_name="_stage_"),
         "isDiscrete": False,
         "mode": "slider",
         "opcode": "data_variable",
@@ -76,7 +76,7 @@ ALL_FR_MONITOR_DATAS = [
     },
     { # [3]
         "height": 0,
-        "id": variable_sha256("globl2", sprite_name=None),
+        "id": variable_sha256("globl2", sprite_name="_stage_"),
         "isDiscrete": True,
         "mode": "default",
         "opcode": "data_variable",
@@ -105,7 +105,7 @@ ALL_FR_MONITOR_DATAS = [
     },
     { # [5]
        "height": 147,
-       "id": list_sha256("globl", sprite_name=None),
+       "id": list_sha256("globl", sprite_name="_stage_"),
        "mode": "list",
        "opcode": "data_listcontents",
        "params": {"LIST": "globl"},
@@ -254,7 +254,7 @@ ALL_FR_MONITORS: list[FRMonitor] = [
         is_discrete=True,
     ),
     FRMonitor( # [2]
-        id=variable_sha256("globl", sprite_name=None),
+        id=variable_sha256("globl", sprite_name="_stage_"),
         mode="slider",
         opcode="data_variable",
         params={
@@ -272,7 +272,7 @@ ALL_FR_MONITORS: list[FRMonitor] = [
         is_discrete=False,
     ),
     FRMonitor( # [3]
-        id=variable_sha256("globl2", sprite_name=None),
+        id=variable_sha256("globl2", sprite_name="_stage_"),
         mode="default",
         opcode="data_variable",
         params={
@@ -308,7 +308,7 @@ ALL_FR_MONITORS: list[FRMonitor] = [
         is_discrete=None,
     ),
     FRMonitor( # [5]
-        id=list_sha256("globl", sprite_name=None),
+        id=list_sha256("globl", sprite_name="_stage_"),
         mode="list",
         opcode="data_listcontents",
         params={
