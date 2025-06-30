@@ -26,6 +26,7 @@ from pypenguin.core.vars_lists     import SRVariable, SRCloudVariable, SRList
 from tests.core.constants import (
     SR_PROJECT, PROJECT_ASSET_FILES,
     SPRITE_DATA, FR_SPRITE, SR_SPRITE, STAGE_DATA, FR_STAGE, SR_STAGE,
+    ALL_SR_SCRIPTS,
 )
 
 from tests.utility import execute_attr_validation_tests
@@ -327,24 +328,49 @@ def test_SRTarget_get_complete_context(context):
 
 
 def test_SRStage_to_first():
-    srstage = SR_STAGE
-    frstage, global_monitors = srstage.to_first(
+    srstage = copy(SR_STAGE)
+    srstage.comments = [
+        SRComment(
+            position=(10391, 97154),
+            size=(300, 300),
+            is_minimized=False,
+            text="hi :)",
+        )
+    ]
+    srstage.scripts = ALL_SR_SCRIPTS
+    target_frstage = copy(FR_STAGE)
+    target_frstage.costumes = [costume.to_second(PROJECT_ASSET_FILES).to_first()[0] for costume in target_frstage.costumes]
+    target_frstage.sounds   = [sound  .to_second(PROJECT_ASSET_FILES).to_first()[0] for sound   in target_frstage.sounds  ]
+    target_frstage.comments = {
+        "a": FRComment(
+            block_id=None,
+            x=10391,
+            y=97154,
+            width=300,
+            height=300,
+            minimized=False,
+            text="hi :)",
+        ),
+    }
+    
+    frstage, global_monitors, asset_files = srstage.to_first(
         info_api,
         global_vars=SR_PROJECT.all_sprite_variables,
         global_lists=SR_PROJECT.all_sprite_lists,
         global_monitors=SR_PROJECT.global_monitors,
+        broadcast_messages=["my message"],
         tempo=SR_PROJECT.tempo,
         video_transparency=SR_PROJECT.video_transparency,
         video_state=FR_STAGE.video_state,
         text_to_speech_language=FR_STAGE.text_to_speech_language,
     )
-    assert frstage.broadcasts == FR_STAGE.broadcasts
-    assert frstage.comments == 0#FR_STAGE.sounds
-    assert frstage.costumes == FR_STAGE.costumes
-    assert frstage.sounds == 0#FR_STAGE.costumes
-    assert frstage == FR_STAGE
+    assert frstage.costumes == target_frstage.costumes
+    assert frstage.sounds == target_frstage.sounds
+    assert frstage.broadcasts == target_frstage.broadcasts
+    assert frstage == target_frstage
     raise Exception("SUCCES")
     assert global_monitors == [] # TODO
+    assert asset_files == 0 # TODO
 
 
 

@@ -367,6 +367,7 @@ class IRBlock:
 
         old_fields = {}
         for dropdown_id, dropdown_value in self.dropdowns.items():
+            print(repr(self.opcode), opcode_info)
             dropdown_type = opcode_info.get_dropdown_info_by_old(dropdown_id).type
             match dropdown_type:
                 case DropdownType.VARIABLE:
@@ -431,7 +432,8 @@ class IRBlock:
             --> "_mouse_" """
         
         old_new_input_ids = opcode_info.get_old_new_input_ids(block=self, fti_if=None)
-        # maps old input ids to new input ids # fti_if isn't necessary for a IRBlock 
+        input_infos = opcode_info.get_new_input_ids_infos(block=self, fti_if=None) 
+        # maps old input ids to new input ids and gets input information # fti_if isn't necessary for a IRBlock 
         
         new_inputs = {}
         for input_id, input_value in self.inputs.items():
@@ -497,12 +499,12 @@ class IRBlock:
                 case InputMode.BLOCK_AND_MENU_TEXT:  # pragma: no cover
                     raise NotImplementedError() # TODO  # pragma: no cover
 
+            new_input_id = old_new_input_ids[input_id]
             if input_dropdown is not None:
-                input_type = opcode_info.get_input_info_by_old(input_id).type
+                input_type = input_infos[new_input_id].type
                 dropdown_type = input_type.corresponding_dropdown_type
                 input_dropdown = SRDropdownValue.from_tuple(dropdown_type.translate_old_to_new_value(input_dropdown))
 
-            new_input_id = old_new_input_ids[input_id]
             new_inputs[new_input_id] = SRInputValue.from_mode(
                 mode     = input_value.mode,
                 blocks   = input_blocks,
@@ -511,8 +513,6 @@ class IRBlock:
                 dropdown = input_dropdown,
             )
         
-        input_infos = opcode_info.get_new_input_ids_infos(block=self, fti_if=None) 
-        # maps input ids to their types # fti_if isn't necessary for a IRBlock
         # Check for missing inputs and give a default value where possible otherwise raise
         for new_input_id in input_infos.keys():
             if new_input_id not in new_inputs:

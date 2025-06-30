@@ -143,6 +143,7 @@ class OpcodeInfo:
         Returns:
             the input information
         """
+        raise DeprecationWarning()
         return self.inputs.get_by_key1(old)
     def get_dropdown_info_by_old(self, old: str) -> DropdownInfo:
         """
@@ -170,6 +171,7 @@ class OpcodeInfo:
         Returns:
             the input information
         """
+        raise DeprecationWarning()
         return self.inputs.get_by_key2(new)
     def get_dropdown_info_by_new(self, new: str) -> DropdownInfo:
         """

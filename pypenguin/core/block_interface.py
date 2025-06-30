@@ -105,7 +105,7 @@ class InterToFirstIF:
     local_vars: list[str]
     local_lists: list[str]
     sprite_name: str | None
-    added_blocks: dict[str, FRBlock] = field(init=False, default_factory=dict)
+    added_blocks: dict[str, FRBlock | tuple] = field(init=False, default_factory=dict)
     added_comments: dict[str, FRComment] = field(init=False, default_factory=dict)
     _next_block_id_num: int = field(init=False, default=1)
     _cb_mutations: dict[str, "FRCustomBlockMutation"] = field(init=False, default_factory=dict)
@@ -135,7 +135,7 @@ class InterToFirstIF:
         self._next_block_id_num += 1
         return block_id
 
-    def schedule_block_addition(self, block_id: str, block: FRBlock) -> None:
+    def schedule_block_addition(self, block_id: str, block: FRBlock | tuple) -> None:
         """
         Order a FRBlock to be added by its reference id. 
         It will be present in first representation
@@ -236,12 +236,11 @@ class SecondReprIF:
 
     scripts: list["SRScript"]
     cb_mutations: dict[SRCustomBlockOpcode, "SRCustomBlockMutation"] = field(init=False, default_factory=dict)
-    broadcast_messages: list[str] = field(init=False, default_factory=list)
     # Safe access is needed because blocks haven't actually been validated yet (see get_all_blocks)
     
     def __post_init__(self) -> None:
         """
-        Fetch and store SRCustomBlockMutation's and broadcast messages for later
+        Fetch and store SRCustomBlockMutation's for later
         
         Returns:
             None
@@ -254,25 +253,6 @@ class SecondReprIF:
             if not isinstance(getattr(mutation, "custom_opcode", None), SRCustomBlockOpcode):
                 continue
             self.cb_mutations[mutation.custom_opcode] = mutation
-        
-        for block in all_blocks:
-            if isinstance(getattr(block, "inputs", None), dict):
-                for input_value in block.inputs.values():
-                    if (
-                        isinstance(input_value, SRInputValue)
-                    and isinstance(getattr(input_value, "dropdown", None), SRDropdownValue)
-                    and getattr(input_value.dropdown, "kind", None) is DropdownValueKind.BROADCAST_MSG
-                    and isinstance(getattr(input_value.dropdown, "value", None), str)
-                    ):
-                        self.broadcast_messages.append(input_value.dropdown.value)
-            if isinstance(getattr(block, "dropdowns", None), dict):
-                for dropdown_value in block.dropdowns.values():
-                    if (
-                        isinstance(dropdown_value, SRDropdownValue)
-                    and getattr(dropdown_value, "kind", None) is DropdownValueKind.BROADCAST_MSG
-                    and isinstance(getattr(dropdown_value, "value", None), str)
-                    ):
-                        self.broadcast_messages.append(dropdown_value.value)
 
     def _get_all_blocks(self) -> list["SRBlock"]:
         """

@@ -3,8 +3,7 @@ from json import dumps
 
 from pypenguin.important_consts import (
     SHA256_SEC_MAIN_ARGUMENT_NAME, SHA256_SEC_LOCAL_ARGUMENT_NAME,
-    SHA256_SEC_VARIABLE, SHA256_SEC_LIST, SHA256_SEC_BROADCAST_MSG,
-    SHA256_SEC_DROPDOWN_VALUE, SHA256_SEC_TARGET_NAME,
+    SHA256_SEC_BROADCAST_MSG, SHA256_SEC_DROPDOWN_VALUE, SHA256_SEC_TARGET_NAME,
 )
 from pypenguin.opcode_info.api  import DropdownValueKind, InputMode
 from pypenguin.utility          import read_all_files_of_zip, string_to_sha256

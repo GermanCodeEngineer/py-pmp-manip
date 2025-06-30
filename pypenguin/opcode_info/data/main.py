@@ -314,7 +314,7 @@ def _f5d7_e3e2(block: "FRBlock", block_id: str, itf_if: "InterToFirstIF") -> "FR
     )
     itf_if.schedule_block_addition(prototype_id, prototype_block)
     for argument_name, argument_default, argument_block_id in zip(
-        mutation.argument_names, argument_default, argument_block_ids
+        mutation.argument_names, mutation.argument_defaults, argument_block_ids
     ):
         argument_opcode = OPCODE_CB_ARG_TEXT if argument_default == "" else OPCODE_CB_ARG_BOOL
         argument_block = FRBlock(
@@ -327,7 +327,11 @@ def _f5d7_e3e2(block: "FRBlock", block_id: str, itf_if: "InterToFirstIF") -> "FR
             },
             shadow   = True,
             topLevel = False,
-            mutation = FRCustomBlockArgumentMutation(color=mutation.color), # use the same colors as the prototype,
+            mutation = FRCustomBlockArgumentMutation(
+                tag_name="mutation", 
+                children=[], 
+                color=mutation.color, # use the same colors as the prototype,
+            ),
         )
         itf_if.schedule_block_addition(argument_block_id, argument_block)
     return block

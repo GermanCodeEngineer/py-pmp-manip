@@ -55,6 +55,7 @@ class FRCostume:
     def to_second(self, asset_files: dict[str, bytes]) -> "SRVectorCostume|SRBitmapCostume": 
         """
         Converts a FRCostume into a SRCostume
+        # TODO: update docstring
         
         Returns:
             the SRCostume
@@ -124,6 +125,7 @@ class FRSound:
     def to_second(self, asset_files: dict[str, bytes]) -> "SRSound":
         """
         Converts a FRSound into a SRSound
+        # TODO: update docstring
         
         Returns:
             the SRSound
