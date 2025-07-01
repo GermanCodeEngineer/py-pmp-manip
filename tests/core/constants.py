@@ -275,7 +275,7 @@ ALL_FR_BLOCK_DATAS = {
             "VALUE": (1, (4, "50")),
         },
         "fields": {
-            "WHENGREATERTHANMENU": ("LOUDNESS", string_to_sha256("LOUDNESS", secondary=SHA256_SEC_DROPDOWN_VALUE), ""),
+            "WHENGREATERTHANMENU": ("LOUDNESS", string_to_sha256("LOUDNESS", secondary=SHA256_SEC_DROPDOWN_VALUE)),
         },
         "shadow": False,
         "topLevel": True,
@@ -569,7 +569,7 @@ ALL_FR_BLOCKS = {
             "VALUE": (1, (4, "50")),
         },
         fields={
-            "WHENGREATERTHANMENU": ("LOUDNESS", string_to_sha256("LOUDNESS", secondary=SHA256_SEC_DROPDOWN_VALUE), ""),
+            "WHENGREATERTHANMENU": ("LOUDNESS", string_to_sha256("LOUDNESS", secondary=SHA256_SEC_DROPDOWN_VALUE)),
         },
         shadow=False,
         top_level=True,

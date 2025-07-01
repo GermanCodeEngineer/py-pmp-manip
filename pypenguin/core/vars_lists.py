@@ -3,7 +3,7 @@ from pypenguin.utility          import string_to_sha256, grepr_dataclass, Valida
 
 
 
-def variable_sha256(variable_name: str, sprite_name: str|None):
+def variable_sha256(variable_name: str, sprite_name: str):
     """
     A shortcut for computing a variable's sha256 hash
 
@@ -18,7 +18,7 @@ def variable_sha256(variable_name: str, sprite_name: str|None):
 
 
 
-def list_sha256(list_name: str, sprite_name: str|None):
+def list_sha256(list_name: str, sprite_name: str):
     """
     A shortcut for computing a list's sha256 hash
 

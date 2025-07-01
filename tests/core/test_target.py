@@ -13,21 +13,26 @@ from pypenguin.utility          import (
     SameValueTwiceError, InvalidValueError
 )
 
-from pypenguin.core.asset          import SRVectorCostume, SRSound
-from pypenguin.core.block_mutation import SRCustomBlockMutation
-from pypenguin.core.block          import FRBlock, SRScript, SRBlock
-from pypenguin.core.comment        import FRComment, SRComment
-from pypenguin.core.context        import PartialContext
-from pypenguin.core.custom_block   import SRCustomBlockOptype, SRCustomBlockOpcode, SRCustomBlockArgument, SRCustomBlockArgumentType
-from pypenguin.core.enums          import SRSpriteRotationStyle
-from pypenguin.core.target         import FRTarget, FRStage, FRSprite, SRTarget, SRSprite
-from pypenguin.core.vars_lists     import SRVariable, SRCloudVariable, SRList
+from pypenguin.core.asset           import SRVectorCostume, SRSound
+from pypenguin.core.block_mutation  import SRCustomBlockMutation
+from pypenguin.core.block           import FRBlock, SRScript, SRBlock
+from pypenguin.core.comment         import FRComment, SRComment
+from pypenguin.core.context         import PartialContext
+from pypenguin.core.custom_block    import (
+    SRCustomBlockOptype, 
+    SRCustomBlockOpcode, SRCustomBlockArgument, SRCustomBlockArgumentType,
+)
+from pypenguin.core.enums           import SRSpriteRotationStyle
+from pypenguin.core.target          import FRTarget, FRStage, FRSprite, SRTarget, SRSprite
+from pypenguin.core.vars_lists      import SRVariable, SRCloudVariable, SRList
 
 from tests.core.constants import (
     SR_PROJECT, PROJECT_ASSET_FILES,
     SPRITE_DATA, FR_SPRITE, SR_SPRITE, STAGE_DATA, FR_STAGE, SR_STAGE,
     ALL_SR_SCRIPTS,
 )
+from tests.core.test_irblock import TEST_InterToFirstIF
+from tests.core.test_srblock import TEST_SecondToInterIF
 
 from tests.utility import execute_attr_validation_tests
 
@@ -327,7 +332,17 @@ def test_SRTarget_get_complete_context(context):
     assert complete_context.is_stage == False
 
 
-def test_SRStage_to_first():
+def test_SRStage_to_first(monkeypatch):
+    import pypenguin.core.block_interface as block_interface
+    monkeypatch.setattr(block_interface, "SecondToInterIF", TEST_SecondToInterIF)
+    monkeypatch.setattr(block_interface, "InterToFirstIF" , TEST_InterToFirstIF )
+    block_ids = [str(i) for i in range(100)]
+    def new_post_init(self):
+        nonlocal block_ids
+        self._block_ids = block_ids
+    monkeypatch.setattr(TEST_SecondToInterIF, "__post_init__", new_post_init)
+    monkeypatch.setattr(TEST_InterToFirstIF , "__post_init__", new_post_init)
+    
     srstage = copy(SR_STAGE)
     srstage.comments = [
         SRComment(
@@ -367,6 +382,19 @@ def test_SRStage_to_first():
     assert frstage.costumes == target_frstage.costumes
     assert frstage.sounds == target_frstage.sounds
     assert frstage.broadcasts == target_frstage.broadcasts
+    a = frstage.blocks
+    b = target_frstage.blocks
+    #assert len(a) == len(b)
+    for key in a.keys():
+        if key not in b:
+            print(key)
+    for key in set(a.keys())|set(b.keys()):
+        if a.get(key) != b.get(key):
+            print(repr(key), a.get(key), b.get(key))
+            raise Exception()
+    assert a == b
+    #assert frstage.blocks == target_frstage.blocks
+    assert frstage.comments == target_frstage.comments
     assert frstage == target_frstage
     raise Exception("SUCCES")
     assert global_monitors == [] # TODO

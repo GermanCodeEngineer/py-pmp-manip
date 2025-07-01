@@ -9,15 +9,22 @@ from pypenguin.utility import ValidationConfig
 #file_path = "../assets/input_modes.pmp"
 #file_path = "../assets/monitors.pmp"
 #file_path = "../assets/dumb example.pmp"
-file_path = "../assets/testing_blocks.pmp"
+#file_path = "../assets/testing_blocks.pmp"
 #file_path = "../assets/scratch_project.sb3"
 #file_path = "../assets/asset_formats.pmp"
+file_path = "../assets/many_dropdowns.pmp"
 
 project = FRProject.from_file(file_path, info_api=info_api)
 
 
 project.asset_files = ...
-print(project)
+bs = project.targets[1].blocks
+print(bs)
+for bid, b in bs.items():
+    for di, dv in b.fields.items():
+        print(f"{repr(b.opcode)}\t{repr(di)}:\t\tLEN{len(dv)} {dv}")
+        input()
+
 
 #new_project = project.to_second(info_api=info_api)
 #print(new_project)

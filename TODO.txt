@@ -10,3 +10,4 @@ TODOs:
     - check uses of ALL_FR_BLOCKS_CLEAN vs. ALL_FR_BLOCKS
     - change typing of dropdown values
     - rename block_interface to sth like transformation_interface
+    - remove debug prints

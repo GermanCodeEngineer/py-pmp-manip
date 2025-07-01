@@ -36,7 +36,7 @@ class FRTarget(ABC):
     lists: dict[str, tuple[str, Any]]
     broadcasts: dict[str, str]
     custom_vars: list
-    blocks: dict[str, FRBlock | tuple]
+    blocks: dict[str, tuple | FRBlock]
     comments: dict[str, FRComment]
     current_costume: int
     costumes: list[FRCostume]
@@ -149,28 +149,32 @@ class FRTarget(ABC):
                 floating_comments.append(new_comment)
 
         blocks = deepcopy(self.blocks)
-        for block_id, block in blocks.items():
+        for block_reference, block in blocks.items():
             if isinstance(block, tuple):
-                blocks[block_id] = FRBlock.from_tuple(block, parent_id=None)
+                blocks[block_reference] = FRBlock.from_tuple(block, parent_id=None)
 
         fti_if = FirstToInterIF(blocks=blocks, block_comments=attached_comments)
         new_blocks: dict["str", "IRBlock"] = {}
-        for block_id, block in blocks.items():
-            new_block = block.to_inter(fti_if, info_api, own_id=block_id)
-            new_blocks[block_id] = new_block
+        for block_reference, block in blocks.items():
+            new_block = block.to_inter(
+                fti_if = fti_if,
+                info_api  = info_api,
+                own_id    = block_reference,
+            )
+            new_blocks[block_reference] = new_block
 
-        for block_id in fti_if.scheduled_block_deletions:
-            del new_blocks[block_id]
+        for block_reference in fti_if.scheduled_block_deletions:
+            del new_blocks[block_reference]
         
         # Get all top level block ids
         top_level_block_refs: list[str] = []
         [
-            top_level_block_refs.append(block_id) 
-            if block.is_top_level else None for block_id, block in new_blocks.items()
+            top_level_block_refs.append(block_reference) 
+            if block.is_top_level else None for block_reference, block in new_blocks.items()
         ]
         
         # Account for that one bug(not my fault), where a block is falsely independent
-        for block_id, block in new_blocks.items():
+        for block_reference, block in new_blocks.items():
             for input_value in block.inputs.values():
                 for sub_reference in input_value.references:
                     sub_block = new_blocks[sub_reference]
@@ -618,7 +622,7 @@ class SRStage(SRTarget):
             lists                   = old_lists,
             broadcasts              = old_broadcasts,
             custom_vars             = [], # Seems to have no purpose
-            blocks                  = old_blocks,
+            blocks                  = itf_if.added_blocks,
             comments                = itf_if.added_comments,
             current_costume         = self.costume_index,
             costumes                = old_costumes,

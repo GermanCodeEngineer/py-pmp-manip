@@ -367,8 +367,10 @@ class IRBlock:
 
         old_fields = {}
         for dropdown_id, dropdown_value in self.dropdowns.items():
-            print(repr(self.opcode), opcode_info)
-            dropdown_type = opcode_info.get_dropdown_info_by_old(dropdown_id).type
+            if opcode_info.opcode_type is OpcodeType.MENU:
+                dropdown_type = None # use the default _ option
+            else:
+                dropdown_type = opcode_info.get_dropdown_info_by_old(dropdown_id).type
             match dropdown_type:
                 case DropdownType.VARIABLE:
                     suffix    = ""
@@ -380,9 +382,12 @@ class IRBlock:
                     suffix    = "broadcast_msg"
                     sha256    = string_to_sha256(dropdown_value, secondary=SHA256_SEC_BROADCAST_MSG)
                 case _:
-                    suffix    = "" # TODO: test if always present and empty
+                    suffix    = None
                     sha256    = string_to_sha256(dropdown_value, secondary=SHA256_SEC_DROPDOWN_VALUE)
-            old_fields[dropdown_id] = (dropdown_value, sha256, suffix)
+            if suffix is None:
+                old_fields[dropdown_id] = (dropdown_value, sha256)
+            else:
+                old_fields[dropdown_id] = (dropdown_value, sha256, suffix)                
         
         old_block = FRBlock(
             opcode    = self.opcode,

@@ -318,19 +318,19 @@ def _f5d7_e3e2(block: "FRBlock", block_id: str, itf_if: "InterToFirstIF") -> "FR
     ):
         argument_opcode = OPCODE_CB_ARG_TEXT if argument_default == "" else OPCODE_CB_ARG_BOOL
         argument_block = FRBlock(
-            opcode   = argument_opcode,
-            next     = None,
-            parent   = prototype_id,
-            inputs   = {},
-            fields   = {
+            opcode    = argument_opcode,
+            next      = None,
+            parent    = prototype_id,
+            inputs    = {},
+            fields    = {
                 "VALUE": (argument_name, string_to_sha256(argument_name, secondary=SHA256_SEC_LOCAL_ARGUMENT_NAME))
             },
-            shadow   = True,
-            topLevel = False,
-            mutation = FRCustomBlockArgumentMutation(
-                tag_name="mutation", 
-                children=[], 
-                color=mutation.color, # use the same colors as the prototype,
+            shadow    = True,
+            top_level = False,
+            mutation  = FRCustomBlockArgumentMutation(
+                tag_name = "mutation", 
+                children = [], 
+                color    = mutation.color, # use the same colors as the prototype,
             ),
         )
         itf_if.schedule_block_addition(argument_block_id, argument_block)
