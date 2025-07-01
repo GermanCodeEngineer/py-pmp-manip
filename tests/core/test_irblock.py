@@ -15,7 +15,7 @@ from tests.core.constants import ALL_FR_BLOCKS, ALL_FR_COMMENTS, ALL_IR_BLOCKS, 
 class TEST_InterToFirstIF(InterToFirstIF):
     _block_ids: list[str] = field(default_factory=list)
 
-    def get_next_block_id(self) -> str:
+    def get_next_block_id(self, comment=False) -> str:
         block_id = self._block_ids[self._next_block_id_num - 1]
         self._next_block_id_num += 1
         return block_id

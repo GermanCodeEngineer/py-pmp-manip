@@ -307,6 +307,21 @@ class IRBlock:
             is_top_level = False,
         )
 
+    def get_references(self) -> list[str]:
+        """
+        Get a list of block ids, this block references
+        # TODO: add tests
+
+        Returns:
+            a list of block ids, this block references
+        """
+        references = []
+        if self.next is not None:
+            references.append(self.next)
+        for input_value in self.inputs.values():
+            references.extend(input_value.references)
+        return references
+
     def to_first(self, 
         itf_if: "InterToFirstIF", 
         info_api: OpcodeInfoAPI,
@@ -340,7 +355,7 @@ class IRBlock:
             input_type = input_infos[input_id].type
             elements = input_value.references.copy()
             if input_value.immediate_block is not None:
-                frblock = input_value.immediate_block.to_first(
+                frblock = input_value.immediate_block.to_first( # an immediate block can't have any references
                     itf_if      = itf_if,
                     info_api    = info_api,
                     parent_id   = own_id,

@@ -124,7 +124,7 @@ class InterToFirstIF:
                     raise ConversionError(f"Two custom blocks cannot be defined with the same proccode(essentially custom opcode text): {repr(frmutation.proccode)}")
                 self._cb_mutations[frmutation.proccode] = frmutation
         
-    def get_next_block_id(self) -> str:
+    def get_next_block_id(self, comment=False) -> str:
         """
         Get the next available block reference id
         
@@ -160,7 +160,7 @@ class InterToFirstIF:
         Returns:
             the reference id of the added FRComment
         """
-        comment_id = self.get_next_block_id()
+        comment_id = self.get_next_block_id(comment=True)
         self.added_comments[comment_id] = comment
         return comment_id
 

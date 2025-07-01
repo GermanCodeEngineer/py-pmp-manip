@@ -1,5 +1,5 @@
 from typing      import Any
-from copy        import deepcopy
+from copy        import copy, deepcopy
 from dataclasses import field
 from abc         import abstractmethod, ABC
 from uuid        import uuid4, UUID
@@ -577,17 +577,27 @@ class SRStage(SRTarget):
             local_lists=[],
             sprite_name="_stage_",
         )
+
+        id_to_parent_id = {}
+        for block_id, block in sti_if.produced_blocks.items():
+            block_references = block.get_references()
+            for block_reference in block_references:
+                id_to_parent_id[block_reference] = block_id
+        
         for block_id, block in sti_if.produced_blocks.items():
             old_block = block.to_first(
                 itf_if, info_api,
-                parent_id=None, own_id=block_id
+                parent_id=id_to_parent_id.get(block_id, None), 
+                # blocks not included must be independent because they are never referenced
+                own_id=block_id,
             )
             itf_if.schedule_block_addition(block_id, old_block)
-        #print(100*"=")
-        #print(SRStage.__repr__(itf_if.added_blocks))
-
 
         [itf_if.add_comment(comment.to_first(block_id=None)) for comment in self.comments]
+
+        # TO FUTURE ME:
+        # core problem: SecondToInterIF and InterToFirstIF both start with _next_block_id_num set to 1.
+        # this will lead to the same ids being used for multiple blocks/comments
 
         asset_files = {}
         old_costumes = []
