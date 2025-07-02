@@ -292,7 +292,9 @@ def _f5d7_e3e2(block: "FRBlock", block_id: str, itf_if: "InterToFirstIF") -> "FR
     from pypenguin.core.block_mutation import FRCustomBlockMutation, FRCustomBlockArgumentMutation
     from pypenguin.core.block          import FRBlock
 
+    block = deepcopy(block)
     mutation: FRCustomBlockMutation = block.mutation
+    block.mutation = None
     prototype_id         = itf_if.get_next_block_id()
     argument_block_ids   = [itf_if.get_next_block_id() for i in range(len(mutation.argument_names))]
 

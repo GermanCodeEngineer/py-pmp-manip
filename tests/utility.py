@@ -1,8 +1,10 @@
 from typing      import Any, Type, Callable, TypeVar
-from copy        import copy
+from copy        import copy, deepcopy
 from pytest      import raises
 
 from pypenguin.utility import ValidationError
+from pypenguin.core.block   import FRBlock
+from pypenguin.core.comment import FRComment
 
 _CPMT = TypeVar("_CPMT")
 
@@ -39,6 +41,35 @@ def execute_attr_validation_tests(
         modified_obj = copymodify(obj, attr, value)
         with raises(error):
             validate_func(modified_obj, *func_args)
+
+
+def nest_block(all_blocks: dict[str, FRBlock|tuple], all_comments: dict[str, FRComment], current_id: str) -> FRBlock:
+    current_block = deepcopy(all_blocks[current_id])
+    if current_block.next is not None:
+        current_block.next = nest_block(all_blocks, all_comments, current_id=current_block.next)
+    current_block.parent = ... # this could cause a difference otherwise
+    for input_id, input_value in current_block.inputs.items():
+        new_input_value = []
+        new_input_value.append(input_value[0])
+        for item in input_value[1:]:
+            if   isinstance(item, tuple): # an immediate block or text field
+                new_input_value.append(item)
+            elif isinstance(item, str): # a block reference
+                new_input_value.append(nest_block(all_blocks, all_comments, current_id=item))
+            else: raise ValueError()
+        current_block.inputs[input_id] = tuple(new_input_value)
+        if isinstance(current_block.comment, str):
+            current_block.comment = all_comments[current_block.comment]
+    return current_block
+
+def nest_all_blocks_comments(all_blocks: dict[str, FRBlock|tuple], all_comments: dict[str, FRComment]) -> tuple[list[FRBlock], list[FRComment]]:
+    new_scripts = []
+    for block_id, block in all_blocks.items():
+        if isinstance(block, tuple):
+            new_scripts.append(block)
+        elif block.top_level:
+            new_scripts.append(nest_block(all_blocks, all_comments, current_id=block_id))
+    return (new_scripts, list(all_comments.values()))
 
 
 __all__ = ["copymodify", "execute_attr_validation_tests"]

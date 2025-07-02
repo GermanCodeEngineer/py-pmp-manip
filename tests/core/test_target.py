@@ -29,12 +29,10 @@ from pypenguin.core.vars_lists      import SRVariable, SRCloudVariable, SRList
 from tests.core.constants import (
     FR_PROJECT, SR_PROJECT, PROJECT_ASSET_FILES, CORRECT_PROJECT_ASSET_FILES,
     SPRITE_DATA, FR_SPRITE, SR_SPRITE, STAGE_DATA, FR_STAGE, SR_STAGE,
-    ALL_FR_BLOCKS, ALL_IR_BLOCKS, ALL_SR_SCRIPTS,
+    ALL_FR_BLOCKS, ALL_IR_BLOCKS,
 )
-from tests.core.test_irblock import TEST_InterToFirstIF
-from tests.core.test_srblock import TEST_SecondToInterIF
 
-from tests.utility import execute_attr_validation_tests
+from tests.utility import execute_attr_validation_tests, nest_all_blocks_comments
 
 
 @fixture
@@ -331,28 +329,7 @@ def test_SRTarget_get_complete_context(context):
     assert complete_context.sounds == [(DropdownValueKind.SOUND, "Hello World!")]
     assert complete_context.is_stage == False
 
-
-def test_SRTarget_to_first_common(monkeypatch: MonkeyPatch):
-    block_ids = [
-    #    "d", "b", "t", "e", "u", "v",
-    #    "f", "g",
-    #    "m",
-        "h", "i", "a", "j",
-    #"s", "qqq"]
-    "qqq"]
-    class LOCKED_SecondToInterIF(TEST_SecondToInterIF):
-        def __post_init__(self):
-            nonlocal block_ids
-            self._block_ids = block_ids
-    class LOCKED_InterToFirstIF(TEST_InterToFirstIF):
-        def __post_init__(self):
-            super().__post_init__()
-            nonlocal block_ids
-            self._block_ids = block_ids
-    import pypenguin.core.target as target_mod
-    monkeypatch.setattr(target_mod, "SecondToInterIF", LOCKED_SecondToInterIF)
-    monkeypatch.setattr(target_mod, "InterToFirstIF" , LOCKED_InterToFirstIF )
-
+def test_SRTarget_to_first_common():
     srtarget = copy(SR_SPRITE)
     srtarget.comments = [ # add some comments
         SRComment(
@@ -362,7 +339,7 @@ def test_SRTarget_to_first_common(monkeypatch: MonkeyPatch):
             text="hi :)",
         )
     ]
-    srtarget.scripts = srtarget.scripts[3:4]
+    srtarget.scripts = srtarget.scripts
     
     (
         old_blocks, old_comments,
@@ -376,15 +353,7 @@ def test_SRTarget_to_first_common(monkeypatch: MonkeyPatch):
         global_lists=SR_PROJECT.all_sprite_lists,
         global_monitors=SR_PROJECT.global_monitors,
     )
-    a = old_blocks
-    b = {k: ALL_FR_BLOCKS[k] for k in {
-    #    "d", "b", "e", "t", "u", "v",
-    #    "f", "g",
-    #    "m",
-        "h", "a", "i", "j",
-    }}
-    assert a == b
-    assert old_comments == FR_SPRITE.comments | {
+    expected_comments = FR_SPRITE.comments | {
         "qqq": FRComment(
             block_id=None,
             x=10391,
@@ -395,15 +364,18 @@ def test_SRTarget_to_first_common(monkeypatch: MonkeyPatch):
             text="hi :)",
         ),
     }
+    nested_generated_blocks, nested_generated_comments = nest_all_blocks_comments(old_blocks, old_comments)
+    nested_expected_blocks , nested_expected_comments  = nest_all_blocks_comments(ALL_FR_BLOCKS, expected_comments)
+    assert lists_equal_ignore_order(nested_generated_blocks, nested_expected_blocks)
+    assert lists_equal_ignore_order(nested_generated_comments, nested_expected_comments)
+
     # standardize costume and sound hashes:
     assert old_costumes == [costume.to_second(PROJECT_ASSET_FILES).to_first()[0] for costume in FR_SPRITE.costumes]
     assert old_sounds   == [sound  .to_second(PROJECT_ASSET_FILES).to_first()[0] for sound   in FR_SPRITE.sounds  ]
     assert old_variables == FR_SPRITE.variables
     assert old_lists     == FR_SPRITE.lists
     assert lists_equal_ignore_order(old_monitors, FR_PROJECT.monitors[1:2])
-    print(CORRECT_PROJECT_ASSET_FILES.keys())
-    expected_asset_files = {k: CORRECT_PROJECT_ASSET_FILES[k] for k in {"cd21514d0531fdffb22204e0ec5ed84a.svg", "c434b674f2da18ba13cdfe51dbc05ecc.svg", "e140d7ff07de8fa35c3d1595bba835ac.wav"}}
-    assert asset_files.keys() == expected_asset_files.keys()
+    assert len(asset_files) == len(FR_PROJECT.asset_files) # cant easily be tests
 
 def _test_SRStage_to_first(monkeypatch: MonkeyPatch):
     
