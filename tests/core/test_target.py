@@ -7,7 +7,7 @@ from pypenguin.important_consts import SHA256_SEC_TARGET_NAME
 from pypenguin.opcode_info.api  import DropdownValueKind
 from pypenguin.opcode_info.data import info_api
 from pypenguin.utility          import (
-    string_to_sha256,
+    string_to_sha256, lists_equal_ignore_order,
     ValidationConfig, 
     ThanksError, ConversionError, TypeValidationError, RangeValidationError, 
     SameValueTwiceError, InvalidValueError
@@ -27,9 +27,9 @@ from pypenguin.core.target          import FRTarget, FRStage, FRSprite, SRTarget
 from pypenguin.core.vars_lists      import SRVariable, SRCloudVariable, SRList
 
 from tests.core.constants import (
-    SR_PROJECT, PROJECT_ASSET_FILES,
+    FR_PROJECT, SR_PROJECT, PROJECT_ASSET_FILES, CORRECT_PROJECT_ASSET_FILES,
     SPRITE_DATA, FR_SPRITE, SR_SPRITE, STAGE_DATA, FR_STAGE, SR_STAGE,
-    ALL_SR_SCRIPTS, ALL_FR_BLOCKS,
+    ALL_FR_BLOCKS, ALL_IR_BLOCKS, ALL_SR_SCRIPTS,
 )
 from tests.core.test_irblock import TEST_InterToFirstIF
 from tests.core.test_srblock import TEST_SecondToInterIF
@@ -332,8 +332,14 @@ def test_SRTarget_get_complete_context(context):
     assert complete_context.is_stage == False
 
 
-def test_SRStage_to_first(monkeypatch: MonkeyPatch):
-    block_ids = ["s", "b", "t", "e", "u", "v"]
+def test_SRTarget_to_first_common(monkeypatch: MonkeyPatch):
+    block_ids = [
+    #    "d", "b", "t", "e", "u", "v",
+    #    "f", "g",
+    #    "m",
+        "h", "i", "a", "j",
+    #"s", "qqq"]
+    "qqq"]
     class LOCKED_SecondToInterIF(TEST_SecondToInterIF):
         def __post_init__(self):
             nonlocal block_ids
@@ -346,9 +352,9 @@ def test_SRStage_to_first(monkeypatch: MonkeyPatch):
     import pypenguin.core.target as target_mod
     monkeypatch.setattr(target_mod, "SecondToInterIF", LOCKED_SecondToInterIF)
     monkeypatch.setattr(target_mod, "InterToFirstIF" , LOCKED_InterToFirstIF )
-    
-    srstage = copy(SR_STAGE)
-    srstage.comments = [
+
+    srtarget = copy(SR_SPRITE)
+    srtarget.comments = [ # add some comments
         SRComment(
             position=(10391, 97154),
             size=(300, 300),
@@ -356,12 +362,30 @@ def test_SRStage_to_first(monkeypatch: MonkeyPatch):
             text="hi :)",
         )
     ]
-    srstage.scripts = [ALL_SR_SCRIPTS[0]]
-    target_frstage = copy(FR_STAGE)
-    target_frstage.costumes = [costume.to_second(PROJECT_ASSET_FILES).to_first()[0] for costume in target_frstage.costumes]
-    target_frstage.sounds   = [sound  .to_second(PROJECT_ASSET_FILES).to_first()[0] for sound   in target_frstage.sounds  ]
-    target_frstage.comments = {
-        "a": FRComment(
+    srtarget.scripts = srtarget.scripts[3:4]
+    
+    (
+        old_blocks, old_comments,
+        old_costumes, old_sounds,
+        old_variables, old_lists,
+        old_monitors,
+        asset_files,
+    ) = srtarget._to_first_common(
+        info_api,
+        global_vars=SR_PROJECT.all_sprite_variables,
+        global_lists=SR_PROJECT.all_sprite_lists,
+        global_monitors=SR_PROJECT.global_monitors,
+    )
+    a = old_blocks
+    b = {k: ALL_FR_BLOCKS[k] for k in {
+    #    "d", "b", "e", "t", "u", "v",
+    #    "f", "g",
+    #    "m",
+        "h", "a", "i", "j",
+    }}
+    assert a == b
+    assert old_comments == FR_SPRITE.comments | {
+        "qqq": FRComment(
             block_id=None,
             x=10391,
             y=97154,
@@ -371,9 +395,21 @@ def test_SRStage_to_first(monkeypatch: MonkeyPatch):
             text="hi :)",
         ),
     }
-    target_frstage.blocks = {k: ALL_FR_BLOCKS[k] for k in {"d", "b", "e", "t", "u", "v"}}
+    # standardize costume and sound hashes:
+    assert old_costumes == [costume.to_second(PROJECT_ASSET_FILES).to_first()[0] for costume in FR_SPRITE.costumes]
+    assert old_sounds   == [sound  .to_second(PROJECT_ASSET_FILES).to_first()[0] for sound   in FR_SPRITE.sounds  ]
+    assert old_variables == FR_SPRITE.variables
+    assert old_lists     == FR_SPRITE.lists
+    assert lists_equal_ignore_order(old_monitors, FR_PROJECT.monitors[1:2])
+    print(CORRECT_PROJECT_ASSET_FILES.keys())
+    expected_asset_files = {k: CORRECT_PROJECT_ASSET_FILES[k] for k in {"cd21514d0531fdffb22204e0ec5ed84a.svg", "c434b674f2da18ba13cdfe51dbc05ecc.svg", "e140d7ff07de8fa35c3d1595bba835ac.wav"}}
+    assert asset_files.keys() == expected_asset_files.keys()
+
+def _test_SRStage_to_first(monkeypatch: MonkeyPatch):
     
-    frstage, global_monitors, asset_files = srstage.to_first(
+    
+    #frstage, global_monitors, asset_files = srstage.to_first(
+    irblocks = srstage.to_first(
         info_api,
         global_vars=SR_PROJECT.all_sprite_variables,
         global_lists=SR_PROJECT.all_sprite_lists,
@@ -384,14 +420,23 @@ def test_SRStage_to_first(monkeypatch: MonkeyPatch):
         video_state=FR_STAGE.video_state,
         text_to_speech_language=FR_STAGE.text_to_speech_language,
     )
+    assert irblocks == {k: ALL_IR_BLOCKS[k] for k in {"d", "b", "e", "t", "u", "v"}}
+    raise Exception("IRBLOCK SUCCESS")
+    
     assert frstage.costumes == target_frstage.costumes
-    assert frstage.sounds == target_frstage.sounds
-    assert frstage.broadcasts == target_frstage.broadcasts
+    assert frstage.sounds == target_frtarget.sounds
+    assert frstage.broadcasts == target_frtarget.broadcasts
     a = frstage.blocks
     b = target_frstage.blocks
-    print(SRBlock.__repr__(a))
-    print(SRBlock.__repr__(b))
+    print("generated", SRBlock.__repr__(a))
+    print("expected", SRBlock.__repr__(b))
     #assert len(a) == len(b)
+    for key in set(a.keys())|set(b.keys()):
+        if a.get(key) != b.get(key):
+            print("ATTR", repr(key))
+            print(a.get(key))
+            print(b.get(key))
+            assert a.get(key) == b.get(key)
     assert a == b
     #for a_key, a_v in a.items():
     #    if a_key in b and b[a_key] == a_v:

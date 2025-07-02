@@ -90,9 +90,9 @@ class FirstToInterIF:
 
 @grepr_dataclass(grepr_fields=[
     "blocks", 
-    "global_vars", "local_vars", "global_lists", "local_lists", "sprite_name",
+    "global_vars", "local_vars", "global_lists", "local_lists", "sprite_name", "_next_block_id_num",
     "added_blocks", "added_comments", 
-    "_next_block_id_num", "_cb_mutations",
+    "_cb_mutations",
 ])
 class InterToFirstIF:
     """
@@ -105,9 +105,9 @@ class InterToFirstIF:
     local_vars: list[str]
     local_lists: list[str]
     sprite_name: str | None
+    _next_block_id_num: int = 1 # TODO: remove default
     added_blocks: dict[str, FRBlock | tuple] = field(init=False, default_factory=dict)
     added_comments: dict[str, FRComment] = field(init=False, default_factory=dict)
-    _next_block_id_num: int = field(init=False, default=1)
     _cb_mutations: dict[str, "FRCustomBlockMutation"] = field(init=False, default_factory=dict)
 
     def __post_init__(self) -> None:
@@ -148,8 +148,9 @@ class InterToFirstIF:
             None
         """
         self.added_blocks[block_id] = block
+        print("ItF ADDED", repr(block_id))
 
-    def add_comment(self, comment: FRComment) -> str:
+    def add_comment(self, comment: FRComment, floating=False) -> str:
         """
         Order a FRComment to be added and return it's reference id.
         It will be present in first representation
@@ -162,6 +163,7 @@ class InterToFirstIF:
         """
         comment_id = self.get_next_block_id(comment=True)
         self.added_comments[comment_id] = comment
+        print(f"ADDDED COMMENT f={floating}", repr(comment_id))
         return comment_id
 
     def get_fr_cb_mutation(self, proccode: str) -> "FRCustomBlockMutation":
@@ -314,6 +316,7 @@ class SecondToInterIF(SecondReprIF):
             None
         """
         self.produced_blocks[block_id] = block
+        print("StI ADDED", repr(block_id))
 
     def get_cb_mutation(self, custom_opcode: SRCustomBlockOpcode) -> "SRCustomBlockMutation":
         """

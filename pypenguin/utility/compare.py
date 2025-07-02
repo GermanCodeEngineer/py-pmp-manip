@@ -30,6 +30,17 @@ def image_equal(img1: Image.Image, img2: Image.Image) -> bool:
         return False
     return img1.tobytes() == img2.tobytes()
 
+def lists_equal_ignore_order(a: list, b: list) -> bool:
+    if len(a) != len(b):
+        return False
 
-__all__ = ["xml_equal", "image_equal"]
+    b_copy = b[:]
+    for item in a:
+        try:
+            b_copy.remove(item)  # uses __eq__, safe for mutable objects
+        except ValueError:
+            return False
+    return not b_copy
+
+__all__ = ["xml_equal", "image_equal", "lists_equal_ignore_order"]
 

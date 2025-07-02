@@ -12,18 +12,6 @@ def remove_duplicates(items: list) -> list:
             result.append(item)
     return result
 
-def lists_equal_ignore_order(a: list, b: list) -> bool:
-    if len(a) != len(b):
-        return False
-
-    b_copy = b[:]
-    for item in a:
-        try:
-            b_copy.remove(item)  # uses __eq__, safe for mutable objects
-        except ValueError:
-            return False
-    return not b_copy
-
 def get_closest_matches(string, possible_values: list[str], n: int) -> list[str]:
     similarity_scores = [(item, SequenceMatcher(None, string, item).ratio()) for item in possible_values]
     sorted_matches = sorted(similarity_scores, key=lambda x: x[1], reverse=True)
@@ -88,7 +76,7 @@ def generate_md5(data: bytes) -> str:
 
 
 __all__ = [
-    "remove_duplicates", "lists_equal_ignore_order", "get_closest_matches", "tuplify", 
+    "remove_duplicates", "get_closest_matches", "tuplify", 
     "string_to_sha256", "number_to_token", "generate_md5",
 ]
 

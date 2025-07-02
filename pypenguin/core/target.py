@@ -296,14 +296,15 @@ class FRStage(FRTarget):
             all_sprite_variables,
             all_sprite_lists,
         ) = super()._to_second_common(asset_files, info_api)
-        return (SRStage(
+        new_stage = SRStage(
             scripts       = scripts,
             comments      = comments,
             costume_index = self.current_costume,
             costumes      = costumes,
             sounds        = sounds,
             volume        = self.volume,
-        ), all_sprite_variables, all_sprite_lists)
+        )
+        return (new_stage, all_sprite_variables, all_sprite_lists)
 
 @grepr_dataclass(grepr_fields=["visible", "x", "y", "size", "direction", "draggable", "rotation_style"],)
 class FRSprite(FRTarget):
@@ -370,7 +371,7 @@ class FRSprite(FRTarget):
             sprite_only_variables,
             sprite_only_lists,
         ) = super()._to_second_common(asset_files, info_api)
-        return (SRSprite(
+        new_sprite = SRSprite(
             name                  = self.name,
             scripts               = scripts,
             comments              = comments,
@@ -387,7 +388,8 @@ class FRSprite(FRTarget):
             direction             = self.direction,
             is_draggable          = self.draggable,
             rotation_style        = SRSpriteRotationStyle.from_code(self.rotation_style),
-        ), None, None)
+        )
+        return (new_sprite, None, None)
 
 
 @grepr_dataclass(grepr_fields=["scripts", "comments", "costume_index", "costumes", "sounds", "volume"])
@@ -528,6 +530,109 @@ class SRTarget:
             sounds   = [(DropdownValueKind.SOUND  , sound  .name) for sound   in self.sounds  ],
             is_stage = isinstance(self, SRStage),
         )
+    
+    def _to_first_common(self,
+        info_api: OpcodeInfoAPI,
+        global_vars: list[SRVariable],
+        global_lists: list[SRList],
+        global_monitors: list[SRMonitor]|None,
+    ) -> tuple[
+        dict[str, FRBlock], dict[str, FRComment],
+        list[FRCostume], list[FRSound],
+        dict[str, tuple[str, str]|tuple[str, str, bool]],
+        dict[str, tuple[str, str]],
+        list[FRMonitor],
+        dict[str, bytes],
+    ]:
+        """
+        *[Helper Method]* Convert common fields into first representation
+
+        Args:
+            info_api: the opcode info api used to fetch information about opcodes
+            global_vars: a list of global variables
+            global_lists: a list of global lists
+            global_monitors: the non-local monitors (only needed for a SRStage)
+        
+        Returns:
+            the blocks, comments, costumes, sounds, variables, lists and monitors in first representation
+            and the file contents of the target assets
+        """
+        if   isinstance(self, SRStage):
+            sprite_name   = "_stage_"
+            new_variables = global_vars
+            new_lists     = global_lists
+            local_vars    = []
+            local_lists   = []
+            new_monitors  = global_monitors
+        elif isinstance(self, SRSprite):
+            sprite_name   = self.name
+            new_variables = self.sprite_only_variables
+            new_lists     = self.sprite_only_lists
+            local_vars    = self.sprite_only_variables
+            local_lists   = self.sprite_only_lists
+            new_monitors  = self.local_monitors
+        
+        sti_if = SecondToInterIF(scripts=self.scripts)
+        for script in self.scripts:
+            top_level_id = script.to_inter(sti_if, info_api)
+        
+        itf_if = InterToFirstIF(
+            blocks=sti_if.produced_blocks,
+            global_vars=[variable.name for variable in global_vars],
+            global_lists=[list_.name for list_ in global_lists],
+            local_vars=[variable.name for variable in local_vars],
+            local_lists=[list_.name for list_ in local_lists],
+            sprite_name=sprite_name,
+            _next_block_id_num=sti_if._next_block_id_num, # to avoid reusing the same ids
+        )
+        
+        id_to_parent_id = {}
+        for block_id, block in sti_if.produced_blocks.items():
+            block_references = block.get_references()
+            for block_reference in block_references:
+                id_to_parent_id[block_reference] = block_id
+        
+        for block_id, block in sti_if.produced_blocks.items():
+            old_block = block.to_first(
+                itf_if, info_api,
+                parent_id=id_to_parent_id.get(block_id, None),
+                # blocks not included must be independent because they are never referenced
+                own_id=block_id,
+            )
+            itf_if.schedule_block_addition(block_id, old_block)
+
+        [itf_if.add_comment(comment.to_first(block_id=None), floating=True) for comment in self.comments]
+        
+        asset_files = {}
+        old_costumes = []
+        for costume in self.costumes:
+            old_costume, file_bytes = costume.to_first()
+            old_costumes.append(old_costume)
+            asset_files[old_costume.md5ext] = file_bytes
+        old_sounds = []
+        for sound in self.sounds:
+            old_sound, file_bytes = sound.to_first()
+            old_sounds.append(old_sound)
+            asset_files[old_sound.md5ext] = file_bytes
+
+        old_variables = {
+            itf_if.get_variable_sha256(variable.name): variable.to_tuple()
+            for variable in new_variables
+        }
+        old_lists = {
+            itf_if.get_list_sha256(list_.name): list_.to_tuple()
+            for list_ in new_lists
+        }
+        old_monitors = [monitor.to_first(itf_if, info_api) for monitor in new_monitors]
+
+        return (
+            itf_if.added_blocks, itf_if.added_comments,
+            old_costumes, old_sounds,
+            old_variables, old_lists,
+            old_monitors,
+            asset_files,
+        )        
+        
 
 class SRStage(SRTarget):
     """
@@ -562,90 +667,44 @@ class SRStage(SRTarget):
         Returns:
             the FRStage, a list of global monitors and the resulting asset files
         """
-        #print(SRStage.__repr__(self.scripts))
-        sti_if = SecondToInterIF(scripts=self.scripts)
-        for script in self.scripts:
-            top_level_id = script.to_inter(sti_if, info_api)
-        
-        #print(100*"=")
-        #print(SRStage.__repr__(sti_if.produced_blocks))
-        itf_if = InterToFirstIF(
-            blocks=sti_if.produced_blocks,
-            global_vars=[variable.name for variable in global_vars],
-            global_lists=[list_.name for list_ in global_lists],
-            local_vars=[], # the stage can't have local variables and lists
-            local_lists=[],
-            sprite_name="_stage_",
+
+        (
+            old_blocks, old_comments,
+            old_costumes, old_sounds,
+            old_variables, old_lists,
+            old_global_monitors,
+            asset_files,
+        ) = super()._to_first_common(
+            info_api,
+            global_vars, global_lists,
+            global_monitors,
         )
-
-        id_to_parent_id = {}
-        for block_id, block in sti_if.produced_blocks.items():
-            block_references = block.get_references()
-            for block_reference in block_references:
-                id_to_parent_id[block_reference] = block_id
-        
-        for block_id, block in sti_if.produced_blocks.items():
-            old_block = block.to_first(
-                itf_if, info_api,
-                parent_id=id_to_parent_id.get(block_id, None), 
-                # blocks not included must be independent because they are never referenced
-                own_id=block_id,
-            )
-            itf_if.schedule_block_addition(block_id, old_block)
-
-        [itf_if.add_comment(comment.to_first(block_id=None)) for comment in self.comments]
-
-        # TO FUTURE ME:
-        # core problem: SecondToInterIF and InterToFirstIF both start with _next_block_id_num set to 1.
-        # this will lead to the same ids being used for multiple blocks/comments
-
-        asset_files = {}
-        old_costumes = []
-        for costume in self.costumes:
-            old_costume, file_bytes = costume.to_first()
-            old_costumes.append(old_costume)
-            asset_files[old_costume.md5ext] = file_bytes
-        old_sounds = []
-        for sound in self.sounds:
-            old_sound, file_bytes = sound.to_first()
-            old_sounds.append(old_sound)
-            asset_files[old_sound.md5ext] = file_bytes
-
-        old_variables = {
-            itf_if.get_variable_sha256(variable.name): variable.to_tuple()
-            for variable in global_vars
-        }
-        old_lists = {
-            itf_if.get_list_sha256(list_.name): list_.to_tuple()
-            for list_ in global_lists
-        }
         old_broadcasts = {
             string_to_sha256(broadcast_name, secondary=SHA256_SEC_BROADCAST_MSG): broadcast_name
             for broadcast_name in broadcast_messages
         }
-        old_global_monitors = [monitor.to_first(itf_if, info_api) for monitor in global_monitors]
-        
-        return (FRStage(
+        old_stage = FRStage(
             is_stage                = True,
             name                    = "Stage",
             variables               = old_variables,
             lists                   = old_lists,
             broadcasts              = old_broadcasts,
             custom_vars             = [], # Seems to have no purpose
-            blocks                  = itf_if.added_blocks,
-            comments                = itf_if.added_comments,
+            blocks                  = old_blocks,
+            comments                = old_comments,
             current_costume         = self.costume_index,
             costumes                = old_costumes,
             sounds                  = old_sounds,
             volume                  = self.volume,
-            layer_order             = 0,
+            layer_order             = 0, # stage is always on the bottom
             id                      = string_to_sha256("_stage_", secondary=SHA256_SEC_TARGET_NAME),
 
             tempo                   = tempo,
             video_transparency      = video_transparency,
             video_state             = video_state,
             text_to_speech_language = text_to_speech_language,
-        ), old_global_monitors, asset_files)
+        )
+        return (old_stage, old_global_monitors, asset_files)
 
 @grepr_dataclass(grepr_fields=["name", "sprite_only_variables", "sprite_only_lists", "local_monitors", "is_visible", "position", "size", "direction", "is_draggable", " rotation_style", "uuid"])
 class SRSprite(SRTarget):
@@ -656,7 +715,7 @@ class SRSprite(SRTarget):
     name: str
     sprite_only_variables: list[SRVariable]
     sprite_only_lists: list[SRList]
-    local_monitors: list[SRMonitor]
+    local_monitors: list[SRMonitor] # TODO: disambig local vs. sprite_only
     is_visible: bool
     position: tuple[int | float, int | float]
     size: int | float

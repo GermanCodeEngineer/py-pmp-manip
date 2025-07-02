@@ -67,7 +67,7 @@ class SRVariable:
         return (self.name, self.current_value)
 
 class SRCloudVariable(SRVariable):
-    def to_tuple(self) -> tuple[str, str]:
+    def to_tuple(self) -> tuple[str, str, bool]:
         """
         Converts a SRCloudVariable into a variable tuple
         
