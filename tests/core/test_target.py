@@ -375,7 +375,7 @@ def test_SRTarget_to_first_common():
     assert old_variables == FR_SPRITE.variables
     assert old_lists     == FR_SPRITE.lists
     assert lists_equal_ignore_order(old_monitors, FR_PROJECT.monitors[1:2])
-    assert len(asset_files) == len(FR_PROJECT.asset_files) # cant easily be tests
+    assert len(asset_files) == len(FR_PROJECT.asset_files) # cant easily be tested
 
 def _test_SRStage_to_first(monkeypatch: MonkeyPatch):
     
