@@ -1,7 +1,7 @@
 from copy   import copy, deepcopy
 from uuid   import UUID
 from pydub  import AudioSegment
-from pytest import fixture, raises, MonkeyPatch
+from pytest import fixture, raises
 
 from pypenguin.important_consts import SHA256_SEC_TARGET_NAME
 from pypenguin.opcode_info.api  import DropdownValueKind
@@ -27,9 +27,9 @@ from pypenguin.core.target          import FRTarget, FRStage, FRSprite, SRTarget
 from pypenguin.core.vars_lists      import SRVariable, SRCloudVariable, SRList
 
 from tests.core.constants import (
-    FR_PROJECT, SR_PROJECT, PROJECT_ASSET_FILES, CORRECT_PROJECT_ASSET_FILES,
+    FR_PROJECT, SR_PROJECT, PROJECT_ASSET_FILES,
     SPRITE_DATA, FR_SPRITE, SR_SPRITE, STAGE_DATA, FR_STAGE, SR_STAGE,
-    ALL_FR_BLOCKS, ALL_IR_BLOCKS,
+    ALL_FR_BLOCKS, ALL_FR_MONITORS_CONVERTED,
 )
 
 from tests.utility import execute_attr_validation_tests, nest_all_blocks_comments
@@ -404,9 +404,28 @@ def test_SRTarget_to_first_common_stage():
     assert old_comments == {}
     assert old_variables == FR_STAGE.variables
     assert old_lists     == FR_STAGE.lists
-    assert old_monitors[0] == FR_PROJECT.monitors[0]
-    #assert lists_equal_ignore_order(old_monitors, FR_PROJECT.monitors[0:1])
-    
+    assert lists_equal_ignore_order(old_monitors, ALL_FR_MONITORS_CONVERTED[0:1])
+
+
+
+def test_SRStage_to_first():
+    srstage = SR_STAGE
+    expected_frstage = copy(FR_STAGE)
+    expected_frstage.costumes = [costume.to_second(PROJECT_ASSET_FILES).to_first()[0] for costume in expected_frstage.costumes]
+    expected_frstage.sounds   = [sound  .to_second(PROJECT_ASSET_FILES).to_first()[0] for sound   in expected_frstage.sounds  ]
+    frstage, old_global_monitors, asset_files = srstage.to_first(
+        info_api,
+        global_vars=SR_PROJECT.all_sprite_variables,
+        global_lists=SR_PROJECT.all_sprite_lists,
+        global_monitors=SR_PROJECT.global_monitors,
+        broadcast_messages=["my message"],
+        tempo=expected_frstage.tempo,
+        video_transparency=expected_frstage.video_transparency,
+        video_state=expected_frstage.video_state,
+        text_to_speech_language=expected_frstage.text_to_speech_language
+    )
+    assert frstage == expected_frstage
+
 
 
 def test_SRSprite_create_empty():
@@ -485,4 +504,19 @@ def test_SRSprite_validate_uuid(config):
 def test_SRSprite_validate_monitors(config, context):
     srsprite = SR_SPRITE
     srsprite.validate_monitor_dropdown_values([], config, info_api, context)
+
+
+
+def test_SRSprite_to_first():
+    srsprite = SR_SPRITE
+    expected_frsprite = copy(FR_SPRITE)
+    expected_frsprite.costumes = [costume.to_second(PROJECT_ASSET_FILES).to_first()[0] for costume in expected_frsprite.costumes]
+    expected_frsprite.sounds   = [sound  .to_second(PROJECT_ASSET_FILES).to_first()[0] for sound   in expected_frsprite.sounds  ]
+    frsprite, asset_files = srsprite.to_first(
+        info_api,
+        global_vars=SR_PROJECT.all_sprite_variables,
+        global_lists=SR_PROJECT.all_sprite_lists,
+        layer_order=SR_PROJECT.sprite_layer_stack.index(SR_SPRITE.uuid),
+    )
+    assert frsprite == expected_frsprite
 

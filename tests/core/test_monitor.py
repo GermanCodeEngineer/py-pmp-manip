@@ -260,7 +260,7 @@ ALL_FR_MONITORS: list[FRMonitor] = [
         params={
             "VARIABLE": "globl",
         },
-        sprite_name="_stage_",
+        sprite_name=None,
         value=0,
         x=110,
         y=76,
@@ -278,7 +278,7 @@ ALL_FR_MONITORS: list[FRMonitor] = [
         params={
             "VARIABLE": "globl2",
         },
-        sprite_name="_stage_",
+        sprite_name=None,
         value=0,
         x=216,
         y=128,
@@ -314,7 +314,7 @@ ALL_FR_MONITORS: list[FRMonitor] = [
         params={
             "LIST": "globl",
         },
-        sprite_name="_stage_",
+        sprite_name=None,
         value=[],
         x=36,
         y=153,
@@ -348,7 +348,7 @@ ALL_FR_MONITORS: list[FRMonitor] = [
         mode="default",
         opcode="sensing_mousedown",
         params={},
-        sprite_name="_stage_",
+        sprite_name=None,
         value=0,
         x=255,
         y=220,
@@ -364,7 +364,7 @@ ALL_FR_MONITORS: list[FRMonitor] = [
         mode="default",
         opcode="sensing_answer",
         params={},
-        sprite_name="_stage_",
+        sprite_name=None,
         value=0,
         x=205,
         y=5,
@@ -382,7 +382,7 @@ ALL_FR_MONITORS: list[FRMonitor] = [
         params={
             "NUMBER_NAME": "number",
         },
-        sprite_name="Sprite1",
+        sprite_name=None,
         value=0,
         x=184,
         y=136,
@@ -400,7 +400,7 @@ ALL_FR_MONITORS: list[FRMonitor] = [
         params={
             "NUMBER_NAME": "number",
         },
-        sprite_name="_stage_",
+        sprite_name=None,
         value=0,
         x=2,
         y=116,
@@ -418,7 +418,7 @@ ALL_FR_MONITORS: list[FRMonitor] = [
         params={
             "CURRENTMENU": "YEAR",
         },
-        sprite_name="_stage_",
+        sprite_name=None,
         value=0,
         x=52,
         y=258,
@@ -578,7 +578,7 @@ def stage_itf_if():
         blocks=ALL_IR_BLOCKS,
         global_vars=["my variable", "globl"], global_lists=["my list", "globl"], 
         local_vars=["locl"], local_lists=["locl"], # variables and lists are modified
-        sprite_name="_stage_",
+        sprite_name=None,
     )
 
 

@@ -404,6 +404,8 @@ class SRTarget:
     sounds: list[SRSound]
     volume: int | float
 
+    # TODO: add init/post_init width NotImplementedError for this and other use cases
+
     @classmethod
     def create_empty(cls) -> "SRTarget":
         """
@@ -558,7 +560,7 @@ class SRTarget:
             and the file contents of the target assets
         """
         if   isinstance(self, SRStage):
-            sprite_name   = "_stage_"
+            sprite_name   = None
             new_variables = global_vars
             new_lists     = global_lists
             local_vars    = []
@@ -826,6 +828,62 @@ class SRSprite(SRTarget):
                 info_api = info_api, 
                 context  = context,
             )
+
+    def to_first(self, 
+        info_api: OpcodeInfoAPI,
+        global_vars: list[SRVariable],
+        global_lists: list[SRList],
+        layer_order: int,
+    ) -> tuple[FRSprite, dict[str, bytes]]:
+        """
+        Converts a SRSprite into a FRSprite
+        
+        Args:
+            info_api: the opcode info api used to fetch information about opcodes
+            global_vars: a list of global variables
+            global_lists: a list of global lists
+            layer_order: the relative layer the sprite is on
+        
+        Returns:
+            the FRSprite and the resulting asset files
+        """
+
+        (
+            old_blocks, old_comments,
+            old_costumes, old_sounds,
+            old_variables, old_lists,
+            old_monitors,
+            asset_files,
+        ) = super()._to_first_common(
+            info_api,
+            global_vars, global_lists,
+            global_monitors=None,
+        )
+        old_stage = FRSprite(
+            is_stage                = False,
+            name                    = self.name,
+            variables               = old_variables,
+            lists                   = old_lists,
+            broadcasts              = {}, # Seems to always be empty
+            custom_vars             = [], # Seems to have no purpose
+            blocks                  = old_blocks,
+            comments                = old_comments,
+            current_costume         = self.costume_index,
+            costumes                = old_costumes,
+            sounds                  = old_sounds,
+            volume                  = self.volume,
+            layer_order             = layer_order,
+            id                      = string_to_sha256(self.name, secondary=SHA256_SEC_TARGET_NAME),
+
+            visible                 = self.is_visible,
+            x                       = self.position[0],
+            y                       = self.position[1],
+            size                    = self.size,
+            direction               = self.direction,
+            draggable               = self.is_draggable,
+            rotation_style          = self.rotation_style.to_code(),
+        )
+        return (old_stage, asset_files)
 
 
 __all__ = ["FRTarget", "FRStage", "FRSprite", "SRTarget", "SRStage", "SRSprite"]

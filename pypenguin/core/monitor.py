@@ -8,7 +8,7 @@ from pypenguin.utility          import (
 )
 from pypenguin.important_consts import (
     OPCODE_VAR_VALUE, OPCODE_LIST_VALUE, NEW_OPCODE_VAR_VALUE, NEW_OPCODE_LIST_VALUE, 
-    SHA256_SEC_TARGET_NAME, SHA256_SEC_VARIABLE, SHA256_SEC_LIST,
+    SHA256_SEC_TARGET_NAME,
 )
 
 from pypenguin.core.block_interface import InterToFirstIF
@@ -59,15 +59,13 @@ class FRMonitor:
         Returns:
             the FRMonitor
         """
-        sprite_name = data["spriteName"]
         return cls(
             # Core Properties
             id          = data["id"        ], 
             mode        = data["mode"      ], 
             opcode      = data["opcode"    ], 
             params      = data["params"    ], 
-            sprite_name = "_stage_" if sprite_name is None else sprite_name, 
-            # TODO: find solution for hash and attribute sprite_name 
+            sprite_name = data["spriteName"],
             value       = data["value"     ],
             x           = data["x"         ],
             y           = data["y"         ],

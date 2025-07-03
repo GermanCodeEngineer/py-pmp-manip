@@ -207,11 +207,12 @@ class InterToFirstIF:
             the sha256 hash
         """
         if   variable_name in self.global_vars:
-            return variable_sha256(variable_name, sprite_name="_stage_")
+            sprite_name = "_stage_"
         elif variable_name in self.local_vars:
-            return variable_sha256(variable_name, sprite_name=self.sprite_name)
+            sprite_name = "_stage_" if self.sprite_name is None else self.sprite_name
         else:
             raise ConversionError(f"Variable {repr(variable_name)} not found")
+        return variable_sha256(variable_name, sprite_name)
 
     def get_list_sha256(self, list_name: str) -> str:
         """
@@ -224,11 +225,12 @@ class InterToFirstIF:
             the sha256 hash
         """
         if   list_name in self.global_lists:
-            return list_sha256(list_name, sprite_name="_stage_")
+            sprite_name = "_stage_"
         elif list_name in self.local_lists:
-            return list_sha256(list_name, sprite_name=self.sprite_name)
+            sprite_name = "_stage_" if self.sprite_name is None else self.sprite_name
         else:
             raise ConversionError(f"List {repr(list_name)} not found")
+        return list_sha256(list_name, sprite_name)
 
 @grepr_dataclass(grepr_fields=["scripts", "cb_mutations"])
 class SecondReprIF:

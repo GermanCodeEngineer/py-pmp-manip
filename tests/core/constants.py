@@ -6,7 +6,7 @@ from pypenguin.important_consts import (
     SHA256_SEC_BROADCAST_MSG, SHA256_SEC_DROPDOWN_VALUE, SHA256_SEC_TARGET_NAME,
 )
 from pypenguin.opcode_info.api  import DropdownValueKind, InputMode
-from pypenguin.utility          import read_all_files_of_zip, string_to_sha256, generate_md5
+from pypenguin.utility          import read_all_files_of_zip, string_to_sha256
 
 from pypenguin.core.asset          import FRCostume, FRSound, SRVectorCostume, SRSound
 from pypenguin.core.block_mutation import (
@@ -27,7 +27,10 @@ from pypenguin.core.custom_block   import (
 )
 from pypenguin.core.enums          import SRSpriteRotationStyle, SRVideoState
 from pypenguin.core.meta           import FRMeta, FRPenguinModPlatformMeta
-from pypenguin.core.monitor        import FRMonitor, SRMonitor, SRListMonitor
+from pypenguin.core.monitor        import (
+    LIST_MONITOR_DEFAULT_WIDTH, LIST_MONITOR_DEFAULT_HEIGHT,
+    FRMonitor, SRMonitor, SRListMonitor,
+)
 from pypenguin.core.project        import FRProject, SRProject
 from pypenguin.core.target         import FRStage, FRSprite, SRStage, SRSprite
 from pypenguin.core.vars_lists     import variable_sha256, list_sha256, SRVariable, SRList
@@ -1504,49 +1507,47 @@ PROJECT_ASSET_FILES = {
     for file_name, content in read_all_files_of_zip("../tests/assets/testing_blocks.pmp").items() 
     if file_name != "project.json"
 }
-CORRECT_PROJECT_ASSET_FILES = {
-    f"{generate_md5(content)}.{file_name[file_name.index('.')+1:]}": content
-    for file_name, content in PROJECT_ASSET_FILES.items()
-}
+
+ALL_FR_MONITOR_DATAS = [
+    {
+        "id": list_sha256("my list", sprite_name="_stage_"),
+        "mode": "list",
+        "opcode": "data_listcontents",
+        "params": {
+            "LIST": "my list",
+        },
+        "spriteName": None,
+        "value": [],
+        "width": 0,
+        "height": 0,
+        "x": 5,
+        "y": 5,
+        "visible": True,
+    },
+    {
+        "height": 0,
+        "id": f'{string_to_sha256("Sprite1", secondary=SHA256_SEC_TARGET_NAME)}_xposition',
+        "isDiscrete": True,
+        "mode": "default",
+        "opcode": "motion_xposition",
+        "params": {},
+        "sliderMax": 100,
+        "sliderMin": 0,
+        "spriteName": "Sprite1",
+        "value": 0,
+        "visible": True,
+        "width": 0,
+        "x": 5,
+        "y": 5,
+    },
+]
 
 PROJECT_DATA = {
     "targets": [
         STAGE_DATA,
         SPRITE_DATA,
     ],
-    "monitors": [
-        {
-            "id": list_sha256("my list", sprite_name="_stage_"),
-            "mode": "list",
-            "opcode": "data_listcontents",
-            "params": {
-                "LIST": "my list",
-            },
-            "spriteName": None,
-            "value": [],
-            "width": 0,
-            "height": 0,
-            "x": 5,
-            "y": 5,
-            "visible": True,
-        },
-        {
-            "height": 0,
-            "id": f'{string_to_sha256("Sprite1", secondary=SHA256_SEC_TARGET_NAME)}_xposition',
-            "isDiscrete": True,
-            "mode": "default",
-            "opcode": "motion_xposition",
-            "params": {},
-            "sliderMax": 100,
-            "sliderMin": 0,
-            "spriteName": "Sprite1",
-            "value": 0,
-            "visible": True,
-            "width": 0,
-            "x": 5,
-            "y": 5,
-        },
-    ],
+    "monitors": ALL_FR_MONITOR_DATAS,
     "extensionData": {},
     "extensions": [],
     "meta": {
@@ -1561,47 +1562,52 @@ PROJECT_DATA = {
     },
 }
 
+ALL_FR_MONITORS = [
+    FRMonitor(
+        id=list_sha256("my list", sprite_name="_stage_"),
+        mode="list",
+        opcode="data_listcontents",
+        params={
+            "LIST": "my list",
+        },
+        sprite_name=None,
+        value=[],
+        x=5,
+        y=5,
+        visible=True,
+        width=0,
+        height=0,
+        slider_min=None,
+        slider_max=None,
+        is_discrete=None,
+    ),
+    FRMonitor(
+        id=f'{string_to_sha256("Sprite1", secondary=SHA256_SEC_TARGET_NAME)}_xposition',
+        mode="default",
+        opcode="motion_xposition",
+        params={},
+        sprite_name="Sprite1",
+        value=0,
+        x=5,
+        y=5,
+        visible=True,
+        width=0,
+        height=0,
+        slider_min=0,
+        slider_max=100,
+        is_discrete=True,
+    ),
+]
+ALL_FR_MONITORS_CONVERTED = deepcopy(ALL_FR_MONITORS)
+ALL_FR_MONITORS_CONVERTED[0].width = LIST_MONITOR_DEFAULT_WIDTH
+ALL_FR_MONITORS_CONVERTED[0].height = LIST_MONITOR_DEFAULT_HEIGHT
+
 FR_PROJECT = FRProject(
     targets=[
         FR_STAGE,
         FR_SPRITE,
     ],
-    monitors=[
-        FRMonitor(
-            id=list_sha256("my list", sprite_name="_stage_"),
-            mode="list",
-            opcode="data_listcontents",
-            params={
-                "LIST": "my list",
-            },
-            sprite_name="_stage_",
-            value=[],
-            x=5,
-            y=5,
-            visible=True,
-            width=100,
-            height=120,
-            slider_min=None,
-            slider_max=None,
-            is_discrete=None,
-        ),
-        FRMonitor(
-            id=f'{string_to_sha256("Sprite1", secondary=SHA256_SEC_TARGET_NAME)}_xposition',
-            mode="default",
-            opcode="motion_xposition",
-            params={},
-            sprite_name="Sprite1",
-            value=0,
-            x=5,
-            y=5,
-            visible=True,
-            width=0,
-            height=0,
-            slider_min=0,
-            slider_max=100,
-            is_discrete=True,
-        ),
-    ],
+    monitors=ALL_FR_MONITORS,
     extension_data={},
     extensions=[],
     extension_urls={},

@@ -144,7 +144,7 @@ class FRProject:
         global_monitors = []
         sprite_names = [sprite.name for sprite in new_sprites]
         for monitor in self.monitors:
-            new_monitor = monitor.to_second(info_api=info_api, sprite_names=sprite_names)
+            new_monitor = monitor.to_second(info_api, sprite_names)
             if new_monitor is None: 
                 continue
             if monitor.sprite_name is None:
