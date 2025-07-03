@@ -600,7 +600,7 @@ class SRTarget:
                 own_id=block_id,
             )
             itf_if.schedule_block_addition(block_id, old_block)
-
+        
         [itf_if.add_comment(comment.to_first(block_id=None), floating=True) for comment in self.comments]
         
         asset_files = {}

@@ -7,7 +7,7 @@ from pypenguin.important_consts import SHA256_SEC_TARGET_NAME
 from pypenguin.opcode_info.api  import DropdownValueKind
 from pypenguin.opcode_info.data import info_api
 from pypenguin.utility          import (
-    string_to_sha256, lists_equal_ignore_order,
+    string_to_sha256, lists_equal_ignore_order, xml_equal,
     ValidationConfig, 
     ThanksError, ConversionError, TypeValidationError, RangeValidationError, 
     SameValueTwiceError, InvalidValueError
@@ -329,7 +329,7 @@ def test_SRTarget_get_complete_context(context):
     assert complete_context.sounds == [(DropdownValueKind.SOUND, "Hello World!")]
     assert complete_context.is_stage == False
 
-def test_SRTarget_to_first_common():
+def test_SRTarget_to_first_common_sprite():
     srtarget = copy(SR_SPRITE)
     srtarget.comments = [ # add some comments
         SRComment(
@@ -339,7 +339,6 @@ def test_SRTarget_to_first_common():
             text="hi :)",
         )
     ]
-    srtarget.scripts = srtarget.scripts
     
     (
         old_blocks, old_comments,
@@ -375,64 +374,39 @@ def test_SRTarget_to_first_common():
     assert old_variables == FR_SPRITE.variables
     assert old_lists     == FR_SPRITE.lists
     assert lists_equal_ignore_order(old_monitors, FR_PROJECT.monitors[1:2])
-    assert len(asset_files) == len(FR_PROJECT.asset_files) # cant easily be tested
+    
+    # asset_files cant easily be tested:
+    assert len(asset_files) == 2 
+    generated_image = old_costumes[0].to_second(asset_files).content
+    expected_image  = SR_SPRITE.costumes[0].content
+    assert xml_equal(generated_image, expected_image)
+    generated_sound = old_sounds[0].to_second(asset_files).content
+    expected_sound  = SR_SPRITE.sounds[0].content
+    assert generated_sound == expected_sound
 
-def _test_SRStage_to_first(monkeypatch: MonkeyPatch):
+def test_SRTarget_to_first_common_stage():
+    srtarget = SR_STAGE
     
-    
-    #frstage, global_monitors, asset_files = srstage.to_first(
-    irblocks = srstage.to_first(
+    (
+        old_blocks, old_comments,
+        old_costumes, old_sounds,
+        old_variables, old_lists,
+        old_monitors,
+        asset_files,
+    ) = srtarget._to_first_common(
         info_api,
         global_vars=SR_PROJECT.all_sprite_variables,
         global_lists=SR_PROJECT.all_sprite_lists,
         global_monitors=SR_PROJECT.global_monitors,
-        broadcast_messages=["my message"],
-        tempo=SR_PROJECT.tempo,
-        video_transparency=SR_PROJECT.video_transparency,
-        video_state=FR_STAGE.video_state,
-        text_to_speech_language=FR_STAGE.text_to_speech_language,
     )
-    assert irblocks == {k: ALL_IR_BLOCKS[k] for k in {"d", "b", "e", "t", "u", "v"}}
-    raise Exception("IRBLOCK SUCCESS")
+    # only variables, lists and monitors might differ from a sprite
+    assert old_blocks == {}
+    assert old_comments == {}
+    assert old_variables == FR_STAGE.variables
+    assert old_lists     == FR_STAGE.lists
+    assert old_monitors[0] == FR_PROJECT.monitors[0]
+    #assert lists_equal_ignore_order(old_monitors, FR_PROJECT.monitors[0:1])
     
-    assert frstage.costumes == target_frstage.costumes
-    assert frstage.sounds == target_frtarget.sounds
-    assert frstage.broadcasts == target_frtarget.broadcasts
-    a = frstage.blocks
-    b = target_frstage.blocks
-    print("generated", SRBlock.__repr__(a))
-    print("expected", SRBlock.__repr__(b))
-    #assert len(a) == len(b)
-    for key in set(a.keys())|set(b.keys()):
-        if a.get(key) != b.get(key):
-            print("ATTR", repr(key))
-            print(a.get(key))
-            print(b.get(key))
-            assert a.get(key) == b.get(key)
-    assert a == b
-    #for a_key, a_v in a.items():
-    #    if a_key in b and b[a_key] == a_v:
-    #        continue
-    #    candidates = []
-    #    for b_key, b_v in b.items():
-    #        if getattr(a_v, "opcode", None) == getattr(b_v, "opcode", None):
-    #            candidates.append((b_key, b_v))
-    #    if not candidates: raise Exception("NONE FOUND", a_key, a_v.opcode)
-    #    print(100*"=")
-    #    print("FOR", repr(a_key), f"{len(candidates)} options", a_v)
-    #    for c in candidates:
-    #        print(c)
-    #    #raise Exception()
-
-            
-    assert a == b
-    #assert frstage.blocks == target_frstage.blocks
-    assert frstage.comments == target_frstage.comments
-    assert frstage == target_frstage
-    raise Exception("SUCCES")
-    assert global_monitors == [] # TODO
-    assert asset_files == 0 # TODO
-
 
 
 def test_SRSprite_create_empty():

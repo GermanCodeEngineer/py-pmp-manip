@@ -59,13 +59,15 @@ class FRMonitor:
         Returns:
             the FRMonitor
         """
+        sprite_name = data["spriteName"]
         return cls(
             # Core Properties
             id          = data["id"        ], 
             mode        = data["mode"      ], 
             opcode      = data["opcode"    ], 
             params      = data["params"    ], 
-            sprite_name = data["spriteName"], 
+            sprite_name = "_stage_" if sprite_name is None else sprite_name, 
+            # TODO: find solution for hash and attribute sprite_name 
             value       = data["value"     ],
             x           = data["x"         ],
             y           = data["y"         ],
