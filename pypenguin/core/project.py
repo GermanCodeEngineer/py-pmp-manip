@@ -14,7 +14,7 @@ from pypenguin.core.extension     import SRExtension, SRCustomExtension, SRBuilt
 from pypenguin.core.meta          import FRMeta
 from pypenguin.core.monitor       import FRMonitor, SRMonitor
 from pypenguin.core.enums         import SRTTSLanguage, SRVideoState, TargetPlatform
-from pypenguin.core.target        import FRTarget, FRStage, FRSprite, SRStage, SRSprite
+from pypenguin.core.target        import FRTarget, FRStage, FRSprite, SRTarget, SRStage, SRSprite
 from pypenguin.core.vars_lists    import SRVariable, SRList
 
 
@@ -474,6 +474,22 @@ class SRProject:
                     raise SameValueTwiceError(other_path, current_path, "Two lists mustn't have the same name")
                 defined_lists[list_.name] = current_path
     
+    def _find_broadcast_messages(self) -> list[str]:
+        """
+        Finds the used broadcast messages in all sprites and the stage
+        
+        Returns:
+            the used broadcast messages
+        """
+        targets: list[SRTarget] = [self.stage] + self.sprites
+        broadcast_messages = []
+        for target in targets:
+            for script in target.scripts:
+                for block in script.blocks:
+                    broadcast_messages.extend(block.find_broadcast_messages())
+        return broadcast_messages
+    
+    
     def to_first(self, info_api: OpcodeInfoAPI, target_platform: TargetPlatform) -> FRProject:
         """
         Converts a SRProject into a FRProject
@@ -485,14 +501,35 @@ class SRProject:
             the FRProject
         """
 
+        old_targets  = []
         old_monitors = []
-        old_stage, old_global_monitors = self.stage.to_first(info_api, self.global_monitors)
-        old_targets = [old_stage]
+        asset_files  = {}
+        tts_language = None if self.text_to_speech_language is None else self.text_to_speech_language.to_code()
+        old_stage, old_global_monitors, stage_asset_files = self.stage.to_first(
+            info_api                = info_api,
+            global_vars             = self.all_sprite_variables,
+            global_lists            = self.all_sprite_lists,
+            global_monitors         = self.global_monitors,
+            broadcast_messages      = self._find_broadcast_messages(),
+            tempo                   = self.tempo,
+            video_transparency      = self.video_transparency,
+            video_state             = self.video_state.to_code(),
+            text_to_speech_language = tts_language, # TODO: rename text_to_speech to tts
+        )
+        old_targets.append(old_stage)
         old_monitors.extend(old_global_monitors)
-        for srsprite in self.sprites:
-            old_sprite, old_local_monitors = srsprite.to_first()
+        asset_files.update(stage_asset_files)
+        
+        for new_sprite in self.sprites:
+            old_sprite, old_local_monitors, sprite_asset_files = new_sprite.to_first(
+                info_api     = info_api,
+                global_vars  = self.all_sprite_variables,
+                global_lists = self.all_sprite_lists,
+                layer_order  = self.sprite_layer_stack.index(new_sprite.uuid) + 1,
+            )
             old_targets.append(old_sprite)
             old_monitors.extend(old_local_monitors)
+            asset_files.update(sprite_asset_files)
 
         extensions     = []
         extension_urls = []
@@ -514,7 +551,7 @@ class SRProject:
             extensions     = extensions,
             extension_urls = extension_urls,
             meta           = meta,
-            asset_files    = 0, # TODO
+            asset_files    = asset_files,
         )
 
 

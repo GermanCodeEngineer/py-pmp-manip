@@ -512,11 +512,16 @@ def test_SRSprite_to_first():
     expected_frsprite = copy(FR_SPRITE)
     expected_frsprite.costumes = [costume.to_second(PROJECT_ASSET_FILES).to_first()[0] for costume in expected_frsprite.costumes]
     expected_frsprite.sounds   = [sound  .to_second(PROJECT_ASSET_FILES).to_first()[0] for sound   in expected_frsprite.sounds  ]
-    frsprite, asset_files = srsprite.to_first(
+    frsprite, old_local_monitors, asset_files = srsprite.to_first(
         info_api,
         global_vars=SR_PROJECT.all_sprite_variables,
         global_lists=SR_PROJECT.all_sprite_lists,
-        layer_order=SR_PROJECT.sprite_layer_stack.index(SR_SPRITE.uuid),
+        layer_order=SR_PROJECT.sprite_layer_stack.index(SR_SPRITE.uuid)+1,
     )
+    # blocks and comments are tested in _to_first_common, so just ignore:
+    frsprite.blocks = {}
+    frsprite.comments = {}
+    expected_frsprite.blocks = {}
+    expected_frsprite.comments = {}
     assert frsprite == expected_frsprite
 

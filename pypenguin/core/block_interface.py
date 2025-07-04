@@ -148,8 +148,7 @@ class InterToFirstIF:
             None
         """
         self.added_blocks[block_id] = block
-        print("ItF ADDED", repr(block_id))
-
+        
     def add_comment(self, comment: FRComment, floating=False) -> str:
         """
         Order a FRComment to be added and return it's reference id.
@@ -163,7 +162,6 @@ class InterToFirstIF:
         """
         comment_id = self.get_next_block_id(comment=True)
         self.added_comments[comment_id] = comment
-        print(f"ADDDED COMMENT f={floating}", repr(comment_id))
         return comment_id
 
     def get_fr_cb_mutation(self, proccode: str) -> "FRCustomBlockMutation":
@@ -318,8 +316,7 @@ class SecondToInterIF(SecondReprIF):
             None
         """
         self.produced_blocks[block_id] = block
-        print("StI ADDED", repr(block_id))
-
+    
     def get_cb_mutation(self, custom_opcode: SRCustomBlockOpcode) -> "SRCustomBlockMutation":
         """
         Get a SRCustomBlockMutation by its SRCustomBlockOpcode

@@ -834,7 +834,7 @@ class SRSprite(SRTarget):
         global_vars: list[SRVariable],
         global_lists: list[SRList],
         layer_order: int,
-    ) -> tuple[FRSprite, dict[str, bytes]]:
+    ) -> tuple[FRSprite, list[FRMonitor], dict[str, bytes]]:
         """
         Converts a SRSprite into a FRSprite
         
@@ -883,7 +883,7 @@ class SRSprite(SRTarget):
             draggable               = self.is_draggable,
             rotation_style          = self.rotation_style.to_code(),
         )
-        return (old_stage, asset_files)
+        return (old_stage, old_monitors, asset_files)
 
 
 __all__ = ["FRTarget", "FRStage", "FRSprite", "SRTarget", "SRStage", "SRSprite"]

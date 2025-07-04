@@ -10,7 +10,7 @@ from pypenguin.important_consts import (
 )
 from pypenguin.opcode_info.api  import (
     OpcodeInfoAPI, OpcodeInfo, 
-    InputInfo, InputType, InputMode, DropdownType,
+    InputInfo, InputType, InputMode, DropdownType, DropdownValueKind,
     OpcodeType, SpecialCaseType,
 )
 from pypenguin.utility          import (
@@ -825,6 +825,35 @@ class SRBlock:
                 raise InvalidBlockShapeError(path, "A block of type ...REPORTER is not allowed within a substack")
             elif not(is_first and is_last):
                 raise InvalidBlockShapeError(path, "If contained in a substack, a block of type ...REPORTER must be the only block in that substack")
+    
+    def find_broadcast_messages(self) -> list[str]:
+        """
+        Finds the used broadcast messages in this block
+        
+        Returns:
+            the used broadcast messages
+        """
+        broadcast_messages = []
+        for input_value in self.inputs.values():
+            if isinstance(input_value, SRBlockAndDropdownInputValue) :
+                if input_value.dropdown is not None:
+                    if input_value.dropdown.kind is DropdownValueKind.BROADCAST_MSG:
+                        broadcast_messages.append(input_value.dropdown.value)
+            
+            if   isinstance(input_value, 
+                (SRBlockAndTextInputValue, SRBlockAndDropdownInputValue, SRBlockOnlyInputValue)
+            ):
+                sub_blocks = [] if input_value.block is None else [input_value.block]
+            elif isinstance(input_value, SRScriptInputValue):
+                sub_blocks = input_value.blocks
+            
+            for sub_block in sub_blocks:
+                broadcast_messages.extend(sub_block.find_broadcast_messages())
+        for dropdown_value in self.dropdowns.values():
+            if dropdown_value is not None:
+                if dropdown_value.kind is DropdownValueKind.BROADCAST_MSG:
+                    broadcast_messages.append(dropdown_value.value)
+        return broadcast_messages
 
     def to_inter(self, 
         sti_if: "SecondToInterIF",

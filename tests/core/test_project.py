@@ -9,7 +9,7 @@ from pypenguin.utility            import (
 )
 from pypenguin.opcode_info.data import info_api
 
-from pypenguin.core.enums      import SRTTSLanguage, SRVideoState
+from pypenguin.core.enums      import SRTTSLanguage, SRVideoState, TargetPlatform
 from pypenguin.core.extension  import SRBuiltinExtension, SRCustomExtension
 from pypenguin.core.project    import FRProject, SRProject
 from pypenguin.core.target     import FRStage, SRSprite, SRStage
@@ -283,4 +283,10 @@ def test_SRProject_validate_list_names_same_inter(config):
     with raises(SameValueTwiceError):
         srproject._validate_list_names([], config)
 
+
+def test_SRProject_to_first():
+    srproject = SR_PROJECT
+    expected_frproject = copy(FR_PROJECT)
+    frproject = srproject.to_first(info_api, target_platform=TargetPlatform.PENGUINMOD)
+    assert frproject == expected_frproject
 
