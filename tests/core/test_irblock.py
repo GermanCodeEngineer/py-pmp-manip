@@ -6,6 +6,7 @@ from pypenguin.opcode_info.data import info_api
 from pypenguin.utility          import grepr_dataclass, ConversionError
 
 from pypenguin.core.block_interface import InterToFirstIF
+from pypenguin.core.block           import IRBlock
 
 
 from tests.core.constants import ALL_FR_BLOCKS, ALL_FR_COMMENTS, ALL_IR_BLOCKS, ALL_SR_SCRIPTS
@@ -21,6 +22,18 @@ class TEST_InterToFirstIF(InterToFirstIF):
         return block_id
 
 
+
+def test_IRBlock_from_menu_dropdown_value():
+    expected_irblock = ALL_IR_BLOCKS["e"]
+    opcode_info = info_api.get_info_by_old("motion_glideto")
+    input_infos = opcode_info.get_old_input_ids_infos(block=ALL_IR_BLOCKS["b"], fti_if=None)
+    irblock = IRBlock.from_menu_dropdown_value(dropdown_value="_random_", input_info=input_infos["TO"])
+    assert irblock == expected_irblock
+
+
+def test_IRBlock_get_references():
+    assert set(ALL_IR_BLOCKS["d"].get_references()) == {"b"}
+    assert set(ALL_IR_BLOCKS["b"].get_references()) == {"e", "t"}
 
 
 def test_IRBlock_to_first_comment():

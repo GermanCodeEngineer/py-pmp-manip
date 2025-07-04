@@ -216,6 +216,20 @@ def test_SRBlock_validate_opcode_type():
                 )
 
 
+def test_SRBlock_find_broadcast_messages_send():
+    srblock = ALL_SR_SCRIPTS[0].blocks[0]
+    assert srblock.find_broadcast_messages() == ["my message"]
+
+def test_SRBlock_find_broadcast_messages_receive():
+    srblock = ALL_SR_SCRIPTS[8].blocks[0]
+    assert srblock.find_broadcast_messages() == ["my message"]
+
+def test_SRBlock_find_broadcast_messages_script_none():
+    srblock = ALL_SR_SCRIPTS[6].blocks[0]
+    assert srblock.find_broadcast_messages() == []
+
+
+
 def test_SRBlock_to_inter_block_and_text_block_only():
     sti_if = TEST_SecondToInterIF(scripts=ALL_SR_SCRIPTS, _block_ids=["k", "l"])
     script = ALL_SR_SCRIPTS[4]

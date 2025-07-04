@@ -310,7 +310,6 @@ class IRBlock:
     def get_references(self) -> list[str]:
         """
         Get a list of block ids, this block references
-        # TODO: add tests
 
         Returns:
             a list of block ids, this block references
@@ -829,6 +828,7 @@ class SRBlock:
     def find_broadcast_messages(self) -> list[str]:
         """
         Finds the used broadcast messages in this block
+        # TODO: add tests
         
         Returns:
             the used broadcast messages

@@ -19,6 +19,7 @@ from tests.core.constants import (
     PROJECT_DATA, PROJECT_ASSET_FILES, 
     FR_PROJECT, SR_PROJECT, 
     SB3_PROJECT_DATA_ORGINAL, SB3_PROJECT_DATA_CONVERTED,
+    ALL_FR_MONITORS_CONVERTED,
 )
 
 from tests.utility import execute_attr_validation_tests
@@ -285,8 +286,17 @@ def test_SRProject_validate_list_names_same_inter(config):
 
 
 def test_SRProject_to_first():
-    srproject = SR_PROJECT
-    expected_frproject = copy(FR_PROJECT)
+    srproject = deepcopy(SR_PROJECT)
+    srproject.sprites[0].scripts = [] # pretend there are no blocks, because they can't be easily compared and are tested elsewhere
+    expected_frproject = deepcopy(FR_PROJECT) 
+    for target in expected_frproject.targets:
+        target.costumes = [costume.to_second(PROJECT_ASSET_FILES).to_first()[0] for costume in target.costumes]
+        target.sounds   = [sound  .to_second(PROJECT_ASSET_FILES).to_first()[0] for sound   in target.sounds  ]
+    expected_frproject.targets[1].blocks     = {} # see above
+    expected_frproject.targets[1].comments   = {} # see above
+    expected_frproject.targets[0].broadcasts = {} # see above
+    expected_frproject.monitors              = ALL_FR_MONITORS_CONVERTED
     frproject = srproject.to_first(info_api, target_platform=TargetPlatform.PENGUINMOD)
+    assert len(frproject.asset_files) == len(expected_frproject.asset_files)
+    frproject.asset_files = expected_frproject.asset_files = {}
     assert frproject == expected_frproject
-

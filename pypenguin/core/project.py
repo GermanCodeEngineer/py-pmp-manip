@@ -477,6 +477,7 @@ class SRProject:
     def _find_broadcast_messages(self) -> list[str]:
         """
         Finds the used broadcast messages in all sprites and the stage
+        # TODO: add tests
         
         Returns:
             the used broadcast messages
@@ -532,7 +533,7 @@ class SRProject:
             asset_files.update(sprite_asset_files)
 
         extensions     = []
-        extension_urls = []
+        extension_urls = {}
         for extension in self.extensions:
             extensions.append(extension.id)
             if isinstance(extension, SRCustomExtension):
