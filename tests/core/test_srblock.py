@@ -2,7 +2,7 @@ from copy        import copy, deepcopy
 from dataclasses import field
 from pytest      import fixture, raises
 
-from pypenguin.opcode_info.api  import DropdownValueKind, OpcodeType, InputType
+from pypenguin.opcode_info.api  import DropdownValueKind, OpcodeType, InputType, InputMode
 from pypenguin.opcode_info.data import info_api
 from pypenguin.utility          import (
     grepr_dataclass, ValidationConfig, ConversionError,
@@ -367,13 +367,66 @@ def test_SRInputValue_eq():
             SRBlockAndTextInputValue(block=None, text="a text field"), 
             SRBlockOnlyInputValue(block=None),
         ),
+        (False, 
+            SRBlockAndTextInputValue(block=None, text=""), 
+            SRBlockAndTextInputValue(block=ALL_SR_SCRIPTS[1].blocks[0], text="")
+        ),
+        (True, 
+            SRBlockAndTextInputValue(block=ALL_SR_SCRIPTS[1].blocks[0], text="a text field"), 
+            SRBlockAndTextInputValue(block=ALL_SR_SCRIPTS[1].blocks[0], text="a text field")
+        ),
     ]
     for target_result, a, b in sub_tests:
-        assert (a == b) == target_result
-    
-    a = SRBlockAndTextInputValue(block=None, text="a text field")
-    b = SRBlockOnlyInputValue(block=None)
-    
+        assert (a == b) == target_result    
+
+
+def test_SRInputValue_from_mode_block_and_text():
+    input_value = SRInputValue.from_mode(
+        mode=InputMode.BLOCK_AND_TEXT,
+        block=ALL_SR_SCRIPTS[1].blocks[0],
+        text="hi :)",
+    )
+    assert input_value == SRBlockAndTextInputValue(
+        block=ALL_SR_SCRIPTS[1].blocks[0],
+        text="hi :)"
+    )
+
+
+def test_SRInputValue_from_mode_block_and_dropdown():
+    input_value1 = SRInputValue.from_mode(
+        mode=InputMode.BLOCK_AND_DROPDOWN,
+        block=ALL_SR_SCRIPTS[1].blocks[0],
+        dropdown=SRDropdownValue(kind=DropdownValueKind.OBJECT, value="mouse-pointer"),
+    )
+    input_value2 = SRInputValue.from_mode(
+        mode=InputMode.BLOCK_AND_BROADCAST_DROPDOWN,
+        block=ALL_SR_SCRIPTS[1].blocks[0],
+        dropdown=SRDropdownValue(kind=DropdownValueKind.OBJECT, value="mouse-pointer"),
+    )
+    assert input_value1 == SRBlockAndDropdownInputValue(
+        block=ALL_SR_SCRIPTS[1].blocks[0],
+        dropdown=SRDropdownValue(kind=DropdownValueKind.OBJECT, value="mouse-pointer"),
+    )
+    assert input_value1 == input_value2
+
+def test_SRInputValue_from_mode_block_only():
+    input_value = SRInputValue.from_mode(
+        mode=InputMode.BLOCK_ONLY,
+        block=ALL_SR_SCRIPTS[1].blocks[0],
+    )
+    assert input_value == SRBlockOnlyInputValue(
+        block=ALL_SR_SCRIPTS[1].blocks[0],
+    )
+
+def test_SRInputValue_from_mode_script():
+    input_value = SRInputValue.from_mode(
+        mode=InputMode.SCRIPT,
+        blocks=ALL_SR_SCRIPTS[6].blocks[0].inputs["THEN"].blocks,
+    )
+    assert input_value == SRScriptInputValue(
+        blocks=ALL_SR_SCRIPTS[6].blocks[0].inputs["THEN"].blocks,
+    )
+
 
 def test_SRInputValue_validate_block(config, validation_if, context):
     input_value = SRBlockAndDropdownInputValue(

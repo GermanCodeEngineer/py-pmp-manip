@@ -477,14 +477,13 @@ class SRProject:
     def _find_broadcast_messages(self) -> list[str]:
         """
         Finds the used broadcast messages in all sprites and the stage
-        # TODO: add tests
         
         Returns:
             the used broadcast messages
         """
-        targets: list[SRTarget] = [self.stage] + self.sprites
         broadcast_messages = []
-        for target in targets:
+        for target in ([self.stage] + self.sprites):
+            target: SRTarget
             for script in target.scripts:
                 for block in script.blocks:
                     broadcast_messages.extend(block.find_broadcast_messages())

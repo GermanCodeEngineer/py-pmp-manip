@@ -245,6 +245,26 @@ def test_IRBlock_to_first_empty_input():
     assert itf_if.added_blocks == {}
     assert itf_if.added_comments == {}
 
+def test_IRBlock_to_first_empty_menu():
+    itf_if = TEST_InterToFirstIF(
+        blocks=ALL_IR_BLOCKS,
+        global_vars=["my variable"], global_lists=["my list"],
+        local_vars=[], local_lists=[],
+        sprite_name="Sprite1",
+        _block_ids=[],
+    )
+    irblock = ALL_IR_BLOCKS["e"]
+    frblock = irblock.to_first(
+        itf_if=itf_if,
+        info_api=info_api,
+        parent_id="b",
+        own_id="e",
+    )
+    assert frblock == ALL_FR_BLOCKS["e"]
+    assert itf_if.added_blocks == {}
+    assert itf_if.added_comments == {}
+
+
 
 def test_IRBlock_to_second_block_and_text_block_only():
     irblock = ALL_IR_BLOCKS["c"]

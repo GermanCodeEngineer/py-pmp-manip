@@ -828,8 +828,7 @@ class SRBlock:
     def find_broadcast_messages(self) -> list[str]:
         """
         Finds the used broadcast messages in this block
-        # TODO: add tests
-        
+               
         Returns:
             the used broadcast messages
         """
@@ -1047,7 +1046,7 @@ class SRInputValue(ABC):
             the input value
         """
         match mode:
-            case InputMode.BLOCK_AND_TEXT | InputMode.BLOCK_AND_MENU_TEXT:
+            case InputMode.BLOCK_AND_TEXT:
                 return SRBlockAndTextInputValue(block=block, text=text)
             case InputMode.BLOCK_AND_DROPDOWN | InputMode.BLOCK_AND_BROADCAST_DROPDOWN:
                 return SRBlockAndDropdownInputValue(block=block, dropdown=dropdown)
@@ -1055,6 +1054,9 @@ class SRInputValue(ABC):
                 return SRBlockOnlyInputValue(block=block)
             case InputMode.SCRIPT:
                 return SRScriptInputValue(blocks=[] if blocks is None else blocks)
+            case InputMode.BLOCK_AND_MENU_TEXT: # pragma: no cover
+                raise NotImplementedError() # TODO # pragma: no cover
+            
 
     @abstractmethod
     def validate(self, 

@@ -11,6 +11,7 @@ from pypenguin.opcode_info.data import info_api
 
 from pypenguin.core.enums      import SRTTSLanguage, SRVideoState, TargetPlatform
 from pypenguin.core.extension  import SRBuiltinExtension, SRCustomExtension
+from pypenguin.core.meta       import FRMeta
 from pypenguin.core.project    import FRProject, SRProject
 from pypenguin.core.target     import FRStage, SRSprite, SRStage
 from pypenguin.core.vars_lists import SRVariable, SRList
@@ -285,7 +286,11 @@ def test_SRProject_validate_list_names_same_inter(config):
         srproject._validate_list_names([], config)
 
 
-def test_SRProject_to_first():
+def test_SRProject_find_broadcast_messages():
+    assert set(SR_PROJECT._find_broadcast_messages()) == {"my message"}
+
+
+def test_SRProject_to_first_main():
     srproject = deepcopy(SR_PROJECT)
     srproject.sprites[0].scripts = [] # pretend there are no blocks, because they can't be easily compared and are tested elsewhere
     expected_frproject = deepcopy(FR_PROJECT) 
@@ -300,3 +305,18 @@ def test_SRProject_to_first():
     assert len(frproject.asset_files) == len(expected_frproject.asset_files)
     frproject.asset_files = expected_frproject.asset_files = {}
     assert frproject == expected_frproject
+
+def test_SRProject_to_first_extensions():
+    srproject = copy(SR_PROJECT)
+    srproject.extensions = [
+        SRBuiltinExtension(id="jgJSON"), 
+        SRCustomExtension(id="truefantombase", url="https://extensions.turbowarp.org/true-fantom/base.js"),
+    ]
+    frproject = srproject.to_first(info_api, target_platform=TargetPlatform.PENGUINMOD)
+    assert frproject.extensions == ["jgJSON", "truefantombase"]
+    assert frproject.extension_urls == {"truefantombase": "https://extensions.turbowarp.org/true-fantom/base.js"}
+
+def test_SRProject_to_first_scratch_platform():
+    srproject = SR_PROJECT
+    frproject = srproject.to_first(info_api, target_platform=TargetPlatform.SCRATCH)
+    assert frproject.meta == FRMeta.new_scratch_meta()
