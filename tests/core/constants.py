@@ -6,7 +6,7 @@ from pypenguin.important_consts import (
     SHA256_SEC_BROADCAST_MSG, SHA256_SEC_DROPDOWN_VALUE, SHA256_SEC_TARGET_NAME,
 )
 from pypenguin.opcode_info.api  import DropdownValueKind, InputMode
-from pypenguin.utility          import read_all_files_of_zip, string_to_sha256
+from pypenguin.utility          import read_all_files_of_zip, string_to_sha256, KeyReprDict
 
 from pypenguin.core.asset          import FRCostume, FRSound, SRVectorCostume, SRSound
 from pypenguin.core.block_mutation import (
@@ -1502,11 +1502,11 @@ FR_SPRITE = FRSprite(
 
 
 
-PROJECT_ASSET_FILES = {
+PROJECT_ASSET_FILES = KeyReprDict({
     file_name: content 
     for file_name, content in read_all_files_of_zip("../tests/assets/testing_blocks.pmp").items() 
     if file_name != "project.json"
-}
+})
 
 ALL_FR_MONITOR_DATAS = [
     {

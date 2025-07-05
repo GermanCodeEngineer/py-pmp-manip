@@ -6,7 +6,7 @@ from pydub  import AudioSegment
 from pytest import fixture, raises
 
 from pypenguin.utility import (
-    xml_equal, image_equal, generate_md5, ValidationConfig,
+    xml_equal, image_equal, generate_md5, ValidationConfig, KeyReprDict,
     TypeValidationError, InvalidValueError, ThanksError,
 )
 
@@ -101,7 +101,7 @@ def test_FRCostume_to_second_vector():
         rotation_center_y=197.11651651651664,
         bitmap_resolution=1,
     )
-    srcostume = frcostume.to_second(asset_files={"051321321c93ae7b61222de62e77ae40.svg": SIMPLE_SVG_EXAMPLE})
+    srcostume = frcostume.to_second(asset_files=KeyReprDict({"051321321c93ae7b61222de62e77ae40.svg": SIMPLE_SVG_EXAMPLE}))
     assert isinstance(srcostume, SRVectorCostume)
     assert srcostume.name == frcostume.name
     assert srcostume.file_extension == frcostume.data_format
@@ -119,7 +119,7 @@ def test_FRCostume_to_second_double_resolution():
         rotation_center_y=94,
         bitmap_resolution=2,
     )
-    srcostume = frcostume.to_second(asset_files={"05630bfa94501a3e5d61ce443a0cea70.png": SIMPLE_BITMAP_EXAMPLE})
+    srcostume = frcostume.to_second(asset_files=KeyReprDict({"05630bfa94501a3e5d61ce443a0cea70.png": SIMPLE_BITMAP_EXAMPLE}))
     assert isinstance(srcostume, SRBitmapCostume)
     assert srcostume.name == frcostume.name
     assert srcostume.file_extension == frcostume.data_format
@@ -140,7 +140,7 @@ def test_FRCostume_to_second_simple_resolution():
         rotation_center_y=94,
         bitmap_resolution=1,
     )
-    srcostume = frcostume.to_second(asset_files={"05630bfa94501a3e5d61ce443a0cea70.png": SIMPLE_BITMAP_EXAMPLE})
+    srcostume = frcostume.to_second(asset_files=KeyReprDict({"05630bfa94501a3e5d61ce443a0cea70.png": SIMPLE_BITMAP_EXAMPLE}))
     assert isinstance(srcostume, SRBitmapCostume)
     assert not srcostume.has_double_resolution
 
@@ -155,7 +155,7 @@ def test_FRCostume_to_second_other_resolution():
         bitmap_resolution=3,
     )
     with raises(ThanksError):
-        frcostume.to_second(asset_files={"05630bfa94501a3e5d61ce443a0cea70.png": SIMPLE_BITMAP_EXAMPLE})
+        frcostume.to_second(asset_files=KeyReprDict({"05630bfa94501a3e5d61ce443a0cea70.png": SIMPLE_BITMAP_EXAMPLE}))
 
 def test_FRCostume_to_second_invalid_format():
     frcostume = FRCostume(
@@ -168,9 +168,9 @@ def test_FRCostume_to_second_invalid_format():
         bitmap_resolution=2,
     )
     with raises(ThanksError):
-        frcostume.to_second(asset_files={
+        frcostume.to_second(asset_files=KeyReprDict({
             "05630bfa94501a3e5d61ce443a0cea70.png": b"\xc4;#\xb2\xff \xa2e\xa6hJc#*>\x02\x01V\x1c#\x8e)\xe0sZ\x16S_B\xad\xb2p\xfd\xe0\x96\xe0\x06\xc9)mKu\x17\x08jmq\xf9\x83\xe0U\xee\xe5a\xb6'xC\x9e8S\xcbgeq\x1f\x0b\r\x115~\x8d\xd0\x0e\xc5",
-        })
+        }))
 
 
 
@@ -202,7 +202,7 @@ def test_FRSound_to_second():
         rate=48000,
         sample_count=1123,
     )
-    srsound = frsound.to_second(asset_files={"83a9787d4cb6f3b7632b4ddfebf74367.wav": SIMPLE_SOUND_EXAMPLE})
+    srsound = frsound.to_second(asset_files=KeyReprDict({"83a9787d4cb6f3b7632b4ddfebf74367.wav": SIMPLE_SOUND_EXAMPLE}))
     assert isinstance(srsound, SRSound)
     assert srsound.name == frsound.name
     assert srsound.file_extension == frsound.data_format

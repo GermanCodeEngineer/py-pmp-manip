@@ -3,7 +3,7 @@ from pytest import fixture, raises
 from uuid   import uuid4
 
 from pypenguin.utility            import (
-    ValidationConfig, 
+    ValidationConfig, KeyReprDict,
     ThanksError, TypeValidationError, RangeValidationError, 
     SameValueTwiceError, SpriteLayerStackError,
 )
@@ -303,7 +303,7 @@ def test_SRProject_to_first_main():
     expected_frproject.monitors              = ALL_FR_MONITORS_CONVERTED
     frproject = srproject.to_first(info_api, target_platform=TargetPlatform.PENGUINMOD)
     assert len(frproject.asset_files) == len(expected_frproject.asset_files)
-    frproject.asset_files = expected_frproject.asset_files = {}
+    frproject.asset_files = expected_frproject.asset_files = KeyReprDict()
     assert frproject == expected_frproject
 
 def test_SRProject_to_first_extensions():

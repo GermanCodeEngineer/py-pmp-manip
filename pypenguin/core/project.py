@@ -4,7 +4,7 @@ from uuid        import UUID
 from pypenguin.important_consts import SHA256_SEC_TARGET_NAME
 from pypenguin.opcode_info.api  import OpcodeInfoAPI, DropdownValueKind
 from pypenguin.utility          import (
-    grepr_dataclass, read_all_files_of_zip, string_to_sha256, ValidationConfig, 
+    grepr_dataclass, read_all_files_of_zip, string_to_sha256, ValidationConfig, KeyReprDict,
     AA_TYPE, AA_NONE_OR_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_RANGE, AA_EXACT_LEN,
     ThanksError, SameValueTwiceError, SpriteLayerStackError,
 )
@@ -30,12 +30,13 @@ class FRProject:
     extensions: list[str]
     extension_urls: dict[str, str]
     meta: FRMeta
-    asset_files: dict[str, bytes]
+    asset_files: KeyReprDict[str, bytes] 
+    # using KeyReprDict here to only show file names and not their gigantic byte values in repr
 
     @classmethod
     def from_data(cls, 
         data: dict, 
-        asset_files: dict[str, bytes], 
+        asset_files: KeyReprDict[str, bytes], 
         info_api: OpcodeInfoAPI,
     ) -> "FRProject":
         """
@@ -99,7 +100,7 @@ class FRProject:
         del contents["project.json"]
         if   file_path.endswith(".sb3"):
             project_data = FRProject._data_sb3_to_pmp(project_data)
-        return FRProject.from_data(project_data, asset_files=contents, info_api=info_api)
+        return FRProject.from_data(project_data, asset_files=KeyReprDict(contents), info_api=info_api)
 
     def __post_init__(self) -> None:
         """
@@ -503,7 +504,7 @@ class SRProject:
 
         old_targets  = []
         old_monitors = []
-        asset_files  = {}
+        asset_files  = KeyReprDict()
         tts_language = None if self.text_to_speech_language is None else self.text_to_speech_language.to_code()
         old_stage, old_global_monitors, stage_asset_files = self.stage.to_first(
             info_api                = info_api,

@@ -7,7 +7,7 @@ from uuid        import uuid4, UUID
 from pypenguin.important_consts import SHA256_SEC_TARGET_NAME, SHA256_SEC_BROADCAST_MSG
 from pypenguin.opcode_info.api  import OpcodeInfoAPI, DropdownValueKind
 from pypenguin.utility          import (
-    string_to_sha256, grepr_dataclass, ThanksError, ValidationConfig, 
+    string_to_sha256, grepr_dataclass, ThanksError, ValidationConfig, KeyReprDict,
     AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_MIN_LEN, AA_MIN, AA_RANGE, AA_COORD_PAIR, AA_NOT_ONE_OF, 
     SameValueTwiceError, ConversionError,
 )
@@ -108,21 +108,21 @@ class FRTarget(ABC):
 
     @abstractmethod
     def to_second(self, 
-        asset_files: dict[str, bytes],
+        asset_files: KeyReprDict[str, bytes],
         info_api: OpcodeInfoAPI,
     ) -> tuple["SRTarget", list[SRVariable] | None,  list[SRList] | None]:
         """
         Converts a FRTarget into a SRTarget
         
         Args:
-            asset_files: TODO: complete
+            asset_files: the asset files, which store the contents of costumes and sounds
             info_api: the opcode info api used to fetch information about opcodes
         
         Returns:
             the SRTarget, a list of the global variables or None, a list of the global lists or None
         """
 
-    def _to_second_common(self, asset_files: dict[str, bytes], info_api: OpcodeInfoAPI) -> tuple[
+    def _to_second_common(self, asset_files: KeyReprDict[str, bytes], info_api: OpcodeInfoAPI) -> tuple[
         list[SRScript], 
         list[SRComment], 
         list[SRCostume], 
@@ -275,14 +275,14 @@ class FRStage(FRTarget):
         )
     
     def to_second(self, 
-        asset_files: dict[str, bytes],
+        asset_files: KeyReprDict[str, bytes],
         info_api: OpcodeInfoAPI,
     ) -> tuple["SRStage", list[SRVariable],  list[SRList]]:
         """
         Converts a FRStage into a SRStage
         
         Args:
-            asset_files: TODO: complete
+            asset_files: the asset files, which store the contents of costumes and sounds
             info_api: the opcode info api used to fetch information about opcodes
         
         Returns:
@@ -350,14 +350,14 @@ class FRSprite(FRTarget):
         )
 
     def to_second(self, 
-        asset_files: dict[str, bytes],
+        asset_files: KeyReprDict[str, bytes],
         info_api: OpcodeInfoAPI,
     ) -> tuple["SRSprite", None, None]:
         """
         Converts a FRSprite into a SRSprite
         
         Args:
-            asset_files: TODO: complete
+            asset_files: the asset files, which store the contents of costumes and sounds
             info_api: the opcode info api used to fetch information about opcodes
         
         Returns:
@@ -544,7 +544,7 @@ class SRTarget:
         dict[str, tuple[str, str]|tuple[str, str, bool]],
         dict[str, tuple[str, str]],
         list[FRMonitor],
-        dict[str, bytes],
+        KeyReprDict[str, bytes],
     ]:
         """
         *[Helper Method]* Convert common fields into first representation
@@ -605,7 +605,7 @@ class SRTarget:
         
         [itf_if.add_comment(comment.to_first(block_id=None), floating=True) for comment in self.comments]
         
-        asset_files = {}
+        asset_files = KeyReprDict()
         old_costumes = []
         for costume in self.costumes:
             old_costume, file_bytes = costume.to_first()
@@ -651,7 +651,7 @@ class SRStage(SRTarget):
         video_transparency: int | float,
         video_state: str,
         text_to_speech_language: str | None,
-    ) -> tuple[FRStage, list[FRMonitor], dict[str, bytes]]:
+    ) -> tuple[FRStage, list[FRMonitor], KeyReprDict[str, bytes]]:
         """
         Converts a SRStage into a FRStage
         
@@ -834,7 +834,7 @@ class SRSprite(SRTarget):
         global_vars: list[SRVariable],
         global_lists: list[SRList],
         layer_order: int,
-    ) -> tuple[FRSprite, list[FRMonitor], dict[str, bytes]]:
+    ) -> tuple[FRSprite, list[FRMonitor], KeyReprDict[str, bytes]]:
         """
         Converts a SRSprite into a FRSprite
         

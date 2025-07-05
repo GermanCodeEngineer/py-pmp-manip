@@ -5,7 +5,18 @@ from enum        import Enum
 from pypenguin.utility.dual_key_dict import DualKeyDict
 
 
+class KeyReprDict(dict):
+    """
+    Behaves exactly like butilins.dict, only the repr method is different. It only shows keys and not values of the dictionary.
+    """
+    def __repr__(self):
+        keys = ", ".join(repr(key) for key in self.keys())
+        return f"{self.__class__.__name__}(keys={{{keys}}})"
+
 def grepr(obj, /, annotate_fields=True, include_attributes=False, *, indent=4):
+    def _is_dict(obj):
+        return isinstance(obj, dict) and not isinstance(obj, KeyReprDict)
+    
     def _grepr(obj, level=0):
         is_compatible = bool(getattr(obj, "_grepr", False))
         if indent is not None:
@@ -28,7 +39,7 @@ def grepr(obj, /, annotate_fields=True, include_attributes=False, *, indent=4):
                 return '(%s)' % (", ".join(_grepr(x, level)[0] for x in obj)), False
             else:
                 return '(%s%s%s)' % (prefix, sep.join(_grepr(x, level)[0] for x in obj), end_sep), False
-        elif isinstance(obj, dict):
+        elif _is_dict(obj):
             if not obj:
                 return '{}', True
             args = [f'{_grepr(key, level)[0]}: {_grepr(value, level)[0]}' for key,value in obj.copy().items()]    
@@ -77,7 +88,7 @@ def grepr(obj, /, annotate_fields=True, include_attributes=False, *, indent=4):
         return repr(obj), True
  
     is_compatible = bool(getattr(obj, "_grepr", False))
-    if not(is_compatible) and not(isinstance(obj, (list, tuple, dict, str, DualKeyDict))):
+    if not(is_compatible) and not(isinstance(obj, (list, tuple, str, DualKeyDict)) or _is_dict(obj)):
         return repr(obj)
     if indent is not None and not isinstance(indent, str):
         indent = ' ' * indent
@@ -123,5 +134,5 @@ class PypenguinEnum(Enum):
         return self.__class__.__name__ + "." + self.name
 
 
-__all__ = ["grepr", "grepr_dataclass", "PypenguinEnum"]
+__all__ = ["KeyReprDict", "grepr", "grepr_dataclass", "PypenguinEnum"]
 

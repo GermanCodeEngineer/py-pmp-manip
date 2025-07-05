@@ -2,11 +2,12 @@ import os
 import zipfile
 
 from pypenguin.utility.errors import PathError
+from pypenguin.utility.repr   import KeyReprDict
 
 
-def read_all_files_of_zip(zip_path: str) -> dict[str, bytes]:
+def read_all_files_of_zip(zip_path: str) -> KeyReprDict[str, bytes]:
     zip_path = ensure_correct_path(zip_path)
-    contents = {}
+    contents = KeyReprDict()
     with zipfile.ZipFile(zip_path, "r") as zip_ref:
         for file_name in zip_ref.namelist():
             with zip_ref.open(file_name) as file_ref:
