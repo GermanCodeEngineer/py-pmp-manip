@@ -1,5 +1,5 @@
 from abc         import ABC, abstractmethod
-from json        import loads
+from json        import loads, dumps
 from typing      import Any, TYPE_CHECKING
 from dataclasses import field
 
@@ -27,13 +27,22 @@ class FRMutation(ABC):
     @abstractmethod
     def from_data(cls, data: dict[str, Any]) -> "FRMutation":
         """
-        Create a FRMutation from raw data
+        Create a FRMutation from json data
         
         Args:
-            data: the raw data
+            data: the json data
         
         Returns:
             the FRMutation
+        """
+
+    @abstractmethod
+    def to_data(self) -> dict[str, Any]:
+        """
+        Serializes a FRMutation into json data
+        
+        Returns:
+            the json data
         """
 
     def __post_init__(self) -> None:
@@ -70,10 +79,10 @@ class FRCustomBlockArgumentMutation(FRMutation):
     @classmethod
     def from_data(cls, data: dict[str, str]) -> "FRCustomBlockArgumentMutation":
         """
-        Create a FRCustomBlockArgumentMutation from raw data
+        Create a FRCustomBlockArgumentMutation from json data
         
         Args:
-            data: the raw data
+            data: the json data
         
         Returns:
             the FRCustomBlockArgumentMutation
@@ -81,8 +90,21 @@ class FRCustomBlockArgumentMutation(FRMutation):
         return cls(
             tag_name = data["tagName" ],
             children = data["children"],
-            color = tuple(loads(data["color"])),
+            color    = tuple(loads(data["color"])),
         )
+
+    def to_data(self) -> dict[str, Any]:
+        """
+        Serializes a FRCustomBlockArgumentMutation into json data
+        
+        Returns:
+            the json data
+        """
+        return {
+            "tagName" : self.tag_name,
+            "children": self.children.copy(),
+            "color"   : dumps(self.color), # automatically converts to list
+        }
     
     def __post_init__(self) -> None:
         """
@@ -145,10 +167,10 @@ class FRCustomBlockMutation(FRMutation):
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRCustomBlockMutation":
         """
-        Create a FRCustomBlockMutation from raw data
+        Create a FRCustomBlockMutation from json data
         
         Args:
-            data: the raw data
+            data: the json data
         
         Returns:
             the FRCustomBlockMutation
@@ -172,6 +194,27 @@ class FRCustomBlockMutation(FRMutation):
             color             = tuple(loads(data["color"])) if "color" in data else ("#FF6680", "#FF4D6A", "#FF3355"),
         )
     
+    def to_data(self) -> dict[str, Any]:
+        """
+        Serializes a FRCustomBlockMutation into json data
+        
+        Returns:
+            the json data
+        """
+        return {
+            "tagName"         : self.tag_name,
+            "children"        : self.children.copy(),
+            "proccode"        : self.proccode,
+            "argumentids"     : dumps(self.argument_ids),
+            "argumentnames"   : dumps(self.argument_names),
+            "argumentdefaults": dumps(self.argument_defaults),
+            "warp"            : dumps(self.warp), # seems to be a str usually
+            "returns"         : dumps(self.returns),
+            "edited"          : dumps(self.edited),
+            "optype"          : dumps(self.optype),
+            "color"           : dumps(self.color), # automatically converts to list
+        }
+        
     def to_second(self, fti_if: "FirstToInterIF") -> "SRCustomBlockMutation":
         """
         Convert a FRCustomBlockMutation into a SRCustomBlockMutation
@@ -211,10 +254,10 @@ class FRCustomBlockCallMutation(FRMutation):
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRCustomBlockCallMutation":
         """
-        Create a FRCustomBlockCallMutation from raw data
+        Create a FRCustomBlockCallMutation from json data
         
         Args:
-            data: the raw data
+            data: the json data
         
         Returns:
             the FRCustomBlockCallMutation
@@ -233,9 +276,28 @@ class FRCustomBlockCallMutation(FRMutation):
             returns      = loads(data["returns"]),
             edited       = loads(data["edited" ]),
             optype       = loads(data["optype" ]) if "optype" in data else "statement",
-            color  = tuple(loads(data["color"  ])),
+            color        = tuple(loads(data["color"])),
         )
     
+    def to_data(self) -> dict[str, Any]:
+        """
+        Serializes a FRCustomBlockCallMutation into json data
+        
+        Returns:
+            the json data
+        """
+        return {
+            "tagName"    : self.tag_name,
+            "children"   : self.children.copy(),
+            "proccode"   : self.proccode,
+            "argumentids": dumps(self.argument_ids),
+            "warp"       : dumps(self.warp), # seems to be a str usually
+            "returns"    : dumps(self.returns),
+            "edited"     : dumps(self.edited),
+            "optype"     : dumps(self.optype),
+            "color"      : dumps(self.color), # automatically converts to list
+        }
+        
     def to_second(self, fti_if: "FirstToInterIF") -> "SRCustomBlockCallMutation":
         """
         Convert a FRCustomBlockCallMutation into a SRCustomBlockCallMutation
@@ -265,20 +327,33 @@ class FRStopScriptMutation(FRMutation):
     @classmethod
     def from_data(cls, data: dict[str, bool]) -> "FRStopScriptMutation":
         """
-        Create a FRCustomBlockCallMutation(for the "stop [this script v]" block) from raw data
+        Create a FRStopScriptMutation(for the "stop [this script v]" block) from json data
         
         Args:
-            data: the raw data
+            data: the json data
         
         Returns:
-            the FRCustomBlockCallMutation
+            the FRStopScriptMutation
         """
         return cls(
             tag_name = data["tagName" ],
             children = data["children"],
             has_next = loads(data["hasnext"]),
         )
-    
+
+    def to_data(self) -> dict[str, Any]:
+        """
+        Serializes a FRStopScriptMutation into json data
+        
+        Returns:
+            the json data
+        """
+        return {
+            "tagName" : self.tag_name,
+            "children": self.children.copy(),
+            "hasnext" : dumps(self.has_next),
+        }
+   
     def to_second(self, fti_if: "FirstToInterIF") -> "SRStopScriptMutation":
         """
         Convert a FRStopScriptMutation into a SRStopScriptMutation

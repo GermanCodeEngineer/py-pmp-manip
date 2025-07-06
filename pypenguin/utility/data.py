@@ -18,11 +18,21 @@ def get_closest_matches(string, possible_values: list[str], n: int) -> list[str]
     return [i[0] for i in sorted_matches[:n]]   
 
 def tuplify(obj):
-    if isinstance(obj, list):
+    if   isinstance(obj, list):
         return tuple(tuplify(item) for item in obj)
     elif isinstance(obj, dict):
         return {tuplify(key): tuplify(value) for key, value in obj.items()}
     elif isinstance(obj, (set, tuple)):
+        return type(obj)(tuplify(item) for item in obj)
+    else:
+        return obj
+
+def listify(obj):
+    if   isinstance(obj, tuple):
+        return [listify(item) for item in obj]
+    elif isinstance(obj, dict):
+        return {listify(key): listify(value) for key, value in obj.items()}
+    elif isinstance(obj, (set, list)):
         return type(obj)(tuplify(item) for item in obj)
     else:
         return obj
@@ -76,7 +86,7 @@ def generate_md5(data: bytes) -> str:
 
 
 __all__ = [
-    "remove_duplicates", "get_closest_matches", "tuplify", 
+    "remove_duplicates", "get_closest_matches", "tuplify", "listify",
     "string_to_sha256", "number_to_token", "generate_md5",
 ]
 

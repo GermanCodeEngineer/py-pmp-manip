@@ -61,6 +61,7 @@ def test_FRMutation_from_data_and_post_init():
                 tag_name = data["tagName" ],
                 children = data["children"],
             )
+        def to_data(self): pass
         def to_second(self, ticfti_if): pass
 
     data = {
@@ -86,7 +87,7 @@ def test_FRMutation_from_data_and_post_init():
 
 
 
-def test_FRCustomBlockArgumentMutation_from_data_and_to_second(fti_if: FirstToInterIF):
+def test_FRCustomBlockArgumentMutation_from_to_data_and_to_second(fti_if: FirstToInterIF):
     colors = ["#FF6680", "#FF4D6A", "#FF3355"]
     data = {
         "tagName": "mutation", 
@@ -95,6 +96,8 @@ def test_FRCustomBlockArgumentMutation_from_data_and_to_second(fti_if: FirstToIn
     }
     frmutation = FRCustomBlockArgumentMutation.from_data(data)
     assert frmutation.color == tuple(colors)
+    
+    assert frmutation.to_data() == data
     
     frmutation.store_argument_name("my_arg")
     srmutation = frmutation.to_second(fti_if)
@@ -117,7 +120,7 @@ def test_FRCustomBlockArgumentMutation_to_second_without_storing_argument(fti_if
 
 
 
-def test_FRCustomBlockMutation_from_data_and_to_second(fti_if: FirstToInterIF):
+def test_FRCustomBlockMutation_from_to_data_and_to_second(fti_if: FirstToInterIF):
     warp    = False
     returns = None
     edited  = True
@@ -147,6 +150,8 @@ def test_FRCustomBlockMutation_from_data_and_to_second(fti_if: FirstToInterIF):
     assert frmutation.optype == optype
     assert frmutation.color == tuple(colors)
     
+    assert frmutation.to_data() == data
+    
     srmutation = frmutation.to_second(fti_if)
     assert isinstance(srmutation, SRCustomBlockMutation)
     custom_opcode = SRCustomBlockOpcode.from_proccode_argument_names(
@@ -162,7 +167,7 @@ def test_FRCustomBlockMutation_from_data_and_to_second(fti_if: FirstToInterIF):
 
 
 
-def test_FRCustomBlockCallMutation_from_data_and_to_second(fti_if: FirstToInterIF):
+def test_FRCustomBlockCallMutation_from_to_data_and_to_second(fti_if: FirstToInterIF):
     warp = False
     returns = None
     edited = True
@@ -187,6 +192,8 @@ def test_FRCustomBlockCallMutation_from_data_and_to_second(fti_if: FirstToInterI
     assert frmutation.edited == edited
     assert frmutation.optype == optype
     assert frmutation.color == tuple(colors)
+    
+    assert frmutation.to_data() == data
     
     srmutation = frmutation.to_second(fti_if)
     assert isinstance(srmutation, SRCustomBlockCallMutation)
@@ -227,7 +234,7 @@ def test_FRCustomBlockMutation_from_data_warp():
     
 
 
-def test_FRStopScriptMutation_from_data_and_to_second(fti_if: FirstToInterIF):
+def test_FRStopScriptMutation_from_to_data_and_to_second(fti_if: FirstToInterIF):
     has_next = False
     data = {
         "tagName": "mutation",
@@ -236,6 +243,8 @@ def test_FRStopScriptMutation_from_data_and_to_second(fti_if: FirstToInterIF):
     }
     frmutation = FRStopScriptMutation.from_data(data)
     assert frmutation.has_next == has_next
+    
+    assert frmutation.to_data() == data
     
     srmutation = frmutation.to_second(fti_if)
     assert isinstance(srmutation, SRStopScriptMutation)

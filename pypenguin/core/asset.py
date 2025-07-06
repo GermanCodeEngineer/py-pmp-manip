@@ -19,7 +19,7 @@ EMPTY_SVG_COSTUME_ROTATION_CENTER = (240, 180)
 @grepr_dataclass(grepr_fields=["name", "asset_id", "data_format", "md5ext", "rotation_center_x", "rotation_center_y", "bitmap_resolution"])
 class FRCostume:
     """
-    The first representation for a costume. It is very close to the raw data in a project
+    The first representation for a costume. It is very close to the json data in a project
     """
     
     name: str
@@ -33,13 +33,13 @@ class FRCostume:
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRCostume":
         """
-        Deserializes raw data into a FRSound
+        Deserializes json data into a FRCostume
         
         Args:
-            data: the raw data
+            data: the json data
         
         Returns:
-            the FRSound
+            the FRCostume
         """
         md5ext = data["md5ext"] if "md5ext" in data else f'{data["assetId"]}.{data["dataFormat"]}'
         return cls(
@@ -51,7 +51,26 @@ class FRCostume:
             rotation_center_y = data["rotationCenterY"],
             bitmap_resolution = data.get("bitmapResolution", None),
         )
-
+    
+    def to_data(self) -> dict[str, Any]:
+        """
+        Serializes a FRCostume into json data
+        
+        Returns:
+            the json data
+        """
+        data = {
+            "name"            : self.name,
+            "assetId"         : self.asset_id,
+            "dataFormat"      : self.data_format,
+            "md5ext"          : self.md5ext,
+            "rotationCenterX" : self.rotation_center_x,
+            "rotationCenterY" : self.rotation_center_y,
+        }
+        if self.bitmap_resolution is not None:
+            data["bitmapResolution"] = self.bitmap_resolution
+        return data
+    
     def to_second(self, asset_files: KeyReprDict[str, bytes]) -> "SRVectorCostume|SRBitmapCostume": 
         """
         Converts a FRCostume into a SRCostume
@@ -94,7 +113,7 @@ class FRCostume:
 @grepr_dataclass(grepr_fields=["name", "asset_id", "data_format", "md5ext", "rate", "sample_count"])
 class FRSound:
     """
-    The first representation for a sound. It is very close to the raw data in a project
+    The first representation for a sound. It is very close to the json data in a project
     """
     
     name: str
@@ -107,10 +126,10 @@ class FRSound:
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRSound":
         """
-        Deserializes raw data into a FRSound
+        Deserializes json data into a FRSound
         
         Args:
-            data: the raw data
+            data: the json data
         
         Returns:
             the FRSound
@@ -123,6 +142,23 @@ class FRSound:
             rate         = data["rate"       ],
             sample_count = data["sampleCount"],
         )
+
+    def to_data(self) -> dict[str, Any]:
+        """
+        Serializes a FRSound into json data
+        
+        Returns:
+            the json data
+        """
+        data = {
+            "name"            : self.name,
+            "assetId"         : self.asset_id,
+            "dataFormat"      : self.data_format,
+            "md5ext"          : self.md5ext,
+            "rate"            : self.rate,
+            "sampleCount"     : self.sample_count,
+        }
+        return data
 
     def to_second(self, asset_files: KeyReprDict[str, bytes]) -> "SRSound":
         """

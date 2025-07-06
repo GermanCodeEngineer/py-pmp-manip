@@ -71,14 +71,14 @@ class FRTarget(ABC):
         Returns:
             a dict containing the prepared values for common fields
         """
-        return {
-            "is_stage": data["isStage"],
-            "name": data["name"],
-            "variables": {key: tuple(value) for key, value in data["variables"].items()},
-            "lists": {key: tuple(value) for key, value in data["lists"].items()},
-            "broadcasts": data["broadcasts"],
-            "custom_vars": data.get("customVars", []),
-            "blocks": {
+        return dict(
+            is_stage=data["isStage"],
+            name=data["name"],
+            variables={key: tuple(value) for key, value in data["variables"].items()},
+            lists={key: tuple(value) for key, value in data["lists"].items()},
+            broadcasts=data["broadcasts"],
+            custom_vars=data.get("customVars", []),
+            blocks={
                 block_id: (
                     tuple(block_data)
                     if isinstance(block_data, list)
@@ -86,16 +86,16 @@ class FRTarget(ABC):
                 )
                 for block_id, block_data in data["blocks"].items()
             },
-            "comments": {
+            comments={
                 comment_id: FRComment.from_data(comment_data)
                 for comment_id, comment_data in data["comments"].items()
             },
-            "current_costume": data["currentCostume"],
-            "costumes": [FRCostume.from_data(costume_data) for costume_data in data["costumes"]],
-            "sounds": [FRSound.from_data(sound_data) for sound_data in data["sounds"]],
-            "volume": data["volume"],
-            "layer_order": data["layerOrder"],
-        }
+            current_costume=data["currentCostume"],
+            costumes=[FRCostume.from_data(costume_data) for costume_data in data["costumes"]],
+            sounds=[FRSound.from_data(sound_data) for sound_data in data["sounds"]],
+            volume=data["volume"],
+            layer_order=data["layerOrder"],
+        )
 
     def __post_init__(self) -> None:
         """
@@ -105,6 +105,48 @@ class FRTarget(ABC):
             None
         """
         if self.custom_vars != []: raise ThanksError()
+
+    @abstractmethod
+    def to_data(self) -> dict[str, Any]:
+        """
+        Serializes a FRTarget into json data
+        
+        Returns:
+            the json data
+        """
+
+    def _to_data_common(data: dict[str, Any], info_api: OpcodeInfoAPI) -> dict[str, Any]:
+        """
+        *[Helper Method]* Prepare common fields for FRTarget and its subclasses
+
+        Returns:
+            a dict containing the prepared values for common fields
+        """
+        return dict(
+            is_stage=data["isStage"],
+            name=data["name"],
+            variables={key: tuple(value) for key, value in data["variables"].items()},
+            lists={key: tuple(value) for key, value in data["lists"].items()},
+            broadcasts=data["broadcasts"],
+            custom_vars=data.get("customVars", []),
+            blocks={
+                block_id: (
+                    tuple(block_data)
+                    if isinstance(block_data, list)
+                    else FRBlock.from_data(block_data, info_api=info_api)
+                )
+                for block_id, block_data in data["blocks"].items()
+            },
+            comments={
+                comment_id: FRComment.from_data(comment_data)
+                for comment_id, comment_data in data["comments"].items()
+            },
+            current_costume=data["currentCostume"],
+            costumes=[FRCostume.from_data(costume_data) for costume_data in data["costumes"]],
+            sounds=[FRSound.from_data(sound_data) for sound_data in data["sounds"]],
+            volume=data["volume"],
+            layer_order=data["layerOrder"],
+        )
 
     @abstractmethod
     def to_second(self, 
@@ -273,6 +315,14 @@ class FRStage(FRTarget):
             video_state=data["videoState"],
             text_to_speech_language=data["textToSpeechLanguage"],
         )
+    
+    def to_data(self) -> dict[str, Any]:
+        """
+        Serializes a FRTarget into json data
+        
+        Returns:
+            the json data
+        """
     
     def to_second(self, 
         asset_files: KeyReprDict[str, bytes],

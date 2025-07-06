@@ -6,7 +6,7 @@ from pypenguin.utility import grepr_dataclass, ValidationConfig, AA_COORD_PAIR, 
 @grepr_dataclass(grepr_fields=["block_id", "x", "y", "width", "height", "minimized", "text"])
 class FRComment:
     """
-    The first representation for a block. It is very close to the raw data in a project
+    The first representation for a block. It is very close to the json data in a project
     """
     
     block_id: str | None
@@ -20,10 +20,10 @@ class FRComment:
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRComment":
         """
-        Deserializes raw data into a FRComment
+        Deserializes json data into a FRComment
         
         Args:
-            data: the raw data
+            data: the json data
         
         Returns:
             the FRComment
@@ -37,6 +37,23 @@ class FRComment:
             minimized = data["minimized"],
             text      = data["text"     ],
         )
+    
+    def to_data(self) -> dict[str, Any]:
+        """
+        Serializes a FRComment into json data
+        
+        Returns:
+            the json data
+        """
+        return {
+            "blockId"  : self.block_id,
+            "x"        : self.x,
+            "y"        : self.y,
+            "width"    : self.width,
+            "height"   : self.height,
+            "minimized": self.minimized,
+            "text"     : self.text,
+        }
     
     def to_second(self) -> tuple[bool, "SRComment"]:
         """

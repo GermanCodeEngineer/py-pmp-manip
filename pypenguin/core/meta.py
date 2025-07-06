@@ -58,6 +58,22 @@ class FRMeta:
             ),
         )
 
+    def to_data(self) -> dict[str, Any]:
+        """
+        Serializes a FRMeta into json data
+        
+        Returns:
+            the json data
+        """
+        data = {
+            "semver"  : self.semver,
+            "vm"      : self.vm,
+            "agent"   : self.agent,
+        }
+        if self.platform is not None:
+            data["platform"] = self.platform.to_data()
+        return data
+
     @classmethod
     def new_scratch_meta(cls) -> "FRMeta":
         """
@@ -130,6 +146,19 @@ class FRPenguinModPlatformMeta:
             version = data["version"],
         )
     
+    def to_data(self) -> dict[str, Any]:
+        """
+        Serializes a FRPenguinModPlatformMeta into json data
+        
+        Returns:
+            the json data
+        """
+        return {
+            "name"   : self.name,
+            "url"    : self.url,
+            "version": self.version,
+        }
+    
     def __post_init__(self) -> None:
         """
         Ensure the metadata is valid
@@ -142,7 +171,6 @@ class FRPenguinModPlatformMeta:
             or (self.version != PENGUINMOD_META_DATA["platform"]["version"])
         ):
             raise ThanksError()
-
 
 
 __all__ = ["FRMeta", "FRPenguinModPlatformMeta"]

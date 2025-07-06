@@ -34,14 +34,28 @@ RAW_COMMENT_DATA_FLOATING = {
 
 def test_FRComment_from_data():
     data = RAW_COMMENT_DATA_ATTACHED
-    comment = FRComment.from_data(data)
-    assert comment.block_id == data["blockId"]
-    assert comment.x == data["x"]
-    assert comment.y == data["y"]
-    assert comment.width == data["width"]
-    assert comment.height == data["height"]
-    assert comment.minimized == data["minimized"]
-    assert comment.text == data["text"]
+    frcomment = FRComment.from_data(data)
+    assert frcomment.block_id == data["blockId"]
+    assert frcomment.x == data["x"]
+    assert frcomment.y == data["y"]
+    assert frcomment.width == data["width"]
+    assert frcomment.height == data["height"]
+    assert frcomment.minimized == data["minimized"]
+    assert frcomment.text == data["text"]
+
+
+def test_FRComment_to_data():
+    frcomment = FRComment(
+        block_id=None,
+        x=10,
+        y=20,
+        width=52,
+        height=32,
+        minimized=True,
+        text="Floating comment here",
+    )
+    assert frcomment.to_data() == RAW_COMMENT_DATA_FLOATING
+
 
 def test_FRComment_to_second_attached():
     frcomment = FRComment.from_data(RAW_COMMENT_DATA_ATTACHED)

@@ -167,6 +167,7 @@ class SRCustomBlockOptype(PypenguinEnum):
     """
     The second representation for the operation type of a custom block
     """
+    
     @classmethod
     def from_code(cls, code: str | None) -> "SRCustomBlockOptype":
         """

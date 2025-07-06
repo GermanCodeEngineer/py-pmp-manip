@@ -78,7 +78,7 @@ def test_FRCostume_from_data_missing_md5ext():
     assert frcostume.md5ext == "051321321c93ae7b61222de62e77ae40.svg"
 
 
-def test_FRCostume_from_data_missing_bitmap_resolution():
+def test_FRCostume_from_data_missing_bitmap_res():
     costume_data = {
         "name": "my costume", 
         "assetId": "051321321c93ae7b61222de62e77ae40", 
@@ -87,8 +87,50 @@ def test_FRCostume_from_data_missing_bitmap_resolution():
         "rotationCenterX": 381.2306306306307, 
         "rotationCenterY": 197.11651651651664,
     }
-    srcostume = FRCostume.from_data(costume_data)
-    assert srcostume.bitmap_resolution == None
+    frcostume = FRCostume.from_data(costume_data)
+    assert frcostume.bitmap_resolution == None
+
+
+def test_FRCostume_to_data_has_bitmap_res():
+    frcostume = FRCostume(
+        name="my costume",
+        asset_id="051321321c93ae7b61222de62e77ae40",
+        data_format="svg",
+        md5ext="051321321c93ae7b61222de62e77ae40.svg",
+        rotation_center_x=381.2306306306307,
+        rotation_center_y=197.11651651651664,
+        bitmap_resolution=1,
+    )
+    costume_data = {
+        "name": "my costume", 
+        "assetId": "051321321c93ae7b61222de62e77ae40", 
+        "dataFormat": "svg", 
+        "md5ext": "051321321c93ae7b61222de62e77ae40.svg", 
+        "rotationCenterX": 381.2306306306307, 
+        "rotationCenterY": 197.11651651651664,
+        "bitmapResolution": 1, 
+    }
+    assert frcostume.to_data() == costume_data
+
+def test_FRCostume_to_data_no_bitmap_res():
+    frcostume = FRCostume(
+        name="my costume",
+        asset_id="051321321c93ae7b61222de62e77ae40",
+        data_format="svg",
+        md5ext="051321321c93ae7b61222de62e77ae40.svg",
+        rotation_center_x=381.2306306306307,
+        rotation_center_y=197.11651651651664,
+        bitmap_resolution=None,
+    )
+    costume_data = {
+        "name": "my costume", 
+        "assetId": "051321321c93ae7b61222de62e77ae40", 
+        "dataFormat": "svg", 
+        "md5ext": "051321321c93ae7b61222de62e77ae40.svg", 
+        "rotationCenterX": 381.2306306306307, 
+        "rotationCenterY": 197.11651651651664,
+    }
+    assert frcostume.to_data() == costume_data
 
 
 def test_FRCostume_to_second_vector():
@@ -191,6 +233,27 @@ def test_FRSound_from_data():
     assert frsound.md5ext == sound_data["md5ext"]
     assert frsound.rate == sound_data["rate"]
     assert frsound.sample_count == sound_data["sampleCount"]
+
+
+def test_FRSound_to_data():
+    frsound = FRSound(
+        name="pop",
+        asset_id="83a9787d4cb6f3b7632b4ddfebf74367",
+        data_format="wav",
+        md5ext="83a9787d4cb6f3b7632b4ddfebf74367.wav",
+        rate=48000,
+        sample_count=1123,
+    )
+    sound_data = {
+        "name": "pop", 
+        "assetId": "83a9787d4cb6f3b7632b4ddfebf74367", 
+        "dataFormat": "wav",
+        "md5ext": "83a9787d4cb6f3b7632b4ddfebf74367.wav", 
+        "rate": 48000, 
+        "sampleCount": 1123, 
+    }
+    assert frsound.to_data() == sound_data
+
 
 
 def test_FRSound_to_second():

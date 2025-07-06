@@ -1,3 +1,4 @@
+from copy   import deepcopy
 from typing import Any
 
 from pypenguin.opcode_info.api  import OpcodeInfoAPI, MonitorIdBehaviour
@@ -36,7 +37,7 @@ class FRMonitor:
     opcode: str
     params: dict[str, Any]
     sprite_name: str | None
-    value: Any
+    value: Any # TODO: check if correct
     x: int | float
     y: int | float
     visible: bool
@@ -64,7 +65,7 @@ class FRMonitor:
             id          = data["id"        ], 
             mode        = data["mode"      ], 
             opcode      = data["opcode"    ], 
-            params      = data["params"    ], 
+            params      = deepcopy(data["params"]), 
             sprite_name = data["spriteName"],
             value       = data["value"     ],
             x           = data["x"         ],
@@ -78,6 +79,33 @@ class FRMonitor:
             slider_max  = data.get("sliderMax" , None),
             is_discrete = data.get("isDiscrete", None),
         )
+    
+    def to_data(self) -> dict[str, Any]:
+        """
+        Serializes a FRMonitor into json data
+        
+        Returns:
+            the json data
+        """
+        data = {
+            "id"        : self.id,
+            "mode"      : self.mode,
+            "opcode"    : self.opcode,
+            "params"    : deepcopy(self.params),
+            "spriteName": self.sprite_name,
+            "value"     : self.value,
+            "x"         : self.x,
+            "y"         : self.y,
+            "visible"   : self.visible,
+
+            "width"     : self.width,
+            "height"    : self.height,
+        }
+        if self.is_discrete is not None:
+            data["sliderMin" ] = self.slider_min
+            data["sliderMax" ] = self.slider_max
+            data["isDiscrete"] = self.is_discrete
+        return data
     
     def __post_init__(self) -> None:
         """

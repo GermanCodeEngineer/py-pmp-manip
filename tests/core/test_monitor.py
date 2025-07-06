@@ -583,7 +583,7 @@ def stage_itf_if():
 
 
 
-def test_FRMonitor_from_data():
+def test_FRMonitor_from_to_data():
     monitor_data = ALL_FR_MONITOR_DATAS[0]
     frmonitor = FRMonitor.from_data(monitor_data)
     assert isinstance(frmonitor, FRMonitor)
@@ -602,13 +602,17 @@ def test_FRMonitor_from_data():
     assert frmonitor.slider_max == monitor_data["sliderMax"]
     assert frmonitor.is_discrete == monitor_data["isDiscrete"]
 
-def test_FRMonitor_from_data_list():
+    assert frmonitor.to_data() == monitor_data
+
+def test_FRMonitor_from_to_data_list():
     monitor_data = ALL_FR_MONITOR_DATAS[4]
     frmonitor = FRMonitor.from_data(monitor_data)
     assert isinstance(frmonitor, FRMonitor)
     assert frmonitor.slider_min == None
     assert frmonitor.slider_max == None
     assert frmonitor.is_discrete == None
+    
+    assert frmonitor.to_data() == monitor_data
 
 
 def test_FRMonitor_post_init_params():

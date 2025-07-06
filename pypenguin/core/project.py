@@ -60,7 +60,7 @@ class FRProject:
                 for monitor_data in data["monitors"]
             ],
             extension_data = data.get("extensionData", {}),
-            extensions     = data["extensions"   ],
+            extensions     = data["extensions"],
             extension_urls = data.get("extensionURLs", {}),
             meta           = FRMeta.from_data(data["meta"]),
             asset_files    = asset_files,

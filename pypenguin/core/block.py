@@ -1,4 +1,5 @@
 from abc         import ABC, abstractmethod
+from copy        import deepcopy
 from dataclasses import field
 from typing      import Any, TYPE_CHECKING
 
@@ -14,7 +15,7 @@ from pypenguin.opcode_info.api  import (
     OpcodeType, SpecialCaseType,
 )
 from pypenguin.utility          import (
-    grepr_dataclass, get_closest_matches, tuplify, string_to_sha256, ValidationConfig,
+    grepr_dataclass, get_closest_matches, tuplify, listify, string_to_sha256, ValidationConfig,
     AA_TYPE, AA_NONE, AA_NONE_OR_TYPE, AA_COORD_PAIR, AA_LIST_OF_TYPE, AA_DICT_OF_TYPE, AA_MIN_LEN,
     DeserializationError, ConversionError,
     UnnecessaryInputError, MissingInputError, UnnecessaryDropdownError, MissingDropdownError, InvalidOpcodeError, InvalidBlockShapeError,
@@ -33,7 +34,7 @@ from pypenguin.core.vars_lists     import variable_sha256, list_sha256
 @grepr_dataclass(grepr_fields=["opcode", "next", "parent", "inputs", "fields", "shadow", "top_level", "x", "y", "comment", "mutation"])
 class FRBlock:
     """
-    The first representation for a block. It is very close to the raw data in a project
+    The first representation for a block. It is very close to the json data in a project
     """
 
     opcode: str
@@ -54,10 +55,10 @@ class FRBlock:
     @classmethod
     def from_data(cls, data: dict[str, Any], info_api: OpcodeInfoAPI) -> "FRBlock":
         """
-        Deserializes raw data into a FRBlock
+        Deserializes json data into a FRBlock
         
         Args:
-            data: the raw data
+            data: the json data
             info_api: the opcode info api used to fetch information about opcodes
         
         Returns:
@@ -78,8 +79,8 @@ class FRBlock:
             opcode    = opcode,
             next      = data["next"    ],
             parent    = data["parent"  ],
-            inputs    = tuplify(data["inputs"]),
-            fields    = tuplify(data["fields"]),
+            inputs    = deepcopy(tuplify(data["inputs"])),
+            fields    = deepcopy(tuplify(data["fields"])),
             shadow    = data["shadow"  ],
             top_level = data["topLevel"],
             x         = data.get("x", None),
@@ -87,7 +88,7 @@ class FRBlock:
             comment   = data.get("comment", None),
             mutation  = mutation,
         )
-    
+        
     @classmethod
     def from_tuple(cls, 
         data: tuple[int, str, str] | tuple[int, str, str, int|float, int|float],
@@ -97,7 +98,7 @@ class FRBlock:
         Deserializes a tuple into a FRBlock with a variable or list value opcode
         
         Args:
-            data: the raw data
+            data: the json data
         
         Returns:
             the FRBlock
@@ -143,13 +144,38 @@ class FRBlock:
                 mutation  = None,
             )
         else: raise ConversionError(f"Invalid constant(first element) for FRBlock conversion: {data[0]}")
-    
+
+    def to_data(self) -> dict[str, Any]:
+        """
+        Serializes a FRBlock into json data
+        
+        Returns:
+            the json data
+        """
+        data = {
+            "opcode"  : self.opcode,
+            "next"    : self.next,
+            "parent"  : self.parent,
+            "inputs"  : listify(self.inputs),
+            "fields"  : listify(self.fields),
+            "shadow"  : self.shadow,
+            "topLevel": self.top_level,
+        }
+        if self.x is not None:
+            data["x"] = self.x
+            data["y"] = self.y
+        if self.comment is not None:
+            data["comment"] = self.comment
+        if self.mutation is not None:
+            data["mutation"] = self.mutation.to_data()
+        return data
+   
     def to_tuple(self) -> tuple[int, str, str] | tuple[int, str, str, int|float, int|float]:
         """
         Serializes a FRBlock with a variable or list value opcode into a tuple
         
         Returns:
-            the raw data
+            the json data
         """
         if self.opcode not in ANY_OPCODE_IMMEDIATE_BLOCK:
             raise ConversionError("To convert a FRBlock into a tuple it must have one of these opcodes: {ANY_OPCODE_IMMEDIATE_BLOCK}")

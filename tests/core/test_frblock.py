@@ -132,6 +132,21 @@ def test_FRBlock_from_tuple_invalid():
         FRBlock.from_tuple([77, ..., ...], parent_id="qqq")
 
 
+def test_FRBlock_to_data_top_level():
+    frblock = ALL_FR_BLOCKS["d"]
+    assert frblock.to_data() == ALL_FR_BLOCK_DATAS["d"]
+
+def test_FRBlock_to_data_comment():
+    frblock = ALL_FR_BLOCKS["b"]
+    assert frblock.to_data() == ALL_FR_BLOCK_DATAS["b"]
+
+def test_FRBlock_to_data_mutation():
+    frblock = ALL_FR_BLOCKS["a"]
+    expected_data = ALL_FR_BLOCK_DATAS["a"]
+    expected_data["mutation"] = FRCustomBlockMutation.from_data(expected_data["mutation"]).to_data() # normalize
+    assert frblock.to_data() == expected_data
+
+
 def test_FRBlock_to_tuple_invalid_opcode():
     frblock = ALL_FR_BLOCKS_CLEAN["g"]
     with raises(ConversionError):
