@@ -48,6 +48,18 @@ scratch_music = OpcodeInfoGroup(name="scratch_music", opcode_info=DualKeyDict({
     ("music_getTempo", "tempo"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         can_have_monitor=True,
+        monitor_id_behaviour=MonitorIdBehaviour.OPCFULL,
     ),
 
 }))
+
+scratch_music.add_opcode("note", "#music: NOTE MENU", OpcodeInfo(
+    opcode_type=OpcodeType.MENU,
+))
+scratch_music.add_opcode("music_menu_DRUM", "#music: DRUM MENU", OpcodeInfo(
+    opcode_type=OpcodeType.MENU,
+))
+scratch_music.add_opcode("music_menu_INSTRUMENT", "#music: INSTRUMENT MENU", OpcodeInfo(
+    opcode_type=OpcodeType.MENU,
+))
+

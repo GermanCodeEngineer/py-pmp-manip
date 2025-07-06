@@ -542,6 +542,9 @@ class IRBlock:
                         input_block    = sub_block_a
                         input_dropdown = sub_block_b
                 case InputMode.BLOCK_AND_MENU_TEXT:  # pragma: no cover
+                    l = locals()
+                    del l["info_api"]
+                    print(FRBlock.__repr__(l))
                     raise NotImplementedError() # TODO  # pragma: no cover
 
             new_input_id = old_new_input_ids[input_id]
