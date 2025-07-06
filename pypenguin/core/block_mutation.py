@@ -1,11 +1,12 @@
 from abc         import ABC, abstractmethod
-from json        import loads, dumps
+from copy        import deepcopy
+from json        import loads
 from typing      import Any, TYPE_CHECKING
 from dataclasses import field
 
 from pypenguin.important_consts import SHA256_SEC_MAIN_ARGUMENT_NAME
 from pypenguin.utility          import (
-    grepr_dataclass, string_to_sha256, ValidationConfig,
+    grepr_dataclass, string_to_sha256, gdumps, ValidationConfig,
     AA_TYPE, AA_HEX_COLOR,
     ThanksError, ConversionError, DeserializationError, 
 )
@@ -102,8 +103,8 @@ class FRCustomBlockArgumentMutation(FRMutation):
         """
         return {
             "tagName" : self.tag_name,
-            "children": self.children.copy(),
-            "color"   : dumps(self.color), # automatically converts to list
+            "children": deepcopy(self.children),
+            "color"   : gdumps(self.color), # automatically converts to list
         }
     
     def __post_init__(self) -> None:
@@ -203,16 +204,16 @@ class FRCustomBlockMutation(FRMutation):
         """
         return {
             "tagName"         : self.tag_name,
-            "children"        : self.children.copy(),
+            "children"        : deepcopy(self.children),
             "proccode"        : self.proccode,
-            "argumentids"     : dumps(self.argument_ids),
-            "argumentnames"   : dumps(self.argument_names),
-            "argumentdefaults": dumps(self.argument_defaults),
-            "warp"            : dumps(self.warp), # seems to be a str usually
-            "returns"         : dumps(self.returns),
-            "edited"          : dumps(self.edited),
-            "optype"          : dumps(self.optype),
-            "color"           : dumps(self.color), # automatically converts to list
+            "argumentids"     : gdumps(self.argument_ids),
+            "argumentnames"   : gdumps(self.argument_names),
+            "argumentdefaults": gdumps(self.argument_defaults),
+            "warp"            : gdumps(self.warp), # seems to be a str usually
+            "returns"         : gdumps(self.returns),
+            "edited"          : gdumps(self.edited),
+            "optype"          : gdumps(self.optype),
+            "color"           : gdumps(self.color), # automatically converts to list
         }
         
     def to_second(self, fti_if: "FirstToInterIF") -> "SRCustomBlockMutation":
@@ -288,14 +289,14 @@ class FRCustomBlockCallMutation(FRMutation):
         """
         return {
             "tagName"    : self.tag_name,
-            "children"   : self.children.copy(),
+            "children"   : deepcopy(self.children),
             "proccode"   : self.proccode,
-            "argumentids": dumps(self.argument_ids),
-            "warp"       : dumps(self.warp), # seems to be a str usually
-            "returns"    : dumps(self.returns),
-            "edited"     : dumps(self.edited),
-            "optype"     : dumps(self.optype),
-            "color"      : dumps(self.color), # automatically converts to list
+            "argumentids": gdumps(self.argument_ids),
+            "warp"       : gdumps(self.warp), # seems to be a str usually
+            "returns"    : gdumps(self.returns),
+            "edited"     : gdumps(self.edited),
+            "optype"     : gdumps(self.optype),
+            "color"      : gdumps(self.color), # automatically converts to list
         }
         
     def to_second(self, fti_if: "FirstToInterIF") -> "SRCustomBlockCallMutation":
@@ -350,8 +351,8 @@ class FRStopScriptMutation(FRMutation):
         """
         return {
             "tagName" : self.tag_name,
-            "children": self.children.copy(),
-            "hasnext" : dumps(self.has_next),
+            "children": deepcopy(self.children),
+            "hasnext" : gdumps(self.has_next),
         }
    
     def to_second(self, fti_if: "FirstToInterIF") -> "SRStopScriptMutation":

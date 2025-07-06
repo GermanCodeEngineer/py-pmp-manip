@@ -1,5 +1,6 @@
 from difflib import SequenceMatcher
 from hashlib import sha256, md5
+from json    import dumps
 
 _TOKEN_CHARSET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!#%()*+,-./:;=?@[]^_`{|}~"
 
@@ -36,6 +37,9 @@ def listify(obj):
         return type(obj)(tuplify(item) for item in obj)
     else:
         return obj
+
+def gdumps(obj) -> str:
+    return dumps(obj, separators=(",", ":"))  # no spaces after commas or colons
 
 def string_to_sha256(primary: str, secondary: str|None=None, tertiary: str|None=None) -> str:
     def _string_to_sha256(input_string: str, digits: int) -> str:
@@ -86,7 +90,7 @@ def generate_md5(data: bytes) -> str:
 
 
 __all__ = [
-    "remove_duplicates", "get_closest_matches", "tuplify", "listify",
+    "remove_duplicates", "get_closest_matches", "tuplify", "listify", "gdumps",
     "string_to_sha256", "number_to_token", "generate_md5",
 ]
 

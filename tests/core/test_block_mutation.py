@@ -1,10 +1,9 @@
 from copy   import deepcopy
-from json   import dumps
 from pytest import fixture, raises
 
 from pypenguin.important_consts import SHA256_SEC_MAIN_ARGUMENT_NAME
 from pypenguin.utility          import (
-    string_to_sha256,
+    string_to_sha256, gdumps,
     DeserializationError, ConversionError, ThanksError, 
     ValidationConfig, TypeValidationError, InvalidValueError
 )
@@ -92,7 +91,7 @@ def test_FRCustomBlockArgumentMutation_from_to_data_and_to_second(fti_if: FirstT
     data = {
         "tagName": "mutation", 
         "children": [], 
-        "color": dumps(colors),
+        "color": gdumps(colors),
     }
     frmutation = FRCustomBlockArgumentMutation.from_data(data)
     assert frmutation.color == tuple(colors)
@@ -111,7 +110,7 @@ def test_FRCustomBlockArgumentMutation_to_second_without_storing_argument(fti_if
     data = {
         "tagName": "mutation",
         "children": [],
-        "color": dumps(["#111111", "#222222", "#333333"]),
+        "color": gdumps(["#111111", "#222222", "#333333"]),
     }
     frmutation = FRCustomBlockArgumentMutation.from_data(data)
 
@@ -130,14 +129,14 @@ def test_FRCustomBlockMutation_from_to_data_and_to_second(fti_if: FirstToInterIF
         "tagName": "mutation", 
         "children": [], 
         "proccode": "do sth text %s and bool %b", 
-        "argumentids": dumps(EXAMPLE_ARG_IDS), 
-        "argumentnames": dumps(EXAMPLE_ARG_NAMES), 
-        "argumentdefaults": dumps(EXAMPLE_ARG_DEFAULTS), 
-        "warp": dumps(warp), 
-        "returns": dumps(returns), 
-        "edited": dumps(edited), 
-        "optype": dumps(optype), 
-        "color": dumps(colors),
+        "argumentids": gdumps(EXAMPLE_ARG_IDS), 
+        "argumentnames": gdumps(EXAMPLE_ARG_NAMES), 
+        "argumentdefaults": gdumps(EXAMPLE_ARG_DEFAULTS), 
+        "warp": gdumps(warp), 
+        "returns": gdumps(returns), 
+        "edited": gdumps(edited), 
+        "optype": gdumps(optype), 
+        "color": gdumps(colors),
     }
     frmutation = FRCustomBlockMutation.from_data(data)
     assert frmutation.proccode == data["proccode"]
@@ -177,12 +176,12 @@ def test_FRCustomBlockCallMutation_from_to_data_and_to_second(fti_if: FirstToInt
         "tagName": "mutation", 
         "children": [], 
         "proccode": "do sth text %s and bool %b", 
-        "argumentids": dumps(EXAMPLE_ARG_IDS), 
-        "warp": dumps(warp), 
-        "returns": dumps(returns), 
-        "edited": dumps(edited), 
-        "optype": dumps(optype), 
-        "color": dumps(colors),
+        "argumentids": gdumps(EXAMPLE_ARG_IDS), 
+        "warp": gdumps(warp), 
+        "returns": gdumps(returns), 
+        "edited": gdumps(edited), 
+        "optype": gdumps(optype), 
+        "color": gdumps(colors),
     }
     frmutation = FRCustomBlockCallMutation.from_data(data)
     assert frmutation.proccode == data["proccode"]
@@ -211,18 +210,18 @@ def test_FRCustomBlockMutation_from_data_warp():
         "tagName": "mutation", 
         "children": [], 
         "proccode": "hi bye", 
-        "argumentids": dumps([]), 
-        "argumentnames": dumps([]), 
-        "argumentdefaults": dumps([]), 
+        "argumentids": gdumps([]), 
+        "argumentnames": gdumps([]), 
+        "argumentdefaults": gdumps([]), 
         "warp": ..., 
-        "returns": dumps(None), 
-        "edited": dumps(True), 
-        "optype": dumps(None), 
-        "color": dumps(colors),
+        "returns": gdumps(None), 
+        "edited": gdumps(True), 
+        "optype": gdumps(None), 
+        "color": gdumps(colors),
     }
     
-    FRCustomBlockMutation    .from_data(data | {"warp": dumps(True )})
-    FRCustomBlockCallMutation.from_data(data | {"warp": dumps(False)})
+    FRCustomBlockMutation    .from_data(data | {"warp": gdumps(True )})
+    FRCustomBlockCallMutation.from_data(data | {"warp": gdumps(False)})
 
     FRCustomBlockMutation    .from_data(data | {"warp": True })
     FRCustomBlockCallMutation.from_data(data | {"warp": False})
@@ -239,7 +238,7 @@ def test_FRStopScriptMutation_from_to_data_and_to_second(fti_if: FirstToInterIF)
     data = {
         "tagName": "mutation",
         "children": [],
-        "hasnext": dumps(has_next),
+        "hasnext": gdumps(has_next),
     }
     frmutation = FRStopScriptMutation.from_data(data)
     assert frmutation.has_next == has_next

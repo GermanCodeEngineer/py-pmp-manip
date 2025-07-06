@@ -30,13 +30,17 @@ def config():
     return ValidationConfig()
 
 
-def test_FRProject_from_data():
+def test_FRProject_from_to_data():
     frproject = FRProject.from_data(
         data=PROJECT_DATA, 
         asset_files=PROJECT_ASSET_FILES, 
         info_api=info_api,
     )
     assert frproject == FR_PROJECT
+
+    project_data, asset_files = frproject.to_data()
+    assert project_data == (PROJECT_DATA | {"extensionURLs": {}})
+    assert asset_files == PROJECT_ASSET_FILES
 
 
 def test_FRProject_data_sb3_to_pmp():

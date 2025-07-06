@@ -1,5 +1,7 @@
-from json        import loads
-from uuid        import UUID
+from copy   import copy, deepcopy
+from json   import loads
+from typing import Any
+from uuid   import UUID
 
 from pypenguin.important_consts import SHA256_SEC_TARGET_NAME
 from pypenguin.opcode_info.api  import OpcodeInfoAPI, DropdownValueKind
@@ -52,24 +54,41 @@ class FRProject:
         """
         return cls(
             targets = [
-                (FRStage if i==0 else FRSprite).from_data(target_data, info_api=info_api)
+                (FRStage if i==0 else FRSprite).from_data(target_data, info_api)
                 for i, target_data in enumerate(data["targets"])
             ],
             monitors = [
                 FRMonitor.from_data(monitor_data) 
                 for monitor_data in data["monitors"]
             ],
-            extension_data = data.get("extensionData", {}),
-            extensions     = data["extensions"],
-            extension_urls = data.get("extensionURLs", {}),
+            extension_data = deepcopy(data.get("extensionData", {})),
+            extensions     = copy(data["extensions"]),
+            extension_urls = copy(data.get("extensionURLs", {})),
             meta           = FRMeta.from_data(data["meta"]),
-            asset_files    = asset_files,
+            asset_files    = copy(asset_files),
         )
     
+    def to_data(self) -> tuple[dict[str, Any], dict[str, bytes]]:
+        """
+        Serializes a FRProject into json data
+        
+        Returns:
+            the json data and the asset files
+        """
+        data = {
+            "targets"      : [target.to_data() for target in self.targets],
+            "monitors"     : [monitor.to_data() for monitor in self.monitors],
+            "extensionData": deepcopy(self.extension_data),
+            "extensions"   : copy(self.extensions),
+            "extensionURLs": copy(self.extension_urls),
+            "meta"         : self.meta.to_data(),
+        }
+        return (data, copy(self.asset_files))
+
     @staticmethod
     def _data_sb3_to_pmp(project_data: dict) -> dict:
         """
-        *[Helper Method]* Adapt sb3 project data to the pmp project data format
+        Adapt sb3 project data to the pmp project data format
 
         Args:
             project_data: the project data in sb3 format
@@ -379,7 +398,7 @@ class SRProject:
 
     def _validate_sprites(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
         """
-        *[Helper Method]* Ensure the sprites of a SRProject are valid, raise ValidationError if not
+        Ensure the sprites of a SRProject are valid, raise ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -417,7 +436,7 @@ class SRProject:
         
     def _validate_var_names(self, path: list, config: ValidationConfig) -> None:
         """
-        *[Helper Method]* Ensures no variables with the same name exist
+        Ensures no variables with the same name exist
 
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -447,7 +466,7 @@ class SRProject:
         
     def _validate_list_names(self, path: list, config: ValidationConfig) -> None:
         """
-        *[Helper Method]* Ensures no lists with the same name exist
+        Ensures no lists with the same name exist
 
         Args:
             path: the path from the project to itself. Used for better error messages

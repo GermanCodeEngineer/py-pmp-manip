@@ -29,7 +29,7 @@ from pypenguin.core.vars_lists      import SRVariable, SRCloudVariable, SRList
 from tests.core.constants import (
     FR_PROJECT, SR_PROJECT, PROJECT_ASSET_FILES,
     SPRITE_DATA, FR_SPRITE, SR_SPRITE, STAGE_DATA, FR_STAGE, SR_STAGE,
-    ALL_FR_BLOCKS, ALL_FR_MONITORS_CONVERTED,
+    ALL_FR_BLOCKS, ALL_FR_BLOCK_DATAS, ALL_FR_MONITORS_CONVERTED, ALL_COMMENT_DATAS,
 )
 
 from tests.utility import execute_attr_validation_tests, nest_all_blocks_comments
@@ -86,6 +86,8 @@ def test_FRTarget_post_init():
         @classmethod
         def from_data(cls, data, info_api) -> "DummyFRTarget":
             pass
+        def to_data(self):
+            pass
         def to_second(self, asset_files, info_api):
             pass
 
@@ -108,6 +110,28 @@ def test_FRTarget_post_init():
         )
 
 
+def test_FRTarget_to_data_common():
+    frsprite = copy(FR_SPRITE)
+    frsprite.variables = FR_STAGE.variables
+    frsprite.lists = FR_STAGE.lists
+    frsprite.broadcasts = FR_STAGE.broadcasts
+    data = frsprite._to_data_common()
+    assert data["isStage"] is False
+    assert data["name"] == "Sprite1"
+    assert data["variables"] == STAGE_DATA["variables"]
+    assert data["lists"] == STAGE_DATA["lists"]
+    assert data["broadcasts"] == STAGE_DATA["broadcasts"]
+    assert data["customVars"] == []
+    assert data["blocks"] == ALL_FR_BLOCK_DATAS
+    assert data["comments"] == ALL_COMMENT_DATAS
+    assert data["currentCostume"] == 0
+    assert data["costumes"] == SPRITE_DATA["costumes"]
+    assert data["sounds"] == SPRITE_DATA["sounds"]
+    assert data["volume"] == 100
+    assert data["layerOrder"] == 1
+    assert data["id"] == SPRITE_DATA["id"]
+
+
 def test_FRTarget_to_second_common():
     (
         scripts,
@@ -125,7 +149,8 @@ def test_FRTarget_to_second_common_false_independent_block():
     frsprite = deepcopy(FR_SPRITE)
     frblock: FRBlock = frsprite.blocks["e"]
     frblock.top_level = True
-    frblock.position = (77, 777)
+    frblock.x = 77
+    frblock.y = 777
     scripts, _, _, _, _, _ = frsprite._to_second_common(PROJECT_ASSET_FILES, info_api)
     assert scripts == SR_SPRITE.scripts # still same output expected
 
@@ -180,9 +205,11 @@ def test_FRTarget_to_second_variables_lists_invalid():
 
 
 
-def test_FRStage_from_data():
+def test_FRStage_from_to_data():
     frstage = FRStage.from_data(STAGE_DATA, info_api)
     assert frstage == FR_STAGE
+
+    assert frstage.to_data() == STAGE_DATA
 
 def test_FRStage_from_data_missing_id():
     stage_data = copy(STAGE_DATA)
@@ -199,9 +226,11 @@ def test_FRStage_to_second():
 
 
 
-def test_FRSprite_from_data():
+def test_FRSprite_from_to_data():
     frsprite = FRSprite.from_data(SPRITE_DATA, info_api)
     assert frsprite == FR_SPRITE
+
+    assert frsprite.to_data() == SPRITE_DATA
 
 def test_FRSprite_from_data_missing_id():
     sprite_data = copy(SPRITE_DATA)

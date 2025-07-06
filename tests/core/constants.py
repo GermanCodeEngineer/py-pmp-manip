@@ -1,12 +1,11 @@
 from copy import deepcopy
-from json import dumps
 
 from pypenguin.important_consts import (
     SHA256_SEC_MAIN_ARGUMENT_NAME, SHA256_SEC_LOCAL_ARGUMENT_NAME,
     SHA256_SEC_BROADCAST_MSG, SHA256_SEC_DROPDOWN_VALUE, SHA256_SEC_TARGET_NAME,
 )
 from pypenguin.opcode_info.api  import DropdownValueKind, InputMode
-from pypenguin.utility          import read_all_files_of_zip, string_to_sha256, KeyReprDict
+from pypenguin.utility          import read_all_files_of_zip, string_to_sha256, gdumps, KeyReprDict
 
 from pypenguin.core.asset          import FRCostume, FRSound, SRVectorCostume, SRSound
 from pypenguin.core.block_mutation import (
@@ -127,7 +126,7 @@ ALL_FR_BLOCK_DATAS = {
             "tagName": "mutation",
             "children": [],
             "proccode": "do sth text %s and bool %b",
-            "argumentids": dumps([
+            "argumentids": gdumps([
                 string_to_sha256("a text arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME), 
                 string_to_sha256("a bool arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME),
             ]),
@@ -201,7 +200,7 @@ ALL_FR_BLOCK_DATAS = {
             "tagName": "mutation",
             "children": [],
             "proccode": "do sth text %s and bool %b",
-            "argumentids": dumps([
+            "argumentids": gdumps([
                 string_to_sha256("a text arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME), 
                 string_to_sha256("a bool arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME),
             ]),
@@ -275,10 +274,10 @@ ALL_FR_BLOCK_DATAS = {
         "next": None,
         "parent": None,
         "inputs": {
-            "VALUE": (1, (4, "50")),
+            "VALUE": [1, [4, "50"]],
         },
         "fields": {
-            "WHENGREATERTHANMENU": ("LOUDNESS", string_to_sha256("LOUDNESS", secondary=SHA256_SEC_DROPDOWN_VALUE)),
+            "WHENGREATERTHANMENU": ["LOUDNESS", string_to_sha256("LOUDNESS", secondary=SHA256_SEC_DROPDOWN_VALUE)],
         },
         "shadow": False,
         "topLevel": True,
@@ -323,11 +322,11 @@ ALL_FR_BLOCK_DATAS = {
         "parent": None,
         "inputs": {},
         "fields": {
-            "BROADCAST_OPTION": (
+            "BROADCAST_OPTION": [
                 "my message",
                 string_to_sha256("my message", secondary=SHA256_SEC_BROADCAST_MSG),
                 "broadcast_msg",
-            ),
+            ],
         },
         "shadow": False,
         "topLevel": True,
@@ -659,6 +658,18 @@ ALL_FR_BLOCKS_CLEAN: dict[str, FRBlock] = ALL_FR_BLOCKS | {
         x=646,
         y=561,
     ),
+}
+
+ALL_COMMENT_DATAS = {
+    "s": {
+        "blockId": "b",
+        "x": 1031,
+        "y": 348,
+        "width": 200,
+        "height": 200,
+        "minimized": False,
+        "text": "hi from attached comment",
+    }
 }
 
 ALL_FR_COMMENTS = {
@@ -1412,17 +1423,7 @@ SPRITE_DATA = {
     "broadcasts": {},
     "customVars": [],
     "blocks": ALL_FR_BLOCK_DATAS,
-    "comments": {
-        "s": {
-            "blockId": "b",
-            "x": 1031,
-            "y": 348,
-            "width": 200,
-            "height": 200,
-            "minimized": False,
-            "text": "hi from attached comment",
-        },
-    },
+    "comments": ALL_COMMENT_DATAS,
     "currentCostume": 0,
     "costumes": [
         {

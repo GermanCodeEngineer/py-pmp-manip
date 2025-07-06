@@ -292,7 +292,7 @@ class SRMonitor:
     
     def _generate_id(self, itf_if: InterToFirstIF, info_api: OpcodeInfoAPI, old_dropdown_value: Any | None) -> str:
         """
-        *[Helper Method]* Generates the id needed for a FRMonitor
+        Generates the id needed for a FRMonitor
 
         Args:
             itf_if: interface which allows the management of other blocks and more

@@ -62,7 +62,7 @@ class FRTarget(ABC):
     @staticmethod
     def _from_data_common(data: dict[str, Any], info_api: OpcodeInfoAPI) -> dict[str, Any]:
         """
-        *[Helper Method]* Prepare common fields for FRTarget and its subclasses
+        Prepare common fields for FRTarget and its subclasses
 
         Args:
             data: the raw data
@@ -115,38 +115,39 @@ class FRTarget(ABC):
             the json data
         """
 
-    def _to_data_common(data: dict[str, Any], info_api: OpcodeInfoAPI) -> dict[str, Any]:
+    def _to_data_common(self) -> dict[str, Any]:
         """
-        *[Helper Method]* Prepare common fields for FRTarget and its subclasses
+        Prepare common fields for FRTarget and its subclasses
 
         Returns:
             a dict containing the prepared values for common fields
         """
-        return dict(
-            is_stage=data["isStage"],
-            name=data["name"],
-            variables={key: tuple(value) for key, value in data["variables"].items()},
-            lists={key: tuple(value) for key, value in data["lists"].items()},
-            broadcasts=data["broadcasts"],
-            custom_vars=data.get("customVars", []),
-            blocks={
+        return {
+            "isStage": self.is_stage,
+            "name": self.name,
+            "variables": {key: list(value) for key, value in self.variables.items()},
+            "lists": {key: list(value) for key, value in self.lists.items()},
+            "broadcasts": deepcopy(self.broadcasts),
+            "customVars": deepcopy(self.custom_vars),
+            "blocks": {
                 block_id: (
-                    tuple(block_data)
-                    if isinstance(block_data, list)
-                    else FRBlock.from_data(block_data, info_api=info_api)
+                    list(block)
+                    if isinstance(block, tuple)
+                    else block.to_data()
                 )
-                for block_id, block_data in data["blocks"].items()
+                for block_id, block in self.blocks.items()
             },
-            comments={
-                comment_id: FRComment.from_data(comment_data)
-                for comment_id, comment_data in data["comments"].items()
+            "comments": {
+                comment_id: comment.to_data()
+                for comment_id, comment in self.comments.items()
             },
-            current_costume=data["currentCostume"],
-            costumes=[FRCostume.from_data(costume_data) for costume_data in data["costumes"]],
-            sounds=[FRSound.from_data(sound_data) for sound_data in data["sounds"]],
-            volume=data["volume"],
-            layer_order=data["layerOrder"],
-        )
+            "currentCostume": self.current_costume,
+            "costumes": [costume.to_data() for costume in self.costumes],
+            "sounds": [sound.to_data() for sound in self.sounds],
+            "volume": self.volume,
+            "layerOrder": self.layer_order,
+            "id": self.id,
+        }
 
     @abstractmethod
     def to_second(self, 
@@ -173,7 +174,7 @@ class FRTarget(ABC):
         list[SRList],
     ]:
         """
-        *[Helper Method]* Convert common fields into second representation
+        Convert common fields into second representation
 
         Args:
             info_api: the opcode info api used to fetch information about opcodes
@@ -250,7 +251,7 @@ class FRTarget(ABC):
     
     def _to_second_variables_lists(self) -> tuple[list[SRVariable], list[SRList]]:
         """
-        *[Helper Method]* Converts the variables and lists of a FRProject into second representation and returns them
+        Converts the variables and lists of a FRProject into second representation and returns them
         
         Returns:
             list of variables and list of lists in second representation
@@ -318,11 +319,19 @@ class FRStage(FRTarget):
     
     def to_data(self) -> dict[str, Any]:
         """
-        Serializes a FRTarget into json data
+        Serializes a FRStage into json data
         
         Returns:
             the json data
         """
+        data = self._to_data_common()
+        data |= {
+            "tempo"               : self.tempo,
+            "videoTransparency"   : self.video_transparency,
+            "videoState"          : self.video_state,
+            "textToSpeechLanguage": self.text_to_speech_language,
+        }
+        return data
     
     def to_second(self, 
         asset_files: KeyReprDict[str, bytes],
@@ -399,6 +408,25 @@ class FRSprite(FRTarget):
             rotation_style=data["rotationStyle"],
         )
 
+    def to_data(self) -> dict[str, Any]:
+        """
+        Serializes a FRSprite into json data
+        
+        Returns:
+            the json data
+        """
+        data = self._to_data_common()
+        data |= {
+            "visible"      : self.visible,
+            "x"            : self.x,
+            "y"            : self.y,
+            "size"         : self.size,
+            "direction"    : self.direction,
+            "draggable"    : self.draggable,
+            "rotationStyle": self.rotation_style,
+        }
+        return data
+    
     def to_second(self, 
         asset_files: KeyReprDict[str, bytes],
         info_api: OpcodeInfoAPI,
@@ -568,7 +596,7 @@ class SRTarget:
 
     def _get_complete_context(self, partial_context: PartialContext) -> CompleteContext:
         """
-        *[Helper Method]* Gets the complete context for a SRTarget from the given partial context (project context)
+        Gets the complete context for a SRTarget from the given partial context (project context)
 
         Args:
             partial_context: the partial context (project context)
@@ -597,7 +625,7 @@ class SRTarget:
         KeyReprDict[str, bytes],
     ]:
         """
-        *[Helper Method]* Convert common fields into first representation
+        Convert common fields into first representation
 
         Args:
             info_api: the opcode info api used to fetch information about opcodes
