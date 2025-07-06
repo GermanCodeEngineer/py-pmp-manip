@@ -17,8 +17,16 @@ file_path = "../assets/from_online/my 1st platformer.pmp"
 project = FRProject.from_file(file_path, info_api=info_api)
 print(project)
 
-new_project = project.to_second(info_api=info_api)
-print(new_project)
-new_project.validate(info_api=info_api, config=ValidationConfig())
+new_project = project.to_second(info_api)
+del project
+new_project.validate(config=ValidationConfig(), info_api=info_api)
+
+old_project = new_project.to_first(info_api, target_platform=TargetPlatform.PENGUINMOD)
+
+#old_project.extensions.append("truefantombase")
+#old_project.extension_urls["truefantombase"] = "https://extensions.turbowarp.org/true-fantom/base.js"
+old_project.to_file("../assets/from_online/changed_plaformer.sb3")
+
+
 
 

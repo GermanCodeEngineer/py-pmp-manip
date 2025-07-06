@@ -6,7 +6,7 @@ from uuid   import UUID
 from pypenguin.important_consts import SHA256_SEC_TARGET_NAME
 from pypenguin.opcode_info.api  import OpcodeInfoAPI, DropdownValueKind
 from pypenguin.utility          import (
-    grepr_dataclass, read_all_files_of_zip, string_to_sha256, ValidationConfig, KeyReprDict,
+    grepr_dataclass, read_all_files_of_zip, create_zip_file, string_to_sha256, gdumps, ValidationConfig, KeyReprDict,
     AA_TYPE, AA_NONE_OR_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_RANGE, AA_EXACT_LEN,
     ThanksError, SameValueTwiceError, SpriteLayerStackError,
 )
@@ -68,7 +68,7 @@ class FRProject:
             asset_files    = copy(asset_files),
         )
     
-    def to_data(self) -> tuple[dict[str, Any], dict[str, bytes]]:
+    def to_data(self) -> tuple[dict[str, Any], KeyReprDict[str, bytes]]:
         """
         Serializes a FRProject into json data
         
@@ -129,6 +129,22 @@ class FRProject:
             None
         """
         if self.extension_data != {}: raise ThanksError()
+
+    def to_file(self, file_path: str) -> None:
+        """
+        Writes the project data to a project file(.sb3 or .pmp)
+
+        Args:
+            file_path: file path to the .sb3 or .pmp file
+        
+        Returns:
+            the FRProject
+        """
+        assert file_path.endswith(".sb3") or file_path.endswith(".pmp")
+        project_data, asset_files = self.to_data()
+        contents = asset_files
+        contents["project.json"] = gdumps(project_data).encode("utf-8")
+        create_zip_file(file_path, contents)
 
     def to_second(self, info_api: OpcodeInfoAPI) -> "SRProject":
         """

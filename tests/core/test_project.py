@@ -1,8 +1,9 @@
 from copy   import copy, deepcopy
-from pytest import fixture, raises
+from pytest import fixture, raises, MonkeyPatch
 from uuid   import uuid4
 
 from pypenguin.utility            import (
+    gdumps,
     ValidationConfig, KeyReprDict,
     ThanksError, TypeValidationError, RangeValidationError, 
     SameValueTwiceError, SpriteLayerStackError,
@@ -63,6 +64,39 @@ def test_FRProject_post_init():
             asset_files=PROJECT_ASSET_FILES,
             info_api=info_api,
         )
+
+
+def test_FRProject_to_file(monkeypatch: MonkeyPatch):
+    class DummyProject(FRProject):
+        def __init__(self):
+            pass
+
+        def to_data(self):
+            return (
+                {"name": "My Project"},  # some dumb example data
+                {"image.png": b"image-bytes"}  # asset_files
+            )
+    
+    calls = 0
+
+    def fake_create_zip_file(path, contents):
+        nonlocal calls
+        if calls >= 1: raise Exception()
+        calls += 1
+        assert path == "project.sb3"
+        assert contents == {
+            "project.json": gdumps({"name": "My Project"}).encode("utf-8"),
+            "image.png": b"image-bytes",
+        }
+
+    from pypenguin.core import project as project_mod
+    monkeypatch.setattr(project_mod, "create_zip_file", fake_create_zip_file)
+
+    dummy_project = DummyProject()
+    FRProject.to_file(dummy_project, "project.sb3")
+
+    with raises(AssertionError):
+        FRProject.to_file(dummy_project, file_path="invalid.ext")
 
 
 def test_FRProject_to_second():
