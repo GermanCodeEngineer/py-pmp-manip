@@ -533,7 +533,7 @@ class IRBlock:
                 case InputMode.SCRIPT:
                     assert script_count in {0, 1}
                     input_blocks = sub_script
-                case InputMode.BLOCK_AND_DROPDOWN:
+                case InputMode.BLOCK_AND_DROPDOWN | InputMode.BLOCK_AND_MENU_TEXT:
                     assert script_count in {1, 2}
                     if   script_count == 1:
                         input_block    = None
@@ -541,17 +541,14 @@ class IRBlock:
                     elif script_count == 2:
                         input_block    = sub_block_a
                         input_dropdown = sub_block_b
-                case InputMode.BLOCK_AND_MENU_TEXT:  # pragma: no cover
-                    l = locals()
-                    del l["info_api"]
-                    print(FRBlock.__repr__(l))
-                    raise NotImplementedError() # TODO  # pragma: no cover
 
             new_input_id = old_new_input_ids[input_id]
             if input_dropdown is not None:
                 input_type = input_infos[new_input_id].type
                 dropdown_type = input_type.corresponding_dropdown_type
-                input_dropdown = SRDropdownValue.from_tuple(dropdown_type.translate_old_to_new_value(input_dropdown))
+                input_dropdown = SRDropdownValue.from_tuple(
+                    dropdown_type.translate_old_to_new_value(input_dropdown)
+                )
 
             new_inputs[new_input_id] = SRInputValue.from_mode(
                 mode     = input_value.mode,
@@ -931,9 +928,15 @@ class SRBlock:
                 case InputMode.SCRIPT:
                     if input_value.blocks:
                         input_sub_scripts.append(input_value.blocks)
-                case InputMode.BLOCK_AND_DROPDOWN:
+                case InputMode.BLOCK_AND_DROPDOWN | InputMode.BLOCK_AND_MENU_TEXT:
                     input_dropdown = input_value.dropdown
-                case InputMode.BLOCK_AND_MENU_TEXT: # pragma: no cover
+                case InputMode.BLOCK_AND_MENU_TEXT:
+                    l = locals()
+                    while True:
+                        i = input(">>> ")
+                        if i == "q":
+                            break
+                        exec(i)
                     raise NotImplementedError() # TODO # pragma: no cover
 
             if input_dropdown is not None:
@@ -1077,15 +1080,12 @@ class SRInputValue(ABC):
         match mode:
             case InputMode.BLOCK_AND_TEXT:
                 return SRBlockAndTextInputValue(block=block, text=text)
-            case InputMode.BLOCK_AND_DROPDOWN | InputMode.BLOCK_AND_BROADCAST_DROPDOWN:
+            case InputMode.BLOCK_AND_DROPDOWN | InputMode.BLOCK_AND_BROADCAST_DROPDOWN | InputMode.BLOCK_AND_MENU_TEXT:
                 return SRBlockAndDropdownInputValue(block=block, dropdown=dropdown)
             case InputMode.BLOCK_ONLY:
                 return SRBlockOnlyInputValue(block=block)
             case InputMode.SCRIPT:
-                return SRScriptInputValue(blocks=[] if blocks is None else blocks)
-            case InputMode.BLOCK_AND_MENU_TEXT: # pragma: no cover
-                raise NotImplementedError() # TODO # pragma: no cover
-            
+                return SRScriptInputValue(blocks=[] if blocks is None else blocks)            
 
     @abstractmethod
     def validate(self, 
