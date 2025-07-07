@@ -14,17 +14,18 @@ from pypenguin.utility import ValidationConfig
 #file_path = "../assets/scratch_project.sb3"
 #file_path = "../assets/asset_formats.pmp"
 #file_path = "../assets/many_dropdowns.pmp"
-file_path = "../assets/music_example.pmp"
+#file_path = "../assets/music_example.pmp"
+file_path = "../assets/ext_truefantombase.pmp"
 
 info_api.add_group(scratch_music)
 
 project = FRProject.from_file(file_path, info_api)
 print(project)
 
-new_project = project.to_second(info_api)
-del project
-new_project.validate(config=ValidationConfig(), info_api=info_api)
-print(new_project)
+#new_project = project.to_second(info_api)
+#del project
+#new_project.validate(config=ValidationConfig(), info_api=info_api)
+#print(new_project)
 
 #old_project = new_project.to_first(info_api, target_platform=TargetPlatform.PENGUINMOD)
 

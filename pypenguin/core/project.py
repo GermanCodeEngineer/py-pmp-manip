@@ -116,6 +116,8 @@ class FRProject:
         assert file_path.endswith(".sb3") or file_path.endswith(".pmp")
         contents = read_all_files_of_zip(file_path)
         project_data = loads(contents["project.json"].decode("utf-8"))
+        print(FRProject.__repr__(project_data|{"extensionURLs": ...}))
+        input()
         del contents["project.json"]
         if   file_path.endswith(".sb3"):
             project_data = FRProject._data_sb3_to_pmp(project_data)
