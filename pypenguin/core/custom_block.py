@@ -1,6 +1,6 @@
 from re import split 
 
-from pypenguin.opcode_info.api import InputType, InputInfo, OpcodeType
+from pypenguin.opcode_info.api import InputType, BuiltinInputType, InputInfo, OpcodeType
 from pypenguin.utility         import (
     grepr_dataclass, PypenguinEnum, ValidationConfig,
     AA_TYPE, AA_TUPLE_OF_TYPES, AA_MIN_LEN, AA_NOT_EQUAL,
@@ -160,8 +160,8 @@ class SRCustomBlockArgumentType(PypenguinEnum):
         """
         return self.value[0]
 
-    STRING_NUMBER = (InputType.TEXT   , 0)
-    BOOLEAN       = (InputType.BOOLEAN, 1)
+    STRING_NUMBER = (BuiltinInputType.TEXT   , 0)
+    BOOLEAN       = (BuiltinInputType.BOOLEAN, 1)
 
 class SRCustomBlockOptype(PypenguinEnum):
     """

@@ -1,6 +1,6 @@
 from pytest import fixture, raises
 
-from pypenguin.opcode_info.api import InputType, InputInfo, OpcodeType
+from pypenguin.opcode_info.api import BuiltinInputType, InputInfo, OpcodeType
 from pypenguin.utility         import (
     ValidationConfig, 
     TypeValidationError, RangeValidationError, SameValueTwiceError, InvalidValueError, ConversionError,
@@ -50,9 +50,9 @@ def test_SRCustomBlockOpcode_to_proccode_argument_names_defaults(segments):
 def test_SRCustomBlockOpcode_corresponding_input_info(segments):
     custom_opcode = SRCustomBlockOpcode(segments=segments)
     assert custom_opcode.corresponding_input_info == {
-        "thing name": InputInfo(InputType.TEXT, menu=None),
-        "do backwards?": InputInfo(InputType.BOOLEAN, menu=None),
-        "repetitions": InputInfo(InputType.TEXT, menu=None),
+        "thing name": InputInfo(BuiltinInputType.TEXT, menu=None),
+        "do backwards?": InputInfo(BuiltinInputType.BOOLEAN, menu=None),
+        "repetitions": InputInfo(BuiltinInputType.TEXT, menu=None),
     }
 
 def test_SRCustomBlockOpcode_validate(config, segments):
@@ -87,9 +87,9 @@ def test_SRCustomBlockArgument_validate(config):
 
 
 def test_SRCustomBlockArgumentType_corresponding_input_type():
-    assert SRCustomBlockArgumentType.STRING_NUMBER.corresponding_input_type is InputType.TEXT
-    assert SRCustomBlockArgumentType.STRING_NUMBER.corresponding_input_type is InputType.TEXT
-    assert SRCustomBlockArgumentType.BOOLEAN.corresponding_input_type is InputType.BOOLEAN
+    assert SRCustomBlockArgumentType.STRING_NUMBER.corresponding_input_type is BuiltinInputType.TEXT
+    assert SRCustomBlockArgumentType.STRING_NUMBER.corresponding_input_type is BuiltinInputType.TEXT
+    assert SRCustomBlockArgumentType.BOOLEAN.corresponding_input_type is BuiltinInputType.BOOLEAN
 
 
 

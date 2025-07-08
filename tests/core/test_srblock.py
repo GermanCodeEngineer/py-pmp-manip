@@ -2,7 +2,7 @@ from copy        import copy, deepcopy
 from dataclasses import field
 from pytest      import fixture, raises
 
-from pypenguin.opcode_info.api  import DropdownValueKind, OpcodeType, InputType, InputMode
+from pypenguin.opcode_info.api  import DropdownValueKind, OpcodeType, BuiltinInputType, InputMode
 from pypenguin.opcode_info.data import info_api
 from pypenguin.utility          import (
     grepr_dataclass, ValidationConfig, ConversionError,
@@ -437,7 +437,7 @@ def test_SRInputValue_validate_block(config, validation_if, context):
 
 
 def test_SRBlockAndTextInputValue_validate(config, validation_if, context):
-    input_type = InputType.TEXT
+    input_type = BuiltinInputType.TEXT
     input_value = SRBlockAndTextInputValue(
         block=ALL_SR_SCRIPTS[1].blocks[0],
         text="some random text",
@@ -455,7 +455,7 @@ def test_SRBlockAndTextInputValue_validate(config, validation_if, context):
     )
 
 def test_SRBlockAndDropdownInputValue_validate(config, validation_if, context):
-    input_type = InputType.MOUSE_OR_OTHER_SPRITE
+    input_type = BuiltinInputType.MOUSE_OR_OTHER_SPRITE
     input_value = SRBlockAndDropdownInputValue(
         block=ALL_SR_SCRIPTS[5].blocks[0],
         dropdown=SRDropdownValue(kind=DropdownValueKind.OBJECT, value="mouse-pointer"),
@@ -473,7 +473,7 @@ def test_SRBlockAndDropdownInputValue_validate(config, validation_if, context):
     )
 
 def test_SRBlockOnlyInputValue_validate(config, validation_if, context):
-    input_type = InputType.BOOLEAN
+    input_type = BuiltinInputType.BOOLEAN
     input_value = SRBlockOnlyInputValue(
         block=None,
     )
@@ -489,7 +489,7 @@ def test_SRBlockOnlyInputValue_validate(config, validation_if, context):
     )
 
 def test_SRScriptInputValue_validate(config, validation_if, context):
-    input_type = InputType.SCRIPT
+    input_type = BuiltinInputType.SCRIPT
     input_value = SRScriptInputValue(
         blocks=ALL_SR_SCRIPTS[0].blocks,
     )

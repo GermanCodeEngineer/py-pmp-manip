@@ -1,4 +1,4 @@
-from typing import TypeVar, Generic, Iterator
+from typing import TypeVar, Generic, Iterator, Iterable, Any
 
 
 _K1 = TypeVar("_K1")
@@ -37,6 +37,16 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
         self._values[key1] = value
         self._k2_to_k1[key2] = key1
         self._k1_to_k2[key1] = key2
+    
+    def delete_by_key1(self, key1: _K1) -> None:
+        key2 = self._k1_to_k2.pop(key1)
+        self._k2_to_k1.pop(key2)
+        self._values.pop(key1)
+
+    def delete_by_key2(self, key2: _K2) -> None:
+        key1 = self._k2_to_k1.pop(key2)
+        self._k1_to_k2.pop(key1)
+        self._values.pop(key1)
 
     def get_by_key1(self, key1: _K1) -> _V:
         return self._values[key1]
@@ -61,7 +71,7 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
     def __iter__(self):
         raise NotImplementedError("Don't iterate DualKeyDict directly. Use keys_key1, keys_key2, values, items_key1, items_key2 etc")
 
-    def __contains__(self, key: object) -> bool:
+    def __contains__(self, key: Any) -> bool:
         raise NotImplementedError("Don't check whether a DualKeyDict contains something like a normal dict. Use has_key1 or has_key2 instead")
 
     # Dict-like behavior
@@ -101,4 +111,8 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
 
 
 __all__ = ["DualKeyDict"]
+
+# Please do this:
+# 1. generalize tuple[_K1, _K2] typing in def __init__(self, data: dict[tuple[_K1, _K2], _V] | None = None, /) -> None: to any iterable of len 2
+# 2. add deletion, and suggest other standard dict methods
 

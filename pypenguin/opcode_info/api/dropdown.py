@@ -112,10 +112,14 @@ class DropdownTypeInfo:
         if self.old_direct_values is None:
             self.old_direct_values = self.direct_values        
     
-class DropdownType(PypenguinEnum):
+class DropdownType:
     """
-    A dropdown type, which can be used for one or many opcodes
+    The type of a block dropdown, which can be used for one or many opcodes. It can be a Builtin or Custom one.
     """
+
+    name: str
+    value: DropdownTypeInfo
+
     @property
     def type_info(self) -> DropdownTypeInfo:
         """
@@ -161,151 +165,6 @@ class DropdownType(PypenguinEnum):
                 else:
                     raise BlameDevsError(f"Got multiple default dropdown value kinds for {self}: {default_kind} and {behaviour_default_kind}")
         return default_kind
-
-    KEY = DropdownTypeInfo(
-        direct_values=[
-            "space", "up arrow", "down arrow", "right arrow", "left arrow", 
-            "enter", "any", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", 
-            "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", 
-            "x", "y", "z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
-            "-", ",", ".", "`", "=", "[", "]", "\\", ";", "'", "/", "!", "@", 
-            "#", "$", "%", "^", "&", "*", "(", ")", "_", "+", "{", "}", "|", 
-            ":", '"', "?", "<", ">", "~", "backspace", "delete", "shift", 
-            "caps lock", "scroll lock", "control", "escape", "insert", 
-            "home", "end", "page up", "page down",
-        ]
-    )
-    UNARY_MATH_OPERATION = DropdownTypeInfo(
-        direct_values=["abs", "floor", "ceiling", "sqrt", "sin", "cos", "tan", "asin", "acos", "atan", "ln", "log", "e ^", "10 ^"]
-    )
-    POWER_ROOT_LOG = DropdownTypeInfo(direct_values=["^", "root", "log"])
-    ROOT_LOG = DropdownTypeInfo(direct_values=["root", "log"])
-    TEXT_METHOD = DropdownTypeInfo(direct_values=["starts", "ends"])
-    TEXT_CASE = DropdownTypeInfo(
-        direct_values=["uppercase", "lowercase"],
-        old_direct_values=["upper", "lower"]
-    )
-    STOP_SCRIPT_TARGET = DropdownTypeInfo(
-        direct_values=["all", "this script", "other scripts in sprite"]
-    )
-    STAGE_OR_OTHER_SPRITE = DropdownTypeInfo(rules=[DropdownValueRule.STAGE, DropdownValueRule.OTHER_SPRITE])
-    CLONING_TARGET = DropdownTypeInfo(
-        rules=[DropdownValueRule.MYSELF_IF_SPRITE, DropdownValueRule.OTHER_SPRITE_EXCEPT_STAGE],
-        fallback=" ",
-    )
-    UP_DOWN = DropdownTypeInfo(direct_values=["up", "down"])
-    LOUDNESS_TIMER = DropdownTypeInfo(
-        direct_values=["loudness", "timer"],
-        old_direct_values=["LOUDNESS", "TIMER"],
-    )
-    MOUSE_OR_OTHER_SPRITE = DropdownTypeInfo(rules=[DropdownValueRule.MOUSE_POINTER, DropdownValueRule.OTHER_SPRITE_EXCEPT_STAGE])
-    MOUSE_EDGE_OR_OTHER_SPRITE = DropdownTypeInfo(rules=[DropdownValueRule.MOUSE_POINTER, DropdownValueRule.EDGE, DropdownValueRule.OTHER_SPRITE])
-    MOUSE_EDGE_MYSELF_OR_OTHER_SPRITE = DropdownTypeInfo(rules=[DropdownValueRule.MOUSE_POINTER, DropdownValueRule.EDGE, DropdownValueRule.MYSELF, DropdownValueRule.OTHER_SPRITE])
-    X_OR_Y = DropdownTypeInfo(direct_values=["x", "y"])
-    DRAG_MODE = DropdownTypeInfo(direct_values=["draggable", "not draggable"])
-    MUTABLE_SPRITE_PROPERTY = DropdownTypeInfo(rules=[DropdownValueRule.MUTABLE_SPRITE_PROPERTY])
-    READABLE_SPRITE_PROPERTY = DropdownTypeInfo(rules=[DropdownValueRule.READABLE_SPRITE_PROPERTY])
-    TIME_PROPERTY = DropdownTypeInfo(
-        direct_values=["year", "month", "date", "day of week", "hour", "minute", "second", "js timestamp"],
-        old_direct_values=["YEAR", "MONTH", "DATE", "DAYOFWEEK", "HOUR", "MINUTE", "SECOND", "TIMESTAMP"],
-    )
-    FINGER_INDEX = DropdownTypeInfo(direct_values=["1", "2", "3", "4", "5"])
-    RANDOM_MOUSE_OR_OTHER_SPRITE = DropdownTypeInfo(rules=[DropdownValueRule.RANDOM_POSITION, DropdownValueRule.MOUSE_POINTER, DropdownValueRule.OTHER_SPRITE_EXCEPT_STAGE])
-    ROTATION_STYLE = DropdownTypeInfo(direct_values=["left-right", "up-down", "don't rotate", "look at", "all around"])
-    STAGE_ZONE = DropdownTypeInfo(direct_values=["bottom-left", "bottom", "bottom-right", "top-left", "top", "top-right", "left", "right"])
-    TEXT_BUBBLE_COLOR_PROPERTY = DropdownTypeInfo(
-        direct_values=["border", "fill", "text"],
-        old_direct_values=["BUBBLE_STROKE", "BUBBLE_FILL", "TEXT_FILL"],
-    )
-    TEXT_BUBBLE_PROPERTY = DropdownTypeInfo(
-        direct_values = ["MIN_WIDTH", "MAX_LINE_WIDTH", "STROKE_WIDTH", "PADDING", "CORNER_RADIUS", "TAIL_HEIGHT", "FONT_HEIGHT_RATIO", "texlim"],
-        old_direct_values=["minimum width", "maximum width" , "border line width", "padding size", "corner radius", "tail height", "font pading percent", "text length limit"],
-    )
-    SPRITE_EFFECT = DropdownTypeInfo(
-        direct_values=["color", "fisheye", "whirl", "pixelate", "mosaic", "brightness", "ghost", "saturation", "red", "green", "blue", "opaque"],
-        old_direct_values=["COLOR", "FISHEYE", "WHIRL", "PIXELATE", "MOSAIC", "BRIGHTNESS", "GHOST", "SATURATION", "RED", "GREEN", "BLUE", "OPAQUE"],
-    )
-    COSTUME = DropdownTypeInfo(rules=[DropdownValueRule.COSTUME])
-    BACKDROP = DropdownTypeInfo(rules=[DropdownValueRule.BACKDROP])
-    COSTUME_PROPERTY = DropdownTypeInfo(direct_values=["width", "height", "rotation center x", "rotation center y", "drawing mode"])
-    MYSELF_OR_OTHER_SPRITE = DropdownTypeInfo(rules=[DropdownValueRule.MYSELF, DropdownValueRule.OTHER_SPRITE])
-    FRONT_BACK = DropdownTypeInfo(direct_values=["front", "back"])
-    FORWARD_BACKWARD = DropdownTypeInfo(direct_values=["forward", "backward"])
-    INFRONT_BEHIND = DropdownTypeInfo(direct_values=["infront", "behind"])
-    NUMBER_NAME = DropdownTypeInfo(direct_values=["number", "name"])
-    SOUND = DropdownTypeInfo(
-        rules=[DropdownValueRule.SOUND], 
-        fallback=" ",
-    )
-    SOUND_EFFECT = DropdownTypeInfo(
-        direct_values=["pitch", "pan"],
-        old_direct_values=["PITCH", "PAN"],
-    )
-    BLOCK_TYPE = DropdownTypeInfo(direct_values=["instruction", "lastInstruction", "textReporter", "numberReporter", "booleanReporter"],)
-    DRUM = DropdownTypeInfo(
-        direct_values=["(1) Snare Drum", "(2) Bass Drum", "(3) Side Stick", "(4) Crash Cymbal", "(5) Open Hi-Hat", "(6) Closed Hi-Hat", "(7) Tambourine", "(8) Hand Clap", "(9) Claves", "(10) Wood Block", "(11) Cowbell", "(12) Triangle", "(13) Bongo", "(14) Conga", "(15) Cabasa", "(16) Guiro", "(17) Vibraslap", "(18) Cuica"],
-        old_direct_values=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18"],
-    )
-    INSTRUMENT = DropdownTypeInfo(
-        direct_values=["(1) Piano", "(2) Electric Piano", "(3) Organ", "(4) Guitar", "(5) Electric Guitar", "(6) Bass", "(7) Pizzicato", "(8) Cello", "(9) Trombone", "(10) Clarinet", "(11) Saxophone", "(12) Flute", "(13) Wooden Flute", "(14) Bassoon", "(15) Choir", "(16) Vibraphone", "(17) Music Box", "(18) Steel Drum", "(19) Marimba", "(20) Synth Lead", "(21) Synth Pad"],
-        old_direct_values=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21"],
-    )
-    NOTE = DropdownTypeInfo(direct_values=["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59", "60", "61", "62", "63", "64", "65", "66", "67", "68", "69", "70", "71", "72", "73", "74", "75", "76", "77", "78", "79", "80", "81", "82", "83", "84", "85", "86", "87", "88", "89", "90", "91", "92", "93", "94", "95", "96", "97", "98", "99", "100", "101", "102", "103", "104", "105", "106", "107", "108", "109", "110", "111", "112", "113", "114", "115", "116", "117", "118", "119", "120", "121", "122", "123", "124", "125", "126", "127", "128", "129", "130"])
-    FONT = DropdownTypeInfo(
-        direct_values=[(DropdownValueKind.SUGGESTION, name) for name in ["Sans Serif", "Serif", "Handwriting", "Marker", "Curly", "Pixel", "Playful", "Bubbly", "Arcade", "Bits and Bytes", "Technological", "Scratch", "Archivo", "Archivo Black", "Random"]],
-        old_direct_values=["Sans Serif", "Serif", "Handwriting", "Marker", "Curly", "Pixel", "Playful", "Bubbly", "Arcade", "Bits and Bytes", "Technological", "Scratch", "Archivo", "Archivo Black", "Random"],
-        rules=[DropdownValueRule.FONT],
-    )
-    ON_OFF = DropdownTypeInfo(direct_values=["on", "off"])
-    EXPANDED_MINIMIZED = DropdownTypeInfo(
-        direct_values=["expanded", "minimized"],
-        old_direct_values=[True, False],
-    )
-    VERTEX_COUNT = DropdownTypeInfo(direct_values=[3, 4])
-    PEN_PROPERTY = DropdownTypeInfo(direct_values=["color", "saturation", "brightness", "transparency"])
-    ANIMATION_TECHNIQUE = DropdownTypeInfo(direct_values=["type", "rainbow", "zoom"])
-    LEFT_CENTER_RIGHT = DropdownTypeInfo(direct_values=["left", "center", "right"])
-    VIDEO_SENSING_PROPERTY = DropdownTypeInfo(direct_values=["motion", "direction"])
-    VIDEO_SENSING_TARGET = DropdownTypeInfo(
-        direct_values=["sprite", "stage"],
-        old_direct_values=["this sprite", "Stage"],
-    )
-    VIDEO_STATE = DropdownTypeInfo(
-        direct_values=["on", "off", "on flipped"],
-        old_direct_values=["on", "off", "on-flipped"],
-    )
-    TEXT_TO_SPEECH_VOICE = DropdownTypeInfo(
-        direct_values=["alto", "tenor", "squeak", "giant", "kitten", "google"],
-        old_direct_values=["ALTO", "TENOR", "SQUEAK", "GIANT", "KITTEN", "GOOGLE"],
-    )
-    TEXT_TO_SPEECH_LANGUAGE = DropdownTypeInfo(
-        direct_values=["Arabic (ar)", "Chinese (Mandarin) (zh-cn)", "Danish (da)", "Dutch (nl)", "English (en)", "French (fr)", "German (de)", "Hindi (hi)", "Icelandic (is)", "Italian (it)", "Japanese (ja)", "Korean (ko)", "Norwegian (nb)", "Polish (pl)", "Portuguese (Brazilian) (pt-br)", "Portuguese (pt)", "Romanian (ro)", "Russian (ru)", "Spanish (es)", "Spanish (Latin American) (es-419)", "Swedish (sv)", "Turkish (tr)", "Welsh (cy)"],
-        old_direct_values=["ar", "zh-cn", "da", "nl", "en", "fr", "de", "hi", "is", "it", "ja", "ko", "nb", "pl", "pt-br", "pt", "ro", "ru", "es", "es-419", "sv", "tr", "cy"],
-    )
-    TRANSLATE_LANGUAGE = DropdownTypeInfo(
-        direct_values=["Amharic (am)", "Arabic (ar)", "Azerbaijani (az)", "Basque (eu)", "Bulgarian (bg)", "Catalan (ca)", "Chinese (Mandarin) (zh-cn)", "Chinese (Traditional) (zh-tw)", "Croatian (hr)", "Czech (cs)", "Danish (da)", "Dutch (nl)", "English (en)", "Estonian (en)", "Finnish (fi)", "French (fr)", "Galician (gl)", "German (de)", "Greek (el)", "Hebrew (he)", "Hungarian (hu)", "Icelandic (is)", "Indonesian (id)", "Irish (ga)", "Italian (it)", "Japanese (ja)", "Korean (ko)", "Lativan (lv)", "Lithuanian (lt)", "Maori (mi)", "Norwegian (nb)", "Persian (fa)", "Polish (pl)", "Portuguese (pt)", "Romanian (ro)", "Russian (ru)", "Scots Gaelic (gd)", "Serbian (sr)", "Slovak (sk)", "Slovenian (sl)", "Spanish (es)", "Swedish (sv)", "Thai (th)", "Turkish (tr)", "Ukrainian (uk)", "Viatnamese (vi)",  "Welsh (cy)", "Zulu (zu)"],
-        old_direct_values=["am", "ar", "az", "eu", "bg", "ca", "zh-cn", "zh-tw", "hr", "cs", "da", "nl", "en", "et", "fi", "fr", "gl", "de", "el", "he", "hu", "is", "id", "ga", "it", "ja", "ko", "lv", "lt", "mi", "nb", "fa", "pl", "pt", "ro", "ru", "gd", "sr", "sk", "sl", "es", "sv", "th", "tr", "uk", "vi", "cy", "zu"],
-    )
-    MAKEY_KEY = DropdownTypeInfo(
-        direct_values=["space", "up arrow", "down arrow", "right arrow", "left arrow", "w", "a", "s", "d", "f", "g"],
-        old_direct_values= ["SPACE", "UP", "DOWN", "RIGHT", "LEFT", "w", "a", "s", "d", "f", "g"],
-    )
-    MAKEY_SEQUENCE = DropdownTypeInfo(
-        direct_values=["left up right", "right up left", "left right", "right left", "up down", "down up", "up right down left", "up left down right", "up up down down left right left right"],
-        old_direct_values=["LEFT UP RIGHT", "RIGHT UP LEFT", "LEFT RIGHT", "RIGHT LEFT", "UP DOWN", "DOWN UP", "UP RIGHT DOWN LEFT", "UP LEFT DOWN RIGHT", "UP UP DOWN DOWN LEFT RIGHT LEFT RIGHT"],
-    )
-    READ_FILE_MODE = DropdownTypeInfo(
-        direct_values=["text", "data: URL", "array buffer"],
-        old_direct_values=["text", "url", "buffer"],
-    )
-    FILE_SELECTOR_MODE = DropdownTypeInfo(
-        direct_values=["show modal", "open selector immediately"],
-        old_direct_values=["modal", "selector"],
-    )
-
-    VARIABLE = DropdownTypeInfo(rules=[DropdownValueRule.VARIABLE])
-    LIST = DropdownTypeInfo(rules=[DropdownValueRule.LIST])
-    BROADCAST = DropdownTypeInfo(rules=[DropdownValueRule.BROADCAST_MSG])
 
     def calculate_possible_new_dropdown_values(self, context: PartialContext|CompleteContext) -> list[tuple[DropdownValueKind, Any]]:
         """
@@ -543,7 +402,7 @@ class DropdownType(PypenguinEnum):
             the SRDropdownValue as a tuple => (kind, value)
         """
         # TODO: add special case for this
-        if self == DropdownType.EXPANDED_MINIMIZED and old_value == "FALSE": # To patch a mistake of the pen extension devs
+        if self == BulitinDropdownType.EXPANDED_MINIMIZED and old_value == "FALSE": # To patch a mistake of the pen extension devs
             old_value = False
         new_values = self.guess_possible_new_dropdown_values(include_behaviours=True)
         old_values = self.guess_possible_old_dropdown_values()
@@ -577,6 +436,165 @@ class DropdownType(PypenguinEnum):
             assert self.guess_default_kind is not None
             return new_value[1]
 
+class BulitinDropdownType(DropdownType, PypenguinEnum):
+    """
+    A built-in type of a block dropdown, which can be used for one or many opcodes.
+    """
 
-__all__ = ["DropdownValueKind", "DropdownInfo", "DropdownValueRule", "DropdownTypeInfo", "DropdownType"]
+    KEY = DropdownTypeInfo(
+        direct_values=[
+            "space", "up arrow", "down arrow", "right arrow", "left arrow", 
+            "enter", "any", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", 
+            "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", 
+            "x", "y", "z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+            "-", ",", ".", "`", "=", "[", "]", "\\", ";", "'", "/", "!", "@", 
+            "#", "$", "%", "^", "&", "*", "(", ")", "_", "+", "{", "}", "|", 
+            ":", '"', "?", "<", ">", "~", "backspace", "delete", "shift", 
+            "caps lock", "scroll lock", "control", "escape", "insert", 
+            "home", "end", "page up", "page down",
+        ]
+    )
+    UNARY_MATH_OPERATION = DropdownTypeInfo(
+        direct_values=["abs", "floor", "ceiling", "sqrt", "sin", "cos", "tan", "asin", "acos", "atan", "ln", "log", "e ^", "10 ^"]
+    )
+    POWER_ROOT_LOG = DropdownTypeInfo(direct_values=["^", "root", "log"])
+    ROOT_LOG = DropdownTypeInfo(direct_values=["root", "log"])
+    TEXT_METHOD = DropdownTypeInfo(direct_values=["starts", "ends"])
+    TEXT_CASE = DropdownTypeInfo(
+        direct_values=["uppercase", "lowercase"],
+        old_direct_values=["upper", "lower"]
+    )
+    STOP_SCRIPT_TARGET = DropdownTypeInfo(
+        direct_values=["all", "this script", "other scripts in sprite"]
+    )
+    STAGE_OR_OTHER_SPRITE = DropdownTypeInfo(rules=[DropdownValueRule.STAGE, DropdownValueRule.OTHER_SPRITE])
+    CLONING_TARGET = DropdownTypeInfo(
+        rules=[DropdownValueRule.MYSELF_IF_SPRITE, DropdownValueRule.OTHER_SPRITE_EXCEPT_STAGE],
+        fallback=" ",
+    )
+    UP_DOWN = DropdownTypeInfo(direct_values=["up", "down"])
+    LOUDNESS_TIMER = DropdownTypeInfo(
+        direct_values=["loudness", "timer"],
+        old_direct_values=["LOUDNESS", "TIMER"],
+    )
+    MOUSE_OR_OTHER_SPRITE = DropdownTypeInfo(rules=[DropdownValueRule.MOUSE_POINTER, DropdownValueRule.OTHER_SPRITE_EXCEPT_STAGE])
+    MOUSE_EDGE_OR_OTHER_SPRITE = DropdownTypeInfo(rules=[DropdownValueRule.MOUSE_POINTER, DropdownValueRule.EDGE, DropdownValueRule.OTHER_SPRITE])
+    MOUSE_EDGE_MYSELF_OR_OTHER_SPRITE = DropdownTypeInfo(rules=[DropdownValueRule.MOUSE_POINTER, DropdownValueRule.EDGE, DropdownValueRule.MYSELF, DropdownValueRule.OTHER_SPRITE])
+    X_OR_Y = DropdownTypeInfo(direct_values=["x", "y"])
+    DRAG_MODE = DropdownTypeInfo(direct_values=["draggable", "not draggable"])
+    MUTABLE_SPRITE_PROPERTY = DropdownTypeInfo(rules=[DropdownValueRule.MUTABLE_SPRITE_PROPERTY])
+    READABLE_SPRITE_PROPERTY = DropdownTypeInfo(rules=[DropdownValueRule.READABLE_SPRITE_PROPERTY])
+    TIME_PROPERTY = DropdownTypeInfo(
+        direct_values=["year", "month", "date", "day of week", "hour", "minute", "second", "js timestamp"],
+        old_direct_values=["YEAR", "MONTH", "DATE", "DAYOFWEEK", "HOUR", "MINUTE", "SECOND", "TIMESTAMP"],
+    )
+    FINGER_INDEX = DropdownTypeInfo(direct_values=["1", "2", "3", "4", "5"])
+    RANDOM_MOUSE_OR_OTHER_SPRITE = DropdownTypeInfo(rules=[DropdownValueRule.RANDOM_POSITION, DropdownValueRule.MOUSE_POINTER, DropdownValueRule.OTHER_SPRITE_EXCEPT_STAGE])
+    ROTATION_STYLE = DropdownTypeInfo(direct_values=["left-right", "up-down", "don't rotate", "look at", "all around"])
+    STAGE_ZONE = DropdownTypeInfo(direct_values=["bottom-left", "bottom", "bottom-right", "top-left", "top", "top-right", "left", "right"])
+    TEXT_BUBBLE_COLOR_PROPERTY = DropdownTypeInfo(
+        direct_values=["border", "fill", "text"],
+        old_direct_values=["BUBBLE_STROKE", "BUBBLE_FILL", "TEXT_FILL"],
+    )
+    TEXT_BUBBLE_PROPERTY = DropdownTypeInfo(
+        direct_values = ["MIN_WIDTH", "MAX_LINE_WIDTH", "STROKE_WIDTH", "PADDING", "CORNER_RADIUS", "TAIL_HEIGHT", "FONT_HEIGHT_RATIO", "texlim"],
+        old_direct_values=["minimum width", "maximum width" , "border line width", "padding size", "corner radius", "tail height", "font pading percent", "text length limit"],
+    )
+    SPRITE_EFFECT = DropdownTypeInfo(
+        direct_values=["color", "fisheye", "whirl", "pixelate", "mosaic", "brightness", "ghost", "saturation", "red", "green", "blue", "opaque"],
+        old_direct_values=["COLOR", "FISHEYE", "WHIRL", "PIXELATE", "MOSAIC", "BRIGHTNESS", "GHOST", "SATURATION", "RED", "GREEN", "BLUE", "OPAQUE"],
+    )
+    COSTUME = DropdownTypeInfo(rules=[DropdownValueRule.COSTUME])
+    BACKDROP = DropdownTypeInfo(rules=[DropdownValueRule.BACKDROP])
+    COSTUME_PROPERTY = DropdownTypeInfo(direct_values=["width", "height", "rotation center x", "rotation center y", "drawing mode"])
+    MYSELF_OR_OTHER_SPRITE = DropdownTypeInfo(rules=[DropdownValueRule.MYSELF, DropdownValueRule.OTHER_SPRITE])
+    FRONT_BACK = DropdownTypeInfo(direct_values=["front", "back"])
+    FORWARD_BACKWARD = DropdownTypeInfo(direct_values=["forward", "backward"])
+    INFRONT_BEHIND = DropdownTypeInfo(direct_values=["infront", "behind"])
+    NUMBER_NAME = DropdownTypeInfo(direct_values=["number", "name"])
+    SOUND = DropdownTypeInfo(
+        rules=[DropdownValueRule.SOUND], 
+        fallback=" ",
+    )
+    SOUND_EFFECT = DropdownTypeInfo(
+        direct_values=["pitch", "pan"],
+        old_direct_values=["PITCH", "PAN"],
+    )
+    BLOCK_TYPE = DropdownTypeInfo(direct_values=["instruction", "lastInstruction", "textReporter", "numberReporter", "booleanReporter"],)
+    DRUM = DropdownTypeInfo(
+        direct_values=["(1) Snare Drum", "(2) Bass Drum", "(3) Side Stick", "(4) Crash Cymbal", "(5) Open Hi-Hat", "(6) Closed Hi-Hat", "(7) Tambourine", "(8) Hand Clap", "(9) Claves", "(10) Wood Block", "(11) Cowbell", "(12) Triangle", "(13) Bongo", "(14) Conga", "(15) Cabasa", "(16) Guiro", "(17) Vibraslap", "(18) Cuica"],
+        old_direct_values=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18"],
+    )
+    INSTRUMENT = DropdownTypeInfo(
+        direct_values=["(1) Piano", "(2) Electric Piano", "(3) Organ", "(4) Guitar", "(5) Electric Guitar", "(6) Bass", "(7) Pizzicato", "(8) Cello", "(9) Trombone", "(10) Clarinet", "(11) Saxophone", "(12) Flute", "(13) Wooden Flute", "(14) Bassoon", "(15) Choir", "(16) Vibraphone", "(17) Music Box", "(18) Steel Drum", "(19) Marimba", "(20) Synth Lead", "(21) Synth Pad"],
+        old_direct_values=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21"],
+    )
+    NOTE = DropdownTypeInfo(direct_values=["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59", "60", "61", "62", "63", "64", "65", "66", "67", "68", "69", "70", "71", "72", "73", "74", "75", "76", "77", "78", "79", "80", "81", "82", "83", "84", "85", "86", "87", "88", "89", "90", "91", "92", "93", "94", "95", "96", "97", "98", "99", "100", "101", "102", "103", "104", "105", "106", "107", "108", "109", "110", "111", "112", "113", "114", "115", "116", "117", "118", "119", "120", "121", "122", "123", "124", "125", "126", "127", "128", "129", "130"])
+    FONT = DropdownTypeInfo(
+        direct_values=[(DropdownValueKind.SUGGESTION, name) for name in ["Sans Serif", "Serif", "Handwriting", "Marker", "Curly", "Pixel", "Playful", "Bubbly", "Arcade", "Bits and Bytes", "Technological", "Scratch", "Archivo", "Archivo Black", "Random"]],
+        old_direct_values=["Sans Serif", "Serif", "Handwriting", "Marker", "Curly", "Pixel", "Playful", "Bubbly", "Arcade", "Bits and Bytes", "Technological", "Scratch", "Archivo", "Archivo Black", "Random"],
+        rules=[DropdownValueRule.FONT],
+    )
+    ON_OFF = DropdownTypeInfo(direct_values=["on", "off"])
+    EXPANDED_MINIMIZED = DropdownTypeInfo(
+        direct_values=["expanded", "minimized"],
+        old_direct_values=[True, False],
+    )
+    VERTEX_COUNT = DropdownTypeInfo(direct_values=[3, 4])
+    PEN_PROPERTY = DropdownTypeInfo(direct_values=["color", "saturation", "brightness", "transparency"])
+    ANIMATION_TECHNIQUE = DropdownTypeInfo(direct_values=["type", "rainbow", "zoom"])
+    LEFT_CENTER_RIGHT = DropdownTypeInfo(direct_values=["left", "center", "right"])
+    VIDEO_SENSING_PROPERTY = DropdownTypeInfo(direct_values=["motion", "direction"])
+    VIDEO_SENSING_TARGET = DropdownTypeInfo(
+        direct_values=["sprite", "stage"],
+        old_direct_values=["this sprite", "Stage"],
+    )
+    VIDEO_STATE = DropdownTypeInfo(
+        direct_values=["on", "off", "on flipped"],
+        old_direct_values=["on", "off", "on-flipped"],
+    )
+    TEXT_TO_SPEECH_VOICE = DropdownTypeInfo(
+        direct_values=["alto", "tenor", "squeak", "giant", "kitten", "google"],
+        old_direct_values=["ALTO", "TENOR", "SQUEAK", "GIANT", "KITTEN", "GOOGLE"],
+    )
+    TEXT_TO_SPEECH_LANGUAGE = DropdownTypeInfo(
+        direct_values=["Arabic (ar)", "Chinese (Mandarin) (zh-cn)", "Danish (da)", "Dutch (nl)", "English (en)", "French (fr)", "German (de)", "Hindi (hi)", "Icelandic (is)", "Italian (it)", "Japanese (ja)", "Korean (ko)", "Norwegian (nb)", "Polish (pl)", "Portuguese (Brazilian) (pt-br)", "Portuguese (pt)", "Romanian (ro)", "Russian (ru)", "Spanish (es)", "Spanish (Latin American) (es-419)", "Swedish (sv)", "Turkish (tr)", "Welsh (cy)"],
+        old_direct_values=["ar", "zh-cn", "da", "nl", "en", "fr", "de", "hi", "is", "it", "ja", "ko", "nb", "pl", "pt-br", "pt", "ro", "ru", "es", "es-419", "sv", "tr", "cy"],
+    )
+    TRANSLATE_LANGUAGE = DropdownTypeInfo(
+        direct_values=["Amharic (am)", "Arabic (ar)", "Azerbaijani (az)", "Basque (eu)", "Bulgarian (bg)", "Catalan (ca)", "Chinese (Mandarin) (zh-cn)", "Chinese (Traditional) (zh-tw)", "Croatian (hr)", "Czech (cs)", "Danish (da)", "Dutch (nl)", "English (en)", "Estonian (en)", "Finnish (fi)", "French (fr)", "Galician (gl)", "German (de)", "Greek (el)", "Hebrew (he)", "Hungarian (hu)", "Icelandic (is)", "Indonesian (id)", "Irish (ga)", "Italian (it)", "Japanese (ja)", "Korean (ko)", "Lativan (lv)", "Lithuanian (lt)", "Maori (mi)", "Norwegian (nb)", "Persian (fa)", "Polish (pl)", "Portuguese (pt)", "Romanian (ro)", "Russian (ru)", "Scots Gaelic (gd)", "Serbian (sr)", "Slovak (sk)", "Slovenian (sl)", "Spanish (es)", "Swedish (sv)", "Thai (th)", "Turkish (tr)", "Ukrainian (uk)", "Viatnamese (vi)",  "Welsh (cy)", "Zulu (zu)"],
+        old_direct_values=["am", "ar", "az", "eu", "bg", "ca", "zh-cn", "zh-tw", "hr", "cs", "da", "nl", "en", "et", "fi", "fr", "gl", "de", "el", "he", "hu", "is", "id", "ga", "it", "ja", "ko", "lv", "lt", "mi", "nb", "fa", "pl", "pt", "ro", "ru", "gd", "sr", "sk", "sl", "es", "sv", "th", "tr", "uk", "vi", "cy", "zu"],
+    )
+    MAKEY_KEY = DropdownTypeInfo(
+        direct_values=["space", "up arrow", "down arrow", "right arrow", "left arrow", "w", "a", "s", "d", "f", "g"],
+        old_direct_values= ["SPACE", "UP", "DOWN", "RIGHT", "LEFT", "w", "a", "s", "d", "f", "g"],
+    )
+    MAKEY_SEQUENCE = DropdownTypeInfo(
+        direct_values=["left up right", "right up left", "left right", "right left", "up down", "down up", "up right down left", "up left down right", "up up down down left right left right"],
+        old_direct_values=["LEFT UP RIGHT", "RIGHT UP LEFT", "LEFT RIGHT", "RIGHT LEFT", "UP DOWN", "DOWN UP", "UP RIGHT DOWN LEFT", "UP LEFT DOWN RIGHT", "UP UP DOWN DOWN LEFT RIGHT LEFT RIGHT"],
+    )
+    READ_FILE_MODE = DropdownTypeInfo(
+        direct_values=["text", "data: URL", "array buffer"],
+        old_direct_values=["text", "url", "buffer"],
+    )
+    FILE_SELECTOR_MODE = DropdownTypeInfo(
+        direct_values=["show modal", "open selector immediately"],
+        old_direct_values=["modal", "selector"],
+    )
+
+    VARIABLE = DropdownTypeInfo(rules=[DropdownValueRule.VARIABLE])
+    LIST = DropdownTypeInfo(rules=[DropdownValueRule.LIST])
+    BROADCAST = DropdownTypeInfo(rules=[DropdownValueRule.BROADCAST_MSG])
+
+@grepr_dataclass(grepr_fields=["name", "value"], unsafe_hash=True, frozen=True)
+class CustomDropdownType(DropdownType):
+    """
+    A custom type of a block dropdown, which can be used for one or many opcodes.
+    """
+
+
+__all__ = [
+    "DropdownValueKind", "DropdownInfo", "DropdownValueRule", 
+    "DropdownTypeInfo", "DropdownType", "BulitinDropdownType", "CustomDropdownType",
+]
 

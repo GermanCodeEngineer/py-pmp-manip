@@ -12,7 +12,7 @@ from pypenguin.utility          import string_to_sha256, DualKeyDict, InvalidVal
 
 from pypenguin.opcode_info.api import (
     OpcodeInfo, OpcodeType, OpcodeInfoGroup, OpcodeInfoAPI, 
-    InputInfo, InputType, 
+    InputInfo, InputType, BuiltinInputType,
     DropdownInfo, DropdownType, 
     SpecialCase, SpecialCaseType,
     MonitorIdBehaviour,
@@ -105,7 +105,7 @@ c_sensing.add_opcode("sensing_fingeroptions", "#FINGER INDEX MENU", OpcodeInfo(
 c_variables.add_opcode(OPCODE_VAR_VALUE, NEW_OPCODE_VAR_VALUE, OpcodeInfo(
     opcode_type=OpcodeType.STRING_REPORTER,
     dropdowns=DualKeyDict({
-        ("VARIABLE", "VARIABLE"): DropdownInfo(DropdownType.VARIABLE),
+        ("VARIABLE", "VARIABLE"): DropdownInfo(BulitinDropdownType.VARIABLE),
     }),
     can_have_monitor=True,
     monitor_id_behaviour=MonitorIdBehaviour.VARIABLE,
@@ -113,7 +113,7 @@ c_variables.add_opcode(OPCODE_VAR_VALUE, NEW_OPCODE_VAR_VALUE, OpcodeInfo(
 c_lists.add_opcode(OPCODE_LIST_VALUE, NEW_OPCODE_LIST_VALUE, OpcodeInfo(
     opcode_type=OpcodeType.STRING_REPORTER,
     dropdowns=DualKeyDict({
-        ("LIST", "LIST"): DropdownInfo(DropdownType.LIST),
+        ("LIST", "LIST"): DropdownInfo(BulitinDropdownType.LIST),
     }),
     can_have_monitor=True,
     monitor_id_behaviour=MonitorIdBehaviour.LIST,
@@ -137,14 +137,14 @@ c_custom_blocks = OpcodeInfoGroup(
         ("procedures_return", "return (VALUE)"): OpcodeInfo(
             opcode_type=OpcodeType.ENDING_STATEMENT,
             inputs=DualKeyDict({
-                ("return", "VALUE"): InputInfo(InputType.TEXT),
+                ("return", "VALUE"): InputInfo(BuiltinInputType.TEXT),
             }),
         ),
         ("procedures_set", "set (PARAM) to (VALUE)"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
-                ("PARAM", "PARAM"): InputInfo(InputType.ROUND),
-                ("VALUE", "VALUE"): InputInfo(InputType.TEXT),
+                ("PARAM", "PARAM"): InputInfo(BuiltinInputType.ROUND),
+                ("VALUE", "VALUE"): InputInfo(BuiltinInputType.TEXT),
             }),
         ),
         (OPCODE_CB_ARG_TEXT, "value of text [ARGUMENT]"): OpcodeInfo(

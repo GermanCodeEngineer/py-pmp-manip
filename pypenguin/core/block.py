@@ -11,7 +11,7 @@ from pypenguin.important_consts import (
 )
 from pypenguin.opcode_info.api  import (
     OpcodeInfoAPI, OpcodeInfo, 
-    InputInfo, InputType, InputMode, DropdownType, DropdownValueKind,
+    InputInfo, InputType, InputMode, BulitinDropdownType, DropdownValueKind,
     OpcodeType, SpecialCaseType,
 )
 from pypenguin.utility          import (
@@ -412,13 +412,13 @@ class IRBlock:
             else:
                 dropdown_type = opcode_info.get_dropdown_info_by_old(dropdown_id).type
             match dropdown_type:
-                case DropdownType.VARIABLE:
+                case BulitinDropdownType.VARIABLE:
                     suffix    = ""
                     sha256    = itf_if.get_variable_sha256(variable_name=dropdown_value)
-                case DropdownType.LIST:
+                case BulitinDropdownType.LIST:
                     suffix    = "list"
                     sha256    = itf_if.get_list_sha256(list_name=dropdown_value)
-                case DropdownType.BROADCAST:
+                case BulitinDropdownType.BROADCAST:
                     suffix    = "broadcast_msg"
                     sha256    = string_to_sha256(dropdown_value, secondary=SHA256_SEC_BROADCAST_MSG)
                 case _:

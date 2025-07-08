@@ -4,45 +4,45 @@ c_sensing = OpcodeInfoGroup(name="c_sensing", opcode_info=DualKeyDict({
     ("sensing_touchingobject", "touching ([OBJECT]) ?"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         inputs=DualKeyDict({
-            ("TOUCHINGOBJECTMENU", "OBJECT"): InputInfo(InputType.MOUSE_EDGE_OR_OTHER_SPRITE, menu=MenuInfo("sensing_touchingobjectmenu", inner="TOUCHINGOBJECTMENU")),
+            ("TOUCHINGOBJECTMENU", "OBJECT"): InputInfo(BuiltinInputType.MOUSE_EDGE_OR_OTHER_SPRITE, menu=MenuInfo("sensing_touchingobjectmenu", inner="TOUCHINGOBJECTMENU")),
         }),
     ),
 
     ("sensing_objecttouchingobject", "([OBJECT]) touching ([SPRITE]) ?"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         inputs=DualKeyDict({
-            ("FULLTOUCHINGOBJECTMENU", "OBJECT"): InputInfo(InputType.MOUSE_EDGE_MYSELF_OR_OTHER_SPRITE, menu=MenuInfo("sensing_fulltouchingobjectmenu", inner="FULLTOUCHINGOBJECTMENU")),
-            ("SPRITETOUCHINGOBJECTMENU", "SPRITE"): InputInfo(InputType.MYSELF_OR_OTHER_SPRITE, menu=MenuInfo("sensing_touchingobjectmenusprites", inner="SPRITETOUCHINGOBJECTMENU")),
+            ("FULLTOUCHINGOBJECTMENU", "OBJECT"): InputInfo(BuiltinInputType.MOUSE_EDGE_MYSELF_OR_OTHER_SPRITE, menu=MenuInfo("sensing_fulltouchingobjectmenu", inner="FULLTOUCHINGOBJECTMENU")),
+            ("SPRITETOUCHINGOBJECTMENU", "SPRITE"): InputInfo(BuiltinInputType.MYSELF_OR_OTHER_SPRITE, menu=MenuInfo("sensing_touchingobjectmenusprites", inner="SPRITETOUCHINGOBJECTMENU")),
         }),
     ),
 
     ("sensing_objecttouchingclonesprite", "([OBJECT]) touching clone of ([SPRITE]) ?"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         inputs=DualKeyDict({
-            ("FULLTOUCHINGOBJECTMENU", "OBJECT"): InputInfo(InputType.MOUSE_EDGE_MYSELF_OR_OTHER_SPRITE, menu=MenuInfo("sensing_fulltouchingobjectmenu", inner="FULLTOUCHINGOBJECTMENU")),
-            ("SPRITETOUCHINGOBJECTMENU", "SPRITE"): InputInfo(InputType.MYSELF_OR_OTHER_SPRITE, menu=MenuInfo("sensing_touchingobjectmenusprites", inner="SPRITETOUCHINGOBJECTMENU")),
+            ("FULLTOUCHINGOBJECTMENU", "OBJECT"): InputInfo(BuiltinInputType.MOUSE_EDGE_MYSELF_OR_OTHER_SPRITE, menu=MenuInfo("sensing_fulltouchingobjectmenu", inner="FULLTOUCHINGOBJECTMENU")),
+            ("SPRITETOUCHINGOBJECTMENU", "SPRITE"): InputInfo(BuiltinInputType.MYSELF_OR_OTHER_SPRITE, menu=MenuInfo("sensing_touchingobjectmenusprites", inner="SPRITETOUCHINGOBJECTMENU")),
         }),
     ),
 
     ("sensing_touchingcolor", "touching color (COLOR) ?"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         inputs=DualKeyDict({
-            ("COLOR", "COLOR"): InputInfo(InputType.COLOR),
+            ("COLOR", "COLOR"): InputInfo(BuiltinInputType.COLOR),
         }),
     ),
 
     ("sensing_coloristouchingcolor", "color (COLOR1) is touching color (COLOR2) ?"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         inputs=DualKeyDict({
-            ("COLOR", "COLOR1"): InputInfo(InputType.COLOR),
-            ("COLOR2", "COLOR2"): InputInfo(InputType.COLOR),
+            ("COLOR", "COLOR1"): InputInfo(BuiltinInputType.COLOR),
+            ("COLOR2", "COLOR2"): InputInfo(BuiltinInputType.COLOR),
         }),
     ),
 
     ("sensing_getxyoftouchingsprite", "[COORDINATE] of touching ([OBJECT]) point"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
-            ("SPRITE", "OBJECT"): InputInfo(InputType.MOUSE_OR_OTHER_SPRITE, menu=MenuInfo("sensing_distancetomenu", inner="DISTANCETOMENU")),
+            ("SPRITE", "OBJECT"): InputInfo(BuiltinInputType.MOUSE_OR_OTHER_SPRITE, menu=MenuInfo("sensing_distancetomenu", inner="DISTANCETOMENU")),
         }),
         dropdowns=DualKeyDict({
             ("XY", "COORDINATE"): DropdownInfo(DropdownType.X_OR_Y),
@@ -52,34 +52,34 @@ c_sensing = OpcodeInfoGroup(name="c_sensing", opcode_info=DualKeyDict({
     ("sensing_distanceto", "distance to ([OBJECT])"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
-            ("DISTANCETOMENU", "OBJECT"): InputInfo(InputType.MOUSE_OR_OTHER_SPRITE, menu=MenuInfo("sensing_distancetomenu", inner="DISTANCETOMENU")),
+            ("DISTANCETOMENU", "OBJECT"): InputInfo(BuiltinInputType.MOUSE_OR_OTHER_SPRITE, menu=MenuInfo("sensing_distancetomenu", inner="DISTANCETOMENU")),
         }),
     ),
 
     ("sensing_distanceTo", "distance from (X1) (Y1) to (X2) (Y2)"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
-            ("x1", "X1"): InputInfo(InputType.TEXT),
-            ("y1", "Y1"): InputInfo(InputType.TEXT),
-            ("x2", "X2"): InputInfo(InputType.TEXT),
-            ("y2", "Y2"): InputInfo(InputType.TEXT),
+            ("x1", "X1"): InputInfo(BuiltinInputType.TEXT),
+            ("y1", "Y1"): InputInfo(BuiltinInputType.TEXT),
+            ("x2", "X2"): InputInfo(BuiltinInputType.TEXT),
+            ("y2", "Y2"): InputInfo(BuiltinInputType.TEXT),
         }),
     ),
 
     ("sensing_directionTo", "direction to (X1) (Y1) from (X2) (Y2)"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
-            ("x2", "X1"): InputInfo(InputType.TEXT),
-            ("y2", "Y1"): InputInfo(InputType.TEXT),
-            ("x1", "X2"): InputInfo(InputType.TEXT),
-            ("y1", "Y2"): InputInfo(InputType.TEXT),
+            ("x2", "X1"): InputInfo(BuiltinInputType.TEXT),
+            ("y2", "Y1"): InputInfo(BuiltinInputType.TEXT),
+            ("x1", "X2"): InputInfo(BuiltinInputType.TEXT),
+            ("y1", "Y2"): InputInfo(BuiltinInputType.TEXT),
         }),
     ),
 
     ("sensing_askandwait", "ask (QUESTION) and wait"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
-            ("QUESTION", "QUESTION"): InputInfo(InputType.TEXT),
+            ("QUESTION", "QUESTION"): InputInfo(BuiltinInputType.TEXT),
         }),
     ),
 
@@ -92,35 +92,35 @@ c_sensing = OpcodeInfoGroup(name="c_sensing", opcode_info=DualKeyDict({
     ("sensing_thing_is_text", "(STRING) is text?"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         inputs=DualKeyDict({
-            ("TEXT1", "STRING"): InputInfo(InputType.TEXT),
+            ("TEXT1", "STRING"): InputInfo(BuiltinInputType.TEXT),
         }),
     ),
 
     ("sensing_thing_is_number", "(STRING) is number?"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         inputs=DualKeyDict({
-            ("TEXT1", "STRING"): InputInfo(InputType.TEXT),
+            ("TEXT1", "STRING"): InputInfo(BuiltinInputType.TEXT),
         }),
     ),
 
     ("sensing_keypressed", "key ([KEY]) pressed?"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         inputs=DualKeyDict({
-            ("KEY_OPTION", "KEY"): InputInfo(InputType.KEY, menu=MenuInfo("sensing_keyoptions", inner="KEY_OPTION")),
+            ("KEY_OPTION", "KEY"): InputInfo(BuiltinInputType.KEY, menu=MenuInfo("sensing_keyoptions", inner="KEY_OPTION")),
         }),
     ),
 
     ("sensing_keyhit", "key ([KEY]) hit?"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         inputs=DualKeyDict({
-            ("KEY_OPTION", "KEY"): InputInfo(InputType.KEY, menu=MenuInfo("sensing_keyoptions", inner="KEY_OPTION")),
+            ("KEY_OPTION", "KEY"): InputInfo(BuiltinInputType.KEY, menu=MenuInfo("sensing_keyoptions", inner="KEY_OPTION")),
         }),
     ),
 
     ("sensing_mousescrolling", "is mouse scrolling ([DIRECTION]) ?"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         inputs=DualKeyDict({
-            ("SCROLL_OPTION", "DIRECTION"): InputInfo(InputType.UP_DOWN, menu=MenuInfo("sensing_scrolldirections", inner="SCROLL_OPTION")),
+            ("SCROLL_OPTION", "DIRECTION"): InputInfo(BuiltinInputType.UP_DOWN, menu=MenuInfo("sensing_scrolldirections", inner="SCROLL_OPTION")),
         }),
     ),
 
@@ -151,7 +151,7 @@ c_sensing = OpcodeInfoGroup(name="c_sensing", opcode_info=DualKeyDict({
     ("sensing_setclipboard", "add (TEXT) to clipboard"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
-            ("ITEM", "TEXT"): InputInfo(InputType.TEXT),
+            ("ITEM", "TEXT"): InputInfo(BuiltinInputType.TEXT),
         }),
     ),
 
@@ -199,8 +199,8 @@ c_sensing = OpcodeInfoGroup(name="c_sensing", opcode_info=DualKeyDict({
     ("sensing_set_of", "set [PROPERTY] of ([TARGET]) to (VALUE)"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
-            ("VALUE", "VALUE"): InputInfo(InputType.TEXT),
-            ("OBJECT", "TARGET"): InputInfo(InputType.STAGE_OR_OTHER_SPRITE, menu=MenuInfo("sensing_of_object_menu", inner="OBJECT")),
+            ("VALUE", "VALUE"): InputInfo(BuiltinInputType.TEXT),
+            ("OBJECT", "TARGET"): InputInfo(BuiltinInputType.STAGE_OR_OTHER_SPRITE, menu=MenuInfo("sensing_of_object_menu", inner="OBJECT")),
         }),
         dropdowns=DualKeyDict({
             ("PROPERTY", "PROPERTY"): DropdownInfo(DropdownType.MUTABLE_SPRITE_PROPERTY),
@@ -210,7 +210,7 @@ c_sensing = OpcodeInfoGroup(name="c_sensing", opcode_info=DualKeyDict({
     ("sensing_of", "[PROPERTY] of ([TARGET])"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
-            ("OBJECT", "TARGET"): InputInfo(InputType.STAGE_OR_OTHER_SPRITE, menu=MenuInfo("sensing_of_object_menu", inner="OBJECT")),
+            ("OBJECT", "TARGET"): InputInfo(BuiltinInputType.STAGE_OR_OTHER_SPRITE, menu=MenuInfo("sensing_of_object_menu", inner="OBJECT")),
         }),
         dropdowns=DualKeyDict({
             ("PROPERTY", "PROPERTY"): DropdownInfo(DropdownType.READABLE_SPRITE_PROPERTY),
@@ -239,28 +239,28 @@ c_sensing = OpcodeInfoGroup(name="c_sensing", opcode_info=DualKeyDict({
     ("sensing_fingerdown", "finger ([INDEX]) down?"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         inputs=DualKeyDict({
-            ("FINGER_OPTION", "INDEX"): InputInfo(InputType.FINGER_INDEX, menu=MenuInfo("sensing_fingeroptions", inner="FINGER_OPTION")),
+            ("FINGER_OPTION", "INDEX"): InputInfo(BuiltinInputType.FINGER_INDEX, menu=MenuInfo("sensing_fingeroptions", inner="FINGER_OPTION")),
         }),
     ),
 
     ("sensing_fingertapped", "finger ([INDEX]) tapped?"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         inputs=DualKeyDict({
-            ("FINGER_OPTION", "INDEX"): InputInfo(InputType.FINGER_INDEX, menu=MenuInfo("sensing_fingeroptions", inner="FINGER_OPTION")),
+            ("FINGER_OPTION", "INDEX"): InputInfo(BuiltinInputType.FINGER_INDEX, menu=MenuInfo("sensing_fingeroptions", inner="FINGER_OPTION")),
         }),
     ),
 
     ("sensing_fingerx", "finger ([INDEX]) x"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
-            ("FINGER_OPTION", "INDEX"): InputInfo(InputType.FINGER_INDEX, menu=MenuInfo("sensing_fingeroptions", inner="FINGER_OPTION")),
+            ("FINGER_OPTION", "INDEX"): InputInfo(BuiltinInputType.FINGER_INDEX, menu=MenuInfo("sensing_fingeroptions", inner="FINGER_OPTION")),
         }),
     ),
 
     ("sensing_fingery", "finger ([INDEX]) y"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
-            ("FINGER_OPTION", "INDEX"): InputInfo(InputType.FINGER_INDEX, menu=MenuInfo("sensing_fingeroptions", inner="FINGER_OPTION")),
+            ("FINGER_OPTION", "INDEX"): InputInfo(BuiltinInputType.FINGER_INDEX, menu=MenuInfo("sensing_fingeroptions", inner="FINGER_OPTION")),
         }),
     ),
 

@@ -1,6 +1,6 @@
-from pypenguin.utility import grepr_dataclass, PypenguinEnum
+from pypenguin.utility import grepr_dataclass, PypenguinEnum, DynamicEnum
 
-from pypenguin.opcode_info.api.dropdown import DropdownType
+from pypenguin.opcode_info.api.dropdown import DropdownType, BulitinDropdownType, CustomDropdownType
 
 
 @grepr_dataclass(grepr_fields=["type", "menu"])
@@ -36,12 +36,15 @@ class InputMode(PypenguinEnum):
     BLOCK_AND_BROADCAST_DROPDOWN = (False, 4)
     BLOCK_AND_DROPDOWN           = (False, 5)
 
-class InputType(PypenguinEnum):
+class InputType:
     """
-    A input type, which can be used for one or many opcodes
-    The input type has only little influence, except those which can contain a dropdown. Then it will be used for dropdown validation
+    The type of a block input, which can be used for one or many opcodes. It can be a Builtin or Custom one.
+    The input type has only little influence, except those which can contain a dropdown. Then it will be used for dropdown validation.
     Its superior input mode mostly determines its behaviour
     """
+
+    name: str
+    value: tuple[InputMode, int|None, int] # (InputMode, magic number, index)
 
     @property
     def mode(self) -> InputMode:
@@ -66,7 +69,10 @@ class InputType(PypenguinEnum):
             InputMode.BLOCK_AND_BROADCAST_DROPDOWN,
             InputMode.BLOCK_AND_DROPDOWN,
         }
-        return DropdownType._member_map_[self.name]
+        if isinstance(self, BuiltinInputType):
+            return BulitinDropdownType._member_map_[self.name]
+        elif isinstance(self, CustomInputType):
+            return CustomDropdownType._member_map_
 
     @property
     def magic_number(self) -> int | None:
@@ -88,10 +94,17 @@ class InputType(PypenguinEnum):
         """
         match default:
             case "":
-                return cls.TEXT
+                return BuiltinInputType.TEXT
             case "false":
-                return cls.BOOLEAN
-    
+                return BuiltinInputType.BOOLEAN
+
+class BuiltinInputType(InputType, PypenguinEnum):
+    """
+    A built-in type of a block input, which can be used for one or many opcodes.
+    The input type has only little influence, except those which can contain a dropdown. Then it will be used for dropdown validation.
+    Its superior input mode mostly determines its behaviour
+    """
+
     # (InputMode, magic number, index)
     # BLOCK_AND_TEXT
     TEXT                = (InputMode.BLOCK_AND_TEXT, 10, 0)
@@ -146,6 +159,15 @@ class InputType(PypenguinEnum):
     MAKEY_SEQUENCE                      = (InputMode.BLOCK_AND_DROPDOWN, None, 26)
     READ_FILE_MODE                      = (InputMode.BLOCK_AND_DROPDOWN, None, 27)
     FILE_SELECTOR_MODE                  = (InputMode.BLOCK_AND_DROPDOWN, None, 28)
+    MATRIX                              = (InputMode.BLOCK_AND_DROPDOWN, None, 29)
+
+@grepr_dataclass(grepr_fields=["name", "value"], init=False, unsafe_hash=True, frozen=True)
+class CustomInputType(InputType, DynamicEnum):
+    """
+    A custom type of a block input, which can be used for one or many opcodes.
+    The input type has only little influence, except those which can contain a dropdown. Then it will be used for dropdown validation.
+    Its superior input mode mostly determines its behaviour
+    """
 
 @grepr_dataclass(grepr_fields=["opcode", "inner"])
 class MenuInfo:
@@ -156,4 +178,4 @@ class MenuInfo:
     opcode: str
     inner : str
 
-__all__ = ["InputInfo", "InputMode", "InputType", "MenuInfo"]
+__all__ = ["InputInfo", "InputMode", "InputType", "BuiltinInputType", "CustomInputType", "MenuInfo"]

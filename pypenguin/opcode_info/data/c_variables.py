@@ -4,7 +4,7 @@ c_variables = OpcodeInfoGroup(name="c_variables", opcode_info=DualKeyDict({
     ("data_setvariableto", "set [VARIABLE] to (VALUE)"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
-            ("VALUE", "VALUE"): InputInfo(InputType.TEXT),
+            ("VALUE", "VALUE"): InputInfo(BuiltinInputType.TEXT),
         }),
         dropdowns=DualKeyDict({
             ("VARIABLE", "VARIABLE"): DropdownInfo(DropdownType.VARIABLE),
@@ -14,7 +14,7 @@ c_variables = OpcodeInfoGroup(name="c_variables", opcode_info=DualKeyDict({
     ("data_changevariableby", "change [VARIABLE] by (VALUE)"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
-            ("VALUE", "VALUE"): InputInfo(InputType.NUMBER),
+            ("VALUE", "VALUE"): InputInfo(BuiltinInputType.NUMBER),
         }),
         dropdowns=DualKeyDict({
             ("VARIABLE", "VARIABLE"): DropdownInfo(DropdownType.VARIABLE),

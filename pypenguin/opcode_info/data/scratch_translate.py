@@ -4,8 +4,8 @@ scratch_translate = OpcodeInfoGroup(name="scratch_translate", opcode_info=DualKe
     ("translate_getTranslate", "translate (TEXT) to ([LANGUAGE])"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
-            ("WORDS", "TEXT"): InputInfo(InputType.TEXT),
-            ("LANGUAGE", "LANGUAGE"): InputInfo(InputType.TRANSLATE_LANGUAGE, menu=MenuInfo("translate_menu_languages", inner="languages")),
+            ("WORDS", "TEXT"): InputInfo(BuiltinInputType.TEXT),
+            ("LANGUAGE", "LANGUAGE"): InputInfo(BuiltinInputType.TRANSLATE_LANGUAGE, menu=MenuInfo("translate_menu_languages", inner="languages")),
         }),
     ),
 

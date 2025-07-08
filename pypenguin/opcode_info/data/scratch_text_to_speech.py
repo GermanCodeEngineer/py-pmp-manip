@@ -4,28 +4,28 @@ scratch_text_to_speech = OpcodeInfoGroup(name="scratch_text_to_speech", opcode_i
     ("text2speech_speakAndWait", "speak (TEXT)"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
-            ("WORDS", "TEXT"): InputInfo(InputType.TEXT),
+            ("WORDS", "TEXT"): InputInfo(BuiltinInputType.TEXT),
         }),
     ),
 
     ("text2speech_setVoice", "set voice to ([VOICE])"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
-            ("VOICE", "VOICE"): InputInfo(InputType.TEXT_TO_SPEECH_VOICE, menu=MenuInfo("text2speech_menu_voices", inner="voices")),
+            ("VOICE", "VOICE"): InputInfo(BuiltinInputType.TEXT_TO_SPEECH_VOICE, menu=MenuInfo("text2speech_menu_voices", inner="voices")),
         }),
     ),
 
     ("text2speech_setLanguage", "set language to ([LANGUAGE])"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
-            ("LANGUAGE", "LANGUAGE"): InputInfo(InputType.TEXT_TO_SPEECH_LANGUAGE, menu=MenuInfo("text2speech_menu_languages", inner="languages")),
+            ("LANGUAGE", "LANGUAGE"): InputInfo(BuiltinInputType.TEXT_TO_SPEECH_LANGUAGE, menu=MenuInfo("text2speech_menu_languages", inner="languages")),
         }),
     ),
 
     ("text2speech_setSpeed", "set reading speed to (SPEED) %"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
-            ("SPEED", "SPEED"): InputInfo(InputType.NUMBER),
+            ("SPEED", "SPEED"): InputInfo(BuiltinInputType.NUMBER),
         }),
     ),
 

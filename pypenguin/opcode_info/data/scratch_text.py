@@ -4,17 +4,17 @@ scratch_text = OpcodeInfoGroup(name="scratch_text", opcode_info=DualKeyDict({
     ("text_setText", "show text (TEXT)"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
-            ("TEXT", "TEXT"): InputInfo(InputType.TEXT),
+            ("TEXT", "TEXT"): InputInfo(BuiltinInputType.TEXT),
         }),
     ),
 
     ("text_animateText", "[ANIMATION_TECHNIQUE] text (TEXT)"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
-            ("TEXT", "TEXT"): InputInfo(InputType.TEXT),
+            ("TEXT", "TEXT"): InputInfo(BuiltinInputType.TEXT),
         }),
         dropdowns=DualKeyDict({
-            ("ANIMATE", "ANIMATION_TECHNIQUE"): DropdownInfo(DropdownType.ANIMATION_TECHNIQUE),
+            ("ANIMATE", "ANIMATION_TECHNIQUE"): DropdownInfo(BulitinDropdownType.ANIMATION_TECHNIQUE),
         }),
     ),
 
@@ -25,52 +25,52 @@ scratch_text = OpcodeInfoGroup(name="scratch_text", opcode_info=DualKeyDict({
     ("text_setFont", "set font to ([FONT])"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
-            ("FONT", "FONT"): InputInfo(InputType.FONT, menu=MenuInfo("text_menu_FONT", inner="FONT")),
+            ("FONT", "FONT"): InputInfo(BuiltinInputType.FONT, menu=MenuInfo("text_menu_FONT", inner="FONT")),
         }),
     ),
 
     ("text_setColor", "set text color to (COLOR)"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
-            ("COLOR", "COLOR"): InputInfo(InputType.COLOR),
+            ("COLOR", "COLOR"): InputInfo(BuiltinInputType.COLOR),
         }),
     ),
 
     ("text_setWidth", "set width to (WIDTH) aligned [ALIGN]"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
-            ("WIDTH", "WIDTH"): InputInfo(InputType.NUMBER),
+            ("WIDTH", "WIDTH"): InputInfo(BuiltinInputType.NUMBER),
         }),
         dropdowns=DualKeyDict({
-            ("ALIGN", "ALIGN"): DropdownInfo(DropdownType.LEFT_CENTER_RIGHT),
+            ("ALIGN", "ALIGN"): DropdownInfo(BulitinDropdownType.LEFT_CENTER_RIGHT),
         }),
     ),
 
     ("text_rainbow", "rainbow for (SECONDS) seconds"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
-            ("SECS", "SECONDS"): InputInfo(InputType.NUMBER),
+            ("SECS", "SECONDS"): InputInfo(BuiltinInputType.NUMBER),
         }),
     ),
 
     ("text_addLine", "add line (TEXT)"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
-            ("TEXT", "TEXT"): InputInfo(InputType.TEXT),
+            ("TEXT", "TEXT"): InputInfo(BuiltinInputType.TEXT),
         }),
     ),
 
     ("text_setOutlineWidth", "set outline width to (WIDTH)"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
-            ("WIDTH", "WIDTH"): InputInfo(InputType.NUMBER),
+            ("WIDTH", "WIDTH"): InputInfo(BuiltinInputType.NUMBER),
         }),
     ),
 
     ("text_setOutlineColor", "set outline color to (COLOR)"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
-            ("COLOR", "COLOR"): InputInfo(InputType.COLOR),
+            ("COLOR", "COLOR"): InputInfo(BuiltinInputType.COLOR),
         }),
     ),
 

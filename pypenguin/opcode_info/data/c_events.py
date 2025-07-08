@@ -16,7 +16,7 @@ c_events = OpcodeInfoGroup(name="c_events", opcode_info=DualKeyDict({
     ("event_whenanything", "when <CONDITION>"): OpcodeInfo(
         opcode_type=OpcodeType.HAT,
         inputs=DualKeyDict({
-            ("ANYTHING", "CONDITION"): InputInfo(InputType.BOOLEAN),
+            ("ANYTHING", "CONDITION"): InputInfo(BuiltinInputType.BOOLEAN),
         }),
     ),
 
@@ -59,7 +59,7 @@ c_events = OpcodeInfoGroup(name="c_events", opcode_info=DualKeyDict({
     ("event_whengreaterthan", "when [OPTION] > (VALUE)"): OpcodeInfo(
         opcode_type=OpcodeType.HAT,
         inputs=DualKeyDict({
-            ("VALUE", "VALUE"): InputInfo(InputType.NUMBER),
+            ("VALUE", "VALUE"): InputInfo(BuiltinInputType.NUMBER),
         }),
         dropdowns=DualKeyDict({
             ("WHENGREATERTHANMENU", "OPTION"): DropdownInfo(DropdownType.LOUDNESS_TIMER),
@@ -76,14 +76,14 @@ c_events = OpcodeInfoGroup(name="c_events", opcode_info=DualKeyDict({
     ("event_broadcast", "broadcast ([MESSAGE])"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
-            ("BROADCAST_INPUT", "MESSAGE"): InputInfo(InputType.BROADCAST),
+            ("BROADCAST_INPUT", "MESSAGE"): InputInfo(BuiltinInputType.BROADCAST),
         }),
     ),
 
     ("event_broadcastandwait", "broadcast ([MESSAGE]) and wait"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
-            ("BROADCAST_INPUT", "MESSAGE"): InputInfo(InputType.BROADCAST),
+            ("BROADCAST_INPUT", "MESSAGE"): InputInfo(BuiltinInputType.BROADCAST),
         }),
     ),
 

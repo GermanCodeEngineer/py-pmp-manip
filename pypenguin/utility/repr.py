@@ -1,6 +1,7 @@
 from copy        import copy
 from dataclasses import dataclass
 from enum        import Enum
+from typing      import Any
 
 from pypenguin.utility.dual_key_dict import DualKeyDict
 
@@ -133,6 +134,44 @@ class PypenguinEnum(Enum):
     def __repr__(self) -> str:
         return self.__class__.__name__ + "." + self.name
 
+class _DynamicEnumMeta(type):
+    def __iter__(cls):
+        return iter(cls._member_map_.values())
 
-__all__ = ["KeyReprDict", "grepr", "grepr_dataclass", "PypenguinEnum"]
+    def __getitem__(cls, name):
+        return cls._member_map_[name]
+
+class DynamicEnum(metaclass=_DynamicEnumMeta):
+    _member_map_: dict[str, "DynamicEnum"] = {}
+
+    def __init_subclass__(cls, **kwargs):
+        cls._member_map_ = {}
+
+    @classmethod
+    def add(cls, name: str, value: Any) -> "DynamicEnum":
+        if name in cls._member_map_:
+            raise ValueError(f"Member {name!r} already exists")
+        
+        # Create a new instance of the enum member
+        member = cls.__new__(cls)
+        member.name = name
+        member.value = value
+
+        # Store in _member_map_ and set as class attribute
+        cls._member_map_[name] = member
+        setattr(cls, name, member)
+        return member
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__}.{self.name}: {self.value}>"
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.value == other.value
+
+    def __hash__(self):
+        return hash((self.__class__, self.name))
+
+
+
+__all__ = ["KeyReprDict", "grepr", "grepr_dataclass", "PypenguinEnum", "DynamicEnum"]
 
