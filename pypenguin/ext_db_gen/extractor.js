@@ -1,3 +1,10 @@
+const fs = require("fs");
+const path = require("path");
+const https = require("https");
+const { URL } = require("url");
+
+// ---- Scratch stub ----
+
 function createTranslate(vm) {
     const translateFn = function (message, args) {
         if (message && typeof message === 'object') {
@@ -99,4 +106,67 @@ globalThis.Scratch = {
     },
     translate: createTranslate(null),
     // I only included the properties which a resonable getInfo should use
+}
+
+// ---- Main loader ----
+
+const inputArg = process.argv[2];
+if (!inputArg) {
+    console.error("Usage: node extract-info.js <file.js | https://... | data:...>");
+    process.exit(1);
+}
+
+function runScript(code) {
+    try {
+        const module = { exports: {} };
+        const requireFunc = require;
+        eval(code); // evaluated in current global context
+        if (!globalThis._scratchExtension) {
+            console.error("Extension was not registered.");
+            process.exit(1);
+        }
+        const info = globalThis._scratchExtension.getInfo();
+        console.log(JSON.stringify(info, null, 2));
+    } catch (e) {
+        console.error("Error executing script:", e);
+        process.exit(1);
+    }
+}
+
+function loadFromURL(urlStr) {
+    const parsed = new URL(urlStr);
+    if (parsed.protocol === 'data:') {
+        const [, base64] = urlStr.split(',');
+        const buf = Buffer.from(base64, 'base64');
+        runScript(buf.toString());
+    } else if (parsed.protocol === 'https:') {
+        https.get(urlStr, res => {
+            if (res.statusCode !== 200) {
+                console.error("Failed to load URL:", res.statusCode);
+                res.resume();
+                return;
+            }
+            let data = "";
+            res.on("data", chunk => data += chunk);
+            res.on("end", () => runScript(data));
+        }).on("error", e => {
+            console.error("HTTPS error:", e);
+        });
+    } else {
+        console.error("Unsupported URL scheme:", parsed.protocol);
+        process.exit(1);
+    }
+}
+
+function loadFromFile(filePath) {
+    const fullPath = path.resolve(filePath);
+    const code = fs.readFileSync(fullPath, "utf-8");
+    runScript(code);
+}
+
+// Detect and dispatch
+if (inputArg.startsWith("http") || inputArg.startsWith("data:")) {
+    loadFromURL(inputArg);
+} else {
+    loadFromFile(inputArg);
 }

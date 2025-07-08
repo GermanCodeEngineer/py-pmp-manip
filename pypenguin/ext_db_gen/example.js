@@ -5,8 +5,7 @@
 // License: MIT
 // Context: "Base" refers to the mathematical definition eg. base 2 is binary, base 10 is decimal, base 16 is hex.
 
-/* generated l10n code */Scratch.translate.setup({"de":{"_Base":"Basis"},"fi":{"_Base":"Kantaluvut","_[A] from base [B] to base [C]":"[A] kantaluvusta [B] kantalukuun [C]","_is base [B] [A]?":"onko luvun [A] kantaluku [B]?"},"it":{"_Base":"Basi"},"ja":{"_Base":"進数","_[A] from base [B] to base [C]":"[B]進数の数[A]を[C]進数に変換する","_is base [B] [A]?":"[A]は[B]進数で表現できる"},"ko":{"_Base":"진법","_[A] from base [B] to base [C]":"[A]을(를) [B]진법에서 [C]진법으로","_is base [B] [A]?":"[A](이)가 [B]진법인가?"},"nb":{"_[A] from base [B] to base [C]":"[A] fra base [B] til base [C]","_is base [B] [A]?":"er base [B] [A]?"},"nl":{"_[A] from base [B] to base [C]":"zet [A] om van base-[B] naar base-[C]","_is base [B] [A]?":"is [A] base-[B]?"},"ru":{"_Base":"База","_[A] from base [B] to base [C]":"[A] из базы [B] в базу [C]","_is base [B] [A]?":"база [B] [A]?"},"zh-cn":{"_Base":"进制转换","_[A] from base [B] to base [C]":"把[B]进制的[A]转换成[C]","_is base [B] [A]?":"[A]是[B]进制吗？"}});/* end generated l10n code */
-((Scratch) => {
+/* generated l10n code */Scratch.translate.setup({"de":{"_Base":"Basis"},"fi":{"_Base":"Kantaluvut","_[A] from base [B] to base [C]":"[A] kantaluvusta [B] kantalukuun [C]","_is base [B] [A]?":"onko luvun [A] kantaluku [B]?"},"it":{"_Base":"Basi"},"ja":{"_Base":"進数","_[A] from base [B] to base [C]":"[B]進数の数[A]を[C]進数に変換する","_is base [B] [A]?":"[A]は[B]進数で表現できる"},"ko":{"_Base":"진법","_[A] from base [B] to base [C]":"[A]을(를) [B]진법에서 [C]진법으로","_is base [B] [A]?":"[A](이)가 [B]진법인가?"},"nb":{"_[A] from base [B] to base [C]":"[A] fra base [B] til base [C]","_is base [B] [A]?":"er base [B] [A]?"},"nl":{"_[A] from base [B] to base [C]":"zet [A] om van base-[B] naar base-[C]","_is base [B] [A]?":"is [A] base-[B]?"},"ru":{"_Base":"База","_[A] from base [B] to base [C]":"[A] из базы [B] в базу [C]","_is base [B] [A]?":"база [B] [A]?"},"zh-cn":{"_Base":"进制转换","_[A] from base [B] to base [C]":"把[B]进制的[A]转换成[C]","_is base [B] [A]?":"[A]是[B]进制吗？"}});/* end generated l10n code */((Scratch) => {
   "use strict";
 
   const icon =
@@ -148,5 +147,4 @@
   }
 
   Scratch.extensions.register(new ScratchBase());
-  var Scratch = Scratch
 })(Scratch);

@@ -9,3 +9,4 @@ TODOs:
     - change typing of dropdown values
     - rename block_interface to sth like transformation_interface
     - check for need of copy and deepcopy in transformation methods
+    - remove "Returns" section of docstrings to avoid doubling
