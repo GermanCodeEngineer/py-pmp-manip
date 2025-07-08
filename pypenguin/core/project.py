@@ -32,13 +32,13 @@ class FRProject:
     extensions: list[str]
     extension_urls: dict[str, str]
     meta: FRMeta
-    asset_files: KeyReprDict[str, bytes] 
+    asset_files: dict[str, bytes] 
     # using KeyReprDict here to only show file names and not their gigantic byte values in repr
 
     @classmethod
     def from_data(cls, 
         data: dict, 
-        asset_files: KeyReprDict[str, bytes], 
+        asset_files: dict[str, bytes], 
         info_api: OpcodeInfoAPI,
     ) -> "FRProject":
         """
@@ -68,7 +68,7 @@ class FRProject:
             asset_files    = copy(asset_files),
         )
     
-    def to_data(self) -> tuple[dict[str, Any], KeyReprDict[str, bytes]]:
+    def to_data(self) -> tuple[dict[str, Any], dict[str, bytes]]:
         """
         Serializes a FRProject into json data
         
@@ -541,7 +541,7 @@ class SRProject:
 
         old_targets  = []
         old_monitors = []
-        asset_files  = KeyReprDict()
+        asset_files  = {}
         tts_language = None if self.text_to_speech_language is None else self.text_to_speech_language.to_code()
         old_stage, old_global_monitors, stage_asset_files = self.stage.to_first(
             info_api                = info_api,
@@ -589,7 +589,7 @@ class SRProject:
             extensions     = extensions,
             extension_urls = extension_urls,
             meta           = meta,
-            asset_files    = asset_files,
+            asset_files    = KeyReprDict(asset_files),
         )
 
 

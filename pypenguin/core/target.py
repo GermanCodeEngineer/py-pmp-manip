@@ -7,7 +7,7 @@ from uuid        import uuid4, UUID
 from pypenguin.important_consts import SHA256_SEC_TARGET_NAME, SHA256_SEC_BROADCAST_MSG
 from pypenguin.opcode_info.api  import OpcodeInfoAPI, DropdownValueKind
 from pypenguin.utility          import (
-    string_to_sha256, grepr_dataclass, ThanksError, ValidationConfig, KeyReprDict,
+    string_to_sha256, grepr_dataclass, ThanksError, ValidationConfig,
     AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_MIN_LEN, AA_MIN, AA_RANGE, AA_COORD_PAIR, AA_NOT_ONE_OF, 
     SameValueTwiceError, ConversionError,
 )
@@ -151,7 +151,7 @@ class FRTarget(ABC):
 
     @abstractmethod
     def to_second(self, 
-        asset_files: KeyReprDict[str, bytes],
+        asset_files: dict[str, bytes],
         info_api: OpcodeInfoAPI,
     ) -> tuple["SRTarget", list[SRVariable] | None,  list[SRList] | None]:
         """
@@ -165,7 +165,7 @@ class FRTarget(ABC):
             the SRTarget, a list of the global variables or None, a list of the global lists or None
         """
 
-    def _to_second_common(self, asset_files: KeyReprDict[str, bytes], info_api: OpcodeInfoAPI) -> tuple[
+    def _to_second_common(self, asset_files: dict[str, bytes], info_api: OpcodeInfoAPI) -> tuple[
         list[SRScript], 
         list[SRComment], 
         list[SRCostume], 
@@ -334,7 +334,7 @@ class FRStage(FRTarget):
         return data
     
     def to_second(self, 
-        asset_files: KeyReprDict[str, bytes],
+        asset_files: dict[str, bytes],
         info_api: OpcodeInfoAPI,
     ) -> tuple["SRStage", list[SRVariable],  list[SRList]]:
         """
@@ -428,7 +428,7 @@ class FRSprite(FRTarget):
         return data
     
     def to_second(self, 
-        asset_files: KeyReprDict[str, bytes],
+        asset_files: dict[str, bytes],
         info_api: OpcodeInfoAPI,
     ) -> tuple["SRSprite", None, None]:
         """
@@ -622,7 +622,7 @@ class SRTarget:
         dict[str, tuple[str, str]|tuple[str, str, bool]],
         dict[str, tuple[str, str]],
         list[FRMonitor],
-        KeyReprDict[str, bytes],
+        dict[str, bytes],
     ]:
         """
         Convert common fields into first representation
@@ -683,7 +683,7 @@ class SRTarget:
         
         [itf_if.add_comment(comment.to_first(block_id=None), floating=True) for comment in self.comments]
         
-        asset_files = KeyReprDict()
+        asset_files = {}
         old_costumes = []
         for costume in self.costumes:
             old_costume, file_bytes = costume.to_first()
@@ -729,7 +729,7 @@ class SRStage(SRTarget):
         video_transparency: int | float,
         video_state: str,
         text_to_speech_language: str | None,
-    ) -> tuple[FRStage, list[FRMonitor], KeyReprDict[str, bytes]]:
+    ) -> tuple[FRStage, list[FRMonitor], dict[str, bytes]]:
         """
         Converts a SRStage into a FRStage
         
@@ -912,7 +912,7 @@ class SRSprite(SRTarget):
         global_vars: list[SRVariable],
         global_lists: list[SRList],
         layer_order: int,
-    ) -> tuple[FRSprite, list[FRMonitor], KeyReprDict[str, bytes]]:
+    ) -> tuple[FRSprite, list[FRMonitor], dict[str, bytes]]:
         """
         Converts a SRSprite into a FRSprite
         

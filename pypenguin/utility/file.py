@@ -2,10 +2,9 @@ import os
 import zipfile
 
 from pypenguin.utility.errors import PathError
-from pypenguin.utility.repr   import KeyReprDict
 
 
-def read_all_files_of_zip(zip_path: str) -> KeyReprDict[str, bytes]:
+def read_all_files_of_zip(zip_path: str) -> dict[str, bytes]:
     """
     Reads all files from a ZIP archive and returns their contents.
 
@@ -13,28 +12,26 @@ def read_all_files_of_zip(zip_path: str) -> KeyReprDict[str, bytes]:
         zip_path (str): Path to the ZIP file.
 
     Returns:
-        KeyReprDict[str, bytes]: A dictionary-like object mapping each file name
+        dict[str, bytes]: An object mapping each file name
         in the archive to its corresponding file contents as bytes.
 
     Notes:
         - Only regular files are read; directories are skipped.
         - File names inside the archive are preserved as-is.
-        - The returned KeyReprDict allows improved display or manipulation of keys, 
-          depending on its implementation.
 
     Raises:
         FileNotFoundError: If the ZIP file does not exist.
         zipfile.BadZipFile: If the file is not a valid ZIP archive.
     """
     zip_path = ensure_correct_path(zip_path)
-    contents = KeyReprDict()
+    contents = {}
     with zipfile.ZipFile(zip_path, "r") as zip_ref:
         for file_name in zip_ref.namelist():
             with zip_ref.open(file_name) as file_ref:
                 contents[file_name] = file_ref.read()
     return contents
 
-def create_zip_file(zip_path: str, contents: KeyReprDict[str, bytes]) -> None:
+def create_zip_file(zip_path: str, contents: dict[str, bytes]) -> None:
     """
     Creates a ZIP file at `zip_path` containing the given contents.
 

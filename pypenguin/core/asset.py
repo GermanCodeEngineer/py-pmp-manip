@@ -6,7 +6,7 @@ from pydub  import AudioSegment
 from typing import Any
 
 from pypenguin.utility import (
-    grepr_dataclass, xml_equal, image_equal, generate_md5, ValidationConfig, KeyReprDict,
+    grepr_dataclass, xml_equal, image_equal, generate_md5, ValidationConfig,
     AA_TYPE, AA_COORD_PAIR, AA_EQUAL,
     ThanksError,
 )
@@ -71,7 +71,7 @@ class FRCostume:
             data["bitmapResolution"] = self.bitmap_resolution
         return data
     
-    def to_second(self, asset_files: KeyReprDict[str, bytes]) -> "SRVectorCostume|SRBitmapCostume": 
+    def to_second(self, asset_files: dict[str, bytes]) -> "SRVectorCostume|SRBitmapCostume": 
         """
         Converts a FRCostume into a SRCostume
         
@@ -160,7 +160,7 @@ class FRSound:
         }
         return data
 
-    def to_second(self, asset_files: KeyReprDict[str, bytes]) -> "SRSound":
+    def to_second(self, asset_files: dict[str, bytes]) -> "SRSound":
         """
         Converts a FRSound into a SRSound
         
