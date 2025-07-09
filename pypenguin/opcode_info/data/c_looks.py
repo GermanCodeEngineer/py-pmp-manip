@@ -49,7 +49,7 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
             ("color", "COLOR"): InputInfo(BuiltinInputType.COLOR),
         }),
         dropdowns=DualKeyDict({
-            ("prop", "PROPERTY"): DropdownInfo(DropdownType.TEXT_BUBBLE_COLOR_PROPERTY),
+            ("prop", "PROPERTY"): DropdownInfo(BuiltinDropdownType.TEXT_BUBBLE_COLOR_PROPERTY),
         }),
     ),
 
@@ -59,7 +59,7 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
             ("color", "VALUE"): InputInfo(BuiltinInputType.NUMBER),
         }),
         dropdowns=DualKeyDict({
-            ("prop", "PROPERTY"): DropdownInfo(DropdownType.TEXT_BUBBLE_PROPERTY),
+            ("prop", "PROPERTY"): DropdownInfo(BuiltinDropdownType.TEXT_BUBBLE_PROPERTY),
         }),
     ),
 
@@ -145,7 +145,7 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
             ("CHANGE", "AMOUNT"): InputInfo(BuiltinInputType.NUMBER),
         }),
         dropdowns=DualKeyDict({
-            ("EFFECT", "EFFECT"): DropdownInfo(DropdownType.SPRITE_EFFECT),
+            ("EFFECT", "EFFECT"): DropdownInfo(BuiltinDropdownType.SPRITE_EFFECT),
         }),
     ),
 
@@ -155,7 +155,7 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
             ("VALUE", "VALUE"): InputInfo(BuiltinInputType.NUMBER),
         }),
         dropdowns=DualKeyDict({
-            ("EFFECT", "EFFECT"): DropdownInfo(DropdownType.SPRITE_EFFECT),
+            ("EFFECT", "EFFECT"): DropdownInfo(BuiltinDropdownType.SPRITE_EFFECT),
         }),
     ),
 
@@ -173,7 +173,7 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
     ("looks_getEffectValue", "[EFFECT] sprite effect"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         dropdowns=DualKeyDict({
-            ("EFFECT", "EFFECT"): DropdownInfo(DropdownType.SPRITE_EFFECT),
+            ("EFFECT", "EFFECT"): DropdownInfo(BuiltinDropdownType.SPRITE_EFFECT),
         }),
         can_have_monitor=True,
         monitor_id_behaviour=MonitorIdBehaviour.SPRITE_OPCMAIN_PARAM,
@@ -223,7 +223,7 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
     ("looks_gotofrontback", "go to [LAYER] layer"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         dropdowns=DualKeyDict({
-            ("FRONT_BACK", "LAYER"): DropdownInfo(DropdownType.FRONT_BACK),
+            ("FRONT_BACK", "LAYER"): DropdownInfo(BuiltinDropdownType.FRONT_BACK),
         }),
     ),
 
@@ -233,7 +233,7 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
             ("NUM", "LAYERS"): InputInfo(BuiltinInputType.INTEGER),
         }),
         dropdowns=DualKeyDict({
-            ("FORWARD_BACKWARD", "DIRECTION"): DropdownInfo(DropdownType.FORWARD_BACKWARD),
+            ("FORWARD_BACKWARD", "DIRECTION"): DropdownInfo(BuiltinDropdownType.FORWARD_BACKWARD),
         }),
     ),
 
@@ -250,7 +250,7 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
             ("VISIBLE_OPTION", "TARGET"): InputInfo(BuiltinInputType.MYSELF_OR_OTHER_SPRITE, menu=MenuInfo("looks_getOtherSpriteVisible_menu", inner="VISIBLE_OPTION")),
         }),
         dropdowns=DualKeyDict({
-            ("FORWARD_BACKWARD", "DIRECTION"): DropdownInfo(DropdownType.INFRONT_BEHIND),
+            ("FORWARD_BACKWARD", "DIRECTION"): DropdownInfo(BuiltinDropdownType.INFRONT_BEHIND),
         }),
     ),
 
@@ -263,7 +263,7 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
     ("looks_costumenumbername", "costume [PROPERTY]"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         dropdowns=DualKeyDict({
-            ("NUMBER_NAME", "PROPERTY"): DropdownInfo(DropdownType.NUMBER_NAME),
+            ("NUMBER_NAME", "PROPERTY"): DropdownInfo(BuiltinDropdownType.NUMBER_NAME),
         }),
         can_have_monitor=True,
         monitor_id_behaviour=MonitorIdBehaviour.SPRITE_OPCMAIN_PARAM,
@@ -272,7 +272,7 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
     ("looks_backdropnumbername", "backdrop [PROPERTY]"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         dropdowns=DualKeyDict({
-            ("NUMBER_NAME", "PROPERTY"): DropdownInfo(DropdownType.NUMBER_NAME),
+            ("NUMBER_NAME", "PROPERTY"): DropdownInfo(BuiltinDropdownType.NUMBER_NAME),
         }),
         can_have_monitor=True,
         monitor_id_behaviour=MonitorIdBehaviour.OPCMAIN_PARAM,

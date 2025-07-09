@@ -7,7 +7,7 @@ c_lists = OpcodeInfoGroup(name="c_lists", opcode_info=DualKeyDict({
             ("ITEM", "ITEM"): InputInfo(BuiltinInputType.TEXT),
         }),
         dropdowns=DualKeyDict({
-            ("LIST", "LIST"): DropdownInfo(DropdownType.LIST),
+            ("LIST", "LIST"): DropdownInfo(BuiltinDropdownType.LIST),
         }),
     ),
 
@@ -17,14 +17,14 @@ c_lists = OpcodeInfoGroup(name="c_lists", opcode_info=DualKeyDict({
             ("INDEX", "INDEX"): InputInfo(BuiltinInputType.INTEGER),
         }),
         dropdowns=DualKeyDict({
-            ("LIST", "LIST"): DropdownInfo(DropdownType.LIST),
+            ("LIST", "LIST"): DropdownInfo(BuiltinDropdownType.LIST),
         }),
     ),
 
     ("data_deletealloflist", "delete all of [LIST]"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         dropdowns=DualKeyDict({
-            ("LIST", "LIST"): DropdownInfo(DropdownType.LIST),
+            ("LIST", "LIST"): DropdownInfo(BuiltinDropdownType.LIST),
         }),
     ),
 
@@ -34,7 +34,7 @@ c_lists = OpcodeInfoGroup(name="c_lists", opcode_info=DualKeyDict({
             ("INDEX", "INDEX"): InputInfo(BuiltinInputType.INTEGER),
         }),
         dropdowns=DualKeyDict({
-            ("LIST", "LIST"): DropdownInfo(DropdownType.LIST),
+            ("LIST", "LIST"): DropdownInfo(BuiltinDropdownType.LIST),
         }),
     ),
 
@@ -45,7 +45,7 @@ c_lists = OpcodeInfoGroup(name="c_lists", opcode_info=DualKeyDict({
             ("INDEX", "INDEX"): InputInfo(BuiltinInputType.INTEGER),
         }),
         dropdowns=DualKeyDict({
-            ("LIST", "LIST"): DropdownInfo(DropdownType.LIST),
+            ("LIST", "LIST"): DropdownInfo(BuiltinDropdownType.LIST),
         }),
     ),
 
@@ -56,7 +56,7 @@ c_lists = OpcodeInfoGroup(name="c_lists", opcode_info=DualKeyDict({
             ("ITEM", "ITEM"): InputInfo(BuiltinInputType.TEXT),
         }),
         dropdowns=DualKeyDict({
-            ("LIST", "LIST"): DropdownInfo(DropdownType.LIST),
+            ("LIST", "LIST"): DropdownInfo(BuiltinDropdownType.LIST),
         }),
     ),
 
@@ -66,8 +66,8 @@ c_lists = OpcodeInfoGroup(name="c_lists", opcode_info=DualKeyDict({
             ("SUBSTACK", "BODY"): InputInfo(BuiltinInputType.SCRIPT),
         }),
         dropdowns=DualKeyDict({
-            ("VARIABLE", "VARIABLE"): DropdownInfo(DropdownType.VARIABLE),
-            ("LIST", "LIST"): DropdownInfo(DropdownType.LIST),
+            ("VARIABLE", "VARIABLE"): DropdownInfo(BuiltinDropdownType.VARIABLE),
+            ("LIST", "LIST"): DropdownInfo(BuiltinDropdownType.LIST),
         }),
     ),
 
@@ -77,8 +77,8 @@ c_lists = OpcodeInfoGroup(name="c_lists", opcode_info=DualKeyDict({
             ("SUBSTACK", "BODY"): InputInfo(BuiltinInputType.SCRIPT),
         }),
         dropdowns=DualKeyDict({
-            ("VARIABLE", "VARIABLE"): DropdownInfo(DropdownType.VARIABLE),
-            ("LIST", "LIST"): DropdownInfo(DropdownType.LIST),
+            ("VARIABLE", "VARIABLE"): DropdownInfo(BuiltinDropdownType.VARIABLE),
+            ("LIST", "LIST"): DropdownInfo(BuiltinDropdownType.LIST),
         }),
     ),
 
@@ -88,7 +88,7 @@ c_lists = OpcodeInfoGroup(name="c_lists", opcode_info=DualKeyDict({
             ("INDEX", "INDEX"): InputInfo(BuiltinInputType.INTEGER),
         }),
         dropdowns=DualKeyDict({
-            ("LIST", "LIST"): DropdownInfo(DropdownType.LIST),
+            ("LIST", "LIST"): DropdownInfo(BuiltinDropdownType.LIST),
         }),
     ),
 
@@ -98,7 +98,7 @@ c_lists = OpcodeInfoGroup(name="c_lists", opcode_info=DualKeyDict({
             ("ITEM", "ITEM"): InputInfo(BuiltinInputType.TEXT),
         }),
         dropdowns=DualKeyDict({
-            ("LIST", "LIST"): DropdownInfo(DropdownType.LIST),
+            ("LIST", "LIST"): DropdownInfo(BuiltinDropdownType.LIST),
         }),
     ),
 
@@ -108,14 +108,14 @@ c_lists = OpcodeInfoGroup(name="c_lists", opcode_info=DualKeyDict({
             ("VALUE", "VALUE"): InputInfo(BuiltinInputType.TEXT),
         }),
         dropdowns=DualKeyDict({
-            ("LIST", "LIST"): DropdownInfo(DropdownType.LIST),
+            ("LIST", "LIST"): DropdownInfo(BuiltinDropdownType.LIST),
         }),
     ),
 
     ("data_lengthoflist", "length of [LIST]"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         dropdowns=DualKeyDict({
-            ("LIST", "LIST"): DropdownInfo(DropdownType.LIST),
+            ("LIST", "LIST"): DropdownInfo(BuiltinDropdownType.LIST),
         }),
     ),
 
@@ -125,7 +125,7 @@ c_lists = OpcodeInfoGroup(name="c_lists", opcode_info=DualKeyDict({
             ("ITEM", "ITEM"): InputInfo(BuiltinInputType.TEXT),
         }),
         dropdowns=DualKeyDict({
-            ("LIST", "LIST"): DropdownInfo(DropdownType.LIST),
+            ("LIST", "LIST"): DropdownInfo(BuiltinDropdownType.LIST),
         }),
     ),
 
@@ -135,21 +135,21 @@ c_lists = OpcodeInfoGroup(name="c_lists", opcode_info=DualKeyDict({
             ("INDEX", "INDEX"): InputInfo(BuiltinInputType.INTEGER),
         }),
         dropdowns=DualKeyDict({
-            ("LIST", "LIST"): DropdownInfo(DropdownType.LIST),
+            ("LIST", "LIST"): DropdownInfo(BuiltinDropdownType.LIST),
         }),
     ),
 
     ("data_listisempty", "is [LIST] empty?"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         dropdowns=DualKeyDict({
-            ("LIST", "LIST"): DropdownInfo(DropdownType.LIST),
+            ("LIST", "LIST"): DropdownInfo(BuiltinDropdownType.LIST),
         }),
     ),
 
     ("data_reverselist", "reverse [LIST]"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         dropdowns=DualKeyDict({
-            ("LIST", "LIST"): DropdownInfo(DropdownType.LIST),
+            ("LIST", "LIST"): DropdownInfo(BuiltinDropdownType.LIST),
         }),
     ),
 
@@ -159,28 +159,28 @@ c_lists = OpcodeInfoGroup(name="c_lists", opcode_info=DualKeyDict({
             ("VALUE", "VALUE"): InputInfo(BuiltinInputType.TEXT),
         }),
         dropdowns=DualKeyDict({
-            ("LIST", "LIST"): DropdownInfo(DropdownType.LIST),
+            ("LIST", "LIST"): DropdownInfo(BuiltinDropdownType.LIST),
         }),
     ),
 
     ("data_listarray", "get list [LIST] as an array"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         dropdowns=DualKeyDict({
-            ("LIST", "LIST"): DropdownInfo(DropdownType.LIST),
+            ("LIST", "LIST"): DropdownInfo(BuiltinDropdownType.LIST),
         }),
     ),
 
     ("data_showlist", "show list [LIST]"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         dropdowns=DualKeyDict({
-            ("LIST", "LIST"): DropdownInfo(DropdownType.LIST),
+            ("LIST", "LIST"): DropdownInfo(BuiltinDropdownType.LIST),
         }),
     ),
 
     ("data_hidelist", "hide list [LIST]"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         dropdowns=DualKeyDict({
-            ("LIST", "LIST"): DropdownInfo(DropdownType.LIST),
+            ("LIST", "LIST"): DropdownInfo(BuiltinDropdownType.LIST),
         }),
     ),
 

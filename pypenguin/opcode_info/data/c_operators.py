@@ -49,7 +49,7 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
             ("THREE", "OPERAND3"): InputInfo(BuiltinInputType.NUMBER),
         }),
         dropdowns=DualKeyDict({
-            ("OPTION", "OPERATION"): DropdownInfo(DropdownType.ROOT_LOG),
+            ("OPTION", "OPERATION"): DropdownInfo(BuiltinDropdownType.ROOT_LOG),
         }),
     ),
 
@@ -60,7 +60,7 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
             ("TWO", "OPERAND2"): InputInfo(BuiltinInputType.NUMBER),
         }),
         dropdowns=DualKeyDict({
-            ("OPTION", "OPERATION"): DropdownInfo(DropdownType.POWER_ROOT_LOG),
+            ("OPTION", "OPERATION"): DropdownInfo(BuiltinDropdownType.POWER_ROOT_LOG),
         }),
     ),
 
@@ -249,7 +249,7 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
             ("TEXT2", "SUBSTRING"): InputInfo(BuiltinInputType.TEXT),
         }),
         dropdowns=DualKeyDict({
-            ("OPTION", "OPERATION"): DropdownInfo(DropdownType.TEXT_METHOD),
+            ("OPTION", "OPERATION"): DropdownInfo(BuiltinDropdownType.TEXT_METHOD),
         }),
     ),
 
@@ -286,7 +286,7 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
             ("TEXT", "TEXT"): InputInfo(BuiltinInputType.TEXT),
         }),
         dropdowns=DualKeyDict({
-            ("OPTION", "CASE"): DropdownInfo(DropdownType.TEXT_CASE),
+            ("OPTION", "CASE"): DropdownInfo(BuiltinDropdownType.TEXT_CASE),
         }),
     ),
 
@@ -311,7 +311,7 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
             ("NUM", "NUM"): InputInfo(BuiltinInputType.NUMBER),
         }),
         dropdowns=DualKeyDict({
-            ("OPERATOR", "OPERATION"): DropdownInfo(DropdownType.UNARY_MATH_OPERATION),
+            ("OPERATOR", "OPERATION"): DropdownInfo(BuiltinDropdownType.UNARY_MATH_OPERATION),
         }),
     ),
 

@@ -7,7 +7,7 @@ c_variables = OpcodeInfoGroup(name="c_variables", opcode_info=DualKeyDict({
             ("VALUE", "VALUE"): InputInfo(BuiltinInputType.TEXT),
         }),
         dropdowns=DualKeyDict({
-            ("VARIABLE", "VARIABLE"): DropdownInfo(DropdownType.VARIABLE),
+            ("VARIABLE", "VARIABLE"): DropdownInfo(BuiltinDropdownType.VARIABLE),
         }),
     ),
 
@@ -17,21 +17,21 @@ c_variables = OpcodeInfoGroup(name="c_variables", opcode_info=DualKeyDict({
             ("VALUE", "VALUE"): InputInfo(BuiltinInputType.NUMBER),
         }),
         dropdowns=DualKeyDict({
-            ("VARIABLE", "VARIABLE"): DropdownInfo(DropdownType.VARIABLE),
+            ("VARIABLE", "VARIABLE"): DropdownInfo(BuiltinDropdownType.VARIABLE),
         }),
     ),
 
     ("data_showvariable", "show variable [VARIABLE]"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         dropdowns=DualKeyDict({
-            ("VARIABLE", "VARIABLE"): DropdownInfo(DropdownType.VARIABLE),
+            ("VARIABLE", "VARIABLE"): DropdownInfo(BuiltinDropdownType.VARIABLE),
         }),
     ),
 
     ("data_hidevariable", "hide variable [VARIABLE]"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         dropdowns=DualKeyDict({
-            ("VARIABLE", "VARIABLE"): DropdownInfo(DropdownType.VARIABLE),
+            ("VARIABLE", "VARIABLE"): DropdownInfo(BuiltinDropdownType.VARIABLE),
         }),
     ),
 

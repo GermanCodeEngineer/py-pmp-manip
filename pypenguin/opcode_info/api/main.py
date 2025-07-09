@@ -74,8 +74,8 @@ class OpcodeInfo:
     monitor_id_behaviour: MonitorIdBehaviour | None = None
     has_shadow: bool = None
     special_cases: dict[SpecialCaseType, SpecialCase] = field(default_factory=dict)
-    old_mutation_cls: Type["FRMutation"] | None = field(init=False, default_factory=type(None))
-    new_mutation_cls: Type["SRMutation"] | None = field(init=False, default_factory=type(None))
+    old_mutation_cls: Type["FRMutation"] | None = None
+    new_mutation_cls: Type["SRMutation"] | None = None
     
     def __post_init__(self) -> None:
         """

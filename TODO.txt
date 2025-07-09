@@ -10,3 +10,6 @@ TODOs:
     - rename block_interface to sth like transformation_interface
     - check for need of copy and deepcopy in transformation methods
     - remove "Returns" section of docstrings to avoid doubling
+    - add "previous costume" and "next costume" to costume menu
+        => explore for similar updates
+    - check if dropdown validation where only default kind: allows non strings? (should not)

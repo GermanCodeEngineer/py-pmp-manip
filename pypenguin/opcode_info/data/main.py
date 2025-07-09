@@ -13,7 +13,7 @@ from pypenguin.utility          import string_to_sha256, DualKeyDict, InvalidVal
 from pypenguin.opcode_info.api import (
     OpcodeInfo, OpcodeType, OpcodeInfoGroup, OpcodeInfoAPI, 
     InputInfo, InputType, BuiltinInputType,
-    DropdownInfo, DropdownType, 
+    DropdownInfo, BuiltinDropdownType, 
     SpecialCase, SpecialCaseType,
     MonitorIdBehaviour,
 )
@@ -105,7 +105,7 @@ c_sensing.add_opcode("sensing_fingeroptions", "#FINGER INDEX MENU", OpcodeInfo(
 c_variables.add_opcode(OPCODE_VAR_VALUE, NEW_OPCODE_VAR_VALUE, OpcodeInfo(
     opcode_type=OpcodeType.STRING_REPORTER,
     dropdowns=DualKeyDict({
-        ("VARIABLE", "VARIABLE"): DropdownInfo(BulitinDropdownType.VARIABLE),
+        ("VARIABLE", "VARIABLE"): DropdownInfo(BuiltinDropdownType.VARIABLE),
     }),
     can_have_monitor=True,
     monitor_id_behaviour=MonitorIdBehaviour.VARIABLE,
@@ -113,7 +113,7 @@ c_variables.add_opcode(OPCODE_VAR_VALUE, NEW_OPCODE_VAR_VALUE, OpcodeInfo(
 c_lists.add_opcode(OPCODE_LIST_VALUE, NEW_OPCODE_LIST_VALUE, OpcodeInfo(
     opcode_type=OpcodeType.STRING_REPORTER,
     dropdowns=DualKeyDict({
-        ("LIST", "LIST"): DropdownInfo(BulitinDropdownType.LIST),
+        ("LIST", "LIST"): DropdownInfo(BuiltinDropdownType.LIST),
     }),
     can_have_monitor=True,
     monitor_id_behaviour=MonitorIdBehaviour.LIST,

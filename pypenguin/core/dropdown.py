@@ -88,13 +88,19 @@ class SRDropdownValue:
             "No possible values" if possible_values == [] else
             "".join(["\n- "+repr(value) for value in possible_values])
         )
-        if self.to_tuple() not in possible_values:
+        tuple_value = self.to_tuple()
+        if tuple_value not in possible_values:
             if default_kind is None:
                 raise InvalidDropdownValueError(path, f"In this case must be one of these: {possible_values_string}")
             elif self.kind is not default_kind:
                 raise InvalidDropdownValueError(
                     path, f"Either kind must be {default_kind} or (kind, value) must be one of these: {possible_values_string}"
                 )
+        post_validate_func = dropdown_type.post_validate_func
+        if post_validate_func is not None:
+            valid, error_msg = post_validate_func(tuple_value)
+            if not valid:
+                raise InvalidDropdownValueError(path, error_msg)
 
 
 __all__ = ["SRDropdownValue"]

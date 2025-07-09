@@ -21,7 +21,7 @@ c_motion = OpcodeInfoGroup(name="c_motion", opcode_info=DualKeyDict({
             ("STEPS", "STEPS"): InputInfo(BuiltinInputType.NUMBER),
         }),
         dropdowns=DualKeyDict({
-            ("DIRECTION", "DIRECTION"): DropdownInfo(DropdownType.UP_DOWN),
+            ("DIRECTION", "DIRECTION"): DropdownInfo(BuiltinDropdownType.UP_DOWN),
         }),
     ),
 
@@ -147,14 +147,14 @@ c_motion = OpcodeInfoGroup(name="c_motion", opcode_info=DualKeyDict({
     ("motion_setrotationstyle", "set rotation style [STYLE]"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         dropdowns=DualKeyDict({
-            ("STYLE", "STYLE"): DropdownInfo(DropdownType.ROTATION_STYLE),
+            ("STYLE", "STYLE"): DropdownInfo(BuiltinDropdownType.ROTATION_STYLE),
         }),
     ),
 
     ("motion_move_sprite_to_scene_side", "move to stage [ZONE]"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         dropdowns=DualKeyDict({
-            ("ALIGNMENT", "ZONE"): DropdownInfo(DropdownType.STAGE_ZONE),
+            ("ALIGNMENT", "ZONE"): DropdownInfo(BuiltinDropdownType.STAGE_ZONE),
         }),
     ),
 

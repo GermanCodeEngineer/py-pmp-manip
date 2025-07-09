@@ -38,7 +38,7 @@ c_control = OpcodeInfoGroup(name="c_control", opcode_info=DualKeyDict({
             ("BODY", "BODY"): InputInfo(BuiltinInputType.SCRIPT),
         }),
         dropdowns=DualKeyDict({
-            ("VARIABLE", "VARIABLE"): DropdownInfo(DropdownType.VARIABLE),
+            ("VARIABLE", "VARIABLE"): DropdownInfo(BuiltinDropdownType.VARIABLE),
         }),
     ),
 
@@ -183,7 +183,7 @@ c_control = OpcodeInfoGroup(name="c_control", opcode_info=DualKeyDict({
     ("control_stop", "stop script [TARGET]"): OpcodeInfo(
         opcode_type=OpcodeType.DYNAMIC,
         dropdowns=DualKeyDict({
-            ("STOP_OPTION", "TARGET"): DropdownInfo(DropdownType.STOP_SCRIPT_TARGET),
+            ("STOP_OPTION", "TARGET"): DropdownInfo(BuiltinDropdownType.STOP_SCRIPT_TARGET),
         }),
     ),
 

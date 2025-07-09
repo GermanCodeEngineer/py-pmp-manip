@@ -1,5 +1,5 @@
 from dataclasses import field
-from typing      import Any
+from typing      import Any, Callable
 
 from pypenguin.utility import grepr_dataclass, remove_duplicates, PypenguinEnum, BlameDevsError
 
@@ -39,6 +39,7 @@ class DropdownValueRule(PypenguinEnum):
     """
     A rule which determines which values are allowed for dropdowns under given circumstances(context)
     """
+
     @property
     def guess_default_kind(self) -> DropdownValueKind | None:
         """
@@ -59,6 +60,31 @@ class DropdownValueRule(PypenguinEnum):
         """
         if self.value[1]: # -> 
             return self.value[0]
+        return None
+
+    @property
+    def post_validate_func(self) -> Callable[[tuple[DropdownValueKind, Any]], tuple[bool, str|None]] | None:
+        """
+        Gets the optional function, which checks if the dropdown value is legal, e.g. because creating a full whitelist is not reasonable
+
+        Returns:
+            the optional function, which checks if the dropdown value is legal
+        """
+        match self:
+            case DropdownValueRule.MATRIX:
+                def _matrix_post_validate_func(dropdown_value: tuple[DropdownValueKind, Any]) -> tuple[bool, str|None]:
+                    value: str = dropdown_value[1]
+                    valid = True
+                    if valid and len(value) != 25:
+                        valid = False
+                    if valid:
+                        for char in value: 
+                            if char not in {"0", "1"}:
+                                valid = False
+                                break
+                    msg = None if valid else 'must be a string of 25 chars, which can each be "0" or "1"'
+                    return (valid, msg)
+                return _matrix_post_validate_func
         return None
 
     # (
@@ -89,9 +115,10 @@ class DropdownValueRule(PypenguinEnum):
     BROADCAST_MSG             = (DropdownValueKind.BROADCAST_MSG, True , 15)
     
     FONT                      = (DropdownValueKind.STANDARD     , True , 16)
+    MATRIX                    = (DropdownValueKind.STANDARD     , True , 17)
 
 
-@grepr_dataclass(grepr_fields=["direct_values", "behaviours", "old_direct_values", "fallback"])
+@grepr_dataclass(grepr_fields=["direct_values", "rules", "old_direct_values", "fallback"])
 class DropdownTypeInfo:
     """
     The information about a dropdown type, which can be used for one or many opcodes
@@ -112,7 +139,7 @@ class DropdownTypeInfo:
         if self.old_direct_values is None:
             self.old_direct_values = self.direct_values        
     
-class DropdownType:
+class DropdownType(PypenguinEnum):
     """
     The type of a block dropdown, which can be used for one or many opcodes. It can be a Builtin or Custom one.
     """
@@ -139,13 +166,13 @@ class DropdownType:
             the default dropdown value kind for an approximate guess
         """
         default_kind = None
-        for behaviour in self.type_info.rules:
-            behaviour_default_kind = behaviour.guess_default_kind
-            if behaviour_default_kind is not None:
+        for rule in self.type_info.rules:
+            rule_default_kind = rule.guess_default_kind
+            if rule_default_kind is not None:
                 if default_kind is None:
-                    default_kind = behaviour_default_kind
+                    default_kind = rule_default_kind
                 else:
-                    raise BlameDevsError(f"Got multiple default dropdown value kinds for {self}: {default_kind} and {behaviour_default_kind}")
+                    raise BlameDevsError(f"Got multiple default dropdown value kinds for {self}: {default_kind} and {rule_default_kind}")
         return default_kind
 
     @property
@@ -157,14 +184,32 @@ class DropdownType:
             the default dropdown value kind for an approximate guess
         """
         default_kind = None
-        for behaviour in self.type_info.rules:
-            behaviour_default_kind = behaviour.calculation_default_kind
-            if behaviour_default_kind is not None:
+        for rule in self.type_info.rules:
+            rule_default_kind = rule.calculation_default_kind
+            if rule_default_kind is not None:
                 if default_kind is None:
-                    default_kind = behaviour_default_kind
+                    default_kind = rule_default_kind
                 else:
-                    raise BlameDevsError(f"Got multiple default dropdown value kinds for {self}: {default_kind} and {behaviour_default_kind}")
+                    raise BlameDevsError(f"Got multiple default dropdown value kinds for {self}: {default_kind} and {rule_default_kind}")
         return default_kind
+
+    @property
+    def post_validate_func(self) -> Callable[[tuple[DropdownValueKind, Any]], tuple[bool, str|None]] | None:
+        """
+        Gets the optional function, which checks if the dropdown value is legal, e.g. because creating a full whitelist is not reasonable
+
+        Returns:
+            the optional function, which checks if the dropdown value is legal
+        """
+        validate_func = None
+        for rule in self.type_info.rules:
+            rule_validate_func = rule.post_validate_func
+            if rule_validate_func is not None:
+                if validate_func is None:
+                    validate_func = rule_validate_func
+                else:
+                    raise BlameDevsError(f"Got multiple post validation functions for {self}: {validate_func} and {rule_validate_func}")
+        return validate_func
 
     def calculate_possible_new_dropdown_values(self, context: PartialContext|CompleteContext) -> list[tuple[DropdownValueKind, Any]]:
         """
@@ -264,12 +309,14 @@ class DropdownType:
                 
                 case DropdownValueRule.BROADCAST_MSG | DropdownValueRule.FONT:
                     pass # Can't be guessed
+                case DropdownValueRule.MATRIX:
+                    pass # Could theoretically be guessed, but there are 3_3554_432 (2^25) possibilities
 
         if (values == []) and (self.type_info.fallback is not None):
             values.append(self.type_info.fallback)
         return remove_duplicates(values)
 
-    def guess_possible_new_dropdown_values(self, include_behaviours: bool) -> list[tuple[DropdownValueKind, Any]]:
+    def guess_possible_new_dropdown_values(self, include_rules: bool) -> list[tuple[DropdownValueKind, Any]]:
         """
         Guess all the possible values for a SRDropdownValue without context
 
@@ -283,9 +330,9 @@ class DropdownType:
             else:
                 values.append((DropdownValueKind.STANDARD, value))
         
-        if include_behaviours:
-            for behaviour in self.type_info.rules:
-                match behaviour:
+        if include_rules:
+            for rule in self.type_info.rules:
+                match rule:
                     case DropdownValueRule.STAGE:
                         values.append((DropdownValueKind.STAGE, "stage"))
                     case DropdownValueRule.OTHER_SPRITE:
@@ -338,6 +385,8 @@ class DropdownType:
                     case (DropdownValueRule.COSTUME  | DropdownValueRule.BACKDROP | DropdownValueRule.SOUND 
                         | DropdownValueRule.VARIABLE | DropdownValueRule.LIST     | DropdownValueRule.BROADCAST_MSG | DropdownValueRule.FONT):
                         pass # Can't be guessed
+                    case DropdownValueRule.MATRIX:
+                        pass # Could theoretically be guessed, but there are 3_3554_432 (2^25) possibilities
         if self.type_info.fallback is not None:
             values.append((DropdownValueKind.FALLBACK, self.type_info.fallback))
         return remove_duplicates(values)
@@ -355,8 +404,8 @@ class DropdownType:
                 values.append(value[0])
             else:
                 values.append(value)
-        for behaviour in self.type_info.rules:
-            match behaviour:
+        for rule in self.type_info.rules:
+            match rule:
                 case DropdownValueRule.STAGE:
                     values.append("_stage_")
                 case DropdownValueRule.OTHER_SPRITE:
@@ -387,6 +436,8 @@ class DropdownType:
                 case (DropdownValueRule.COSTUME  | DropdownValueRule.BACKDROP | DropdownValueRule.SOUND 
                     | DropdownValueRule.VARIABLE | DropdownValueRule.LIST     | DropdownValueRule.BROADCAST_MSG | DropdownValueRule.FONT):
                         pass # Can't be guessed
+                case DropdownValueRule.MATRIX:
+                    pass # Could theoretically be guessed, but there are 3_3554_432 (2^25) possibilities
         if self.type_info.fallback is not None:
             values.append((DropdownValueKind.FALLBACK, self.type_info.fallback))
         return remove_duplicates(values)
@@ -402,9 +453,9 @@ class DropdownType:
             the SRDropdownValue as a tuple => (kind, value)
         """
         # TODO: add special case for this
-        if self == BulitinDropdownType.EXPANDED_MINIMIZED and old_value == "FALSE": # To patch a mistake of the pen extension devs
+        if self == BuiltinDropdownType.EXPANDED_MINIMIZED and old_value == "FALSE": # To patch a mistake of the pen extension devs
             old_value = False
-        new_values = self.guess_possible_new_dropdown_values(include_behaviours=True)
+        new_values = self.guess_possible_new_dropdown_values(include_rules=True)
         old_values = self.guess_possible_old_dropdown_values()
         
         assert len(new_values) == len(old_values)
@@ -425,7 +476,7 @@ class DropdownType:
         Returns:
             the dropdown value in first representation
         """
-        new_values = self.guess_possible_new_dropdown_values(include_behaviours=True)
+        new_values = self.guess_possible_new_dropdown_values(include_rules=True)
         old_values = self.guess_possible_old_dropdown_values()
         
         assert len(new_values) == len(old_values)
@@ -436,7 +487,7 @@ class DropdownType:
             assert self.guess_default_kind is not None
             return new_value[1]
 
-class BulitinDropdownType(DropdownType, PypenguinEnum):
+class BuiltinDropdownType(DropdownType):
     """
     A built-in type of a block dropdown, which can be used for one or many opcodes.
     """
@@ -581,20 +632,15 @@ class BulitinDropdownType(DropdownType, PypenguinEnum):
         direct_values=["show modal", "open selector immediately"],
         old_direct_values=["modal", "selector"],
     )
+    MATRIX = DropdownTypeInfo(rules=[DropdownValueRule.MATRIX])
 
     VARIABLE = DropdownTypeInfo(rules=[DropdownValueRule.VARIABLE])
     LIST = DropdownTypeInfo(rules=[DropdownValueRule.LIST])
     BROADCAST = DropdownTypeInfo(rules=[DropdownValueRule.BROADCAST_MSG])
 
-@grepr_dataclass(grepr_fields=["name", "value"], unsafe_hash=True, frozen=True)
-class CustomDropdownType(DropdownType):
-    """
-    A custom type of a block dropdown, which can be used for one or many opcodes.
-    """
-
 
 __all__ = [
     "DropdownValueKind", "DropdownInfo", "DropdownValueRule", 
-    "DropdownTypeInfo", "DropdownType", "BulitinDropdownType", "CustomDropdownType",
+    "DropdownTypeInfo", "DropdownType", "BuiltinDropdownType",
 ]
 

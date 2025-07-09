@@ -59,7 +59,7 @@ c_sounds = OpcodeInfoGroup(name="c_sounds", opcode_info=DualKeyDict({
             ("VALUE", "AMOUNT"): InputInfo(BuiltinInputType.NUMBER),
         }),
         dropdowns=DualKeyDict({
-            ("EFFECT", "EFFECT"): DropdownInfo(DropdownType.SOUND_EFFECT),
+            ("EFFECT", "EFFECT"): DropdownInfo(BuiltinDropdownType.SOUND_EFFECT),
         }),
     ),
 
@@ -69,7 +69,7 @@ c_sounds = OpcodeInfoGroup(name="c_sounds", opcode_info=DualKeyDict({
             ("VALUE", "VALUE"): InputInfo(BuiltinInputType.NUMBER),
         }),
         dropdowns=DualKeyDict({
-            ("EFFECT", "EFFECT"): DropdownInfo(DropdownType.SOUND_EFFECT),
+            ("EFFECT", "EFFECT"): DropdownInfo(BuiltinDropdownType.SOUND_EFFECT),
         }),
     ),
 
@@ -80,7 +80,7 @@ c_sounds = OpcodeInfoGroup(name="c_sounds", opcode_info=DualKeyDict({
     ("sound_getEffectValue", "[EFFECT] sound effect"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         dropdowns=DualKeyDict({
-            ("EFFECT", "EFFECT"): DropdownInfo(DropdownType.SOUND_EFFECT),
+            ("EFFECT", "EFFECT"): DropdownInfo(BuiltinDropdownType.SOUND_EFFECT),
         }),
         can_have_monitor=True,
         monitor_id_behaviour=MonitorIdBehaviour.SPRITE_OPCMAIN_PARAM,

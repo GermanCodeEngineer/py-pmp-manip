@@ -40,7 +40,7 @@ scratch_pen = OpcodeInfoGroup(name="scratch_pen", opcode_info=DualKeyDict({
     ("pen_setPrintFontItalics", "set print font italics to [ON_OFF]"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         dropdowns=DualKeyDict({
-            ("OPTION", "ON_OFF"): DropdownInfo(BulitinDropdownType.ON_OFF),
+            ("OPTION", "ON_OFF"): DropdownInfo(BuiltinDropdownType.ON_OFF),
         }),
     ),
 

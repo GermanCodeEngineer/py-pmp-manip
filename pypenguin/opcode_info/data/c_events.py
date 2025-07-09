@@ -23,21 +23,21 @@ c_events = OpcodeInfoGroup(name="c_events", opcode_info=DualKeyDict({
     ("event_whenkeypressed", "when [KEY] key pressed"): OpcodeInfo(
         opcode_type=OpcodeType.HAT,
         dropdowns=DualKeyDict({
-            ("KEY_OPTION", "KEY"): DropdownInfo(DropdownType.KEY),
+            ("KEY_OPTION", "KEY"): DropdownInfo(BuiltinDropdownType.KEY),
         }),
     ),
 
     ("event_whenkeyhit", "when [KEY] key hit"): OpcodeInfo(
         opcode_type=OpcodeType.HAT,
         dropdowns=DualKeyDict({
-            ("KEY_OPTION", "KEY"): DropdownInfo(DropdownType.KEY),
+            ("KEY_OPTION", "KEY"): DropdownInfo(BuiltinDropdownType.KEY),
         }),
     ),
 
     ("event_whenmousescrolled", "when mouse is scrolled [DIRECTION]"): OpcodeInfo(
         opcode_type=OpcodeType.HAT,
         dropdowns=DualKeyDict({
-            ("KEY_OPTION", "DIRECTION"): DropdownInfo(DropdownType.UP_DOWN),
+            ("KEY_OPTION", "DIRECTION"): DropdownInfo(BuiltinDropdownType.UP_DOWN),
         }),
     ),
 
@@ -52,7 +52,7 @@ c_events = OpcodeInfoGroup(name="c_events", opcode_info=DualKeyDict({
     ("event_whenbackdropswitchesto", "when backdrop switches to [BACKDROP]"): OpcodeInfo(
         opcode_type=OpcodeType.HAT,
         dropdowns=DualKeyDict({
-            ("BACKDROP", "BACKDROP"): DropdownInfo(DropdownType.BACKDROP),
+            ("BACKDROP", "BACKDROP"): DropdownInfo(BuiltinDropdownType.BACKDROP),
         }),
     ),
 
@@ -62,14 +62,14 @@ c_events = OpcodeInfoGroup(name="c_events", opcode_info=DualKeyDict({
             ("VALUE", "VALUE"): InputInfo(BuiltinInputType.NUMBER),
         }),
         dropdowns=DualKeyDict({
-            ("WHENGREATERTHANMENU", "OPTION"): DropdownInfo(DropdownType.LOUDNESS_TIMER),
+            ("WHENGREATERTHANMENU", "OPTION"): DropdownInfo(BuiltinDropdownType.LOUDNESS_TIMER),
         }),
     ),
 
     ("event_whenbroadcastreceived", "when I receive [MESSAGE]"): OpcodeInfo(
         opcode_type=OpcodeType.HAT,
         dropdowns=DualKeyDict({
-            ("BROADCAST_OPTION", "MESSAGE"): DropdownInfo(DropdownType.BROADCAST),
+            ("BROADCAST_OPTION", "MESSAGE"): DropdownInfo(BuiltinDropdownType.BROADCAST),
         }),
     ),
 

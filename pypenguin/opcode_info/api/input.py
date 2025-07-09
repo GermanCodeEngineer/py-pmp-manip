@@ -1,6 +1,6 @@
-from pypenguin.utility import grepr_dataclass, PypenguinEnum, DynamicEnum
+from pypenguin.utility import grepr_dataclass, PypenguinEnum
 
-from pypenguin.opcode_info.api.dropdown import DropdownType, BulitinDropdownType, CustomDropdownType
+from pypenguin.opcode_info.api.dropdown import DropdownType, BuiltinDropdownType
 
 
 @grepr_dataclass(grepr_fields=["type", "menu"])
@@ -36,7 +36,7 @@ class InputMode(PypenguinEnum):
     BLOCK_AND_BROADCAST_DROPDOWN = (False, 4)
     BLOCK_AND_DROPDOWN           = (False, 5)
 
-class InputType:
+class InputType(PypenguinEnum):
     """
     The type of a block input, which can be used for one or many opcodes. It can be a Builtin or Custom one.
     The input type has only little influence, except those which can contain a dropdown. Then it will be used for dropdown validation.
@@ -44,7 +44,8 @@ class InputType:
     """
 
     name: str
-    value: tuple[InputMode, int|None, int] # (InputMode, magic number, index)
+    value: tuple[InputMode, int|None, DropdownType|None, int] 
+    # (InputMode, magic number, corresponding dropdown type, index)
 
     @property
     def mode(self) -> InputMode:
@@ -69,10 +70,7 @@ class InputType:
             InputMode.BLOCK_AND_BROADCAST_DROPDOWN,
             InputMode.BLOCK_AND_DROPDOWN,
         }
-        if isinstance(self, BuiltinInputType):
-            return BulitinDropdownType._member_map_[self.name]
-        elif isinstance(self, CustomInputType):
-            return CustomDropdownType._member_map_
+        return self.value[2]
 
     @property
     def magic_number(self) -> int | None:
@@ -98,76 +96,67 @@ class InputType:
             case "false":
                 return BuiltinInputType.BOOLEAN
 
-class BuiltinInputType(InputType, PypenguinEnum):
+class BuiltinInputType(InputType):
     """
     A built-in type of a block input, which can be used for one or many opcodes.
     The input type has only little influence, except those which can contain a dropdown. Then it will be used for dropdown validation.
     Its superior input mode mostly determines its behaviour
     """
 
-    # (InputMode, magic number, index)
+    # (InputMode, magic number, corresponding dropdown type, index)
     # BLOCK_AND_TEXT
-    TEXT                = (InputMode.BLOCK_AND_TEXT, 10, 0)
-    COLOR               = (InputMode.BLOCK_AND_TEXT,  9, 1)
-    DIRECTION           = (InputMode.BLOCK_AND_TEXT,  8, 2)
-    INTEGER             = (InputMode.BLOCK_AND_TEXT,  7, 3)
-    POSITIVE_INTEGER    = (InputMode.BLOCK_AND_TEXT,  6, 4)
-    POSITIVE_NUMBER     = (InputMode.BLOCK_AND_TEXT,  5, 5)
-    NUMBER              = (InputMode.BLOCK_AND_TEXT,  4, 6)
+    TEXT                = (InputMode.BLOCK_AND_TEXT, 10, None, 0)
+    COLOR               = (InputMode.BLOCK_AND_TEXT,  9, None, 1)
+    DIRECTION           = (InputMode.BLOCK_AND_TEXT,  8, None, 2)
+    INTEGER             = (InputMode.BLOCK_AND_TEXT,  7, None, 3)
+    POSITIVE_INTEGER    = (InputMode.BLOCK_AND_TEXT,  6, None, 4)
+    POSITIVE_NUMBER     = (InputMode.BLOCK_AND_TEXT,  5, None, 5)
+    NUMBER              = (InputMode.BLOCK_AND_TEXT,  4, None, 6)
 
     # BLOCK_AND_MENU_TEXT
-    NOTE                = (InputMode.BLOCK_AND_MENU_TEXT, None, 0)
+    NOTE                = (InputMode.BLOCK_AND_MENU_TEXT, None, 0, BuiltinDropdownType.NOTE)
 
     # BLOCK_ONLY
-    BOOLEAN             = (InputMode.BLOCK_ONLY, None, 0)
-    ROUND               = (InputMode.BLOCK_ONLY, None, 1)
-    EMBEDDED_MENU       = (InputMode.BLOCK_ONLY, None, 2)
+    BOOLEAN             = (InputMode.BLOCK_ONLY, None, None, 0)
+    ROUND               = (InputMode.BLOCK_ONLY, None, None, 1)
+    EMBEDDED_MENU       = (InputMode.BLOCK_ONLY, None, None, 2)
 
     # SCRIPT
-    SCRIPT              = (InputMode.SCRIPT, None, 0)
+    SCRIPT              = (InputMode.SCRIPT, None, None, 0)
 
     # BLOCK_AND_BROADCAST_DROPDOWN
-    BROADCAST           = (InputMode.BLOCK_AND_BROADCAST_DROPDOWN, 11, 0)
+    BROADCAST           = (InputMode.BLOCK_AND_BROADCAST_DROPDOWN, 11, BuiltinDropdownType.BROADCAST, 0)
 
     # BLOCK_AND_DROPDOWN
-    STAGE_OR_OTHER_SPRITE               = (InputMode.BLOCK_AND_DROPDOWN, None,  0)
-    CLONING_TARGET                      = (InputMode.BLOCK_AND_DROPDOWN, None,  1)
-    MOUSE_OR_OTHER_SPRITE               = (InputMode.BLOCK_AND_DROPDOWN, None,  2)
-    MOUSE_EDGE_OR_OTHER_SPRITE          = (InputMode.BLOCK_AND_DROPDOWN, None,  3)
-    MOUSE_EDGE_MYSELF_OR_OTHER_SPRITE   = (InputMode.BLOCK_AND_DROPDOWN, None,  4)
-    KEY                                 = (InputMode.BLOCK_AND_DROPDOWN, None,  5)
-    UP_DOWN                             = (InputMode.BLOCK_AND_DROPDOWN, None,  6)
-    FINGER_INDEX                        = (InputMode.BLOCK_AND_DROPDOWN, None,  7)
-    RANDOM_MOUSE_OR_OTHER_SPRITE        = (InputMode.BLOCK_AND_DROPDOWN, None,  8)
-    COSTUME                             = (InputMode.BLOCK_AND_DROPDOWN, None,  9)
-    COSTUME_PROPERTY                    = (InputMode.BLOCK_AND_DROPDOWN, None, 10)
-    BACKDROP                            = (InputMode.BLOCK_AND_DROPDOWN, None, 11)
-    BACKDROP_PROPERTY                   = (InputMode.BLOCK_AND_DROPDOWN, None, 12)
-    MYSELF_OR_OTHER_SPRITE              = (InputMode.BLOCK_AND_DROPDOWN, None, 13)
-    SOUND                               = (InputMode.BLOCK_AND_DROPDOWN, None, 14)
-    DRUM                                = (InputMode.BLOCK_AND_DROPDOWN, None, 15)
-    INSTRUMENT                          = (InputMode.BLOCK_AND_DROPDOWN, None, 16)
-    FONT                                = (InputMode.BLOCK_AND_DROPDOWN, None, 17)
-    PEN_PROPERTY                        = (InputMode.BLOCK_AND_DROPDOWN, None, 18)
-    VIDEO_SENSING_PROPERTY              = (InputMode.BLOCK_AND_DROPDOWN, None, 19)
-    VIDEO_SENSING_TARGET                = (InputMode.BLOCK_AND_DROPDOWN, None, 20)
-    VIDEO_STATE                         = (InputMode.BLOCK_AND_DROPDOWN, None, 21)
-    TEXT_TO_SPEECH_VOICE                = (InputMode.BLOCK_AND_DROPDOWN, None, 22)
-    TEXT_TO_SPEECH_LANGUAGE             = (InputMode.BLOCK_AND_DROPDOWN, None, 23)
-    TRANSLATE_LANGUAGE                  = (InputMode.BLOCK_AND_DROPDOWN, None, 24)
-    MAKEY_KEY                           = (InputMode.BLOCK_AND_DROPDOWN, None, 25)
-    MAKEY_SEQUENCE                      = (InputMode.BLOCK_AND_DROPDOWN, None, 26)
-    READ_FILE_MODE                      = (InputMode.BLOCK_AND_DROPDOWN, None, 27)
-    FILE_SELECTOR_MODE                  = (InputMode.BLOCK_AND_DROPDOWN, None, 28)
-    MATRIX                              = (InputMode.BLOCK_AND_DROPDOWN, None, 29)
-
-@grepr_dataclass(grepr_fields=["name", "value"], init=False, unsafe_hash=True, frozen=True)
-class CustomInputType(InputType, DynamicEnum):
-    """
-    A custom type of a block input, which can be used for one or many opcodes.
-    The input type has only little influence, except those which can contain a dropdown. Then it will be used for dropdown validation.
-    Its superior input mode mostly determines its behaviour
-    """
+    STAGE_OR_OTHER_SPRITE             = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.STAGE_OR_OTHER_SPRITE            ,  0)
+    CLONING_TARGET                    = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.CLONING_TARGET                   ,  1)
+    MOUSE_OR_OTHER_SPRITE             = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.MOUSE_OR_OTHER_SPRITE            ,  2)
+    MOUSE_EDGE_OR_OTHER_SPRITE        = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.MOUSE_EDGE_OR_OTHER_SPRITE       ,  3)
+    MOUSE_EDGE_MYSELF_OR_OTHER_SPRITE = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.MOUSE_EDGE_MYSELF_OR_OTHER_SPRITE,  4)
+    KEY                               = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.KEY                              ,  5)
+    UP_DOWN                           = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.UP_DOWN                          ,  6)
+    FINGER_INDEX                      = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.FINGER_INDEX                     ,  7)
+    RANDOM_MOUSE_OR_OTHER_SPRITE      = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.RANDOM_MOUSE_OR_OTHER_SPRITE     ,  8)
+    COSTUME                           = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.COSTUME                          ,  9)
+    BACKDROP                          = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.BACKDROP                         , 10)
+    COSTUME_PROPERTY                  = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.COSTUME_PROPERTY                 , 11)
+    MYSELF_OR_OTHER_SPRITE            = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.MYSELF_OR_OTHER_SPRITE           , 12)
+    SOUND                             = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.SOUND                            , 13)
+    DRUM                              = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.DRUM                             , 14)
+    INSTRUMENT                        = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.INSTRUMENT                       , 15)
+    FONT                              = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.FONT                             , 16)
+    PEN_PROPERTY                      = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.PEN_PROPERTY                     , 17)
+    VIDEO_SENSING_PROPERTY            = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.VIDEO_SENSING_PROPERTY           , 18)
+    VIDEO_SENSING_TARGET              = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.VIDEO_SENSING_TARGET             , 29)
+    VIDEO_STATE                       = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.VIDEO_STATE                      , 20)
+    TEXT_TO_SPEECH_VOICE              = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.TEXT_TO_SPEECH_VOICE             , 21)
+    TEXT_TO_SPEECH_LANGUAGE           = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.TEXT_TO_SPEECH_LANGUAGE          , 22)
+    TRANSLATE_LANGUAGE                = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.TRANSLATE_LANGUAGE               , 23)
+    MAKEY_KEY                         = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.MAKEY_KEY                        , 24)
+    MAKEY_SEQUENCE                    = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.MAKEY_SEQUENCE                   , 25)
+    READ_FILE_MODE                    = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.READ_FILE_MODE                   , 26)
+    FILE_SELECTOR_MODE                = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.FILE_SELECTOR_MODE               , 27)
+    MATRIX                            = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.MATRIX                           , 28)
 
 @grepr_dataclass(grepr_fields=["opcode", "inner"])
 class MenuInfo:
@@ -178,4 +167,4 @@ class MenuInfo:
     opcode: str
     inner : str
 
-__all__ = ["InputInfo", "InputMode", "InputType", "BuiltinInputType", "CustomInputType", "MenuInfo"]
+__all__ = ["InputInfo", "InputMode", "InputType", "BuiltinInputType", "MenuInfo"]

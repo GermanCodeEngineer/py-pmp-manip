@@ -14,7 +14,7 @@ scratch_text = OpcodeInfoGroup(name="scratch_text", opcode_info=DualKeyDict({
             ("TEXT", "TEXT"): InputInfo(BuiltinInputType.TEXT),
         }),
         dropdowns=DualKeyDict({
-            ("ANIMATE", "ANIMATION_TECHNIQUE"): DropdownInfo(BulitinDropdownType.ANIMATION_TECHNIQUE),
+            ("ANIMATE", "ANIMATION_TECHNIQUE"): DropdownInfo(BuiltinDropdownType.ANIMATION_TECHNIQUE),
         }),
     ),
 
@@ -42,7 +42,7 @@ scratch_text = OpcodeInfoGroup(name="scratch_text", opcode_info=DualKeyDict({
             ("WIDTH", "WIDTH"): InputInfo(BuiltinInputType.NUMBER),
         }),
         dropdowns=DualKeyDict({
-            ("ALIGN", "ALIGN"): DropdownInfo(BulitinDropdownType.LEFT_CENTER_RIGHT),
+            ("ALIGN", "ALIGN"): DropdownInfo(BuiltinDropdownType.LEFT_CENTER_RIGHT),
         }),
     ),
 

@@ -45,7 +45,7 @@ c_sensing = OpcodeInfoGroup(name="c_sensing", opcode_info=DualKeyDict({
             ("SPRITE", "OBJECT"): InputInfo(BuiltinInputType.MOUSE_OR_OTHER_SPRITE, menu=MenuInfo("sensing_distancetomenu", inner="DISTANCETOMENU")),
         }),
         dropdowns=DualKeyDict({
-            ("XY", "COORDINATE"): DropdownInfo(DropdownType.X_OR_Y),
+            ("XY", "COORDINATE"): DropdownInfo(BuiltinDropdownType.X_OR_Y),
         }),
     ),
 
@@ -164,7 +164,7 @@ c_sensing = OpcodeInfoGroup(name="c_sensing", opcode_info=DualKeyDict({
     ("sensing_setdragmode", "set drag mode [MODE]"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         dropdowns=DualKeyDict({
-            ("DRAG_MODE", "MODE"): DropdownInfo(DropdownType.DRAG_MODE),
+            ("DRAG_MODE", "MODE"): DropdownInfo(BuiltinDropdownType.DRAG_MODE),
         }),
     ),
 
@@ -203,7 +203,7 @@ c_sensing = OpcodeInfoGroup(name="c_sensing", opcode_info=DualKeyDict({
             ("OBJECT", "TARGET"): InputInfo(BuiltinInputType.STAGE_OR_OTHER_SPRITE, menu=MenuInfo("sensing_of_object_menu", inner="OBJECT")),
         }),
         dropdowns=DualKeyDict({
-            ("PROPERTY", "PROPERTY"): DropdownInfo(DropdownType.MUTABLE_SPRITE_PROPERTY),
+            ("PROPERTY", "PROPERTY"): DropdownInfo(BuiltinDropdownType.MUTABLE_SPRITE_PROPERTY),
         }),
     ),
 
@@ -213,14 +213,14 @@ c_sensing = OpcodeInfoGroup(name="c_sensing", opcode_info=DualKeyDict({
             ("OBJECT", "TARGET"): InputInfo(BuiltinInputType.STAGE_OR_OTHER_SPRITE, menu=MenuInfo("sensing_of_object_menu", inner="OBJECT")),
         }),
         dropdowns=DualKeyDict({
-            ("PROPERTY", "PROPERTY"): DropdownInfo(DropdownType.READABLE_SPRITE_PROPERTY),
+            ("PROPERTY", "PROPERTY"): DropdownInfo(BuiltinDropdownType.READABLE_SPRITE_PROPERTY),
         }),
     ),
 
     ("sensing_current", "current [PROPERTY]"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         dropdowns=DualKeyDict({
-            ("CURRENTMENU", "PROPERTY"): DropdownInfo(DropdownType.TIME_PROPERTY),
+            ("CURRENTMENU", "PROPERTY"): DropdownInfo(BuiltinDropdownType.TIME_PROPERTY),
         }),
         can_have_monitor=True,
         monitor_id_behaviour=MonitorIdBehaviour.OPCMAIN_LOWERPARAM,
