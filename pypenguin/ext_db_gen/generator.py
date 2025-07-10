@@ -72,12 +72,12 @@ def process_all_menus(menus: dict[str, dict[str, Any]]) -> tuple[type[InputType]
             old_direct_values = possible_values,
             fallback          = None, # there can't be a fallback when the possible values are static
         )
-        custom_dropdown_type = extend_enum(ExtensionDropdownType, name=menu_block_id, value=dropdown_type_info)
+        custom_dropdown_type = extend_enum(ExtensionDropdownType, menu_block_id, dropdown_type_info)
 
         if accept_reporters:
             #                 (InputMode                   , magic number, corresponding dropdown type, index     )
             input_type_info = (InputMode.BLOCK_AND_DROPDOWN, None        , custom_dropdown_type       , menu_index)
-            custom_input_type = extend_enum(ExtensionInputType, name=menu_block_id, value=input_type_info)
+            custom_input_type = extend_enum(ExtensionInputType, menu_block_id, input_type_info)
     return (ExtensionInputType, ExtensionDropdownType)
 
 def generate_block_opcode_info(
@@ -210,18 +210,18 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> OpcodeInfoGrou
     def gen_code_for_enum(enum_cls: type[PypenguinEnum]) -> str:
         code = f"class {enum_cls.__name__}({enum_cls.__bases__[0].__name__}):"
         for enum_item in enum_cls:
-            code += f"\n{INDENT}{enum_item.name} = {enum_item.value}"
+            code += f"\n{INDENT}{enum_item.name} = {grepr(enum_item.value, level_offset=1)}"
         if len(enum_cls) == 0:
             code += f"\n{INDENT}pass"
         return code
     
     import_code = "from pypenguin.opcode_info.data_imports import *"
-    input_type_code = gen_code_for_enum(input_type_cls)
     dropdown_type_code = gen_code_for_enum(dropdown_type_cls)
-    info_group_code = f"{extension_id} = {repr(info_group)}"   
-    code = f"{import_code}\n\n{input_type_code}\n\n{dropdown_type_code}\n\n{info_group_code}"
-    print(100*"=")
-    print(code)
+    input_type_code = gen_code_for_enum(input_type_cls)
+    info_group_code = f"{extension_id} = {grepr(info_group, safe_dkd=True)}"   
+    code = f"{import_code}\n\n{dropdown_type_code}\n\n{input_type_code}\n\n{info_group_code}"
+    with open(f"pypenguin/opcode_info/data/{extension_id}.py", "w") as file:
+        file.write(code)
 
 extension_info = extract_getinfo("pypenguin/ext_db_gen/example.js")
 generate_opcode_info_group(extension_info)

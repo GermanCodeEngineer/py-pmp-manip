@@ -39,13 +39,16 @@ def grepr(obj, /, safe_dkd=False, level_offset=0, annotate_fields=True, include_
                 return f"{opening}{prefix}{sep.join(strings)}{end_sep}{closing}", False
             else:
                 return f"{opening}{", ".join(strings)}{closing}", False
+        
         elif _is_dict(obj):
             if not obj:
                 return "{}", True
             args = [f"{_grepr(key, level)[0]}: {_grepr(value, level)[0]}" for key,value in obj.items()]    
             return f"{prefix}{sep.join(args)}{end_sep}", False
+        
         elif isinstance(obj, str):
             return f'"{obj.replace('"', '\\"')}"', True
+        
         elif isinstance(obj, DualKeyDict):
             if not obj:
                 return ("DualKeyDict()" if safe_dkd else "DualKeyDict{}"), True
@@ -62,8 +65,8 @@ def grepr(obj, /, safe_dkd=False, level_offset=0, annotate_fields=True, include_
                 strings = [f"{key1_str} / {key2_str}: {value_str}" for key1_str, key2_str, value_str in args]
                 fmt = "DualKeyDict{%s}"
             return fmt % f"{prefix}{sep.join(strings)}{end_sep}", False
+        
         elif is_compatible:
-            cls = type(obj)
             args = []
             allsimple = True
             for name in obj._grepr_fields:
@@ -76,7 +79,7 @@ def grepr(obj, /, safe_dkd=False, level_offset=0, annotate_fields=True, include_
                     args.append(f"{name}={value}")
                 else:
                     args.append(value)
-            class_name = getattr(obj, "_grepr_class_name", obj.__class__.__name__)
+            class_name = obj.__class__.__name__
             if allsimple and len(args) <= 3:
                 return f"{class_name}({", ".join(args)})", not args
             return f"{class_name}({prefix}{sep.join(args)}{end_sep})", False
