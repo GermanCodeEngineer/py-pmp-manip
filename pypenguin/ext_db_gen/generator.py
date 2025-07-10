@@ -10,7 +10,7 @@ from pypenguin.opcode_info.api import (
     InputInfo, InputMode, InputType, BuiltinInputType, MenuInfo, 
     DropdownInfo, DropdownType, BuiltinDropdownType, DropdownTypeInfo
 )
-from pypenguin.utility         import grepr, DualKeyDict, ThanksError
+from pypenguin.utility         import grepr, DualKeyDict, ThanksError, PypenguinEnum
 
 ARGUMENT_TYPE_TO_INPUT_TYPE: dict[str, InputType] = {
     "string": BuiltinInputType.TEXT,
@@ -28,6 +28,7 @@ ARGUMENT_TYPE_TO_DROPDOWN_TYPE: dict[str, DropdownType] = {
     "variable": BuiltinDropdownType.VARIABLE,
     "list": BuiltinDropdownType.LIST,
 }
+INDENT = 4*" "
 
 def extract_getinfo(ext_file: str) -> dict[str, Any]:
     """
@@ -46,21 +47,23 @@ def extract_getinfo(ext_file: str) -> dict[str, Any]:
     if result.returncode != 0:
         raise RuntimeError(result.stderr)
     return loads(result.stdout)
-    # Returned properties:
-    #     ["id", "name", "color1", "menuIconURI", "blocks", "menus"])
     # Of these:
-    #     Irrelevant: ["id", "name", "color1", "menuIconURI"]
-    #     Relevant:   ["blocks", "menus"]
+    #     Irrelevant: ["name", "color1", "menuIconURI"]
+    #     Relevant:   ["id", "blocks", "menus"]
 
 def process_all_menus(menus: dict[str, dict[str, Any]]) -> tuple[type[InputType], type[DropdownType]]:
-    # TODO: docstring
+    """
+    Process all menus of an extension. Returns two classes, which contain the dervied input and dropdown types
+    
+    Args:
+        menus: the dict mapping menu id to menu information 
+    """
     class ExtensionInputType(InputType):
         pass
     class ExtensionDropdownType(DropdownType):
         pass
 
-    menu_index = 0
-    for menu_block_id, menu_info in menus.items():
+    for menu_index, menu_block_id, menu_info in zip(range(len(menus)), menus.keys(), menus.values()):
         possible_values: list[str] = menu_info["items"]
         accept_reporters = menu_info.get("acceptReporters", False)
         dropdown_type_info = DropdownTypeInfo(
@@ -75,7 +78,6 @@ def process_all_menus(menus: dict[str, dict[str, Any]]) -> tuple[type[InputType]
             #                 (InputMode                   , magic number, corresponding dropdown type, index     )
             input_type_info = (InputMode.BLOCK_AND_DROPDOWN, None        , custom_dropdown_type       , menu_index)
             custom_input_type = extend_enum(ExtensionInputType, name=menu_block_id, value=input_type_info)
-        menu_index += 1
     return (ExtensionInputType, ExtensionDropdownType)
 
 def generate_block_opcode_info(
@@ -128,7 +130,7 @@ def generate_block_opcode_info(
                         menu=None,
                     )
                 else:
-                    assert builitin_input_type is BuiltinInputType.TEXT, 'If "menu" exists, "type" should be Scratch.ArgumentType.STRING'
+                    assert builitin_input_type is BuiltinInputType.TEXT, 'If "menu" exists, "type" should be Scratch.ArgumentType.STRING(="string")'
                     accept_reporters = menus[argument_menu].get("acceptReporters", False)
 
                     if accept_reporters:
@@ -142,9 +144,10 @@ def generate_block_opcode_info(
                     else:
                         dropdown_info = DropdownInfo(type=getattr(dropdown_type_cls, argument_menu)) # TODO: test
             case "variable"|"list":
-                dropdown_type_cls = ARGUMENT_TYPE_TO_DROPDOWN_TYPE[argument_type]
+                builtin_dropdown_type = ARGUMENT_TYPE_TO_DROPDOWN_TYPE[argument_type]
+                dropdown_info = DropdownInfo(type=builtin_dropdown_type)
             case "image":
-                pass # not really an input or dropdown
+                continue # not really an input or dropdown
             case "polygon":
                 raise NotImplementedError() # TODO, only necessary for the few polygon blocks(pen ext)
             case "seperator":
@@ -162,8 +165,8 @@ def generate_block_opcode_info(
         inputs=inputs,
         dropdowns=dropdowns,
     )
-    #    inputs: DualKeyDict[str, str, InputInfo] = field(default_factory=DualKeyDict)
-    #    dropdowns: DualKeyDict[str, str, DropdownInfo] = field(default_factory=DualKeyDict)
+    ###    inputs: DualKeyDict[str, str, InputInfo] = field(default_factory=DualKeyDict)
+    ###    dropdowns: DualKeyDict[str, str, DropdownInfo] = field(default_factory=DualKeyDict)
     #    can_have_monitor: bool = False
     #    monitor_id_behaviour: MonitorIdBehaviour | None = None
     #    has_shadow: bool = None
@@ -171,25 +174,54 @@ def generate_block_opcode_info(
     #    old_mutation_cls: Type["FRMutation"] | None = field(init=False, default_factory=type(None))
     #    new_mutation_cls: Type["SRMutation"] | None = field(init=False, default_factory=type(None))
     print(opcode_info)
-    raise Exception("HALT")
+    #raise Exception("HALT")
+    return opcode_info
 
 def generate_opcode_info_group(extension_info: dict[str, Any]) -> OpcodeInfoGroup:
     # TODO: docstring
     print(grepr(extension_info))
+    extension_id = f"gen_{extension_info['id']}"
     info_group = OpcodeInfoGroup(
-        name=extension_info["id"], # TODO: get correct name
+        name=extension_id, # TODO: get correct name
         opcode_info=DualKeyDict(),
     )
     input_type_cls, dropdown_type_cls = process_all_menus(extension_info["menus"])
-
+    
+    print(input_type_cls._value2member_map_)
+    print(dropdown_type_cls._value2member_map_)
+    
     for block_info in extension_info["blocks"]:
-        generate_block_opcode_info(
+        opcode_info = generate_block_opcode_info(
             block_info, 
             menus=extension_info["menus"], 
             input_type_cls=input_type_cls,
             dropdown_type_cls=dropdown_type_cls,
             extension_id=extension_info["id"],
         )
+        if opcode_info is not None:
+            opcode: str = block_info["opcode"]
+            info_group.add_opcode(
+                old_opcode  = opcode,
+                new_opcode  = opcode, # TODO: possibly base new opcode off "text"
+                opcode_info = opcode_info,
+            )
+    print(info_group)
+    
+    def gen_code_for_enum(enum_cls: type[PypenguinEnum]) -> str:
+        code = f"class {enum_cls.__name__}({enum_cls.__bases__[0].__name__}):"
+        for enum_item in enum_cls:
+            code += f"\n{INDENT}{enum_item.name} = {enum_item.value}"
+        if len(enum_cls) == 0:
+            code += f"\n{INDENT}pass"
+        return code
+    
+    import_code = "from pypenguin.opcode_info.data_imports import *"
+    input_type_code = gen_code_for_enum(input_type_cls)
+    dropdown_type_code = gen_code_for_enum(dropdown_type_cls)
+    info_group_code = f"{extension_id} = {repr(info_group)}"   
+    code = f"{import_code}\n\n{input_type_code}\n\n{dropdown_type_code}\n\n{info_group_code}"
+    print(100*"=")
+    print(code)
 
 extension_info = extract_getinfo("pypenguin/ext_db_gen/example.js")
 generate_opcode_info_group(extension_info)

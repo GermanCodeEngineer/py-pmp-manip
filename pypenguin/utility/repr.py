@@ -132,6 +132,7 @@ def grepr_dataclass(*, grepr_fields: list[str],
 
 class PypenguinEnum(Enum):
     name: str
+    value: Any
 
     def __repr__(self) -> str:
         return self.__class__.__name__ + "." + self.name
