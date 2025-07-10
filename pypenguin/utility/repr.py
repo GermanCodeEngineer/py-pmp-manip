@@ -14,49 +14,54 @@ class KeyReprDict(dict):
         keys = ", ".join(repr(key) for key in self.keys())
         return f"{self.__class__.__name__}(keys={{{keys}}})"
 
-def grepr(obj, /, annotate_fields=True, include_attributes=False, *, indent=4):
+def grepr(obj, /, safe_dkd=False, level_offset=0, annotate_fields=True, include_attributes=False, *, indent=4) -> str:
     def _is_dict(obj):
         return isinstance(obj, dict) and not isinstance(obj, KeyReprDict)
     
-    def _grepr(obj, level=0):
+    def _grepr(obj, level=level_offset):
         is_compatible = bool(getattr(obj, "_grepr", False))
         if indent is not None:
             level += 1
-            prefix = '\n' + indent * level
-            sep = ',\n' + indent * level
-            end_sep = ',\n' + indent * (level-1)
+            prefix = "\n" + indent * level
+            sep = ",\n" + indent * level
+            end_sep = ",\n" + indent * (level-1)
         else:
-            prefix = ''
-            sep = ', '
+            prefix = ""
+            sep = ", "
             end_sep = ""
-        if isinstance(obj, list):
+        
+        if isinstance(obj, (list, tuple)):
             if not obj:
-                return '[]', True
-            return '[%s%s%s]' % (prefix, sep.join(_grepr(x, level)[0] for x in obj), end_sep), False
-        if isinstance(obj, tuple):
-            if not obj:
-                return '()', True
-            if len(obj) <= 2:
-                return '(%s)' % (", ".join(_grepr(x, level)[0] for x in obj)), False
+                return "[]", True
+            strings = [_grepr(x, level)[0] for x in obj]
+            opening, closing = ("[", "]") if isinstance(obj, list) else ("(", ")")
+            if len(obj) > 2 and (max(len(s) for s in strings) > 10):
+                return f"{opening}{prefix}{sep.join(strings)}{end_sep}{closing}", False
             else:
-                return '(%s%s%s)' % (prefix, sep.join(_grepr(x, level)[0] for x in obj), end_sep), False
+                return f"{opening}{", ".join(strings)}{closing}", False
         elif _is_dict(obj):
             if not obj:
-                return '{}', True
-            args = [f'{_grepr(key, level)[0]}: {_grepr(value, level)[0]}' for key,value in obj.copy().items()]    
-            return '{%s%s%s}' % (prefix, sep.join(args), end_sep), False
+                return "{}", True
+            args = [f"{_grepr(key, level)[0]}: {_grepr(value, level)[0]}" for key,value in obj.items()]    
+            return f"{prefix}{sep.join(args)}{end_sep}", False
         elif isinstance(obj, str):
             return f'"{obj.replace('"', '\\"')}"', True
         elif isinstance(obj, DualKeyDict):
             if not obj:
-                return 'DualKeyDict{}', True
+                return ("DualKeyDict()" if safe_dkd else "DualKeyDict{}"), True
             args = []
             for key1, key2, value in obj.items_key1_key2():
                 key1_str, _ = _grepr(key1, level)
                 key2_str, _ = _grepr(key2, level)
                 value_str, _ = _grepr(value, level)
-                args.append(f'{key1_str} / {key2_str}: {value_str}')
-            return 'DualKeyDict{%s%s%s}' % (prefix, sep.join(args), end_sep), False
+                args.append((key1_str, key2_str, value_str))
+            if safe_dkd:
+                strings = [f"({key1_str}, {key2_str}): {value_str}" for key1_str, key2_str, value_str in args]
+                fmt = "DualKeyDict({%s})"
+            else:
+                strings = [f"{key1_str} / {key2_str}: {value_str}" for key1_str, key2_str, value_str in args]
+                fmt = "DualKeyDict{%s}"
+            return fmt % f"{prefix}{sep.join(strings)}{end_sep}", False
         elif is_compatible:
             cls = type(obj)
             args = []
@@ -68,31 +73,20 @@ def grepr(obj, /, annotate_fields=True, include_attributes=False, *, indent=4):
                 value, simple = _grepr(value, level)
                 allsimple = allsimple and simple
                 if annotate_fields:
-                    args.append('%s=%s' % (name, value))
+                    args.append(f"{name}={value}")
                 else:
                     args.append(value)
-            if include_attributes and obj._attributes:
-                for name in obj._attributes:
-                    try:
-                        value = getattr(obj, name)
-                    except AttributeError:
-                        continue
-                    if value is None and getattr(cls, name, ...) is None:
-                        continue
-                    value, simple = _grepr(value, level)
-                    allsimple = allsimple and simple
-                    args.append('%s=%s' % (name, value))
             class_name = getattr(obj, "_grepr_class_name", obj.__class__.__name__)
             if allsimple and len(args) <= 3:
-                return '%s(%s)' % (class_name, ', '.join(args)), not args
-            return '%s(%s%s%s)' % (class_name, prefix, sep.join(args), end_sep), False
+                return f"{class_name}({", ".join(args)})", not args
+            return f"{class_name}({prefix}{sep.join(args)}{end_sep})", False
         return repr(obj), True
  
     is_compatible = bool(getattr(obj, "_grepr", False))
     if not(is_compatible) and not(isinstance(obj, (list, tuple, str, DualKeyDict)) or _is_dict(obj)):
         return repr(obj)
     if indent is not None and not isinstance(indent, str):
-        indent = ' ' * indent
+        indent = " " * indent
     return _grepr(obj)[0]
 
 def grepr_dataclass(*, grepr_fields: list[str],
