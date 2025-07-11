@@ -137,7 +137,7 @@ def generate_block_opcode_info(
                         input_info = InputInfo(
                             type=getattr(input_type_cls, argument_menu),
                             menu=MenuInfo(
-                                opcode=argument_menu,
+                                opcode=f"{extension_id}_menu_{argument_menu}",
                                 inner=argument_menu, # menu opcode seems to also be used as field name
                             ),
                         )
@@ -158,16 +158,20 @@ def generate_block_opcode_info(
             dropdowns.set(key1=argument_id, key2=argument_id, value=dropdown_info)
         else:
             raise Exception()
-
+    
+    disable_monitor = block_info.get("disableMonitor", False)
+    can_have_monitor = opcode_type.is_reporter() and (not inputs) and (not disable_monitor)
     
     opcode_info = OpcodeInfo(
         opcode_type=opcode_type,
         inputs=inputs,
         dropdowns=dropdowns,
+        can_have_monitor=can_have_monitor,
+        monitor_id_behaviour=,
     )
     ###    inputs: DualKeyDict[str, str, InputInfo] = field(default_factory=DualKeyDict)
     ###    dropdowns: DualKeyDict[str, str, DropdownInfo] = field(default_factory=DualKeyDict)
-    #    can_have_monitor: bool = False
+    ###    can_have_monitor: bool = False
     #    monitor_id_behaviour: MonitorIdBehaviour | None = None
     #    has_shadow: bool = None
     #    special_cases: dict[SpecialCaseType, SpecialCase] = field(default_factory=dict)
@@ -180,7 +184,7 @@ def generate_block_opcode_info(
 def generate_opcode_info_group(extension_info: dict[str, Any]) -> OpcodeInfoGroup:
     # TODO: docstring
     print(grepr(extension_info))
-    extension_id = f"gen_{extension_info['id']}"
+    extension_id = extension_info['id']
     info_group = OpcodeInfoGroup(
         name=extension_id, # TODO: get correct name
         opcode_info=DualKeyDict(),
@@ -196,15 +200,21 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> OpcodeInfoGrou
             menus=extension_info["menus"], 
             input_type_cls=input_type_cls,
             dropdown_type_cls=dropdown_type_cls,
-            extension_id=extension_info["id"],
+            extension_id=extension_id,
         )
         if opcode_info is not None:
-            opcode: str = block_info["opcode"]
+            opcode: str = f"{extension_id}_{block_info['opcode']}"
             info_group.add_opcode(
                 old_opcode  = opcode,
                 new_opcode  = opcode, # TODO: possibly base new opcode off "text"
                 opcode_info = opcode_info,
             )
+    
+    for menu_opcode, menu_info in extension_info["menus"].items():
+        menu_opcode = f"{extension_id}_menu_{menu_opcode}"
+        opcode_info = OpcodeInfo(opcode_type=OpcodeType.MENU)
+        info_group.add_opcode(menu_opcode, menu_opcode, opcode_info)
+    
     print(info_group)
     
     def gen_code_for_enum(enum_cls: type[PypenguinEnum]) -> str:

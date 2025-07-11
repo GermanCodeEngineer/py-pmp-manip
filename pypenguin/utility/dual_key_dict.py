@@ -78,6 +78,9 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
     def __len__(self) -> int:
         return len(self._values)
 
+    def __ne__(self) -> bool:
+        return not(len(self))
+
     # Iteration methods
     def keys_key1(self) -> Iterator[_K1]:
         return self._values.keys()

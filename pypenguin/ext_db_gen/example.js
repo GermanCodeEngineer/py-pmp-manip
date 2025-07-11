@@ -107,11 +107,57 @@
               },
             },
           },
+          
+          // Added
+          {
+            opcode: "last_used_base_even",
+            blockType: Scratch.BlockType.BOOLEAN,
+            text: "last used base even?",
+            arguments: {},
+          },
+          {
+            opcode: "last_used_base",
+            blockType: Scratch.BlockType.REPORTER,
+            text: "last used base",
+            arguments: {},
+          },
+          {
+            opcode: "last_inout_value",
+            blockType: Scratch.BlockType.REPORTER,
+            text: "last [SELECT] value",
+            arguments: {
+              SELECT: {
+                type: Scratch.ArgumentType.STRING,
+                menu: "in_out_menue"
+              },
+            },
+          },
+          {
+            opcode: "last_two_inout_values",
+            blockType: Scratch.BlockType.REPORTER,
+            text: "last two [S1] and [S2] values",
+            arguments: {
+              S1: {
+                type: Scratch.ArgumentType.STRING,
+                menu: "in_out_menue"
+              },
+              S2: {
+                type: Scratch.ArgumentType.STRING,
+                menu: "in_out_menue"
+              },
+            },
+          },
         ],
         menus: {
           base_menu: {
             acceptReporters: true,
             items: bases,
+          },
+          
+          // Added
+          in_out_menue: {
+            acceptReporters: false,
+            items: ["IN", "OUT"],
           },
         },
       };
@@ -143,6 +189,22 @@
         }
       }
       return "0"; // Return string zero because toString() function always return strings
+    }
+    last_used_base_even() {
+      return false;
+    }
+    last_used_base() {
+      return "some base";
+    }
+    last_inout_value( {SELECT} ) {
+      if (SELECT == "IN") {return "some {IN} val"}
+      else {return "some {OuT} val"}
+    }
+    last_two_inout_values( {S1, S2} ) {
+      return JSON.stringify([
+          ScratchBase.last_inout_value(S1), 
+          ScratchBase.last_inout_value(S2),
+      ])
     }
   }
 

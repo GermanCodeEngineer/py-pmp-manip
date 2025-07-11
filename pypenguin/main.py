@@ -15,7 +15,9 @@ from pypenguin.utility import ValidationConfig
 #file_path = "../assets/asset_formats.pmp"
 #file_path = "../assets/many_dropdowns.pmp"
 #file_path = "../assets/music_example.pmp"
-file_path = "../assets/matrix_example.sb3"
+#file_path = "../assets/matrix_example.sb3"
+#file_path = "../assets/ext_truefantombase_mod2.pmp"
+file_path = "/storage/emulated/0/Download/example.pmp"
 
 info_api.add_group(scratch_music)
 

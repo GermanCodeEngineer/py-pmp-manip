@@ -44,7 +44,7 @@ def grepr(obj, /, safe_dkd=False, level_offset=0, annotate_fields=True, include_
             if not obj:
                 return "{}", True
             args = [f"{_grepr(key, level)[0]}: {_grepr(value, level)[0]}" for key,value in obj.items()]    
-            return f"{prefix}{sep.join(args)}{end_sep}", False
+            return "{" + f"{prefix}{sep.join(args)}{end_sep}" + "}", False
         
         elif isinstance(obj, str):
             return f'"{obj.replace('"', '\\"')}"', True
