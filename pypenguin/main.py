@@ -8,7 +8,6 @@ from pypenguin.utility import ValidationConfig
 
 #file_path = "../assets/from_online/my 1st platformer.pmp"
 #file_path = "../assets/input_modes.pmp"
-#file_path = "../assets/monitors.pmp"
 #file_path = "../assets/dumb example.pmp"
 #file_path = "../assets/testing_blocks.pmp"
 #file_path = "../assets/scratch_project.sb3"
@@ -17,7 +16,8 @@ from pypenguin.utility import ValidationConfig
 #file_path = "../assets/music_example.pmp"
 #file_path = "../assets/matrix_example.sb3"
 #file_path = "../assets/ext_truefantombase_mod2.pmp"
-file_path = "/storage/emulated/0/Download/example.pmp"
+file_path = "../assets/example.pmp"
+#file_path = "../assets/monitors.pmp"
 
 info_api.add_group(scratch_music)
 

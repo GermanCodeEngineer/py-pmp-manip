@@ -9,7 +9,7 @@ from pypenguin.utility          import (
 )
 from pypenguin.important_consts import (
     OPCODE_VAR_VALUE, OPCODE_LIST_VALUE, NEW_OPCODE_VAR_VALUE, NEW_OPCODE_LIST_VALUE, 
-    SHA256_SEC_TARGET_NAME,
+    SHA256_SEC_TARGET_NAME, SHA256_SEC_MONITOR_VARIABLE_ID,
 )
 
 from pypenguin.core.block_interface import InterToFirstIF
@@ -25,7 +25,7 @@ STAGE_HEIGHT: int = 360
 LIST_MONITOR_DEFAULT_WIDTH  = 100
 LIST_MONITOR_DEFAULT_HEIGHT = 120
 
-@grepr_dataclass(grepr_fields=["id", "mode", "opcode", "params", "sprite_name", "value", "x", "y", "visible", "width", "height", "slider_min", "slider_max", "is_discrete"])
+@grepr_dataclass(grepr_fields=["id", "mode", "opcode", "params", "sprite_name", "value", "x", "y", "visible", "width", "height", "slider_min", "slider_max", "is_discrete", "variable_type", "variable_id"])
 class FRMonitor:
     """
     The first representation for a monitor
@@ -41,13 +41,17 @@ class FRMonitor:
     x: int | float
     y: int | float
     visible: bool
-    
+
     # Properties which matter for some opcodes
     width: int | float
     height: int | float
     slider_min: int | float | None
     slider_max: int | float | None
     is_discrete: bool | None
+
+    # Properties which matter for blocks from custom extensions
+    variable_type: None
+    variable_id: str | None
 
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRMonitor":
@@ -78,6 +82,10 @@ class FRMonitor:
             slider_min  = data.get("sliderMin" , None),
             slider_max  = data.get("sliderMax" , None),
             is_discrete = data.get("isDiscrete", None),
+
+            # Properties which matter for blocks from custom extensions
+            variable_type = data.get("variableType", None),
+            variable_id   = data.get("variableId"  , None),
         )
     
     def to_data(self) -> dict[str, Any]:
@@ -88,18 +96,21 @@ class FRMonitor:
             the json data
         """
         data = {
-            "id"        : self.id,
-            "mode"      : self.mode,
-            "opcode"    : self.opcode,
-            "params"    : deepcopy(self.params),
-            "spriteName": self.sprite_name,
-            "value"     : self.value,
-            "x"         : self.x,
-            "y"         : self.y,
-            "visible"   : self.visible,
+            "id"          : self.id,
+            "mode"        : self.mode,
+            "opcode"      : self.opcode,
+            "params"      : deepcopy(self.params),
+            "spriteName"  : self.sprite_name,
+            "value"       : self.value,
+            "x"           : self.x,
+            "y"           : self.y,
+            "visible"     : self.visible,
 
-            "width"     : self.width,
-            "height"    : self.height,
+            "width"       : self.width,
+            "height"      : self.height,
+
+            "variableType": self.variable_type,
+            "variableId"  : self.variable_id,
         }
         if self.is_discrete is not None:
             data["sliderMin" ] = self.slider_min
@@ -123,6 +134,8 @@ class FRMonitor:
         else:
             valid = self.mode == "default"
         if not valid:
+            raise ThanksError()
+        if self.variable_type is not None:
             raise ThanksError()
 
     def to_second(self, info_api: OpcodeInfoAPI, sprite_names: list[str]) -> "SRMonitor | None":
@@ -367,21 +380,26 @@ class SRMonitor:
             old_dropdowns[old_dropdown_id] = old_dropdown_value
         
         old_dropdown_value = next(iter(old_dropdowns.values())) if self.dropdowns else None
+        old_opcode = info_api.get_old_by_new(self.opcode)
         return FRMonitor(
-            id          = self._generate_id(itf_if, info_api, old_dropdown_value),
-            mode        = mode,
-            opcode      = info_api.get_old_by_new(self.opcode),
-            params      = old_dropdowns,
-            sprite_name = itf_if.sprite_name,
-            value       = value,
-            x           = self.position[0] + (STAGE_WIDTH //2),
-            y           = self.position[1] + (STAGE_HEIGHT//2),
-            visible     = self.is_visible,
-            width       = width,
-            height      = height,
-            slider_min  = slider_min,
-            slider_max  = slider_max,
-            is_discrete = is_discrete,
+            id            = self._generate_id(itf_if, info_api, old_dropdown_value),
+            mode          = mode,
+            opcode        = old_opcode,
+            params        = old_dropdowns,
+            sprite_name   = itf_if.sprite_name,
+            value         = value,
+            x             = self.position[0] + (STAGE_WIDTH //2),
+            y             = self.position[1] + (STAGE_HEIGHT//2),
+            visible       = self.is_visible,
+
+            width         = width,
+            height        = height,
+            slider_min    = slider_min,
+            slider_max    = slider_max,
+            is_discrete   = is_discrete,
+
+            variable_type = None,
+            variable_id   = string_to_sha256(old_opcode, secondary=SHA256_SEC_MONITOR_VARIABLE_ID),
         )
         
 
