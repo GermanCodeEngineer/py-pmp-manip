@@ -1,8 +1,6 @@
 ((Scratch) => {
   "use strict";
 
-  const icon = null;
-
   class DumbExample {
     getInfo() {
       return {
@@ -10,8 +8,6 @@
         name: "Dumb Example",
 
         color1: "#e200ca",
-
-        menuIconURI: icon,
 
         blocks: [
           {
@@ -54,4 +50,5 @@
   }
 
   Scratch.extensions.register(new DumbExample());
+  console.log(Scratch)
 })(Scratch);

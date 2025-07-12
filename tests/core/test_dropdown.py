@@ -76,5 +76,16 @@ def test_SRDropdownValue_validate_value(config, context):
     with raises(InvalidDropdownValueError):
         dropdown_value.validate_value([], config, BuiltinDropdownType.BROADCAST, context)
 
+def test_SRDropdownValue_validate_value_with_post_validate_func(config, context):
+    dropdown_value = SRDropdownValue(kind=DropdownValueKind.STANDARD, value="1011100011001100110100111")
+    dropdown_value.validate_value([], config, BuiltinDropdownType.MATRIX, context)
+
+    dropdown_value = SRDropdownValue(kind=DropdownValueKind.STANDARD, value="10110") # too short
+    with raises(InvalidDropdownValueError):
+        dropdown_value.validate_value([], config, BuiltinDropdownType.MATRIX, context)
+    
+    dropdown_value = SRDropdownValue(kind=DropdownValueKind.STANDARD, value="2112022311310111012121112") # only 0 or 1 are allowed
+    with raises(InvalidDropdownValueError):
+        dropdown_value.validate_value([], config, BuiltinDropdownType.MATRIX, context)
 
 
