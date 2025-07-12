@@ -4,6 +4,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.
 from pypenguin.core import *
 from pypenguin.opcode_info.data import info_api
 from pypenguin.opcode_info.data.scratch_music import scratch_music
+#from pypenguin.opcode_info.data.gen_dumbExample import dumbExample
 from pypenguin.utility import ValidationConfig
 
 #file_path = "../assets/from_online/my 1st platformer.pmp"
@@ -13,10 +14,10 @@ from pypenguin.utility import ValidationConfig
 #file_path = "../assets/scratch_project.sb3"
 #file_path = "../assets/asset_formats.pmp"
 #file_path = "../assets/many_dropdowns.pmp"
-#file_path = "../assets/music_example.pmp"
+file_path = "../assets/music_example.pmp"
 #file_path = "../assets/matrix_example.sb3"
 #file_path = "../assets/ext_truefantombase_mod2.pmp"
-file_path = "../assets/example.pmp"
+#file_path = "../assets/example.pmp"
 #file_path = "../assets/monitors.pmp"
 
 info_api.add_group(scratch_music)
@@ -24,12 +25,12 @@ info_api.add_group(scratch_music)
 project = FRProject.from_file(file_path, info_api)
 print(project)
 
-#new_project = project.to_second(info_api)
-#del project
-#new_project.validate(config=ValidationConfig(), info_api=info_api)
-#print(new_project)
+new_project = project.to_second(info_api)
+del project
+new_project.validate(config=ValidationConfig(), info_api=info_api)
+print(new_project)
 
-#old_project = new_project.to_first(info_api, target_platform=TargetPlatform.PENGUINMOD)
+old_project = new_project.to_first(info_api, target_platform=TargetPlatform.PENGUINMOD)
 
 #old_project.extensions.append("truefantombase")
 #old_project.extension_urls["truefantombase"] = "https://extensions.turbowarp.org/true-fantom/base.js"

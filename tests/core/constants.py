@@ -1,4 +1,7 @@
 from copy import deepcopy
+from io        import BytesIO
+from pydub     import AudioSegment
+from lxml      import etree
 
 from pypenguin.important_consts import (
     SHA256_SEC_MAIN_ARGUMENT_NAME, SHA256_SEC_LOCAL_ARGUMENT_NAME,
@@ -33,11 +36,7 @@ from pypenguin.core.monitor        import (
 from pypenguin.core.project        import FRProject, SRProject
 from pypenguin.core.target         import FRStage, FRSprite, SRStage, SRSprite
 from pypenguin.core.vars_lists     import variable_sha256, list_sha256, SRVariable, SRList
-
-from lxml      import etree
-from io        import BytesIO
-from pydub     import AudioSegment
-from lxml      import etree
+# TODO: correct formatting
 
 
 ALL_FR_BLOCK_DATAS = {
@@ -1524,6 +1523,8 @@ ALL_FR_MONITOR_DATAS = [
         "x": 5,
         "y": 5,
         "visible": True,
+        "variableType": None,
+        "variableId": None,
     },
     {
         "height": 0,
@@ -1540,6 +1541,8 @@ ALL_FR_MONITOR_DATAS = [
         "width": 0,
         "x": 5,
         "y": 5,
+        "variableType": None,
+        "variableId": None,
     },
 ]
 
@@ -1581,6 +1584,8 @@ ALL_FR_MONITORS = [
         slider_min=None,
         slider_max=None,
         is_discrete=None,
+        variable_type=None,
+        variable_id=None,
     ),
     FRMonitor(
         id=f'{string_to_sha256("Sprite1", secondary=SHA256_SEC_TARGET_NAME)}_xposition',
@@ -1597,6 +1602,8 @@ ALL_FR_MONITORS = [
         slider_min=0,
         slider_max=100,
         is_discrete=True,
+        variable_type=None,
+        variable_id=None,
     ),
 ]
 ALL_FR_MONITORS_CONVERTED = deepcopy(ALL_FR_MONITORS)
@@ -1611,7 +1618,7 @@ FR_PROJECT = FRProject(
     monitors=ALL_FR_MONITORS,
     extension_data={},
     extensions=[],
-    extension_urls={},
+    extension_urls=KeyReprDict({}),
     meta=FRMeta(
         semver="3.0.0",
         vm="0.2.0",

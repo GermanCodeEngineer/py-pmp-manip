@@ -120,7 +120,7 @@ def test_FRProject_to_second_tts():
 def test_FRProject_to_second_extensions():
     frproject = copy(FR_PROJECT)
     frproject.extensions = ["jgJSON", "skyhigh173object"]
-    frproject.extension_urls = {"skyhigh173object": "https://extensions.penguinmod.com/extensions/skyhigh173/object.js"}
+    frproject.extension_urls = KeyReprDict({"skyhigh173object": "https://extensions.penguinmod.com/extensions/skyhigh173/object.js"})
     srproject = frproject.to_second(info_api)
     assert srproject.extensions == [
         SRBuiltinExtension(id="jgJSON"), 
@@ -352,7 +352,7 @@ def test_SRProject_to_first_extensions():
     ]
     frproject = srproject.to_first(info_api, target_platform=TargetPlatform.PENGUINMOD)
     assert frproject.extensions == ["jgJSON", "truefantombase"]
-    assert frproject.extension_urls == {"truefantombase": "https://extensions.turbowarp.org/true-fantom/base.js"}
+    assert frproject.extension_urls == KeyReprDict({"truefantombase": "https://extensions.turbowarp.org/true-fantom/base.js"})
 
 def test_SRProject_to_first_scratch_platform():
     srproject = SR_PROJECT

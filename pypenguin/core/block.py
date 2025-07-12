@@ -930,14 +930,6 @@ class SRBlock:
                         input_sub_scripts.append(input_value.blocks)
                 case InputMode.BLOCK_AND_DROPDOWN | InputMode.BLOCK_AND_MENU_TEXT:
                     input_dropdown = input_value.dropdown
-                case InputMode.BLOCK_AND_MENU_TEXT:
-                    l = locals()
-                    while True:
-                        i = input(">>> ")
-                        if i == "q":
-                            break
-                        exec(i)
-                    raise NotImplementedError() # TODO # pragma: no cover
 
             if input_dropdown is not None:
                 dropdown_type = input_info.type.corresponding_dropdown_type

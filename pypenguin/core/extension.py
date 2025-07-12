@@ -42,7 +42,8 @@ class SRCustomExtension(SRExtension):
     Creating an extension and adding it to a project is equivalent to clicking the "add extension" button
     """
     
-    url: str # either "https://..." or "data:application/javascript,..."
+    url: str # either "https://..." or "data:application/javascript,..." 
+    # TODO: find a way to not show whole huge JS data URI's
     
     def validate(self, path: list, config: ValidationConfig):
         """

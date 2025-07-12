@@ -2,6 +2,7 @@ from copy   import copy, deepcopy
 from json   import loads
 from typing import Any
 from uuid   import UUID
+import os # temporary
 
 from pypenguin.important_consts import SHA256_SEC_TARGET_NAME
 from pypenguin.opcode_info.api  import OpcodeInfoAPI, DropdownValueKind
@@ -63,7 +64,7 @@ class FRProject:
             ],
             extension_data = deepcopy(data.get("extensionData", {})),
             extensions     = copy(data["extensions"]),
-            extension_urls = copy(data.get("extensionURLs", {})),
+            extension_urls = KeyReprDict(data.get("extensionURLs", {})),
             meta           = FRMeta.from_data(data["meta"]),
             asset_files    = copy(asset_files),
         )
@@ -80,7 +81,7 @@ class FRProject:
             "monitors"     : [monitor.to_data() for monitor in self.monitors],
             "extensionData": deepcopy(self.extension_data),
             "extensions"   : copy(self.extensions),
-            "extensionURLs": copy(self.extension_urls),
+            "extensionURLs": dict(self.extension_urls),
             "meta"         : self.meta.to_data(),
         }
         return (data, copy(self.asset_files))
@@ -116,8 +117,7 @@ class FRProject:
         assert file_path.endswith(".sb3") or file_path.endswith(".pmp")
         contents = read_all_files_of_zip(file_path)
         project_data = loads(contents["project.json"].decode("utf-8"))
-        print(FRProject.__repr__(project_data|{"extensionURLs": ...}))
-        input()
+        print(FRProject.__repr__(project_data))
         del contents["project.json"]
         if   file_path.endswith(".sb3"):
             project_data = FRProject._data_sb3_to_pmp(project_data)
@@ -587,7 +587,7 @@ class SRProject:
             monitors       = old_monitors,
             extension_data = {},
             extensions     = extensions,
-            extension_urls = extension_urls,
+            extension_urls = KeyReprDict(extension_urls),
             meta           = meta,
             asset_files    = KeyReprDict(asset_files),
         )

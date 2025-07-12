@@ -51,17 +51,18 @@ class MonitorIdBehaviour(PypenguinEnum):
     The orientation basis for monitor id generation
     """
 
-    SPRITE_OPCMAIN       = 0
-    SPRITE_OPCMAIN_PARAM = 1
-    OPCMAIN_PARAM        = 2
-    OPCMAIN_LOWERPARAM   = 3
-    OPCMAIN              = 4
-    OPCFULL              = 5
-    VARIABLE             = 6
-    LIST                 = 7
+    SPRITE_OPCMAIN        = 0
+    SPRITE_OPCMAIN_PARAMS = 1
+    OPCMAIN_PARAMS        = 2
+    OPCMAIN_LOWERPARAM    = 3
+    OPCMAIN               = 4
+    OPCFULL_PARAMS        = 5
+    OPCFULL               = 6
+    VARIABLE              = 7
+    LIST                  = 8
     
 
-@grepr_dataclass(grepr_fields=["opcode_type", "inputs", "dropdowns", "can_have_monitor", "has_shadow", "old_mutation_cls", "new_mutation_cls"])
+@grepr_dataclass(grepr_fields=["opcode_type", "inputs", "dropdowns", "can_have_monitor", "monitor_id_behaviour", "has_shadow", "has_variable_id", "special_cases", "old_mutation_cls", "new_mutation_cls"])
 class OpcodeInfo:
     """
     The information about all the blocks with a certain opcode
@@ -73,6 +74,7 @@ class OpcodeInfo:
     can_have_monitor: bool = False
     monitor_id_behaviour: MonitorIdBehaviour | None = None
     has_shadow: bool = None
+    has_variable_id: bool = False
     special_cases: dict[SpecialCaseType, SpecialCase] = field(default_factory=dict)
     old_mutation_cls: Type["FRMutation"] | None = None
     new_mutation_cls: Type["SRMutation"] | None = None

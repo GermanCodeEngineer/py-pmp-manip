@@ -12,7 +12,7 @@ from pypenguin.utility          import (
 
 from pypenguin.core.block_interface import SecondToInterIF, ValidationIF
 from pypenguin.core.block           import (
-    IRInputValue,
+    IRBlock, IRInputValue,
     SRScript, SRBlock, SRInputValue, 
     SRBlockAndTextInputValue, SRBlockOnlyInputValue, SRBlockAndDropdownInputValue, SRScriptInputValue,
 )
@@ -24,6 +24,15 @@ from tests.core.constants import ALL_IR_BLOCKS, ALL_SR_SCRIPTS
 
 from tests.utility import execute_attr_validation_tests
 
+
+@fixture
+def info_api_extended():
+    info_api_extended = copy(info_api)
+    info_api_extended.opcode_info = copy(info_api.opcode_info) 
+    # make sure the internals of the DualKeyDict are shallow copied as well
+    from pypenguin.opcode_info.data.scratch_music import scratch_music
+    info_api_extended.add_group(scratch_music)
+    return info_api_extended
 
 @fixture
 def config():
@@ -347,6 +356,72 @@ def test_SRBlock_to_inter_invalid_sub_script():
             is_top_level=True,
         )
 
+def test_SRBlock_to_inter_block_and_menu_text(info_api_extended):
+    # this test uses the scratch music extension and a seperate blocks/scripts environment
+    sti_if = TEST_SecondToInterIF(scripts=[], _block_ids=["a", "b"])
+    script = SRScript(
+        position=(311, 505), 
+        blocks=[
+            SRBlock(
+                opcode="play note ([NOTE]) for (BEATS) beats",
+                inputs={
+                    "NOTE": SRBlockAndDropdownInputValue(
+                        block=None,
+                        dropdown=SRDropdownValue(kind=DropdownValueKind.STANDARD, value="60"),
+                    ),
+                    "BEATS": SRBlockAndTextInputValue(block=None, text="0.25"),
+                },
+                dropdowns={},
+                comment=None,
+                mutation=None,
+            )
+        ]
+    )
+    srblock = script.blocks[0]
+    irblock = srblock.to_inter(
+        sti_if=sti_if,
+        info_api=info_api_extended,
+        next=None,
+        position=script.position,
+        is_top_level=True,
+    )
+    assert irblock == IRBlock(
+        opcode="music_playNoteForBeats",
+        inputs={
+            "NOTE": IRInputValue(
+                mode=InputMode.BLOCK_AND_MENU_TEXT,
+                references=["a"],
+                immediate_block=None,
+                text=None,
+            ),
+            "BEATS": IRInputValue(
+                mode=InputMode.BLOCK_AND_TEXT,
+                references=[],
+                immediate_block=None,
+                text="0.25",
+            ),
+        },
+        dropdowns={},
+        comment=None,
+        mutation=None,
+        position=(311, 505),
+        next=None,
+        is_top_level=True,
+    )
+    assert sti_if.produced_blocks == {
+        "a": IRBlock(
+            opcode="note",
+            inputs={},
+            dropdowns={
+                "NOTE": "60",
+            },
+            comment=None,
+            mutation=None,
+            position=None,
+            next=None,
+            is_top_level=False,
+        )
+    }
 
 
 def test_SRInputValue_init():

@@ -74,16 +74,13 @@ class DropdownValueRule(PypenguinEnum):
             case DropdownValueRule.MATRIX:
                 def _matrix_post_validate_func(dropdown_value: tuple[DropdownValueKind, Any]) -> tuple[bool, str|None]:
                     value: str = dropdown_value[1]
-                    valid = True
-                    if valid and len(value) != 25:
-                        valid = False
-                    if valid:
-                        for char in value: 
-                            if char not in {"0", "1"}:
-                                valid = False
-                                break
-                    msg = None if valid else 'must be a string of 25 chars, which can each be "0" or "1"'
-                    return (valid, msg)
+                    msg = 'Must be a string of 25 chars. Every char must be either "0" or "1"'
+                    if len(value) != 25:
+                        return (False, msg)
+                    for char in value: 
+                        if char not in {"0", "1"}:
+                            return (False, msg)
+                    return (True, None)
                 return _matrix_post_validate_func
         return None
 

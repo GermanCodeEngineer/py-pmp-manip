@@ -83,7 +83,7 @@ c_sounds = OpcodeInfoGroup(name="c_sounds", opcode_info=DualKeyDict({
             ("EFFECT", "EFFECT"): DropdownInfo(BuiltinDropdownType.SOUND_EFFECT),
         }),
         can_have_monitor=True,
-        monitor_id_behaviour=MonitorIdBehaviour.SPRITE_OPCMAIN_PARAM,
+        monitor_id_behaviour=MonitorIdBehaviour.SPRITE_OPCMAIN_PARAMS,
     ),
 
     ("sound_changevolumeby", "change volume by (AMOUNT)"): OpcodeInfo(

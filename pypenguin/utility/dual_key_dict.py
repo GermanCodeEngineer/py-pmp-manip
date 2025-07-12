@@ -1,3 +1,4 @@
+from copy   import copy
 from typing import TypeVar, Generic, Iterator, Iterable, Any
 
 
@@ -78,9 +79,16 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
     def __len__(self) -> int:
         return len(self._values)
 
-    def __ne__(self) -> bool:
-        return not(len(self))
-
+    def __bool__(self) -> bool:
+        return bool(len(self))
+    
+    def __copy__(self) -> "DualKeyDict":
+        new = DualKeyDict()
+        new._values   = copy(self._values)
+        new._k2_to_k1 = copy(self._k2_to_k1)
+        new._k1_to_k2 = copy(self._k1_to_k2)
+        return new
+    
     # Iteration methods
     def keys_key1(self) -> Iterator[_K1]:
         return self._values.keys()
@@ -114,8 +122,4 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
 
 
 __all__ = ["DualKeyDict"]
-
-# Please do this:
-# 1. generalize tuple[_K1, _K2] typing in def __init__(self, data: dict[tuple[_K1, _K2], _V] | None = None, /) -> None: to any iterable of len 2
-# 2. add deletion, and suggest other standard dict methods
 

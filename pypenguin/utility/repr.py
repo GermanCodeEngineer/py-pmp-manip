@@ -10,15 +10,15 @@ class KeyReprDict(dict):
     """
     Behaves exactly like butilins.dict, only the repr method is different. It only shows keys and not values of the dictionary.
     """
-    def __repr__(self):
-        keys = ", ".join(repr(key) for key in self.keys())
-        return f"{self.__class__.__name__}(keys={{{keys}}})"
+    
+    def __repr__(self) -> str:
+        return grepr(self)
 
 def grepr(obj, /, safe_dkd=False, level_offset=0, annotate_fields=True, include_attributes=False, *, indent=4) -> str:
     def _is_dict(obj):
         return isinstance(obj, dict) and not isinstance(obj, KeyReprDict)
     
-    def _grepr(obj, level=level_offset):
+    def _grepr(obj, level=level_offset) -> tuple[str, bool]:
         is_compatible = bool(getattr(obj, "_grepr", False))
         if indent is not None:
             level += 1
@@ -30,24 +30,20 @@ def grepr(obj, /, safe_dkd=False, level_offset=0, annotate_fields=True, include_
             sep = ", "
             end_sep = ""
         
-        if isinstance(obj, (list, tuple)):
+        if isinstance(obj, (list, tuple, set)):
+            opening, closing = (
+                     ("[", "]") if isinstance(obj, list) 
+                else ("(", ")") if isinstance(obj, tuple)
+                else ("{", "}")
+            )
+            
             if not obj:
-                return "[]", True
+                return f"{opening}{closing}", True
             strings = [_grepr(x, level)[0] for x in obj]
-            opening, closing = ("[", "]") if isinstance(obj, list) else ("(", ")")
             if len(obj) > 2 and (max(len(s) for s in strings) > 10):
                 return f"{opening}{prefix}{sep.join(strings)}{end_sep}{closing}", False
             else:
-                return f"{opening}{", ".join(strings)}{closing}", False
-        
-        elif _is_dict(obj):
-            if not obj:
-                return "{}", True
-            args = [f"{_grepr(key, level)[0]}: {_grepr(value, level)[0]}" for key,value in obj.items()]    
-            return "{" + f"{prefix}{sep.join(args)}{end_sep}" + "}", False
-        
-        elif isinstance(obj, str):
-            return f'"{obj.replace('"', '\\"')}"', True
+                return f"{opening}{", ".join(strings)}{closing}", True
         
         elif isinstance(obj, DualKeyDict):
             if not obj:
@@ -65,6 +61,21 @@ def grepr(obj, /, safe_dkd=False, level_offset=0, annotate_fields=True, include_
                 strings = [f"{key1_str} / {key2_str}: {value_str}" for key1_str, key2_str, value_str in args]
                 fmt = "DualKeyDict{%s}"
             return fmt % f"{prefix}{sep.join(strings)}{end_sep}", False
+        
+        elif isinstance(obj, KeyReprDict): # must come before isinstance(obj, dict)
+            keys_str, is_simple = _grepr(tuple(obj.keys()), level-1)
+            keys_str = "{" + keys_str.removeprefix("(").removesuffix(")") + "}"
+            # Above: Avoid loss of key order
+            return f"KeyReprDict(keys={keys_str})", is_simple
+        
+        elif isinstance(obj, dict):
+            if not obj:
+                return "{}", True
+            args = [f"{_grepr(key, level)[0]}: {_grepr(value, level)[0]}" for key,value in obj.items()]    
+            return "{" + f"{prefix}{sep.join(args)}{end_sep}" + "}", False
+         
+        elif isinstance(obj, str):
+            return f'"{obj.replace('"', '\\"')}"', True
         
         elif is_compatible:
             args = []
@@ -86,11 +97,11 @@ def grepr(obj, /, safe_dkd=False, level_offset=0, annotate_fields=True, include_
         return repr(obj), True
  
     is_compatible = bool(getattr(obj, "_grepr", False))
-    if not(is_compatible) and not(isinstance(obj, (list, tuple, str, DualKeyDict)) or _is_dict(obj)):
-        return repr(obj)
-    if indent is not None and not isinstance(indent, str):
-        indent = " " * indent
-    return _grepr(obj)[0]
+    if is_compatible or isinstance(obj, (list, tuple, set, DualKeyDict, dict, str)):
+        if indent is not None and not isinstance(indent, str):
+            indent = " " * indent
+        return _grepr(obj)[0]
+    return repr(obj)
 
 def grepr_dataclass(*, grepr_fields: list[str],
         init: bool = True, eq: bool = True, order: bool = False, 

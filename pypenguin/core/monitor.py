@@ -303,14 +303,14 @@ class SRMonitor:
                 context       = context,
             )
     
-    def _generate_id(self, itf_if: InterToFirstIF, info_api: OpcodeInfoAPI, old_dropdown_value: Any | None) -> str:
+    def _generate_id(self, itf_if: InterToFirstIF, info_api: OpcodeInfoAPI, old_dropdown_values: list[Any]) -> str:
         """
         Generates the id needed for a FRMonitor
 
         Args:
             itf_if: interface which allows the management of other blocks and more
             info_api: the opcode info api used to fetch information about opcodes
-            old_dropdown_value: the first(probably only) dropdown value of the monitor in first representation
+            old_dropdown_values: the dropdown values of the monitor in first representation
         
         Returns:
             the monitor id
@@ -323,20 +323,25 @@ class SRMonitor:
         match monitor_id_behaviour:
             case MonitorIdBehaviour.SPRITE_OPCMAIN:
                 return f"{sprite_sha256}_{opcode_main}"
-            case MonitorIdBehaviour.SPRITE_OPCMAIN_PARAM:
-                return f"{sprite_sha256}_{opcode_main}_{old_dropdown_value}"
-            case MonitorIdBehaviour.OPCMAIN_PARAM:
-                return f"{opcode_main}_{old_dropdown_value}"
+            case MonitorIdBehaviour.SPRITE_OPCMAIN_PARAMS:
+                return f"{sprite_sha256}_{opcode_main}_{'_'.join(old_dropdown_values)}"
+            case MonitorIdBehaviour.OPCMAIN_PARAMS:
+                return f"{opcode_main}_{'_'.join(old_dropdown_values)}"
             case MonitorIdBehaviour.OPCMAIN_LOWERPARAM:
-                return f"{opcode_main}_{old_dropdown_value.lower()}"
+                assert len(old_dropdown_values) == 1
+                return f"{opcode_main}_{old_dropdown_values[0].lower()}"
             case MonitorIdBehaviour.OPCMAIN:
                 return opcode_main
+            case MonitorIdBehaviour.OPCFULL_PARAMS:
+                return f"{opcode_full}_{'_'.join(old_dropdown_values)}"
             case MonitorIdBehaviour.OPCFULL:
                 return opcode_full
             case MonitorIdBehaviour.VARIABLE:
-                return itf_if.get_variable_sha256(old_dropdown_value)
+                assert len(old_dropdown_values) == 1
+                return itf_if.get_variable_sha256(old_dropdown_values[0])
             case MonitorIdBehaviour.LIST:
-                return itf_if.get_list_sha256    (old_dropdown_value)
+                assert len(old_dropdown_values) == 1
+                return itf_if.get_list_sha256    (old_dropdown_values[0])
 
     def to_first(self, itf_if: InterToFirstIF, info_api: OpcodeInfoAPI) -> FRMonitor:
         """
@@ -379,10 +384,15 @@ class SRMonitor:
             old_dropdown_value = dropdown_type.translate_new_to_old_value(dropdown_value.to_tuple())
             old_dropdowns[old_dropdown_id] = old_dropdown_value
         
-        old_dropdown_value = next(iter(old_dropdowns.values())) if self.dropdowns else None
+        old_dropdown_values = list(old_dropdowns.values())
         old_opcode = info_api.get_old_by_new(self.opcode)
+        if opcode_info.has_variable_id:
+            variable_id = string_to_sha256(old_opcode, secondary=SHA256_SEC_MONITOR_VARIABLE_ID)
+        else:
+            variable_id = None
+        
         return FRMonitor(
-            id            = self._generate_id(itf_if, info_api, old_dropdown_value),
+            id            = self._generate_id(itf_if, info_api, old_dropdown_values),
             mode          = mode,
             opcode        = old_opcode,
             params        = old_dropdowns,
@@ -399,7 +409,7 @@ class SRMonitor:
             is_discrete   = is_discrete,
 
             variable_type = None,
-            variable_id   = string_to_sha256(old_opcode, secondary=SHA256_SEC_MONITOR_VARIABLE_ID),
+            variable_id   = variable_id,
         )
         
 

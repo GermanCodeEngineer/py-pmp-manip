@@ -176,7 +176,7 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
             ("EFFECT", "EFFECT"): DropdownInfo(BuiltinDropdownType.SPRITE_EFFECT),
         }),
         can_have_monitor=True,
-        monitor_id_behaviour=MonitorIdBehaviour.SPRITE_OPCMAIN_PARAM,
+        monitor_id_behaviour=MonitorIdBehaviour.SPRITE_OPCMAIN_PARAMS,
     ),
 
     ("looks_tintColor", "tint color"): OpcodeInfo(
@@ -266,7 +266,7 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
             ("NUMBER_NAME", "PROPERTY"): DropdownInfo(BuiltinDropdownType.NUMBER_NAME),
         }),
         can_have_monitor=True,
-        monitor_id_behaviour=MonitorIdBehaviour.SPRITE_OPCMAIN_PARAM,
+        monitor_id_behaviour=MonitorIdBehaviour.SPRITE_OPCMAIN_PARAMS,
     ),
 
     ("looks_backdropnumbername", "backdrop [PROPERTY]"): OpcodeInfo(
@@ -275,7 +275,7 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
             ("NUMBER_NAME", "PROPERTY"): DropdownInfo(BuiltinDropdownType.NUMBER_NAME),
         }),
         can_have_monitor=True,
-        monitor_id_behaviour=MonitorIdBehaviour.OPCMAIN_PARAM,
+        monitor_id_behaviour=MonitorIdBehaviour.OPCMAIN_PARAMS,
     ),
 
     ("looks_size", "size"): OpcodeInfo(

@@ -6,9 +6,9 @@ from typing     import Any
 from json       import loads
 
 from pypenguin.opcode_info.api import (
-    OpcodeInfoGroup, OpcodeInfo, OpcodeType, 
-    InputInfo, InputMode, InputType, BuiltinInputType, MenuInfo, 
-    DropdownInfo, DropdownType, BuiltinDropdownType, DropdownTypeInfo
+    OpcodeInfoGroup, OpcodeInfo, OpcodeType, MonitorIdBehaviour,
+    InputInfo, InputMode, InputType, BuiltinInputType, MenuInfo,
+    DropdownInfo, DropdownType, BuiltinDropdownType, DropdownTypeInfo,
 )
 from pypenguin.utility         import grepr, DualKeyDict, ThanksError, PypenguinEnum
 
@@ -160,20 +160,29 @@ def generate_block_opcode_info(
             raise Exception()
     
     disable_monitor = block_info.get("disableMonitor", False)
-    can_have_monitor = opcode_type.is_reporter() and (not inputs) and (not disable_monitor)
+    can_have_monitor = opcode_type.is_reporter and (not inputs) and (not disable_monitor)
+    if can_have_monitor:
+        if dropdowns:
+            monitor_id_hehaviour = MonitorIdBehaviour.OPCFULL_PARAMS
+        else:
+            monitor_id_hehaviour = MonitorIdBehaviour.OPCFULL
+    else:
+        monitor_id_hehaviour = None
     
     opcode_info = OpcodeInfo(
         opcode_type=opcode_type,
         inputs=inputs,
         dropdowns=dropdowns,
         can_have_monitor=can_have_monitor,
-        monitor_id_behaviour=,
+        monitor_id_behaviour=monitor_id_hehaviour,
+        has_variable_id=bool(dropdowns), # if there are any dropdowns
     )
     ###    inputs: DualKeyDict[str, str, InputInfo] = field(default_factory=DualKeyDict)
     ###    dropdowns: DualKeyDict[str, str, DropdownInfo] = field(default_factory=DualKeyDict)
     ###    can_have_monitor: bool = False
     #    monitor_id_behaviour: MonitorIdBehaviour | None = None
     #    has_shadow: bool = None
+    ###    has_variable_id: bool = False
     #    special_cases: dict[SpecialCaseType, SpecialCase] = field(default_factory=dict)
     #    old_mutation_cls: Type["FRMutation"] | None = field(init=False, default_factory=type(None))
     #    new_mutation_cls: Type["SRMutation"] | None = field(init=False, default_factory=type(None))
@@ -230,9 +239,9 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> OpcodeInfoGrou
     input_type_code = gen_code_for_enum(input_type_cls)
     info_group_code = f"{extension_id} = {grepr(info_group, safe_dkd=True)}"   
     code = f"{import_code}\n\n{dropdown_type_code}\n\n{input_type_code}\n\n{info_group_code}"
-    with open(f"pypenguin/opcode_info/data/{extension_id}.py", "w") as file:
+    with open(f"pypenguin/opcode_info/data/gen_{extension_id}.py", "w") as file:
         file.write(code)
 
-extension_info = extract_getinfo("pypenguin/ext_db_gen/example.js")
+extension_info = extract_getinfo("pypenguin/ext_db_gen/example_mod.js")
 generate_opcode_info_group(extension_info)
 

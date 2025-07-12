@@ -114,7 +114,7 @@ class BuiltinInputType(InputType):
     NUMBER              = (InputMode.BLOCK_AND_TEXT,  4, None, 6)
 
     # BLOCK_AND_MENU_TEXT
-    NOTE                = (InputMode.BLOCK_AND_MENU_TEXT, None, 0, BuiltinDropdownType.NOTE)
+    NOTE                = (InputMode.BLOCK_AND_MENU_TEXT, None, BuiltinDropdownType.NOTE, 0)
 
     # BLOCK_ONLY
     BOOLEAN             = (InputMode.BLOCK_ONLY, None, None, 0)
