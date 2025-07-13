@@ -105,6 +105,14 @@ globalThis.Scratch = {
         "isPenguinMod": true
     },
     translate: createTranslate(null),
+
+    vm: {
+        runtime: {
+            registerCompiledExtensionBlocks: (extensionId, compileInfo) => {
+                // do nothing since we don't care about compilation stuff
+            } 
+        }
+    }
     // I only included the properties which a resonable getInfo should use
 }
 
@@ -126,7 +134,7 @@ function runScript(code) {
             process.exit(1);
         }
         const info = globalThis._scratchExtension.getInfo();
-        console.log(JSON.stringify(info, null, 2));
+        console.log(JSON.stringify(info));
     } catch (e) {
         console.error("Error executing script:", e);
         process.exit(1);

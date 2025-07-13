@@ -47,13 +47,13 @@ def extract_getinfo(extension: str) -> dict[str, Any]:
     )
     if result.returncode != 0:
         raise RuntimeError(result.stderr)
-    info = loads(result.stdout)
+    info = loads(result.stdout.splitlines()[-1]) # avoid error, when extension itself logs sth
     # Of the returned attributes:
-    #     Irrelevant: ["name", "color1", "menuIconURI"]
+    #     Irrelevant: ["name", "color1", "color2", "color3", "menuIconURI"]
     #     Relevant:   ["id", "blocks", "menus"]
     for attr in info.keys():
-        if attr not in {"name", "id", "color1", "menuIconURI", "blocks", "menus"}:
-            raise ThanksError()
+        if attr not in {"name", "color1", "color2", "color3", "menuIconURI", "isDynamic", "id", "blocks", "menus"}:
+            raise Exception(attr)#ThanksError()
     return info
 
 def process_all_menus(menus: dict[str, dict[str, Any]]) -> tuple[type[InputType], type[DropdownType]]:
@@ -108,10 +108,11 @@ def generate_block_opcode_info(
     """
     #print()
     #print()
-    #print("CURRENT BLOCK", grepr(block_info))
+    print("CURRENT BLOCK", grepr(block_info))
     
     block_type: str = block_info["blockType"]
-    arguments: dict[str, dict[str, Any]] = block_info["arguments"]
+    arguments: dict[str, dict[str, Any]] = block_info.get("arguments", {})
+    branch_count: int = block_info.get("branchCount", 0)
     opcode_type: OpcodeType
     match block_type:
         case "command":
@@ -124,7 +125,8 @@ def generate_block_opcode_info(
             opcode_type = OpcodeType.HAT
         case "conditional" | "loop":
             opcode_type = OpcodeType.STATEMENT
-            raise NotImplementedError() # TODO: add a subscript at the end or smth
+            branch_count = max(branch_count, 1)
+            #raise NotImplementedError() # TODO: add a subscript at the end or smth
         case "label" | "button":
             return None # not really block, but a label or button
         case "xml":
@@ -189,6 +191,10 @@ def generate_block_opcode_info(
     else:
         monitor_id_hehaviour = None
     
+    for attr in block_info.keys():
+        if attr not in {"opcode", "blockType", "text", "arguments"}:
+            raise Exception(attr)#ThanksError()
+
     opcode_info = OpcodeInfo(
         opcode_type=opcode_type,
         inputs=inputs,
@@ -209,14 +215,14 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
         extension_info: the raw extension information
     """
     extension_id = extension_info["id"] # TODO: get correct name
-    menus: dict[str, dict[str, Any]] = extension_info["menus"]
+    menus: dict[str, dict[str, Any]] = extension_info.get("menus", {})
     info_group = OpcodeInfoGroup(
         name=extension_id,
         opcode_info=DualKeyDict(),
     )
     input_type_cls, dropdown_type_cls = process_all_menus(menus)
     
-    for block_info in extension_info["blocks"]:
+    for block_info in extension_info.get("blocks", []):
         opcode_info = generate_block_opcode_info(
             block_info, 
             menus=menus, 
@@ -283,6 +289,7 @@ def generate_extension_info_py_file(extension: str, destination_gen: Callable[[s
 for extension in [
     "example_extensions/js_extension/dumbExample.js",
     "https://extensions.turbowarp.org/true-fantom/base.js",
+    "example_extensions/js_extension/pmControlsExpansion.js",
 ]:
     generate_extension_info_py_file(
         extension=extension,
