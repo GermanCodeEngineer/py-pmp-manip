@@ -95,9 +95,9 @@ def generate_block_opcode_info(
         input_type_cls: type[InputType],
         dropdown_type_cls: type[DropdownType],
         extension_id: str,
-    ) -> OpcodeInfo | None:
+    ) -> tuple[OpcodeInfo, str] | tuple[None, None]:
     """
-    Generate the opcode information for one kind of block
+    Generate the opcode information for one kind of block and the block opcode in 'new style'
 
     Args:
         block_info: the raw block information
@@ -128,14 +128,14 @@ def generate_block_opcode_info(
             branch_count = max(branch_count, 1)
             #raise NotImplementedError() # TODO: add a subscript at the end or smth
         case "label" | "button":
-            return None # not really block, but a label or button
+            return (None, None) # not really block, but a label or button
         case "xml":
-            raise NotImplementedError("XML blocks are NOT supported. It is pretty much impossible to translate them into a database entry.")
+            raise NotImplementedError("XML blocks are NOT supported. It is pretty much impossible to translate one into a database entry.")
         case _:
             raise ValueError(f"Unknown value for blockType: {repr(block_type)}")
     
-    inputs = DualKeyDict()
-    dropdowns = DualKeyDict()
+    inputs: DualKeyDict[str, str, InputInfo] = DualKeyDict()
+    dropdowns: DualKeyDict[str, str, DropdownInfo] = DualKeyDict()
 
     for argument_id, argument_info in arguments.items():
         argument_type: str = argument_info["type"]
@@ -181,6 +181,14 @@ def generate_block_opcode_info(
         else:
             raise Exception()
     
+    for i in range(branch_count):
+        input_id = "SUBSTACK" if i == 0 else f"SUBSTACK{i+1}"
+        input_info = InputInfo(
+            type=BuiltinInputType.SCRIPT,
+            menu=None,
+        )
+        inputs.set(key1=input_id, key2=input_id, value=input_info)
+    
     disable_monitor = block_info.get("disableMonitor", False)
     can_have_monitor = opcode_type.is_reporter and (not inputs) and (not disable_monitor)
     if can_have_monitor:
@@ -192,7 +200,7 @@ def generate_block_opcode_info(
         monitor_id_hehaviour = None
     
     for attr in block_info.keys():
-        if attr not in {"opcode", "blockType", "text", "arguments"}:
+        if attr not in {"opcode", "blockType", "text", "arguments", "branchCount"}:
             raise Exception(attr)#ThanksError()
 
     opcode_info = OpcodeInfo(
@@ -203,9 +211,55 @@ def generate_block_opcode_info(
         monitor_id_behaviour=monitor_id_hehaviour,
         has_variable_id=bool(dropdowns), # if there are any dropdowns
     )
-    #print(opcode_info)
-    #input()
-    return opcode_info
+    
+    text: str | list[str] = block_info["text"]
+    text_lines: list[str] = text if isinstance(text, list) else [text]
+    new_opcode_segments = []
+    for i, text_line in enumerate(text_lines):
+        line_segments = text_line.split(" ")
+        for line_segment in line_segments:
+            if line_segment.startswith("[") and line_segment.endswith("]"):
+                argument_name = line_segment.removeprefix("[").removesuffix("]")
+                if   inputs.has_key1(argument_name):
+                    input_type = inputs.get_by_key1(argument_name).type
+                    match input_type.mode:
+                        case InputMode.BLOCK_AND_TEXT:
+                            opening, closing = "(", ")"
+                        case (
+                            InputMode.BLOCK_AND_DROPDOWN
+                          | InputMode.BLOCK_AND_BROADCAST_DROPDOWN
+                          | InputMode.BLOCK_AND_MENU_TEXT
+                        ):
+                            opening, closing = "([", ")]"
+                        case InputMode.BLOCK_ONLY:
+                            match input_type:
+                                case BuiltinInputType.BOOLEAN:
+                                    opening, closing = "<", ">"
+                                case BuiltinInputType.ROUND | InputType.EMBEDDED_MENU:
+                                    opening, closing = "(", ")"
+                        case InputMode.SCRIPT:
+                            opening, closing = "{", "}"
+                                
+                elif dropdowns.has_key1(argument_name):
+                    dropdown_info = dropdowns.get_by_key1(argument_name)
+                    opening, closing = "[", "]"
+                new_opcode_segments.append(f"{opening}{argument_name}{closing}")
+            else:
+                new_opcode_segments.append(line_segment)
+        new_opcode_segments.append("{SUBSTACK}" if i == 0 else "{SUBSTACK%}".replace("%", str(i+1)))
+        
+    if   branch_count == len(text_lines):
+        pass
+    elif (branch_count + 1) == len(text_lines):
+        new_opcode_segments.pop()
+    else:
+        raise Exception()
+    new_opcode = f"{extension_id}::{" ".join(new_opcode_segments)}"
+    
+    print(opcode_info)
+    print("NEWOPC", new_opcode)
+    input()
+    return (opcode_info, new_opcode)
 
 def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeInfoGroup, type[InputType], type[DropdownType]]:
     """
@@ -287,8 +341,8 @@ def generate_extension_info_py_file(extension: str, destination_gen: Callable[[s
         
 
 for extension in [
-    "example_extensions/js_extension/dumbExample.js",
-    "https://extensions.turbowarp.org/true-fantom/base.js",
+#    "example_extensions/js_extension/dumbExample.js",
+#    "https://extensions.turbowarp.org/true-fantom/base.js",
     "example_extensions/js_extension/pmControlsExpansion.js",
 ]:
     generate_extension_info_py_file(

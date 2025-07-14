@@ -28,7 +28,7 @@ class InputMode(PypenguinEnum):
         """
         return self.value[0]  
     
-    # (magic number, index)
+    # (can be missing?, index)
     BLOCK_AND_TEXT               = (False, 0)
     BLOCK_AND_MENU_TEXT          = (False, 1)
     BLOCK_ONLY                   = (True , 2)
@@ -119,7 +119,7 @@ class BuiltinInputType(InputType):
     # BLOCK_ONLY
     BOOLEAN             = (InputMode.BLOCK_ONLY, None, None, 0)
     ROUND               = (InputMode.BLOCK_ONLY, None, None, 1)
-    EMBEDDED_MENU       = (InputMode.BLOCK_ONLY, None, None, 2)
+    EMBEDDED_MENU       = (InputMode.BLOCK_ONLY, None, None, 2) # TODO: check that it works and is used correctly
 
     # SCRIPT
     SCRIPT              = (InputMode.SCRIPT, None, None, 0)

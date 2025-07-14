@@ -13,4 +13,5 @@ TODOs:
     - add "previous costume" and "next costume" to costume menu
         => explore for similar updates
     - check if dropdown validation where only default kind: allows non strings? (should not)
-    - make sure: js execution in ext_db_gen is safe
+    - make sure: js execution in ext_info_gen is safe
+    - simplify new opcode input/dropdown representation brackets
