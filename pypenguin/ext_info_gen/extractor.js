@@ -133,7 +133,11 @@ function runScript(code) {
             console.error("Extension was not registered.");
             process.exit(1);
         }
-        const info = globalThis._scratchExtension.getInfo();
+        const extensionInfo = globalThis._scratchExtension.getInfo();
+        const info = {
+            extensionInfo: extensionInfo,
+            jsCode: code,
+        }
         console.log(JSON.stringify(info));
     } catch (e) {
         console.error("Error executing script:", e);

@@ -10,7 +10,7 @@ from pypenguin.opcode_info.api import (
     InputInfo, InputMode, InputType, BuiltinInputType, MenuInfo,
     DropdownInfo, DropdownType, BuiltinDropdownType, DropdownTypeInfo,
 )
-from pypenguin.utility         import grepr, DualKeyDict, ThanksError, PypenguinEnum
+from pypenguin.utility         import grepr, DualKeyDict, ThanksError, PypenguinEnum, ContentFingerprint
 
 ARGUMENT_TYPE_TO_INPUT_TYPE: dict[str, InputType] = {
     "string": BuiltinInputType.TEXT,
@@ -32,9 +32,9 @@ INDENT = 4*" "
 EXTRACTOR_PATH = "pypenguin/ext_info_gen/extractor.js"
 
 
-def extract_getinfo(extension: str) -> dict[str, Any]:
+def extract_getinfo_and_code(extension: str) -> dict[str, Any]:
     """
-    Extract the return value of the getInfo method of the extension class.
+    Extract the return value of the getInfo method of the extension class and the extension's code.
     A node subprocess is run, which lets the outer code run and then calls and logs the return value of the getInfo method of the extension class.
     
     Args:
@@ -48,13 +48,15 @@ def extract_getinfo(extension: str) -> dict[str, Any]:
     if result.returncode != 0:
         raise RuntimeError(result.stderr)
     info = loads(result.stdout.splitlines()[-1]) # avoid error, when extension itself logs sth
+    extension_info = info["extensionInfo"]
+    js_code = info["jsCode"]
     # Of the returned attributes:
     #     Irrelevant: ["name", "color1", "color2", "color3", "menuIconURI"]
     #     Relevant:   ["id", "blocks", "menus"]
-    for attr in info.keys():
+    for attr in extension_info.keys():
         if attr not in {"name", "color1", "color2", "color3", "menuIconURI", "isDynamic", "id", "blocks", "menus"}:
             raise Exception(attr)#ThanksError()
-    return info
+    return (extension_info, js_code)
 
 def process_all_menus(menus: dict[str, dict[str, Any]]) -> tuple[type[InputType], type[DropdownType]]:
     """
@@ -111,12 +113,15 @@ def generate_block_opcode_info(
     print("CURRENT BLOCK", grepr(block_info))
     
     block_type: str = block_info["blockType"]
+    is_terminal: bool = block_info.get("isTerminal", False)
     arguments: dict[str, dict[str, Any]] = block_info.get("arguments", {})
     branch_count: int = block_info.get("branchCount", 0)
     opcode_type: OpcodeType
+    if block_type != "command":
+        assert not(is_terminal)
     match block_type:
         case "command":
-            opcode_type = OpcodeType.STATEMENT
+            opcode_type = OpcodeType.ENDING_STATEMENT if is_terminal else OpcodeType.STATEMENT
         case "reporter":
             opcode_type = OpcodeType.STRING_REPORTER
         case "Boolean":
@@ -200,7 +205,8 @@ def generate_block_opcode_info(
         monitor_id_hehaviour = None
     
     for attr in block_info.keys():
-        if attr not in {"opcode", "blockType", "text", "arguments", "branchCount"}:
+        if attr not in {"opcode", "blockType", "text", "arguments", "branchCount", "alignments", "isTerminal", "disableMonitor"}:
+            # alignments: irrelevant for my purpose
             raise Exception(attr)#ThanksError()
 
     opcode_info = OpcodeInfo(
@@ -220,6 +226,7 @@ def generate_block_opcode_info(
         for line_segment in line_segments:
             if line_segment.startswith("[") and line_segment.endswith("]"):
                 argument_name = line_segment.removeprefix("[").removesuffix("]")
+                argument_type: str = arguments[argument_name]["type"]
                 if   inputs.has_key1(argument_name):
                     input_type = inputs.get_by_key1(argument_name).type
                     match input_type.mode:
@@ -243,6 +250,8 @@ def generate_block_opcode_info(
                 elif dropdowns.has_key1(argument_name):
                     dropdown_info = dropdowns.get_by_key1(argument_name)
                     opening, closing = "[", "]"
+                elif argument_type == "image":
+                    continue
                 new_opcode_segments.append(f"{opening}{argument_name}{closing}")
             else:
                 new_opcode_segments.append(line_segment)
@@ -277,7 +286,7 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
     input_type_cls, dropdown_type_cls = process_all_menus(menus)
     
     for block_info in extension_info.get("blocks", []):
-        opcode_info = generate_block_opcode_info(
+        opcode_info, new_opcode = generate_block_opcode_info(
             block_info, 
             menus=menus, 
             input_type_cls=input_type_cls,
@@ -285,10 +294,10 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
             extension_id=extension_id,
         )
         if opcode_info is not None:
-            opcode: str = f"{extension_id}_{block_info['opcode']}"
+            old_opcode: str = f"{extension_id}_{block_info['opcode']}"
             info_group.add_opcode(
-                old_opcode  = opcode,
-                new_opcode  = opcode, # TODO: possibly base new opcode off "text"
+                old_opcode  = old_opcode,
+                new_opcode  = new_opcode,
                 opcode_info = opcode_info,
             )
     
@@ -298,7 +307,12 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
         info_group.add_opcode(menu_opcode, menu_opcode, opcode_info)
     return (info_group, input_type_cls, dropdown_type_cls)
 
-def generate_file_code(info_group: OpcodeInfoGroup, input_type_cls: type[InputType], dropdown_type_cls: type[DropdownType]) -> str:
+def generate_file_code(
+        info_group: OpcodeInfoGroup, 
+        input_type_cls: type[InputType], 
+        dropdown_type_cls: type[DropdownType],
+        js_code: str,
+    ) -> str:
     """
     Generate the code of a python file, which stores information about the blocks of the given extension and is required for the core module
 
@@ -306,6 +320,7 @@ def generate_file_code(info_group: OpcodeInfoGroup, input_type_cls: type[InputTy
         info_group: the group of information about the blocks of the given extension
         input_type_cls: the generated class containing the custom input types
         dropdown_type_cls: the generated class containing the custom dropdown types
+        js_code: the extension's full javascript code
     """
     def generate_enum_code(enum_cls: type[PypenguinEnum]) -> str:
         cls_code = f"class {enum_cls.__name__}({enum_cls.__bases__[0].__name__}):"
@@ -316,11 +331,14 @@ def generate_file_code(info_group: OpcodeInfoGroup, input_type_cls: type[InputTy
             cls_code += f"\n{INDENT}{enum_item.name} = {grepr(enum_item.value, level_offset=1)}"
         return cls_code
     
+    fingerprint = ContentFingerprint.from_value(js_code)
+    
     file_code = "\n\n".join((
         "from pypenguin.opcode_info.data_imports import *",
         generate_enum_code(dropdown_type_cls),
         generate_enum_code(input_type_cls),
         f"{info_group.name} = {grepr(info_group, safe_dkd=True)}",
+        f"extension_fingerprint = {fingerprint}"
     ))
     return file_code
 
@@ -332,9 +350,9 @@ def generate_extension_info_py_file(extension: str, destination_gen: Callable[[s
         extension: the file path or https URL or JS Data URI of the extension code
         destination: the destination path for the generated python file
     """
-    extension_info = extract_getinfo(extension)
+    extension_info, js_code = extract_getinfo_and_code(extension)
     info_group, input_type_cls, dropdown_type_cls = generate_opcode_info_group(extension_info)
-    file_code = generate_file_code(info_group, input_type_cls, dropdown_type_cls)
+    file_code = generate_file_code(info_group, input_type_cls, dropdown_type_cls, js_code)
     destination = destination_gen(info_group.name)
     with open(destination, "w") as destination_file:
         destination_file.write(file_code)

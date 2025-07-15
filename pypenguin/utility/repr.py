@@ -77,6 +77,8 @@ def grepr(obj, /, safe_dkd=False, level_offset=0, annotate_fields=True, include_
         elif isinstance(obj, str):
             return f'"{obj.replace('"', '\\"')}"', True
         
+        # TODO: add compatability with bytes objects
+        
         elif is_compatible:
             args = []
             allsimple = True

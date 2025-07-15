@@ -2,6 +2,9 @@ from difflib import SequenceMatcher
 from hashlib import sha256, md5
 from json    import dumps
 
+from pypenguin.utility.repr import grepr_dataclass
+
+
 _TOKEN_CHARSET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!#%()*+,-./:;=?@[]^_`{|}~"
 
 def remove_duplicates(items: list) -> list:
@@ -75,7 +78,7 @@ def number_to_token(number: int) -> str:
 
 def generate_md5(data: bytes) -> str:
     """
-    Generate an MD5 hash for a given bytes object.
+    Generate an MD5 hash for a given bytes object
 
     Args:
         data: the input data in bytes
@@ -88,9 +91,53 @@ def generate_md5(data: bytes) -> str:
         md5_hash.update(data[i:i+4096])
     return md5_hash.hexdigest()
 
+@grepr_dataclass(grepr_fields=["length", "hash"])
+class ContentFingerprint:
+    """
+    Represents the fingerprint of string content. Stores length and hash for fast and efficient comparison. 
+    """
+    
+    length: int
+    hash: bytes
+    
+    @staticmethod
+    def hash_value(value: str) -> bytes:
+        """
+        Hash a value with the chosen hash algorithm (sha256 here)
+        
+        Args:
+            value: the string to hash
+        """
+        return sha256(value.encode("utf-8")).digest()
+    
+    @classmethod
+    def from_value(cls, value: str) -> "ContentFingerprint":
+        """
+        Create the fingerprint of the given value
+        
+        Args:
+            value: the value the created fingerprint will represent
+        """
+        return cls(
+            length=len(value),
+            hash=cls.hash_value(value),
+        )
+    
+    def matches(self, value: str) -> bool:
+        """
+        Return True if the given value has the same length and hash
+        
+        Args:
+            value: the value to compare to
+        """
+        if len(value) != self.length:
+            return False
+        if ContentFingerprint.hash_value(value) != self.hash:
+            return False
+        return True
 
 __all__ = [
     "remove_duplicates", "get_closest_matches", "tuplify", "listify", "gdumps",
-    "string_to_sha256", "number_to_token", "generate_md5",
+    "string_to_sha256", "number_to_token", "generate_md5", "ContentFingerprint",
 ]
 
