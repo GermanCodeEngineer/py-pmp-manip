@@ -5,7 +5,7 @@ from base64       import b64decode
 from datetime     import datetime, timezone, timedelta
 from importlib    import util as importutil
 from json         import loads, dumps
-from os           import remove as os_remove, path
+from os           import remove as os_remove, makedirs, path
 from requests     import get as requests_get, RequestException
 from subprocess   import run as run_subprocess
 from sys          import modules as sys_modules, exit as sys_exit
@@ -45,18 +45,30 @@ INDENT = 4*" "
 EXTRACTOR_PATH = "pypenguin/ext_info_gen/extractor.js"
 CACHE_FILENAME = "cache.json"
 FINGERPRINT_VARIABLE = "extension_fingerprint"
-GEN_OPCODE_INFO_DIR = None
 
-def ext_info_gen_setup(gen_opcode_info_dir: str):
+# Configurable:
+GEN_OPCODE_INFO_DIR: str = None
+JS_FETCH_INTERVAL: timedelta = None
+
+def ext_info_gen_setup(gen_opcode_info_dir: str, js_fetch_interval: timedelta):
     """
     Setup the extension info generator module
     
     Args:
         gen_opcode_info_dir: the directory file path to store the generated info python files in
+        js_fetch_interval: if the extension is accessed through a link, it will only be fetched again after this interval has passed
     """
+    try:
+        makedirs(gen_opcode_info_dir, exist_ok=True)
+    except OSError as error:
+        raise error from error
+    global GEN_OPCODE_INFO_DIR, JS_FETCH_INTERVAL
     if GEN_OPCODE_INFO_DIR is not None:
         raise SetupError("Setup has alredy been completed")
+    assert isinstance(js_fetch_interval, timedelta), "js_fetch_interval must be datetime.timedelta object"
     GEN_OPCODE_INFO_DIR = gen_opcode_info_dir
+    JS_FETCH_INTERVAL   = js_fetch_interval
+    
 
 def fetch_js_code(extension: str) -> str:
     """
@@ -466,38 +478,56 @@ def generate_file_code(
     ))
     return file_code
 
+def consider_state(
+        destination_file_name: str, 
+        destination_file_path: str, 
+        cache_file_path: str, 
+        by_url: bool,
+    ) -> tuple[bool, bool]:
+    """
+    Returns wether the extensions JavaScript should be fetched again and wether the python file should be (re-)generated
+    """
+    if not(path.exists(destination_file_path)) or not(path.exists(cache_file_path)):
+        return (True, True)
+    
+    with open(cache_file_path, "r") as cache_file:
+        cache: dict[str, dict[str, Any]] = loads(cache_file.read())
+    if destination_file_name not in cache:
+        return (True, True)
+    
+    file_cache = cache[destination_file_name]
+    py_fingerprint = ContentFingerprint.from_json(file_cache["pyFingerprint"])
+    last_update_time = datetime.fromisoformat(file_cache["lastUpdate"])
+    
+    with open(destination_file_path, "r") as destination_file:
+        python_code = destination_file.read()
+    if by_url:
+        is_too_old = (datetime.now(timezone.utc) - last_update_time) > JS_FETCH_INTERVAL # wether the last JS fetch is too long ago
+    else:
+        is_too_old = True # fetching the JS is not expensive in this case
+    if not py_fingerprint.matches(python_code): # if the python code was manipulated
+        return (is_too_old, True)
+    return (is_too_old, False)
+
 def generate_extension_info_py_file(extension: str) -> str:
     """
     Generate a python file, which stores information about the blocks of the given extension and is required for the core module. Returns the file path of the python file
 
     Args:
         extension: the file path or https URL or JS Data URI of the extension code
-    """
+    """                
+
     if GEN_OPCODE_INFO_DIR is None:
         raise SetupError("Setup has not been completed. Please run ext_info_gen_setup before proceeding.")
     
     js_code = fetch_js_code(extension)
-#    start = time()
     extension_info = extract_getinfo(js_code)
     
     destination_file_name = f"{extension_info['id']}.py"
-    destination_file_path = path.join(GEN_OPCOD_INFO_DIR, destination_file_name)
-    cache_file_path = path.join(GEN_OPCOD_INFO_DIR, CACHE_FILENAME)
+    destination_file_path = path.join(GEN_OPCODE_INFO_DIR, destination_file_name)
+    cache_file_path = path.join(GEN_OPCODE_INFO_DIR, CACHE_FILENAME)
     
-    if path.exists(destination_file_path):
-       cache: dict[str, dict[str, Any]]
-       if path.exists(cache_file_path):
-           with open(cache_file_path, "r") as cache_file:
-               cache = loads(cache_file.read())
-       else:
-            cache = {}
-       if destination_file_name in cache:
-           file_cache = cache[destination_file_name]
-           last_update_time = datetime.fromisoformat(file_cache["lastUpdate"])
-           py_fingerprint = ContentFingerprint.from_json(file_cache["pyFingerprint"])
-           js_fingerprint = ContentFingerprint.from_json(file_cache["jsFingerprint"])
-           if last_update_time
-            
+    
             
         #try:
         #    spec = importutil.spec_from_file_location(name="info_file", location=destination_file_path)
@@ -526,8 +556,6 @@ def generate_extension_info_py_file(extension: str) -> str:
         #    if fingerprint.matches(js_code): 
         #        # if the py file was generated based on the same js code, just keep it
         #        print("JUST KEPT IT")
-        #        #stop = time()
-        #        #print("TIME:", stop-start)
         #        return destination
         #print("DID NOT MATCH OR INVALID FINGERPRINT")
     
@@ -536,19 +564,17 @@ def generate_extension_info_py_file(extension: str) -> str:
     with open(destination_file_path, "w") as destination_file:
         destination_file.write(file_code)
     print("NEWLY WRITTEN")
-#    stop = time()
-#    print("TIME:", stop-start)
     return destination
 
-#from time import time
-for extension in [
-    "example_extensions/js_extension/dumbExample.js",
-    "https://extensions.turbowarp.org/true-fantom/base.js",
-    "example_extensions/js_extension/pmControlsExpansion.js",
-    "https://extensions.penguinmod.com/extensions/derpygamer2142/gpusb3.js",
-    "https://extensions.penguinmod.com/extensions/pooiod/Box2D.js",
-]:
-    generate_extension_info_py_file(
-        extension=extension,
-        destination_gen=lambda extension_id: f"example_extensions/gen_opcode_info/{extension_id}.py"
-    )
+if __name__ == "__main__":
+    for extension in [
+        "example_extensions/js_extension/dumbExample.js",
+        "https://extensions.turbowarp.org/true-fantom/base.js",
+        "example_extensions/js_extension/pmControlsExpansion.js",
+        "https://extensions.penguinmod.com/extensions/derpygamer2142/gpusb3.js",
+        "https://extensions.penguinmod.com/extensions/pooiod/Box2D.js",
+    ]:
+        generate_extension_info_py_file(
+            extension=extension,
+            destination_gen=lambda extension_id: f"example_extensions/gen_opcode_info/{extension_id}.py"
+        )

@@ -1,6 +1,7 @@
 from difflib import SequenceMatcher
 from hashlib import sha256, md5
 from json    import dumps
+from typing  import Any
 
 from pypenguin.utility.repr import grepr_dataclass
 
