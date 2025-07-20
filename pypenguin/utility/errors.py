@@ -2,6 +2,7 @@ class PypenguinError(Exception):
     pass
 
 
+class SetupError(PypenguinError): pass
 class BlameDevsError(PypenguinError): pass
 class PathError(PypenguinError): pass
 
@@ -90,7 +91,7 @@ class SameValueTwiceError(ValidationError):
 
 
 __all__ = [
-    "PypenguinError", "BlameDevsError", "ThanksError", 
+    "PypenguinError", "SetupError", "BlameDevsError", "ThanksError", 
     "OpcodeInfoError", "UnknownOpcodeError", "SameOpcodeTwiceError", 
     "DeserializationError", "ConversionError",
     "ValidationError", "PathValidationError", "TypeValidationError", "InvalidValueError",

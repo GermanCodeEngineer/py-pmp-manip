@@ -113,6 +113,9 @@ class DropdownValueRule(PypenguinEnum):
     
     FONT                      = (DropdownValueKind.STANDARD     , True , 16)
     MATRIX                    = (DropdownValueKind.STANDARD     , True , 17)
+    
+    EXTENSION_UNPREDICTABLE   = (DropdownValueKind.STANDARD     , True , 18) 
+    # used for dynamic menus in custom extensions, whose values can not be predicted in python
 
 
 @grepr_dataclass(grepr_fields=["direct_values", "rules", "old_direct_values", "fallback"])

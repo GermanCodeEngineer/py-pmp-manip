@@ -14,7 +14,7 @@ class ExtensionInputType(InputType):
 dumbExample = OpcodeInfoGroup(
     name="dumbExample",
     opcode_info=DualKeyDict({
-        ("dumbExample_last_used_base", "dumbExample_last_used_base"): OpcodeInfo(
+        ("dumbExample_last_used_base", "dumbExample::last used base"): OpcodeInfo(
             opcode_type=OpcodeType.STRING_REPORTER,
             inputs=DualKeyDict(),
             dropdowns=DualKeyDict(),
@@ -26,7 +26,7 @@ dumbExample = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("dumbExample_last_two_inout_values", "dumbExample_last_two_inout_values"): OpcodeInfo(
+        ("dumbExample_last_two_inout_values", "dumbExample::last two [S1] and [S2] values"): OpcodeInfo(
             opcode_type=OpcodeType.STRING_REPORTER,
             inputs=DualKeyDict(),
             dropdowns=DualKeyDict({
@@ -55,3 +55,5 @@ dumbExample = OpcodeInfoGroup(
         ),
     }),
 )
+
+extension_fingerprint = ContentFingerprint(length=1231, hash=b'\xbf\xb6\xfb\x13@\xc6\x13\xdb\x0f\x81\xcbW\x9ea\x0f\x1dc\xbc\xf9\x07\x87Z\xf8\xcbQ\xdb\xc1}GV\xa3\xf2')

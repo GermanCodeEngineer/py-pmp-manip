@@ -98,7 +98,7 @@ class ContentFingerprint:
     """
     
     length: int
-    hash: bytes
+    hash: str
     
     @staticmethod
     def hash_value(value: str) -> bytes:
@@ -108,7 +108,7 @@ class ContentFingerprint:
         Args:
             value: the string to hash
         """
-        return sha256(value.encode("utf-8")).digest()
+        return sha256(value.encode("utf-8")).hexdigest()
     
     @classmethod
     def from_value(cls, value: str) -> "ContentFingerprint":
@@ -123,6 +123,19 @@ class ContentFingerprint:
             hash=cls.hash_value(value),
         )
     
+    @classmethod
+    def from_json(cls, data: dict[str, Any]) -> "ContentFingerprint":
+        """
+        Deserialize the figerprint from JSON
+        
+        Args:
+            data: the json data
+        """
+        return cls(
+            length = data["length"],
+            hash   = data["hash"  ],
+        )        
+    
     def matches(self, value: str) -> bool:
         """
         Return True if the given value has the same length and hash
@@ -135,7 +148,17 @@ class ContentFingerprint:
         if ContentFingerprint.hash_value(value) != self.hash:
             return False
         return True
-
+    
+    def to_json(self) -> dict[str, Any]:
+        """
+        Serialize the figerprint to JSON
+        
+        """
+        return {
+            "length": self.length,
+            "hash"  : self.hash  ,
+        }
+    
 __all__ = [
     "remove_duplicates", "get_closest_matches", "tuplify", "listify", "gdumps",
     "string_to_sha256", "number_to_token", "generate_md5", "ContentFingerprint",

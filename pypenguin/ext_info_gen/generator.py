@@ -1,16 +1,29 @@
 import sys, os; sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir))); del sys, os
 
-from aenum      import extend_enum, Enum
-from subprocess import run as run_subprocess
-from typing     import Any, Callable
-from json       import loads
+from aenum        import extend_enum, Enum
+from base64       import b64decode
+from datetime     import datetime, timezone, timedelta
+from importlib    import util as importutil
+from json         import loads, dumps
+from os           import remove as os_remove, path
+from requests     import get as requests_get, RequestException
+from subprocess   import run as run_subprocess
+from sys          import modules as sys_modules, exit as sys_exit
+from tempfile     import NamedTemporaryFile
+from typing       import Any, Callable
+from urllib.parse import unquote, urlparse
+
 
 from pypenguin.opcode_info.api import (
     OpcodeInfoGroup, OpcodeInfo, OpcodeType, MonitorIdBehaviour,
     InputInfo, InputMode, InputType, BuiltinInputType, MenuInfo,
     DropdownInfo, DropdownType, BuiltinDropdownType, DropdownTypeInfo,
+    DropdownValueRule,
 )
-from pypenguin.utility         import grepr, DualKeyDict, ThanksError, PypenguinEnum, ContentFingerprint
+from pypenguin.utility         import (
+    grepr, DualKeyDict, PypenguinEnum, ContentFingerprint,
+    ThanksError, SetupError,
+)
 
 ARGUMENT_TYPE_TO_INPUT_TYPE: dict[str, InputType] = {
     "string": BuiltinInputType.TEXT,
@@ -30,35 +43,103 @@ ARGUMENT_TYPE_TO_DROPDOWN_TYPE: dict[str, DropdownType] = {
 }
 INDENT = 4*" "
 EXTRACTOR_PATH = "pypenguin/ext_info_gen/extractor.js"
+CACHE_FILENAME = "cache.json"
+FINGERPRINT_VARIABLE = "extension_fingerprint"
+GEN_OPCODE_INFO_DIR = None
 
-
-def extract_getinfo_and_code(extension: str) -> dict[str, Any]:
+def ext_info_gen_setup(gen_opcode_info_dir: str):
     """
-    Extract the return value of the getInfo method of the extension class and the extension's code.
+    Setup the extension info generator module
+    
+    Args:
+        gen_opcode_info_dir: the directory file path to store the generated info python files in
+    """
+    if GEN_OPCODE_INFO_DIR is not None:
+        raise SetupError("Setup has alredy been completed")
+    GEN_OPCODE_INFO_DIR = gen_opcode_info_dir
+
+def fetch_js_code(extension: str) -> str:
+    """
+    Fetch the extension's JS code from a file path, HTTPS URL, or JavaScript Data URI.
+
+    Args:
+        extension: The file path, HTTPS URL, or data URI of the extension code.
+
+    Raises:
+        ValueError: If the data URI is invalid.
+        FileNotFoundError: If the local file does not exist.
+        OSError: If the file cannot be read.
+        requests.RequestException: For any network-related error.
+        requests.HTTPError: For HTTP error responses (4xx, 5xx).
+    """
+    if extension.startswith("data:"):
+        print("--> Fetching from data URI")
+        try:
+            meta, encoded = extension.split(",", 1)
+            if ";base64" in meta:
+                return b64decode(encoded).decode("utf-8")
+            else:
+                return unquote(encoded)
+        except Exception as error:
+            raise ValueError(f"Failed to decode data URI: {error}") from error
+
+    elif extension.startswith("http://") or extension.startswith("https://"):
+        print(f"--> Fetching from URL: {extension}")
+        try:
+            response = requests_get(extension, timeout=10)
+            response.raise_for_status()
+            return response.text
+        except RequestException as error:
+            raise ConnectionError(f"Network error fetching {extension}") from error
+        except Exception as error:
+            raise RuntimeError(f"Unexpected error while fetching URL") from error
+
+    else:
+        print(f"--> Reading from file: {extension}")
+        if not path.exists(extension):
+            raise FileNotFoundError(f"File not found: {extension}")
+        try:
+            with open(extension, "r", encoding="utf-8") as file:
+                return file.read()
+        except OSError as error:
+            raise OSError(f"Failed to read file {extension}") from error
+
+def extract_getinfo(js_code: str) -> dict[str, Any]:
+    """
+    Extract the return value of the getInfo method of the extension class based on the extension's JS code.
     A node subprocess is run, which lets the outer code run and then calls and logs the return value of the getInfo method of the extension class.
     
     Args:
-        extension: the file path or https URL or JS Data URI of the extension code
+        js_code: the file path or https URL or JS Data URI of the extension code
     """
-    result = run_subprocess(
-        ["node", EXTRACTOR_PATH, extension],
-        capture_output=True,
-        text=True
-    )
+    with NamedTemporaryFile(mode="w", suffix=".js", delete=False) as temp_js:
+        temp_js.write(js_code)
+        temp_js_path = temp_js.name
+
+    try:
+        print("--> Executing JavaScript via Node.js")
+        result = run_subprocess(
+            ["node", EXTRACTOR_PATH, temp_js_path],
+            capture_output=True,
+            text=True
+        )
+    except FileNotFoundError as error: # when python can't find the node executable
+        raise RuntimeError("Node.js is not installed or not found in PATH.") from error
+    finally:
+        os_remove(temp_js_path)
+    
     if result.returncode != 0:
         raise RuntimeError(result.stderr)
     info = loads(result.stdout.splitlines()[-1]) # avoid error, when extension itself logs sth
     extension_info = info["extensionInfo"]
     js_code = info["jsCode"]
-    # Of the returned attributes:
-    #     Irrelevant: ["name", "color1", "color2", "color3", "menuIconURI"]
-    #     Relevant:   ["id", "blocks", "menus"]
+    # Relevant of the returned attributes: ["id", "blocks", "menus"]
     for attr in extension_info.keys():
-        if attr not in {"name", "color1", "color2", "color3", "menuIconURI", "isDynamic", "id", "blocks", "menus"}:
+        if attr not in {"name", "color1", "color2", "color3", "menuIconURI", "docsURI", "isDynamic", "id", "blocks", "menus"}:
             raise Exception(attr)#ThanksError()
-    return (extension_info, js_code)
+    return extension_info
 
-def process_all_menus(menus: dict[str, dict[str, Any]]) -> tuple[type[InputType], type[DropdownType]]:
+def process_all_menus(menus: dict[str, dict[str, Any]|list]) -> tuple[type[InputType], type[DropdownType]]:
     """
     Process all menus of an extension. Returns two classes, which contain the dervied input and dropdown types
     
@@ -71,12 +152,36 @@ def process_all_menus(menus: dict[str, dict[str, Any]]) -> tuple[type[InputType]
         pass
 
     for menu_index, menu_block_id, menu_info in zip(range(len(menus)), menus.keys(), menus.values()):
-        possible_values: list[str] = menu_info["items"]
-        accept_reporters = menu_info.get("acceptReporters", False)
+        possible_values: list[str|dict[str, str]]
+        rules: list[DropdownValueRule] = []
+        accept_reporters: bool
+        if   isinstance(menu_info, dict):
+            possible_values = menu_info["items"]
+            accept_reporters = menu_info.get("acceptReporters", False)
+        elif isinstance(menu_info, list):
+            possible_values = menu_info
+            accept_reporters = False
+        
+        if   isinstance(possible_values, list): pass
+        elif isinstance(possible_values, str):
+            possible_values = []
+            rules.append(DropdownValueRule.EXTENSION_UNPREDICTABLE)
+        else: raise NotImplementedError()
+        
+        new_possible_values = []
+        old_possible_values = []
+        for possible_value in possible_values:
+            if   isinstance(possible_value, str):
+                new_possible_values.append(possible_value)
+                old_possible_values.append(possible_value)
+            elif isinstance(possible_value, dict):
+                new_possible_values.append(possible_value["text"])
+                old_possible_values.append(possible_value["value"])
+        
         dropdown_type_info = DropdownTypeInfo(
-            direct_values     = possible_values,
-            rules             = [], # we assume the possible menu values are static
-            old_direct_values = possible_values,
+            direct_values     = new_possible_values,
+            rules             = rules, # we assume the possible menu values are static
+            old_direct_values = old_possible_values,
             fallback          = None, # there can't be a fallback when the possible values are static
         )
         custom_dropdown_type = extend_enum(ExtensionDropdownType, menu_block_id, dropdown_type_info)
@@ -110,7 +215,7 @@ def generate_block_opcode_info(
     """
     #print()
     #print()
-    print("CURRENT BLOCK", grepr(block_info))
+    #print("CURRENT BLOCK", grepr(block_info))
     
     block_type: str = block_info["blockType"]
     is_terminal: bool = block_info.get("isTerminal", False)
@@ -143,7 +248,7 @@ def generate_block_opcode_info(
     dropdowns: DualKeyDict[str, str, DropdownInfo] = DualKeyDict()
 
     for argument_id, argument_info in arguments.items():
-        argument_type: str = argument_info["type"]
+        argument_type: str = argument_info.get("type", "string")
         argument_menu: str|None = argument_info.get("menu", None)
         input_info = None
         dropdown_info = None
@@ -157,7 +262,11 @@ def generate_block_opcode_info(
                     )
                 else:
                     assert builitin_input_type is BuiltinInputType.TEXT, 'If "menu" exists, "type" should be Scratch.ArgumentType.STRING(="string")'
-                    accept_reporters = menus[argument_menu].get("acceptReporters", False)
+                    menu_info = menus[argument_menu]
+                    if   isinstance(menu_info, dict):
+                        accept_reporters = menu_info.get("acceptReporters", False)
+                    else:
+                        accept_reporters = False
 
                     if accept_reporters:
                         input_info = InputInfo(
@@ -205,8 +314,12 @@ def generate_block_opcode_info(
         monitor_id_hehaviour = None
     
     for attr in block_info.keys():
-        if attr not in {"opcode", "blockType", "text", "arguments", "branchCount", "alignments", "isTerminal", "disableMonitor"}:
-            # alignments: irrelevant for my purpose
+        if attr not in {
+            "opcode", "blockType", "text", "arguments", "branchCount", "isTerminal", "disableMonitor", 
+            # irrelevant for my purpose:
+            "alignments", "hideFromPalette", "filter",
+            "shouldRestartExistingThreads", "isEdgeActivated",
+        }:
             raise Exception(attr)#ThanksError()
 
     opcode_info = OpcodeInfo(
@@ -226,7 +339,18 @@ def generate_block_opcode_info(
         for line_segment in line_segments:
             if line_segment.startswith("[") and line_segment.endswith("]"):
                 argument_name = line_segment.removeprefix("[").removesuffix("]")
-                argument_type: str = arguments[argument_name]["type"]
+                # because of the scatterbrainedness of some extension devs:
+                # fun fact: scatterbrainedness (ger. Schusseligkeit)
+                if argument_name in arguments:
+                    argument_type: str = arguments[argument_name].get("type", "string")
+                else:
+                    argument_type = "string"
+                    input_info = InputInfo(
+                        type=BuiltinInputType.TEXT,
+                        menu=None,
+                    )
+                    inputs.set(key1=argument_name, key2=argument_name, value=input_info)
+                
                 if   inputs.has_key1(argument_name):
                     input_type = inputs.get_by_key1(argument_name).type
                     match input_type.mode:
@@ -237,7 +361,7 @@ def generate_block_opcode_info(
                           | InputMode.BLOCK_AND_BROADCAST_DROPDOWN
                           | InputMode.BLOCK_AND_MENU_TEXT
                         ):
-                            opening, closing = "([", ")]"
+                            opening, closing = "([", "])"
                         case InputMode.BLOCK_ONLY:
                             match input_type:
                                 case BuiltinInputType.BOOLEAN:
@@ -265,9 +389,9 @@ def generate_block_opcode_info(
         raise Exception()
     new_opcode = f"{extension_id}::{" ".join(new_opcode_segments)}"
     
-    print(opcode_info)
-    print("NEWOPC", new_opcode)
-    input()
+    #print(opcode_info)
+    #print("NEWOPC", new_opcode)
+    #input()
     return (opcode_info, new_opcode)
 
 def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeInfoGroup, type[InputType], type[DropdownType]]:
@@ -278,7 +402,7 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
         extension_info: the raw extension information
     """
     extension_id = extension_info["id"] # TODO: get correct name
-    menus: dict[str, dict[str, Any]] = extension_info.get("menus", {})
+    menus: dict[str, dict[str, Any]|list] = extension_info.get("menus", {})
     info_group = OpcodeInfoGroup(
         name=extension_id,
         opcode_info=DualKeyDict(),
@@ -331,40 +455,100 @@ def generate_file_code(
             cls_code += f"\n{INDENT}{enum_item.name} = {grepr(enum_item.value, level_offset=1)}"
         return cls_code
     
-    fingerprint = ContentFingerprint.from_value(js_code)
+    #fingerprint = ContentFingerprint.from_value(js_code)
     
     file_code = "\n\n".join((
         "from pypenguin.opcode_info.data_imports import *",
         generate_enum_code(dropdown_type_cls),
         generate_enum_code(input_type_cls),
         f"{info_group.name} = {grepr(info_group, safe_dkd=True)}",
-        f"extension_fingerprint = {fingerprint}"
+    #    f"{FINGERPRINT_VARIABLE} = {fingerprint}"
     ))
     return file_code
 
-def generate_extension_info_py_file(extension: str, destination_gen: Callable[[str], str]) -> None:
+def generate_extension_info_py_file(extension: str) -> str:
     """
-    Generate a python file, which stores information about the blocks of the given extension and is required for the core module
+    Generate a python file, which stores information about the blocks of the given extension and is required for the core module. Returns the file path of the python file
 
     Args:
         extension: the file path or https URL or JS Data URI of the extension code
-        destination: the destination path for the generated python file
     """
-    extension_info, js_code = extract_getinfo_and_code(extension)
+    if GEN_OPCODE_INFO_DIR is None:
+        raise SetupError("Setup has not been completed. Please run ext_info_gen_setup before proceeding.")
+    
+    js_code = fetch_js_code(extension)
+#    start = time()
+    extension_info = extract_getinfo(js_code)
+    
+    destination_file_name = f"{extension_info['id']}.py"
+    destination_file_path = path.join(GEN_OPCOD_INFO_DIR, destination_file_name)
+    cache_file_path = path.join(GEN_OPCOD_INFO_DIR, CACHE_FILENAME)
+    
+    if path.exists(destination_file_path):
+       cache: dict[str, dict[str, Any]]
+       if path.exists(cache_file_path):
+           with open(cache_file_path, "r") as cache_file:
+               cache = loads(cache_file.read())
+       else:
+            cache = {}
+       if destination_file_name in cache:
+           file_cache = cache[destination_file_name]
+           last_update_time = datetime.fromisoformat(file_cache["lastUpdate"])
+           py_fingerprint = ContentFingerprint.from_json(file_cache["pyFingerprint"])
+           js_fingerprint = ContentFingerprint.from_json(file_cache["jsFingerprint"])
+           if last_update_time
+            
+            
+        #try:
+        #    spec = importutil.spec_from_file_location(name="info_file", location=destination_file_path)
+        #    if spec is None or spec.loader is None:
+        #        raise ImportError(f"Could not load module spec for {destination}")
+        #
+        #    module = importutil.module_from_spec(spec)
+        #    sys_modules["info_file"] = module
+        #    spec.loader.exec_module(module)
+        #
+        #except FileNotFoundError as error: # basically impossible
+        #    print(f"[File Error] {error}")
+        #    sys_exit(1)
+        #except ImportError as error:
+        #    print(f"[Import Error] {error}")
+        #    sys_exit(1)
+        #except SyntaxError as error:
+        #    print(f"[Syntax Error in module] {error}")
+        #    sys_exit(1)
+        #except Exception as error:
+        #    print(f"[Unexpected Error] {error}")
+        #    sys_exit(1)
+        #
+        #fingerprint = getattr(module, FINGERPRINT_VARIABLE, None)
+        #if isinstance(fingerprint, ContentFingerprint):
+        #    if fingerprint.matches(js_code): 
+        #        # if the py file was generated based on the same js code, just keep it
+        #        print("JUST KEPT IT")
+        #        #stop = time()
+        #        #print("TIME:", stop-start)
+        #        return destination
+        #print("DID NOT MATCH OR INVALID FINGERPRINT")
+    
     info_group, input_type_cls, dropdown_type_cls = generate_opcode_info_group(extension_info)
     file_code = generate_file_code(info_group, input_type_cls, dropdown_type_cls, js_code)
-    destination = destination_gen(info_group.name)
-    with open(destination, "w") as destination_file:
+    with open(destination_file_path, "w") as destination_file:
         destination_file.write(file_code)
-        
+    print("NEWLY WRITTEN")
+#    stop = time()
+#    print("TIME:", stop-start)
+    return destination
 
+#from time import time
 for extension in [
-#    "example_extensions/js_extension/dumbExample.js",
-#    "https://extensions.turbowarp.org/true-fantom/base.js",
+    "example_extensions/js_extension/dumbExample.js",
+    "https://extensions.turbowarp.org/true-fantom/base.js",
     "example_extensions/js_extension/pmControlsExpansion.js",
+    "https://extensions.penguinmod.com/extensions/derpygamer2142/gpusb3.js",
+    "https://extensions.penguinmod.com/extensions/pooiod/Box2D.js",
 ]:
     generate_extension_info_py_file(
         extension=extension,
         destination_gen=lambda extension_id: f"example_extensions/gen_opcode_info/{extension_id}.py"
     )
-

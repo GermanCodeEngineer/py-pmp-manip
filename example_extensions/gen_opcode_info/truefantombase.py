@@ -19,7 +19,7 @@ class ExtensionInputType(InputType):
 truefantombase = OpcodeInfoGroup(
     name="truefantombase",
     opcode_info=DualKeyDict({
-        ("truefantombase_is_base_block", "truefantombase_is_base_block"): OpcodeInfo(
+        ("truefantombase_is_base_block", "truefantombase::is base ([B]) [A]?"): OpcodeInfo(
             opcode_type=OpcodeType.BOOLEAN_REPORTER,
             inputs=DualKeyDict({
                 ("A", "A"): InputInfo(type=BuiltinInputType.TEXT, menu=None),
@@ -37,7 +37,7 @@ truefantombase = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("truefantombase_base_block", "truefantombase_base_block"): OpcodeInfo(
+        ("truefantombase_base_block", "truefantombase::(A) from base ([B]) to base ([C])"): OpcodeInfo(
             opcode_type=OpcodeType.STRING_REPORTER,
             inputs=DualKeyDict({
                 ("A", "A"): InputInfo(type=BuiltinInputType.TEXT, menu=None),
@@ -73,3 +73,5 @@ truefantombase = OpcodeInfoGroup(
         ),
     }),
 )
+
+extension_fingerprint = ContentFingerprint(length=7769, hash=b'k\xf9Q(x\xf7\xd6\n\xc4yw\x12\x16\x10\xcc\x90v \xf1qRY\xe3F\x98DTy\xa4\xc6q5')

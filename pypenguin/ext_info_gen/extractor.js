@@ -7,9 +7,9 @@ const { URL } = require("url");
 
 function createTranslate(vm) {
     const translateFn = function (message, args) {
-        if (message && typeof message === 'object') {
+        if (message && typeof message === "object") {
             // already in expected format
-        } else if (typeof message === 'string') {
+        } else if (typeof message === "string") {
             message = { default: message };
         } else {
             throw new Error("unsupported data type in translate()");
@@ -21,8 +21,8 @@ function createTranslate(vm) {
 
     const getLocale = () => {
         if (vm && vm.getLocale) return vm.getLocale();
-        if (typeof navigator !== 'undefined') return navigator.language;
-        return 'en';
+        if (typeof navigator !== "undefined") return navigator.language;
+        return "en";
     };
 
     let storedTranslations = {};
@@ -33,7 +33,7 @@ function createTranslate(vm) {
         // simulate the behavior of format-message.namespace().setup()
     };
 
-    Object.defineProperty(translateFn, 'language', {
+    Object.defineProperty(translateFn, "language", {
         configurable: true,
         enumerable: true,
         get: () => getLocale()
@@ -49,6 +49,21 @@ function createTranslate(vm) {
 
     return translateFn;
 }
+
+register = (ext) => {
+    const dangerousMethods = ["init"];
+
+    // Patch the prototype directly
+    const proto = Object.getPrototypeOf(ext);
+    for (const method of dangerousMethods) {
+        if (typeof proto[method] === "function") {
+            console.warn(`Patching prototype method '${method}'`);
+            proto[method] = () => {};
+        }
+    }
+
+    globalThis._scratchExtension = ext;
+};
 
 globalThis.Scratch = {
     ArgumentAlignment: {
@@ -99,9 +114,7 @@ globalThis.Scratch = {
     },
     extensions: {
         "unsandboxed": true,
-        "register": (ext) => {
-            globalThis._scratchExtension = ext;
-        },
+        "register": register,
         "isPenguinMod": true
     },
     translate: createTranslate(null),
@@ -110,20 +123,16 @@ globalThis.Scratch = {
         runtime: {
             registerCompiledExtensionBlocks: (extensionId, compileInfo) => {
                 // do nothing since we don't care about compilation stuff
-            } 
+            },
+            on: (eventName, func) => { // TODO: research
+                // do nothing since we don't care about what happens after loading the extension
+            },
         }
     }
     // I only included the properties which a resonable getInfo should use
 }
 
 // ---- Main loader ----
-
-const inputArg = process.argv[2];
-if (!inputArg) {
-    console.error("Usage: node extract-info.js <file.js | https://... | data:...>");
-    process.exit(1);
-}
-
 function runScript(code) {
     try {
         const module = { exports: {} };
@@ -145,40 +154,12 @@ function runScript(code) {
     }
 }
 
-function loadFromURL(urlStr) {
-    const parsed = new URL(urlStr);
-    if (parsed.protocol === 'data:') {
-        const [, base64] = urlStr.split(',');
-        const buf = Buffer.from(base64, 'base64');
-        runScript(buf.toString());
-    } else if (parsed.protocol === 'https:') {
-        https.get(urlStr, res => {
-            if (res.statusCode !== 200) {
-                console.error("Failed to load URL:", res.statusCode);
-                res.resume();
-                return;
-            }
-            let data = "";
-            res.on("data", chunk => data += chunk);
-            res.on("end", () => runScript(data));
-        }).on("error", e => {
-            console.error("HTTPS error:", e);
-        });
-    } else {
-        console.error("Unsupported URL scheme:", parsed.protocol);
-        process.exit(1);
-    }
+const filePath = process.argv[2];
+if (!filePath) {
+    console.error("Usage: node <this file> <extensionFile.js>");
+    process.exit(1);
 }
 
-function loadFromFile(filePath) {
-    const fullPath = path.resolve(filePath);
-    const code = fs.readFileSync(fullPath, "utf-8");
-    runScript(code);
-}
-
-// Detect and dispatch
-if (inputArg.startsWith("http") || inputArg.startsWith("data:")) {
-    loadFromURL(inputArg);
-} else {
-    loadFromFile(inputArg);
-}
+const fullPath = path.resolve(filePath);
+const code = fs.readFileSync(fullPath, "utf-8");
+runScript(code);
