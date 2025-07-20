@@ -44,7 +44,6 @@ ARGUMENT_TYPE_TO_DROPDOWN_TYPE: dict[str, DropdownType] = {
 INDENT = 4*" "
 EXTRACTOR_PATH = "pypenguin/ext_info_gen/extractor.js"
 CACHE_FILENAME = "cache.json"
-FINGERPRINT_VARIABLE = "extension_fingerprint"
 
 # Configurable:
 GEN_OPCODE_INFO_DIR: str = None
@@ -447,7 +446,6 @@ def generate_file_code(
         info_group: OpcodeInfoGroup, 
         input_type_cls: type[InputType], 
         dropdown_type_cls: type[DropdownType],
-        js_code: str,
     ) -> str:
     """
     Generate the code of a python file, which stores information about the blocks of the given extension and is required for the core module
@@ -456,7 +454,6 @@ def generate_file_code(
         info_group: the group of information about the blocks of the given extension
         input_type_cls: the generated class containing the custom input types
         dropdown_type_cls: the generated class containing the custom dropdown types
-        js_code: the extension's full javascript code
     """
     def generate_enum_code(enum_cls: type[PypenguinEnum]) -> str:
         cls_code = f"class {enum_cls.__name__}({enum_cls.__bases__[0].__name__}):"
@@ -467,14 +464,11 @@ def generate_file_code(
             cls_code += f"\n{INDENT}{enum_item.name} = {grepr(enum_item.value, level_offset=1)}"
         return cls_code
     
-    #fingerprint = ContentFingerprint.from_value(js_code)
-    
     file_code = "\n\n".join((
         "from pypenguin.opcode_info.data_imports import *",
         generate_enum_code(dropdown_type_cls),
         generate_enum_code(input_type_cls),
         f"{info_group.name} = {grepr(info_group, safe_dkd=True)}",
-    #    f"{FINGERPRINT_VARIABLE} = {fingerprint}"
     ))
     return file_code
 
@@ -483,17 +477,17 @@ def consider_state(
         destination_file_path: str, 
         cache_file_path: str, 
         by_url: bool,
-    ) -> tuple[bool, bool]:
+    ) -> bool|type(...):
     """
-    Returns wether the extensions JavaScript should be fetched again and wether the python file should be (re-)generated
+    Returns wether the extensions JavaScript should be fetched again and the python file should be (re-)generated
     """
     if not(path.exists(destination_file_path)) or not(path.exists(cache_file_path)):
-        return (True, True)
+        return True
     
     with open(cache_file_path, "r") as cache_file:
         cache: dict[str, dict[str, Any]] = loads(cache_file.read())
     if destination_file_name not in cache:
-        return (True, True)
+        return True
     
     file_cache = cache[destination_file_name]
     py_fingerprint = ContentFingerprint.from_json(file_cache["pyFingerprint"])
@@ -505,9 +499,10 @@ def consider_state(
         is_too_old = (datetime.now(timezone.utc) - last_update_time) > JS_FETCH_INTERVAL # wether the last JS fetch is too long ago
     else:
         is_too_old = True # fetching the JS is not expensive in this case
-    if not py_fingerprint.matches(python_code): # if the python code was manipulated
-        return (is_too_old, True)
-    return (is_too_old, False)
+    if py_fingerprint.matches(python_code): # if the python code was NOT manipulated
+        return ... if is_too_old else False
+    else:
+        return ...
 
 def generate_extension_info_py_file(extension: str) -> str:
     """
@@ -520,45 +515,23 @@ def generate_extension_info_py_file(extension: str) -> str:
     if GEN_OPCODE_INFO_DIR is None:
         raise SetupError("Setup has not been completed. Please run ext_info_gen_setup before proceeding.")
     
-    js_code = fetch_js_code(extension)
-    extension_info = extract_getinfo(js_code)
-    
     destination_file_name = f"{extension_info['id']}.py"
     destination_file_path = path.join(GEN_OPCODE_INFO_DIR, destination_file_name)
     cache_file_path = path.join(GEN_OPCODE_INFO_DIR, CACHE_FILENAME)
+    should_continue = consider_state(
+        destination_file_name, 
+        destination_file_path, 
+        cache_file_path, 
+        by_url=(extension.startswith("http://") or extension.startswith("https://")), 
+    )
+    if should_continue is False: # neither True nor Ellipsis
+        return destination_file_path
+    js_code = fetch_js_code(extension)
+    js_fingerprint = ContentFingerprint.from_json(file_cache["jsFingerprint"])
+    if (should_continue is ...) and js_fingerprint.matches(js_code):
+        return destination_file_path
     
-    
-            
-        #try:
-        #    spec = importutil.spec_from_file_location(name="info_file", location=destination_file_path)
-        #    if spec is None or spec.loader is None:
-        #        raise ImportError(f"Could not load module spec for {destination}")
-        #
-        #    module = importutil.module_from_spec(spec)
-        #    sys_modules["info_file"] = module
-        #    spec.loader.exec_module(module)
-        #
-        #except FileNotFoundError as error: # basically impossible
-        #    print(f"[File Error] {error}")
-        #    sys_exit(1)
-        #except ImportError as error:
-        #    print(f"[Import Error] {error}")
-        #    sys_exit(1)
-        #except SyntaxError as error:
-        #    print(f"[Syntax Error in module] {error}")
-        #    sys_exit(1)
-        #except Exception as error:
-        #    print(f"[Unexpected Error] {error}")
-        #    sys_exit(1)
-        #
-        #fingerprint = getattr(module, FINGERPRINT_VARIABLE, None)
-        #if isinstance(fingerprint, ContentFingerprint):
-        #    if fingerprint.matches(js_code): 
-        #        # if the py file was generated based on the same js code, just keep it
-        #        print("JUST KEPT IT")
-        #        return destination
-        #print("DID NOT MATCH OR INVALID FINGERPRINT")
-    
+    extension_info = extract_getinfo(js_code)
     info_group, input_type_cls, dropdown_type_cls = generate_opcode_info_group(extension_info)
     file_code = generate_file_code(info_group, input_type_cls, dropdown_type_cls, js_code)
     with open(destination_file_path, "w") as destination_file:
