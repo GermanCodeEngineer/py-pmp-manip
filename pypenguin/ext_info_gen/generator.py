@@ -1,17 +1,16 @@
 import sys, os; sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir))); del sys, os
 
-from aenum        import extend_enum, Enum
+from aenum        import extend_enum
 from base64       import b64decode
 from datetime     import datetime, timezone, timedelta
-from importlib    import util as importutil
 from json         import loads, dumps
 from os           import remove as os_remove, makedirs, path
 from requests     import get as requests_get, RequestException
 from subprocess   import run as run_subprocess
-from sys          import modules as sys_modules, exit as sys_exit
 from tempfile     import NamedTemporaryFile
-from typing       import Any, Callable
-from urllib.parse import unquote, urlparse
+from types        import EllipsisType
+from typing       import Any
+from urllib.parse import unquote
 
 
 from pypenguin.opcode_info.api import (
@@ -472,45 +471,36 @@ def generate_file_code(
     ))
     return file_code
 
-def consider_state(
-        destination_file_name: str, 
-        destination_file_path: str, 
-        cache_file_path: str, 
-        by_url: bool,
-    ) -> bool|type(...):
-    """
-    Returns wether the extensions JavaScript should be fetched again and the python file should be (re-)generated
-    """
-    if not(path.exists(destination_file_path)) or not(path.exists(cache_file_path)):
-        return True
-    
-    with open(cache_file_path, "r") as cache_file:
-        cache: dict[str, dict[str, Any]] = loads(cache_file.read())
-    if destination_file_name not in cache:
-        return True
-    
-    file_cache = cache[destination_file_name]
-    py_fingerprint = ContentFingerprint.from_json(file_cache["pyFingerprint"])
-    last_update_time = datetime.fromisoformat(file_cache["lastUpdate"])
-    
-    with open(destination_file_path, "r") as destination_file:
-        python_code = destination_file.read()
-    if by_url:
-        is_too_old = (datetime.now(timezone.utc) - last_update_time) > JS_FETCH_INTERVAL # wether the last JS fetch is too long ago
-    else:
-        is_too_old = True # fetching the JS is not expensive in this case
-    if py_fingerprint.matches(python_code): # if the python code was NOT manipulated
-        return ... if is_too_old else False
-    else:
-        return ...
-
 def generate_extension_info_py_file(extension: str) -> str:
     """
     Generate a python file, which stores information about the blocks of the given extension and is required for the core module. Returns the file path of the python file
 
     Args:
         extension: the file path or https URL or JS Data URI of the extension code
-    """                
+    """
+    def consider_state(by_url: bool) -> bool|EllipsisType:
+        """
+        Returns wether the extensions JavaScript should be fetched again and the python file should be (re-)generated
+        """
+        if not path.exists(destination_file_path):
+            return True
+        
+        if destination_file_name not in cache:
+            return True
+        
+        py_fingerprint = ContentFingerprint.from_json(file_cache["pyFingerprint"])
+        last_update_time = datetime.fromisoformat(file_cache["lastUpdate"])
+        
+        with open(destination_file_path, "r") as destination_file:
+            python_code = destination_file.read()
+        if by_url:
+            is_too_old = (datetime.now(timezone.utc) - last_update_time) > JS_FETCH_INTERVAL # wether the last JS fetch is too long ago
+        else:
+            is_too_old = True # fetching the JS is not expensive in this case
+        if py_fingerprint.matches(python_code): # if the python code was NOT manipulated
+            return ... if is_too_old else False
+        else:
+            return ...
 
     if GEN_OPCODE_INFO_DIR is None:
         raise SetupError("Setup has not been completed. Please run ext_info_gen_setup before proceeding.")
@@ -518,12 +508,16 @@ def generate_extension_info_py_file(extension: str) -> str:
     destination_file_name = f"{extension_info['id']}.py"
     destination_file_path = path.join(GEN_OPCODE_INFO_DIR, destination_file_name)
     cache_file_path = path.join(GEN_OPCODE_INFO_DIR, CACHE_FILENAME)
-    should_continue = consider_state(
-        destination_file_name, 
-        destination_file_path, 
-        cache_file_path, 
-        by_url=(extension.startswith("http://") or extension.startswith("https://")), 
-    )
+    cache: dict[str, dict[str, Any]]
+    if path.exists(cache_file_path):
+        with open(cache_file_path, "r") as cache_file:
+            cache = loads(cache_file.read())
+    else:
+        cache = {}
+    file_cache = cache.get(destination_file_name, None)
+
+
+    should_continue = consider_state(by_url=(extension.startswith("http://") or extension.startswith("https://")))
     if should_continue is False: # neither True nor Ellipsis
         return destination_file_path
     js_code = fetch_js_code(extension)
@@ -537,7 +531,7 @@ def generate_extension_info_py_file(extension: str) -> str:
     with open(destination_file_path, "w") as destination_file:
         destination_file.write(file_code)
     print("NEWLY WRITTEN")
-    return destination
+    return destination_file_path
 
 if __name__ == "__main__":
     for extension in [
