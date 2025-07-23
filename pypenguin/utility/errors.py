@@ -2,7 +2,6 @@ class PypenguinError(Exception):
     pass
 
 
-class SetupError(PypenguinError): pass
 class BlameDevsError(PypenguinError): pass
 class PathError(PypenguinError): pass
 
@@ -90,8 +89,14 @@ class SameValueTwiceError(ValidationError):
 
 
 
+###############################################################
+#                 ERRORS FOR THE EXT INFO GEN                 #
+###############################################################
+class UnknownExtensionAttributeError(PypenguinError):
+    pass
+
 __all__ = [
-    "PypenguinError", "SetupError", "BlameDevsError", "ThanksError", 
+    "PypenguinError", "BlameDevsError", "ThanksError", 
     "OpcodeInfoError", "UnknownOpcodeError", "SameOpcodeTwiceError", 
     "DeserializationError", "ConversionError",
     "ValidationError", "PathValidationError", "TypeValidationError", "InvalidValueError",
@@ -99,5 +104,6 @@ __all__ = [
     "MissingDropdownError", "UnnecessaryDropdownError", "InvalidDropdownValueError", 
     "InvalidOpcodeError", "InvalidBlockShapeError", "SpriteLayerStackError", 
     "SameValueTwiceError",
+    "UnknownExtensionAttributeError",
 ]
 

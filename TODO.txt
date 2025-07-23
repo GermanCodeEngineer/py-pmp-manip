@@ -15,4 +15,3 @@
     - check if dropdown validation where only default kind: allows non strings? (should not)
     - make sure: js execution in ext_info_gen is safe
     - simplify new opcode input/dropdown representation brackets
-    - remove "utf-8" everywhere, just use default

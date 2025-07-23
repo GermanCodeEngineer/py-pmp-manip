@@ -3,7 +3,6 @@ import zipfile
 
 from pypenguin.utility.errors import PathError
 
-
 def read_all_files_of_zip(zip_path: str) -> dict[str, bytes]:
     """
     Reads all files from a ZIP archive and returns their contents.
@@ -30,6 +29,27 @@ def read_all_files_of_zip(zip_path: str) -> dict[str, bytes]:
             with zip_ref.open(file_name) as file_ref:
                 contents[file_name] = file_ref.read()
     return contents
+
+def read_file_text(file_path: str) -> str:
+    """
+    Read the text of a file.
+
+    Args:
+        file_path: file path of the file to read
+    """
+    with open(file_path, "r") as file:
+        return file.read()
+
+def write_file_text(file_path: str, text: str) -> None:
+    """
+    Write text to a file.
+
+    Args:
+        file_path: file path of the file to write to
+        text: the text to write
+    """
+    with open(file_path, "w") as file:
+        file.write(text)
 
 def create_zip_file(zip_path: str, contents: dict[str, bytes]) -> None:
     """
@@ -67,5 +87,5 @@ def ensure_correct_path(_path: str, target_folder_name: str = "pypenguin") -> st
         return final_path
 
 
-__all__ = ["read_all_files_of_zip", "create_zip_file", "ensure_correct_path"]
+__all__ = ["read_all_files_of_zip", "read_file_text", "write_file_text", "create_zip_file", "ensure_correct_path"]
 

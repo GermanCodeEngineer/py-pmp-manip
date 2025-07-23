@@ -85,7 +85,7 @@ def test_FRProject_to_file(monkeypatch: MonkeyPatch):
         calls += 1
         assert path == "project.sb3"
         assert contents == {
-            "project.json": gdumps({"name": "My Project"}).encode("utf-8"),
+            "project.json": gdumps({"name": "My Project"}).encode(),
             "image.png": b"image-bytes",
         }
 

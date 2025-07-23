@@ -1,5 +1,3 @@
-import sys, os; sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir))); del sys, os
-
 from aenum        import extend_enum
 from base64       import b64decode
 from datetime     import datetime, timezone, timedelta
@@ -20,8 +18,8 @@ from pypenguin.opcode_info.api import (
     DropdownValueRule,
 )
 from pypenguin.utility         import (
-    grepr, DualKeyDict, PypenguinEnum, ContentFingerprint,
-    ThanksError, SetupError,
+    grepr, read_file_text, write_file_text, DualKeyDict, PypenguinEnum, ContentFingerprint,
+    ThanksError, UnknownExtensionAttributeError,
 )
 
 ARGUMENT_TYPE_TO_INPUT_TYPE: dict[str, InputType] = {
@@ -87,7 +85,7 @@ def fetch_js_code(extension: str) -> str:
         try:
             meta, encoded = extension.split(",", 1)
             if ";base64" in meta:
-                return b64decode(encoded).decode("utf-8")
+                return b64decode(encoded).decode()
             else:
                 return unquote(encoded)
         except Exception as error:
@@ -109,8 +107,7 @@ def fetch_js_code(extension: str) -> str:
         if not path.exists(extension):
             raise FileNotFoundError(f"File not found: {extension}")
         try:
-            with open(extension, "r", encoding="utf-8") as file:
-                return file.read()
+            return read_file_text(extension)
         except OSError as error:
             raise OSError(f"Failed to read file {extension}") from error
 
@@ -122,7 +119,11 @@ def extract_getinfo(js_code: str) -> dict[str, Any]:
     Args:
         js_code: the file path or https URL or JS Data URI of the extension code
     """
-    with NamedTemporaryFile(mode="w", suffix=".js", delete=False) as temp_js:
+    with NamedTemporaryFile(
+        mode="w", suffix=".js", 
+        encoding="utf-8", 
+        delete=False
+    ) as temp_js:
         temp_js.write(js_code)
         temp_js_path = temp_js.name
 
@@ -131,7 +132,9 @@ def extract_getinfo(js_code: str) -> dict[str, Any]:
         result = run_subprocess(
             ["node", EXTRACTOR_PATH, temp_js_path],
             capture_output=True,
-            text=True
+            text=True,
+            encoding="utf-8",
+            timeout=1, # usually seems to take around 0.10-0.14 seconds on windows
         )
     except FileNotFoundError as error: # when python can't find the node executable
         raise RuntimeError("Node.js is not installed or not found in PATH.") from error
@@ -140,13 +143,15 @@ def extract_getinfo(js_code: str) -> dict[str, Any]:
     
     if result.returncode != 0:
         raise RuntimeError(result.stderr)
+    if not isinstance(result.stdout, str):
+        raise RuntimeError("Unexpected Error in subprocess.run itself (before extracting extension information)")
     info = loads(result.stdout.splitlines()[-1]) # avoid error, when extension itself logs sth
     extension_info = info["extensionInfo"]
     js_code = info["jsCode"]
     # Relevant of the returned attributes: ["id", "blocks", "menus"]
     for attr in extension_info.keys():
         if attr not in {"name", "color1", "color2", "color3", "menuIconURI", "docsURI", "isDynamic", "id", "blocks", "menus"}:
-            raise Exception(attr)#ThanksError()
+            raise UnknownExtensionAttributeError(attr)
     return extension_info
 
 def process_all_menus(menus: dict[str, dict[str, Any]|list]) -> tuple[type[InputType], type[DropdownType]]:
@@ -246,9 +251,8 @@ def generate_block_opcode_info(
         case "conditional" | "loop":
             opcode_type = OpcodeType.STATEMENT
             branch_count = max(branch_count, 1)
-            #raise NotImplementedError() # TODO: add a subscript at the end or smth
         case "label" | "button":
-            return (None, None) # not really block, but a label or button
+            return (None, None) # not really block, but a label or button, can just be skipped
         case "xml":
             raise NotImplementedError("XML blocks are NOT supported. It is pretty much impossible to translate one into a database entry.")
         case _:
@@ -302,8 +306,6 @@ def generate_block_opcode_info(
             inputs.set(key1=argument_id, key2=argument_id, value=input_info)
         elif (input_info is None) and (dropdown_info is not None):
             dropdowns.set(key1=argument_id, key2=argument_id, value=dropdown_info)
-        else:
-            raise Exception()
     
     for i in range(branch_count):
         input_id = "SUBSTACK" if i == 0 else f"SUBSTACK{i+1}"
@@ -330,7 +332,7 @@ def generate_block_opcode_info(
             "alignments", "hideFromPalette", "filter",
             "shouldRestartExistingThreads", "isEdgeActivated",
         }:
-            raise Exception(attr)#ThanksError()
+            raise UnknownExtensionAttributeError(attr)
 
     opcode_info = OpcodeInfo(
         opcode_type=opcode_type,
@@ -391,14 +393,14 @@ def generate_block_opcode_info(
                 new_opcode_segments.append(f"{opening}{argument_name}{closing}")
             else:
                 new_opcode_segments.append(line_segment)
-        new_opcode_segments.append("{SUBSTACK}" if i == 0 else "{SUBSTACK%}".replace("%", str(i+1)))
+        new_opcode_segments.append("{SUBSTACK}" if i == 0 else f"{{SUBSTACK{i+1}}}")
         
     if   branch_count == len(text_lines):
         pass
     elif (branch_count + 1) == len(text_lines):
         new_opcode_segments.pop()
     else:
-        raise Exception()
+        raise ValueError("`branchCount` must be equal to or at most 1 bigger then the line count of `text`")
     new_opcode = f"{extension_id}::{" ".join(new_opcode_segments)}"
     
     #print(opcode_info)
@@ -494,8 +496,7 @@ def generate_extension_info_py_file(extension: str, extension_id: str) -> str:
         py_fingerprint = ContentFingerprint.from_json(file_cache["pyFingerprint"])
         last_update_time = datetime.fromisoformat(file_cache["lastUpdate"])
         
-        with open(destination_file_path, "r") as destination_file:
-            python_code = destination_file.read()
+        python_code = read_file_text(destination_file_path)
         if by_url:
             is_too_old = (datetime.now(timezone.utc) - last_update_time) > JS_FETCH_INTERVAL # wether the last JS fetch is too long ago
         else:
@@ -514,8 +515,7 @@ def generate_extension_info_py_file(extension: str, extension_id: str) -> str:
         """
         cache_copy = {"_": "Please DO NOT TOUCH this file. If you want to be safe just delete it and it will be regenerated"}
         cache_copy |= cache
-        with open(cache_file_path, "w") as cache_file:
-            cache_file.write(dumps(cache_copy, indent=4))
+        write_file_text(cache_file_path, dumps(cache_copy, indent=4))
 
     if GEN_OPCODE_INFO_DIR is None:
         raise SetupError("Setup has not been completed. Please run ext_info_gen_setup before proceeding.")
@@ -525,8 +525,7 @@ def generate_extension_info_py_file(extension: str, extension_id: str) -> str:
     cache_file_path = path.join(GEN_OPCODE_INFO_DIR, CACHE_FILENAME)
     cache: dict[str, dict[str, Any]]
     if path.exists(cache_file_path):
-        with open(cache_file_path, "r") as cache_file:
-            cache = loads(cache_file.read())
+        cache = loads(read_file_text(cache_file_path))
     else:
         cache = {}
     file_cache = cache.get(destination_file_name, None)
@@ -550,8 +549,8 @@ def generate_extension_info_py_file(extension: str, extension_id: str) -> str:
     extension_info = extract_getinfo(js_code)
     info_group, input_type_cls, dropdown_type_cls = generate_opcode_info_group(extension_info)
     file_code = generate_file_code(info_group, input_type_cls, dropdown_type_cls)
-    with open(destination_file_path, "w") as destination_file:
-        destination_file.write(file_code)
+    write_file_text(destination_file_path, file_code)
+    
     cache[destination_file_name] = {
         "jsFingerprint": ContentFingerprint.from_value(js_code).to_json(),
         "pyFingerprint": ContentFingerprint.from_value(file_code).to_json(),

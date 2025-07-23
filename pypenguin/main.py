@@ -1,6 +1,3 @@
-import sys, os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
-
 from pypenguin.core import *
 from pypenguin.opcode_info.data import info_api
 from pypenguin.opcode_info.data.scratch_music import scratch_music

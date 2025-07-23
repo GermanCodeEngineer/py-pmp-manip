@@ -1,6 +1,5 @@
 __pycache__/
-extracted.json
-pypenguin/extracted.json
+example_extensions/gen_opcode_info/
 .vscode
 .coverage
 htmlcov

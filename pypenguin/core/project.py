@@ -116,7 +116,7 @@ class FRProject:
         """
         assert file_path.endswith(".sb3") or file_path.endswith(".pmp")
         contents = read_all_files_of_zip(file_path)
-        project_data = loads(contents["project.json"].decode("utf-8"))
+        project_data = loads(contents["project.json"].decode())
         print(FRProject.__repr__(project_data))
         del contents["project.json"]
         if   file_path.endswith(".sb3"):
@@ -145,7 +145,7 @@ class FRProject:
         assert file_path.endswith(".sb3") or file_path.endswith(".pmp")
         project_data, asset_files = self.to_data()
         contents = asset_files
-        contents["project.json"] = gdumps(project_data).encode("utf-8")
+        contents["project.json"] = gdumps(project_data).encode()
         create_zip_file(file_path, contents)
 
     def to_second(self, info_api: OpcodeInfoAPI) -> "SRProject":

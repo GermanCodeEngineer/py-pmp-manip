@@ -109,7 +109,7 @@ class ContentFingerprint:
         Args:
             value: the string to hash
         """
-        return sha256(value.encode("utf-8")).hexdigest()
+        return sha256(value.encode()).hexdigest()
     
     @classmethod
     def from_value(cls, value: str) -> "ContentFingerprint":
