@@ -1,0 +1,36 @@
+[project]
+name = "pypenguin"
+version = "0.1.0"
+description = "Python tool for creating, editing and inspecting Penguinmod(.pmp) and Scratch(.sb3) files."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "GPL-3.0-or-later" }
+authors = [{ name = "anonymous" }]
+dependencies = [
+    "aenum==3.1.16",
+    "lxml==6.0.0",
+    "pillow==11.3.0",
+    "pydub==0.25.1",
+    "requests==2.32.4"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/Fritzforcode/pypenguin/"
+"Repository" = "https://github.com/Fritzforcode/pypenguin/"
+"Issues" = "https://github.com/Fritzforcode/pypenguin/issues/"
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov"
+]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["pypenguin"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
