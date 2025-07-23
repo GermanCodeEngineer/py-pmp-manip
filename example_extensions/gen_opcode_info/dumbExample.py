@@ -55,5 +55,3 @@ dumbExample = OpcodeInfoGroup(
         ),
     }),
 )
-
-extension_fingerprint = ContentFingerprint(length=1231, hash=b'\xbf\xb6\xfb\x13@\xc6\x13\xdb\x0f\x81\xcbW\x9ea\x0f\x1dc\xbc\xf9\x07\x87Z\xf8\xcbQ\xdb\xc1}GV\xa3\xf2')

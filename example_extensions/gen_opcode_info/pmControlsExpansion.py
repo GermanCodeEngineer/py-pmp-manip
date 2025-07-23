@@ -99,5 +99,3 @@ pmControlsExpansion = OpcodeInfoGroup(
         ),
     }),
 )
-
-extension_fingerprint = ContentFingerprint(length=13915, hash=b'nlU\xfa\x82\xb1~B<r\xe3\xb65\x80\x83>|\xa5r\x89!EA\xd3\x89\xbdS>\xe7n9\xe9')

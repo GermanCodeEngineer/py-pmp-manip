@@ -2229,5 +2229,3 @@ gpusb3 = OpcodeInfoGroup(
         ),
     }),
 )
-
-extension_fingerprint = ContentFingerprint(length=146585, hash=b'%v\x1e\x0c\x8c\xf7\x81o\xae\x0e\xd9\xbb\xa1E\xef)\x8c\xd2\x85\x84\xd94)\x1c\x1f\xe6\x1bn\xfavn\xd5')

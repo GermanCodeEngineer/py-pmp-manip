@@ -73,5 +73,3 @@ truefantombase = OpcodeInfoGroup(
         ),
     }),
 )
-
-extension_fingerprint = ContentFingerprint(length=7769, hash=b'k\xf9Q(x\xf7\xd6\n\xc4yw\x12\x16\x10\xcc\x90v \xf1qRY\xe3F\x98DTy\xa4\xc6q5')

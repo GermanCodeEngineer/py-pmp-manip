@@ -347,7 +347,9 @@ def generate_block_opcode_info(
     for i, text_line in enumerate(text_lines):
         line_segments = text_line.split(" ")
         for line_segment in line_segments:
-            if line_segment.startswith("[") and line_segment.endswith("]"):
+            if not line_segment:
+                continue
+            elif line_segment.startswith("[") and line_segment.endswith("]"):
                 argument_name = line_segment.removeprefix("[").removesuffix("]")
                 # because of the scatterbrainedness of some extension devs:
                 # fun fact: scatterbrainedness (ger. Schusseligkeit)
@@ -406,7 +408,7 @@ def generate_block_opcode_info(
 
 def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeInfoGroup, type[InputType], type[DropdownType]]:
     """
-    Generate a group of information about the blocks of the given extension and the classes containing the custom input and dropdown types
+    Generate a group of information about the blocks of the given extension and the classes containing the custom insput and dropdown types
 
     Args:
         extension_info: the raw extension information
@@ -471,12 +473,13 @@ def generate_file_code(
     ))
     return file_code
 
-def generate_extension_info_py_file(extension: str) -> str:
+def generate_extension_info_py_file(extension: str, extension_id: str) -> str:
     """
     Generate a python file, which stores information about the blocks of the given extension and is required for the core module. Returns the file path of the python file
 
     Args:
         extension: the file path or https URL or JS Data URI of the extension code
+        extension_id: the unique identifier of the extension 
     """
     def consider_state(by_url: bool) -> bool|EllipsisType:
         """
@@ -502,10 +505,22 @@ def generate_extension_info_py_file(extension: str) -> str:
         else:
             return ...
 
+    def update_cache(cache: dict[str, dict[str, Any]]):
+        """
+        Updates the cache file
+        
+        Args:
+            cache: the cache data
+        """
+        cache_copy = {"_": "Please DO NOT TOUCH this file. If you want to be safe just delete it and it will be regenerated"}
+        cache_copy |= cache
+        with open(cache_file_path, "w") as cache_file:
+            cache_file.write(dumps(cache_copy, indent=4))
+
     if GEN_OPCODE_INFO_DIR is None:
         raise SetupError("Setup has not been completed. Please run ext_info_gen_setup before proceeding.")
     
-    destination_file_name = f"{extension_info['id']}.py"
+    destination_file_name = f"{extension_id}.py"
     destination_file_path = path.join(GEN_OPCODE_INFO_DIR, destination_file_name)
     cache_file_path = path.join(GEN_OPCODE_INFO_DIR, CACHE_FILENAME)
     cache: dict[str, dict[str, Any]]
@@ -519,29 +534,43 @@ def generate_extension_info_py_file(extension: str) -> str:
 
     should_continue = consider_state(by_url=(extension.startswith("http://") or extension.startswith("https://")))
     if should_continue is False: # neither True nor Ellipsis
+        print("PY STILL UP TO DATE")
+        file_cache["lastUpdate"] = datetime.now(timezone.utc).isoformat()
+        update_cache(cache)
         return destination_file_path
     js_code = fetch_js_code(extension)
-    js_fingerprint = ContentFingerprint.from_json(file_cache["jsFingerprint"])
-    if (should_continue is ...) and js_fingerprint.matches(js_code):
-        return destination_file_path
+    if file_cache is not None:
+        js_fingerprint = ContentFingerprint.from_json(file_cache["jsFingerprint"])
+        if (should_continue is ...) and js_fingerprint.matches(js_code):
+            file_cache["lastUpdate"] = datetime.now(timezone.utc).isoformat()
+            update_cache(cache)
+            print("PY & JS STILL UP TO DATE")
+            return destination_file_path
     
     extension_info = extract_getinfo(js_code)
     info_group, input_type_cls, dropdown_type_cls = generate_opcode_info_group(extension_info)
-    file_code = generate_file_code(info_group, input_type_cls, dropdown_type_cls, js_code)
+    file_code = generate_file_code(info_group, input_type_cls, dropdown_type_cls)
     with open(destination_file_path, "w") as destination_file:
         destination_file.write(file_code)
-    print("NEWLY WRITTEN")
+    cache[destination_file_name] = {
+        "jsFingerprint": ContentFingerprint.from_value(js_code).to_json(),
+        "pyFingerprint": ContentFingerprint.from_value(file_code).to_json(),
+        "lastUpdate": datetime.now(timezone.utc).isoformat(),
+    }
+    update_cache(cache)
+    print("(RE-)GENERATED PY")
     return destination_file_path
 
 if __name__ == "__main__":
-    for extension in [
-        "example_extensions/js_extension/dumbExample.js",
-        "https://extensions.turbowarp.org/true-fantom/base.js",
-        "example_extensions/js_extension/pmControlsExpansion.js",
-        "https://extensions.penguinmod.com/extensions/derpygamer2142/gpusb3.js",
-        "https://extensions.penguinmod.com/extensions/pooiod/Box2D.js",
+    ext_info_gen_setup(
+        gen_opcode_info_dir="example_extensions/gen_opcode_info/",
+        js_fetch_interval=timedelta(days=1),
+    )
+    for extension_id, extension in [
+        ("dumbExample",         "example_extensions/js_extension/dumbExample.js"),
+        ("truefantombase",      "https://extensions.turbowarp.org/true-fantom/base.js"),
+        ("pmControlsExpansion", "example_extensions/js_extension/pmControlsExpansion.js"),
+        ("gpusb3",              "https://extensions.penguinmod.com/extensions/derpygamer2142/gpusb3.js"),
+        ("P7BoxPhys",           "https://extensions.penguinmod.com/extensions/pooiod/Box2D.js"),
     ]:
-        generate_extension_info_py_file(
-            extension=extension,
-            destination_gen=lambda extension_id: f"example_extensions/gen_opcode_info/{extension_id}.py"
-        )
+        generate_extension_info_py_file(extension, extension_id)

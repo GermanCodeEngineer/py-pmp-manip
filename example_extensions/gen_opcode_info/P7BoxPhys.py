@@ -1048,5 +1048,3 @@ P7BoxPhys = OpcodeInfoGroup(
         ),
     }),
 )
-
-extension_fingerprint = ContentFingerprint(length=436150, hash=b'\x88h\xb3^B\x91\xc4\xa1g\x82\xe4\xb0\x122d\xa3\x11\xca\xa9?\x86\xf6\xb7\xe7?h\xba\xcb\xc9\x0c\xaa\x1b')
