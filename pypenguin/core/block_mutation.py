@@ -6,7 +6,7 @@ from dataclasses import field
 
 from pypenguin.important_consts import SHA256_SEC_MAIN_ARGUMENT_NAME
 from pypenguin.utility          import (
-    grepr_dataclass, string_to_sha256, gdumps, ValidationConfig,
+    grepr_dataclass, string_to_sha256, gdumps,
     AA_TYPE, AA_HEX_COLOR,
     ThanksError, ConversionError, DeserializationError, 
 )
@@ -377,13 +377,12 @@ class SRMutation(ABC):
     """
 
     @abstractmethod
-    def validate(self, path: list, config: ValidationConfig) -> None:
+    def validate(self, path: list) -> None:
         """
         Ensure the SRMutation is valid, raise ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
         
         Returns:
             None
@@ -417,13 +416,12 @@ class SRCustomBlockArgumentMutation(SRMutation):
     prototype_color: str
     outline_color: str
 
-    def validate(self, path: list, config: ValidationConfig) -> None:
+    def validate(self, path: list) -> None:
         """
         Ensure the SRCustomBlockArgumentMutation is valid, raise ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
         
         Returns:
             None
@@ -468,13 +466,12 @@ class SRCustomBlockMutation(SRMutation):
     prototype_color: str
     outline_color: str
     
-    def validate(self, path: list, config: ValidationConfig) -> None:
+    def validate(self, path: list) -> None:
         """
         Ensure the SRCustomBlockMutation is valid, raise ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
         
         Returns:
             None
@@ -489,7 +486,7 @@ class SRCustomBlockMutation(SRMutation):
         AA_HEX_COLOR(self, path, "prototype_color")
         AA_HEX_COLOR(self, path, "outline_color")
 
-        self.custom_opcode.validate(path+["custom_opcode"], config)
+        self.custom_opcode.validate(path+["custom_opcode"])
 
     
     def to_first(self, itf_if: "InterToFirstIF") -> FRCustomBlockMutation:
@@ -534,13 +531,12 @@ class SRCustomBlockCallMutation(SRMutation):
     
     custom_opcode: "SRCustomBlockOpcode"
     
-    def validate(self, path: list, config: ValidationConfig) -> None:
+    def validate(self, path: list) -> None:
         """
         Ensure the SRCustomBlockCallMutation is valid, raise ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
         
         Returns:
             None
@@ -550,7 +546,7 @@ class SRCustomBlockCallMutation(SRMutation):
         """
         AA_TYPE(self, path, "custom_opcode", SRCustomBlockOpcode)
 
-        self.custom_opcode.validate(path+["custom_opcode"], config)
+        self.custom_opcode.validate(path+["custom_opcode"])
     
     def to_first(self, itf_if: "InterToFirstIF") -> FRCustomBlockCallMutation:
         """
@@ -596,13 +592,12 @@ class SRStopScriptMutation(SRMutation):
     
     is_ending_statement: bool
 
-    def validate(self, path: list, config: ValidationConfig) -> None:
+    def validate(self, path: list) -> None:
         """
         Ensure the SRStopScriptMutation is valid, raise ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
         
         Returns:
             None

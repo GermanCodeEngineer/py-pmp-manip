@@ -1,2 +1,2 @@
-from pypenguin.core import *
-from pypenguin.utility import ValidationConfig
+from pypenguin.core   import *
+from pypenguin.config import *

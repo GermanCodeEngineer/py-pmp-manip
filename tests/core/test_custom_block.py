@@ -2,7 +2,6 @@ from pytest import fixture, raises
 
 from pypenguin.opcode_info.api import BuiltinInputType, InputInfo, OpcodeType
 from pypenguin.utility         import (
-    ValidationConfig, 
     TypeValidationError, RangeValidationError, SameValueTwiceError, InvalidValueError, ConversionError,
 )
 
@@ -23,10 +22,6 @@ def segments():
         "times",
         SRCustomBlockArgument(type=SRCustomBlockArgumentType.STRING_NUMBER, name="repetitions"),
     )
-
-@fixture
-def config():
-    return ValidationConfig()
 
 
 
@@ -55,15 +50,15 @@ def test_SRCustomBlockOpcode_corresponding_input_info(segments):
         "repetitions": InputInfo(BuiltinInputType.TEXT, menu=None),
     }
 
-def test_SRCustomBlockOpcode_validate(config, segments):
+def test_SRCustomBlockOpcode_validate(segments):
     custom_opcode = SRCustomBlockOpcode(segments=segments)
-    custom_opcode.validate([], config)
+    custom_opcode.validate([])
     # can't use execute_attr_validation_tests because frozen=True
-    with raises(TypeValidationError): SRCustomBlockOpcode(segments=5).validate([], config)
-    with raises(RangeValidationError): SRCustomBlockOpcode(segments=()).validate([], config)
-    with raises(TypeValidationError): SRCustomBlockOpcode(segments=(-94,)).validate([], config)
+    with raises(TypeValidationError): SRCustomBlockOpcode(segments=5).validate([])
+    with raises(RangeValidationError): SRCustomBlockOpcode(segments=()).validate([])
+    with raises(TypeValidationError): SRCustomBlockOpcode(segments=(-94,)).validate([])
 
-def test_SRCustomBlockOpcode_validate_same_arg_name_twice(config):
+def test_SRCustomBlockOpcode_validate_same_arg_name_twice():
     custom_opcode = SRCustomBlockOpcode(segments=(
         "...",
         SRCustomBlockArgument(type=SRCustomBlockArgumentType.STRING_NUMBER, name="the same arg name"),
@@ -72,17 +67,17 @@ def test_SRCustomBlockOpcode_validate_same_arg_name_twice(config):
         ";;;",
     ))
     with raises(SameValueTwiceError):
-        custom_opcode.validate(path=[], config=config)
+        custom_opcode.validate(path=[])
 
 
 
-def test_SRCustomBlockArgument_validate(config):
+def test_SRCustomBlockArgument_validate():
     argument = SRCustomBlockArgument(name="some arg name", type=SRCustomBlockArgumentType.STRING_NUMBER)
-    argument.validate(path=[], config=config)
+    argument.validate(path=[])
     # can't use execute_attr_validation_tests because frozen=True
-    with raises(TypeValidationError): SRCustomBlockArgument(name=[], type=argument.type).validate([], config)
-    with raises(InvalidValueError): SRCustomBlockArgument(name="", type=argument.type).validate([], config)
-    with raises(TypeValidationError): SRCustomBlockArgument(name=argument.name, type=True).validate([], config)
+    with raises(TypeValidationError): SRCustomBlockArgument(name=[], type=argument.type).validate([])
+    with raises(InvalidValueError): SRCustomBlockArgument(name="", type=argument.type).validate([])
+    with raises(TypeValidationError): SRCustomBlockArgument(name=argument.name, type=True).validate([])
 
 
 

@@ -1,29 +1,13 @@
 from typing import Any
 
+from pypenguin.config  import get_config
 from pypenguin.utility import grepr_dataclass, ThanksError
 
 
-SCRATCH_SEMVER = "3.0.0"
-
-SCRATCH_VM = "11.1.0"
-
-SCRATCH_META_DATA = {
-    "semver": SCRATCH_SEMVER,
-    "vm": SCRATCH_VM,
-    "agent": "", # doesn't matter
-}
-
-PENGUINMOD_VM = "0.2.0"
-
-PENGUINMOD_META_DATA = {
-    "semver": SCRATCH_SEMVER,
-    "vm": PENGUINMOD_VM,
-    "agent": "", # always empty
-    "platform": {
-        "name": "PenguinMod",
-        "url": "https://penguinmod.com/",
-        "version": "stable",
-    },
+PENGUINMOD_PLATFORM_META_DATA = {
+    "name": "PenguinMod",
+    "url": "https://penguinmod.com/",
+    "version": "stable",
 }
 
 @grepr_dataclass(grepr_fields=["semver", "vm", "agent", "platform"])
@@ -82,9 +66,10 @@ class FRMeta:
         Returns:
             the scratch project meta
         """
+        cfg = get_config()
         return FRMeta(
-            semver   = SCRATCH_SEMVER,
-            vm       = SCRATCH_VM,
+            semver   = cfg.platform_meta.scratch_semver,
+            vm       = cfg.platform_meta.scratch_vm,
             agent    = "",
             platform = None,
         )
@@ -97,9 +82,10 @@ class FRMeta:
         Returns:
             the penguinmod project meta
         """
+        cfg = get_config()
         return FRMeta(
-            semver   = SCRATCH_SEMVER,
-            vm       = PENGUINMOD_VM,
+            semver   = cfg.platform_meta.scratch_semver,
+            vm       = cfg.platform_meta.penguinmod_vm,
             agent    = "",
             platform = FRPenguinModPlatformMeta(
                 name    = "PenguinMod",
@@ -115,7 +101,8 @@ class FRMeta:
         Returns:
             None
         """
-        if (self.semver != SCRATCH_SEMVER) or (self.vm not in {SCRATCH_VM, PENGUINMOD_VM}):
+        cfg = get_config()
+        if (self.semver != cfg.platform_meta.scratch_semver) or (self.vm not in {cfg.platform_meta.scratch_vm, cfg.platform_meta.penguinmod_vm}):
             # agent can be anything i don't care
             raise ThanksError() # project must be older or newer
 
@@ -166,9 +153,10 @@ class FRPenguinModPlatformMeta:
         Returns:
             None
         """
-        if (   (self.name != PENGUINMOD_META_DATA["platform"]["name"])
-            or (self.url != PENGUINMOD_META_DATA["platform"]["url"])
-            or (self.version != PENGUINMOD_META_DATA["platform"]["version"])
+
+        if (   (self.name != "PenguinMod")
+            or (self.url != PENGUINMOD_PLATFORM_META_DATA["url"])
+            or (self.version != PENGUINMOD_PLATFORM_META_DATA["version"])
         ):
             raise ThanksError()
 

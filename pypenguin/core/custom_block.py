@@ -2,7 +2,7 @@ from re import split
 
 from pypenguin.opcode_info.api import InputType, BuiltinInputType, InputInfo, OpcodeType
 from pypenguin.utility         import (
-    grepr_dataclass, PypenguinEnum, ValidationConfig,
+    grepr_dataclass, PypenguinEnum,
     AA_TYPE, AA_TUPLE_OF_TYPES, AA_MIN_LEN, AA_NOT_EQUAL,
     SameValueTwiceError, ConversionError,
 )
@@ -88,13 +88,12 @@ class SRCustomBlockOpcode:
             for segment in self.segments if isinstance(segment, SRCustomBlockArgument)
         }
     
-    def validate(self, path: list, config: ValidationConfig) -> None:
+    def validate(self, path: list) -> None:
         """
         Ensures the custom block opcode is valid, raise if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
         
         Returns:
             None
@@ -110,7 +109,7 @@ class SRCustomBlockOpcode:
         for i, segment in enumerate(self.segments):
             current_path = ["segments", i]
             if isinstance(segment, SRCustomBlockArgument):
-                segment.validate(current_path, config)
+                segment.validate(current_path)
                 if segment.name in names:
                     other_path = names[segment.name]
                     raise SameValueTwiceError(other_path, current_path, 
@@ -127,13 +126,12 @@ class SRCustomBlockArgument:
     name: str
     type: "SRCustomBlockArgumentType"
 
-    def validate(self, path: list, config: ValidationConfig) -> None:
+    def validate(self, path: list) -> None:
         """
         Ensures the custom block argument is valid, raise if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
         
         Returns:
             None

@@ -1,8 +1,25 @@
 from pytest import raises
 
+from pypenguin.config  import get_config
 from pypenguin.utility import ThanksError
 
-from pypenguin.core.meta import FRMeta, FRPenguinModPlatformMeta, SCRATCH_META_DATA, PENGUINMOD_META_DATA
+from pypenguin.core.meta import FRMeta, FRPenguinModPlatformMeta, PENGUINMOD_PLATFORM_META_DATA
+
+
+cfg = get_config()
+
+SCRATCH_META_DATA = {
+    "semver": cfg.platform_meta.scratch_semver,
+    "vm": cfg.platform_meta.scratch_vm,
+    "agent": "", # doesn't matter
+}
+
+PENGUINMOD_META_DATA = {
+    "semver": cfg.platform_meta.scratch_semver,
+    "vm": cfg.platform_meta.penguinmod_vm,
+    "agent": "", # always empty
+    "platform": PENGUINMOD_PLATFORM_META_DATA
+}
 
 
 

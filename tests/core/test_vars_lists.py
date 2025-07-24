@@ -1,15 +1,11 @@
 from pytest import fixture
 
 from pypenguin.important_consts import SHA256_SEC_VARIABLE, SHA256_SEC_LIST
-from pypenguin.utility          import string_to_sha256, ValidationConfig, TypeValidationError
+from pypenguin.utility          import string_to_sha256, TypeValidationError
 
 from pypenguin.core.vars_lists import variable_sha256, list_sha256, SRVariable, SRCloudVariable, SRList
 
 from tests.utility import execute_attr_validation_tests
-
-@fixture
-def config():
-    return ValidationConfig()
 
 
 
@@ -27,12 +23,12 @@ def test_list_sha256():
 
 
 
-def test_SRVariable_validate(config):
+def test_SRVariable_validate():
     srvariable = SRVariable(
         name="a variable",
         current_value=35,
     )
-    srvariable.validate(path=[], config=config)
+    srvariable.validate(path=[])
 
     execute_attr_validation_tests(
         obj=srvariable,
@@ -41,7 +37,7 @@ def test_SRVariable_validate(config):
             ("current_value", [], TypeValidationError),
         ],
         validate_func=SRVariable.validate,
-        func_args=[[], config],
+        func_args=[[]],
     )
 
 
@@ -63,12 +59,12 @@ def test_SRCloudVariable_to_tuple():
 
 
 
-def test_SRList_validate(config):
+def test_SRList_validate():
     srlist = SRList(
         name="a list",
         current_value=[5, -6.9, "hi", False],
     )
-    srlist.validate(path=[], config=config)
+    srlist.validate(path=[])
 
     execute_attr_validation_tests(
         obj=srlist,
@@ -77,7 +73,7 @@ def test_SRList_validate(config):
             ("current_value", {}, TypeValidationError),
         ],
         validate_func=SRList.validate,
-        func_args=[[], config],
+        func_args=[[]],
     )
 
 

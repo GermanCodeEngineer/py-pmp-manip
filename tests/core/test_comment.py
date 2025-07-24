@@ -1,15 +1,9 @@
-from pytest import fixture
-
-from pypenguin.utility import ValidationConfig, TypeValidationError, InvalidValueError
+from pypenguin.utility import TypeValidationError, InvalidValueError
 
 from pypenguin.core.comment import FRComment, SRComment
 
 from tests.utility import execute_attr_validation_tests
 
-
-@fixture
-def config():
-    return ValidationConfig()
 
 RAW_COMMENT_DATA_ATTACHED = {
     "blockId": "a",
@@ -79,14 +73,14 @@ def test_FRComment_to_second_floating():
 
 
 
-def test_SRComment_validate(config):
+def test_SRComment_validate():
     srcomment = SRComment(
         position=(10, 10),
         size=(52, 32),
         is_minimized=False,
         text="Comment text",
     )
-    srcomment.validate(path=[], config=config)
+    srcomment.validate(path=[])
 
     execute_attr_validation_tests(
         obj=srcomment,
@@ -98,7 +92,7 @@ def test_SRComment_validate(config):
             ("text", {}, TypeValidationError),
         ],
         validate_func=SRComment.validate,
-        func_args=[[], config],
+        func_args=[[]],
     )
 
 

@@ -1,16 +1,12 @@
 from pytest import fixture, raises
 
 from pypenguin.opcode_info.api import BuiltinDropdownType, DropdownValueKind
-from pypenguin.utility         import ValidationConfig, TypeValidationError, InvalidDropdownValueError
+from pypenguin.utility         import TypeValidationError, InvalidDropdownValueError
 
 from pypenguin.core.context  import PartialContext
 from pypenguin.core.dropdown import SRDropdownValue
 
 from tests.utility import execute_attr_validation_tests
-
-@fixture
-def config():
-    return ValidationConfig()
 
 @fixture
 def context():
@@ -45,7 +41,7 @@ def test_SRDropdownValue_to_tuple():
 
 
 
-def test_SRDropdownValue_validate(config):
+def test_SRDropdownValue_validate():
     dropdown_value = SRDropdownValue(kind=DropdownValueKind.SPRITE, value="Player")
     
     execute_attr_validation_tests(
@@ -55,13 +51,13 @@ def test_SRDropdownValue_validate(config):
             ("value", set(), TypeValidationError),
         ],
         validate_func=SRDropdownValue.validate,
-        func_args=[[], config],
+        func_args=[[]],
     )
 
 
-def test_SRDropdownValue_validate_value(config, context):
+def test_SRDropdownValue_validate_value(context):
     dropdown_value = SRDropdownValue(kind=DropdownValueKind.SPRITE, value="Player")
-    dropdown_value.validate_value([], config, BuiltinDropdownType.MOUSE_OR_OTHER_SPRITE, context)
+    dropdown_value.validate_value([], BuiltinDropdownType.MOUSE_OR_OTHER_SPRITE, context)
 
     execute_attr_validation_tests(
         obj=dropdown_value,
@@ -69,23 +65,23 @@ def test_SRDropdownValue_validate_value(config, context):
             ("value", "a non existing sprite", InvalidDropdownValueError),
         ],
         validate_func=SRDropdownValue.validate_value,
-        func_args=[[], config, BuiltinDropdownType.MOUSE_OR_OTHER_SPRITE, context],
+        func_args=[[], BuiltinDropdownType.MOUSE_OR_OTHER_SPRITE, context],
     )
 
     dropdown_value = SRDropdownValue(kind=DropdownValueKind.SOUND, value="a message")
     with raises(InvalidDropdownValueError):
-        dropdown_value.validate_value([], config, BuiltinDropdownType.BROADCAST, context)
+        dropdown_value.validate_value([], BuiltinDropdownType.BROADCAST, context)
 
-def test_SRDropdownValue_validate_value_with_post_validate_func(config, context):
+def test_SRDropdownValue_validate_value_with_post_validate_func(context):
     dropdown_value = SRDropdownValue(kind=DropdownValueKind.STANDARD, value="1011100011001100110100111")
-    dropdown_value.validate_value([], config, BuiltinDropdownType.MATRIX, context)
+    dropdown_value.validate_value([], BuiltinDropdownType.MATRIX, context)
 
     dropdown_value = SRDropdownValue(kind=DropdownValueKind.STANDARD, value="10110") # too short
     with raises(InvalidDropdownValueError):
-        dropdown_value.validate_value([], config, BuiltinDropdownType.MATRIX, context)
+        dropdown_value.validate_value([], BuiltinDropdownType.MATRIX, context)
     
     dropdown_value = SRDropdownValue(kind=DropdownValueKind.STANDARD, value="2112022311310111012121112") # only 0 or 1 are allowed
     with raises(InvalidDropdownValueError):
-        dropdown_value.validate_value([], config, BuiltinDropdownType.MATRIX, context)
+        dropdown_value.validate_value([], BuiltinDropdownType.MATRIX, context)
 
 

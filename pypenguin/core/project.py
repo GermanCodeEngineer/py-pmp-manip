@@ -6,7 +6,7 @@ from uuid   import UUID
 from pypenguin.important_consts import SHA256_SEC_TARGET_NAME
 from pypenguin.opcode_info.api  import OpcodeInfoAPI, DropdownValueKind
 from pypenguin.utility          import (
-    grepr_dataclass, read_all_files_of_zip, create_zip_file, string_to_sha256, gdumps, ValidationConfig, KeyReprDict,
+    grepr_dataclass, read_all_files_of_zip, create_zip_file, string_to_sha256, gdumps, KeyReprDict,
     AA_TYPE, AA_NONE_OR_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_RANGE, AA_EXACT_LEN,
     ThanksError, SameValueTwiceError, SpriteLayerStackError,
 )
@@ -302,12 +302,11 @@ class SRProject:
 
         return True
 
-    def validate(self, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
+    def validate(self, info_api: OpcodeInfoAPI) -> None:
         """
         Ensure a SRProject is valid, raise ValidationError if not
         
         Args:
-            config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
         
         Returns:
@@ -334,23 +333,23 @@ class SRProject:
         AA_LIST_OF_TYPE(self, path, "global_monitors", SRMonitor)
         AA_LIST_OF_TYPE(self, path, "extensions", SRExtension)
         
-        self.stage.validate(path+["stage"], config, info_api)
+        self.stage.validate(path+["stage"], info_api)
 
-        self._validate_sprites(path, config, info_api)
+        self._validate_sprites(path, info_api)
         
         for i, variable in enumerate(self.all_sprite_variables):
-            variable.validate(path+["all_sprite_variables", i], config)
+            variable.validate(path+["all_sprite_variables", i])
         for i, list_ in enumerate(self.all_sprite_lists):
-            list_.validate(path+["all_sprite_lists", i], config)
+            list_.validate(path+["all_sprite_lists", i])
         
-        self._validate_var_names(path, config)
-        self._validate_list_names(path, config)
+        self._validate_var_names(path)
+        self._validate_list_names(path)
         
         for i, monitor in enumerate(self.global_monitors):
-            monitor.validate(path+["global_monitors", i], config, info_api)
+            monitor.validate(path+["global_monitors", i], info_api)
         
         for i, extension in enumerate(self.extensions):
-            extension.validate(path+["extensions", i], config)
+            extension.validate(path+["extensions", i])
         
         # 1. Ensure no same sprite name
         # 2. Validate Dropdown Values
@@ -390,7 +389,6 @@ class SRProject:
             )
             target.validate_scripts(
                 path     = current_path, 
-                config   = config,
                 info_api = info_api, 
                 context  = partial_context,
             )
@@ -400,7 +398,6 @@ class SRProject:
                 target: SRSprite
                 target.validate_monitor_dropdown_values(
                     path     = current_path, 
-                    config   = config,
                     info_api = info_api, 
                     context  = partial_context,
                 )
@@ -408,18 +405,16 @@ class SRProject:
         for i, monitor in enumerate(self.global_monitors):
             monitor.validate_dropdown_values(
                 path     = path+["global_monitors", i], 
-                config   = config,
                 info_api = info_api, 
                 context  = global_context,
             )
 
-    def _validate_sprites(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
+    def _validate_sprites(self, path: list, info_api: OpcodeInfoAPI) -> None:
         """
         Ensure the sprites of a SRProject are valid, raise ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
         
         Returns:
@@ -432,7 +427,7 @@ class SRProject:
         sprite_uuid_paths: dict[UUID, list] = {}
         for i, sprite in enumerate(self.sprites):
             current_path = path+["sprites", i]
-            sprite.validate(current_path, config, info_api)
+            sprite.validate(current_path, info_api)
             if sprite.uuid in sprite_uuid_paths:
                 other_path = sprite_uuid_paths[sprite.uuid]
                 raise SameValueTwiceError(other_path, current_path, "Two sprites mustn't have the same UUID")
@@ -451,13 +446,12 @@ class SRProject:
         # same length and uniqueness is assured and every UUID must have a partner sprite
         # => no sprite can possibly be missing a partner UUID
         
-    def _validate_var_names(self, path: list, config: ValidationConfig) -> None:
+    def _validate_var_names(self, path: list) -> None:
         """
         Ensures no variables with the same name exist
 
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
         
         Returns:
             None
@@ -481,13 +475,12 @@ class SRProject:
                     raise SameValueTwiceError(other_path, current_path, "Two variables mustn't have the same name")
                 defined_variables[variable.name] = current_path
         
-    def _validate_list_names(self, path: list, config: ValidationConfig) -> None:
+    def _validate_list_names(self, path: list) -> None:
         """
         Ensures no lists with the same name exist
 
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
         
         Returns:
             None

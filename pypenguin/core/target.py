@@ -7,7 +7,7 @@ from uuid        import uuid4, UUID
 from pypenguin.important_consts import SHA256_SEC_TARGET_NAME, SHA256_SEC_BROADCAST_MSG
 from pypenguin.opcode_info.api  import OpcodeInfoAPI, DropdownValueKind
 from pypenguin.utility          import (
-    string_to_sha256, grepr_dataclass, ThanksError, ValidationConfig,
+    string_to_sha256, grepr_dataclass, ThanksError,
     AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_MIN_LEN, AA_MIN, AA_RANGE, AA_COORD_PAIR, AA_NOT_ONE_OF, 
     SameValueTwiceError, ConversionError,
 )
@@ -501,13 +501,12 @@ class SRTarget:
             volume=100,
         )
 
-    def validate(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
+    def validate(self, path: list, info_api: OpcodeInfoAPI) -> None:
         """
         Ensure a SRTarget is valid, raise ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
         
         Returns:
@@ -530,12 +529,12 @@ class SRTarget:
         AA_RANGE(self, path, "volume", min=0, max=100)
         
         for i, comment in enumerate(self.comments):
-            comment.validate(path+["comments", i], config)
+            comment.validate(path+["comments", i])
 
         defined_costumes = {}
         for i, costume in enumerate(self.costumes):
             current_path = path+["costumes", i]
-            costume.validate(path, config)
+            costume.validate(path)
             if costume.name in defined_costumes:
                 other_path = defined_costumes[costume.name]
                 raise SameValueTwiceError(other_path, current_path, "Two costumes mustn't have the same name")
@@ -544,7 +543,7 @@ class SRTarget:
         defined_sounds = {}
         for i, sound in enumerate(self.sounds):
             current_path = path+["sounds", i]
-            sound.validate(path, config)
+            sound.validate(path)
             if sound.name in defined_sounds:
                 other_path = defined_sounds[sound.name]
                 raise SameValueTwiceError(other_path, current_path, "Two sounds mustn't have the same name")
@@ -552,7 +551,6 @@ class SRTarget:
     
     def validate_scripts(self, 
         path: list, 
-        config: ValidationConfig,
         info_api: OpcodeInfoAPI,
         context: PartialContext,
     ) -> None:
@@ -561,7 +559,6 @@ class SRTarget:
         
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
             context: Context about parts of the project. Used to validate dropdowns
         
@@ -578,7 +575,6 @@ class SRTarget:
         for i, script in enumerate(self.scripts):
             script.validate(
                 path           = path+["scripts", i],
-                config         = config,
                 info_api       = info_api,
                 validation_if = validation_if,
                 context        = context,
@@ -836,13 +832,12 @@ class SRSprite(SRTarget):
             raise AttributeError('Cannot modify "uuid" after creation')
         super().__setattr__(name, value)
     
-    def validate(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
+    def validate(self, path: list, info_api: OpcodeInfoAPI) -> None:
         """
         Ensure a SRSprite is valid, raise ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
         
         Returns:
@@ -851,7 +846,7 @@ class SRSprite(SRTarget):
         Raises:
             ValidationError: if the SRSprite is invalid
         """
-        super().validate(path, config, info_api)
+        super().validate(path, info_api)
         
         AA_TYPE(self, path, "name", str)
         AA_NOT_ONE_OF(self, path, "name", ["_myself_", "_stage_", "_mouse_", "_edge_"])
@@ -870,16 +865,15 @@ class SRSprite(SRTarget):
         
         
         for i, variable in enumerate(self.sprite_only_variables):
-            variable.validate(path+["sprite_only_variables", i], config)
+            variable.validate(path+["sprite_only_variables", i])
         for i, list_ in enumerate(self.sprite_only_lists):
-            list_.validate(path+["sprite_only_lists", i], config)
+            list_.validate(path+["sprite_only_lists", i])
         
         for i, monitor in enumerate(self.local_monitors):
-            monitor.validate(path+["local_monitors", i], config, info_api)
+            monitor.validate(path+["local_monitors", i], info_api)
     
     def validate_monitor_dropdown_values(self, 
         path: list, 
-        config: ValidationConfig,
         info_api: OpcodeInfoAPI,
         context: PartialContext | CompleteContext,
     ) -> None:
@@ -888,7 +882,6 @@ class SRSprite(SRTarget):
         
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
             context: Context about parts of the project. Used to validate dropdowns
         
@@ -902,7 +895,6 @@ class SRSprite(SRTarget):
         for i, monitor in enumerate(self.local_monitors):
             monitor.validate_dropdown_values(
                 path     = path+["local_monitors", i], 
-                config   = config,
                 info_api = info_api, 
                 context  = context,
             )

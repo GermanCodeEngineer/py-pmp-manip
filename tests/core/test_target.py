@@ -8,7 +8,6 @@ from pypenguin.opcode_info.api  import DropdownValueKind
 from pypenguin.opcode_info.data import info_api
 from pypenguin.utility          import (
     string_to_sha256, lists_equal_ignore_order, xml_equal,
-    ValidationConfig, 
     ThanksError, ConversionError, TypeValidationError, RangeValidationError, 
     SameValueTwiceError, InvalidValueError
 )
@@ -34,10 +33,6 @@ from tests.core.constants import (
 
 from tests.utility import execute_attr_validation_tests, nest_all_blocks_comments
 
-
-@fixture
-def config():
-    return ValidationConfig()
 
 @fixture
 def context():
@@ -259,9 +254,9 @@ def test_SRTarget_create_empty():
     assert srtarget.volume == 100
 
 
-def test_SRTarget_validate(config):
+def test_SRTarget_validate():
     srtarget = SR_STAGE
-    srtarget.validate([], config, info_api)
+    srtarget.validate([], info_api)
 
     execute_attr_validation_tests(
         obj=srtarget,
@@ -282,10 +277,10 @@ def test_SRTarget_validate(config):
             ("volume", 105, RangeValidationError),
         ],
         validate_func=SRTarget.validate,
-        func_args=[[], config, info_api],
+        func_args=[[], info_api],
     )
 
-def test_SRTarget_validate_same_comment(config):
+def test_SRTarget_validate_same_comment():
     srtarget = SRTarget.create_empty()
     srtarget.comments = [SRComment(
         position=(10, 10),
@@ -293,33 +288,33 @@ def test_SRTarget_validate_same_comment(config):
         is_minimized=False,
         text="Comment text",
     )]
-    srtarget.validate([], config, info_api)
+    srtarget.validate([], info_api)
 
-def test_SRTarget_validate_same_costume_name(config):
+def test_SRTarget_validate_same_costume_name():
     srtarget = SRTarget.create_empty()
     srtarget.costumes = [
         SRVectorCostume.create_empty(name="costume1"),
         SRVectorCostume.create_empty(name="costume1"),
     ]
     with raises(SameValueTwiceError):
-        srtarget.validate([], config, info_api)
+        srtarget.validate([], info_api)
 
-def test_SRTarget_validate_same_sound_name(config):
+def test_SRTarget_validate_same_sound_name():
     srtarget = SRTarget.create_empty()
     srtarget.sounds = [
         SRSound(name="Hello there!", file_extension="wav", content=AudioSegment.silent(duration=0)),
         SRSound(name="Hello there!", file_extension="wav", content=AudioSegment.silent(duration=0)),
     ]
     with raises(SameValueTwiceError):
-        srtarget.validate([], config, info_api)
+        srtarget.validate([], info_api)
 
 
 
-def test_SRTarget_validate_scripts(config, context):
+def test_SRTarget_validate_scripts(context):
     srtarget = SR_SPRITE
-    srtarget.validate_scripts([], config, info_api, context)
+    srtarget.validate_scripts([], info_api, context)
 
-def test_SRTarget_validate_scripts_same_custom_opcode(config, context):
+def test_SRTarget_validate_scripts_same_custom_opcode(context):
     srtarget = SRTarget.create_empty()
     cb_def_script = SRScript(
         position=(0, 0),
@@ -347,7 +342,7 @@ def test_SRTarget_validate_scripts_same_custom_opcode(config, context):
         copy(cb_def_script),
     ]
     with raises(SameValueTwiceError):
-        srtarget.validate_scripts([], config, info_api, context)
+        srtarget.validate_scripts([], info_api, context)
 
 
 def test_SRTarget_get_complete_context(context):
@@ -484,9 +479,9 @@ def test_SRSprite_setattr():
         srsprite.uuid = "something doesn't matter"
 
 
-def test_SRSprite_validate(config):
+def test_SRSprite_validate():
     srsprite = SR_SPRITE
-    srsprite.validate([], config, info_api)
+    srsprite.validate([], info_api)
 
     execute_attr_validation_tests(
         obj=srsprite,
@@ -510,10 +505,10 @@ def test_SRSprite_validate(config):
             ("rotation_style", "don't rotate", TypeValidationError),
         ],
         validate_func=SRSprite.validate,
-        func_args=[[], config, info_api],
+        func_args=[[], info_api],
     )
 
-def test_SRSprite_validate_vars_lists(config):
+def test_SRSprite_validate_vars_lists():
     srsprite = SRSprite.create_empty(name="my sprite")
     srsprite.sprite_only_variables = [
         SRVariable(name="my var", current_value="Günther Jauch")
@@ -521,18 +516,18 @@ def test_SRSprite_validate_vars_lists(config):
     srsprite.sprite_only_lists = [
         SRList(name="my var", current_value=["Günther Jauch", "Dieter Bohlen"])
     ]
-    srsprite.validate([], config, info_api)
+    srsprite.validate([], info_api)
 
-def test_SRSprite_validate_uuid(config):
+def test_SRSprite_validate_uuid():
     srsprite = SRSprite.create_empty(name="my sprite")
     srsprite.__dict__["uuid"] = "abc-def-ghi"
     with raises(TypeValidationError):
-        srsprite.validate([], config, info_api)
+        srsprite.validate([], info_api)
 
 
-def test_SRSprite_validate_monitors(config, context):
+def test_SRSprite_validate_monitors(context):
     srsprite = SR_SPRITE
-    srsprite.validate_monitor_dropdown_values([], config, info_api, context)
+    srsprite.validate_monitor_dropdown_values([], info_api, context)
 
 
 

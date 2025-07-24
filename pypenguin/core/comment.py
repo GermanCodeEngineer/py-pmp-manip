@@ -1,6 +1,6 @@
 from typing import Any
 
-from pypenguin.utility import grepr_dataclass, ValidationConfig, AA_COORD_PAIR, AA_TYPE, InvalidValueError
+from pypenguin.utility import grepr_dataclass, AA_COORD_PAIR, AA_TYPE, InvalidValueError
 
 
 @grepr_dataclass(grepr_fields=["block_id", "x", "y", "width", "height", "minimized", "text"])
@@ -83,12 +83,11 @@ class SRComment:
     is_minimized: bool
     text: str
     
-    def validate(self, path: list, config: ValidationConfig) -> None:
+    def validate(self, path: list) -> None:
         """
         Ensure a SRComment is valid, raise ValidationError if not
         
         Args:
-            config: Configuration for Validation Behaviour
         
         Returns:
             None

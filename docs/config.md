@@ -12,7 +12,6 @@ The configuration system is composed of several modular configuration dataclasse
 
 - `ExtInfoGenConfig`
 - `ValidationConfig`
-- `ConversionConfig`
 - `PlatformMetaConfig`
 
 These are composed into a single root config: `MasterConfig`, which is initialized and accessed globally throughout the project.
@@ -80,7 +79,7 @@ Returns a pre-built `MasterConfig` with safe, reasonable defaults. This can be u
 ### Method 1: Override from Default Config (Recommended)
 
 ```python
-from pypenguin.config import (
+from pypenguin import (
     init_config, get_config, get_default_config,
 )
 
@@ -89,8 +88,7 @@ cfg = get_default_config()
 
 # Override only the fields you want to change
 cfg.ext_info_gen.gen_opcode_info_dir = "my/overridden/path"
-cfg.conversion.stage_width  = 720
-cfg.conversion.stage_height = 960
+cfg.validation.raise_if_monitor_position_outside_stage = False
 
 
 # Initialize with modified config
@@ -102,10 +100,10 @@ init_config(cfg)
 ### Method 2: Full Manual Initialization
 
 ```python
-from pypenguin.config import (
+from pypenguin import (
     init_config, get_config,
     ExtInfoGenConfig, ValidationConfig,
-    ConversionConfig, PlatformMetaConfig, MasterConfig,
+    PlatformMetaConfig, MasterConfig,
 )
 from datetime import timedelta
 
@@ -118,10 +116,6 @@ init_config(MasterConfig(
     validation=ValidationConfig(
         raise_if_monitor_position_outside_stage=True,
         raise_if_monitor_bigger_then_stage=False,
-    ),
-    conversion=ConversionConfig(
-        stage_width=640,
-        stage_height=480,
     ),
     platform_meta=PlatformMetaConfig(
         scratch_semver="3.0.0",

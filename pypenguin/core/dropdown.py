@@ -1,7 +1,7 @@
 from typing import Any
 
 from pypenguin.opcode_info.api import DropdownType, DropdownValueKind
-from pypenguin.utility         import grepr_dataclass, ValidationConfig, AA_TYPE, AA_JSON_COMPATIBLE, InvalidDropdownValueError
+from pypenguin.utility         import grepr_dataclass, AA_TYPE, AA_JSON_COMPATIBLE, InvalidDropdownValueError
 
 from pypenguin.core.context import PartialContext, CompleteContext
 
@@ -40,14 +40,13 @@ class SRDropdownValue:
         """
         return (self.kind, self.value)
 
-    def validate(self, path: list, config: ValidationConfig) -> None:
+    def validate(self, path: list) -> None:
         """
         Ensure a SRDropdownValue is structurally valid, raise ValidationError if not
         For exact validation, you should additionally call the validate_value method
         
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
         
         Returns:
             None
@@ -60,7 +59,6 @@ class SRDropdownValue:
 
     def validate_value(self, 
         path: list, 
-        config: ValidationConfig, 
         dropdown_type: "DropdownType", 
         context: PartialContext | CompleteContext,
     ) -> None:
@@ -72,7 +70,6 @@ class SRDropdownValue:
         
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
             dropdown_type: the dropdown type as described in the opcode specific information
             context: Context about parts of the project. Used to validate the values of dropdowns
         

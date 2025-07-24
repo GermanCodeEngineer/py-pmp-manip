@@ -6,7 +6,7 @@ from pydub  import AudioSegment
 from typing import Any
 
 from pypenguin.utility import (
-    grepr_dataclass, xml_equal, image_equal, generate_md5, ValidationConfig,
+    grepr_dataclass, xml_equal, image_equal, generate_md5,
     AA_TYPE, AA_COORD_PAIR, AA_EQUAL,
     ThanksError,
 )
@@ -191,13 +191,12 @@ class SRCostume(ABC):
     file_extension: str
     rotation_center: tuple[int | float, int | float]
 
-    def validate(self, path: list, config: ValidationConfig) -> None:
+    def validate(self, path: list) -> None:
         """
         Ensure a SRCostume is valid, raise ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
         
         Returns:
             None
@@ -251,13 +250,12 @@ class SRVectorCostume(SRCostume):
         other: SRVectorCostume = other
         return xml_equal(self.content, other.content)
         
-    def validate(self, path: list, config: ValidationConfig) -> None:
+    def validate(self, path: list) -> None:
         """
         Ensure a SRVectorCostume is valid, raise ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
         
         Returns:
             None
@@ -265,7 +263,7 @@ class SRVectorCostume(SRCostume):
         Raises:
             ValidationError: if the SRVectorCostume is invalid
         """
-        super().validate(path, config)
+        super().validate(path)
         
         AA_EQUAL(self, path, "file_extension", "svg")
         AA_TYPE(self, path, "content", etree._Element)
@@ -322,13 +320,12 @@ class SRBitmapCostume(SRCostume):
             and image_equal(self.content, other.content)
         )
     
-    def validate(self, path: list, config: ValidationConfig) -> None:
+    def validate(self, path: list) -> None:
         """
         Ensure a SRBitmapCostume is valid, raise ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
         
         Returns:
             None
@@ -336,7 +333,7 @@ class SRBitmapCostume(SRCostume):
         Raises:
             ValidationError: if the SRBitmapCostume is invalid
         """
-        super().validate(path, config)
+        super().validate(path)
         
         AA_TYPE(self, path, "content", Image.Image)
         AA_TYPE(self, path, "has_double_resolution", bool)
@@ -377,13 +374,12 @@ class SRSound:
     file_extension: str # i've only seen "wav", "mp3", "ogg"; others might work
     content: AudioSegment
     
-    def validate(self, path: list, config: ValidationConfig) -> None:
+    def validate(self, path: list) -> None:
         """
         Ensure a SRSound is valid, raise ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
         
         Returns:
             None

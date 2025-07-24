@@ -1,5 +1,5 @@
 from pypenguin.important_consts import SHA256_SEC_VARIABLE, SHA256_SEC_LIST
-from pypenguin.utility          import string_to_sha256, grepr_dataclass, ValidationConfig, AA_TYPE, AA_TYPES, AA_LIST_OF_TYPES
+from pypenguin.utility          import string_to_sha256, grepr_dataclass, AA_TYPE, AA_TYPES, AA_LIST_OF_TYPES
 
 
 
@@ -39,13 +39,12 @@ class SRVariable:
     name: str
     current_value: int | float | str | bool
 
-    def validate(self, path: list, config: ValidationConfig) -> None:
+    def validate(self, path: list) -> None:
         """
         Ensure a SRVariable is valid, raise ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
         
         Returns:
             None
@@ -82,13 +81,12 @@ class SRList:
     name: str
     current_value: list[int | float | str | bool]
 
-    def validate(self, path: list, config: ValidationConfig):
+    def validate(self, path: list):
         """
         Ensure a SRList is valid, raise ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
         
         Returns:
             None

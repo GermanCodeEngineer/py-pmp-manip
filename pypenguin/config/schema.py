@@ -92,28 +92,6 @@ class ValidationConfig(ConfigBase):
         AA_TYPE(self, path, "raise_if_monitor_position_outside_stage", bool)
         AA_TYPE(self, path, "raise_if_monitor_bigger_then_stage", bool)
 
-@grepr_dataclass(grepr_fields=["stage_width", "stage_height"])
-class ConversionConfig(ConfigBase):
-    """
-    The configuration for the conversion of a project or parts of it between representations
-    """
-
-    stage_width: int
-    stage_height: int
-
-    def validate(self, path: list) -> None:
-        """
-        Ensure a ConversionConfig is valid, raise ValidationError if not
-        
-        Args:
-            path: the path from the top of the config tree to itself. Used for better error messages
-        
-        Raises:
-            ValidationError: if the ConversionConfig is invalid
-        """
-        AA_TYPE(self, path, "stage_width", str)
-        AA_TYPE(self, path, "stage_height", str)
-
 @grepr_dataclass(grepr_fields=["scratch_semver", "scratch_vm", "penguinmod_vm"])
 class PlatformMetaConfig(ConfigBase):
     """
@@ -139,7 +117,7 @@ class PlatformMetaConfig(ConfigBase):
         AA_TYPE(self, path, "scratch_vm", str)
         AA_TYPE(self, path, "penguinmod_vm", str)
 
-@grepr_dataclass(grepr_fields=["ext_info_gen", "validation", "conversion", "platform_meta"])
+@grepr_dataclass(grepr_fields=["ext_info_gen", "validation", "platform_meta"])
 class MasterConfig(ConfigBase):
     """
     The master configuration containing all subconfigurations for the pypenguin project
@@ -147,7 +125,6 @@ class MasterConfig(ConfigBase):
 
     ext_info_gen: ExtInfoGenConfig
     validation: ValidationConfig
-    conversion: ConversionConfig
     platform_meta: PlatformMetaConfig
 
     def validate(self, path: list = []) -> None:
@@ -162,17 +139,12 @@ class MasterConfig(ConfigBase):
         """
         AA_TYPE(self, path, "ext_info_gen" , ExtInfoGenConfig  )
         AA_TYPE(self, path, "validation"   , ValidationConfig  )
-        AA_TYPE(self, path, "conversion"   , ConversionConfig  )
         AA_TYPE(self, path, "platform_meta", PlatformMetaConfig)
         
         self.ext_info_gen .validate(path+["ext_info_gen" ])
         self.validation   .validate(path+["validation"   ])
-        self.conversion   .validate(path+["conversion"   ])
         self.platform_meta.validate(path+["platform_meta"])
 
 
-__all__ = [
-    "ExtInfoGenConfig", "ValidationConfig", "ConversionConfig", "PlatformMetaConfig", 
-    "MasterConfig",
-]
+__all__ = ["ExtInfoGenConfig", "ValidationConfig", "PlatformMetaConfig", "MasterConfig"]
 

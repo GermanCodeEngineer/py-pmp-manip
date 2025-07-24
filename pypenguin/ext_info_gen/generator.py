@@ -11,6 +11,7 @@ from typing       import Any
 from urllib.parse import unquote
 
 
+from pypenguin.config          import get_config
 from pypenguin.opcode_info.api import (
     OpcodeInfoGroup, OpcodeInfo, OpcodeType, MonitorIdBehaviour,
     InputInfo, InputMode, InputType, BuiltinInputType, MenuInfo,
@@ -41,26 +42,7 @@ ARGUMENT_TYPE_TO_DROPDOWN_TYPE: dict[str, DropdownType] = {
 INDENT = 4*" "
 EXTRACTOR_PATH = "pypenguin/ext_info_gen/extractor.js"
 CACHE_FILENAME = "cache.json"
-
-def ext_info_gen_setup(gen_opcode_info_dir: str, js_fetch_interval: timedelta):
-    """
-    Setup the extension info generator module
-    
-    Args:
-        gen_opcode_info_dir: the directory file path to store the generated info python files in
-        js_fetch_interval: if the extension is accessed through a link, it will only be fetched again after this interval has passed
-    """
-    try:
-        makedirs(gen_opcode_info_dir, exist_ok=True)
-    except OSError as error:
-        raise error from error
-    global GEN_OPCODE_INFO_DIR, JS_FETCH_INTERVAL
-    if GEN_OPCODE_INFO_DIR is not None:
-        raise SetupError("Setup has alredy been completed")
-    assert isinstance(js_fetch_interval, timedelta), "js_fetch_interval must be datetime.timedelta object"
-    GEN_OPCODE_INFO_DIR = gen_opcode_info_dir
-    JS_FETCH_INTERVAL   = js_fetch_interval
-    
+   
 
 def fetch_js_code(extension: str) -> str:
     """
@@ -494,7 +476,8 @@ def generate_extension_info_py_file(extension: str, extension_id: str) -> str:
         
         python_code = read_file_text(destination_file_path)
         if by_url:
-            is_too_old = (datetime.now(timezone.utc) - last_update_time) > JS_FETCH_INTERVAL # wether the last JS fetch is too long ago
+            is_too_old = (datetime.now(timezone.utc) - last_update_time) > get_config().ext_info_gen.js_fetch_interval 
+            # /\ wether the last JS fetch is too long ago
         else:
             is_too_old = True # fetching the JS is not expensive in this case
         if py_fingerprint.matches(python_code): # if the python code was NOT manipulated
@@ -513,12 +496,10 @@ def generate_extension_info_py_file(extension: str, extension_id: str) -> str:
         cache_copy |= cache
         write_file_text(cache_file_path, dumps(cache_copy, indent=4))
 
-    if GEN_OPCODE_INFO_DIR is None:
-        raise SetupError("Setup has not been completed. Please run ext_info_gen_setup before proceeding.")
-    
+    cfg = get_config()
     destination_file_name = f"{extension_id}.py"
-    destination_file_path = path.join(GEN_OPCODE_INFO_DIR, destination_file_name)
-    cache_file_path = path.join(GEN_OPCODE_INFO_DIR, CACHE_FILENAME)
+    destination_file_path = path.join(cfg.ext_info_gen.gen_opcode_info_dir, destination_file_name)
+    cache_file_path = path.join(cfg.ext_info_gen.gen_opcode_info_dir, CACHE_FILENAME)
     cache: dict[str, dict[str, Any]]
     if path.exists(cache_file_path):
         cache = loads(read_file_text(cache_file_path))
@@ -561,10 +542,6 @@ __all__ = ["generate_extension_info_py_file"]
 
 
 if __name__ == "__main__":
-    ext_info_gen_setup(
-        gen_opcode_info_dir="example_extensions/gen_opcode_info/",
-        js_fetch_interval=timedelta(days=1),
-    )
     for extension_id, extension in [
         ("dumbExample",         "example_extensions/js_extension/dumbExample.js"),
         ("truefantombase",      "https://extensions.turbowarp.org/true-fantom/base.js"),

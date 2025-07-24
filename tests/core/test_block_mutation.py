@@ -5,7 +5,7 @@ from pypenguin.important_consts import SHA256_SEC_MAIN_ARGUMENT_NAME
 from pypenguin.utility          import (
     string_to_sha256, gdumps,
     DeserializationError, ConversionError, ThanksError, 
-    ValidationConfig, TypeValidationError, InvalidValueError
+    TypeValidationError, InvalidValueError
 )
 
 from pypenguin.core.block_interface import FirstToInterIF, InterToFirstIF
@@ -38,10 +38,6 @@ def itf_if():
         local_vars=[], local_lists=[],
         sprite_name="_stage_",
     )
-
-@fixture
-def config():
-    return ValidationConfig()
 
 EXAMPLE_ARG_IDS = [
     string_to_sha256("a text arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME), 
@@ -251,14 +247,14 @@ def test_FRStopScriptMutation_from_to_data_and_to_second(fti_if: FirstToInterIF)
 
 
 
-def test_SRCustomBlockArgumentMutation_validate(config: ValidationConfig):
+def test_SRCustomBlockArgumentMutation_validate():
     srmutation = SRCustomBlockArgumentMutation(
         argument_name="my argument",
         main_color="#f8e43a",
         prototype_color="#c38d12",
         outline_color="#e9d563",
     )
-    srmutation.validate(path=[], config=config)
+    srmutation.validate(path=[])
     
     execute_attr_validation_tests(
         obj=srmutation,
@@ -272,7 +268,7 @@ def test_SRCustomBlockArgumentMutation_validate(config: ValidationConfig):
             ("outline_color", "255", InvalidValueError),
         ],
         validate_func=SRCustomBlockArgumentMutation.validate,
-        func_args=[[], config],
+        func_args=[[]],
     )
 
 
@@ -291,7 +287,7 @@ def test_SRCustomBlockArgumentMutation_to_first(itf_if: InterToFirstIF):
 
 
 
-def test_SRCustomBlockMutation_validate(config: ValidationConfig):
+def test_SRCustomBlockMutation_validate():
     srmutation = SRCustomBlockMutation(
         custom_opcode=SRCustomBlockOpcode(segments=("hi",)),
         no_screen_refresh=True,
@@ -301,7 +297,7 @@ def test_SRCustomBlockMutation_validate(config: ValidationConfig):
         outline_color="#e9d563",
     )
 
-    srmutation.validate(path=[], config=config)
+    srmutation.validate(path=[])
     
     execute_attr_validation_tests(
         obj=srmutation,
@@ -316,7 +312,7 @@ def test_SRCustomBlockMutation_validate(config: ValidationConfig):
             ("outline_color", "255", InvalidValueError),
         ],
         validate_func=SRCustomBlockMutation.validate,
-        func_args=[[], config],
+        func_args=[[]],
     )
 
 
@@ -347,12 +343,12 @@ def test_SRCustomBlockMutation_to_first(itf_if: InterToFirstIF):
 
 
   
-def test_SRCustomBlockCallMutation_validate(config: ValidationConfig):
+def test_SRCustomBlockCallMutation_validate():
     srmutation = SRCustomBlockCallMutation(
         custom_opcode=SRCustomBlockOpcode(segments=("hi",)),
     )
 
-    srmutation.validate(path=[], config=config)
+    srmutation.validate(path=[])
     
     execute_attr_validation_tests(
         obj=srmutation,
@@ -360,7 +356,7 @@ def test_SRCustomBlockCallMutation_validate(config: ValidationConfig):
             ("custom_opcode", "some custom opcode", TypeValidationError),
         ],
         validate_func=SRCustomBlockCallMutation.validate,
-        func_args=[[], config],
+        func_args=[[]],
     )
 
 
@@ -396,12 +392,12 @@ def test_SRCustomBlockMutationCall_to_first(itf_if: InterToFirstIF):
 
 
 
-def test_SRStopScriptMutation_validate(config: ValidationConfig):
+def test_SRStopScriptMutation_validate():
     srmutation = SRStopScriptMutation(
         is_ending_statement=True,
     )
 
-    srmutation.validate(path=[], config=config)
+    srmutation.validate(path=[])
 
     execute_attr_validation_tests(
         obj=srmutation,
@@ -409,7 +405,7 @@ def test_SRStopScriptMutation_validate(config: ValidationConfig):
             ("is_ending_statement", {...}, TypeValidationError),
         ],
         validate_func=SRStopScriptMutation.validate,
-        func_args=[[], config],
+        func_args=[[]],
     )
     
 

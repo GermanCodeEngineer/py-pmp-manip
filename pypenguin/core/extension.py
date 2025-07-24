@@ -1,4 +1,4 @@
-from pypenguin.utility import grepr_dataclass, ValidationConfig, AA_TYPE, AA_ALNUM, is_valid_js_data_uri, is_valid_url, InvalidValueError
+from pypenguin.utility import grepr_dataclass, AA_TYPE, AA_ALNUM, is_valid_js_data_uri, is_valid_url, InvalidValueError
 
 
 @grepr_dataclass(grepr_fields=["id"])
@@ -10,13 +10,12 @@ class SRExtension:
     
     id: str
 
-    def validate(self, path: list, config: ValidationConfig) -> None:
+    def validate(self, path: list) -> None:
         """
         Ensure a SRExtension is valid, raise ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
         
         Returns:
             None
@@ -45,13 +44,12 @@ class SRCustomExtension(SRExtension):
     url: str # either "https://..." or "data:application/javascript,..." 
     # TODO: find a way to not show whole huge JS data URI's
     
-    def validate(self, path: list, config: ValidationConfig):
+    def validate(self, path: list):
         """
         Ensure a SRCustomExtension is valid, raise ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
         
         Returns:
             None
@@ -60,7 +58,7 @@ class SRCustomExtension(SRExtension):
             ValidationError: if the SRCustomExtension is invalid
             InvalidValueError(ValidationError): if the url is invalid
         """
-        super().validate(path, config)
+        super().validate(path)
 
         AA_TYPE(self, path, "url", str)
         if not (is_valid_url(self.url) or is_valid_js_data_uri(self.url)):

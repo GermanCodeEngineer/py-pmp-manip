@@ -6,12 +6,12 @@
 
 from datetime import timedelta
 
-from pypenguin.utility import ConfigurationError
+from pypenguin.utility import ConfigurationError, ValidationError
 
 from pypenguin.config.schema import *
 
 
-_config_instance: MasterConfig|None = None
+_config_instance: MasterConfig | None = None
 
 def init_config(config: MasterConfig) -> None:
     global _config_instance
@@ -25,7 +25,6 @@ def init_config(config: MasterConfig) -> None:
     
     config.ext_info_gen ._frozen_ = True
     config.validation   ._frozen_ = True
-    config.conversion   ._frozen_ = True
     config.platform_meta._frozen_ = True
     config              ._frozen_ = True
     _config_instance = config
@@ -45,10 +44,6 @@ def get_default_config() -> "MasterConfig":
         validation=ValidationConfig(
             raise_if_monitor_position_outside_stage=True,
             raise_if_monitor_bigger_then_stage=True,
-        ),
-        conversion=ConversionConfig(
-            stage_width=480,
-            stage_height=360,
         ),
         platform_meta=PlatformMetaConfig(
             scratch_semver="3.0.0",

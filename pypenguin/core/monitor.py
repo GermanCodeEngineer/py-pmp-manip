@@ -1,9 +1,10 @@
 from copy   import deepcopy
 from typing import Any
 
+from pypenguin.config           import get_config
 from pypenguin.opcode_info.api  import OpcodeInfoAPI, MonitorIdBehaviour
 from pypenguin.utility          import (
-    grepr_dataclass, string_to_sha256, ValidationConfig,
+    grepr_dataclass, string_to_sha256,
     AA_TYPE, AA_TYPES, AA_DICT_OF_TYPE, AA_COORD_PAIR, AA_BOXED_COORD_PAIR, AA_EQUAL, AA_BIGGER_OR_EQUAL, 
     InvalidOpcodeError, MissingDropdownError, UnnecessaryDropdownError, ThanksError,
 )
@@ -16,7 +17,6 @@ from pypenguin.core.block_interface import InterToFirstIF
 from pypenguin.core.context         import PartialContext, CompleteContext
 from pypenguin.core.dropdown        import SRDropdownValue
 from pypenguin.core.enums           import SRVariableMonitorReadoutMode
-from pypenguin.core.vars_lists      import variable_sha256, list_sha256
 
 
 STAGE_WIDTH : int = 480
@@ -223,14 +223,13 @@ class SRMonitor:
                 f"is neither {repr(NEW_OPCODE_VAR_VALUE)} nor {repr(NEW_OPCODE_LIST_VALUE)}")
             
     
-    def validate(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI) -> None:
+    def validate(self, path: list, info_api: OpcodeInfoAPI) -> None:
         """
         Ensure a SRMonitor is valid, raise ValidationError if not
         To validate the exact dropdown values you should additionally call the validate_dropdown_values method
         
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
         
         Returns:
@@ -244,7 +243,7 @@ class SRMonitor:
         """
         AA_TYPE(self, path, "opcode", str)
         AA_DICT_OF_TYPE(self, path, "dropdowns", key_t=str, value_t=SRDropdownValue)
-        if config.raise_when_monitor_position_outside_stage:
+        if get_config().validation.raise_if_monitor_position_outside_stage:
             AA_BOXED_COORD_PAIR(self, path, "position", 
                 min_x=-(STAGE_WIDTH //2), max_x=(STAGE_WIDTH //2), 
                 min_y=-(STAGE_HEIGHT//2), max_y=(STAGE_HEIGHT//2),
@@ -262,7 +261,7 @@ class SRMonitor:
         
         new_dropdown_ids = opcode_info.get_all_new_dropdown_ids()
         for new_dropdown_id, dropdown_value in self.dropdowns.items():
-            dropdown_value.validate(path+["dropdowns", (new_dropdown_id,)], config)
+            dropdown_value.validate(path+["dropdowns", (new_dropdown_id,)])
             if new_dropdown_id not in new_dropdown_ids:
                 raise UnnecessaryDropdownError(path, 
                     f"dropdowns of {cls_name} with opcode {repr(self.opcode)} includes unnecessary dropdown {repr(new_dropdown_id)}",
@@ -275,7 +274,6 @@ class SRMonitor:
     
     def validate_dropdown_values(self, 
         path: list, 
-        config: ValidationConfig, 
         info_api: OpcodeInfoAPI, 
         context: PartialContext | CompleteContext,
      ) -> None:
@@ -285,7 +283,6 @@ class SRMonitor:
         
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
             context: Context about parts of the project. Used to validate dropdowns
         
@@ -300,7 +297,6 @@ class SRMonitor:
             dropdown_type = opcode_info.get_dropdown_info_by_new(new_dropdown_id).type
             dropdown.validate_value(
                 path          = path+["dropdowns", (new_dropdown_id,)],
-                config        = config,
                 dropdown_type = dropdown_type, 
                 context       = context,
             )
@@ -426,14 +422,13 @@ class SRVariableMonitor(SRMonitor):
     slider_max: int | float
     allow_only_integers: bool
     
-    def validate(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI):
+    def validate(self, path: list, info_api: OpcodeInfoAPI):
         """
         Ensure a SRVariableMonitor is valid, raise ValidationError if not
         To validate the exact dropdown values you should additionally call the validate_dropdown_values method
         
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
         
         Returns:
@@ -442,7 +437,7 @@ class SRVariableMonitor(SRMonitor):
         Raises:
             ValidationError: if the SRVariableMonitor is invalid
         """
-        super().validate(path, config, info_api)
+        super().validate(path, info_api)
         AA_EQUAL(self, path, "opcode", NEW_OPCODE_VAR_VALUE)
         
         AA_TYPE(self, path, "readout_mode", SRVariableMonitorReadoutMode)
@@ -466,14 +461,13 @@ class SRListMonitor(SRMonitor):
 
     size: tuple[int | float, int | float]
     
-    def validate(self, path: list, config: ValidationConfig, info_api: OpcodeInfoAPI):
+    def validate(self, path: list, info_api: OpcodeInfoAPI):
         """
         Ensure a SRListMonitor is valid, raise ValidationError if not
         To validate the exact dropdown values you should additionally call the validate_dropdown_values method
         
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
         
         Returns:
@@ -482,10 +476,10 @@ class SRListMonitor(SRMonitor):
         Raises:
             ValidationError: if the SRListMonitor is invalid
         """
-        super().validate(path, config, info_api)
+        super().validate(path, info_api)
         AA_EQUAL(self, path, "opcode", NEW_OPCODE_LIST_VALUE)
         
-        if config.raise_when_monitor_bigger_then_stage:
+        if get_config().validation.raise_if_monitor_bigger_then_stage:
             max_x, max_y = STAGE_WIDTH, STAGE_HEIGHT
         else:
             max_x, max_y = None, None

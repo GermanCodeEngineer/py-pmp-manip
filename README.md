@@ -6,7 +6,7 @@
 
 ## 🚀 Features
 
-- [Creating ...]
+- [Creating ...](docs/creating.md)
 - [Editing ...]
 - [Inspecting ...]
 ... Project files
@@ -27,12 +27,12 @@ pip install -e .
 
 ---
 
-🧰 Basic Usage
+## 🧰 Basic Usage
 
 Before using most parts of pypenguin, you must initialize the configuration once:
 
 ```python
-from pypenguin.config import init_config, get_default_config
+from pypenguin import init_config, get_default_config
 
 # Start from defaults and override what you need
 cfg = get_default_config()
@@ -40,13 +40,13 @@ cfg.ext_info_gen.gen_opcode_info_dir = "output/gen_opcode_info"
 init_config(cfg)
 ```
 
-For more config options, see [docs/config.md](docs/config.md)
+For more config details, see [docs/config.md](docs/config.md)
 
 
 ---
 
-📁 Project Structure
-
+## 📁 Project Structure
+```
 pypenguin/
 ├── pypenguin/
 │   ├── core/              # Core functionality
@@ -56,26 +56,27 @@ pypenguin/
 │   └── utility/           # Utilities for other modukes
 ├── docs/              # Documentation
 └── tests/             # Unit tests
+```
 
+## 🧪 Running Tests
 
-🧪 Running Tests
-
+Just run:
 ```bash
 pytest
 ```
 
 ---
 
-📄 License
+## 📄 License
 
 GPLv3
 
 ---
 
-🤝 Contributing
+## 🤝 Contributing
 
 Pull requests, issues, and feedback are welcome!
 Please read the CONTRIBUTING.md guide before submitting code. 
-# TODO
+\# TODO
 
 ---

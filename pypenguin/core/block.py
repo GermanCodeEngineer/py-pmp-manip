@@ -15,7 +15,7 @@ from pypenguin.opcode_info.api  import (
     OpcodeType, SpecialCaseType,
 )
 from pypenguin.utility          import (
-    grepr_dataclass, get_closest_matches, tuplify, listify, string_to_sha256, ValidationConfig,
+    grepr_dataclass, get_closest_matches, tuplify, listify, string_to_sha256,
     AA_TYPE, AA_NONE, AA_NONE_OR_TYPE, AA_COORD_PAIR, AA_LIST_OF_TYPE, AA_DICT_OF_TYPE, AA_MIN_LEN,
     DeserializationError, ConversionError,
     UnnecessaryInputError, MissingInputError, UnnecessaryDropdownError, MissingDropdownError, InvalidOpcodeError, InvalidBlockShapeError,
@@ -616,7 +616,6 @@ class SRScript:
 
     def validate(self, 
         path: list, 
-        config: ValidationConfig,
         info_api: OpcodeInfoAPI,
         validation_if: "ValidationIF",
         context: CompleteContext,
@@ -626,7 +625,6 @@ class SRScript:
         
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
             validation_if: interface which allows the management of other blocks 
             context: Context about parts of the project. Used to validate the values of dropdowns
@@ -645,7 +643,6 @@ class SRScript:
             current_path = path+["blocks", i]
             block.validate(
                 path             = current_path,
-                config           = config,
                 info_api         = info_api,
                 validation_if    = validation_if,
                 context          = context,
@@ -656,7 +653,6 @@ class SRScript:
             SRBlock.validate_opcode_type(
                 opcode_type  = opcode_type,
                 path         = current_path,
-                config       = config,
                 is_top_level = True,
                 is_first     = (i == 0),
                 is_last      = ((i+1) == len(self.blocks)),
@@ -706,7 +702,6 @@ class SRBlock:
     
     def validate(self, 
         path: list, 
-        config: ValidationConfig,
         info_api: OpcodeInfoAPI,
         validation_if: "ValidationIF", 
         context: CompleteContext,
@@ -717,7 +712,6 @@ class SRBlock:
         
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
             validation_if: interface which allows the management of other blocks 
             context: Context about parts of the project. Used to validate dropdowns
@@ -752,13 +746,13 @@ class SRBlock:
             raise InvalidOpcodeError(path, msg)
         
         if self.comment is not None:
-            self.comment.validate(path+["comment"], config)
+            self.comment.validate(path+["comment"])
         
         if opcode_info.new_mutation_cls is None:
             AA_NONE(self, path, "mutation", condition="For this opcode")
         else:
             AA_TYPE(self, path, "mutation", opcode_info.new_mutation_cls, condition="For this opcode")
-            self.mutation.validate(path+["mutation"], config)
+            self.mutation.validate(path+["mutation"])
 
         input_infos = opcode_info.get_new_input_ids_infos(block=self, fti_if=None) 
         # maps input ids to their types # fti_if isn't necessary for a IRBlock
@@ -770,7 +764,6 @@ class SRBlock:
                 )
             input.validate(
                 path           = path+["inputs", (new_input_id,)],
-                config         = config,
                 info_api       = info_api,
                 validation_if = validation_if,
                 context        = context,
@@ -789,10 +782,9 @@ class SRBlock:
                     f"dropdowns of {cls_name} with opcode {repr(self.opcode)} includes unnecessary dropdown {repr(new_dropdown_id)}",
                 )
             current_path = path+["dropdowns", (new_dropdown_id,)]
-            dropdown.validate(current_path, config)
+            dropdown.validate(current_path)
             dropdown.validate_value(
                 path          = current_path,
-                config        = config,
                 dropdown_type = opcode_info.get_dropdown_info_by_new(new_dropdown_id).type,
                 context       = context,
             )
@@ -813,7 +805,6 @@ class SRBlock:
     @staticmethod
     def validate_opcode_type(
         path: list,
-        config: ValidationConfig, 
         opcode_type: OpcodeType,
         is_top_level: bool,
         is_first: bool,
@@ -824,7 +815,6 @@ class SRBlock:
         
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
             opcode_type: the opcode type of this block
             is_top_level: Wether this block is in a script(True) or in a substack(False)
             is_fist: Wether this block is the first in it's script/substack
@@ -1082,7 +1072,6 @@ class SRInputValue(ABC):
     @abstractmethod
     def validate(self, 
         path: list, 
-        config: ValidationConfig,
         info_api: OpcodeInfoAPI,
         validation_if: "ValidationIF", 
         context: CompleteContext, 
@@ -1093,7 +1082,6 @@ class SRInputValue(ABC):
         
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
             validation_if: interface which allows the management of other blocks 
             context: Context about parts of the project. Used to validate dropdowns
@@ -1108,7 +1096,6 @@ class SRInputValue(ABC):
 
     def _validate_block(self, 
         path: list, 
-        config: ValidationConfig,
         info_api: OpcodeInfoAPI,
         validation_if: "ValidationIF", 
         context: CompleteContext, 
@@ -1118,7 +1105,6 @@ class SRInputValue(ABC):
         
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
             validation_if: interface which allows the management of other blocks 
             context: Context about parts of the project. Used to validate dropdowns
@@ -1134,7 +1120,6 @@ class SRInputValue(ABC):
         if block is not None:
             block.validate(
                 path             = path+["block"],
-                config           = config,
                 info_api         = info_api,
                 validation_if   = validation_if,
                 context          = context,
@@ -1152,7 +1137,6 @@ class SRBlockAndTextInputValue(SRInputValue):
 
     def validate(self, 
         path: list, 
-        config: ValidationConfig,
         info_api: OpcodeInfoAPI,
         validation_if: "ValidationIF", 
         context: CompleteContext, 
@@ -1163,7 +1147,6 @@ class SRBlockAndTextInputValue(SRInputValue):
         
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
             validation_if: interface which allows the management of other blocks 
             context: Context about parts of the project. Used to validate dropdowns
@@ -1177,7 +1160,6 @@ class SRBlockAndTextInputValue(SRInputValue):
         """
         self._validate_block(
             path           = path,
-            config         = config,
             info_api       = info_api,
             validation_if = validation_if,
             context        = context,
@@ -1195,7 +1177,6 @@ class SRBlockAndDropdownInputValue(SRInputValue):
 
     def validate(self, 
         path: list, 
-        config: ValidationConfig,
         info_api: OpcodeInfoAPI,
         validation_if: "ValidationIF", 
         context: CompleteContext, 
@@ -1206,7 +1187,6 @@ class SRBlockAndDropdownInputValue(SRInputValue):
         
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
             validation_if: interface which allows the management of other blocks 
             context: Context about parts of the project. Used to validate dropdowns
@@ -1220,7 +1200,6 @@ class SRBlockAndDropdownInputValue(SRInputValue):
         """
         self._validate_block(
             path           = path,
-            config         = config,
             info_api       = info_api,
             validation_if = validation_if,
             context        = context,
@@ -1228,10 +1207,9 @@ class SRBlockAndDropdownInputValue(SRInputValue):
         AA_NONE_OR_TYPE(self, path, "dropdown", SRDropdownValue)
         if self.dropdown is not None:
             current_path = path+["dropdown"]
-            self.dropdown.validate(current_path, config)
+            self.dropdown.validate(current_path)
             self.dropdown.validate_value(
                 path          = current_path,
-                config        = config,
                 dropdown_type = input_type.corresponding_dropdown_type,
                 context       = context,
             )
@@ -1246,7 +1224,6 @@ class SRBlockOnlyInputValue(SRInputValue):
 
     def validate(self, 
         path: list, 
-        config: ValidationConfig,
         info_api: OpcodeInfoAPI,
         validation_if: "ValidationIF", 
         context: CompleteContext, 
@@ -1257,7 +1234,6 @@ class SRBlockOnlyInputValue(SRInputValue):
         
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
             validation_if: interface which allows the management of other blocks 
             context: Context about parts of the project. Used to validate dropdowns
@@ -1271,7 +1247,6 @@ class SRBlockOnlyInputValue(SRInputValue):
         """
         self._validate_block(
             path           = path,
-            config         = config,
             info_api       = info_api,
             validation_if = validation_if,
             context        = context,
@@ -1287,7 +1262,6 @@ class SRScriptInputValue(SRInputValue):
 
     def validate(self, 
         path: list, 
-        config: ValidationConfig,
         info_api: OpcodeInfoAPI,
         validation_if: "ValidationIF", 
         context: CompleteContext, 
@@ -1298,7 +1272,6 @@ class SRScriptInputValue(SRInputValue):
         
         Args:
             path: the path from the project to itself. Used for better error messages
-            config: Configuration for Validation Behaviour
             info_api: the opcode info api used to fetch information about opcodes
             validation_if: interface which allows the management of other blocks 
             context: Context about parts of the project. Used to validate dropdowns
@@ -1315,18 +1288,16 @@ class SRScriptInputValue(SRInputValue):
             current_path = path+["blocks", i]
             block.validate(
                 path             = current_path,
-                config           = config,
                 info_api         = info_api,
-                validation_if   = validation_if,
+                validation_if    = validation_if,
                 context          = context,
                 expects_reporter = False,
             )
             opcode_info = info_api.get_info_by_new(block.opcode)
             opcode_type = opcode_info.get_opcode_type(block=block, validation_if=validation_if)
             SRBlock.validate_opcode_type(
-                opcode_type  = opcode_type,
                 path         = current_path,
-                config       = config,
+                opcode_type  = opcode_type,
                 is_top_level = False,
                 is_first     = (i == 0),
                 is_last      = ((i+1) == len(self.blocks)),
