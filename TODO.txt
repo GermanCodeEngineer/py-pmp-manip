@@ -1,7 +1,8 @@
-  TODOs:
+TODOs:
     - todos + go over code
     - test and document utility
     - test and document opcode_info
+    - test ext_info_gen
     - add specific reasons for ThanksError
     - add all errors to docstrings
     - possibly remove mode attribute of IRInputValue
