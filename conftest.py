@@ -1,11 +1,5 @@
-from pytest import fixture
-
+# conftest.py
 from pypenguin.config import init_config, get_default_config
 
-
-@fixture(scope="session", autouse=True)
-def setup_config():
+def pytest_configure(config):
     init_config(get_default_config())
-    raise Exception()
-
-raise Exception()

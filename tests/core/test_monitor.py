@@ -1,6 +1,7 @@
 from copy   import copy
-from pytest import fixture, raises
+from pytest import fixture, raises, MonkeyPatch
 
+from pypenguin.config           import get_config, get_default_config
 from pypenguin.important_consts import (
     NEW_OPCODE_VAR_VALUE, NEW_OPCODE_LIST_VALUE,
     SHA256_SEC_MONITOR_VARIABLE_ID,
@@ -989,9 +990,13 @@ def test_SRVariableMonitor_validate_invalid_opcode(info_api_extended):
         srmonitor.validate([], info_api_extended)
 
 
-def test_SRVariableMonitor_validate_dont_raise_when_monitor_position_outside_stage(info_api_extended):
+def test_SRVariableMonitor_validate_dont_raise_if_monitor_position_outside_stage(monkeypatch: MonkeyPatch, info_api_extended):
+    modified_cfg = get_default_config()
+    modified_cfg.validation.raise_if_monitor_position_outside_stage = False
+    from pypenguin.config import manager as manager_mod
+    monkeypatch.setattr(manager_mod, "_config_instance", modified_cfg)
+
     srmonitor: SRVariableMonitor = ALL_GLOBAL_SR_MONITORS[0]
-    config = ValidationConfig(raise_when_monitor_position_outside_stage=False) # MARK
     srmonitor.validate([], info_api_extended)
 
 
@@ -1001,17 +1006,19 @@ def test_SRListMonitor_validate(info_api_extended):
     srmonitor: SRListMonitor
     srmonitor.validate([], info_api_extended)
 
-def test_SRListMonitor_validate_too_big_size(info_api_extended):
+def test_SRListMonitor_validate_too_big_size(monkeypatch: MonkeyPatch, info_api_extended):
     srmonitor = copy(ALL_GLOBAL_SR_MONITORS[2])
     srmonitor: SRListMonitor
     srmonitor.size = (2*STAGE_WIDTH, 2*STAGE_HEIGHT)
     with raises(RangeValidationError):
         srmonitor.validate([], info_api_extended)
     
-    modified_config = copy(config) # MARK
-    modified_config: ValidationConfig
-    modified_config.raise_when_monitor_bigger_then_stage = False
-    srmonitor.validate([], modified_config, info_api_extended)
+    modified_cfg = get_default_config()
+    modified_cfg.validation.raise_if_monitor_bigger_then_stage = False
+    from pypenguin.config import manager as manager_mod
+    monkeypatch.setattr(manager_mod, "_config_instance", modified_cfg)
+    
+    srmonitor.validate([], info_api_extended)
 
 def test_SRListMonitor_validate_invalid_opcode(info_api_extended):
     srmonitor = copy(ALL_GLOBAL_SR_MONITORS[2])
