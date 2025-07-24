@@ -67,7 +67,7 @@ class ExtInfoGenConfig(ConfigBase):
         Raises:
             ValidationError: if the ExtInfoGenConfig is invalid
         """
-        AA_TYPE(self, path, "gen_opcode_info_dir", str)
+        AA_TYPE(self, path, "gen_opcode_info_dir", str) # TODO: possibly add check if path is valid
         AA_TYPE(self, path, "js_fetch_interval", timedelta)
 
 @grepr_dataclass(grepr_fields=["raise_if_monitor_position_outside_stage", "raise_if_monitor_bigger_then_stage"])
@@ -113,9 +113,9 @@ class PlatformMetaConfig(ConfigBase):
         Raises:
             ValidationError: if the PlatformMetaConfig is invalid
         """
-        AA_TYPE(self, path, "scratch_semver", str)
-        AA_TYPE(self, path, "scratch_vm", str)
-        AA_TYPE(self, path, "penguinmod_vm", str)
+        AA_TYPE(self, path, "scratch_semver", str) # TODO: possibly implement stricter validation
+        AA_TYPE(self, path, "scratch_vm"    , str)
+        AA_TYPE(self, path, "penguinmod_vm" , str)
 
 @grepr_dataclass(grepr_fields=["ext_info_gen", "validation", "platform_meta"])
 class MasterConfig(ConfigBase):

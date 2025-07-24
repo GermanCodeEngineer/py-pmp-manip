@@ -14,10 +14,24 @@ from pypenguin.config.schema import *
 _config_instance: MasterConfig | None = None
 
 def init_config(config: MasterConfig) -> None:
+    """
+    Initializes the global configuration.
+    This must be called exactly **once** at the beginning of your program.
+    After initialization, the configuration becomes immutable
+
+    Args:
+        config: The configuration object to initialize with
+
+    Raises:
+        ConfigurationError: If configuration is already initialized or validation fails
+        TypeError: If the provided config is not an instance of MasterConfig
+    """
     global _config_instance
     
     if _config_instance is not None:
         raise ConfigurationError("Configuration has already been initialized.")
+    if not isinstance(config, MasterConfig):
+        raise TypeError("Expected a MasterConfig instance")
     try:
         config.validate()
     except ValidationError as error:
@@ -30,12 +44,27 @@ def init_config(config: MasterConfig) -> None:
     _config_instance = config
 
 def get_config() -> MasterConfig:
+    """
+    Returns the globally initialized configuration
+
+    Returns:
+        MasterConfig: The active project configuration
+
+    Raises:
+        ConfigurationError: If configuration has not been initialized
+    """
     global _config_instance
     if _config_instance is None:
         raise ConfigurationError("Configuration has not been initialized.")
     return _config_instance
 
 def get_default_config() -> "MasterConfig":
+    """
+    Returns the default project configuration
+
+    Returns:
+        MasterConfig: A default configuration with reasonable presets
+    """
     return MasterConfig(
         ext_info_gen=ExtInfoGenConfig(
             gen_opcode_info_dir="example_extensions/gen_opcode_info/", # TODO: find perm solution
