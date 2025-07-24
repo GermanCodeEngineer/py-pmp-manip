@@ -4,7 +4,6 @@ from typing       import Any
 from urllib.parse import urlparse
 
 from pypenguin.utility.errors import TypeValidationError, RangeValidationError, InvalidValueError
-from pypenguin.utility.repr   import grepr_dataclass
 
 
 def _value_and_descr(obj, attr: str) -> tuple[Any, str]:
@@ -194,11 +193,6 @@ def is_valid_url(url: str) -> bool:
     except Exception:
         return False
 
-@grepr_dataclass(grepr_fields=["raise_when_monitor_position_outside_stage", "raise_when_monitor_bigger_then_stage"])
-class ValidationConfig:
-    raise_when_monitor_position_outside_stage: bool = True
-    raise_when_monitor_bigger_then_stage: bool = True
-
 
 __all__ = [
     "AA_TYPE", "AA_TYPES", "AA_NONE", "AA_NONE_OR_TYPE", 
@@ -206,6 +200,6 @@ __all__ = [
     "AA_MIN", "AA_MAX", "AA_RANGE", "AA_MIN_LEN", "AA_EXACT_LEN", "AA_COORD_PAIR", "AA_BOXED_COORD_PAIR",
     "AA_JSON_COMPATIBLE", "AA_HEX_COLOR", "AA_ALNUM",
     "AA_EQUAL", "AA_NOT_EQUAL", "AA_BIGGER_OR_EQUAL", "AA_NOT_ONE_OF", 
-    "is_valid_js_data_uri", "is_valid_url", "ValidationConfig",
+    "is_valid_js_data_uri", "is_valid_url",
 ]
 

@@ -42,10 +42,6 @@ INDENT = 4*" "
 EXTRACTOR_PATH = "pypenguin/ext_info_gen/extractor.js"
 CACHE_FILENAME = "cache.json"
 
-# Configurable:
-GEN_OPCODE_INFO_DIR: str = None
-JS_FETCH_INTERVAL: timedelta = None
-
 def ext_info_gen_setup(gen_opcode_info_dir: str, js_fetch_interval: timedelta):
     """
     Setup the extension info generator module
@@ -559,6 +555,10 @@ def generate_extension_info_py_file(extension: str, extension_id: str) -> str:
     update_cache(cache)
     print("(RE-)GENERATED PY")
     return destination_file_path
+
+
+__all__ = ["generate_extension_info_py_file"]
+
 
 if __name__ == "__main__":
     ext_info_gen_setup(

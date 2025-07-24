@@ -19,11 +19,13 @@ from pypenguin.core.enums           import SRVariableMonitorReadoutMode
 from pypenguin.core.vars_lists      import variable_sha256, list_sha256
 
 
-# TODO: create global config
 STAGE_WIDTH : int = 480
 STAGE_HEIGHT: int = 360
-LIST_MONITOR_DEFAULT_WIDTH  = 100
-LIST_MONITOR_DEFAULT_HEIGHT = 120
+LIST_MONITOR_DEFAULT_WIDTH : int|float = 100
+LIST_MONITOR_DEFAULT_HEIGHT: int|float = 120
+LIST_MONITOR_MIN_WIDTH : int|float = 100
+LIST_MONITOR_MIN_HEIGHT: int|float = 60
+
 
 @grepr_dataclass(grepr_fields=["id", "mode", "opcode", "params", "sprite_name", "value", "x", "y", "visible", "width", "height", "slider_min", "slider_max", "is_discrete", "variable_type", "variable_id"])
 class FRMonitor:
@@ -487,7 +489,10 @@ class SRListMonitor(SRMonitor):
             max_x, max_y = STAGE_WIDTH, STAGE_HEIGHT
         else:
             max_x, max_y = None, None
-        AA_BOXED_COORD_PAIR(self, path, "size", min_x=100, max_x=max_x, min_y=60, max_y=max_y)
+        AA_BOXED_COORD_PAIR(self, path, "size", 
+            min_x=LIST_MONITOR_MIN_WIDTH , max_x=max_x, 
+            min_y=LIST_MONITOR_MIN_HEIGHT, max_y=max_y,
+        )
 
 
 __all__ = [

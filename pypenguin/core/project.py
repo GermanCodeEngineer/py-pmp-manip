@@ -2,7 +2,6 @@ from copy   import copy, deepcopy
 from json   import loads
 from typing import Any
 from uuid   import UUID
-import os # temporary
 
 from pypenguin.important_consts import SHA256_SEC_TARGET_NAME
 from pypenguin.opcode_info.api  import OpcodeInfoAPI, DropdownValueKind

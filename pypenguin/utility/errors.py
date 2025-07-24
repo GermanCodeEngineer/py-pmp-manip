@@ -92,18 +92,31 @@ class SameValueTwiceError(ValidationError):
 ###############################################################
 #                 ERRORS FOR THE EXT INFO GEN                 #
 ###############################################################
+
 class UnknownExtensionAttributeError(PypenguinError):
     pass
 
+###############################################################
+#                      ERRORS FOR THE CONFIG                  #
+###############################################################
+
+class ConfigurationError(PypenguinError):
+    pass
+
+
 __all__ = [
     "PypenguinError", "BlameDevsError", "ThanksError", 
+    
     "OpcodeInfoError", "UnknownOpcodeError", "SameOpcodeTwiceError", 
+    
     "DeserializationError", "ConversionError",
+    
     "ValidationError", "PathValidationError", "TypeValidationError", "InvalidValueError",
     "RangeValidationError", "MissingInputError", "UnnecessaryInputError", 
     "MissingDropdownError", "UnnecessaryDropdownError", "InvalidDropdownValueError", 
     "InvalidOpcodeError", "InvalidBlockShapeError", "SpriteLayerStackError", 
     "SameValueTwiceError",
-    "UnknownExtensionAttributeError",
+    
+    "UnknownExtensionAttributeError", "ConfigurationError",
 ]
 

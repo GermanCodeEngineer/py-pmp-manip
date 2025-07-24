@@ -672,13 +672,13 @@ ALL_GLOBAL_SR_MONITORS: list[SRMonitor] = [
     
     
     SRMonitor( # [7] for [12]
-        opcode="dumbExample_last_used_base",
+        opcode="dumbExample::last used base",
         dropdowns={},
         position=(-235, -175),
         is_visible=True,
     ),
     SRMonitor( # [8] for [13]
-        opcode="dumbExample_last_two_inout_values",
+        opcode="dumbExample::last two [S1] and [S2] values",
         dropdowns={
             "S1": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="IN"),
             "S2": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="OUT"),
