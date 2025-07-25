@@ -2,7 +2,7 @@
   "use strict";
 
   class DumbExample {
-    getInfo() {
+/*     getInfo() {
       return {
         id: "dumbExample",
         name: "Dumb Example",
@@ -46,7 +46,7 @@
     }
     last_two_inout_values( {S1, S2} ) {
       return JSON.stringify(["HERE", S1, S2])
-    }
+    } */
   }
 
   Scratch.extensions.register(new DumbExample());

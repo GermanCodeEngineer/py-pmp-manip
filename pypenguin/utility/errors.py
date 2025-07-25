@@ -96,6 +96,9 @@ class SameValueTwiceError(ValidationError):
 class UnknownExtensionAttributeError(PypenguinError):
     pass
 
+class InvalidExtensionCodeError(PypenguinError):
+    pass
+
 ###############################################################
 #                      ERRORS FOR THE CONFIG                  #
 ###############################################################
@@ -117,6 +120,7 @@ __all__ = [
     "InvalidOpcodeError", "InvalidBlockShapeError", "SpriteLayerStackError", 
     "SameValueTwiceError",
     
-    "UnknownExtensionAttributeError", "ConfigurationError",
+    "UnknownExtensionAttributeError", "InvalidExtensionCodeError",
+    "ConfigurationError",
 ]
 

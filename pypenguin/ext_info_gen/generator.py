@@ -1,11 +1,11 @@
 from aenum        import extend_enum
 from base64       import b64decode
-from datetime     import datetime, timezone, timedelta
+from datetime     import datetime, timezone
 from esprima      import parseScript
 from json         import loads, dumps
-from os           import remove as os_remove, makedirs, path
+from os           import remove as os_remove, path, makedirs # TODO: why not needed?
 from requests     import get as requests_get, RequestException
-from subprocess   import run as run_subprocess, TimeoutExpired
+from subprocess   import run as run_subprocess
 from tempfile     import NamedTemporaryFile
 from types        import EllipsisType
 from typing       import Any
@@ -21,9 +21,57 @@ from pypenguin.opcode_info.api import (
 )
 from pypenguin.utility         import (
     grepr, read_file_text, write_file_text, DualKeyDict, PypenguinEnum, ContentFingerprint,
-    ThanksError, UnknownExtensionAttributeError,
+    ThanksError, UnknownExtensionAttributeError, InvalidExtensionCodeError,
 )
 
+SCRATCH_STUB = {
+    "ArgumentAlignment": {
+        "DEFAULT": None,
+        "LEFT": "LEFT",
+        "CENTER": "CENTRE",
+        "RIGHT": "RIGHT"
+    },
+    "ArgumentType": {
+        "ANGLE": "angle",
+        "BOOLEAN": "Boolean",
+        "COLOR": "color",
+        "NUMBER": "number",
+        "STRING": "string",
+        "MATRIX": "matrix",
+        "NOTE": "note",
+        "IMAGE": "image",
+        "POLYGON": "polygon",
+        "COSTUME": "costume",
+        "SOUND": "sound",
+        "VARIABLE": "variable",
+        "LIST": "list",
+        "BROADCAST": "broadcast",
+        "SEPERATOR": "seperator"
+    },
+    "BlockShape": {
+        "HEXAGONAL": 1,
+        "ROUND": 2,
+        "SQUARE": 3,
+        "LEAF": 4,
+        "PLUS": 5
+    },
+    "BlockType": {
+        "BOOLEAN": "Boolean",
+        "BUTTON": "button",
+        "LABEL": "label",
+        "COMMAND": "command",
+        "CONDITIONAL": "conditional",
+        "EVENT": "event",
+        "HAT": "hat",
+        "LOOP": "loop",
+        "REPORTER": "reporter",
+        "XML": "xml"
+    },
+    "TargetType": {
+        "SPRITE": "sprite",
+        "STAGE": "stage"
+    },
+}
 ARGUMENT_TYPE_TO_INPUT_TYPE: dict[str, InputType] = {
     "string": BuiltinInputType.TEXT,
     "number": BuiltinInputType.NUMBER,
@@ -43,7 +91,7 @@ ARGUMENT_TYPE_TO_DROPDOWN_TYPE: dict[str, DropdownType] = {
 INDENT = 4*" "
 EXTRACTOR_PATH = "pypenguin/ext_info_gen/extractor.js"
 CACHE_FILENAME = "cache.json"
-   
+
 
 def fetch_js_code(extension: str) -> str:
     """
@@ -142,13 +190,150 @@ def extract_getinfo(js_code: str) -> dict[str, Any]:
     Args:
         js_code: the file path or https URL or JS Data URI of the extension code
     """
-    full_ast = parseScript(js_code)
-    reduced_ast = full_ast.body[0]
-    reduced_ast.expression.callee.body = "... ..."
     
-    write_file_text("parsed_ast.js", str(reduced_ast))
-    
-    
+
+    from esprima.nodes import (
+        Node, ExpressionStatement, ClassDeclaration, ClassBody, MethodDefinition, BlockStatement, ReturnStatement,
+        CallExpression, StaticMemberExpression, NewExpression, FunctionExpression, ObjectExpression, ArrayExpression,
+        Identifier, Literal,  Property,
+    )
+    REGISTER_EXTENSION_FUNC_PATTERN = StaticMemberExpression(
+        object=StaticMemberExpression(
+            object=Identifier(name="Scratch"),
+            property=Identifier(name="extensions"),
+        ), 
+        property=Identifier(name="register"),
+    )
+    def esprima_to_json(node: list[Node] | Node | str | int | float | bool | None) -> Any:
+        """
+        Recursively converts an Esprima-style object-oriented AST into a plain JSON-compatible Python structure.
+
+        Args:
+            node: The root AST node or subnode, typically an instance of ObjectExpression, ArrayExpression, Literal,
+                Identifier, or a list of nodes.
+
+        Returns:
+            A Python object representing the JSON-equivalent value: dict, list, str, int, float, bool, or None.
+
+        Raises:
+            ValueError: If an unsupported node type is encountered.
+        """
+        from collections.abc import Iterable
+
+        if   isinstance(node, StaticMemberExpression):
+            try:  # try to handle eg. Scratch.ArgumentType.STRING
+                assert isinstance(node.object, StaticMemberExpression)
+                inner_expression = node.object
+                
+                assert isinstance(inner_expression.object, Identifier)
+                assert inner_expression.object.name == "Scratch"
+                assert isinstance(inner_expression.property, Identifier)
+                assert inner_expression.property.name in SCRATCH_STUB
+
+                target_section = SCRATCH_STUB[inner_expression.property.name]
+                assert isinstance(node.property, Identifier)
+                assert node.property.name in target_section
+                return target_section[node.property.name]
+
+            except AssertionError as error:
+                raise ValueError("Could not process MemberExpression of unexpected format") from error
+
+        elif isinstance(node, ObjectExpression):
+            result = {}
+            for property in node.properties:
+                if not isinstance(property, Property):
+                    raise ValueError(f"Unsupported property type: {type(property)}")
+                # Determine key
+                if isinstance(property.key, Identifier):
+                    key = property.key.name
+                elif isinstance(property.key, Literal):
+                    key = property.key.value
+                else:
+                    raise ValueError(f"Unsupported key type: {type(property.key)}")
+                # Recurse on value
+                value = esprima_to_json(property.value)
+                result[key] = value
+            return result
+
+        elif isinstance(node, ArrayExpression):
+            return [esprima_to_json(elem) for elem in node.elements]
+
+        elif isinstance(node, Literal):
+            return node.value
+
+        elif isinstance(node, Identifier):
+            return node.name
+
+        elif isinstance(node, (str, int, float, bool, type(None))):
+            return node
+
+        elif isinstance(node, Iterable) and not(isinstance(node, StaticMemberExpression)):
+            return [esprima_to_json(item) for item in node]
+
+        else:
+            raise ValueError(f"Unsupported node type: {type(node)}")
+
+    # TODO
+
+
+    tree = parseScript(js_code)
+    #write_file_text("parsed_ast.lua", repr(tree.body[0]))
+    write_file_text("parsed_ast.lua", repr(tree.body[0].body.body[0].value.body.body[0].argument))
+
+    try:
+        ext_class_id: Identifier | None = None
+        for i, statement in enumerate(reversed(tree.body)): # register is usually last
+            if isinstance(statement, ExpressionStatement):
+                if isinstance(statement.expression, CallExpression):
+                    callee: Node = statement.expression.callee
+                    if callee.toDict() == REGISTER_EXTENSION_FUNC_PATTERN.toDict():
+                        arguments: list[Node] = statement.expression.arguments
+                        assert len(arguments) == 1
+                        argument = arguments[0]
+                        assert isinstance(argument, NewExpression)
+                        assert isinstance(argument.callee, Identifier)
+                        ext_class_id = argument.callee
+                        break
+        assert ext_class_id is not None
+
+        class_node: Node | None = None
+        for statement in reversed(tree.body):
+            if isinstance(statement, ClassDeclaration):
+                class_id: Identifier = statement.id
+                if class_id.name == ext_class_id.name:
+                    class_node = statement
+                    break
+        assert class_node is not None
+
+        class_body: ClassBody = class_node.body
+        getInfo_method: FunctionExpression | None = None
+        for statement in class_body.body:
+            if isinstance(statement, MethodDefinition):
+                method_id: Identifier = statement.key
+                if method_id.name == "getInfo":
+                    assert isinstance(statement.value, FunctionExpression)
+                    getInfo_method = statement.value
+                    break
+        assert getInfo_method is not None
+
+        assert isinstance(getInfo_method.body, BlockStatement)
+        last_statement = getInfo_method.body.body[-1]
+        assert isinstance(last_statement, ReturnStatement)
+        return_value = last_statement.argument
+        assert isinstance(return_value, ObjectExpression)
+        print(return_value)
+        
+        extension_info = esprima_to_json(return_value)
+        print(MenuInfo.__repr__(extension_info))
+
+
+    except (AssertionError, ValueError) as error:
+        raise InvalidExtensionCodeError("Cannot extract extension information: Invalid extension code ") from error
+
+            
+        #if isinstance(statement, ClassDeclaration):
+        #    print("found class", statement.id)
+
     raise Exception("...")
     
     
@@ -565,7 +750,8 @@ __all__ = ["generate_extension_info_py_file"]
 if __name__ == "__main__":
     init_config(get_default_config())
     for extension_id, extension in [
-        ("dumbExample",         "example_extensions/js_extension/dumbExample.js"),
+    ("asyncexample",         "example_extensions/js_extension/asyncexample.js")
+#        ("dumbExample",         "example_extensions/js_extension/dumbExample.js"),
 #        ("truefantombase",      "https://extensions.turbowarp.org/true-fantom/base.js"),
 #        ("pmControlsExpansion", "example_extensions/js_extension/pmControlsExpansion.js"),
 #        ("gpusb3",              "https://extensions.penguinmod.com/extensions/derpygamer2142/gpusb3.js"),
