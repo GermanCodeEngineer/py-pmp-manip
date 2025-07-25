@@ -1,8 +1,8 @@
 from aenum        import extend_enum
 from base64       import b64decode
-from datetime     import datetime, timezone
+from datetime     import datetime, timezone, timedelta
 from json         import loads, dumps
-from os           import remove as os_remove, path
+from os           import remove as os_remove, makedirs, path
 from requests     import get as requests_get, RequestException
 from subprocess   import run as run_subprocess, TimeoutExpired
 from tempfile     import NamedTemporaryFile
@@ -89,6 +89,14 @@ def fetch_js_code(extension: str) -> str:
         except OSError as error:
             raise OSError(f"Failed to read file {extension}") from error
 
+from subprocess import run as run_subprocess, TimeoutExpired
+from tempfile import NamedTemporaryFile
+from os import remove as os_remove
+from json import loads
+from typing import Any
+import uuid
+
+
 def extract_getinfo(js_code: str) -> dict[str, Any]:
     """
     Extract the return value of the getInfo method of the extension class based on the extension's JS code,
@@ -100,25 +108,27 @@ def extract_getinfo(js_code: str) -> dict[str, Any]:
     Raises:
         RuntimeError, UnknownExtensionAttributeError
     """
-    with NamedTemporaryFile(
-        mode="w", suffix=".js", 
-        encoding="utf-8", 
-        delete=False
-    ) as temp_js:
+    # Create a temp file for the JS code
+    with NamedTemporaryFile(mode="w", suffix=".js", encoding="utf-8", delete=False) as temp_js:
         temp_js.write(js_code)
-        temp_js_path = temp_js.name
+        temp_path = temp_js.name
 
     try:
-        print("--> Executing JavaScript via Node.js")
+        print("--> Executing JavaScript in sandboxed Docker container")
         result = run_subprocess(
-            ["node", EXTRACTOR_PATH, temp_js_path],
+            [
+                "docker", "run", "--rm",
+                "-v", f"{temp_path}:/ext.js:ro",
+                "pypenguin-js-sandbox", "/ext.js"
+            ],
             capture_output=True,
             text=True,
-            encoding="utf-8",
-            timeout=1, # usually seems to take around 0.10-0.14 seconds on windows
+            timeout=5
         )
-    except FileNotFoundError as error: # when python can't find the node executable
-        raise RuntimeError("Node.js is not installed or not found in PATH.") from error
+    except FileNotFoundError:
+        raise RuntimeError("Docker is not installed or not found in PATH.")
+    except TimeoutExpired:
+        raise RuntimeError("Docker sandbox timed out while extracting getInfo().")
     finally:
         os_remove(temp_js_path)
 
