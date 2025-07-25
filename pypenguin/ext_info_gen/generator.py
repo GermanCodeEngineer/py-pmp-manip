@@ -1,6 +1,7 @@
 from aenum        import extend_enum
 from base64       import b64decode
 from datetime     import datetime, timezone, timedelta
+from esprima      import parseScript
 from json         import loads, dumps
 from os           import remove as os_remove, makedirs, path
 from requests     import get as requests_get, RequestException
@@ -89,89 +90,68 @@ def fetch_js_code(extension: str) -> str:
         except OSError as error:
             raise OSError(f"Failed to read file {extension}") from error
 
-from subprocess import run as run_subprocess, TimeoutExpired
-from tempfile import NamedTemporaryFile
-from os import remove as os_remove
-from json import loads
-from typing import Any
-import uuid
+def extract_getinfo_old(js_code: str) -> dict[str, Any]:
+    """
+    Extract the return value of the getInfo method of the extension class based on the extension's JS code.
+    A node subprocess is run, which lets the outer code run and then calls and logs the return value of the getInfo method of the extension class.
+    
+    Args:
+        js_code: the file path or https URL or JS Data URI of the extension code
+    """
+    with NamedTemporaryFile(
+        mode="w", suffix=".js", 
+        encoding="utf-8", 
+        delete=False
+    ) as temp_js:
+        temp_js.write(js_code)
+        temp_js_path = temp_js.name
 
+    try:
+        print("--> Executing JavaScript via Node.js")
+        result = run_subprocess(
+            ["node", EXTRACTOR_PATH, temp_js_path],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            timeout=1, # usually seems to take around 0.10-0.14 seconds on windows
+        )
+    except FileNotFoundError as error: # when python can't find the node executable
+        raise RuntimeError("Node.js is not installed or not found in PATH.") from error
+    finally:
+        os_remove(temp_js_path)
+    
+    if result.returncode != 0:
+        raise RuntimeError(result.stderr)
+    if not isinstance(result.stdout, str):
+        raise RuntimeError("Unexpected Error in subprocess.run itself (before extracting extension information)")
+    
+    extension_info = loads(result.stdout.splitlines()[-1]) # avoid error, when extension itself logs sth
+    # Relevant of the returned attributes: ["id", "blocks", "menus"]
+    for attr in extension_info.keys():
+        if attr not in {
+            "name", "color1", "color2", "color3", "menuIconURI", "docsURI", "isDynamic", 
+            "id", "blocks", "menus",
+         }:
+            raise UnknownExtensionAttributeError(attr)
+    return extension_info
 
 def extract_getinfo(js_code: str) -> dict[str, Any]:
     """
-    Extract the return value of the getInfo method of the extension class based on the extension's JS code,
-    executed in a sandboxed Docker container for safety.
-
+    Extract the return value of the getInfo method of the extension class based on the extension's JS code.    
+    # TODO: add details when done    
     Args:
-        js_code: The full JS code of the extension.
-
-    Raises:
-        RuntimeError, UnknownExtensionAttributeError
+        js_code: the file path or https URL or JS Data URI of the extension code
     """
-    # Create a temp file for the JS code
-    with NamedTemporaryFile(mode="w", suffix=".js", encoding="utf-8", delete=False) as temp_js:
-        temp_js.write(js_code)
-        temp_path = temp_js.name
-
-    try:
-        print("--> Executing JavaScript in sandboxed Docker container")
-        result = run_subprocess(
-            [
-                "docker", "run", "--rm",
-                "-v", f"{temp_path}:/ext.js:ro",
-                "pypenguin-js-sandbox", "/ext.js"
-            ],
-            capture_output=True,
-            text=True,
-            timeout=5
-        )
-    except FileNotFoundError:
-        raise RuntimeError("Docker is not installed or not found in PATH.")
-    except TimeoutExpired:
-        raise RuntimeError("Docker sandbox timed out while extracting getInfo().")
-    finally:
-        os_remove(temp_js_path)
-
-    # Create a temp file for the JS code
-    with NamedTemporaryFile(mode="w", suffix=".js", encoding="utf-8", delete=False) as temp_js:
-        temp_js.write(js_code)
-        temp_path = temp_js.name
-
-    try:
-        print("--> Executing JavaScript in sandboxed Docker container")
-        result = run_subprocess(
-            [
-                "docker", "run", "--rm",
-                "-v", f"{temp_path}:/ext.js:ro",
-                "pypenguin-js-sandbox", "/ext.js"
-            ],
-            capture_output=True,
-            text=True,
-            timeout=5
-        )
-    except FileNotFoundError:
-        raise RuntimeError("Docker is not installed or not found in PATH.")
-    except TimeoutExpired:
-        raise RuntimeError("Docker sandbox timed out while extracting getInfo().")
-    finally:
-        os_remove(temp_path)
-
-    if result.returncode != 0:
-        raise RuntimeError(f"Error in sandboxed JS execution: {result.stderr}")
-
-    try:
-        extension_info = loads(result.stdout.strip().splitlines()[-1])  # last line = JSON
-    except Exception as error:
-        raise RuntimeError(f"Invalid JSON output from container: {error}") from error
-
-    for attr in extension_info.keys():
-        if attr not in {
-            "name", "color1", "color2", "color3", "menuIconURI",
-            "docsURI", "isDynamic", "id", "blocks", "menus"
-        }:
-            raise UnknownExtensionAttributeError(attr)
-
-    return extension_info
+    full_ast = parseScript(js_code)
+    reduced_ast = full_ast.body[0]
+    reduced_ast.expression.callee.body = "... ..."
+    
+    write_file_text("parsed_ast.js", str(reduced_ast))
+    
+    
+    raise Exception("...")
+    
+    
 
 def process_all_menus(menus: dict[str, dict[str, Any]|list]) -> tuple[type[InputType], type[DropdownType]]:
     """
@@ -549,7 +529,7 @@ def generate_extension_info_py_file(extension: str, extension_id: str) -> str:
     file_cache = cache.get(destination_file_name, None)
 
 
-    should_continue = consider_state(by_url=(extension.startswith("http://") or extension.startswith("https://")))
+    should_continue = True #consider_state(by_url=(extension.startswith("http://") or extension.startswith("https://")))
     if should_continue is False: # neither True nor Ellipsis
         print("PY STILL UP TO DATE")
         file_cache["lastUpdate"] = datetime.now(timezone.utc).isoformat()
@@ -558,7 +538,7 @@ def generate_extension_info_py_file(extension: str, extension_id: str) -> str:
     js_code = fetch_js_code(extension)
     if file_cache is not None:
         js_fingerprint = ContentFingerprint.from_json(file_cache["jsFingerprint"])
-        if (should_continue is ...) and js_fingerprint.matches(js_code):
+        if False: #(should_continue is ...) and js_fingerprint.matches(js_code):
             file_cache["lastUpdate"] = datetime.now(timezone.utc).isoformat()
             update_cache(cache)
             print("PY & JS STILL UP TO DATE")
