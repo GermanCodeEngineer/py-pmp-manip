@@ -1,17 +1,17 @@
 from aenum        import extend_enum
 from base64       import b64decode
-from datetime     import datetime, timezone, timedelta
+from datetime     import datetime, timezone
 from json         import loads, dumps
-from os           import remove as os_remove, makedirs, path
+from os           import remove as os_remove, path
 from requests     import get as requests_get, RequestException
-from subprocess   import run as run_subprocess
+from subprocess   import run as run_subprocess, TimeoutExpired
 from tempfile     import NamedTemporaryFile
 from types        import EllipsisType
 from typing       import Any
 from urllib.parse import unquote
 
 
-from pypenguin.config          import get_config
+from pypenguin.config          import get_config, init_config, get_default_config
 from pypenguin.opcode_info.api import (
     OpcodeInfoGroup, OpcodeInfo, OpcodeType, MonitorIdBehaviour,
     InputInfo, InputMode, InputType, BuiltinInputType, MenuInfo,
@@ -91,11 +91,14 @@ def fetch_js_code(extension: str) -> str:
 
 def extract_getinfo(js_code: str) -> dict[str, Any]:
     """
-    Extract the return value of the getInfo method of the extension class based on the extension's JS code.
-    A node subprocess is run, which lets the outer code run and then calls and logs the return value of the getInfo method of the extension class.
-    
+    Extract the return value of the getInfo method of the extension class based on the extension's JS code,
+    executed in a sandboxed Docker container for safety.
+
     Args:
-        js_code: the file path or https URL or JS Data URI of the extension code
+        js_code: The full JS code of the extension.
+
+    Raises:
+        RuntimeError, UnknownExtensionAttributeError
     """
     with NamedTemporaryFile(
         mode="w", suffix=".js", 
@@ -118,18 +121,46 @@ def extract_getinfo(js_code: str) -> dict[str, Any]:
         raise RuntimeError("Node.js is not installed or not found in PATH.") from error
     finally:
         os_remove(temp_js_path)
-    
+
+    # Create a temp file for the JS code
+    with NamedTemporaryFile(mode="w", suffix=".js", encoding="utf-8", delete=False) as temp_js:
+        temp_js.write(js_code)
+        temp_path = temp_js.name
+
+    try:
+        print("--> Executing JavaScript in sandboxed Docker container")
+        result = run_subprocess(
+            [
+                "docker", "run", "--rm",
+                "-v", f"{temp_path}:/ext.js:ro",
+                "pypenguin-js-sandbox", "/ext.js"
+            ],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+    except FileNotFoundError:
+        raise RuntimeError("Docker is not installed or not found in PATH.")
+    except TimeoutExpired:
+        raise RuntimeError("Docker sandbox timed out while extracting getInfo().")
+    finally:
+        os_remove(temp_path)
+
     if result.returncode != 0:
-        raise RuntimeError(result.stderr)
-    if not isinstance(result.stdout, str):
-        raise RuntimeError("Unexpected Error in subprocess.run itself (before extracting extension information)")
-    info = loads(result.stdout.splitlines()[-1]) # avoid error, when extension itself logs sth
-    extension_info = info["extensionInfo"]
-    js_code = info["jsCode"]
-    # Relevant of the returned attributes: ["id", "blocks", "menus"]
+        raise RuntimeError(f"Error in sandboxed JS execution: {result.stderr}")
+
+    try:
+        extension_info = loads(result.stdout.strip().splitlines()[-1])  # last line = JSON
+    except Exception as error:
+        raise RuntimeError(f"Invalid JSON output from container: {error}") from error
+
     for attr in extension_info.keys():
-        if attr not in {"name", "color1", "color2", "color3", "menuIconURI", "docsURI", "isDynamic", "id", "blocks", "menus"}:
+        if attr not in {
+            "name", "color1", "color2", "color3", "menuIconURI",
+            "docsURI", "isDynamic", "id", "blocks", "menus"
+        }:
             raise UnknownExtensionAttributeError(attr)
+
     return extension_info
 
 def process_all_menus(menus: dict[str, dict[str, Any]|list]) -> tuple[type[InputType], type[DropdownType]]:
@@ -417,7 +448,7 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
                 opcode_info = opcode_info,
             )
     
-    for menu_opcode, menu_info in menus.items():
+    for menu_opcode in menus.keys():
         menu_opcode = f"{extension_id}_menu_{menu_opcode}"
         opcode_info = OpcodeInfo(opcode_type=OpcodeType.MENU)
         info_group.add_opcode(menu_opcode, menu_opcode, opcode_info)
@@ -542,11 +573,12 @@ __all__ = ["generate_extension_info_py_file"]
 
 
 if __name__ == "__main__":
+    init_config(get_default_config())
     for extension_id, extension in [
         ("dumbExample",         "example_extensions/js_extension/dumbExample.js"),
-        ("truefantombase",      "https://extensions.turbowarp.org/true-fantom/base.js"),
-        ("pmControlsExpansion", "example_extensions/js_extension/pmControlsExpansion.js"),
-        ("gpusb3",              "https://extensions.penguinmod.com/extensions/derpygamer2142/gpusb3.js"),
-        ("P7BoxPhys",           "https://extensions.penguinmod.com/extensions/pooiod/Box2D.js"),
+#        ("truefantombase",      "https://extensions.turbowarp.org/true-fantom/base.js"),
+#        ("pmControlsExpansion", "example_extensions/js_extension/pmControlsExpansion.js"),
+#        ("gpusb3",              "https://extensions.penguinmod.com/extensions/derpygamer2142/gpusb3.js"),
+#        ("P7BoxPhys",           "https://extensions.penguinmod.com/extensions/pooiod/Box2D.js"),
     ]:
         generate_extension_info_py_file(extension, extension_id)

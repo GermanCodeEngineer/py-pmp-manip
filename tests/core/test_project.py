@@ -46,8 +46,8 @@ def test_FRProject_data_sb3_to_pmp():
 
 
 def test_FRProject_from_file():
-    FRProject.from_file("../tests/assets/testing_blocks.pmp", info_api)
-    FRProject.from_file("../tests/assets/scratch_project.sb3", info_api) 
+    FRProject.from_file("../tests/_assets_/testing_blocks.pmp", info_api)
+    FRProject.from_file("../tests/_assets_/scratch_project.sb3", info_api) 
     # TODO: use smaller examples and check equality
     with raises(AssertionError):
         FRProject.from_file("abc/def/ghi/christ_loves_u.bible", info_api)

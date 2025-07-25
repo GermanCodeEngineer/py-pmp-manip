@@ -1504,7 +1504,7 @@ FR_SPRITE = FRSprite(
 
 PROJECT_ASSET_FILES = KeyReprDict({
     file_name: content 
-    for file_name, content in read_all_files_of_zip("../tests/assets/testing_blocks.pmp").items() 
+    for file_name, content in read_all_files_of_zip("../tests/_assets_/testing_blocks.pmp").items() 
     if file_name != "project.json"
 })
 

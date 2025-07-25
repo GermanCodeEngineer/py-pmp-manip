@@ -143,11 +143,7 @@ function runScript(code) {
             process.exit(1);
         }
         const extensionInfo = globalThis._scratchExtension.getInfo();
-        const info = {
-            extensionInfo: extensionInfo,
-            jsCode: code,
-        }
-        console.log(JSON.stringify(info));
+        console.log(JSON.stringify(extensionInfo));
     } catch (e) {
         console.error("Error executing script:", e);
         process.exit(1);
