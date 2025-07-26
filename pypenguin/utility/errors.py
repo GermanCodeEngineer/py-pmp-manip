@@ -93,6 +93,20 @@ class SameValueTwiceError(ValidationError):
 #                 ERRORS FOR THE EXT INFO GEN                 #
 ###############################################################
 
+class EsprimaParsingError(PypenguinError):
+    def __init__(self, message: str, line: int | None = None, column: int | None = None):
+        super().__init__(f"{message} at line {line}, column {column}")
+        self.line = line
+        self.column = column
+
+def parse_esprima_script(js_code: str) -> esprima.nodes.Script:
+    try:
+        return esprima.parseScript(js_code, tolerant=False)
+    except esprima.error.Error as e:
+        line = getattr(e, 'lineNumber', None)
+        column = getattr(e, 'column', None)
+        raise EsprimaParsingError(str(e), line, column) from e
+
 class InvalidExtensionCodeError(PypenguinError):
     pass
 

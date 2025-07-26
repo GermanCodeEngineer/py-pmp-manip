@@ -1,7 +1,7 @@
 from aenum        import extend_enum
 from datetime     import datetime, timezone
 from json         import loads, dumps
-from os           import path, makedirs # TODO: why not needed?
+from os           import path, makedirs
 from types        import EllipsisType
 from typing       import Any
 
@@ -17,7 +17,7 @@ from pypenguin.utility         import (
     ThanksError, UnknownExtensionAttributeError,
 )
 
-from pypenguin.ext_info_gen.extractor import 
+from pypenguin.ext_info_gen.extractor import fetch_js_code, extract_getinfo
 
 
 ARGUMENT_TYPE_TO_INPUT_TYPE: dict[str, InputType] = {
@@ -425,7 +425,7 @@ def generate_extension_info_py_file(extension: str, extension_id: str) -> str:
     file_cache = cache.get(destination_file_name, None)
 
 
-    should_continue = True #consider_state(by_url=(extension.startswith("http://") or extension.startswith("https://")))
+    should_continue = consider_state(by_url=(extension.startswith("http://") or extension.startswith("https://")))
     if should_continue is False: # neither True nor Ellipsis
         print("PY STILL UP TO DATE")
         file_cache["lastUpdate"] = datetime.now(timezone.utc).isoformat()
@@ -434,7 +434,7 @@ def generate_extension_info_py_file(extension: str, extension_id: str) -> str:
     js_code = fetch_js_code(extension)
     if file_cache is not None:
         js_fingerprint = ContentFingerprint.from_json(file_cache["jsFingerprint"])
-        if False: #(should_continue is ...) and js_fingerprint.matches(js_code):
+        if (should_continue is ...) and js_fingerprint.matches(js_code):
             file_cache["lastUpdate"] = datetime.now(timezone.utc).isoformat()
             update_cache(cache)
             print("PY & JS STILL UP TO DATE")
@@ -443,6 +443,7 @@ def generate_extension_info_py_file(extension: str, extension_id: str) -> str:
     extension_info = extract_getinfo(js_code)
     info_group, input_type_cls, dropdown_type_cls = generate_opcode_info_group(extension_info)
     file_code = generate_file_code(info_group, input_type_cls, dropdown_type_cls)
+    makedirs(cfg.ext_info_gen.gen_opcode_info_dir, exist_ok=True)
     write_file_text(destination_file_path, file_code)
     
     cache[destination_file_name] = {
@@ -461,8 +462,8 @@ __all__ = ["generate_extension_info_py_file"]
 if __name__ == "__main__":
     init_config(get_default_config())
     for extension_id, extension in [
-    ("asyncexample",         "example_extensions/js_extension/asyncexample.js")
-#        ("dumbExample",         "example_extensions/js_extension/dumbExample.js"),
+        ("asyncexample",         "example_extensions/js_extension/asyncexample.js"),
+        ("dumbExample",         "example_extensions/js_extension/dumbExample.js"),
 #        ("truefantombase",      "https://extensions.turbowarp.org/true-fantom/base.js"),
 #        ("pmControlsExpansion", "example_extensions/js_extension/pmControlsExpansion.js"),
 #        ("gpusb3",              "https://extensions.penguinmod.com/extensions/derpygamer2142/gpusb3.js"),

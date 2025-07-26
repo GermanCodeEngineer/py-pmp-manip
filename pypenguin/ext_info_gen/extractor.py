@@ -3,7 +3,7 @@ from collections.abc import Iterable
 from esprima         import parseScript
 from esprima.nodes   import (
     Node, ExpressionStatement, ClassDeclaration, ClassBody, MethodDefinition, BlockStatement, ReturnStatement,
-    CallExpression, StaticMemberExpression, NewExpression, FunctionExpression, ObjectExpression, ArrayExpression,
+    CallExpression, StaticMemberExpression, NewExpression, FunctionExpression, ObjectExpression, ArrayExpression, ArrowFunctionExpression,
     Identifier, Literal, Property,
 )
 from os              import path
@@ -13,7 +13,7 @@ from urllib.parse    import unquote
 
 from pypenguin.utility         import (
     grepr, read_file_text,
-    UnknownExtensionAttributeError, InvalidExtensionCodeError,
+    InvalidExtensionCodeError, EsprimaToJsonConversionError,
     write_file_text, # temporary
 )
 
@@ -199,13 +199,24 @@ def extract_getinfo(js_code: str) -> dict[str, Any]:
     """
 
 
+    
     tree = parseScript(js_code)
-    #write_file_text("parsed_ast.lua", repr(tree.body[0]))
-    write_file_text("parsed_ast.lua", repr(tree.body[0].body.body[0].value.body.body[0].argument))
-
+    write_file_text("parsed_ast.lua", repr(tree))
+    #write_file_text("parsed_ast.lua", repr(tree.body[0].body.body[0].value.body.body[0].argument))
+    
     try:
+        if (len(tree.body) == 1) and isinstance(tree.body[0], ExpressionStatement):
+            # this handles ((Scratch) => { ... })(Scratch);
+            statement: ExpressionStatement = tree.body[0]
+            assert isinstance(statement.expression, CallExpression)
+            assert isinstance(statement.expression.callee, ArrowFunctionExpression)
+            assert isinstance(statement.expression.callee.body, BlockStatement)
+            tree_body = statement.expression.callee.body.body
+        else:
+            tree_body = tree.body
+        
         ext_class_id: Identifier | None = None
-        for i, statement in enumerate(reversed(tree.body)): # register is usually last
+        for i, statement in enumerate(reversed(tree_body)): # register is usually last
             if isinstance(statement, ExpressionStatement):
                 if isinstance(statement.expression, CallExpression):
                     callee: Node = statement.expression.callee
@@ -220,7 +231,7 @@ def extract_getinfo(js_code: str) -> dict[str, Any]:
         assert ext_class_id is not None
 
         class_node: Node | None = None
-        for statement in reversed(tree.body):
+        for statement in reversed(tree_body):
             if isinstance(statement, ClassDeclaration):
                 class_id: Identifier = statement.id
                 if class_id.name == ext_class_id.name:
