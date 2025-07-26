@@ -93,10 +93,13 @@ class SameValueTwiceError(ValidationError):
 #                 ERRORS FOR THE EXT INFO GEN                 #
 ###############################################################
 
-class UnknownExtensionAttributeError(PypenguinError):
+class InvalidExtensionCodeError(PypenguinError):
     pass
 
-class InvalidExtensionCodeError(PypenguinError):
+class EsprimaToJsonConversionError(PypenguinError):
+    pass
+
+class UnknownExtensionAttributeError(PypenguinError):
     pass
 
 ###############################################################
@@ -120,7 +123,7 @@ __all__ = [
     "InvalidOpcodeError", "InvalidBlockShapeError", "SpriteLayerStackError", 
     "SameValueTwiceError",
     
-    "UnknownExtensionAttributeError", "InvalidExtensionCodeError",
+    "InvalidExtensionCodeError", "EsprimaToJsonConversionError", "UnknownExtensionAttributeError", 
     "ConfigurationError",
 ]
 

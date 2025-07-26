@@ -1,16 +1,9 @@
 from aenum        import extend_enum
-from base64       import b64decode
 from datetime     import datetime, timezone
-from esprima      import parseScript
 from json         import loads, dumps
-from os           import remove as os_remove, path, makedirs # TODO: why not needed?
-from requests     import get as requests_get, RequestException
-from subprocess   import run as run_subprocess
-from tempfile     import NamedTemporaryFile
+from os           import path, makedirs # TODO: why not needed?
 from types        import EllipsisType
 from typing       import Any
-from urllib.parse import unquote
-
 
 from pypenguin.config          import get_config, init_config, get_default_config
 from pypenguin.opcode_info.api import (
@@ -21,57 +14,12 @@ from pypenguin.opcode_info.api import (
 )
 from pypenguin.utility         import (
     grepr, read_file_text, write_file_text, DualKeyDict, PypenguinEnum, ContentFingerprint,
-    ThanksError, UnknownExtensionAttributeError, InvalidExtensionCodeError,
+    ThanksError, UnknownExtensionAttributeError,
 )
 
-SCRATCH_STUB = {
-    "ArgumentAlignment": {
-        "DEFAULT": None,
-        "LEFT": "LEFT",
-        "CENTER": "CENTRE",
-        "RIGHT": "RIGHT"
-    },
-    "ArgumentType": {
-        "ANGLE": "angle",
-        "BOOLEAN": "Boolean",
-        "COLOR": "color",
-        "NUMBER": "number",
-        "STRING": "string",
-        "MATRIX": "matrix",
-        "NOTE": "note",
-        "IMAGE": "image",
-        "POLYGON": "polygon",
-        "COSTUME": "costume",
-        "SOUND": "sound",
-        "VARIABLE": "variable",
-        "LIST": "list",
-        "BROADCAST": "broadcast",
-        "SEPERATOR": "seperator"
-    },
-    "BlockShape": {
-        "HEXAGONAL": 1,
-        "ROUND": 2,
-        "SQUARE": 3,
-        "LEAF": 4,
-        "PLUS": 5
-    },
-    "BlockType": {
-        "BOOLEAN": "Boolean",
-        "BUTTON": "button",
-        "LABEL": "label",
-        "COMMAND": "command",
-        "CONDITIONAL": "conditional",
-        "EVENT": "event",
-        "HAT": "hat",
-        "LOOP": "loop",
-        "REPORTER": "reporter",
-        "XML": "xml"
-    },
-    "TargetType": {
-        "SPRITE": "sprite",
-        "STAGE": "stage"
-    },
-}
+from pypenguin.ext_info_gen.extractor import 
+
+
 ARGUMENT_TYPE_TO_INPUT_TYPE: dict[str, InputType] = {
     "string": BuiltinInputType.TEXT,
     "number": BuiltinInputType.NUMBER,
@@ -89,255 +37,9 @@ ARGUMENT_TYPE_TO_DROPDOWN_TYPE: dict[str, DropdownType] = {
     "list": BuiltinDropdownType.LIST,
 }
 INDENT = 4*" "
-EXTRACTOR_PATH = "pypenguin/ext_info_gen/extractor.js"
 CACHE_FILENAME = "cache.json"
 
-
-def fetch_js_code(extension: str) -> str:
-    """
-    Fetch the extension's JS code from a file path, HTTPS URL, or JavaScript Data URI.
-
-    Args:
-        extension: The file path, HTTPS URL, or data URI of the extension code.
-
-    Raises:
-        ValueError: If the data URI is invalid.
-        FileNotFoundError: If the local file does not exist.
-        OSError: If the file cannot be read.
-        requests.RequestException: For any network-related error.
-        requests.HTTPError: For HTTP error responses (4xx, 5xx).
-    """
-    if extension.startswith("data:"):
-        print("--> Fetching from data URI")
-        try:
-            meta, encoded = extension.split(",", 1)
-            if ";base64" in meta:
-                return b64decode(encoded).decode()
-            else:
-                return unquote(encoded)
-        except Exception as error:
-            raise ValueError(f"Failed to decode data URI: {error}") from error
-
-    elif extension.startswith("http://") or extension.startswith("https://"):
-        print(f"--> Fetching from URL: {extension}")
-        try:
-            response = requests_get(extension, timeout=10)
-            response.raise_for_status()
-            return response.text
-        except RequestException as error:
-            raise ConnectionError(f"Network error fetching {extension}") from error
-        except Exception as error:
-            raise RuntimeError(f"Unexpected error while fetching URL") from error
-
-    else:
-        print(f"--> Reading from file: {extension}")
-        if not path.exists(extension):
-            raise FileNotFoundError(f"File not found: {extension}")
-        try:
-            return read_file_text(extension)
-        except OSError as error:
-            raise OSError(f"Failed to read file {extension}") from error
-
-def extract_getinfo_old(js_code: str) -> dict[str, Any]:
-    """
-    Extract the return value of the getInfo method of the extension class based on the extension's JS code.
-    A node subprocess is run, which lets the outer code run and then calls and logs the return value of the getInfo method of the extension class.
     
-    Args:
-        js_code: the file path or https URL or JS Data URI of the extension code
-    """
-    with NamedTemporaryFile(
-        mode="w", suffix=".js", 
-        encoding="utf-8", 
-        delete=False
-    ) as temp_js:
-        temp_js.write(js_code)
-        temp_js_path = temp_js.name
-
-    try:
-        print("--> Executing JavaScript via Node.js")
-        result = run_subprocess(
-            ["node", EXTRACTOR_PATH, temp_js_path],
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            timeout=1, # usually seems to take around 0.10-0.14 seconds on windows
-        )
-    except FileNotFoundError as error: # when python can't find the node executable
-        raise RuntimeError("Node.js is not installed or not found in PATH.") from error
-    finally:
-        os_remove(temp_js_path)
-    
-    if result.returncode != 0:
-        raise RuntimeError(result.stderr)
-    if not isinstance(result.stdout, str):
-        raise RuntimeError("Unexpected Error in subprocess.run itself (before extracting extension information)")
-    
-    extension_info = loads(result.stdout.splitlines()[-1]) # avoid error, when extension itself logs sth
-    # Relevant of the returned attributes: ["id", "blocks", "menus"]
-    for attr in extension_info.keys():
-        if attr not in {
-            "name", "color1", "color2", "color3", "menuIconURI", "docsURI", "isDynamic", 
-            "id", "blocks", "menus",
-         }:
-            raise UnknownExtensionAttributeError(attr)
-    return extension_info
-
-def extract_getinfo(js_code: str) -> dict[str, Any]:
-    """
-    Extract the return value of the getInfo method of the extension class based on the extension's JS code.    
-    # TODO: add details when done    
-    Args:
-        js_code: the file path or https URL or JS Data URI of the extension code
-    """
-    
-
-    from esprima.nodes import (
-        Node, ExpressionStatement, ClassDeclaration, ClassBody, MethodDefinition, BlockStatement, ReturnStatement,
-        CallExpression, StaticMemberExpression, NewExpression, FunctionExpression, ObjectExpression, ArrayExpression,
-        Identifier, Literal,  Property,
-    )
-    REGISTER_EXTENSION_FUNC_PATTERN = StaticMemberExpression(
-        object=StaticMemberExpression(
-            object=Identifier(name="Scratch"),
-            property=Identifier(name="extensions"),
-        ), 
-        property=Identifier(name="register"),
-    )
-    def esprima_to_json(node: list[Node] | Node | str | int | float | bool | None) -> Any:
-        """
-        Recursively converts an Esprima-style object-oriented AST into a plain JSON-compatible Python structure.
-
-        Args:
-            node: The root AST node or subnode, typically an instance of ObjectExpression, ArrayExpression, Literal,
-                Identifier, or a list of nodes.
-
-        Returns:
-            A Python object representing the JSON-equivalent value: dict, list, str, int, float, bool, or None.
-
-        Raises:
-            ValueError: If an unsupported node type is encountered.
-        """
-        from collections.abc import Iterable
-
-        if   isinstance(node, StaticMemberExpression):
-            try:  # try to handle eg. Scratch.ArgumentType.STRING
-                assert isinstance(node.object, StaticMemberExpression)
-                inner_expression = node.object
-                
-                assert isinstance(inner_expression.object, Identifier)
-                assert inner_expression.object.name == "Scratch"
-                assert isinstance(inner_expression.property, Identifier)
-                assert inner_expression.property.name in SCRATCH_STUB
-
-                target_section = SCRATCH_STUB[inner_expression.property.name]
-                assert isinstance(node.property, Identifier)
-                assert node.property.name in target_section
-                return target_section[node.property.name]
-
-            except AssertionError as error:
-                raise ValueError("Could not process MemberExpression of unexpected format") from error
-
-        elif isinstance(node, ObjectExpression):
-            result = {}
-            for property in node.properties:
-                if not isinstance(property, Property):
-                    raise ValueError(f"Unsupported property type: {type(property)}")
-                # Determine key
-                if isinstance(property.key, Identifier):
-                    key = property.key.name
-                elif isinstance(property.key, Literal):
-                    key = property.key.value
-                else:
-                    raise ValueError(f"Unsupported key type: {type(property.key)}")
-                # Recurse on value
-                value = esprima_to_json(property.value)
-                result[key] = value
-            return result
-
-        elif isinstance(node, ArrayExpression):
-            return [esprima_to_json(elem) for elem in node.elements]
-
-        elif isinstance(node, Literal):
-            return node.value
-
-        elif isinstance(node, Identifier):
-            return node.name
-
-        elif isinstance(node, (str, int, float, bool, type(None))):
-            return node
-
-        elif isinstance(node, Iterable) and not(isinstance(node, StaticMemberExpression)):
-            return [esprima_to_json(item) for item in node]
-
-        else:
-            raise ValueError(f"Unsupported node type: {type(node)}")
-
-    # TODO
-
-
-    tree = parseScript(js_code)
-    #write_file_text("parsed_ast.lua", repr(tree.body[0]))
-    write_file_text("parsed_ast.lua", repr(tree.body[0].body.body[0].value.body.body[0].argument))
-
-    try:
-        ext_class_id: Identifier | None = None
-        for i, statement in enumerate(reversed(tree.body)): # register is usually last
-            if isinstance(statement, ExpressionStatement):
-                if isinstance(statement.expression, CallExpression):
-                    callee: Node = statement.expression.callee
-                    if callee.toDict() == REGISTER_EXTENSION_FUNC_PATTERN.toDict():
-                        arguments: list[Node] = statement.expression.arguments
-                        assert len(arguments) == 1
-                        argument = arguments[0]
-                        assert isinstance(argument, NewExpression)
-                        assert isinstance(argument.callee, Identifier)
-                        ext_class_id = argument.callee
-                        break
-        assert ext_class_id is not None
-
-        class_node: Node | None = None
-        for statement in reversed(tree.body):
-            if isinstance(statement, ClassDeclaration):
-                class_id: Identifier = statement.id
-                if class_id.name == ext_class_id.name:
-                    class_node = statement
-                    break
-        assert class_node is not None
-
-        class_body: ClassBody = class_node.body
-        getInfo_method: FunctionExpression | None = None
-        for statement in class_body.body:
-            if isinstance(statement, MethodDefinition):
-                method_id: Identifier = statement.key
-                if method_id.name == "getInfo":
-                    assert isinstance(statement.value, FunctionExpression)
-                    getInfo_method = statement.value
-                    break
-        assert getInfo_method is not None
-
-        assert isinstance(getInfo_method.body, BlockStatement)
-        last_statement = getInfo_method.body.body[-1]
-        assert isinstance(last_statement, ReturnStatement)
-        return_value = last_statement.argument
-        assert isinstance(return_value, ObjectExpression)
-        print(return_value)
-        
-        extension_info = esprima_to_json(return_value)
-        print(MenuInfo.__repr__(extension_info))
-
-
-    except (AssertionError, ValueError) as error:
-        raise InvalidExtensionCodeError("Cannot extract extension information: Invalid extension code ") from error
-
-            
-        #if isinstance(statement, ClassDeclaration):
-        #    print("found class", statement.id)
-
-    raise Exception("...")
-    
-    
-
 def process_all_menus(menus: dict[str, dict[str, Any]|list]) -> tuple[type[InputType], type[DropdownType]]:
     """
     Process all menus of an extension. Returns two classes, which contain the dervied input and dropdown types
@@ -599,6 +301,15 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
     Args:
         extension_info: the raw extension information
     """
+    # Relevant of the returned attributes: ["id", "blocks", "menus"]
+    for attr in extension_info.keys():
+        if attr not in {
+            "name", "color1", "color2", "color3", "menuIconURI", "docsURI", "isDynamic", 
+            "id", "blocks", "menus",
+         }:
+            raise UnknownExtensionAttributeError(attr)
+
+    
     extension_id = extension_info["id"] # TODO: get correct name
     menus: dict[str, dict[str, Any]|list] = extension_info.get("menus", {})
     info_group = OpcodeInfoGroup(
