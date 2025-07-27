@@ -114,7 +114,7 @@ class PP_FileNotFoundError(PP_Error): pass
 
 class PP_JsNodeTreeToJsonConversionError(PP_Error): pass
 
-class PP_BadOrInvalidExtensionCodeError(PP_Error)
+class PP_BadOrInvalidExtensionCodeError(PP_Error): pass
 class PP_InvalidExtensionCodeSyntaxError(PP_BadOrInvalidExtensionCodeError):
     def __init__(self, message: str, line: int | None = None, column: int | None = None):
         super().__init__(f"{message} at line {line}, column {column}")
@@ -139,12 +139,21 @@ class PP_UnknownExtensionAttributeError(PP_InvalidExtensionInformationError): pa
 
 class PP_ConfigurationError(PP_Error): pass
 
+
+###############################################################
+#                       ERRORS FOR UTILITY                    #
+###############################################################
+
+class PP_FailedFileWriteError(PP_Error): pass
+class PP_FailedFileReadError(PP_Error): pass
+
 ###############################################################
 #                     COPIED BUILT-IN ERRORS                  #
 ###############################################################
 
-
 class PP_NotImplementedError(PP_Error): pass
+class PP_TypeError(PP_Error): pass
+class PP_ValueError(PP_Error): pass
 
 ###############################################################
 #                         SPECIAL ERRORS                      #

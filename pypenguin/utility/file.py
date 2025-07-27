@@ -1,28 +1,32 @@
 import os
 import zipfile
 
-from pypenguin.utility.errors import PP_PathError
+from pypenguin.utility.errors import (
+    PP_PathError, 
+    PP_TypeError, PP_ValueError, 
+    PP_FileNotFoundError, PP_FailedFileWriteError, PP_FailedFileReadError,
+)
 
 def read_all_files_of_zip(zip_path: str) -> dict[str, bytes]:
     """
-    Reads all files from a ZIP archive and returns their contents.
+    Reads all files from a ZIP archive and returns their contents
 
     Args:
-        zip_path (str): Path to the ZIP file.
+        zip_path (str): Path to the ZIP file
 
     Returns:
         dict[str, bytes]: An object mapping each file name
-        in the archive to its corresponding file contents as bytes.
+        in the archive to its corresponding file contents as bytes
 
     Notes:
-        - Only regular files are read; directories are skipped.
-        - File names inside the archive are preserved as-is.
+        - Only regular files are read; directories are skipped
+        - File names inside the archive are preserved as-is
 
     Raises:
-        FileNotFoundError: If the ZIP file does not exist.
-        zipfile.BadZipFile: If the file is not a valid ZIP archive.
+        FileNotFoundError: If the ZIP file does not exist
+        zipfile.BadZipFile: If the file is not a valid ZIP archive
     """
-    zip_path = ensure_correct_path(zip_path)
+    #zip_path = ensure_correct_path(zip_path)
     contents = {}
     with zipfile.ZipFile(zip_path, "r") as zip_ref:
         for file_name in zip_ref.namelist():
@@ -30,42 +34,89 @@ def read_all_files_of_zip(zip_path: str) -> dict[str, bytes]:
                 contents[file_name] = file_ref.read()
     return contents
 
-def read_file_text(file_path: str) -> str:
+def read_file_text(file_path: str, encoding: str = "utf-8") -> str:
     """
-    Read the text of a file.
+    Read the text content of a file
 
     Args:
-        file_path: file path of the file to read
-    """
-    with open(file_path, "r") as file:
-        return file.read()
+        file_path: path to the file to read
+        encoding: encoding to use when reading the file. default is 'utf-8'
 
-def write_file_text(file_path: str, text: str) -> None:
+    Returns:
+        str: The contents of the file.
+
+    Raises:
+        PP_TypeError: If an argument is of the wrong type
+        PP_ValueError: If the file is in an invalid state (e.g. closed or unreadable)
+        PP_FileNotFoundError: If the file was not found
+        PP_FailedFileReadError: For OS-related errors like, permission denied, invalid path, or decoding failures
+    """
+    try:
+        with open(file_path, "r", encoding=encoding) as file:
+            return file.read()
+
+    except TypeError as error:
+        raise PP_TypeError(str(error)) from error
+    except ValueError as error:
+        raise PP_ValueError(str(error)) from error
+    except FileNotFoundError as error:
+        raise PP_FileNotFoundError(f"Failed to read, file does not exist: {error}") from error
+    except (PermissionError, IsADirectoryError,
+            NotADirectoryError, UnicodeDecodeError, OSError, Exception) as error:
+        raise PP_FailedFileReadError(f"Failed to read from {repr(file_path)}") from error
+
+def write_file_text(file_path: str, text: str, encoding: str = "utf-8") -> None:
+
     """
     Write text to a file.
 
     Args:
         file_path: file path of the file to write to
         text: the text to write
+        encoding: the text encoding to use
+    
+    Raises:
+        PP_TypeError: If `text` is not a string or another type-related issue occurs
+        PP_ValueError: If the file is in an invalid state or mode for writing
+        PP_FailedFileWriteError: If an OS-level error occurs (e.g., file not found, permission denied,
+                                 is a directory, or other I/O-related failure)
     """
-    with open(file_path, "w") as file:
-        file.write(text)
+    if not isinstance(text, str):
+        raise PP_TypeError(f"'text' argument must be a str, not {type(text).__name__}")
+
+    try:
+        with open(file_path, mode="w", encoding=encoding) as file:
+            file.write(text)
+
+    except TypeError as error:
+        raise PP_TypeError(str(error)) from error
+    except ValueError as error:
+        raise PP_ValueError(str(error)) from error
+    except (FileNotFoundError, OSError, PermissionError, IsADirectoryError, Exception) as error:
+        raise PP_FailedFileWriteError(f"Failed to write to {repr(file_path)}") from error
 
 def create_zip_file(zip_path: str, contents: dict[str, bytes]) -> None:
     """
-    Creates a ZIP file at `zip_path` containing the given contents.
+    Creates a ZIP file at `zip_path` containing the given contents
 
     Args:
-        file_path: Destination path for the ZIP file.
+        file_path: Destination path for the ZIP file
         contents: A dictionary where keys are filenames (inside the ZIP)
-                  and values are their corresponding file contents in bytes.
+                  and values are their corresponding file contents in bytes
     """
-    zip_path = ensure_correct_path(zip_path)
+    #zip_path = ensure_correct_path(zip_path)
     with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_DEFLATED) as zip_out:
         for name, data in contents.items():
             zip_out.writestr(name, data)
 
-def ensure_correct_path(_path: str, target_folder_name: str = "pypenguin") -> str:
+def ensure_correct_path(path: str, target_folder_name: str = "pypenguin") -> str: # TODO: remove
+    """
+    Ensure a relative path is converted to an absolute path correctly
+
+    Raises:
+        PP_PathError: if the relative path is not from inside the current project
+    """
+    raise DeprecationWarning()
     if target_folder_name is not None:
         initial_path = __file__
         current_path = os.path.normpath(initial_path)
@@ -79,11 +130,11 @@ def ensure_correct_path(_path: str, target_folder_name: str = "pypenguin") -> st
             parent_path = os.path.dirname(current_path)
             
             if parent_path == current_path:
-                raise PP_PathError(f"Target folder '{target_folder_name}' not found in the _path '{initial_path}'")
+                raise PP_PathError(f"Target folder '{target_folder_name}' not found in the path '{initial_path}'")
             
             current_path = parent_path
 
-        final_path = os.path.join(current_path, _path)
+        final_path = os.path.join(current_path, path)
         return final_path
 
 

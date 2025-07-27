@@ -9,10 +9,10 @@ from pypenguin.opcode_info.api import (
 )
 from pypenguin.utility         import (
     grepr, DualKeyDict, PypenguinEnum,
-    PP_ThanksError, PP_UnknownExtensionAttributeError,
+    PP_ThanksError, PP_TempNotImplementedError, PP_NotImplementedError,
+    PP_InvalidCustomMenuError, PP_InvalidCustomBlockError,
+    PP_UnknownExtensionAttributeError, 
 )
-
-from pypenguin.ext_info_gen.extractor import fetch_js_code, extract_extension_info
 
 
 ARGUMENT_TYPE_TO_INPUT_TYPE: dict[str, InputType] = {
@@ -95,7 +95,7 @@ def process_all_menus(menus: dict[str, dict[str, Any]|list]) -> tuple[type[Input
                     custom_dropdown_type, # corresponding dropdown type,
                     menu_index, # uniqueness index
                 )
-                custom_input_type = extend_enum(ExtensionInputType, menu_block_id, input_type_info)
+                extend_enum(ExtensionInputType, menu_block_id, input_type_info)
         except AssertionError as error:
             raise PP_InvalidCustomMenuError("Invalid custom menu {repr(menu_block_id)}") from error
         except KeyError as error:
@@ -204,15 +204,17 @@ def generate_block_opcode_info(
                 menu=None,
             )
             inputs.set(key1=input_id, key2=input_id, value=input_info)
-        return (inputs, fields)
+        return (inputs, dropdowns)
     
     def generate_new_opcode(
         text: str | list[str], 
         arguments: dict[str, dict[Any]],
+        inputs: DualKeyDict[str, str, InputInfo],
+        dropdowns: DualKeyDict[str, str, DropdownInfo],
         branch_count: int,
     ) -> str:
         """
-        Generate the new opcode of a block based on the text field
+        Generate the new opcode of a block based on the text field. Might modify inputs
         
         Args:
             text: the text attribute of the block info
@@ -272,9 +274,7 @@ def generate_block_opcode_info(
                     if   inputs.has_key1(argument_name):
                         input_type = inputs.get_by_key1(argument_name).type
                         opening, closing = get_input_argument_brackets(input_type)
-                                    
                     elif dropdowns.has_key1(argument_name):
-                        dropdown_info = dropdowns.get_by_key1(argument_name)
                         opening, closing = "[", "]"
                     elif argument_type == "image":
                         continue
@@ -320,7 +320,7 @@ def generate_block_opcode_info(
             case _:
                 raise ValueError(f"Unknown value for blockType: {repr(block_type)}")
         
-        inputs, fields = process_arguments(arguments, menus, input_type_cls, dropdown_type_cls)
+        inputs, dropdowns = process_arguments(arguments, menus, input_type_cls, dropdown_type_cls)
                 
         disable_monitor = block_info.get("disableMonitor", False)
         can_have_monitor = opcode_type.is_reporter and (not inputs) and (not disable_monitor)
@@ -341,6 +341,14 @@ def generate_block_opcode_info(
             }:
                 raise PP_UnknownExtensionAttributeError(f"Unknown or not (yet) implemented block attribute: {repr(attr)}")
     
+        new_opcode = generate_new_opcode(
+            text=block_info["text"],
+            arguments=arguments,
+            inputs=inputs,
+            dropdowns=dropdowns,
+            branch_count=branch_count,
+        ) # first because inputs might change
+
         opcode_info = OpcodeInfo(
             opcode_type=opcode_type,
             inputs=inputs,
@@ -350,11 +358,6 @@ def generate_block_opcode_info(
             has_variable_id=bool(dropdowns), # if there are any dropdowns
         )
         
-        new_opcode = generate_new_opcode(
-            text=block_info["text"],
-            arguments=arguments,
-            branch_count=branch_count,
-        )
     except (KeyError, ValueError) as error:
         block_opcode = repr(block_info.get('opcode', 'Unknown'))
         if   isinstance(error, KeyError):
@@ -396,7 +399,8 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
     input_type_cls, dropdown_type_cls = process_all_menus(menus)
     
     for block_info in extension_info.get("blocks", []):
-        block_opcode = block_info.get("opcode", "Unknown")
+        block_info: dict[str, Any]
+        block_opcode: str = block_info.get("opcode", "Unknown")
         try:
             opcode_info, new_opcode = generate_block_opcode_info(
                 block_info, 
@@ -436,8 +440,7 @@ def generate_file_code(
         input_type_cls: the generated class containing the custom input types
         dropdown_type_cls: the generated class containing the custom dropdown types
     
-    Raises:
-        Never
+    Raises: Never
     """
     def generate_enum_code(enum_cls: type[PypenguinEnum]) -> str:
         """
