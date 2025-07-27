@@ -41,7 +41,7 @@ class SRVariable:
 
     def validate(self, path: list) -> None:
         """
-        Ensure a SRVariable is valid, raise ValidationError if not
+        Ensure a SRVariable is valid, raise PP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -50,7 +50,7 @@ class SRVariable:
             None
         
         Raises:
-            ValidationError: if the SRVariable is invalid
+            PP_ValidationError: if the SRVariable is invalid
         """
         AA_TYPE(self, path, "name", str)
         AA_TYPES(self, path, "current_value", (int, float, str, bool))
@@ -83,7 +83,7 @@ class SRList:
 
     def validate(self, path: list):
         """
-        Ensure a SRList is valid, raise ValidationError if not
+        Ensure a SRList is valid, raise PP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -92,7 +92,7 @@ class SRList:
             None
         
         Raises:
-            ValidationError: if the SRList is invalid
+            PP_ValidationError: if the SRList is invalid
         """
         AA_TYPE(self, path, "name", str)
         AA_LIST_OF_TYPES(self, path, "current_value", (int, float, str, bool))

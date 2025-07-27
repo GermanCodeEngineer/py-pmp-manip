@@ -1,4 +1,4 @@
-from pypenguin.utility import TypeValidationError, InvalidValueError
+from pypenguin.utility import PP_TypeValidationError, PP_InvalidValueError
 
 from pypenguin.core.comment import FRComment, SRComment
 
@@ -85,11 +85,11 @@ def test_SRComment_validate():
     execute_attr_validation_tests(
         obj=srcomment,
         attr_tests=[
-            ("position", [10], TypeValidationError),
-            ("size", 50, TypeValidationError),
-            ("size", (30, 30), InvalidValueError),  # Too small
-            ("is_minimized", "nope", TypeValidationError),
-            ("text", {}, TypeValidationError),
+            ("position", [10], PP_TypeValidationError),
+            ("size", 50, PP_TypeValidationError),
+            ("size", (30, 30), PP_InvalidValueError),  # Too small
+            ("is_minimized", "nope", PP_TypeValidationError),
+            ("text", {}, PP_TypeValidationError),
         ],
         validate_func=SRComment.validate,
         func_args=[[]],

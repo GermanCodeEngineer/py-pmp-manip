@@ -6,7 +6,7 @@
 
 from datetime import timedelta
 
-from pypenguin.utility import ConfigurationError, ValidationError
+from pypenguin.utility import PP_ConfigurationError, PP_ValidationError
 
 from pypenguin.config.schema import *
 
@@ -23,19 +23,19 @@ def init_config(config: MasterConfig) -> None:
         config: The configuration object to initialize with
 
     Raises:
-        ConfigurationError: If configuration is already initialized or validation fails
+        PP_ConfigurationError: If configuration is already initialized or validation fails
         TypeError: If the provided config is not an instance of MasterConfig
     """
     global _config_instance
     
     if _config_instance is not None:
-        raise ConfigurationError("Configuration has already been initialized.")
+        raise PP_ConfigurationError("Configuration has already been initialized.")
     if not isinstance(config, MasterConfig):
         raise TypeError("Expected a MasterConfig instance")
     try:
         config.validate()
-    except ValidationError as error:
-        raise ConfigurationError("Invalid Configuration") from error
+    except PP_ValidationError as error:
+        raise PP_ConfigurationError("Invalid Configuration") from error
     
     config.ext_info_gen ._frozen_ = True
     config.validation   ._frozen_ = True
@@ -51,11 +51,11 @@ def get_config() -> MasterConfig:
         MasterConfig: The active project configuration
 
     Raises:
-        ConfigurationError: If configuration has not been initialized
+        PP_ConfigurationError: If configuration has not been initialized
     """
     global _config_instance
     if _config_instance is None:
-        raise ConfigurationError("Configuration has not been initialized.")
+        raise PP_ConfigurationError("Configuration has not been initialized.")
     return _config_instance
 
 def get_default_config() -> "MasterConfig":

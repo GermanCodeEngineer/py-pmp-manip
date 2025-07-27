@@ -7,7 +7,7 @@ from pytest import fixture, raises
 
 from pypenguin.utility import (
     xml_equal, image_equal, generate_md5, KeyReprDict,
-    TypeValidationError, InvalidValueError, ThanksError,
+    PP_TypeValidationError, PP_InvalidValueError, PP_ThanksError,
 )
 
 from pypenguin.core.asset import (
@@ -192,7 +192,7 @@ def test_FRCostume_to_second_other_resolution():
         rotation_center_y=94,
         bitmap_resolution=3,
     )
-    with raises(ThanksError):
+    with raises(PP_ThanksError):
         frcostume.to_second(asset_files=KeyReprDict({"05630bfa94501a3e5d61ce443a0cea70.png": SIMPLE_BITMAP_EXAMPLE}))
 
 def test_FRCostume_to_second_invalid_format():
@@ -205,7 +205,7 @@ def test_FRCostume_to_second_invalid_format():
         rotation_center_y=94,
         bitmap_resolution=2,
     )
-    with raises(ThanksError):
+    with raises(PP_ThanksError):
         frcostume.to_second(asset_files=KeyReprDict({
             "05630bfa94501a3e5d61ce443a0cea70.png": b"\xc4;#\xb2\xff \xa2e\xa6hJc#*>\x02\x01V\x1c#\x8e)\xe0sZ\x16S_B\xad\xb2p\xfd\xe0\x96\xe0\x06\xc9)mKu\x17\x08jmq\xf9\x83\xe0U\xee\xe5a\xb6'xC\x9e8S\xcbgeq\x1f\x0b\r\x115~\x8d\xd0\x0e\xc5",
         }))
@@ -320,11 +320,11 @@ def test_SRVectorCostume_validate():
     execute_attr_validation_tests(
         obj=srcostume,
         attr_tests=[
-            ("name", 5, TypeValidationError),
-            ("file_extension", {}, TypeValidationError),
-            ("file_extension", "jpg", InvalidValueError),
-            ("rotation_center", [], TypeValidationError),
-            ("content", "<svg></svg>", TypeValidationError),
+            ("name", 5, PP_TypeValidationError),
+            ("file_extension", {}, PP_TypeValidationError),
+            ("file_extension", "jpg", PP_InvalidValueError),
+            ("rotation_center", [], PP_TypeValidationError),
+            ("content", "<svg></svg>", PP_TypeValidationError),
         ],
         validate_func=SRVectorCostume.validate,
         func_args=[[]],
@@ -435,11 +435,11 @@ def test_SRBitmapCostume_validate(bitmap_example):
     execute_attr_validation_tests(
         obj=srcostume,
         attr_tests=[
-            ("name", 5, TypeValidationError),
-            ("file_extension", {}, TypeValidationError),
-            ("rotation_center", [], TypeValidationError),
-            ("content", b"\x89PNG", TypeValidationError),
-            ("has_double_resolution", "hi", TypeValidationError),
+            ("name", 5, PP_TypeValidationError),
+            ("file_extension", {}, PP_TypeValidationError),
+            ("rotation_center", [], PP_TypeValidationError),
+            ("content", b"\x89PNG", PP_TypeValidationError),
+            ("has_double_resolution", "hi", PP_TypeValidationError),
         ],
         validate_func=SRBitmapCostume.validate,
         func_args=[[]],
@@ -482,9 +482,9 @@ def test_SRSound_validate(sound_example):
     execute_attr_validation_tests(
         obj=srsound,
         attr_tests=[
-            ("name", 5, TypeValidationError),
-            ("file_extension", {}, TypeValidationError),
-            ("content", b"123456", TypeValidationError),
+            ("name", 5, PP_TypeValidationError),
+            ("file_extension", {}, PP_TypeValidationError),
+            ("content", b"123456", PP_TypeValidationError),
         ],
         validate_func=SRSound.validate,
         func_args=[[]],

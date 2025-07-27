@@ -8,7 +8,7 @@ from pypenguin.opcode_info.api  import OpcodeInfoAPI, DropdownValueKind
 from pypenguin.utility          import (
     grepr_dataclass, read_all_files_of_zip, create_zip_file, string_to_sha256, gdumps, KeyReprDict,
     AA_TYPE, AA_NONE_OR_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_RANGE, AA_EXACT_LEN,
-    ThanksError, SameValueTwiceError, SpriteLayerStackError,
+    PP_ThanksError, PP_SameValueTwiceError, PP_SpriteLayerStackError,
 )
 
 from pypenguin.core.context       import PartialContext
@@ -129,7 +129,7 @@ class FRProject:
         Returns:
             None
         """
-        if self.extension_data != {}: raise ThanksError()
+        if self.extension_data != {}: raise PP_ThanksError()
 
     def to_file(self, file_path: str) -> None:
         """
@@ -304,7 +304,7 @@ class SRProject:
 
     def validate(self, info_api: OpcodeInfoAPI) -> None:
         """
-        Ensure a SRProject is valid, raise ValidationError if not
+        Ensure a SRProject is valid, raise PP_ValidationError if not
         
         Args:
             info_api: the opcode info api used to fetch information about opcodes
@@ -313,8 +313,8 @@ class SRProject:
             None
         
         Raises:
-            ValidationError: if the SRProject is invalid
-            SameValueTwiceError(ValidationError): if two sprites have the same name
+            PP_ValidationError: if the SRProject is invalid
+            PP_SameValueTwiceError(PP_ValidationError): if two sprites have the same name
         """
         path = []
         AA_TYPE(self, path, "stage", SRStage)
@@ -360,7 +360,7 @@ class SRProject:
             current_path = path+["sprites", i]
             if sprite.name in defined_sprites:
                 other_path = defined_sprites[sprite.name]
-                raise SameValueTwiceError(other_path, current_path, "Two sprites mustn't have the same name")
+                raise PP_SameValueTwiceError(other_path, current_path, "Two sprites mustn't have the same name")
             defined_sprites[sprite.name] = current_path
             sprite_only_variables[sprite.name] = [
                 (DropdownValueKind.VARIABLE, variable.name) for variable in sprite.sprite_only_variables]
@@ -411,7 +411,7 @@ class SRProject:
 
     def _validate_sprites(self, path: list, info_api: OpcodeInfoAPI) -> None:
         """
-        Ensure the sprites of a SRProject are valid, raise ValidationError if not
+        Ensure the sprites of a SRProject are valid, raise PP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -421,8 +421,8 @@ class SRProject:
             None
         
         Raises:
-            SameValueTwiceError(ValidationError): if two sprites have the same UUID **OR** if the same UUID is included twice in sprite_layer_stack 
-            SpriteLayerStackError(ValidationError): if the sprite_layer_stack contains a UUID which belongs to no sprite 
+            PP_SameValueTwiceError(PP_ValidationError): if two sprites have the same UUID **OR** if the same UUID is included twice in sprite_layer_stack 
+            PP_SpriteLayerStackError(PP_ValidationError): if the sprite_layer_stack contains a UUID which belongs to no sprite 
         """
         sprite_uuid_paths: dict[UUID, list] = {}
         for i, sprite in enumerate(self.sprites):
@@ -430,7 +430,7 @@ class SRProject:
             sprite.validate(current_path, info_api)
             if sprite.uuid in sprite_uuid_paths:
                 other_path = sprite_uuid_paths[sprite.uuid]
-                raise SameValueTwiceError(other_path, current_path, "Two sprites mustn't have the same UUID")
+                raise PP_SameValueTwiceError(other_path, current_path, "Two sprites mustn't have the same UUID")
             sprite_uuid_paths[sprite.uuid] = current_path
         
 
@@ -439,9 +439,9 @@ class SRProject:
             current_path = path+["sprite_layer_stack", i]
             if uuid in stack_uuid_paths:
                 other_path = stack_uuid_paths[uuid]
-                raise SameValueTwiceError(other_path, current_path, "The same UUID mustn't be included twice")
+                raise PP_SameValueTwiceError(other_path, current_path, "The same UUID mustn't be included twice")
             if uuid not in sprite_uuid_paths:
-                raise SpriteLayerStackError(current_path, "Must be the UUID of an existing sprite")
+                raise PP_SpriteLayerStackError(current_path, "Must be the UUID of an existing sprite")
             stack_uuid_paths[uuid] = current_path
         # same length and uniqueness is assured and every UUID must have a partner sprite
         # => no sprite can possibly be missing a partner UUID
@@ -457,14 +457,14 @@ class SRProject:
             None
         
         Raises:
-            SameValueTwiceError(ValidationError): if the project contains vars with the same name
+            PP_SameValueTwiceError(PP_ValidationError): if the project contains vars with the same name
         """
         defined_variables = {}
         for i, variable in enumerate(self.all_sprite_variables):
             current_path = path+["all_sprite_variables", i]
             if variable.name in defined_variables:
                 other_path = defined_variables[variable.name]
-                raise SameValueTwiceError(other_path, current_path, "Two variables mustn't have the same name")
+                raise PP_SameValueTwiceError(other_path, current_path, "Two variables mustn't have the same name")
             defined_variables[variable.name] = current_path
         
         for i, sprite in enumerate(self.sprites):
@@ -472,7 +472,7 @@ class SRProject:
                 current_path = path+["sprites", i, "sprite_only_variables", j]
                 if variable.name in defined_variables:
                     other_path = defined_variables[variable.name]
-                    raise SameValueTwiceError(other_path, current_path, "Two variables mustn't have the same name")
+                    raise PP_SameValueTwiceError(other_path, current_path, "Two variables mustn't have the same name")
                 defined_variables[variable.name] = current_path
         
     def _validate_list_names(self, path: list) -> None:
@@ -486,14 +486,14 @@ class SRProject:
             None
         
         Raises:
-            SameValueTwiceError(ValidationError): if the project contains lists with the same name
+            PP_SameValueTwiceError(PP_ValidationError): if the project contains lists with the same name
         """
         defined_lists = {}
         for i, list_ in enumerate(self.all_sprite_lists):
             current_path = path+["all_sprite_lists", i]
             if list_.name in defined_lists:
                 other_path = defined_lists[list_.name]
-                raise SameValueTwiceError(other_path, current_path, "Two lists mustn't have the same name")
+                raise PP_SameValueTwiceError(other_path, current_path, "Two lists mustn't have the same name")
             defined_lists[list_.name] = current_path
         
         for i, sprite in enumerate(self.sprites):
@@ -501,7 +501,7 @@ class SRProject:
                 current_path = path+["sprites", i, "sprite_only_lists", j]
                 if list_.name in defined_lists:
                     other_path = defined_lists[list_.name]
-                    raise SameValueTwiceError(other_path, current_path, "Two lists mustn't have the same name")
+                    raise PP_SameValueTwiceError(other_path, current_path, "Two lists mustn't have the same name")
                 defined_lists[list_.name] = current_path
     
     def _find_broadcast_messages(self) -> list[str]:

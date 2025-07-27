@@ -5,9 +5,9 @@ from pytest      import fixture, raises
 from pypenguin.opcode_info.api  import DropdownValueKind, OpcodeType, BuiltinInputType, InputMode
 from pypenguin.opcode_info.data import info_api
 from pypenguin.utility          import (
-    grepr_dataclass, ConversionError,
-    TypeValidationError, RangeValidationError, InvalidOpcodeError, InvalidBlockShapeError,
-    UnnecessaryInputError, MissingInputError, UnnecessaryDropdownError, MissingDropdownError,
+    grepr_dataclass, PP_ConversionError,
+    PP_TypeValidationError, PP_RangeValidationError, PP_InvalidOpcodeError, PP_InvalidBlockShapeError,
+    PP_UnnecessaryInputError, PP_MissingInputError, PP_UnnecessaryDropdownError, PP_MissingDropdownError,
 )
 
 from pypenguin.core.block_interface import SecondToInterIF, ValidationIF
@@ -76,10 +76,10 @@ def test_SRScript_validate(validation_if, context):
     execute_attr_validation_tests(
         obj=srscript,
         attr_tests=[
-            ("position", 5, TypeValidationError),
-            ("blocks", {}, TypeValidationError),
-            ("blocks", [8], TypeValidationError),
-            ("blocks", [], RangeValidationError),
+            ("position", 5, PP_TypeValidationError),
+            ("blocks", {}, PP_TypeValidationError),
+            ("blocks", [8], PP_TypeValidationError),
+            ("blocks", [], PP_RangeValidationError),
         ],
         validate_func=SRScript.validate,
         func_args=[[], info_api, validation_if, context],
@@ -108,12 +108,12 @@ def test_SRBlock_validate(validation_if, context):
     execute_attr_validation_tests(
         obj=srblock,
         attr_tests=[
-            ("opcode", {}, TypeValidationError),
-            ("opcode", "some_undefined_opcode", InvalidOpcodeError),
-            ("inputs", {5:6}, TypeValidationError),
-            ("dropdowns", [], TypeValidationError),
-            ("comment", 89, TypeValidationError),
-            ("mutation", "hi", TypeValidationError),
+            ("opcode", {}, PP_TypeValidationError),
+            ("opcode", "some_undefined_opcode", PP_InvalidOpcodeError),
+            ("inputs", {5:6}, PP_TypeValidationError),
+            ("dropdowns", [], PP_TypeValidationError),
+            ("comment", 89, PP_TypeValidationError),
+            ("mutation", "hi", PP_TypeValidationError),
         ],
         validate_func=SRBlock.validate,
         func_args=[[], info_api, validation_if, context, False],
@@ -130,42 +130,42 @@ def test_SRBlock_validate_cb_def(validation_if, context):
 def test_SRBlock_validate_unexpected_mutation(validation_if, context):
     srblock = copy(ALL_SR_SCRIPTS[0].blocks[1])
     srblock.mutation = {...}
-    with raises(TypeValidationError):
+    with raises(PP_TypeValidationError):
         srblock.validate([], info_api, validation_if, context, expects_reporter=False)
 
 def test_SRBlock_validate_missing_mutation(validation_if, context):
     srblock = copy(ALL_SR_SCRIPTS[4].blocks[0])
     srblock.mutation = None
-    with raises(TypeValidationError):
+    with raises(PP_TypeValidationError):
         srblock.validate([], info_api, validation_if, context, expects_reporter=False)
 
 def test_SRBlock_validate_invalid_reporter_shape(validation_if, context):
     srblock = ALL_SR_SCRIPTS[0].blocks[0]
-    with raises(InvalidBlockShapeError):
+    with raises(PP_InvalidBlockShapeError):
         srblock.validate([], info_api, validation_if, context, expects_reporter=True)
 
 def test_SRBlock_validate_unexpected_input(validation_if, context):
     srblock = deepcopy(ALL_SR_SCRIPTS[6].blocks[0])
     srblock.inputs["SOME_ID"] = SRBlockOnlyInputValue(block=None)
-    with raises(UnnecessaryInputError):
+    with raises(PP_UnnecessaryInputError):
         srblock.validate([], info_api, validation_if, context, expects_reporter=False)
 
 def test_SRBlock_validate_missing_input(validation_if, context):
     srblock = deepcopy(ALL_SR_SCRIPTS[6].blocks[0])
     del srblock.inputs["CONDITION"]
-    with raises(MissingInputError):
+    with raises(PP_MissingInputError):
         srblock.validate([], info_api, validation_if, context, expects_reporter=False) # 1
 
 def test_SRBlock_validate_unexpected_dropdown(validation_if, context):
     srblock = deepcopy(ALL_SR_SCRIPTS[2].blocks[0])
     srblock.dropdowns["SOME_ID"] = SRDropdownValue(kind=DropdownValueKind.STANDARD, value="something")
-    with raises(UnnecessaryDropdownError):
+    with raises(PP_UnnecessaryDropdownError):
         srblock.validate([], info_api, validation_if, context, expects_reporter=True)
 
 def test_SRBlock_validate_missing_dropdown(validation_if, context):
     srblock = deepcopy(ALL_SR_SCRIPTS[2].blocks[0])
     del srblock.dropdowns["VARIABLE"]
-    with raises(MissingDropdownError):
+    with raises(PP_MissingDropdownError):
         srblock.validate([], info_api, validation_if, context, expects_reporter=True)
 
 def test_SRBlock_validate_post_handler(validation_if, context):
@@ -201,7 +201,7 @@ def test_SRBlock_validate_opcode_type():
             is_first     = bool((flags % 0b100)//0b010)
             is_last      = bool((flags % 0b010)//0b001)
             if should_raise:
-                with raises(InvalidBlockShapeError):
+                with raises(PP_InvalidBlockShapeError):
                     SRBlock.validate_opcode_type(
                         path         = [],
                         opcode_type  = opcode_type,
@@ -341,7 +341,7 @@ def test_SRBlock_to_inter_invalid_sub_script():
     script = ALL_SR_SCRIPTS[6]
     srblock = deepcopy(script.blocks[0])
     srblock.inputs["THEN"].blocks = ["some invalid stuff"]
-    with raises(ConversionError):
+    with raises(PP_ConversionError):
         srblock.to_inter(
             sti_if=sti_if,
             info_api=info_api,
@@ -516,8 +516,8 @@ def test_SRBlockAndTextInputValue_validate(validation_if, context):
     execute_attr_validation_tests(
         obj=input_value,
         attr_tests=[
-            ("block", 5, TypeValidationError),
-            ("text", {}, TypeValidationError),
+            ("block", 5, PP_TypeValidationError),
+            ("text", {}, PP_TypeValidationError),
         ],
         validate_func=SRBlockAndTextInputValue.validate,
         func_args=[[], info_api, validation_if, context, input_type],
@@ -534,8 +534,8 @@ def test_SRBlockAndDropdownInputValue_validate(validation_if, context):
     execute_attr_validation_tests(
         obj=input_value,
         attr_tests=[
-            ("block", 5, TypeValidationError),
-            ("dropdown", {}, TypeValidationError),
+            ("block", 5, PP_TypeValidationError),
+            ("dropdown", {}, PP_TypeValidationError),
         ],
         validate_func=SRBlockAndDropdownInputValue.validate,
         func_args=[[], info_api, validation_if, context, input_type],
@@ -551,7 +551,7 @@ def test_SRBlockOnlyInputValue_validate(validation_if, context):
     execute_attr_validation_tests(
         obj=input_value,
         attr_tests=[
-            ("block", 5, TypeValidationError),
+            ("block", 5, PP_TypeValidationError),
         ],
         validate_func=SRBlockOnlyInputValue.validate,
         func_args=[[], info_api, validation_if, context, input_type],
@@ -567,8 +567,8 @@ def test_SRScriptInputValue_validate(validation_if, context):
     execute_attr_validation_tests(
         obj=input_value,
         attr_tests=[
-            ("blocks", 9, TypeValidationError),
-            ("blocks", [{}], TypeValidationError),
+            ("blocks", 9, PP_TypeValidationError),
+            ("blocks", [{}], PP_TypeValidationError),
         ],
         validate_func=SRScriptInputValue.validate,
         func_args=[[], info_api, validation_if, context, input_type],

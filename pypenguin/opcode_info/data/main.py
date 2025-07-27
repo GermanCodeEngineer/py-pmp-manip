@@ -8,7 +8,7 @@ from pypenguin.important_consts import (
     OPCODE_CB_DEF, NEW_OPCODE_CB_DEF, OPCODE_CB_DEF_RET, NEW_OPCODE_CB_DEF_REP,
     SHA256_SEC_LOCAL_ARGUMENT_NAME,
 )
-from pypenguin.utility          import string_to_sha256, DualKeyDict, InvalidValueError
+from pypenguin.utility          import string_to_sha256, DualKeyDict, PP_InvalidValueError
 
 from pypenguin.opcode_info.api import (
     OpcodeInfo, OpcodeType, OpcodeInfoGroup, OpcodeInfoAPI, 
@@ -367,10 +367,10 @@ def _26f9_8217(path:list, block: "SRBlock") -> None:
     mutation: SRCustomBlockMutation = block.mutation
     if block.opcode == NEW_OPCODE_CB_DEF:
         if mutation.optype.is_reporter():
-            raise InvalidValueError(path, f"If mutation.optype of a {block.__class__.__name__} is ...REPORTER, opcode should be {repr(NEW_OPCODE_CB_DEF_REP)}")
+            raise PP_InvalidValueError(path, f"If mutation.optype of a {block.__class__.__name__} is ...REPORTER, opcode should be {repr(NEW_OPCODE_CB_DEF_REP)}")
     elif block.opcode == NEW_OPCODE_CB_DEF_REP:
         if not mutation.optype.is_reporter():
-            raise InvalidValueError(path, f"If mutation.optype of a {block.__class__.__name__} is NOT ...REPORTER, opcode should be {repr(NEW_OPCODE_CB_DEF)}")
+            raise PP_InvalidValueError(path, f"If mutation.optype of a {block.__class__.__name__} is NOT ...REPORTER, opcode should be {repr(NEW_OPCODE_CB_DEF)}")
     else: raise ValueError()
 info_api.add_opcodes_case(ANY_OPCODE_CB_DEF, SpecialCase(
     type=SpecialCaseType.POST_VALIDATION,

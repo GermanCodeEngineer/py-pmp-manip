@@ -2,7 +2,7 @@ from pytest import fixture, raises
 
 from pypenguin.opcode_info.api import BuiltinInputType, InputInfo, OpcodeType
 from pypenguin.utility         import (
-    TypeValidationError, RangeValidationError, SameValueTwiceError, InvalidValueError, ConversionError,
+    PP_TypeValidationError, PP_RangeValidationError, PP_SameValueTwiceError, PP_InvalidValueError, PP_ConversionError,
 )
 
 from pypenguin.core.custom_block import (
@@ -54,9 +54,9 @@ def test_SRCustomBlockOpcode_validate(segments):
     custom_opcode = SRCustomBlockOpcode(segments=segments)
     custom_opcode.validate([])
     # can't use execute_attr_validation_tests because frozen=True
-    with raises(TypeValidationError): SRCustomBlockOpcode(segments=5).validate([])
-    with raises(RangeValidationError): SRCustomBlockOpcode(segments=()).validate([])
-    with raises(TypeValidationError): SRCustomBlockOpcode(segments=(-94,)).validate([])
+    with raises(PP_TypeValidationError): SRCustomBlockOpcode(segments=5).validate([])
+    with raises(PP_RangeValidationError): SRCustomBlockOpcode(segments=()).validate([])
+    with raises(PP_TypeValidationError): SRCustomBlockOpcode(segments=(-94,)).validate([])
 
 def test_SRCustomBlockOpcode_validate_same_arg_name_twice():
     custom_opcode = SRCustomBlockOpcode(segments=(
@@ -66,7 +66,7 @@ def test_SRCustomBlockOpcode_validate_same_arg_name_twice():
         SRCustomBlockArgument(type=SRCustomBlockArgumentType.BOOLEAN, name="the same arg name"),
         ";;;",
     ))
-    with raises(SameValueTwiceError):
+    with raises(PP_SameValueTwiceError):
         custom_opcode.validate(path=[])
 
 
@@ -75,9 +75,9 @@ def test_SRCustomBlockArgument_validate():
     argument = SRCustomBlockArgument(name="some arg name", type=SRCustomBlockArgumentType.STRING_NUMBER)
     argument.validate(path=[])
     # can't use execute_attr_validation_tests because frozen=True
-    with raises(TypeValidationError): SRCustomBlockArgument(name=[], type=argument.type).validate([])
-    with raises(InvalidValueError): SRCustomBlockArgument(name="", type=argument.type).validate([])
-    with raises(TypeValidationError): SRCustomBlockArgument(name=argument.name, type=True).validate([])
+    with raises(PP_TypeValidationError): SRCustomBlockArgument(name=[], type=argument.type).validate([])
+    with raises(PP_InvalidValueError): SRCustomBlockArgument(name="", type=argument.type).validate([])
+    with raises(PP_TypeValidationError): SRCustomBlockArgument(name=argument.name, type=True).validate([])
 
 
 
@@ -95,7 +95,7 @@ def test_SRCustomBlockOptype_from_code():
     assert SRCustomBlockOptype.from_code("string"   ) == SRCustomBlockOptype.STRING_REPORTER
     assert SRCustomBlockOptype.from_code("number"   ) == SRCustomBlockOptype.NUMBER_REPORTER
     assert SRCustomBlockOptype.from_code("boolean"  ) == SRCustomBlockOptype.BOOLEAN_REPORTER
-    with raises(ConversionError):
+    with raises(PP_ConversionError):
         SRCustomBlockOptype.from_code("something else")
 
 

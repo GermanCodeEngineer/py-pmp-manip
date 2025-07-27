@@ -1,79 +1,79 @@
-class ValidationError(Exception):
+class PP_ValidationError(Exception):
     pass
 
 
-class blockTypeError(ValidationError):
+class blockTypeError(PP_ValidationError):
     pass
 
-class unknownOpcodeError(ValidationError):
+class unknownOpcodeError(PP_ValidationError):
     pass
 
-class inputIdError(ValidationError):
+class inputIdError(PP_ValidationError):
     pass
 
-class missingInputAttributeError(ValidationError):
+class missingInputAttributeError(PP_ValidationError):
     pass
 
-class optionIdError(ValidationError):
+class optionIdError(PP_ValidationError):
     pass
 
-class optionValueCategoryError(ValidationError):
+class optionValueCategoryError(PP_ValidationError):
     pass
 
-class optionValueError(ValidationError):
+class optionValueError(PP_ValidationError):
     pass
 
-class undefinedVariableError(ValidationError):
+class undefinedVariableError(PP_ValidationError):
     pass
 
-class undefinedListError(ValidationError):
+class undefinedListError(PP_ValidationError):
     pass
 
-class undefinedCustomOpcodeError(ValidationError):
+class undefinedCustomOpcodeError(PP_ValidationError):
     pass
 
-class embeddedMenuError(ValidationError):
+class embeddedMenuError(PP_ValidationError):
     pass
 
-class commentSizeError(ValidationError):
+class commentSizeError(PP_ValidationError):
     pass
 
-class doubleVariableDefinitionError(ValidationError):
+class doubleVariableDefinitionError(PP_ValidationError):
     pass
 
-class doubleListDefinitionError(ValidationError):
+class doubleListDefinitionError(PP_ValidationError):
     pass
 
-class equalSpriteNameError(ValidationError):
+class equalSpriteNameError(PP_ValidationError):
     pass
 
-class monitorSpriteNameError(ValidationError):
+class monitorSpriteNameError(PP_ValidationError):
     pass
 
-class missingMonitorAttributeError(ValidationError):
+class missingMonitorAttributeError(PP_ValidationError):
     pass
 
-class monitorSliderRangeError(ValidationError):
+class monitorSliderRangeError(PP_ValidationError):
     pass
 
-class spriteNameError(ValidationError):
+class spriteNameError(PP_ValidationError):
     pass
 
-class layerOrderError(ValidationError):
+class layerOrderError(PP_ValidationError):
     pass
 
-class equalCostumeName(ValidationError):
+class equalCostumeName(PP_ValidationError):
     pass
 
-class equalSoundName(ValidationError):
+class equalSoundName(PP_ValidationError):
     pass
 
-class currentCostumeError(ValidationError):
+class currentCostumeError(PP_ValidationError):
     pass
 
-class doubleCustomBlockDefinitionError(ValidationError):
+class doubleCustomBlockDefinitionError(PP_ValidationError):
     pass
 
-class missingVariableAttributeError(ValidationError):
+class missingVariableAttributeError(PP_ValidationError):
     pass
 

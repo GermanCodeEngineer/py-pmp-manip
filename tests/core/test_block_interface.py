@@ -2,7 +2,7 @@ from copy   import deepcopy
 from pytest import fixture, raises
 
 from pypenguin.important_consts import SHA256_SEC_MAIN_ARGUMENT_NAME
-from pypenguin.utility          import lists_equal_ignore_order, string_to_sha256, ConversionError, ValidationError
+from pypenguin.utility          import lists_equal_ignore_order, string_to_sha256, PP_ConversionError, PP_ValidationError
 
 from pypenguin.core.block_interface import FirstToInterIF, InterToFirstIF, SecondReprIF, SecondToInterIF, ValidationIF
 from pypenguin.core.block_mutation  import FRCustomBlockMutation, SRCustomBlockMutation
@@ -57,7 +57,7 @@ def test_FirstToInterIF_get_block(fti_if: FirstToInterIF):
     assert fti_if.get_block("d") == ALL_FR_BLOCKS_CLEAN["d"]
 
 def test_FirstToInterIF_get_block_not_found(fti_if: FirstToInterIF):
-    with raises(ConversionError):
+    with raises(PP_ConversionError):
         fti_if.get_block("qqq")
 
 
@@ -72,7 +72,7 @@ def test_FirstToInterIF_schedule_block_deletion(fti_if: FirstToInterIF):
 def test_FirstToInterIF_get_cb_mutation(fti_if: FirstToInterIF):
     fti_if_copy = deepcopy(fti_if)
     assert fti_if_copy.get_cb_mutation("do sth text %s and bool %b") == ALL_FR_BLOCKS_CLEAN["a"].mutation
-    with raises(ConversionError):
+    with raises(PP_ConversionError):
         fti_if_copy.get_cb_mutation("some %s proccode")
     assert fti_if_copy == fti_if
     
@@ -85,7 +85,7 @@ def test_FirstToInterIF_get_comment(fti_if: FirstToInterIF):
 
 def test_FirstToInterIF_get_comment_not_found(fti_if: FirstToInterIF):
     fti_if_copy = deepcopy(fti_if)
-    with raises(ConversionError):
+    with raises(PP_ConversionError):
         fti_if_copy.get_comment("qqq")
     assert fti_if_copy == fti_if
 
@@ -120,7 +120,7 @@ def test_InterToFirstIF_post_init():
 def test_InterToFirstIF_post_init_same_proccode_twice():
     blocks = deepcopy(ALL_IR_BLOCKS)
     blocks["qqq"] = ALL_IR_BLOCKS["h"]
-    with raises(ConversionError):
+    with raises(PP_ConversionError):
         InterToFirstIF(
             blocks=blocks,
             global_vars=[], global_lists=[],
@@ -194,7 +194,7 @@ def test_InterToFirstIF_get_fr_cb_mutation(itf_if: InterToFirstIF):
         optype="number",
         color=("#FF6680", "#FF4D6A", "#FF3355"),
     )
-    with raises(ConversionError):
+    with raises(PP_ConversionError):
         itf_if_copy.get_fr_cb_mutation("some %s proccode")
     assert itf_if_copy == itf_if
 
@@ -210,7 +210,7 @@ def test_InterToFirstIF_get_sr_cb_mutation(itf_if: InterToFirstIF):
         prototype_color="#FF4D6A",
         outline_color="#FF3355",
     )
-    with raises(ConversionError):
+    with raises(PP_ConversionError):
         itf_if_copy.get_sr_cb_mutation(SRCustomBlockOpcode(segments=("hi")))
     assert itf_if_copy == itf_if
 
@@ -224,7 +224,7 @@ def test_InterToFirstIF_get_variable_sha256_local(itf_if: InterToFirstIF):
     assert sha256 == variable_sha256("locvar", sprite_name=itf_if.sprite_name)
 
 def test_InterToFirstIF_get_variable_sha256_undefined(itf_if: InterToFirstIF):
-    with raises(ConversionError):
+    with raises(PP_ConversionError):
         itf_if.get_variable_sha256("some undefined var")
 
 
@@ -237,7 +237,7 @@ def test_InterToFirstIF_get_list_sha256_local(itf_if: InterToFirstIF):
     assert sha256 == list_sha256("loclist", sprite_name=itf_if.sprite_name)
 
 def test_InterToFirstIF_get_list_sha256_undefined(itf_if: InterToFirstIF):
-    with raises(ConversionError):
+    with raises(PP_ConversionError):
         itf_if.get_list_sha256("some undefined list")
 
 
@@ -328,7 +328,7 @@ def test_SecondToInterIF_get_cb_mutation(sti_if: SecondToInterIF):
 
 def test_SecondToInterIF_get_cb_mutation_invalid_custom_opcode(sti_if: SecondToInterIF):
     sti_if_copy = deepcopy(sti_if)
-    with raises(ConversionError):
+    with raises(PP_ConversionError):
         sti_if_copy.get_cb_mutation(SRCustomBlockOpcode(segments=("hi")))
     assert sti_if_copy == sti_if
 
@@ -341,7 +341,7 @@ def test_ValidationIF_get_cb_mutation(validation_if: ValidationIF):
 
 def test_ValidationIF_get_cb_mutation_invalid_custom_opcode(validation_if: ValidationIF):
     validation_if_copy = deepcopy(validation_if)
-    with raises(ValidationError):
+    with raises(PP_ValidationError):
         validation_if_copy.get_cb_mutation(SRCustomBlockOpcode(segments=("hi")))
     assert validation_if_copy == validation_if
 

@@ -1,7 +1,7 @@
 import os
 import zipfile
 
-from pypenguin.utility.errors import PathError
+from pypenguin.utility.errors import PP_PathError
 
 def read_all_files_of_zip(zip_path: str) -> dict[str, bytes]:
     """
@@ -79,7 +79,7 @@ def ensure_correct_path(_path: str, target_folder_name: str = "pypenguin") -> st
             parent_path = os.path.dirname(current_path)
             
             if parent_path == current_path:
-                raise PathError(f"Target folder '{target_folder_name}' not found in the _path '{initial_path}'")
+                raise PP_PathError(f"Target folder '{target_folder_name}' not found in the _path '{initial_path}'")
             
             current_path = parent_path
 

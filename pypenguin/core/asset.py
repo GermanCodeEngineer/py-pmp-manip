@@ -8,7 +8,7 @@ from typing import Any
 from pypenguin.utility import (
     grepr_dataclass, xml_equal, image_equal, generate_md5,
     AA_TYPE, AA_COORD_PAIR, AA_EQUAL,
-    ThanksError,
+    PP_ThanksError,
 )
 
 
@@ -95,13 +95,13 @@ class FRCostume:
             try:
                 image = Image.open(BytesIO(content_bytes))
             except UnidentifiedImageError:
-                raise ThanksError()
+                raise PP_ThanksError()
             image.load()  # Ensure it's fully loaded into memory
             if   self.bitmap_resolution == 1:
                 has_double_resolution = False
             elif self.bitmap_resolution == 2:
                 has_double_resolution = True
-            else: raise ThanksError()
+            else: raise PP_ThanksError()
             return SRBitmapCostume(
                 name                  = self.name,
                 file_extension        = self.data_format,
@@ -193,7 +193,7 @@ class SRCostume(ABC):
 
     def validate(self, path: list) -> None:
         """
-        Ensure a SRCostume is valid, raise ValidationError if not
+        Ensure a SRCostume is valid, raise PP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -202,7 +202,7 @@ class SRCostume(ABC):
             None
         
         Raises:
-            ValidationError: if the SRCostume is invalid
+            PP_ValidationError: if the SRCostume is invalid
         """
         AA_TYPE(self, path, "name", str)
         AA_TYPE(self, path, "file_extension", str)
@@ -252,7 +252,7 @@ class SRVectorCostume(SRCostume):
         
     def validate(self, path: list) -> None:
         """
-        Ensure a SRVectorCostume is valid, raise ValidationError if not
+        Ensure a SRVectorCostume is valid, raise PP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -261,7 +261,7 @@ class SRVectorCostume(SRCostume):
             None
         
         Raises:
-            ValidationError: if the SRVectorCostume is invalid
+            PP_ValidationError: if the SRVectorCostume is invalid
         """
         super().validate(path)
         
@@ -322,7 +322,7 @@ class SRBitmapCostume(SRCostume):
     
     def validate(self, path: list) -> None:
         """
-        Ensure a SRBitmapCostume is valid, raise ValidationError if not
+        Ensure a SRBitmapCostume is valid, raise PP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -331,7 +331,7 @@ class SRBitmapCostume(SRCostume):
             None
         
         Raises:
-            ValidationError: if the SRBitmapCostume is invalid
+            PP_ValidationError: if the SRBitmapCostume is invalid
         """
         super().validate(path)
         
@@ -376,7 +376,7 @@ class SRSound:
     
     def validate(self, path: list) -> None:
         """
-        Ensure a SRSound is valid, raise ValidationError if not
+        Ensure a SRSound is valid, raise PP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -385,7 +385,7 @@ class SRSound:
             None
         
         Raises:
-            ValidationError: if the SRSound is invalid
+            PP_ValidationError: if the SRSound is invalid
         """
         AA_TYPE(self, path, "name", str)
         AA_TYPE(self, path, "file_extension", str)

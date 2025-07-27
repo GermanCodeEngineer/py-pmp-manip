@@ -8,4 +8,4 @@
 ################################################################################################
 
 from .main import validateProject
-from .errors import ValidationError
+from .errors import PP_ValidationError

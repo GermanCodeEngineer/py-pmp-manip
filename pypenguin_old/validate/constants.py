@@ -312,10 +312,10 @@ def validateSchema(pathToData, data, schema):
     try:
         validate(instance=data, schema=schema)
         error = None
-    except exceptions.ValidationError as err:
+    except exceptions.PP_ValidationError as err:
         # Custom error message
         errorPath = list(map(str, pathToData + list(err.absolute_path)))
-        error = formatError(ValidationError, errorPath, err.message)
+        error = formatError(PP_ValidationError, errorPath, err.message)
         del err.schema
         pp(err.__dict__)
     if error != None:

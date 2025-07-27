@@ -5,8 +5,8 @@ from uuid   import uuid4
 from pypenguin.utility            import (
     gdumps,
     KeyReprDict,
-    ThanksError, TypeValidationError, RangeValidationError, 
-    SameValueTwiceError, SpriteLayerStackError,
+    PP_ThanksError, PP_TypeValidationError, PP_RangeValidationError, 
+    PP_SameValueTwiceError, PP_SpriteLayerStackError,
 )
 from pypenguin.opcode_info.data import info_api
 
@@ -54,7 +54,7 @@ def test_FRProject_from_file():
 
 
 def test_FRProject_post_init():
-    with raises(ThanksError):
+    with raises(PP_ThanksError):
         FRProject.from_data(
             data=PROJECT_DATA | {"extensionData": 7}, 
             asset_files=PROJECT_ASSET_FILES,
@@ -193,25 +193,25 @@ def test_SRProject_validate():
     execute_attr_validation_tests(
         obj=srproject,
         attr_tests=[
-            ("stage", 5, TypeValidationError),
-            ("sprites", (), TypeValidationError),
-            ("sprites", [6.7], TypeValidationError),
-            ("sprite_layer_stack", None, TypeValidationError),
-            ("sprite_layer_stack", [None], TypeValidationError),
-            ("sprite_layer_stack", [uuid4(), uuid4()], RangeValidationError), # must have exactly 1 item
-            ("all_sprite_variables", {}, TypeValidationError),
-            ("all_sprite_variables", ["bye"], TypeValidationError),
-            ("all_sprite_lists", set(), TypeValidationError),
-            ("all_sprite_lists", [{}], TypeValidationError),
-            ("tempo", 5.6, TypeValidationError),
-            ("tempo", 10, RangeValidationError), # too low
-            ("video_transparency", "invalid", TypeValidationError),
-            ("video_state", "on", TypeValidationError),
-            ("text_to_speech_language", "fr", TypeValidationError),
-            ("global_monitors", (), TypeValidationError),
-            ("global_monitors", [[]], TypeValidationError),
-            ("extensions", 7, TypeValidationError),
-            ("extensions", ["jgJSON"], TypeValidationError),
+            ("stage", 5, PP_TypeValidationError),
+            ("sprites", (), PP_TypeValidationError),
+            ("sprites", [6.7], PP_TypeValidationError),
+            ("sprite_layer_stack", None, PP_TypeValidationError),
+            ("sprite_layer_stack", [None], PP_TypeValidationError),
+            ("sprite_layer_stack", [uuid4(), uuid4()], PP_RangeValidationError), # must have exactly 1 item
+            ("all_sprite_variables", {}, PP_TypeValidationError),
+            ("all_sprite_variables", ["bye"], PP_TypeValidationError),
+            ("all_sprite_lists", set(), PP_TypeValidationError),
+            ("all_sprite_lists", [{}], PP_TypeValidationError),
+            ("tempo", 5.6, PP_TypeValidationError),
+            ("tempo", 10, PP_RangeValidationError), # too low
+            ("video_transparency", "invalid", PP_TypeValidationError),
+            ("video_state", "on", PP_TypeValidationError),
+            ("text_to_speech_language", "fr", PP_TypeValidationError),
+            ("global_monitors", (), PP_TypeValidationError),
+            ("global_monitors", [[]], PP_TypeValidationError),
+            ("extensions", 7, PP_TypeValidationError),
+            ("extensions", ["jgJSON"], PP_TypeValidationError),
         ],
         validate_func=SRProject.validate,
         func_args=[info_api],
@@ -229,7 +229,7 @@ def test_SRProject_validate_same_sprite_name():
     sprite2 = SRSprite.create_empty(name="sprite1")
     srproject.sprites = [sprite1, sprite2]
     srproject.sprite_layer_stack = [sprite2.uuid, sprite1.uuid]
-    with raises(SameValueTwiceError):
+    with raises(PP_SameValueTwiceError):
         srproject.validate(info_api)
 
 def test_SRProject_validate_sprites_same_sprite_uuid():
@@ -240,7 +240,7 @@ def test_SRProject_validate_sprites_same_sprite_uuid():
     sprite2.__dict__["uuid"] = uuid
     srproject.sprites = [sprite1, sprite2]
     srproject.sprite_layer_stack = [uuid, uuid]
-    with raises(SameValueTwiceError):
+    with raises(PP_SameValueTwiceError):
         srproject._validate_sprites([], info_api)
 
 def test_SRProject_validate_sprites_invalid_layer_stack():
@@ -252,11 +252,11 @@ def test_SRProject_validate_sprites_invalid_layer_stack():
     srproject._validate_sprites([], info_api)
 
     srproject.sprite_layer_stack = [sprite1.uuid, uuid4()]
-    with raises(SpriteLayerStackError):
+    with raises(PP_SpriteLayerStackError):
         srproject._validate_sprites([], info_api)
 
     srproject.sprite_layer_stack = [sprite1.uuid, sprite1.uuid]
-    with raises(SameValueTwiceError):
+    with raises(PP_SameValueTwiceError):
         srproject._validate_sprites([], info_api)
     
 
@@ -277,7 +277,7 @@ def test_SRProject_validate_var_names_same_global():
         SRVariable(name="same var", current_value=5),
         SRVariable(name="same var", current_value=";)"),
     ]
-    with raises(SameValueTwiceError):
+    with raises(PP_SameValueTwiceError):
         srproject._validate_var_names([])
 
 def test_SRProject_validate_var_names_same_inter():
@@ -286,7 +286,7 @@ def test_SRProject_validate_var_names_same_inter():
     sprite = SRSprite.create_empty(name="Sprite1")
     sprite.sprite_only_variables = [SRVariable(name="same var", current_value=")=")]
     srproject.sprites = [sprite]
-    with raises(SameValueTwiceError):
+    with raises(PP_SameValueTwiceError):
         srproject._validate_var_names([])
 
 
@@ -307,7 +307,7 @@ def test_SRProject_validate_list_names_same_global():
         SRList(name="same list", current_value=[5]),
         SRList(name="same list", current_value=[";)"]),
     ]
-    with raises(SameValueTwiceError):
+    with raises(PP_SameValueTwiceError):
         srproject._validate_list_names([])
 
 def test_SRProject_validate_list_names_same_inter():
@@ -316,7 +316,7 @@ def test_SRProject_validate_list_names_same_inter():
     sprite = SRSprite.create_empty(name="Sprite1")
     sprite.sprite_only_lists = [SRList(name="same var", current_value=[")=", "(="])]
     srproject.sprites = [sprite]
-    with raises(SameValueTwiceError):
+    with raises(PP_SameValueTwiceError):
         srproject._validate_list_names([])
 
 

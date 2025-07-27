@@ -35,6 +35,7 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
         return grepr(self)
 
     def set(self, key1: _K1, key2: _K2, value: _V) -> None:
+        # TODO: if alredy set: make sure key1 and key2 point to the same entry
         self._values[key1] = value
         self._k2_to_k1[key2] = key1
         self._k1_to_k2[key1] = key2

@@ -1,6 +1,6 @@
 from typing import Any
 
-from pypenguin.utility import grepr_dataclass, AA_COORD_PAIR, AA_TYPE, InvalidValueError
+from pypenguin.utility import grepr_dataclass, AA_COORD_PAIR, AA_TYPE, PP_InvalidValueError
 
 
 @grepr_dataclass(grepr_fields=["block_id", "x", "y", "width", "height", "minimized", "text"])
@@ -85,7 +85,7 @@ class SRComment:
     
     def validate(self, path: list) -> None:
         """
-        Ensure a SRComment is valid, raise ValidationError if not
+        Ensure a SRComment is valid, raise PP_ValidationError if not
         
         Args:
         
@@ -93,13 +93,13 @@ class SRComment:
             None
         
         Raises:
-            ValidationError: if the SRComment is invalid
-            InvalidValueError(ValidationError): if size is smaller then the minimum
+            PP_ValidationError: if the SRComment is invalid
+            PP_InvalidValueError(PP_ValidationError): if size is smaller then the minimum
         """
         AA_COORD_PAIR(self, path, "position")
         AA_COORD_PAIR(self, path, "size")
         if (self.size[0] < 52) or (self.size[1] < 32):
-            raise InvalidValueError(path, f"size of {self.__class__.__name__} must be at least 52 by 32")
+            raise PP_InvalidValueError(path, f"size of {self.__class__.__name__} must be at least 52 by 32")
         AA_TYPE(self, path, "is_minimized", bool)
         AA_TYPE(self, path, "text", str)
 

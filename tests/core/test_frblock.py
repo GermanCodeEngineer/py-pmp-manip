@@ -7,7 +7,7 @@ from pypenguin.important_consts import (
     SHA256_SEC_MAIN_ARGUMENT_NAME,
 )
 from pypenguin.opcode_info.data import info_api
-from pypenguin.utility          import string_to_sha256, DeserializationError, ConversionError
+from pypenguin.utility          import string_to_sha256, PP_DeserializationError, PP_ConversionError
 
 from pypenguin.core.block_interface import FirstToInterIF
 from pypenguin.core.block_mutation  import FRCustomBlockMutation, SRCustomBlockArgumentMutation
@@ -52,13 +52,13 @@ def test_FRBlock_from_data_comment():
 
 def test_FRBlock_from_data_invalid_mutation():
     data = ALL_FR_BLOCK_DATAS["d"] | {"mutation": {...}}
-    with raises(DeserializationError):
+    with raises(PP_DeserializationError):
         FRBlock.from_data(data, info_api=info_api)
 
 def test_FRBlock_from_data_missing_mutation():
     data = ALL_FR_BLOCK_DATAS["j"].copy()
     del data["mutation"]
-    with raises(DeserializationError):
+    with raises(PP_DeserializationError):
         FRBlock.from_data(data, info_api=info_api)
 
 def test_FRBlock_from_data_valid_mutation():
@@ -102,7 +102,7 @@ def test_FRBlock_from_tuple_not_top_level():
     assert frblock.comment   is None
     assert frblock.mutation  is None
 
-    with raises(ConversionError):
+    with raises(PP_ConversionError):
         FRBlock.from_tuple(data, parent_id=None)
 
 def test_FRBlock_from_tuple_list_top_level():
@@ -121,14 +121,14 @@ def test_FRBlock_from_tuple_list_top_level():
     assert frblock.comment   is None
     assert frblock.mutation  is None
 
-    with raises(ConversionError):
+    with raises(PP_ConversionError):
         FRBlock.from_tuple(data, parent_id="qqq")
 
 def test_FRBlock_from_tuple_invalid():
-    with raises(ConversionError):
+    with raises(PP_ConversionError):
         FRBlock.from_tuple([1, 2], parent_id="qqq")
 
-    with raises(ConversionError):
+    with raises(PP_ConversionError):
         FRBlock.from_tuple([77, ..., ...], parent_id="qqq")
 
 
@@ -149,7 +149,7 @@ def test_FRBlock_to_data_mutation():
 
 def test_FRBlock_to_tuple_invalid_opcode():
     frblock = ALL_FR_BLOCKS_CLEAN["g"]
-    with raises(ConversionError):
+    with raises(PP_ConversionError):
         frblock.to_tuple()
 
 def test_FRBlock_to_tuple_variable_top_level():
@@ -248,7 +248,7 @@ def test_FRBlock_to_inter_cb_call(fti_if: FirstToInterIF):
 def test_FRBlock_to_inter_invalid_input_element(fti_if: FirstToInterIF):
     frblock: FRBlock = deepcopy(ALL_FR_BLOCKS["g"])
     frblock.inputs["STRING1"] = (1, (10, "apple "), (40, "abc"))
-    with raises(ConversionError):
+    with raises(PP_ConversionError):
         frblock.to_inter(
             fti_if=fti_if,
             info_api=info_api,

@@ -2,7 +2,7 @@ from dataclasses import FrozenInstanceError
 from datetime    import timedelta
 from pytest      import raises
 
-from pypenguin.utility import grepr_dataclass, TypeValidationError
+from pypenguin.utility import grepr_dataclass, PP_TypeValidationError
 
 from pypenguin.config.manager import get_default_config
 from pypenguin.config.schema  import ConfigBase, MasterConfig, ExtInfoGenConfig, ValidationConfig, PlatformMetaConfig
@@ -43,8 +43,8 @@ def test_ExtInfoGenConfig_validate():
     execute_attr_validation_tests(
         obj=config,
         attr_tests=[
-            ("gen_opcode_info_dir", 5, TypeValidationError),
-            ("js_fetch_interval", {}, TypeValidationError),
+            ("gen_opcode_info_dir", 5, PP_TypeValidationError),
+            ("js_fetch_interval", {}, PP_TypeValidationError),
         ],
         validate_func=ExtInfoGenConfig.validate,
         func_args=[[]],
@@ -62,8 +62,8 @@ def test_ValidationConfig_validate():
     execute_attr_validation_tests(
         obj=config,
         attr_tests=[
-            ("raise_if_monitor_position_outside_stage", set(), TypeValidationError),
-            ("raise_if_monitor_bigger_then_stage", None, TypeValidationError),
+            ("raise_if_monitor_position_outside_stage", set(), PP_TypeValidationError),
+            ("raise_if_monitor_bigger_then_stage", None, PP_TypeValidationError),
         ],
         validate_func=ValidationConfig.validate,
         func_args=[[]],
@@ -82,9 +82,9 @@ def test_PlatformMetaConfig_validate():
     execute_attr_validation_tests(
         obj=config,
         attr_tests=[
-            ("scratch_semver", 31, TypeValidationError),
-            ("scratch_vm", (11, 1, 0), TypeValidationError),
-            ("penguinmod_vm", 2.0, TypeValidationError),
+            ("scratch_semver", 31, PP_TypeValidationError),
+            ("scratch_vm", (11, 1, 0), PP_TypeValidationError),
+            ("penguinmod_vm", 2.0, PP_TypeValidationError),
         ],
         validate_func=PlatformMetaConfig.validate,
         func_args=[[]],
@@ -99,10 +99,10 @@ def test_MasterConfig_validate():
     execute_attr_validation_tests(
         obj=config,
         attr_tests=[
-            ("ext_info_gen", {}, TypeValidationError),
-            ("ext_info_gen", ExtInfoGenConfig(gen_opcode_info_dir=".", js_fetch_interval=3), TypeValidationError),
-            ("validation", config.ext_info_gen, TypeValidationError),
-            ("platform_meta", [], TypeValidationError),
+            ("ext_info_gen", {}, PP_TypeValidationError),
+            ("ext_info_gen", ExtInfoGenConfig(gen_opcode_info_dir=".", js_fetch_interval=3), PP_TypeValidationError),
+            ("validation", config.ext_info_gen, PP_TypeValidationError),
+            ("platform_meta", [], PP_TypeValidationError),
         ],
         validate_func=MasterConfig.validate,
         func_args=[[]],

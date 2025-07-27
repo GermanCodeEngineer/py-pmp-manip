@@ -8,8 +8,8 @@ from pypenguin.opcode_info.api  import DropdownValueKind
 from pypenguin.opcode_info.data import info_api
 from pypenguin.utility          import (
     string_to_sha256, lists_equal_ignore_order, xml_equal,
-    ThanksError, ConversionError, TypeValidationError, RangeValidationError, 
-    SameValueTwiceError, InvalidValueError
+    PP_ThanksError, PP_ConversionError, PP_TypeValidationError, PP_RangeValidationError, 
+    PP_SameValueTwiceError, PP_InvalidValueError
 )
 
 from pypenguin.core.asset           import SRVectorCostume, SRSound
@@ -86,7 +86,7 @@ def test_FRTarget_post_init():
         def to_second(self, asset_files, info_api):
             pass
 
-    with raises(ThanksError):
+    with raises(PP_ThanksError):
         DummyFRTarget(
             is_stage=...,
             name=...,
@@ -190,12 +190,12 @@ def test_FRTarget_to_second_variables_lists():
 def test_FRTarget_to_second_variables_lists_invalid():
     frsprite = copy(FR_STAGE)
     frsprite.variables = {"b-bPdkv!fE]yunTdvpQi": ("some other var", None, None)}
-    with raises(ConversionError):
+    with raises(PP_ConversionError):
         frsprite._to_second_variables_lists()
 
     frsprite = copy(FR_STAGE)
     frsprite.lists = {"LSfpvIEwXe-upUsR|ypy": ("some other list", None, None)}
-    with raises(ConversionError):
+    with raises(PP_ConversionError):
         frsprite._to_second_variables_lists()
 
 
@@ -261,20 +261,20 @@ def test_SRTarget_validate():
     execute_attr_validation_tests(
         obj=srtarget,
         attr_tests=[
-            ("scripts", 5, TypeValidationError),
-            ("scripts", [5], TypeValidationError),
-            ("comments", (), TypeValidationError),
-            ("comments", [()], TypeValidationError),
-            ("costumes", {}, TypeValidationError),
-            ("costumes", [], RangeValidationError),
-            ("costumes", [{}], TypeValidationError),
-            ("costume_index", "costume1", TypeValidationError),
-            ("costume_index", 3, RangeValidationError),
-            ("sounds", "a str", TypeValidationError),
-            ("sounds", ["a str"], TypeValidationError),
-            ("volume", [], TypeValidationError),
-            ("volume", -5, RangeValidationError),
-            ("volume", 105, RangeValidationError),
+            ("scripts", 5, PP_TypeValidationError),
+            ("scripts", [5], PP_TypeValidationError),
+            ("comments", (), PP_TypeValidationError),
+            ("comments", [()], PP_TypeValidationError),
+            ("costumes", {}, PP_TypeValidationError),
+            ("costumes", [], PP_RangeValidationError),
+            ("costumes", [{}], PP_TypeValidationError),
+            ("costume_index", "costume1", PP_TypeValidationError),
+            ("costume_index", 3, PP_RangeValidationError),
+            ("sounds", "a str", PP_TypeValidationError),
+            ("sounds", ["a str"], PP_TypeValidationError),
+            ("volume", [], PP_TypeValidationError),
+            ("volume", -5, PP_RangeValidationError),
+            ("volume", 105, PP_RangeValidationError),
         ],
         validate_func=SRTarget.validate,
         func_args=[[], info_api],
@@ -296,7 +296,7 @@ def test_SRTarget_validate_same_costume_name():
         SRVectorCostume.create_empty(name="costume1"),
         SRVectorCostume.create_empty(name="costume1"),
     ]
-    with raises(SameValueTwiceError):
+    with raises(PP_SameValueTwiceError):
         srtarget.validate([], info_api)
 
 def test_SRTarget_validate_same_sound_name():
@@ -305,7 +305,7 @@ def test_SRTarget_validate_same_sound_name():
         SRSound(name="Hello there!", file_extension="wav", content=AudioSegment.silent(duration=0)),
         SRSound(name="Hello there!", file_extension="wav", content=AudioSegment.silent(duration=0)),
     ]
-    with raises(SameValueTwiceError):
+    with raises(PP_SameValueTwiceError):
         srtarget.validate([], info_api)
 
 
@@ -341,7 +341,7 @@ def test_SRTarget_validate_scripts_same_custom_opcode(context):
         cb_def_script,
         copy(cb_def_script),
     ]
-    with raises(SameValueTwiceError):
+    with raises(PP_SameValueTwiceError):
         srtarget.validate_scripts([], info_api, context)
 
 
@@ -486,23 +486,23 @@ def test_SRSprite_validate():
     execute_attr_validation_tests(
         obj=srsprite,
         attr_tests=[
-            ("name", False, TypeValidationError),
-            ("name", "_stage_", InvalidValueError),
-            ("sprite_only_variables", (), TypeValidationError),
-            ("sprite_only_variables", [()], TypeValidationError),
-            ("sprite_only_lists", {}, TypeValidationError),
-            ("sprite_only_lists", [{}], TypeValidationError),
-            ("local_monitors", None, TypeValidationError),
-            ("local_monitors", [None], TypeValidationError),
-            ("is_visible", "a str", TypeValidationError),
-            ("position", 45, TypeValidationError),
-            ("position", ("", ""), TypeValidationError),
-            ("size", "100", TypeValidationError),
-            ("size", -4, RangeValidationError),
-            ("direction", [], TypeValidationError),
-            ("direction", 190, RangeValidationError),
-            ("is_draggable", [], TypeValidationError),
-            ("rotation_style", "don't rotate", TypeValidationError),
+            ("name", False, PP_TypeValidationError),
+            ("name", "_stage_", PP_InvalidValueError),
+            ("sprite_only_variables", (), PP_TypeValidationError),
+            ("sprite_only_variables", [()], PP_TypeValidationError),
+            ("sprite_only_lists", {}, PP_TypeValidationError),
+            ("sprite_only_lists", [{}], PP_TypeValidationError),
+            ("local_monitors", None, PP_TypeValidationError),
+            ("local_monitors", [None], PP_TypeValidationError),
+            ("is_visible", "a str", PP_TypeValidationError),
+            ("position", 45, PP_TypeValidationError),
+            ("position", ("", ""), PP_TypeValidationError),
+            ("size", "100", PP_TypeValidationError),
+            ("size", -4, PP_RangeValidationError),
+            ("direction", [], PP_TypeValidationError),
+            ("direction", 190, PP_RangeValidationError),
+            ("is_draggable", [], PP_TypeValidationError),
+            ("rotation_style", "don't rotate", PP_TypeValidationError),
         ],
         validate_func=SRSprite.validate,
         func_args=[[], info_api],
@@ -521,7 +521,7 @@ def test_SRSprite_validate_vars_lists():
 def test_SRSprite_validate_uuid():
     srsprite = SRSprite.create_empty(name="my sprite")
     srsprite.__dict__["uuid"] = "abc-def-ghi"
-    with raises(TypeValidationError):
+    with raises(PP_TypeValidationError):
         srsprite.validate([], info_api)
 
 

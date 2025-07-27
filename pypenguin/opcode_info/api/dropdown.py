@@ -1,7 +1,7 @@
 from dataclasses import field
 from typing      import Any, Callable
 
-from pypenguin.utility import grepr_dataclass, remove_duplicates, PypenguinEnum, BlameDevsError
+from pypenguin.utility import grepr_dataclass, remove_duplicates, PypenguinEnum, PP_BlameDevsError
 
 from pypenguin.core.context import PartialContext, CompleteContext
 
@@ -172,7 +172,7 @@ class DropdownType(PypenguinEnum):
                 if default_kind is None:
                     default_kind = rule_default_kind
                 else:
-                    raise BlameDevsError(f"Got multiple default dropdown value kinds for {self}: {default_kind} and {rule_default_kind}")
+                    raise PP_BlameDevsError(f"Got multiple default dropdown value kinds for {self}: {default_kind} and {rule_default_kind}")
         return default_kind
 
     @property
@@ -190,7 +190,7 @@ class DropdownType(PypenguinEnum):
                 if default_kind is None:
                     default_kind = rule_default_kind
                 else:
-                    raise BlameDevsError(f"Got multiple default dropdown value kinds for {self}: {default_kind} and {rule_default_kind}")
+                    raise PP_BlameDevsError(f"Got multiple default dropdown value kinds for {self}: {default_kind} and {rule_default_kind}")
         return default_kind
 
     @property
@@ -208,7 +208,7 @@ class DropdownType(PypenguinEnum):
                 if validate_func is None:
                     validate_func = rule_validate_func
                 else:
-                    raise BlameDevsError(f"Got multiple post validation functions for {self}: {validate_func} and {rule_validate_func}")
+                    raise PP_BlameDevsError(f"Got multiple post validation functions for {self}: {validate_func} and {rule_validate_func}")
         return validate_func
 
     def calculate_possible_new_dropdown_values(self, context: PartialContext|CompleteContext) -> list[tuple[DropdownValueKind, Any]]:

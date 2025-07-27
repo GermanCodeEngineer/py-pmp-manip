@@ -2,7 +2,7 @@ from typing      import Any, Type, Callable, TypeVar
 from copy        import copy, deepcopy
 from pytest      import raises
 
-from pypenguin.utility import ValidationError
+from pypenguin.utility import PP_ValidationError
 from pypenguin.core.block   import FRBlock
 from pypenguin.core.comment import FRComment
 
@@ -21,7 +21,7 @@ _AVTT = TypeVar("_AVTT")
 
 def execute_attr_validation_tests(
         obj: _AVTT, 
-        attr_tests: list[tuple[str, Any, Type[ValidationError]]], 
+        attr_tests: list[tuple[str, Any, Type[PP_ValidationError]]], 
         validate_func: Callable[[_AVTT], None],
         func_args: list[Any]=[],
     ) -> None:

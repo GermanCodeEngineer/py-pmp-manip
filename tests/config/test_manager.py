@@ -1,7 +1,7 @@
 from datetime import timedelta
 from pytest   import raises, MonkeyPatch
 
-from pypenguin.utility import ConfigurationError
+from pypenguin.utility import PP_ConfigurationError
 
 from pypenguin.config.manager import init_config, get_config, get_default_config
 from pypenguin.config.schema  import MasterConfig, ExtInfoGenConfig, ValidationConfig, PlatformMetaConfig
@@ -14,7 +14,7 @@ def test_init_config(monkeypatch: MonkeyPatch):
     
     init_config(get_default_config())
     assert manager_mod._config_instance is not None
-    with raises(ConfigurationError):
+    with raises(PP_ConfigurationError):
         init_config(get_default_config())
 
 def test_init_config_invalid_type(monkeypatch: MonkeyPatch):
@@ -30,7 +30,7 @@ def test_init_config_validation_fail(monkeypatch: MonkeyPatch):
 
     cfg = get_default_config()
     cfg.ext_info_gen = 6
-    with raises(ConfigurationError):
+    with raises(PP_ConfigurationError):
         init_config(cfg)
 
 
@@ -47,7 +47,7 @@ def test_get_config_not_configured(monkeypatch: MonkeyPatch):
     from pypenguin.config import manager as manager_mod
     monkeypatch.setattr(manager_mod, "_config_instance", None)
 
-    with raises(ConfigurationError):
+    with raises(PP_ConfigurationError):
         get_config()
     
 

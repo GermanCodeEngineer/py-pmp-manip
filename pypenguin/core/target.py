@@ -7,9 +7,9 @@ from uuid        import uuid4, UUID
 from pypenguin.important_consts import SHA256_SEC_TARGET_NAME, SHA256_SEC_BROADCAST_MSG
 from pypenguin.opcode_info.api  import OpcodeInfoAPI, DropdownValueKind
 from pypenguin.utility          import (
-    string_to_sha256, grepr_dataclass, ThanksError,
+    string_to_sha256, grepr_dataclass, PP_ThanksError,
     AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_MIN_LEN, AA_MIN, AA_RANGE, AA_COORD_PAIR, AA_NOT_ONE_OF, 
-    SameValueTwiceError, ConversionError,
+    PP_SameValueTwiceError, PP_ConversionError,
 )
 
 from pypenguin.core.asset           import FRCostume, FRSound, SRCostume, SRVectorCostume, SRSound
@@ -104,7 +104,7 @@ class FRTarget(ABC):
         Returns:
             None
         """
-        if self.custom_vars != []: raise ThanksError()
+        if self.custom_vars != []: raise PP_ThanksError()
 
     @abstractmethod
     def to_data(self) -> dict[str, Any]:
@@ -267,7 +267,7 @@ class FRTarget(ABC):
                     SRCloudVariable(name=variable[0], current_value=variable[1])
                 )
             else:
-                raise ConversionError(f"Invalid variable data {variable}")
+                raise PP_ConversionError(f"Invalid variable data {variable}")
         
         new_lists = []
         for list_ in self.lists.values():
@@ -276,7 +276,7 @@ class FRTarget(ABC):
                     SRList(name=list_[0], current_value=list_[1])
                 )
             else:
-                raise ConversionError(f"Invalid list data {list_}")
+                raise PP_ConversionError(f"Invalid list data {list_}")
         
         return new_variables, new_lists
 
@@ -503,7 +503,7 @@ class SRTarget:
 
     def validate(self, path: list, info_api: OpcodeInfoAPI) -> None:
         """
-        Ensure a SRTarget is valid, raise ValidationError if not
+        Ensure a SRTarget is valid, raise PP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -513,8 +513,8 @@ class SRTarget:
             None
         
         Raises:
-            ValidationError: if the SRTarget is invalid
-            SameValueTwiceError(ValidationError): if two costumes or two sounds have the same name
+            PP_ValidationError: if the SRTarget is invalid
+            PP_SameValueTwiceError(PP_ValidationError): if two costumes or two sounds have the same name
         """
         AA_LIST_OF_TYPE(self, path, "scripts", SRScript)
         AA_LIST_OF_TYPE(self, path, "comments", SRComment)
@@ -537,7 +537,7 @@ class SRTarget:
             costume.validate(path)
             if costume.name in defined_costumes:
                 other_path = defined_costumes[costume.name]
-                raise SameValueTwiceError(other_path, current_path, "Two costumes mustn't have the same name")
+                raise PP_SameValueTwiceError(other_path, current_path, "Two costumes mustn't have the same name")
             defined_costumes[costume.name] = current_path
         
         defined_sounds = {}
@@ -546,7 +546,7 @@ class SRTarget:
             sound.validate(path)
             if sound.name in defined_sounds:
                 other_path = defined_sounds[sound.name]
-                raise SameValueTwiceError(other_path, current_path, "Two sounds mustn't have the same name")
+                raise PP_SameValueTwiceError(other_path, current_path, "Two sounds mustn't have the same name")
             defined_sounds[sound.name] = current_path
     
     def validate_scripts(self, 
@@ -555,7 +555,7 @@ class SRTarget:
         context: PartialContext,
     ) -> None:
         """
-        Ensure the scripts of a SRTarget are valid, raise ValidationError if not
+        Ensure the scripts of a SRTarget are valid, raise PP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -566,8 +566,8 @@ class SRTarget:
             None
         
         Raises:
-            ValidationError: if the scripts of the SRTarget are invalid
-            SameValueTwiceError(ValidationError): if two custom blocks have the same custom_opcode.
+            PP_ValidationError: if the scripts of the SRTarget are invalid
+            PP_SameValueTwiceError(PP_ValidationError): if two custom blocks have the same custom_opcode.
         """
         context = self._get_complete_context(partial_context=context)
         validation_if = ValidationIF(scripts=self.scripts)
@@ -585,7 +585,7 @@ class SRTarget:
                     custom_opcode = block.mutation.custom_opcode
                     if custom_opcode in cb_custom_opcodes:
                         other_path = cb_custom_opcodes[custom_opcode]
-                        raise SameValueTwiceError(
+                        raise PP_SameValueTwiceError(
                             other_path, current_path, "Two custom blocks mustn't have the same custom_opcode(see .mutation.custom_opcode)",
                         )
                     cb_custom_opcodes[custom_opcode] = current_path
@@ -834,7 +834,7 @@ class SRSprite(SRTarget):
     
     def validate(self, path: list, info_api: OpcodeInfoAPI) -> None:
         """
-        Ensure a SRSprite is valid, raise ValidationError if not
+        Ensure a SRSprite is valid, raise PP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -844,7 +844,7 @@ class SRSprite(SRTarget):
             None
         
         Raises:
-            ValidationError: if the SRSprite is invalid
+            PP_ValidationError: if the SRSprite is invalid
         """
         super().validate(path, info_api)
         
@@ -878,7 +878,7 @@ class SRSprite(SRTarget):
         context: PartialContext | CompleteContext,
     ) -> None:
         """
-        Ensure the dropdown values of the monitors of a SRSprite are valid, raise ValidationError if not
+        Ensure the dropdown values of the monitors of a SRSprite are valid, raise PP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -889,7 +889,7 @@ class SRSprite(SRTarget):
             None
         
         Raises:
-            ValidationError: if the monitor dropdown values of the SRSprite are invalid
+            PP_ValidationError: if the monitor dropdown values of the SRSprite are invalid
         """
         context = self._get_complete_context(partial_context=context)
         for i, monitor in enumerate(self.local_monitors):

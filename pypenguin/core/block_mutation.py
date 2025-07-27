@@ -8,7 +8,7 @@ from pypenguin.important_consts import SHA256_SEC_MAIN_ARGUMENT_NAME
 from pypenguin.utility          import (
     grepr_dataclass, string_to_sha256, gdumps,
     AA_TYPE, AA_HEX_COLOR,
-    ThanksError, ConversionError, DeserializationError, 
+    PP_ThanksError, PP_ConversionError, PP_DeserializationError, 
 )
 
 
@@ -54,7 +54,7 @@ class FRMutation(ABC):
             None
         """
         if (self.tag_name != "mutation") or (self.children != []):
-            raise ThanksError()
+            raise PP_ThanksError()
 
     @abstractmethod
     def to_second(self, fti_if: "FirstToInterIF") -> "SRMutation":
@@ -141,7 +141,7 @@ class FRCustomBlockArgumentMutation(FRMutation):
             the SRCustomBlockArgumentMutation
         """
         if getattr(self, "_argument_name", None) is None:
-            raise ConversionError("Argument name must be set before SR conversion")
+            raise PP_ConversionError("Argument name must be set before SR conversion")
         return SRCustomBlockArgumentMutation(
             argument_name   = self._argument_name,
             main_color      = self.color[0],
@@ -180,7 +180,7 @@ class FRCustomBlockMutation(FRMutation):
             warp = data["warp"]
         elif isinstance(data["warp"], str):
             warp = loads(data["warp"])
-        else: raise DeserializationError(f"Invalid value for warp: {data['warp']}")
+        else: raise PP_DeserializationError(f"Invalid value for warp: {data['warp']}")
         return cls(
             tag_name          = data["tagName" ],
             children          = data["children"],
@@ -267,7 +267,7 @@ class FRCustomBlockCallMutation(FRMutation):
             warp = data["warp"]
         elif isinstance(data["warp"], str):
             warp = loads(data["warp"])
-        else: raise DeserializationError(f"Invalid value for warp: {data['warp']}")
+        else: raise PP_DeserializationError(f"Invalid value for warp: {data['warp']}")
         return cls(
             tag_name     = data["tagName" ],
             children     = data["children"],
@@ -379,7 +379,7 @@ class SRMutation(ABC):
     @abstractmethod
     def validate(self, path: list) -> None:
         """
-        Ensure the SRMutation is valid, raise ValidationError if not
+        Ensure the SRMutation is valid, raise PP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -388,7 +388,7 @@ class SRMutation(ABC):
             None
         
         Raises:
-            ValidationError: if the SRMutation is invalid
+            PP_ValidationError: if the SRMutation is invalid
         """
 
     @abstractmethod
@@ -418,7 +418,7 @@ class SRCustomBlockArgumentMutation(SRMutation):
 
     def validate(self, path: list) -> None:
         """
-        Ensure the SRCustomBlockArgumentMutation is valid, raise ValidationError if not
+        Ensure the SRCustomBlockArgumentMutation is valid, raise PP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -427,7 +427,7 @@ class SRCustomBlockArgumentMutation(SRMutation):
             None
         
         Raises:
-            ValidationError: if the SRCustomBlockArgumentMutation is invalid
+            PP_ValidationError: if the SRCustomBlockArgumentMutation is invalid
         """
         AA_TYPE(self, path, "argument_name", str)
         AA_HEX_COLOR(self, path, "main_color")
@@ -468,7 +468,7 @@ class SRCustomBlockMutation(SRMutation):
     
     def validate(self, path: list) -> None:
         """
-        Ensure the SRCustomBlockMutation is valid, raise ValidationError if not
+        Ensure the SRCustomBlockMutation is valid, raise PP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -477,7 +477,7 @@ class SRCustomBlockMutation(SRMutation):
             None
         
         Raises:
-            ValidationError: if the SRCustomBlockMutation is invalid
+            PP_ValidationError: if the SRCustomBlockMutation is invalid
         """
         AA_TYPE(self, path, "custom_opcode", SRCustomBlockOpcode)
         AA_TYPE(self, path, "no_screen_refresh", bool)
@@ -533,7 +533,7 @@ class SRCustomBlockCallMutation(SRMutation):
     
     def validate(self, path: list) -> None:
         """
-        Ensure the SRCustomBlockCallMutation is valid, raise ValidationError if not
+        Ensure the SRCustomBlockCallMutation is valid, raise PP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -542,7 +542,7 @@ class SRCustomBlockCallMutation(SRMutation):
             None
         
         Raises:
-            ValidationError: if the SRCustomBlockCallMutation is invalid
+            PP_ValidationError: if the SRCustomBlockCallMutation is invalid
         """
         AA_TYPE(self, path, "custom_opcode", SRCustomBlockOpcode)
 
@@ -594,7 +594,7 @@ class SRStopScriptMutation(SRMutation):
 
     def validate(self, path: list) -> None:
         """
-        Ensure the SRStopScriptMutation is valid, raise ValidationError if not
+        Ensure the SRStopScriptMutation is valid, raise PP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -603,7 +603,7 @@ class SRStopScriptMutation(SRMutation):
             None
         
         Raises:
-            ValidationError: if the SRStopScriptMutation is invalid
+            PP_ValidationError: if the SRStopScriptMutation is invalid
         """
         AA_TYPE(self, path, "is_ending_statement", bool)
 

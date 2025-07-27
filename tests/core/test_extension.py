@@ -1,4 +1,4 @@
-from pypenguin.utility import InvalidValueError
+from pypenguin.utility import PP_InvalidValueError
 
 from pypenguin.core.extension import SRExtension, SRCustomExtension
 
@@ -13,7 +13,7 @@ def test_SRExtension_validate():
     execute_attr_validation_tests(
         obj=extension,
         attr_tests=[
-            ("id", "some-invalid-id", InvalidValueError),
+            ("id", "some-invalid-id", PP_InvalidValueError),
         ],
         validate_func=SRExtension.validate,
         func_args=[[]]
@@ -28,7 +28,7 @@ def test_SRCustomExtension_validate_url():
     execute_attr_validation_tests(
         obj=extension,
         attr_tests=[
-            ("url", "x://a.b.c", InvalidValueError),
+            ("url", "x://a.b.c", PP_InvalidValueError),
         ],
         validate_func=SRCustomExtension.validate,
         func_args=[[]]
@@ -41,7 +41,7 @@ def test_SRCustomExtension_validate_js_uri():
     execute_attr_validation_tests(
         obj=extension,
         attr_tests=[
-            ("url", "x:a/b,Lorem%20ipsum%20dolor%20sit%20amet%2C%20consetetur%20sadipscing%20elitr%2C%20sed%20diam", InvalidValueError),
+            ("url", "x:a/b,Lorem%20ipsum%20dolor%20sit%20amet%2C%20consetetur%20sadipscing%20elitr%2C%20sed%20diam", PP_InvalidValueError),
         ],
         validate_func=SRCustomExtension.validate,
         func_args=[[]]

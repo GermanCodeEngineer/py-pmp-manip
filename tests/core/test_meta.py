@@ -1,7 +1,7 @@
 from pytest import raises
 
 from pypenguin.config  import get_config
-from pypenguin.utility import ThanksError
+from pypenguin.utility import PP_ThanksError
 
 from pypenguin.core.meta import FRMeta, FRPenguinModPlatformMeta, PENGUINMOD_PLATFORM_META_DATA
 
@@ -42,9 +42,9 @@ def test_FRMeta_from_data_scratch():
     assert meta.platform is None
 
 def test_FRMeta_from_data_post_init_invalid():
-    with raises(ThanksError):
+    with raises(PP_ThanksError):
         FRMeta.from_data(PENGUINMOD_META_DATA | {"semver": "2.0.0"})
-    with raises(ThanksError):
+    with raises(PP_ThanksError):
         FRMeta.from_data(PENGUINMOD_META_DATA | {"vm": "5.0.0"})
 
 
@@ -76,10 +76,10 @@ def test_FRPenguinModPlatformMeta_from_to_data():
     assert platform_meta.to_data() == platform_meta_data
 
 def test_FRPenguinModPlatformMeta_from_data_invalid():
-    with raises(ThanksError):
+    with raises(PP_ThanksError):
         FRPenguinModPlatformMeta.from_data(PENGUINMOD_META_DATA["platform"] | {"name": "MyScratchMod"})
-    with raises(ThanksError):
+    with raises(PP_ThanksError):
         FRPenguinModPlatformMeta.from_data(PENGUINMOD_META_DATA["platform"] | {"url": "https://my.scratchmod/"})
-    with raises(ThanksError):
+    with raises(PP_ThanksError):
         FRPenguinModPlatformMeta.from_data(PENGUINMOD_META_DATA["platform"] | {"version": "99.12.34"})
 

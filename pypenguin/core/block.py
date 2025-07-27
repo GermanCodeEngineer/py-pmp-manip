@@ -17,8 +17,8 @@ from pypenguin.opcode_info.api  import (
 from pypenguin.utility          import (
     grepr_dataclass, get_closest_matches, tuplify, listify, string_to_sha256,
     AA_TYPE, AA_NONE, AA_NONE_OR_TYPE, AA_COORD_PAIR, AA_LIST_OF_TYPE, AA_DICT_OF_TYPE, AA_MIN_LEN,
-    DeserializationError, ConversionError,
-    UnnecessaryInputError, MissingInputError, UnnecessaryDropdownError, MissingDropdownError, InvalidOpcodeError, InvalidBlockShapeError,
+    PP_DeserializationError, PP_ConversionError,
+    PP_UnnecessaryInputError, PP_MissingInputError, PP_UnnecessaryDropdownError, PP_MissingDropdownError, PP_InvalidOpcodeError, PP_InvalidBlockShapeError,
 )
 
 if TYPE_CHECKING: from pypenguin.core.block_interface import (
@@ -68,12 +68,12 @@ class FRBlock:
         opcode_info = info_api.get_info_by_old(opcode)
         if opcode_info.old_mutation_cls is None:
             if "mutation" in data:
-                raise DeserializationError(f"Invalid mutation for FRBlock with opcode {repr(opcode)}: {data['mutation']}")
+                raise PP_DeserializationError(f"Invalid mutation for FRBlock with opcode {repr(opcode)}: {data['mutation']}")
             mutation = None
         else:
             if "mutation" not in data:
                 cls_name = opcode_info.old_mutation_cls.__name__
-                raise DeserializationError(f"Missing mutation of type {cls_name} for FRBlock with opcode {repr(opcode)}")
+                raise PP_DeserializationError(f"Missing mutation of type {cls_name} for FRBlock with opcode {repr(opcode)}")
             mutation = opcode_info.old_mutation_cls.from_data(data["mutation"])
         return cls(
             opcode    = opcode,
@@ -105,15 +105,15 @@ class FRBlock:
         """
         if   len(data) == 3:
             if parent_id is None:
-                raise ConversionError(f"Invalid parent_id for FRBlock conversion of {data}: {parent_id}")
+                raise PP_ConversionError(f"Invalid parent_id for FRBlock conversion of {data}: {parent_id}")
             x = None
             y = None
         elif len(data) == 5: 
             if parent_id is not None:
-                raise ConversionError(f"Invalid parent_id for FRBlock conversion of {data}: {parent_id}")
+                raise PP_ConversionError(f"Invalid parent_id for FRBlock conversion of {data}: {parent_id}")
             x = data[3]
             y = data[4]
-        else: raise ConversionError(f"Invalid data for FRBlock conversion: {data}")
+        else: raise PP_ConversionError(f"Invalid data for FRBlock conversion: {data}")
         
         if data[0] == OPCODE_NUM_VAR_VALUE:
             return cls(
@@ -143,7 +143,7 @@ class FRBlock:
                 comment   = None,
                 mutation  = None,
             )
-        else: raise ConversionError(f"Invalid constant(first element) for FRBlock conversion: {data[0]}")
+        else: raise PP_ConversionError(f"Invalid constant(first element) for FRBlock conversion: {data[0]}")
 
     def to_data(self) -> dict[str, Any]:
         """
@@ -178,7 +178,7 @@ class FRBlock:
             the json data
         """
         if self.opcode not in ANY_OPCODE_IMMEDIATE_BLOCK:
-            raise ConversionError("To convert a FRBlock into a tuple it must have one of these opcodes: {ANY_OPCODE_IMMEDIATE_BLOCK}")
+            raise PP_ConversionError("To convert a FRBlock into a tuple it must have one of these opcodes: {ANY_OPCODE_IMMEDIATE_BLOCK}")
         
         if   self.opcode == OPCODE_VAR_VALUE:
             magic_number = OPCODE_NUM_VAR_VALUE
@@ -281,7 +281,7 @@ class FRBlock:
                         info_api  = info_api,
                         own_id    = None, # None is fine, because tuple blocks can't possibly contain more tuple blocks 
                     )
-                else: raise ConversionError(f"Invalid input value {input_value} for input {repr(input_id)}")
+                else: raise PP_ConversionError(f"Invalid input value {input_value} for input {repr(input_id)}")
 
             new_inputs[input_id] = IRInputValue(
                 mode            = input_info,
@@ -511,7 +511,7 @@ class IRBlock:
                 sub_script  = []
                 sub_block_a = None
                 sub_block_b = None
-            else: raise ConversionError(f"Invalid script count {script_count}")
+            else: raise PP_ConversionError(f"Invalid script count {script_count}")
             
             input_blocks   = []
             input_block    = None
@@ -565,7 +565,7 @@ class IRBlock:
                 if input_mode.can_be_missing:
                     new_inputs[new_input_id] = SRInputValue.from_mode(mode=input_mode)
                 else:
-                    raise ConversionError(f"For a block with opcode {repr(self.opcode)}, input {repr(new_input_id)} is missing")
+                    raise PP_ConversionError(f"For a block with opcode {repr(self.opcode)}, input {repr(new_input_id)} is missing")
         
         new_dropdowns = {}
         for dropdown_id, dropdown_value in self.dropdowns.items():
@@ -621,7 +621,7 @@ class SRScript:
         context: CompleteContext,
     ) -> None:
         """
-        Ensure a SRScript is valid, raise ValidationError if not
+        Ensure a SRScript is valid, raise PP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -633,7 +633,7 @@ class SRScript:
             None
         
         Raises:
-            ValidationError: if the SRScript is invalid
+            PP_ValidationError: if the SRScript is invalid
         """
         AA_COORD_PAIR(self, path, "position")
         AA_LIST_OF_TYPE(self, path, "blocks", SRBlock)
@@ -708,7 +708,7 @@ class SRBlock:
         expects_reporter: bool,
     ) -> None:
         """
-        Ensure a SRBlock is valid, raise ValidationError if not
+        Ensure a SRBlock is valid, raise PP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -721,13 +721,13 @@ class SRBlock:
             None
         
         Raises:
-            ValidationError: if the SRBlock is invalid
-            InvalidOpcodeError(ValidationError): if the opcode is not a defined opcode
-            UnnecessaryInputError(ValidationError): if a key of inputs is not expected for the specific opcode
-            MissingInputError(ValidationError): if an expected key of inputs for the specific opcode is missing
-            UnnecessaryDropdownError(ValidationError): if a key of dropdowns is not expected for the specific opcode
-            MissingDropdownError(ValidationError): if an expected key of dropdowns for the specific opcode is missing
-            InvalidBlockShapeError(ValidationError): if a reporter block was expected but a non-reporter block was found
+            PP_ValidationError: if the SRBlock is invalid
+            PP_InvalidOpcodeError(PP_ValidationError): if the opcode is not a defined opcode
+            PP_UnnecessaryInputError(PP_ValidationError): if a key of inputs is not expected for the specific opcode
+            PP_MissingInputError(PP_ValidationError): if an expected key of inputs for the specific opcode is missing
+            PP_UnnecessaryDropdownError(PP_ValidationError): if a key of dropdowns is not expected for the specific opcode
+            PP_MissingDropdownError(PP_ValidationError): if an expected key of dropdowns for the specific opcode is missing
+            PP_InvalidBlockShapeError(PP_ValidationError): if a reporter block was expected but a non-reporter block was found
         """
         AA_TYPE(self, path, "opcode", str)
         AA_DICT_OF_TYPE(self, path, "inputs"   , key_t=str, value_t=SRInputValue   )
@@ -743,7 +743,7 @@ class SRBlock:
                 f"opcode of {cls_name} must be a defined opcode not {repr(self.opcode)}. "
                 f"The closest matches are: \n  - "+"\n  - ".join([repr(m) for m in closest_matches])
             )
-            raise InvalidOpcodeError(path, msg)
+            raise PP_InvalidOpcodeError(path, msg)
         
         if self.comment is not None:
             self.comment.validate(path+["comment"])
@@ -759,7 +759,7 @@ class SRBlock:
         
         for new_input_id, input in self.inputs.items():
             if new_input_id not in input_infos.keys():
-                raise UnnecessaryInputError(path, 
+                raise PP_UnnecessaryInputError(path, 
                     f"inputs of {cls_name} with opcode {repr(self.opcode)} includes unnecessary input {repr(new_input_id)}",
                 )
             input.validate(
@@ -771,14 +771,14 @@ class SRBlock:
             )
         for new_input_id in input_infos.keys():
             if new_input_id not in self.inputs:
-                raise MissingInputError(path, 
+                raise PP_MissingInputError(path, 
                     f"inputs of {cls_name} with opcode {repr(self.opcode)} is missing input {repr(new_input_id)}",
                 )
         
         new_dropdown_ids = opcode_info.get_all_new_dropdown_ids()
         for new_dropdown_id, dropdown in self.dropdowns.items():
             if new_dropdown_id not in new_dropdown_ids:
-                raise UnnecessaryDropdownError(path, 
+                raise PP_UnnecessaryDropdownError(path, 
                     f"dropdowns of {cls_name} with opcode {repr(self.opcode)} includes unnecessary dropdown {repr(new_dropdown_id)}",
                 )
             current_path = path+["dropdowns", (new_dropdown_id,)]
@@ -790,13 +790,13 @@ class SRBlock:
             )
         for new_dropdown_id in new_dropdown_ids:
             if new_dropdown_id not in self.dropdowns:
-                raise MissingDropdownError(path, 
+                raise PP_MissingDropdownError(path, 
                     f"dropdowns of {cls_name} with opcode {repr(self.opcode)} is missing dropdown {repr(new_dropdown_id)}",
                 )
         
         opcode_type = opcode_info.get_opcode_type(block=self, validation_if=validation_if)
         if expects_reporter and not(opcode_type.is_reporter):
-            raise InvalidBlockShapeError(path, "Expected a reporter block here")
+            raise PP_InvalidBlockShapeError(path, "Expected a reporter block here")
 
         post_case = opcode_info.get_special_case(SpecialCaseType.POST_VALIDATION)
         if post_case is not None:
@@ -824,22 +824,22 @@ class SRBlock:
             None
         
         Raises:
-            InvalidBlockShapeError(ValidationError): if the opcode_type of the block's opcode is invalid in a specific situation
+            PP_InvalidBlockShapeError(PP_ValidationError): if the opcode_type of the block's opcode is invalid in a specific situation
         """
         if   opcode_type == OpcodeType.STATEMENT: pass
         elif opcode_type == OpcodeType.ENDING_STATEMENT:
             if not is_last: # when there is a next block
-                raise InvalidBlockShapeError(path, "A block of type ENDING_STATEMENT must be the last block in it's script or substack")
+                raise PP_InvalidBlockShapeError(path, "A block of type ENDING_STATEMENT must be the last block in it's script or substack")
         elif opcode_type == OpcodeType.HAT:
             if not is_top_level:
-                raise InvalidBlockShapeError(path, "A block of type HAT is not allowed within a substack")
+                raise PP_InvalidBlockShapeError(path, "A block of type HAT is not allowed within a substack")
             elif not is_first:
-                raise InvalidBlockShapeError(path, "A block of type HAT must to be the first block in it's script or substack")
+                raise PP_InvalidBlockShapeError(path, "A block of type HAT must to be the first block in it's script or substack")
         elif opcode_type.is_reporter:
             if not is_top_level:
-                raise InvalidBlockShapeError(path, "A block of type ...REPORTER is not allowed within a substack")
+                raise PP_InvalidBlockShapeError(path, "A block of type ...REPORTER is not allowed within a substack")
             elif not(is_first and is_last):
-                raise InvalidBlockShapeError(path, "If contained in a substack, a block of type ...REPORTER must be the only block in that substack")
+                raise PP_InvalidBlockShapeError(path, "If contained in a substack, a block of type ...REPORTER must be the only block in that substack")
     
     def find_broadcast_messages(self) -> list[str]:
         """
@@ -957,7 +957,7 @@ class SRBlock:
                         )
                         sti_if.schedule_block_addition(block_ids[i], irblock)
                     references.append(block_ids[0])
-                else: raise ConversionError(f"Invalid input sub script: {sub_blocks}")
+                else: raise PP_ConversionError(f"Invalid input sub script: {sub_blocks}")
 
             old_input_value = IRInputValue(
                 mode            = input_mode,
@@ -1078,7 +1078,7 @@ class SRInputValue(ABC):
         input_type: InputType, 
     ) -> None:
         """
-        Ensures this input is valid, raise ValidationError if not
+        Ensures this input is valid, raise PP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -1091,7 +1091,7 @@ class SRInputValue(ABC):
             None
         
         Raises:
-            ValidationError: if the SRInputValue is invalid
+            PP_ValidationError: if the SRInputValue is invalid
         """
 
     def _validate_block(self, 
@@ -1101,7 +1101,7 @@ class SRInputValue(ABC):
         context: CompleteContext, 
     ) -> None:
         """
-        *[Helper Method]* Ensures the block of this input is valid, raise ValidationError if not
+        *[Helper Method]* Ensures the block of this input is valid, raise PP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -1113,7 +1113,7 @@ class SRInputValue(ABC):
             None
         
         Raises:
-            ValidationError: if the block of the SRInputValue is invalid
+            PP_ValidationError: if the block of the SRInputValue is invalid
         """
         block: SRBlock = self.block
         AA_NONE_OR_TYPE(self, path, "block", SRBlock)
@@ -1143,7 +1143,7 @@ class SRBlockAndTextInputValue(SRInputValue):
         input_type: InputType, 
     ) -> None:
         """
-        Ensures this input is valid, raise ValidationError if not
+        Ensures this input is valid, raise PP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -1156,7 +1156,7 @@ class SRBlockAndTextInputValue(SRInputValue):
             None
         
         Raises:
-            ValidationError: if the SRBlockAndTextInputValue is invalid
+            PP_ValidationError: if the SRBlockAndTextInputValue is invalid
         """
         self._validate_block(
             path           = path,
@@ -1183,7 +1183,7 @@ class SRBlockAndDropdownInputValue(SRInputValue):
         input_type: InputType, 
     ) -> None:
         """
-        Ensures this input is valid, raise ValidationError if not
+        Ensures this input is valid, raise PP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -1196,7 +1196,7 @@ class SRBlockAndDropdownInputValue(SRInputValue):
             None
         
         Raises:
-            ValidationError: if the SRBlockAndDropdownInputValue is invalid
+            PP_ValidationError: if the SRBlockAndDropdownInputValue is invalid
         """
         self._validate_block(
             path           = path,
@@ -1230,7 +1230,7 @@ class SRBlockOnlyInputValue(SRInputValue):
         input_type: InputType, 
     ) -> None:
         """
-        Ensures this input is valid, raise ValidationError if not
+        Ensures this input is valid, raise PP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -1243,7 +1243,7 @@ class SRBlockOnlyInputValue(SRInputValue):
             None
         
         Raises:
-            ValidationError: if the SRBlockOnlyInputValue is invalid
+            PP_ValidationError: if the SRBlockOnlyInputValue is invalid
         """
         self._validate_block(
             path           = path,
@@ -1268,7 +1268,7 @@ class SRScriptInputValue(SRInputValue):
         input_type: InputType, 
     ) -> None:
         """
-        Ensures this input is valid, raise ValidationError if not
+        Ensures this input is valid, raise PP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -1281,7 +1281,7 @@ class SRScriptInputValue(SRInputValue):
             None
         
         Raises:
-            ValidationError: if the SRScriptInputValue is invalid
+            PP_ValidationError: if the SRScriptInputValue is invalid
         """
         AA_LIST_OF_TYPE(self, path, "blocks", SRBlock)
         for i, block in enumerate(self.blocks):

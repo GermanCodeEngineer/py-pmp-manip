@@ -39,13 +39,13 @@ class ConfigBase(ABC):
     @abstractmethod
     def validate(self, path: list) -> None:
         """
-        Ensure a Config is valid, raise ValidationError if not
+        Ensure a Config is valid, raise PP_ValidationError if not
         
         Args:
             path: the path from the top of the config tree to itself. Used for better error messages
         
         Raises:
-            ValidationError: if the Config is invalid
+            PP_ValidationError: if the Config is invalid
         """
 
 @grepr_dataclass(grepr_fields=["gen_opcode_info_dir", "js_fetch_interval"])
@@ -59,13 +59,13 @@ class ExtInfoGenConfig(ConfigBase):
     
     def validate(self, path: list) -> None:
         """
-        Ensure a ExtInfoGenConfig is valid, raise ValidationError if not
+        Ensure a ExtInfoGenConfig is valid, raise PP_ValidationError if not
         
         Args:
             path: the path from the top of the config tree to itself. Used for better error messages
         
         Raises:
-            ValidationError: if the ExtInfoGenConfig is invalid
+            PP_ValidationError: if the ExtInfoGenConfig is invalid
         """
         AA_TYPE(self, path, "gen_opcode_info_dir", str) # TODO: possibly add check if path is valid
         AA_TYPE(self, path, "js_fetch_interval", timedelta)
@@ -81,13 +81,13 @@ class ValidationConfig(ConfigBase):
 
     def validate(self, path: list) -> None:
         """
-        Ensure a ValidationConfig is valid, raise ValidationError if not
+        Ensure a ValidationConfig is valid, raise PP_ValidationError if not
         
         Args:
             path: the path from the top of the config tree to itself. Used for better error messages
         
         Raises:
-            ValidationError: if the ValidationConfig is invalid
+            PP_ValidationError: if the ValidationConfig is invalid
         """
         AA_TYPE(self, path, "raise_if_monitor_position_outside_stage", bool)
         AA_TYPE(self, path, "raise_if_monitor_bigger_then_stage", bool)
@@ -105,13 +105,13 @@ class PlatformMetaConfig(ConfigBase):
 
     def validate(self, path: list) -> None:
         """
-        Ensure a PlatformMetaConfig is valid, raise ValidationError if not
+        Ensure a PlatformMetaConfig is valid, raise PP_ValidationError if not
         
         Args:
             path: the path from the top of the config tree to itself. Used for better error messages
         
         Raises:
-            ValidationError: if the PlatformMetaConfig is invalid
+            PP_ValidationError: if the PlatformMetaConfig is invalid
         """
         AA_TYPE(self, path, "scratch_semver", str) # TODO: possibly implement stricter validation
         AA_TYPE(self, path, "scratch_vm"    , str)
@@ -129,13 +129,13 @@ class MasterConfig(ConfigBase):
 
     def validate(self, path: list = []) -> None:
         """
-        Ensure a MasterConfig is valid, raise ValidationError if not
+        Ensure a MasterConfig is valid, raise PP_ValidationError if not
         
         Args:
             path: the path from the top of the config tree to itself. Used for better error messages
         
         Raises:
-            ValidationError: if the MasterConfig is invalid
+            PP_ValidationError: if the MasterConfig is invalid
         """
         AA_TYPE(self, path, "ext_info_gen" , ExtInfoGenConfig  )
         AA_TYPE(self, path, "validation"   , ValidationConfig  )

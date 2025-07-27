@@ -1,7 +1,7 @@
 from typing import Any
 
 from pypenguin.opcode_info.api import DropdownType, DropdownValueKind
-from pypenguin.utility         import grepr_dataclass, AA_TYPE, AA_JSON_COMPATIBLE, InvalidDropdownValueError
+from pypenguin.utility         import grepr_dataclass, AA_TYPE, AA_JSON_COMPATIBLE, PP_InvalidDropdownValueError
 
 from pypenguin.core.context import PartialContext, CompleteContext
 
@@ -42,7 +42,7 @@ class SRDropdownValue:
 
     def validate(self, path: list) -> None:
         """
-        Ensure a SRDropdownValue is structurally valid, raise ValidationError if not
+        Ensure a SRDropdownValue is structurally valid, raise PP_ValidationError if not
         For exact validation, you should additionally call the validate_value method
         
         Args:
@@ -52,7 +52,7 @@ class SRDropdownValue:
             None
         
         Raises:
-            ValidationError: if the SRDropdownValue is invalid
+            PP_ValidationError: if the SRDropdownValue is invalid
         """
         AA_TYPE(self, path, "kind", DropdownValueKind)
         AA_JSON_COMPATIBLE(self, path, "value")
@@ -64,7 +64,7 @@ class SRDropdownValue:
     ) -> None:
         """
         Ensures the value of a SRDropdownValue is allowed under given circumstances(context),
-        raise ValidationError if not. 
+        raise PP_ValidationError if not. 
         For example, it ensures that only variables are referenced, which actually exist.     
         For structural validation call the validate method
         
@@ -77,7 +77,7 @@ class SRDropdownValue:
             None
         
         Raises:
-            InvalidDropdownValueError(ValidationError): if the value is invalid in the specific situation
+            PP_InvalidDropdownValueError(PP_ValidationError): if the value is invalid in the specific situation
         """
         possible_values = dropdown_type.calculate_possible_new_dropdown_values(context=context)
         default_kind = dropdown_type.calculation_default_kind
@@ -88,16 +88,16 @@ class SRDropdownValue:
         tuple_value = self.to_tuple()
         if tuple_value not in possible_values:
             if default_kind is None:
-                raise InvalidDropdownValueError(path, f"In this case must be one of these: {possible_values_string}")
+                raise PP_InvalidDropdownValueError(path, f"In this case must be one of these: {possible_values_string}")
             elif self.kind is not default_kind:
-                raise InvalidDropdownValueError(
+                raise PP_InvalidDropdownValueError(
                     path, f"Either kind must be {default_kind} or (kind, value) must be one of these: {possible_values_string}"
                 )
         post_validate_func = dropdown_type.post_validate_func
         if post_validate_func is not None:
             valid, error_msg = post_validate_func(tuple_value)
             if not valid:
-                raise InvalidDropdownValueError(path, error_msg)
+                raise PP_InvalidDropdownValueError(path, error_msg)
 
 
 __all__ = ["SRDropdownValue"]

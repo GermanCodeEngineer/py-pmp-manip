@@ -4,7 +4,7 @@ from pypenguin.opcode_info.api import InputType, BuiltinInputType, InputInfo, Op
 from pypenguin.utility         import (
     grepr_dataclass, PypenguinEnum,
     AA_TYPE, AA_TUPLE_OF_TYPES, AA_MIN_LEN, AA_NOT_EQUAL,
-    SameValueTwiceError, ConversionError,
+    PP_SameValueTwiceError, PP_ConversionError,
 )
 
 @grepr_dataclass(grepr_fields=["segments"], frozen=True, unsafe_hash=True)
@@ -99,8 +99,8 @@ class SRCustomBlockOpcode:
             None
         
         Raises:
-            ValidationError: if the SRCustomBlockOpcode is invalid
-            SameValueTwiceError(ValidationError): if two arguments have the same name
+            PP_ValidationError: if the SRCustomBlockOpcode is invalid
+            PP_SameValueTwiceError(PP_ValidationError): if two arguments have the same name
         """
         AA_TUPLE_OF_TYPES(self, path, "segments", (str, SRCustomBlockArgument))
         AA_MIN_LEN(self, path, "segments", min_len=1)
@@ -112,7 +112,7 @@ class SRCustomBlockOpcode:
                 segment.validate(current_path)
                 if segment.name in names:
                     other_path = names[segment.name]
-                    raise SameValueTwiceError(other_path, current_path, 
+                    raise PP_SameValueTwiceError(other_path, current_path, 
                         f"Two arguments of a {self.__class__.__name__} mustn't have the same name",
                     )
                 names[segment.name] = current_path
@@ -137,7 +137,7 @@ class SRCustomBlockArgument:
             None
         
         Raises:
-            ValidationError: if the SRCustomBlockArgument is invalid
+            PP_ValidationError: if the SRCustomBlockArgument is invalid
         """
         AA_TYPE(self, path, "name", str)
         AA_NOT_EQUAL(self, path, "name", value="")
@@ -182,7 +182,7 @@ class SRCustomBlockOptype(PypenguinEnum):
         for value, optype_candidate in cls._value2member_map_.items():
             if value[1] == code:
                 return optype_candidate
-        raise ConversionError(f"Couldn't find video state enum for video state code: {repr(code)}")
+        raise PP_ConversionError(f"Couldn't find video state enum for video state code: {repr(code)}")
 
     def to_code(self) -> str:
         """

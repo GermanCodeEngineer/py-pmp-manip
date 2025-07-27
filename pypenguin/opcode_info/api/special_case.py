@@ -83,7 +83,7 @@ class SpecialCaseType(PypenguinEnum):
 
     POST_VALIDATION = 6
     # execute after SRBlock.validate
-    # should raise subclass of ValidationError if invalid
+    # should raise subclass of PP_ValidationError if invalid
     """
     def example(path: list, block: "SRBlock") -> None:
         ...

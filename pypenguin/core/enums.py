@@ -1,4 +1,4 @@
-from pypenguin.utility import PypenguinEnum, ConversionError
+from pypenguin.utility import PypenguinEnum, PP_ConversionError
 
 
 class SRCodeEnum(PypenguinEnum):
@@ -19,7 +19,7 @@ class SRCodeEnum(PypenguinEnum):
         """
         if code in cls._value2member_map_:
             return cls._value2member_map_[code]
-        raise ConversionError(f"Couldn't find an enum for code: {repr(code)}")
+        raise PP_ConversionError(f"Couldn't find an enum for code: {repr(code)}")
 
     def to_code(self) -> str:
         """
