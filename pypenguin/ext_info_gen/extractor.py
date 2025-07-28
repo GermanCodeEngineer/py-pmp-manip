@@ -1,18 +1,10 @@
 from ast             import literal_eval
 from base64          import b64decode
-from collections.abc import Iterable
 from colorama        import Fore as ColorFore, Style as ColorStyle
-#from esprima         import parseScript, Error as EsprimaError
-from esprima.nodes   import (
-    Node, Script, ExpressionStatement, ClassDeclaration, ClassBody, MethodDefinition, 
-    BlockStatement, ReturnStatement,
-    CallExpression, StaticMemberExpression, NewExpression, FunctionExpression, 
-    ObjectExpression, ArrayExpression, ArrowFunctionExpression, ThisExpression, 
-    Identifier, Literal, TemplateLiteral, Property,
-)
+from collections.abc import Iterator
 from os              import path
 from requests        import get as requests_get, RequestException
-from tree_sitter     import Node
+from tree_sitter     import Node, Tree
 from typing          import Any, Callable
 from types           import NotImplementedType
 from urllib.parse    import unquote
@@ -25,6 +17,7 @@ from pypenguin.utility            import (
     PP_NetworkFetchError, PP_UnexpectedFetchError, PP_FileFetchError, PP_FileNotFoundError, 
     PP_JsNodeTreeToJsonConversionError, PP_InvalidExtensionCodeSyntaxError, PP_BadExtensionCodeFormatError,    PP_InvalidTranslationMessageError,
     PP_UnexpectedPropertyAccessWarning, PP_UnexpectedTemplateLiteralWarning,
+    NotSetType, NotSet,
     write_file_text, repr_tree, # temporary
 )
 
@@ -82,17 +75,6 @@ SCRATCH_STUB = {
         # .register is handled somewhere else
     },
 }
-REGISTER_EXTENSION_FUNC_PATTERN = StaticMemberExpression(
-    object=StaticMemberExpression(
-        object=Identifier(name="Scratch"),
-        property=Identifier(name="extensions"),
-    ), 
-    property=Identifier(name="register"),
-).toDict()
-TRANSLATE_FUNC_PATTERN = StaticMemberExpression(
-    object=Identifier(name="Scratch"),
-    property=Identifier(name="translate"),
-).toDict()
 
 
 def fetch_js_code(source: str) -> str:
@@ -142,15 +124,13 @@ def fetch_js_code(source: str) -> str:
 
 def ts_node_to_json(
     node: Node | str | int | float | bool | None, 
-    source_code: str, 
     call_handler=None,
-) -> Any:
+) -> Any | NotSetType:
     """
     Recursively converts a tree sitter Syntax Tree into a plain JSON-compatible Python structure
 
     Args:
         node: the root node or a subnode
-        source_code: the node tree's original source code
         call_handler: a callable handling call expression nodes (should return NotImplemented if node not addressed by handler)
 
     Returns:
@@ -163,10 +143,7 @@ def ts_node_to_json(
         PP_UnexpectedPropertyAccessWarning: if a property of 'this' is accessed
         PP_UnexpectedTemplateLiteralWarning: if a template literal is used
     """
-    def get_code(node: Node) -> str:
-        nonlocal source:code
-        return source_code[node.start_byte : node.end_byte]
-    
+
     if isinstance(node, (str, int, float, bool, type(None))):
         return node
 
@@ -178,14 +155,15 @@ def ts_node_to_json(
         if object_node.type == "member_expression":
             inner_obj = object_node.child_by_field_name("object")
             inner_prop = object_node.child_by_field_name("property")
-            if inner_obj.type == "identifier" and get_code(inner_obj) == "Scratch":
-                outer_key = get_code(property_node)
-                inner_key = get_code(inner_prop)
+            if (inner_obj.type in {"identifier", "property_identifier"}) and (inner_obj.text.decode() == "Scratch"):
+                outer_key = inner_prop.text.decode()
+                inner_key = property_node.text.decode()
                 if (outer_key in SCRATCH_STUB) and (inner_key in SCRATCH_STUB[outer_key]):
                     return SCRATCH_STUB[outer_key][inner_key]
 
         elif object_node.type == "this":
-            warn(f"{ColorFore.YELLOW}Tried to access property of 'this': {property_node.text.decode()}, Defaulting to None{ColorStyle.RESET_ALL}", PP_UnexpectedPropertyAccessWarning)
+            warn(f"{ColorFore.YELLOW}Tried to access property of 'this': {property_node.text.decode()}. "
+                 f"Defaulting to None{ColorStyle.RESET_ALL}", PP_UnexpectedPropertyAccessWarning)
             return None
 
         raise PP_JsNodeTreeToJsonConversionError(f"Unsupported member expression format: {node.sexp()}")
@@ -193,30 +171,31 @@ def ts_node_to_json(
     elif node.type == "object":
         result = {}
         for prop in node.named_children:
-            if prop.type != "pair":
+            if   prop.type == "comment": continue
+            elif prop.type != "pair":
                 raise PP_JsNodeTreeToJsonConversionError(f"Unsupported property type: {prop.type}")
 
             key_node = prop.child_by_field_name("key")
             value_node = prop.child_by_field_name("value")
 
-            if key_node.type == "identifier":
-                key = get_code(key_node)
+            if key_node.type in {"identifier", "property_identifier"}:
+                key = key_node.text.decode()
             elif key_node.type == "string":
-                key = literal_eval(get_code(key_node).replace('`', '"'))
+                key = literal_eval(key_node.text.decode().replace('`', '"'))
             else:
                 raise PP_JsNodeTreeToJsonConversionError(f"Unsupported key type: {key_node.type}")
 
-            result[key] = ts_node_to_json(value_node, source_code, call_handler)
+            result[key] = ts_node_to_json(value_node, call_handler) # cant return NotSet
         return result
 
     elif node.type == "array":
-        return [ts_node_to_json(child, source_code, call_handler) for child in node.named_children]
+        return [ts_node_to_json(child, call_handler) for child in node.named_children if child is not NotSet]
 
     elif node.type == "string":
-        return literal_eval(get_code(node).replace('`', '"'))
+        return literal_eval(node.text.decode().replace('`', '"'))
     
     elif node.type == "number":
-        code = get_code(node)
+        code = node.text.decode()
         return float(code) if "." in code else int(code)
     elif node.type == "true":
         return True
@@ -228,17 +207,21 @@ def ts_node_to_json(
         return None
 
     elif node.type == "identifier":
-        return get_code(node)
+        return node.text.decode()
 
     elif node.type == "template_string":
-        warn("{ColorFore.YELLOW}Template literal encountered. Defaulting to None{ColorStyle.RESET_ALL}", PP_UnexpectedTemplateLiteralWarning)
+        warn(f"{ColorFore.YELLOW}Template literal encountered. Defaulting to None{ColorStyle.RESET_ALL}", PP_UnexpectedTemplateLiteralWarning)
         return None
 
     elif (node.type == "call_expression") and bool(call_handler):
         value = call_handler(node)
         if value is not NotImplemented:
             return value
+    
+    elif (node.type == "comment"):
+        return NotSet
 
+    print(node.text.decode())
     raise PP_JsNodeTreeToJsonConversionError(f"Unsupported node type: {node.type}")
 
 def extract_extension_info(js_code: str) -> dict[str, Any]:
@@ -257,32 +240,36 @@ def extract_extension_info(js_code: str) -> dict[str, Any]:
     Warnings:
         PP_UnexpectedPropertyAccessWarning: if a property of 'this' is accessed in the getInfo method
         PP_UnexpectedTemplateLiteralWarning: if a template literal is used in the getInfo method
-    """
-    def get_main_body(root: Node) -> list[Node]:
+    """    
+    def get_main_body(root_node: Node) -> list[Node]:
         """
         Get the main code body
         
         Args:
-            root: the JavaScript Syntax Tree
-        
-        Raises:
-            AssertionError: if the code is not formatted in one of the two expected ways
+            root_node: the JavaScript Syntax Tree
         """
         # Check for IIFE '((Scratch) => {...})(Scratch)'(sandboxed style)
-        if root.type == "program":
-            last = root.children[-1]
+        if root_node.type == "program":
+            last = root_node.children[-1]
             if last.type == "expression_statement" and last.named_children:
                 expr = last.named_children[0]
                 if expr.type == "call_expression":
                     func = expr.child_by_field_name("function")
-                    if func and func.type == "arrow_function":
+                    if func.type == "parenthesized_expression":
+                        func = func.named_children[0]
+                    if   func and func.type == "arrow_function":
                         body = func.child_by_field_name("body")
-                        if body.type == "statement_block":
+                        if body and body.type == "statement_block":
                             return body.named_children
+                    elif func and func.type == "function_expression":
+                        body = func.child_by_field_name("body")
+                        if body and body.type == "statement_block":
+                            return body.named_children
+
         # Otherwise assume unsandboxed style
-        return root.named_children
+        return root_node.named_children
     
-    def get_registered_class_name(code_body: list[Node]) -> str: # STOPPED HERE: convert rest of function
+    def get_registered_class_name(code_body: list[Node]) -> str:
         """
         Get the name of the class, whose instance is registered with Scratch.extensions.register 
         
@@ -290,25 +277,24 @@ def extract_extension_info(js_code: str) -> dict[str, Any]:
             code_body: the code body to search in
         
         Raises:
-            AssertionError: if the code is not formatted like expected or the register call is not found
+            PP_BadExtensionCodeFormatError: if the code is not formatted like expected or the register call is not found
         """
-        ext_class_id: Identifier | None = None
-        for i, statement in enumerate(reversed(main_body)): # register is usually last
-            if isinstance(statement, ExpressionStatement):
-                if isinstance(statement.expression, CallExpression):
-                    callee: Node = statement.expression.callee
-                    if callee.toDict() == REGISTER_EXTENSION_FUNC_PATTERN:
-                        arguments: list[Node] = statement.expression.arguments
-                        assert len(arguments) == 1
-                        argument = arguments[0]
-                        assert isinstance(argument, NewExpression)
-                        assert isinstance(argument.callee, Identifier)
-                        ext_class_id = argument.callee
-                        break
-        assert ext_class_id is not None
-        return ext_class_id.name
-    
-    def get_class_def_by_name(code_body: list[Node], class_name: str) -> ClassDeclaration:
+        for statement in reversed(code_body): # register() is usually last
+            if statement.type != "expression_statement":
+                continue
+            expr = statement.named_children[0]
+            if expr.type != "call_expression":
+                continue
+            callee = expr.child_by_field_name("function")
+            if callee and callee.type == "member_expression":
+                if callee.text.decode() == "Scratch.extensions.register":
+                    arg = expr.child_by_field_name("arguments").named_children[0]
+                    if arg.type == "new_expression":
+                        class_id = arg.child_by_field_name("constructor")
+                        return class_id.text.decode()
+        raise PP_BadExtensionCodeFormatError("Could not find registered class name")
+
+    def get_class_def_by_name(code_body: list[Node], class_name: str) -> Node:
         """
         Get a class definition in the code body by its name
         
@@ -317,89 +303,119 @@ def extract_extension_info(js_code: str) -> dict[str, Any]:
             class_name: the name of the class to search
         
         Raises:
-            AssertionError: if class is not found
+            PP_BadExtensionCodeFormatError: if the class is not found
         """
-        class_node: Node | None = None
-        for statement in reversed(code_body):
-            if isinstance(statement, ClassDeclaration):
-                class_id: Identifier = statement.id
-                if class_id.name == class_name:
-                    class_node = statement
-                    break
-        assert class_node is not None
-        return class_node
-
-    def get_class_method_def_by_name(class_def: ClassDeclaration, method_name: str) -> MethodDefinition:
+        for statement in code_body:
+            if statement.type == "class_declaration":
+                id_node = statement.child_by_field_name("name")
+                if id_node and (id_node.text.decode() == class_name):
+                    return statement
+        raise PP_BadExtensionCodeFormatError(f"Class '{class_name}' not found")
+    
+    def get_class_method_def_by_name(class_node: Node, method_name: str) -> Node:
         """
         Get a classes method definition by its name
         
         Args:
-            class_def: the definition node of the class
+            class_node: the definition node of the class
             method_name: the name of the method to search
         
         Raises:
-            AssertionError: if method is not found
+            PP_BadExtensionCodeFormatError: if the method is not found
         """
-        class_body: ClassBody = class_def.body
-        method_node: MethodDefinition | None = None
-        for statement in class_body.body:
-            if isinstance(statement, MethodDefinition):
-                method_id: Identifier = statement.key
-                if method_id.name == method_name:
-                    method_node = statement
-                    break
-        assert method_node is not None
-        return method_node
+        body = class_node.child_by_field_name("body")
+        for item in body.named_children:
+            if item.type == "method_definition":
+                name_node = item.child_by_field_name("name")
+                if name_node.text.decode() == method_name:
+                    return item
+        raise PP_BadExtensionCodeFormatError(f"Method '{method_name}' not found")
     
+    def find_error_nodes(node: Node) -> Iterator[Node]:
+        if node.type == "ERROR":
+            yield node
+        for child in node.children:
+            yield from find_error_nodes(child)
+
     parser = get_js_parser()
     try:
-        tree = parser.parse(js_code.encode()).root_node
-    except EsprimaError as error:
-        line = getattr(error, "lineNumber", None)
-        column = getattr(error, "column", None)
-        raise PP_InvalidExtensionCodeSyntaxError(str(error), line, column) from error
+        tree: Tree = parser.parse(js_code.encode())
+        root_node = tree.root_node
+    except Exception as error:
+        raise PP_InvalidExtensionCodeSyntaxError(str(error)) from error # unlikely, but for safety
+    if root_node.has_error:
+        message_lines = ["Syntax error(s) detected:"]
+        error_nodes = find_error_nodes(root_node)
+        for error_node in error_nodes:
+            line, col = error_node.start_point
+            code_seg = error_node.text.decode()[:50].replace("\n", "\\n")
+            message_lines.append(f"    At line {line}, col {col}: {code_seg}")
+        raise PP_InvalidExtensionCodeSyntaxError("\n".join(message_lines))    
     
-    write_file_text("parsed_ast.lua", repr_tree(tree, js_code.encode()))
-    #write_file_text("parsed_ast.lua", repr(tree.body[0].body.body[0].value.body.body[0].argument))
+    write_file_text("parsed_ast.lua", repr_tree(root_node, js_code.encode()))
+    #write_file_text("parsed_ast.lua", repr(root.body[0].body.body[0].value.body.body[0].argument))
     #raise Exception(r"$\/\$STOP$/\/$")
             
+   
     try:
-        main_body = get_main_body(tree)
+        main_body = get_main_body(root_node)
+        print("####", ("\n"+100*"="+"\n").join([x.text.decode()[:200] for x in main_body]))
         class_name = get_registered_class_name(main_body)
         class_node = get_class_def_by_name(main_body, class_name)
         getInfo_method = get_class_method_def_by_name(class_node, method_name="getInfo")
-        
-        getInfo_expression = getInfo_method.value
-        assert isinstance(getInfo_expression, FunctionExpression)
-        assert isinstance(getInfo_expression.body, BlockStatement)
-        last_statement = getInfo_expression.body.body[-1]
-        assert isinstance(last_statement, ReturnStatement)
-        return_value = last_statement.argument
-        assert isinstance(return_value, ObjectExpression)
+
+        getInfo_func_expr = getInfo_method.child_by_field_name("body")
+        assert (getInfo_func_expr is not None) and (getInfo_func_expr.type == "statement_block"), "Invalid getInfo method declaration"
+
+        last_statement = getInfo_func_expr.named_children[-1]
+        assert last_statement.type == "return_statement", "getInfo method is missing final return statement"
+
+        return_value = last_statement.named_children[0]
+        assert (return_value is not None) and (return_value.type == "object"), "Invalid or Failed to process getInfo return value"
 
     except AssertionError as error:
-        raise PP_BadExtensionCodeFormatError("Cannot extract extension information: Bad extension code format") from error
-    
-    def handle_call(node: CallExpression) -> NotImplementedType | None:
-        if isinstance(node.callee, StaticMemberExpression):
-            if (node.callee.toDict() == TRANSLATE_FUNC_PATTERN) and (len(node.arguments) == 1):
-                message = esprima_to_json(node.arguments[0])
-                if   isinstance(message, dict):
+        raise PP_BadExtensionCodeFormatError(f"Cannot extract extension information: Bad extension code format: {error}") from error
+
+    def handle_call(node: Node) -> NotImplementedType | str:
+        if node.type != "call_expression":
+            return NotImplemented
+
+        callee = node.child_by_field_name("function")
+        arguments_node = node.child_by_field_name("arguments")
+
+        if (
+            callee and (callee.type == "member_expression")
+            and arguments_node and (arguments_node.named_child_count == 1)
+        ):
+            # Match Scratch.translate(...)
+            object_node = callee.child_by_field_name("object")
+            property_node = callee.child_by_field_name("property")
+
+            if (
+                object_node and (object_node.type == "identifier") and (object_node.text.decode() == "Scratch") and
+                property_node and (property_node.type == "property_identifier") and (property_node.text.decode() == "translate")
+            ):
+                arg_node = arguments_node.named_children[0]
+                message = ts_node_to_json(arg_node, js_code)
+
+                if isinstance(message, dict):
                     message = message.get("default", "")
                 elif isinstance(message, str):
-                    pass # already in expected format
+                    pass  # already fine
                 else:
-                    pass # just keep it, error will raise
-                
-                if not(isinstance(message, str)) or not(message):
-                    raise PP_InvalidTranslationMessageError(f"Invalid or empty message was passed to Scratch.translate: {repr(message)}");
-                return message # just return the default value in english, the whole project is english anyway                
-        return NotImplementedError
+                    pass  # will trigger error below if needed
+
+                if not isinstance(message, str) or not message:
+                    raise PP_InvalidTranslationMessageError(f"Invalid or empty message passed to Scratch.translate: {repr(message)}")
+
+                return message
+
+        return NotImplemented
 
     try:
-        extension_info = esprima_to_json(return_value, call_handler=handle_call)
+        extension_info = ts_node_to_json(return_value, call_handler=handle_call)
     except PP_JsNodeTreeToJsonConversionError as error:
-        raise PP_BadExtensionCodeFormatError("Cannot extract extension information: Bad extension code format: getInfo method should return static value") from error
+        raise PP_BadExtensionCodeFormatError(f"Cannot extract extension information: Bad extension code format: getInfo method should return static value: \n{error}") from error
     return extension_info
 
 

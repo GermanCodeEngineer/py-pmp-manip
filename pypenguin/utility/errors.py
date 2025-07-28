@@ -115,11 +115,7 @@ class PP_FileNotFoundError(PP_Error): pass
 class PP_JsNodeTreeToJsonConversionError(PP_Error): pass
 
 class PP_BadOrInvalidExtensionCodeError(PP_Error): pass
-class PP_InvalidExtensionCodeSyntaxError(PP_BadOrInvalidExtensionCodeError):
-    def __init__(self, message: str, line: int | None = None, column: int | None = None):
-        super().__init__(f"{message} at line {line}, column {column}")
-        self.line = line
-        self.column = column
+class PP_InvalidExtensionCodeSyntaxError(PP_BadOrInvalidExtensionCodeError): pass
 class PP_BadExtensionCodeFormatError(PP_BadOrInvalidExtensionCodeError): pass
 class PP_InvalidTranslationMessageError(PP_BadOrInvalidExtensionCodeError): pass
 

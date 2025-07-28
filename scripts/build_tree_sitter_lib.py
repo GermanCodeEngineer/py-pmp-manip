@@ -14,26 +14,35 @@ system = get_system()
 match system:
     case "Linux":
         linux_output = path.join(OUTPUT_DIR, "tree_sitter_js_linux.so")
-        Language.build_library(
-            linux_output,
-            [TS_JS_PATH]
-        )
+        try:
+            Language.build_library(
+                linux_output,
+                [TS_JS_PATH]
+            )
+        except FileNotFoundError:
+            raise RuntimeError("Missing submodules please run: \n\n    git submodule update --init --recursive")
         print(f"✅ Built Linux library at {linux_output}")
     case "Windows":
         windows_output = path.join(OUTPUT_DIR, "tree_sitter_js_windows.dll")
-        Language.build_library(
-            windows_output,
-            [TS_JS_PATH]
-        )
+        try:
+            Language.build_library(
+                windows_output,
+                [TS_JS_PATH]
+            )
+        except FileNotFoundError:
+            raise RuntimeError("Missing submodules please run: \n\n    git submodule update --init --recursive")
         print(f"✅ Built Windows library at {windows_output}")
     case "Darwin":
-        macos_output = os.path.join(OUTPUT_DIR, "tree_sitter_js_macos.dylib")
-        Language.build_library(
-            macos_output,
-            [TS_JS_PATH]
-        )
+        macos_output = path.join(OUTPUT_DIR, "tree_sitter_js_macos.dylib")
+        try:
+            Language.build_library(
+                macos_output,
+                [TS_JS_PATH]
+            )
+        except FileNotFoundError:
+            raise RuntimeError("Missing submodules please run: \n\n    git submodule update --init --recursive")
         print(f"✅ Built macOS library at {macos_output}")
     case _:
-        raise Exception(f"❌ Unsupported OS: {system}")
+        raise RuntimeError(f"❌ Unsupported OS: {system}")
 
 sys_exit(0)

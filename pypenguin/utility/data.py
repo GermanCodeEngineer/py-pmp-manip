@@ -159,9 +159,20 @@ class ContentFingerprint:
             "length": self.length,
             "hash"  : self.hash  ,
         }
-    
+
+class NotSetType:
+    """
+    An empty placeholder
+    """
+
+    def __repr__(self):
+        return "NotSet"
+
+NotSet = NotSetType()
+
 __all__ = [
     "remove_duplicates", "get_closest_matches", "tuplify", "listify", "gdumps",
     "string_to_sha256", "number_to_token", "generate_md5", "ContentFingerprint",
+    "NotSetType", "NotSet",
 ]
 
