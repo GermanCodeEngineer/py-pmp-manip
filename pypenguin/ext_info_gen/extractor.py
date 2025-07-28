@@ -1,22 +1,31 @@
+from ast             import literal_eval
 from base64          import b64decode
 from collections.abc import Iterable
-from esprima         import parseScript, Error as EsprimaError
+from colorama        import Fore as ColorFore, Style as ColorStyle
+#from esprima         import parseScript, Error as EsprimaError
 from esprima.nodes   import (
-    Node, Script, ExpressionStatement, ClassDeclaration, ClassBody, MethodDefinition, BlockStatement, ReturnStatement,
-    CallExpression, StaticMemberExpression, NewExpression, FunctionExpression, ObjectExpression, ArrayExpression, ArrowFunctionExpression,
-    Identifier, Literal, Property,
+    Node, Script, ExpressionStatement, ClassDeclaration, ClassBody, MethodDefinition, 
+    BlockStatement, ReturnStatement,
+    CallExpression, StaticMemberExpression, NewExpression, FunctionExpression, 
+    ObjectExpression, ArrayExpression, ArrowFunctionExpression, ThisExpression, 
+    Identifier, Literal, TemplateLiteral, Property,
 )
 from os              import path
 from requests        import get as requests_get, RequestException
+from tree_sitter     import Node
 from typing          import Any, Callable
 from types           import NotImplementedType
 from urllib.parse    import unquote
+from warnings        import warn
 
-from pypenguin.utility         import (
+from pypenguin.tree_sitter_loader import get_js_parser
+from pypenguin.utility            import (
     read_file_text,
     PP_InvalidExtensionCodeSourceError, 
     PP_NetworkFetchError, PP_UnexpectedFetchError, PP_FileFetchError, PP_FileNotFoundError, 
-    PP_JsNodeTreeToJsonConversionError, PP_InvalidExtensionCodeSyntaxError, PP_BadExtensionCodeFormatError,    write_file_text, # temporary
+    PP_JsNodeTreeToJsonConversionError, PP_InvalidExtensionCodeSyntaxError, PP_BadExtensionCodeFormatError,    PP_InvalidTranslationMessageError,
+    PP_UnexpectedPropertyAccessWarning, PP_UnexpectedTemplateLiteralWarning,
+    write_file_text, repr_tree, # temporary
 )
 
 
@@ -67,6 +76,11 @@ SCRATCH_STUB = {
         "SPRITE": "sprite",
         "STAGE": "stage"
     },
+    "extensions": {
+        #"unsandboxed": True , # hasn't ever been needed, uncomment when needed
+        #"isPenguinMod": True, # hasn't ever been needed, uncomment when needed
+        # .register is handled somewhere else
+    },
 }
 REGISTER_EXTENSION_FUNC_PATTERN = StaticMemberExpression(
     object=StaticMemberExpression(
@@ -74,13 +88,6 @@ REGISTER_EXTENSION_FUNC_PATTERN = StaticMemberExpression(
         property=Identifier(name="extensions"),
     ), 
     property=Identifier(name="register"),
-).toDict()
-SETUP_TRANSLATION_FUNC_PATTERN = StaticMemberExpression(
-    object=StaticMemberExpression(
-        object=Identifier(name="Scratch"),
-        property=Identifier(name="translate"),
-    ),
-    property=Identifier(name="setup"),
 ).toDict()
 TRANSLATE_FUNC_PATTERN = StaticMemberExpression(
     object=Identifier(name="Scratch"),
@@ -133,83 +140,106 @@ def fetch_js_code(source: str) -> str:
         except Exception as error:
             raise PP_FileFetchError(f"Failed to read file {source}: {error}") from error
 
-def esprima_to_json(
-        node: list[Node] | Node | str | int | float | bool | None, 
-        call_handler: Callable[[CallExpression], NotImplementedType|Any] | None = None,
-    ) -> Any:
+def ts_node_to_json(
+    node: Node | str | int | float | bool | None, 
+    source_code: str, 
+    call_handler=None,
+) -> Any:
     """
-    Recursively converts an Esprima-style object-oriented AST into a plain JSON-compatible Python structure
+    Recursively converts a tree sitter Syntax Tree into a plain JSON-compatible Python structure
 
     Args:
-        node: The root AST node or subnode, typically an instance of ObjectExpression, ArrayExpression, Literal,
-            Identifier, or a list of nodes
-        call_handler: a callable handling CallExpression nodes
+        node: the root node or a subnode
+        source_code: the node tree's original source code
+        call_handler: a callable handling call expression nodes (should return NotImplemented if node not addressed by handler)
 
     Returns:
         A Python object representing the JSON-equivalent value: dict, list, str, int, float, bool, or None
 
     Raises:
-        PP_JsNodeTreeToJsonConversionError: If an unsupported node type or a MemberExpression of unexptected format is encountered
+        PP_JsNodeTreeToJsonConversionError: If an unsupported node type or a member expression of unexptected format is encountered
+    
+    Warnings:
+        PP_UnexpectedPropertyAccessWarning: if a property of 'this' is accessed
+        PP_UnexpectedTemplateLiteralWarning: if a template literal is used
     """
-    if   isinstance(node, StaticMemberExpression):
-        try:  # try to handle eg. Scratch.ArgumentType.STRING
-            assert isinstance(node.object, StaticMemberExpression)
-            inner_expression = node.object
-            
-            assert isinstance(inner_expression.object, Identifier)
-            assert inner_expression.object.name == "Scratch"
-            assert isinstance(inner_expression.property, Identifier)
-            assert inner_expression.property.name in SCRATCH_STUB
-
-            target_section = SCRATCH_STUB[inner_expression.property.name]
-            assert isinstance(node.property, Identifier)
-            assert node.property.name in target_section
-            return target_section[node.property.name]
-
-        except AssertionError as error:
-            raise PP_JsNodeTreeToJsonConversionError("Could not process MemberExpression of unexpected format: {node}") from error
-
-    elif isinstance(node, ObjectExpression):
-        result = {}
-        for property in node.properties:
-            if not isinstance(property, Property):
-                raise PP_JsNodeTreeToJsonConversionError(f"Unsupported property type: {type(property)}")
-            # Determine key
-            if isinstance(property.key, Identifier):
-                key = property.key.name
-            elif isinstance(property.key, Literal):
-                key = property.key.value
-            else:
-                raise PP_JsNodeTreeToJsonConversionError(f"Unsupported key type: {type(property.key)}")
-            # Recurse on value
-            value = esprima_to_json(property.value, call_handler)
-            result[key] = value
-        return result
-
-    elif isinstance(node, ArrayExpression):
-        return [esprima_to_json(elem, call_handler) for elem in node.elements]
-
-    elif isinstance(node, Literal):
-        return node.value
-
-    elif isinstance(node, Identifier):
-        return node.name
-
-    elif isinstance(node, (str, int, float, bool, type(None))):
+    def get_code(node: Node) -> str:
+        nonlocal source:code
+        return source_code[node.start_byte : node.end_byte]
+    
+    if isinstance(node, (str, int, float, bool, type(None))):
         return node
 
-    elif isinstance(node, Iterable) and not(isinstance(node, (StaticMemberExpression, CallExpression))):
-        return [esprima_to_json(item, call_handler) for item in node]
+    if node.type == "member_expression":
+        # try to handle eg. Scratch.ArgumentType.STRING
+        object_node = node.child_by_field_name("object")
+        property_node = node.child_by_field_name("property")
 
-    else:
+        if object_node.type == "member_expression":
+            inner_obj = object_node.child_by_field_name("object")
+            inner_prop = object_node.child_by_field_name("property")
+            if inner_obj.type == "identifier" and get_code(inner_obj) == "Scratch":
+                outer_key = get_code(property_node)
+                inner_key = get_code(inner_prop)
+                if (outer_key in SCRATCH_STUB) and (inner_key in SCRATCH_STUB[outer_key]):
+                    return SCRATCH_STUB[outer_key][inner_key]
 
-        if isinstance(node, CallExpression) and bool(call_handler):
-            value = call_handler(node)
-            if value is not NotImplemented:
-                return value
+        elif object_node.type == "this":
+            warn(f"{ColorFore.YELLOW}Tried to access property of 'this': {property_node.text.decode()}, Defaulting to None{ColorStyle.RESET_ALL}", PP_UnexpectedPropertyAccessWarning)
+            return None
 
-        #write_file_text("parsed_ast.lua", f"ETJ: {repr(node)}")
-        raise PP_JsNodeTreeToJsonConversionError(f"Unsupported node type: {type(node)}")
+        raise PP_JsNodeTreeToJsonConversionError(f"Unsupported member expression format: {node.sexp()}")
+
+    elif node.type == "object":
+        result = {}
+        for prop in node.named_children:
+            if prop.type != "pair":
+                raise PP_JsNodeTreeToJsonConversionError(f"Unsupported property type: {prop.type}")
+
+            key_node = prop.child_by_field_name("key")
+            value_node = prop.child_by_field_name("value")
+
+            if key_node.type == "identifier":
+                key = get_code(key_node)
+            elif key_node.type == "string":
+                key = literal_eval(get_code(key_node).replace('`', '"'))
+            else:
+                raise PP_JsNodeTreeToJsonConversionError(f"Unsupported key type: {key_node.type}")
+
+            result[key] = ts_node_to_json(value_node, source_code, call_handler)
+        return result
+
+    elif node.type == "array":
+        return [ts_node_to_json(child, source_code, call_handler) for child in node.named_children]
+
+    elif node.type == "string":
+        return literal_eval(get_code(node).replace('`', '"'))
+    
+    elif node.type == "number":
+        code = get_code(node)
+        return float(code) if "." in code else int(code)
+    elif node.type == "true":
+        return True
+    elif node.type == "false":
+        return False
+    elif node.type == "null":
+        return None
+    elif node.type == "undefined":
+        return None
+
+    elif node.type == "identifier":
+        return get_code(node)
+
+    elif node.type == "template_string":
+        warn("{ColorFore.YELLOW}Template literal encountered. Defaulting to None{ColorStyle.RESET_ALL}", PP_UnexpectedTemplateLiteralWarning)
+        return None
+
+    elif (node.type == "call_expression") and bool(call_handler):
+        value = call_handler(node)
+        if value is not NotImplemented:
+            return value
+
+    raise PP_JsNodeTreeToJsonConversionError(f"Unsupported node type: {node.type}")
 
 def extract_extension_info(js_code: str) -> dict[str, Any]:
     """
@@ -222,32 +252,37 @@ def extract_extension_info(js_code: str) -> dict[str, Any]:
     Raises:
         PP_InvalidExtensionCodeSyntaxError: if the extension code is syntactically invalid 
         PP_BadExtensionCodeFormatError: if the extension code is badly formatted, so that the extension information cannot be extracted
+        PP_InvalidTranslationMessageError: if Scratch.translate is called with an invalid message
+    
+    Warnings:
+        PP_UnexpectedPropertyAccessWarning: if a property of 'this' is accessed in the getInfo method
+        PP_UnexpectedTemplateLiteralWarning: if a template literal is used in the getInfo method
     """
-    def get_main_body(tree: Script) -> list[Node]:
+    def get_main_body(root: Node) -> list[Node]:
         """
         Get the main code body
         
         Args:
-            tree: the JavaScript AST
+            root: the JavaScript Syntax Tree
         
         Raises:
             AssertionError: if the code is not formatted in one of the two expected ways
         """
-        assert len(tree.body) >= 1
-        last_statement = tree.body[-1]
-        # try finding '((Scratch) => { ... })(Scratch);' else expect sandboxed format
-        if isinstance(last_statement, ExpressionStatement) and isinstance(last_statement.expression, CallExpression):
-            if isinstance(last_statement.expression.callee, ArrowFunctionExpression):
-                assert isinstance(last_statement.expression.callee.body, BlockStatement)
-                assert len(last_statement.expression.arguments) == 1
-                argument = last_statement.expression.arguments[0]
-                assert isinstance(argument, Identifier)
-                assert argument.name == "Scratch"
-                return last_statement.expression.callee.body.body
-        else:
-            return tree.body
+        # Check for IIFE '((Scratch) => {...})(Scratch)'(sandboxed style)
+        if root.type == "program":
+            last = root.children[-1]
+            if last.type == "expression_statement" and last.named_children:
+                expr = last.named_children[0]
+                if expr.type == "call_expression":
+                    func = expr.child_by_field_name("function")
+                    if func and func.type == "arrow_function":
+                        body = func.child_by_field_name("body")
+                        if body.type == "statement_block":
+                            return body.named_children
+        # Otherwise assume unsandboxed style
+        return root.named_children
     
-    def get_registered_class_name(code_body: list[Node]) -> str:
+    def get_registered_class_name(code_body: list[Node]) -> str: # STOPPED HERE: convert rest of function
         """
         Get the name of the class, whose instance is registered with Scratch.extensions.register 
         
@@ -315,20 +350,20 @@ def extract_extension_info(js_code: str) -> dict[str, Any]:
                     break
         assert method_node is not None
         return method_node
-
-
+    
+    parser = get_js_parser()
     try:
-        tree = parseScript(js_code, tolerant=False)
+        tree = parser.parse(js_code.encode()).root_node
     except EsprimaError as error:
         line = getattr(error, "lineNumber", None)
         column = getattr(error, "column", None)
         raise PP_InvalidExtensionCodeSyntaxError(str(error), line, column) from error
-
-    write_file_text("parsed_ast.lua", repr(tree))
-    #write_file_text("parsed_ast.lua", repr(tree.body[0].body.body[0].value.body.body[0].argument))
     
+    write_file_text("parsed_ast.lua", repr_tree(tree, js_code.encode()))
+    #write_file_text("parsed_ast.lua", repr(tree.body[0].body.body[0].value.body.body[0].argument))
+    #raise Exception(r"$\/\$STOP$/\/$")
+            
     try:
-        # STOPPED HERE: create sub func which searches for and handles Scratch.translate.setup + finish hande_call
         main_body = get_main_body(tree)
         class_name = get_registered_class_name(main_body)
         class_node = get_class_def_by_name(main_body, class_name)
@@ -348,10 +383,17 @@ def extract_extension_info(js_code: str) -> dict[str, Any]:
     def handle_call(node: CallExpression) -> NotImplementedType | None:
         if isinstance(node.callee, StaticMemberExpression):
             if (node.callee.toDict() == TRANSLATE_FUNC_PATTERN) and (len(node.arguments) == 1):
-                translate_message = esprima_to_json(node.arguments[0])
-                raise Exception(translate_message)
-
+                message = esprima_to_json(node.arguments[0])
+                if   isinstance(message, dict):
+                    message = message.get("default", "")
+                elif isinstance(message, str):
+                    pass # already in expected format
+                else:
+                    pass # just keep it, error will raise
                 
+                if not(isinstance(message, str)) or not(message):
+                    raise PP_InvalidTranslationMessageError(f"Invalid or empty message was passed to Scratch.translate: {repr(message)}");
+                return message # just return the default value in english, the whole project is english anyway                
         return NotImplementedError
 
     try:

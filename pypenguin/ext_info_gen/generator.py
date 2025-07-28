@@ -384,7 +384,7 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
     # Relevant of the returned attributes: ["id", "blocks", "menus"]
     for attr in extension_info.keys():
         if attr not in {
-            "name", "color1", "color2", "color3", "menuIconURI", "docsURI", "isDynamic", 
+            "name", "color1", "color2", "color3", "menuIconURI", "docsURI", "isDynamic", "orderBlocks",
             "id", "blocks", "menus",
          }:
             raise PP_UnknownExtensionAttributeError(f"Unknown or not (yet) implemented extension attribute: {repr(attr)}")

@@ -2,4 +2,5 @@ __pycache__/
 example_extensions/gen_opcode_info/
 .vscode
 .coverage
-htmlcov
+htmlcov/
+build/

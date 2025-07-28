@@ -5,3 +5,4 @@ from pypenguin.utility.errors        import *
 from pypenguin.utility.file          import *
 from pypenguin.utility.repr          import *
 from pypenguin.utility.validation    import *
+from pypenguin.utility.warnings      import *

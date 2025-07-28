@@ -4,6 +4,7 @@
 ############################################################################################
 
 
+from colorama import init as colorama_init
 from datetime import timedelta
 
 from pypenguin.utility import PP_ConfigurationError, PP_ValidationError
@@ -18,6 +19,7 @@ def init_config(config: MasterConfig) -> None:
     Initializes the global configuration.
     This must be called exactly **once** at the beginning of your program.
     After initialization, the configuration becomes immutable
+    Also initializes some required packages
 
     Args:
         config: The configuration object to initialize with
@@ -42,6 +44,9 @@ def init_config(config: MasterConfig) -> None:
     config.platform_meta._frozen_ = True
     config              ._frozen_ = True
     _config_instance = config
+    
+    # Initialize required packages
+    colorama_init()
 
 def get_config() -> MasterConfig:
     """

@@ -25,7 +25,16 @@ cd pypenguin
 pip install -e .
 ```
 
+## 🛠️ Building Tree-sitter Parser
+
+Before using custom extension info generator-related features, you must build the Tree-sitter language library:
+
+python scripts/build_tree_sitter_lib.py
+
+This builds the parser binary used internally by the extension info generator system.
+
 ---
+
 
 ## 🧰 Basic Usage
 
@@ -48,21 +57,25 @@ For more config details, see [docs/config.md](docs/config.md)
 ## 📁 Project Structure
 ```
 pypenguin/
-├── pypenguin/
-│   ├── core/              # Core functionality
-│   ├── ext_info_gen/      # information generator for custom extensions
-│   ├── config/            # Configuration schema and lifecycle
-│   ├── opcode_info/       # Contains an API for and the information about all the blocks
-│   └── utility/           # Utilities for other modukes
+├── pypenguin/         # Source Code
+│   ├── config/               # Configuration schema and lifecycle
+│   ├── core/                 # Core functionality
+│   ├── ext_info_gen/         # information generator for custom extensions
+│   ├── opcode_info/          # Contains an API for and the information about all the blocks
+│   ├── utility/              # Utilities for other modules
+│   ├── important_consts.py   # Common important constants
+│   └── tree_sitter_loader.py # Interface for access to the tree sitter JavaScript library
 ├── docs/              # Documentation
-└── tests/             # Unit tests
+├── tests/             # Unit tests
+└── scripts/           # Independent project-related scripts
+    └── build_tree_sitter_lib.py # Set up tree sitter JavaScript library
 ```
 
 ## 🧪 Running Tests
 
 Just run:
 ```bash
-pytest
+pytest tests/
 ```
 
 ---

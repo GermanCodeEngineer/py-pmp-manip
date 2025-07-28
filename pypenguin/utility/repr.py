@@ -147,8 +147,20 @@ class PypenguinEnum(Enum):
     def __repr__(self) -> str:
         return self.__class__.__name__ + "." + self.name
 
+def repr_tree(node, source_code, indent=0): # TODO: reconsider
+    """Nicely formatted repr of a tree-sitter node and its children."""
+    indent_str = "  " * indent
+    node_type = node.type
+
+    if node.child_count == 0:
+        text = source_code[node.start_byte:node.end_byte].decode("utf8")
+        return f"{indent_str}{node_type} ({repr(text)})"
+
+    lines = [f"{indent_str}{node_type}:"]
+    for child in node.children:
+        lines.append(repr_tree(child, source_code, indent + 1))
+    return "\n".join(lines)
 
 
-
-__all__ = ["KeyReprDict", "grepr", "grepr_dataclass", "PypenguinEnum"]
+__all__ = ["KeyReprDict", "grepr", "grepr_dataclass", "PypenguinEnum", "repr_tree"]
 

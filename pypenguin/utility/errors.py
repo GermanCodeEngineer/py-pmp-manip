@@ -121,6 +121,7 @@ class PP_InvalidExtensionCodeSyntaxError(PP_BadOrInvalidExtensionCodeError):
         self.line = line
         self.column = column
 class PP_BadExtensionCodeFormatError(PP_BadOrInvalidExtensionCodeError): pass
+class PP_InvalidTranslationMessageError(PP_BadOrInvalidExtensionCodeError): pass
 
 # generator.py
 
@@ -159,6 +160,8 @@ class PP_ValueError(PP_Error): pass
 #                         SPECIAL ERRORS                      #
 ###############################################################
 
+class PP_UnsupportedOSError(PP_Error): pass
+class PP_SetupRequiredError(PP_Error): pass
 class PP_TempNotImplementedError(PP_Error):
     """Occurs on features that are not YET implemented"""
 
