@@ -54,7 +54,7 @@ def load_tree_sitter_js() -> Language:
     else:
         load_path = lib_source_path
     
-    return Language(load_path, "javascript")
+    return Language(load_path, "javascript") # TODO: find solution
 
 def get_js_parser() -> Parser:
     """
@@ -66,8 +66,7 @@ def get_js_parser() -> Parser:
     """
     global _js_parser
     if _js_parser is None:
-        _js_parser = Parser()
-        _js_parser.set_language(load_tree_sitter_js())
+        _js_parser = Parser(language=load_tree_sitter_js())
     return _js_parser
 
 

@@ -3,7 +3,6 @@ from json         import loads, dumps
 from os           import path, makedirs
 from types        import EllipsisType
 from typing       import Any
-from warnings     import warn
 
 from pypenguin.config          import get_config, init_config, get_default_config
 from pypenguin.utility         import (
