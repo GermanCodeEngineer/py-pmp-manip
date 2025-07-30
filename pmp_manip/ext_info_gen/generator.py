@@ -97,9 +97,9 @@ def process_all_menus(menus: dict[str, dict[str, Any]|list]) -> tuple[type[Input
                 )
                 extend_enum(ExtensionInputType, menu_block_id, input_type_info)
         except AssertionError as error:
-            raise PP_InvalidCustomMenuError("Invalid custom menu {repr(menu_block_id)}") from error
+            raise PP_InvalidCustomMenuError(f"Invalid custom menu {repr(menu_block_id)}: {menu_info}") from error
         except KeyError as error:
-            raise PP_InvalidCustomMenuError("Invalid custom menu {repr(menu_block_id)} is missing attribute {error}") from error
+            raise PP_InvalidCustomMenuError(f"Invalid custom menu {repr(menu_block_id)} is missing attribute {error}") from error
     return (ExtensionInputType, ExtensionDropdownType)
 
 def generate_block_opcode_info(
@@ -163,9 +163,9 @@ def generate_block_opcode_info(
                         )
                     else:
                         if builitin_input_type is not BuiltinInputType.TEXT:
-                            raise ValueError("Argument {repr(argument_id)}: If 'menu' exists, 'type'' should be Scratch.ArgumentType.STRING(='string')")
+                            raise ValueError(f"Argument {repr(argument_id)}: If 'menu' exists, 'type' should be Scratch.ArgumentType.STRING(='string')")
                         if argument_menu not in menus:
-                            raise ValueError("Argument {repr(argument_id)}: 'menu' must refer to an existing menu")
+                            raise ValueError(f"Argument {repr(argument_id)}: 'menu' must refer to an existing menu")
                         menu_info = menus[argument_menu]
                         if   isinstance(menu_info, dict):
                             accept_reporters = menu_info.get("acceptReporters", False)
@@ -292,14 +292,14 @@ def generate_block_opcode_info(
         return f"{extension_id}::{" ".join(new_opcode_segments)}" 
     
     try:
-        opcode: str = block_info["opcode"]
         block_type: str = block_info["blockType"]
+        branch_count: int = block_info.get("branchCount", 0)
         is_terminal: bool = block_info.get("isTerminal", False)
         arguments: dict[str, dict[str, Any]] = block_info.get("arguments", {})
-        branch_count: int = block_info.get("branchCount", 0)
         opcode_type: OpcodeType
         if is_terminal and (block_type != "command"):
             raise ValueError("'isTerminal' can only be True when 'blockType' is Scratch.BlockType.COMMAND(='command')")
+
         
         match block_type:
             case "command":
@@ -320,6 +320,8 @@ def generate_block_opcode_info(
             case _:
                 raise ValueError(f"Unknown value for blockType: {repr(block_type)}")
         
+        opcode: str = block_info["opcode"] # might not be included so must come after eg. "label" blocks have returned alredy       
+        
         inputs, dropdowns = process_arguments(arguments, menus, input_type_cls, dropdown_type_cls)
                 
         disable_monitor = block_info.get("disableMonitor", False)
@@ -339,7 +341,8 @@ def generate_block_opcode_info(
                 "alignments", "hideFromPalette", "filter",
                 "shouldRestartExistingThreads", "isEdgeActivated",
             }:
-                raise PP_UnknownExtensionAttributeError(f"Unknown or not (yet) implemented block attribute: {repr(attr)}")
+                block_opcode = repr(block_info.get('opcode', 'Unknown'))
+                raise PP_UnknownExtensionAttributeError(f"Unknown or not (yet) implemented block attribute (block {block_opcode}): {repr(attr)}")
     
         new_opcode = generate_new_opcode(
             text=block_info["text"],
@@ -361,9 +364,9 @@ def generate_block_opcode_info(
     except (KeyError, ValueError) as error:
         block_opcode = repr(block_info.get('opcode', 'Unknown'))
         if   isinstance(error, KeyError):
-            raise PP_InvalidCustomBlockError(f"Invalid block info missing attribute (block {block_opcode}): {error}") from error
+            raise PP_InvalidCustomBlockError(f"Invalid block info missing attribute {error} (block {block_opcode}): {block_info}") from error
         elif isinstance(error, ValueError):
-            raise PP_InvalidCustomBlockError(f"Invalid block info (block {block_opcode}): {error}") from error
+            raise PP_InvalidCustomBlockError(f"Invalid block info (block {block_opcode}): {error}: {block_info}") from error
     
     return (opcode_info, new_opcode)
 
@@ -400,21 +403,16 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
     
     for block_info in extension_info.get("blocks", []):
         block_info: dict[str, Any]
-        block_opcode: str = block_info.get("opcode", "Unknown")
-        try:
-            opcode_info, new_opcode = generate_block_opcode_info(
-                block_info, 
-                menus=menus, 
-                input_type_cls=input_type_cls,
-                dropdown_type_cls=dropdown_type_cls,
-                extension_id=extension_id,
-            )
-        except (PP_InvalidCustomBlockError, PP_UnknownExtensionAttributeError) as error:
-            raise type(error)("In block {repr(block_opcode)}: {error}") from error
+        opcode_info, new_opcode = generate_block_opcode_info(
+            block_info, 
+            menus=menus, 
+            input_type_cls=input_type_cls,
+            dropdown_type_cls=dropdown_type_cls,
+            extension_id=extension_id,
+        )
         
-        # i can be sure to use block_opcode bc if the opcode property is missing an error happens above
         if opcode_info is not None:
-            old_opcode: str = f"{extension_id}_{block_opcode}"
+            old_opcode: str = f"{extension_id}_{block_info['opcode']}" # 'opcode' is guaranteed to exist
             info_group.add_opcode(
                 old_opcode  = old_opcode,
                 new_opcode  = new_opcode,
@@ -458,7 +456,7 @@ def generate_file_code(
         return cls_code
     
     file_code = "\n\n".join((
-        "from {DATA_IMPORTS_IMPORT_PATH} import *",
+        f"from {DATA_IMPORTS_IMPORT_PATH} import *",
         generate_enum_code(dropdown_type_cls),
         generate_enum_code(input_type_cls),
         f"{info_group.name} = {grepr(info_group, safe_dkd=True)}",

@@ -5,8 +5,8 @@ class PP_Warning(UserWarning): pass
 ###############################################################
 
 class PP_UnexpectedPropertyAccessWarning(PP_Warning): pass
-class PP_UnexpectedTemplateLiteralWarning(PP_Warning): pass
+class PP_UnexpectedNotPossibleFeatureWarning(PP_Warning): pass
 
 
-__all__ = ["PP_Warning", "PP_UnexpectedPropertyAccessWarning", "PP_UnexpectedTemplateLiteralWarning"]
+__all__ = ["PP_Warning", "PP_UnexpectedPropertyAccessWarning", "PP_UnexpectedNotPossibleFeatureWarning"]
 

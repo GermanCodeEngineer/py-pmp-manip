@@ -16,7 +16,7 @@ from pmp_manip.ext_info_gen.generator import generate_opcode_info_group, generat
 
 CACHE_FILENAME = "cache.json"
 
-    
+
 def generate_extension_info_py_file(source: str, extension_id: str) -> str:
     """
     Generate a python file, which stores information about the blocks of the given extension and is required for the core module. Returns the file path of the python file
@@ -42,7 +42,8 @@ def generate_extension_info_py_file(source: str, extension_id: str) -> str:
 
     Warnings:
         PP_UnexpectedPropertyAccessWarning: if a property of 'this' is accessed in the getInfo method of the extension code
-        PP_UnexpectedTemplateLiteralWarning: if a template literal is used is the getInfo method of the extension code
+        PP_UnexpectedNotPossibleFeatureWarning: if a impossible to implement feature is used (eg. ternary expr) in the getInfo method of the extension code
+
     """
     def consider_state(by_url: bool) -> bool|EllipsisType:
         """
@@ -154,11 +155,11 @@ __all__ = ["generate_extension_info_py_file"]
 if __name__ == "__main__":
     init_config(get_default_config())
     for extension_id, extension in [
-#        ("asyncexample",         "example_extensions/js_extension/asyncexample.js"),
-#        ("dumbExample",         "example_extensions/js_extension/dumbExample.js"),
-#        ("truefantombase",      "https://extensions.turbowarp.org/true-fantom/base.js"),
-#        ("pmControlsExpansion", "example_extensions/js_extension/pmControlsExpansion.js"),
+        ("asyncexample",        "example_extensions/js_extension/asyncexample.js"),
+        ("dumbExample",         "example_extensions/js_extension/dumbExample.js"),
+        ("truefantombase",      "https://extensions.turbowarp.org/true-fantom/base.js"),
+        ("pmControlsExpansion", "example_extensions/js_extension/pmControlsExpansion.js"),
         ("gpusb3",              "https://extensions.penguinmod.com/extensions/derpygamer2142/gpusb3.js"),
-#        ("P7BoxPhys",           "https://extensions.penguinmod.com/extensions/pooiod/Box2D.js"),
+        ("P7BoxPhys",           "https://extensions.penguinmod.com/extensions/pooiod/Box2D.js"),
     ]:
         generate_extension_info_py_file(extension, extension_id)

@@ -151,6 +151,7 @@ class PP_FailedFileReadError(PP_Error): pass
 class PP_NotImplementedError(PP_Error): pass
 class PP_TypeError(PP_Error): pass
 class PP_ValueError(PP_Error): pass
+class PP_AttributeError(PP_Error): pass
 
 ###############################################################
 #                         SPECIAL ERRORS                      #

@@ -36,6 +36,8 @@ class FRMutation(ABC):
         Returns:
             the FRMutation
         """
+        # STOPPED HERE: implement method which runs for all mutation classes:
+        #               do required and optional attributes match data.keys()?
 
     @abstractmethod
     def to_data(self) -> dict[str, Any]:

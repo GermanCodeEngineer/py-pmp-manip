@@ -17,3 +17,4 @@ TODOs:
     - make sure: js execution in ext_info_gen is safe
     - simplify new opcode input/dropdown representation brackets
     - error messages: use only one of "x" 'x' ˋxˋ
+    - explore "customFonts"

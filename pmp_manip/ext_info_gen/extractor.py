@@ -2,6 +2,7 @@ from ast                    import literal_eval
 from base64                 import b64decode
 from colorama               import Fore as ColorFore, Style as ColorStyle
 from collections.abc        import Iterator
+from json                   import dumps
 from os                     import path
 from requests               import get as requests_get, RequestException
 from tree_sitter            import Parser, Language, Node, Tree
@@ -16,7 +17,7 @@ from pmp_manip.utility            import (
     PP_InvalidExtensionCodeSourceError, 
     PP_NetworkFetchError, PP_UnexpectedFetchError, PP_FileFetchError, PP_FileNotFoundError, 
     PP_JsNodeTreeToJsonConversionError, PP_InvalidExtensionCodeSyntaxError, PP_BadExtensionCodeFormatError,    PP_InvalidTranslationMessageError,
-    PP_UnexpectedPropertyAccessWarning, PP_UnexpectedTemplateLiteralWarning,
+    PP_UnexpectedPropertyAccessWarning, PP_UnexpectedNotPossibleFeatureWarning,
     NotSetType, NotSet,
     write_file_text, repr_tree, # temporary
 )
@@ -153,7 +154,7 @@ def ts_node_to_json(
     
     Warnings:
         PP_UnexpectedPropertyAccessWarning: if a property of 'this' is accessed
-        PP_UnexpectedTemplateLiteralWarning: if a template literal is used
+        PP_UnexpectedNotPossibleFeatureWarning: if a impossible to implement feature is used (eg. ternary expr)
     """
 
     if isinstance(node, (str, int, float, bool, type(None))):
@@ -201,7 +202,12 @@ def ts_node_to_json(
         return result
 
     elif node.type == "array":
-        return [ts_node_to_json(child, call_handler) for child in node.named_children if child is not NotSet]
+        array = []
+        for child in node.named_children:
+            result = ts_node_to_json(child, call_handler)
+            if result is not NotSet:
+                array.append(result)
+        return array
 
     elif node.type == "string":
         return literal_eval(node.text.decode().replace('`', '"'))
@@ -221,9 +227,13 @@ def ts_node_to_json(
     elif node.type == "identifier":
         return node.text.decode()
 
-    elif node.type == "template_string":
-        warn(f"{ColorFore.YELLOW}Template literal encountered. Defaulting to None{ColorStyle.RESET_ALL}", PP_UnexpectedTemplateLiteralWarning)
+    elif node.type in {
+        "template_string", 
+        "ternary_expression", "binary_expression", "unary_expression"
+    }:
+        warn(f"{ColorFore.YELLOW}Not Implementable Feature {repr(node.type)} encountered. Defaulting to None{ColorStyle.RESET_ALL}", PP_UnexpectedNotPossibleFeatureWarning)
         return None
+        # I am assuming/hoping that only less/not relevant properties are generated with these features
 
     elif (node.type == "call_expression") and bool(call_handler):
         value = call_handler(node)
@@ -233,7 +243,7 @@ def ts_node_to_json(
     elif (node.type == "comment"):
         return NotSet
 
-    print(node.text.decode())
+    print("Unprocessable:", node.text.decode())
     raise PP_JsNodeTreeToJsonConversionError(f"Unsupported node type: {node.type}")
 
 def extract_extension_info(js_code: str) -> dict[str, Any]:
@@ -251,7 +261,7 @@ def extract_extension_info(js_code: str) -> dict[str, Any]:
     
     Warnings:
         PP_UnexpectedPropertyAccessWarning: if a property of 'this' is accessed in the getInfo method
-        PP_UnexpectedTemplateLiteralWarning: if a template literal is used in the getInfo method
+        PP_UnexpectedNotPossibleFeatureWarning: if a impossible to implement feature is used (eg. ternary expr) in the getInfo method
     """    
     def get_main_body(root_node: Node) -> list[Node]:
         """
@@ -387,40 +397,51 @@ def extract_extension_info(js_code: str) -> dict[str, Any]:
 
     except AssertionError as error:
         raise PP_BadExtensionCodeFormatError(f"Cannot extract extension information: Bad extension code format: {error}") from error
+    
+    def handle_Scratch_translate(arguments_node: Node) -> str:
+        arg_node = arguments_node.named_children[0]
+        message = ts_node_to_json(arg_node)
 
-    def handle_call(node: Node) -> NotImplementedType | str:
+        if isinstance(message, dict):
+            message = message.get("default", "")
+        elif isinstance(message, str):
+            pass  # already fine
+        else:
+            pass  # will trigger error below if needed
+
+        if not isinstance(message, str) or not message:
+            raise PP_InvalidTranslationMessageError(f"Invalid or empty message passed to Scratch.translate: {repr(message)}")
+
+        return message
+    
+    def handle_JSON_stringify(arguments_node: Node) -> str:
+        arg_node = arguments_node.named_children[0]
+        value = ts_node_to_json(arg_node)
+        return dumps(value, separators=(',', ':'))
+    
+    def handle_call(node: Node) -> NotImplementedType | Any:
         if node.type != "call_expression":
             return NotImplemented
-
-        callee = node.child_by_field_name("function")
+        callee_node = node.child_by_field_name("function")
         arguments_node = node.child_by_field_name("arguments")
 
         if (
-            callee and (callee.type == "member_expression")
+            callee_node and (callee_node.type == "member_expression")
             and arguments_node and (arguments_node.named_child_count == 1)
         ):
-            # Match Scratch.translate(...)
-            object_node = callee.child_by_field_name("object")
-            property_node = callee.child_by_field_name("property")
-
+            object_node = callee_node.child_by_field_name("object")
+            property_node = callee_node.child_by_field_name("property")
+            
             if (
-                object_node and (object_node.type == "identifier") and (object_node.text.decode() == "Scratch") and
-                property_node and (property_node.type == "property_identifier") and (property_node.text.decode() == "translate")
+                object_node and (object_node.type == "identifier") and
+                property_node and (property_node.type == "property_identifier")
             ):
-                arg_node = arguments_node.named_children[0]
-                message = ts_node_to_json(arg_node, js_code)
-
-                if isinstance(message, dict):
-                    message = message.get("default", "")
-                elif isinstance(message, str):
-                    pass  # already fine
-                else:
-                    pass  # will trigger error below if needed
-
-                if not isinstance(message, str) or not message:
-                    raise PP_InvalidTranslationMessageError(f"Invalid or empty message passed to Scratch.translate: {repr(message)}")
-
-                return message
+                object_name   = object_node.text.decode()
+                property_name = property_node.text.decode()
+                if   (object_name == "Scratch") and (property_name == "translate"):
+                    return handle_Scratch_translate(arguments_node)
+                elif (object_name == "JSON") and (property_name == "stringify"):
+                    return handle_JSON_stringify(arguments_node)
 
         return NotImplemented
 
