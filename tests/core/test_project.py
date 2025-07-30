@@ -2,20 +2,20 @@ from copy   import copy, deepcopy
 from pytest import fixture, raises, MonkeyPatch
 from uuid   import uuid4
 
-from pypenguin.utility            import (
+from pmp_manip.utility            import (
     gdumps,
     KeyReprDict,
     PP_ThanksError, PP_TypeValidationError, PP_RangeValidationError, 
     PP_SameValueTwiceError, PP_SpriteLayerStackError,
 )
-from pypenguin.opcode_info.data import info_api
+from pmp_manip.opcode_info.data import info_api
 
-from pypenguin.core.enums      import SRTTSLanguage, SRVideoState, TargetPlatform
-from pypenguin.core.extension  import SRBuiltinExtension, SRCustomExtension
-from pypenguin.core.meta       import FRMeta
-from pypenguin.core.project    import FRProject, SRProject
-from pypenguin.core.target     import FRStage, SRSprite, SRStage
-from pypenguin.core.vars_lists import SRVariable, SRList
+from pmp_manip.core.enums      import SRTTSLanguage, SRVideoState, TargetPlatform
+from pmp_manip.core.extension  import SRBuiltinExtension, SRCustomExtension
+from pmp_manip.core.meta       import FRMeta
+from pmp_manip.core.project    import FRProject, SRProject
+from pmp_manip.core.target     import FRStage, SRSprite, SRStage
+from pmp_manip.core.vars_lists import SRVariable, SRList
 
 from tests.core.constants import (
     PROJECT_DATA, PROJECT_ASSET_FILES, 
@@ -85,7 +85,7 @@ def test_FRProject_to_file(monkeypatch: MonkeyPatch):
             "image.png": b"image-bytes",
         }
 
-    from pypenguin.core import project as project_mod
+    from pmp_manip.core import project as project_mod
     monkeypatch.setattr(project_mod, "create_zip_file", fake_create_zip_file)
 
     dummy_project = DummyProject()

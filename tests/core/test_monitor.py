@@ -1,29 +1,29 @@
 from copy   import copy
 from pytest import fixture, raises, MonkeyPatch
 
-from pypenguin.config           import get_config, get_default_config
-from pypenguin.important_consts import (
+from pmp_manip.config           import get_config, get_default_config
+from pmp_manip.important_consts import (
     NEW_OPCODE_VAR_VALUE, NEW_OPCODE_LIST_VALUE,
     SHA256_SEC_MONITOR_VARIABLE_ID,
 )
-from pypenguin.opcode_info.api  import DropdownValueKind
-from pypenguin.opcode_info.data import info_api
-from pypenguin.important_consts import SHA256_SEC_TARGET_NAME
-from pypenguin.utility          import (
+from pmp_manip.opcode_info.api  import DropdownValueKind
+from pmp_manip.opcode_info.data import info_api
+from pmp_manip.important_consts import SHA256_SEC_TARGET_NAME
+from pmp_manip.utility          import (
     string_to_sha256, 
     PP_ThanksError, PP_TypeValidationError, PP_InvalidOpcodeError, PP_UnnecessaryDropdownError, 
     PP_MissingDropdownError, PP_RangeValidationError, PP_InvalidValueError,
 )
 
-from pypenguin.core.block_interface import InterToFirstIF
-from pypenguin.core.context         import PartialContext
-from pypenguin.core.dropdown        import SRDropdownValue
-from pypenguin.core.enums           import SRVariableMonitorReadoutMode
-from pypenguin.core.monitor         import (
+from pmp_manip.core.block_interface import InterToFirstIF
+from pmp_manip.core.context         import PartialContext
+from pmp_manip.core.dropdown        import SRDropdownValue
+from pmp_manip.core.enums           import SRVariableMonitorReadoutMode
+from pmp_manip.core.monitor         import (
     FRMonitor, SRMonitor, SRVariableMonitor, SRListMonitor, 
     STAGE_WIDTH, STAGE_HEIGHT,
 )
-from pypenguin.core.vars_lists      import variable_sha256, list_sha256
+from pmp_manip.core.vars_lists      import variable_sha256, list_sha256
 
 from tests.utility import execute_attr_validation_tests
 from tests.core.constants import ALL_IR_BLOCKS
@@ -993,7 +993,7 @@ def test_SRVariableMonitor_validate_invalid_opcode(info_api_extended):
 def test_SRVariableMonitor_validate_dont_raise_if_monitor_position_outside_stage(monkeypatch: MonkeyPatch, info_api_extended):
     modified_cfg = get_default_config()
     modified_cfg.validation.raise_if_monitor_position_outside_stage = False
-    from pypenguin.config import manager as manager_mod
+    from pmp_manip.config import manager as manager_mod
     monkeypatch.setattr(manager_mod, "_config_instance", modified_cfg)
 
     srmonitor: SRVariableMonitor = ALL_GLOBAL_SR_MONITORS[0]
@@ -1015,7 +1015,7 @@ def test_SRListMonitor_validate_too_big_size(monkeypatch: MonkeyPatch, info_api_
     
     modified_cfg = get_default_config()
     modified_cfg.validation.raise_if_monitor_bigger_then_stage = False
-    from pypenguin.config import manager as manager_mod
+    from pmp_manip.config import manager as manager_mod
     monkeypatch.setattr(manager_mod, "_config_instance", modified_cfg)
     
     srmonitor.validate([], info_api_extended)

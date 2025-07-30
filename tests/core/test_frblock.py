@@ -1,18 +1,18 @@
 from copy   import deepcopy
 from pytest import fixture, raises
 
-from pypenguin.important_consts import (
+from pmp_manip.important_consts import (
     OPCODE_NUM_VAR_VALUE, OPCODE_VAR_VALUE, OPCODE_NUM_LIST_VALUE, OPCODE_LIST_VALUE,
     SHA256_SEC_VARIABLE, SHA256_SEC_LIST, SHA256_SEC_BROADCAST_MSG,
     SHA256_SEC_MAIN_ARGUMENT_NAME,
 )
-from pypenguin.opcode_info.data import info_api
-from pypenguin.utility          import string_to_sha256, PP_DeserializationError, PP_ConversionError
+from pmp_manip.opcode_info.data import info_api
+from pmp_manip.utility          import string_to_sha256, PP_DeserializationError, PP_ConversionError
 
-from pypenguin.core.block_interface import FirstToInterIF
-from pypenguin.core.block_mutation  import FRCustomBlockMutation, SRCustomBlockArgumentMutation
-from pypenguin.core.block           import FRBlock, IRBlock
-from pypenguin.core.vars_lists      import variable_sha256, list_sha256
+from pmp_manip.core.block_interface import FirstToInterIF
+from pmp_manip.core.block_mutation  import FRCustomBlockMutation, SRCustomBlockArgumentMutation
+from pmp_manip.core.block           import FRBlock, IRBlock
+from pmp_manip.core.vars_lists      import variable_sha256, list_sha256
 
 from tests.core.constants import ALL_FR_BLOCK_DATAS, ALL_FR_BLOCKS, ALL_FR_BLOCKS_CLEAN, ALL_IR_BLOCKS, ALL_SR_COMMENTS
 

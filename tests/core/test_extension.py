@@ -1,6 +1,6 @@
-from pypenguin.utility import PP_InvalidValueError
+from pmp_manip.utility import PP_InvalidValueError
 
-from pypenguin.core.extension import SRExtension, SRCustomExtension
+from pmp_manip.core.extension import SRExtension, SRCustomExtension
 
 from tests.utility import execute_attr_validation_tests
 

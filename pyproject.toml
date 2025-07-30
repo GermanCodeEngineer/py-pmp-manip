@@ -1,5 +1,5 @@
 [project]
-name = "pypenguin"
+name = "py-pmp-manip"
 version = "0.1.0"
 description = "Python tool for creating, editing and inspecting Penguinmod(.pmp) and Scratch(.sb3) files."
 readme = "README.md"
@@ -15,9 +15,9 @@ dependencies = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/Fritzforcode/pypenguin/"
-"Repository" = "https://github.com/Fritzforcode/pypenguin/"
-"Issues" = "https://github.com/Fritzforcode/pypenguin/issues/"
+"Homepage" = "https://github.com/Fritzforcode/py-pmp-manip/"
+"Repository" = "https://github.com/Fritzforcode/py-pmp-manip/"
+"Issues" = "https://github.com/Fritzforcode/py-pmp-manip/issues/"
 
 [project.optional-dependencies]
 dev = [
@@ -30,7 +30,7 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["pypenguin"]
+packages = ["pmp_manip"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

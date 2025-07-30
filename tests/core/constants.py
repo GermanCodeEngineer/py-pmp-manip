@@ -3,39 +3,39 @@ from io        import BytesIO
 from pydub     import AudioSegment
 from lxml      import etree
 
-from pypenguin.important_consts import (
+from pmp_manip.important_consts import (
     SHA256_SEC_MAIN_ARGUMENT_NAME, SHA256_SEC_LOCAL_ARGUMENT_NAME,
     SHA256_SEC_BROADCAST_MSG, SHA256_SEC_DROPDOWN_VALUE, SHA256_SEC_TARGET_NAME,
 )
-from pypenguin.opcode_info.api  import DropdownValueKind, InputMode
-from pypenguin.utility          import read_all_files_of_zip, string_to_sha256, gdumps, KeyReprDict
+from pmp_manip.opcode_info.api  import DropdownValueKind, InputMode
+from pmp_manip.utility          import read_all_files_of_zip, string_to_sha256, gdumps, KeyReprDict
 
-from pypenguin.core.asset          import FRCostume, FRSound, SRVectorCostume, SRSound
-from pypenguin.core.block_mutation import (
+from pmp_manip.core.asset          import FRCostume, FRSound, SRVectorCostume, SRSound
+from pmp_manip.core.block_mutation import (
     FRCustomBlockMutation, FRCustomBlockCallMutation,
     FRCustomBlockArgumentMutation,
     SRCustomBlockMutation, SRCustomBlockCallMutation,
 )
-from pypenguin.core.block          import (
+from pmp_manip.core.block          import (
     FRBlock, IRBlock, IRInputValue,
     SRBlock, SRScript,
     SRBlockAndTextInputValue, SRBlockAndDropdownInputValue, SRBlockOnlyInputValue, SRScriptInputValue,
     SRDropdownValue,
 )
-from pypenguin.core.comment        import FRComment, SRComment
-from pypenguin.core.custom_block   import (
+from pmp_manip.core.comment        import FRComment, SRComment
+from pmp_manip.core.custom_block   import (
     SRCustomBlockOpcode, SRCustomBlockArgument, SRCustomBlockArgumentType,
     SRCustomBlockOptype,
 )
-from pypenguin.core.enums          import SRSpriteRotationStyle, SRVideoState
-from pypenguin.core.meta           import FRMeta, FRPenguinModPlatformMeta
-from pypenguin.core.monitor        import (
+from pmp_manip.core.enums          import SRSpriteRotationStyle, SRVideoState
+from pmp_manip.core.meta           import FRMeta, FRPenguinModPlatformMeta
+from pmp_manip.core.monitor        import (
     LIST_MONITOR_DEFAULT_WIDTH, LIST_MONITOR_DEFAULT_HEIGHT,
     FRMonitor, SRMonitor, SRListMonitor,
 )
-from pypenguin.core.project        import FRProject, SRProject
-from pypenguin.core.target         import FRStage, FRSprite, SRStage, SRSprite
-from pypenguin.core.vars_lists     import variable_sha256, list_sha256, SRVariable, SRList
+from pmp_manip.core.project        import FRProject, SRProject
+from pmp_manip.core.target         import FRStage, FRSprite, SRStage, SRSprite
+from pmp_manip.core.vars_lists     import variable_sha256, list_sha256, SRVariable, SRList
 # TODO: correct formatting
 
 

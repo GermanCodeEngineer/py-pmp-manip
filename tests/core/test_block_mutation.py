@@ -1,22 +1,22 @@
 from copy   import deepcopy
 from pytest import fixture, raises
 
-from pypenguin.important_consts import SHA256_SEC_MAIN_ARGUMENT_NAME
-from pypenguin.utility          import (
+from pmp_manip.important_consts import SHA256_SEC_MAIN_ARGUMENT_NAME
+from pmp_manip.utility          import (
     string_to_sha256, gdumps,
     PP_DeserializationError, PP_ConversionError, PP_ThanksError, 
     PP_TypeValidationError, PP_InvalidValueError
 )
 
-from pypenguin.core.block_interface import FirstToInterIF, InterToFirstIF
-from pypenguin.core.block_mutation  import (
+from pmp_manip.core.block_interface import FirstToInterIF, InterToFirstIF
+from pmp_manip.core.block_mutation  import (
     FRMutation,
     FRCustomBlockArgumentMutation, FRCustomBlockMutation,
     FRCustomBlockCallMutation, FRStopScriptMutation,
     SRCustomBlockArgumentMutation, SRCustomBlockMutation,
     SRCustomBlockCallMutation, SRStopScriptMutation
 )
-from pypenguin.core.custom_block    import SRCustomBlockOpcode, SRCustomBlockOptype
+from pmp_manip.core.custom_block    import SRCustomBlockOpcode, SRCustomBlockOptype
 
 from tests.core.constants import (
     ALL_FR_BLOCKS_CLEAN, ALL_IR_BLOCKS, ALL_SR_COMMENTS, SR_BLOCK_CUSTOM_OPCODE,

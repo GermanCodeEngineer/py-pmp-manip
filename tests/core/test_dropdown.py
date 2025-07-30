@@ -1,10 +1,10 @@
 from pytest import fixture, raises
 
-from pypenguin.opcode_info.api import BuiltinDropdownType, DropdownValueKind
-from pypenguin.utility         import PP_TypeValidationError, PP_InvalidDropdownValueError
+from pmp_manip.opcode_info.api import BuiltinDropdownType, DropdownValueKind
+from pmp_manip.utility         import PP_TypeValidationError, PP_InvalidDropdownValueError
 
-from pypenguin.core.context  import PartialContext
-from pypenguin.core.dropdown import SRDropdownValue
+from pmp_manip.core.context  import PartialContext
+from pmp_manip.core.dropdown import SRDropdownValue
 
 from tests.utility import execute_attr_validation_tests
 

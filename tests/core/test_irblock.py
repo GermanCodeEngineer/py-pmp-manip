@@ -2,11 +2,11 @@ from copy        import deepcopy
 from dataclasses import field
 from pytest      import raises
 
-from pypenguin.opcode_info.data import info_api
-from pypenguin.utility          import grepr_dataclass, PP_ConversionError
+from pmp_manip.opcode_info.data import info_api
+from pmp_manip.utility          import grepr_dataclass, PP_ConversionError
 
-from pypenguin.core.block_interface import InterToFirstIF
-from pypenguin.core.block           import IRBlock
+from pmp_manip.core.block_interface import InterToFirstIF
+from pmp_manip.core.block           import IRBlock
 
 
 from tests.core.constants import ALL_FR_BLOCKS, ALL_FR_COMMENTS, ALL_IR_BLOCKS, ALL_SR_SCRIPTS

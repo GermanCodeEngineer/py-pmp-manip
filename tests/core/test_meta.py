@@ -1,9 +1,9 @@
 from pytest import raises
 
-from pypenguin.config  import get_config
-from pypenguin.utility import PP_ThanksError
+from pmp_manip.config  import get_config
+from pmp_manip.utility import PP_ThanksError
 
-from pypenguin.core.meta import FRMeta, FRPenguinModPlatformMeta, PENGUINMOD_PLATFORM_META_DATA
+from pmp_manip.core.meta import FRMeta, FRPenguinModPlatformMeta, PENGUINMOD_PLATFORM_META_DATA
 
 
 cfg = get_config()

@@ -1,6 +1,6 @@
-from pypenguin.utility import PP_TypeValidationError, PP_InvalidValueError
+from pmp_manip.utility import PP_TypeValidationError, PP_InvalidValueError
 
-from pypenguin.core.comment import FRComment, SRComment
+from pmp_manip.core.comment import FRComment, SRComment
 
 from tests.utility import execute_attr_validation_tests
 

@@ -2,22 +2,22 @@ from copy        import copy, deepcopy
 from dataclasses import field
 from pytest      import fixture, raises
 
-from pypenguin.opcode_info.api  import DropdownValueKind, OpcodeType, BuiltinInputType, InputMode
-from pypenguin.opcode_info.data import info_api
-from pypenguin.utility          import (
+from pmp_manip.opcode_info.api  import DropdownValueKind, OpcodeType, BuiltinInputType, InputMode
+from pmp_manip.opcode_info.data import info_api
+from pmp_manip.utility          import (
     grepr_dataclass, PP_ConversionError,
     PP_TypeValidationError, PP_RangeValidationError, PP_InvalidOpcodeError, PP_InvalidBlockShapeError,
     PP_UnnecessaryInputError, PP_MissingInputError, PP_UnnecessaryDropdownError, PP_MissingDropdownError,
 )
 
-from pypenguin.core.block_interface import SecondToInterIF, ValidationIF
-from pypenguin.core.block           import (
+from pmp_manip.core.block_interface import SecondToInterIF, ValidationIF
+from pmp_manip.core.block           import (
     IRBlock, IRInputValue,
     SRScript, SRBlock, SRInputValue, 
     SRBlockAndTextInputValue, SRBlockOnlyInputValue, SRBlockAndDropdownInputValue, SRScriptInputValue,
 )
-from pypenguin.core.context         import CompleteContext
-from pypenguin.core.dropdown        import SRDropdownValue
+from pmp_manip.core.context         import CompleteContext
+from pmp_manip.core.dropdown        import SRDropdownValue
 
 
 from tests.core.constants import ALL_IR_BLOCKS, ALL_SR_SCRIPTS
@@ -30,7 +30,7 @@ def info_api_extended():
     info_api_extended = copy(info_api)
     info_api_extended.opcode_info = copy(info_api.opcode_info) 
     # make sure the internals of the DualKeyDict are shallow copied as well
-    from pypenguin.opcode_info.data.scratch_music import scratch_music
+    from pmp_manip.opcode_info.data.scratch_music import scratch_music
     info_api_extended.add_group(scratch_music)
     return info_api_extended
 

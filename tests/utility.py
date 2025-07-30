@@ -2,9 +2,9 @@ from typing      import Any, Type, Callable, TypeVar
 from copy        import copy, deepcopy
 from pytest      import raises
 
-from pypenguin.utility import PP_ValidationError
-from pypenguin.core.block   import FRBlock
-from pypenguin.core.comment import FRComment
+from pmp_manip.utility import PP_ValidationError
+from pmp_manip.core.block   import FRBlock
+from pmp_manip.core.comment import FRComment
 
 _CPMT = TypeVar("_CPMT")
 

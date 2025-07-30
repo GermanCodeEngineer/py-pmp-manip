@@ -1,11 +1,11 @@
 from pytest import fixture, raises
 
-from pypenguin.opcode_info.api import BuiltinInputType, InputInfo, OpcodeType
-from pypenguin.utility         import (
+from pmp_manip.opcode_info.api import BuiltinInputType, InputInfo, OpcodeType
+from pmp_manip.utility         import (
     PP_TypeValidationError, PP_RangeValidationError, PP_SameValueTwiceError, PP_InvalidValueError, PP_ConversionError,
 )
 
-from pypenguin.core.custom_block import (
+from pmp_manip.core.custom_block import (
     SRCustomBlockOpcode, SRCustomBlockArgument, SRCustomBlockArgumentType, SRCustomBlockOptype,
 )
 

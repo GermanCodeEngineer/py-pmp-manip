@@ -3,27 +3,27 @@ from uuid   import UUID
 from pydub  import AudioSegment
 from pytest import fixture, raises
 
-from pypenguin.important_consts import SHA256_SEC_TARGET_NAME
-from pypenguin.opcode_info.api  import DropdownValueKind
-from pypenguin.opcode_info.data import info_api
-from pypenguin.utility          import (
+from pmp_manip.important_consts import SHA256_SEC_TARGET_NAME
+from pmp_manip.opcode_info.api  import DropdownValueKind
+from pmp_manip.opcode_info.data import info_api
+from pmp_manip.utility          import (
     string_to_sha256, lists_equal_ignore_order, xml_equal,
     PP_ThanksError, PP_ConversionError, PP_TypeValidationError, PP_RangeValidationError, 
     PP_SameValueTwiceError, PP_InvalidValueError
 )
 
-from pypenguin.core.asset           import SRVectorCostume, SRSound
-from pypenguin.core.block_mutation  import SRCustomBlockMutation
-from pypenguin.core.block           import FRBlock, SRScript, SRBlock
-from pypenguin.core.comment         import FRComment, SRComment
-from pypenguin.core.context         import PartialContext
-from pypenguin.core.custom_block    import (
+from pmp_manip.core.asset           import SRVectorCostume, SRSound
+from pmp_manip.core.block_mutation  import SRCustomBlockMutation
+from pmp_manip.core.block           import FRBlock, SRScript, SRBlock
+from pmp_manip.core.comment         import FRComment, SRComment
+from pmp_manip.core.context         import PartialContext
+from pmp_manip.core.custom_block    import (
     SRCustomBlockOptype, 
     SRCustomBlockOpcode, SRCustomBlockArgument, SRCustomBlockArgumentType,
 )
-from pypenguin.core.enums           import SRSpriteRotationStyle
-from pypenguin.core.target          import FRTarget, FRStage, FRSprite, SRTarget, SRSprite
-from pypenguin.core.vars_lists      import SRVariable, SRCloudVariable, SRList
+from pmp_manip.core.enums           import SRSpriteRotationStyle
+from pmp_manip.core.target          import FRTarget, FRStage, FRSprite, SRTarget, SRSprite
+from pmp_manip.core.vars_lists      import SRVariable, SRCloudVariable, SRList
 
 from tests.core.constants import (
     FR_PROJECT, SR_PROJECT, PROJECT_ASSET_FILES,

@@ -5,12 +5,12 @@ from PIL    import Image
 from pydub  import AudioSegment
 from pytest import fixture, raises
 
-from pypenguin.utility import (
+from pmp_manip.utility import (
     xml_equal, image_equal, generate_md5, KeyReprDict,
     PP_TypeValidationError, PP_InvalidValueError, PP_ThanksError,
 )
 
-from pypenguin.core.asset import (
+from pmp_manip.core.asset import (
     FRCostume, FRSound, SRCostume, SRVectorCostume, SRBitmapCostume, SRSound, 
     EMPTY_SVG_COSTUME_XML, EMPTY_SVG_COSTUME_ROTATION_CENTER,
 )

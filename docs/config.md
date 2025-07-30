@@ -1,6 +1,6 @@
-# Configuration System – `pypenguin.config`
+# Configuration System – `pmp_manip.config`
 
-This module handles centralized configuration for the `pypenguin` project. It allows setting and validating all configuration parameters exactly once, after which they are **deeply frozen** to prevent further modification.
+This module handles centralized configuration for the `pmp_manip` project. It allows setting and validating all configuration parameters exactly once, after which they are **deeply frozen** to prevent further modification.
 
 For field-specific documentation, refer to the table at the bottom.
 
@@ -79,7 +79,7 @@ Returns a pre-built `MasterConfig` with safe, reasonable defaults. This can be u
 ### Method 1: Override from Default Config (Recommended)
 
 ```python
-from pypenguin import (
+from pmp_manip import (
     init_config, get_config, get_default_config,
 )
 
@@ -94,13 +94,13 @@ cfg.validation.raise_if_monitor_position_outside_stage = False
 # Initialize with modified config
 init_config(cfg)
 
-# ... Use the pypenguin module however you want from here
+# ... Use the pmp_manip module however you want from here
 ```
 
 ### Method 2: Full Manual Initialization
 
 ```python
-from pypenguin import (
+from pmp_manip import (
     init_config, get_config,
     ExtInfoGenConfig, ValidationConfig,
     PlatformMetaConfig, MasterConfig,
@@ -124,6 +124,6 @@ init_config(MasterConfig(
     ),
 ))
 
-# ... Use the pypenguin module however you want from here
+# ... Use the pmp_manip module however you want from here
 ```
 

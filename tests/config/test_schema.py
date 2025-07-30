@@ -2,10 +2,10 @@ from dataclasses import FrozenInstanceError
 from datetime    import timedelta
 from pytest      import raises
 
-from pypenguin.utility import grepr_dataclass, PP_TypeValidationError
+from pmp_manip.utility import grepr_dataclass, PP_TypeValidationError
 
-from pypenguin.config.manager import get_default_config
-from pypenguin.config.schema  import ConfigBase, MasterConfig, ExtInfoGenConfig, ValidationConfig, PlatformMetaConfig
+from pmp_manip.config.manager import get_default_config
+from pmp_manip.config.schema  import ConfigBase, MasterConfig, ExtInfoGenConfig, ValidationConfig, PlatformMetaConfig
 
 from tests.utility import execute_attr_validation_tests
 

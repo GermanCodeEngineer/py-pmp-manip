@@ -1,6 +1,6 @@
-from pypenguin.opcode_info.api import DropdownValueKind
+from pmp_manip.opcode_info.api import DropdownValueKind
 
-from pypenguin.core.context import PartialContext, CompleteContext
+from pmp_manip.core.context import PartialContext, CompleteContext
 
 
 def test_CompleteContext_from_partial():

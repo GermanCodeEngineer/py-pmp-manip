@@ -1,9 +1,9 @@
 from pytest import raises
 
-from pypenguin.utility import PP_ConversionError
+from pmp_manip.utility import PP_ConversionError
 
 
-from pypenguin.core.enums import SRCodeEnum
+from pmp_manip.core.enums import SRCodeEnum
 
 
 
@@ -26,7 +26,7 @@ def test_SRCodeEnum_to_code():
     assert DummyEnum.GÜNTHER_JAUCH.to_code() == "gj"
     assert DummyEnum.DIETER_BOHLEN.to_code() == "dibo"
 
-from pypenguin.core.enums import SRTTSLanguage, SRVideoState, SRSpriteRotationStyle, SRVariableMonitorReadoutMode
+from pmp_manip.core.enums import SRTTSLanguage, SRVideoState, SRSpriteRotationStyle, SRVariableMonitorReadoutMode
 
 
 

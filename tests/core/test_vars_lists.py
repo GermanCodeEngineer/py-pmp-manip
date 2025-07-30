@@ -1,9 +1,9 @@
 from pytest import fixture
 
-from pypenguin.important_consts import SHA256_SEC_VARIABLE, SHA256_SEC_LIST
-from pypenguin.utility          import string_to_sha256, PP_TypeValidationError
+from pmp_manip.important_consts import SHA256_SEC_VARIABLE, SHA256_SEC_LIST
+from pmp_manip.utility          import string_to_sha256, PP_TypeValidationError
 
-from pypenguin.core.vars_lists import variable_sha256, list_sha256, SRVariable, SRCloudVariable, SRList
+from pmp_manip.core.vars_lists import variable_sha256, list_sha256, SRVariable, SRCloudVariable, SRList
 
 from tests.utility import execute_attr_validation_tests
 
