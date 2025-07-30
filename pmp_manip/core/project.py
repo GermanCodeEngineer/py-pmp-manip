@@ -39,7 +39,6 @@ class FRProject:
     def from_data(cls, 
         data: dict, 
         asset_files: dict[str, bytes], 
-        info_api: OpcodeInfoAPI,
     ) -> "FRProject":
         """
         Deserializes raw data into a FRProject
@@ -47,14 +46,13 @@ class FRProject:
         Args:
             data: the raw data
             asset_files: the contents of the costume and sound files
-            info_api: the opcode info api used to fetch information about opcodes
         
         Returns:
             the FRProject
         """
         return cls(
             targets = [
-                (FRStage if i==0 else FRSprite).from_data(target_data, info_api)
+                (FRStage if i==0 else FRSprite).from_data(target_data)
                 for i, target_data in enumerate(data["targets"])
             ],
             monitors = [

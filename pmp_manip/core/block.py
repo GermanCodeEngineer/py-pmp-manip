@@ -53,28 +53,20 @@ class FRBlock:
     mutation: "FRMutation | None" = None
 
     @classmethod
-    def from_data(cls, data: dict[str, Any], info_api: OpcodeInfoAPI) -> "FRBlock":
+    def from_data(cls, data: dict[str, Any]) -> "FRBlock":
         """
         Deserializes json data into a FRBlock
         
         Args:
             data: the json data
-            info_api: the opcode info api used to fetch information about opcodes
         
         Returns:
             the FRBlock
         """
-        opcode = data["opcode"]
-        opcode_info = info_api.get_info_by_old(opcode)
-        if opcode_info.old_mutation_cls is None:
-            if "mutation" in data:
-                raise PP_DeserializationError(f"Invalid mutation for FRBlock with opcode {repr(opcode)}: {data['mutation']}")
-            mutation = None
+        if "mutation" in data:
+            mutation = FRMutation.from_data(data["mutation"])
         else:
-            if "mutation" not in data:
-                cls_name = opcode_info.old_mutation_cls.__name__
-                raise PP_DeserializationError(f"Missing mutation of type {cls_name} for FRBlock with opcode {repr(opcode)}")
-            mutation = opcode_info.old_mutation_cls.from_data(data["mutation"])
+            mutation = None
         return cls(
             opcode    = opcode,
             next      = data["next"    ],

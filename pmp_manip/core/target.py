@@ -47,26 +47,24 @@ class FRTarget(ABC):
     
     @classmethod
     @abstractmethod
-    def from_data(cls, data: dict[str, Any], info_api: OpcodeInfoAPI) -> "FRTarget":
+    def from_data(cls, data: dict[str, Any]) -> "FRTarget":
         """
         Deserializes raw data into a FRTarget
         
         Args:
             data: the raw data
-            info_api: the opcode info api used to fetch information about opcodes
         
         Returns:
             the FRTarget
         """
 
     @staticmethod
-    def _from_data_common(data: dict[str, Any], info_api: OpcodeInfoAPI) -> dict[str, Any]:
+    def _from_data_common(data: dict[str, Any]) -> dict[str, Any]:
         """
         Prepare common fields for FRTarget and its subclasses
 
         Args:
             data: the raw data
-            info_api: the opcode info api used to fetch information about opcodes
 
         Returns:
             a dict containing the prepared values for common fields
@@ -82,7 +80,7 @@ class FRTarget(ABC):
                 block_id: (
                     tuple(block_data)
                     if isinstance(block_data, list)
-                    else FRBlock.from_data(block_data, info_api=info_api)
+                    else FRBlock.from_data(block_data)
                 )
                 for block_id, block_data in data["blocks"].items()
             },
@@ -292,18 +290,17 @@ class FRStage(FRTarget):
     text_to_speech_language: str | None
 
     @classmethod
-    def from_data(cls, data: dict[str, Any], info_api: OpcodeInfoAPI) -> "FRStage":
+    def from_data(cls, data: dict[str, Any]) -> "FRStage":
         """
         Deserializes raw data into a FRStage
         
         Args:
             data: the raw data
-            info_api: the opcode info api used to fetch information about opcodes
         
         Returns:
             the FRStage
         """
-        common_fields = cls._from_data_common(data, info_api)
+        common_fields = cls._from_data_common(data)
         if "id" in data:
             id = data["id"]
         else:
@@ -380,18 +377,17 @@ class FRSprite(FRTarget):
     rotation_style: str
 
     @classmethod
-    def from_data(cls, data: dict[str, Any], info_api: OpcodeInfoAPI) -> "FRSprite":
+    def from_data(cls, data: dict[str, Any]) -> "FRSprite":
         """
         Deserializes raw data into a FRSprite
         
         Args:
             data: the raw data
-            info_api: the opcode info api used to fetch information about opcodes
         
         Returns:
             the FRSprite
         """
-        common_fields = cls._from_data_common(data, info_api)
+        common_fields = cls._from_data_common(data)
         if "id" in data:
             id = data["id"]
         else:

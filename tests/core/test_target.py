@@ -79,7 +79,7 @@ def test_FRTarget_post_init():
     class DummyFRTarget(FRTarget):
         # to fullfill the abstractmethod requirements:
         @classmethod
-        def from_data(cls, data, info_api) -> "DummyFRTarget":
+        def from_data(cls, data) -> "DummyFRTarget":
             pass
         def to_data(self):
             pass

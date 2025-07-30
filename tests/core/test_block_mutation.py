@@ -3,7 +3,7 @@ from pytest import fixture, raises
 
 from pmp_manip.important_consts import SHA256_SEC_MAIN_ARGUMENT_NAME
 from pmp_manip.utility          import (
-    string_to_sha256, gdumps,
+    string_to_sha256, gdumps, grepr_dataclass,
     PP_DeserializationError, PP_ConversionError, PP_ThanksError, 
     PP_TypeValidationError, PP_InvalidValueError
 )
@@ -39,6 +39,16 @@ def itf_if():
         sprite_name="_stage_",
     )
 
+@fixture(autouse=True)
+def reset_frmutation_subclass_info():
+    """
+    Automatically snapshot and restore FRMutation._subclasses_info_
+    before and after each test, to prevent cross-test contamination.
+    """
+    original = deepcopy(FRMutation._subclasses_info_)
+    yield
+    FRMutation._subclasses_info_ = original
+
 EXAMPLE_ARG_IDS = [
     string_to_sha256("a text arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME), 
     string_to_sha256("a bool arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME),
@@ -48,8 +58,76 @@ EXAMPLE_ARG_DEFAULTS = ["", "false"]
 
 
 
+def test_FRMutation_init_subclass():
+    class_names = {cls.__name__ for cls in FRMutation._subclasses_info_.keys()}
+    assert "Dummy_FRMutation" not in class_names
+    @grepr_dataclass(grepr_fields=["abx"])
+    class Dummy_FRMutation(FRMutation, required_properties={"abx", "iop"}, optional_properties={"pkl"}):
+        abx: str
+        iop: list
+        pkl: bool
+
+        @classmethod
+        def from_data(cls, data): pass
+        def to_data(self): pass
+        def to_second(self, ticfti_if): pass
+    
+    assert Dummy_FRMutation in FRMutation._subclasses_info_
+    assert FRMutation._subclasses_info_[Dummy_FRMutation] == ({"tagName", "children",  "abx", "iop"}, {"pkl"})
+
+
+def test_FRMutation_find_from_data_subcls():
+    @grepr_dataclass(grepr_fields=["size"])
+    class Dummy1_FRMutation(FRMutation, required_properties={"size"}):
+        size: float
+
+        @classmethod
+        def from_data(cls, data) -> "Dummy1_FRMutation":
+            return cls(
+                tag_name        = data["tagName" ],
+                children        = data["children"],
+                size            = data["size"],
+            )
+        def to_data(self): pass
+        def to_second(self, ticfti_if): pass
+
+    @grepr_dataclass(grepr_fields=["smart_activated", "title_text"])
+    class Dummy2_FRMutation(FRMutation, required_properties={"smartActivated"}, optional_properties={"titleText"}):
+        smart_activated: bool
+        title_text: str | None
+
+        @classmethod
+        def from_data(cls, data) -> "Dummy2_FRMutation":
+            return cls(
+                tag_name        = data["tagName" ],
+                children        = data["children"],
+                smart_activated = data["smartActivated"],
+                title_text      = data.get("titleText", None),
+            )
+        def to_data(self): pass
+        def to_second(self, ticfti_if): pass
+    
+    @grepr_dataclass(grepr_fields=["smart_activated", "author_name"])
+    class Dummy3_FRMutation(FRMutation, required_properties={"smartActivated"}, optional_properties={"authorName"}):
+        smart_activated: bool
+        author_name: str | None
+
+        @classmethod
+        def from_data(cls, data) -> "Dummy3_FRMutation":
+            return cls(
+                tag_name        = data["tagName" ],
+                children        = data["children"],
+                smart_activated = data["smartActivated"],
+                author_name     = data.get("authorName", None),
+            )
+        def to_data(self): pass
+        def to_second(self, ticfti_if): pass
+    
+    assert FRMutation._find_from_data_subclasses({"smartActivated": True})
+
+
 def test_FRMutation_from_data_and_post_init():
-    class DummyFRMutation(FRMutation):
+    class DummyFRMutation(FRMutation, required_properties=set()):
         @classmethod
         def from_data(cls, data) -> "DummyFRMutation":
             return cls(

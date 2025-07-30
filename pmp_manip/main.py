@@ -4,6 +4,10 @@ from pmp_manip.opcode_info.data.scratch_music import scratch_music
 #from pmp_manip.opcode_info.data.gen_dumbExample import dumbExample
 from pmp_manip.config import *
 
+
+print(FRMutation.__repr__(FRMutation._subclasses_info_))
+raise Exception()
+
 #file_path = "assets/from_online/my 1st platformer.pmp"
 file_path = "assets/from_online/ONLINE 2D MAINCRAFT.pmp"
 #file_path = "assets/input_modes.pmp"

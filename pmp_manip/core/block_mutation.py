@@ -1,8 +1,8 @@
 from abc         import ABC, abstractmethod
 from copy        import deepcopy
-from json        import loads
-from typing      import Any, TYPE_CHECKING
 from dataclasses import field
+from json        import loads
+from typing      import Any, ClassVar, TYPE_CHECKING
 
 from pmp_manip.important_consts import SHA256_SEC_MAIN_ARGUMENT_NAME
 from pmp_manip.utility          import (
@@ -21,23 +21,63 @@ class FRMutation(ABC):
     The first representation for the mutation of a block. Mutations hold special information, which only special blocks have
     """
     
+    _subclasses_info_: ClassVar[dict[type["FRMutation"], tuple[set[str], set[str]]]] = {}
+    # stores classes required and optional properties
+
     tag_name: str # always "mutation"
     children: list # always []
+
+    def __init_subclass__(cls, *, required_properties: set[str], optional_properties: set[str]=set(), **kwargs):
+        """
+        Take note of a mutation subclasses required and optional properties
+
+        Args:
+            required_properties: the set of properties, a subclass instance's json data dict must contain
+            optional_properties: the set of properties, a subclass instance's json data dict might contain
+        """
+        super().__init_subclass__(**kwargs)
+        subclass_info = ({"tagName", "children"} | required_properties, optional_properties)
+        FRMutation._subclasses_info_[cls] = subclass_info
+    
+
+    @classmethod
+    def _find_from_data_subclasses(cls, data: dict[str, Any]) -> list[type["FRMutation"]]:
+        """
+        Compares the keys of the provided data with the properties of all subclasses and returns the matching ones
+        
+        Args:
+            data: the json data
+        """
+        data_properties = set(data.keys())
+        matches = []
+        for subcls, subcls_info in FRMutation._subclasses_info_.items():
+            required_properties, optional_properties = subcls_info
+            if not required_properties.issubset(data_properties):
+                continue
+            unrecognized_properties = (data_properties - required_properties)
+            if not optional_properties.issubset(unrecognized_properties):
+                continue
+            matches.append(subcls)
+        return matches
 
     @classmethod
     @abstractmethod
     def from_data(cls, data: dict[str, Any]) -> "FRMutation":
         """
-        Create a FRMutation from json data
+        Create a FRMutation from json data. 
+        Automatically chooses the right subclass and creates an instance using its from_data method
         
         Args:
             data: the json data
-        
-        Returns:
-            the FRMutation
+
+        Raises:
+            PP_DeserializationError: if no matching block mutation subclass is found(compares properties)
         """
-        # STOPPED HERE: implement method which runs for all mutation classes:
-        #               do required and optional attributes match data.keys()?
+        subcls = FRMutation._find_from_data_subclasses(cls, data)
+        if subcls is None:
+            raise PP_DeserializationError(f"Couldn't find matching block mutation subclass for data: {data}")
+        else:
+            return subcls.from_data(data)
 
     @abstractmethod
     def to_data(self) -> dict[str, Any]:
@@ -71,7 +111,7 @@ class FRMutation(ABC):
         """
 
 @grepr_dataclass(grepr_fields=["color"])
-class FRCustomBlockArgumentMutation(FRMutation):
+class FRCustomBlockArgumentMutation(FRMutation, required_properties={"color"}):
     """
     The first representation for the mutation of a custom block's argument reporter
     """
@@ -152,7 +192,10 @@ class FRCustomBlockArgumentMutation(FRMutation):
         )
 
 @grepr_dataclass(grepr_fields=["proccode", "argument_ids", "argument_names", "argument_defaults", "warp", "returns", "edited", "optype", "color"])
-class FRCustomBlockMutation(FRMutation):
+class FRCustomBlockMutation(FRMutation, 
+        required_properties={"proccode", "argumentids", "argumentnames", "argumentdefaults", "warp"},
+        optional_properties={"returns", "edited", "optype", "color"},
+    ):
     """
     The first representation for the mutation of a custom block definition
     """
@@ -241,7 +284,10 @@ class FRCustomBlockMutation(FRMutation):
         )
 
 @grepr_dataclass(grepr_fields=["proccode", "argument_ids", "warp", "returns", "edited", "optype", "color"])
-class FRCustomBlockCallMutation(FRMutation):
+class FRCustomBlockCallMutation(FRMutation, 
+        required_properties={"proccode", "argumentids", "warp"},
+        optional_properties={"returns", "edited", "optype", "color"},
+    ):
     """
     The first representation for the mutation of a custom block call
     """
@@ -320,7 +366,7 @@ class FRCustomBlockCallMutation(FRMutation):
         )
 
 @grepr_dataclass(grepr_fields=["has_next"])
-class FRStopScriptMutation(FRMutation):
+class FRStopScriptMutation(FRMutation, required_properties={"hasnext"}):
     """
     The first representation for the mutation of a stop script mutation
     """

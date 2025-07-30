@@ -19,7 +19,7 @@ def grepr(obj, /, safe_dkd=False, level_offset=0, annotate_fields=True, include_
         return isinstance(obj, dict) and not isinstance(obj, KeyReprDict)
     
     def _grepr(obj, level=level_offset) -> tuple[str, bool]:
-        is_compatible = bool(getattr(obj, "_grepr", False))
+        is_compatible = bool(getattr(obj, "_grepr", False)) and not(isinstance(obj, type)) # the class also has _grepr
         if indent is not None:
             level += 1
             prefix = "\n" + indent * level
@@ -98,7 +98,7 @@ def grepr(obj, /, safe_dkd=False, level_offset=0, annotate_fields=True, include_
             return f"{class_name}({prefix}{sep.join(args)}{end_sep})", False
         return repr(obj), True
  
-    is_compatible = bool(getattr(obj, "_grepr", False))
+    is_compatible = bool(getattr(obj, "_grepr", False)) and not(isinstance(obj, type))
     if is_compatible or isinstance(obj, (list, tuple, set, DualKeyDict, dict, str)):
         if indent is not None and not isinstance(indent, str):
             indent = " " * indent
