@@ -31,7 +31,6 @@ def test_FRProject_from_to_data():
     frproject = FRProject.from_data(
         data=PROJECT_DATA, 
         asset_files=PROJECT_ASSET_FILES, 
-        info_api=info_api,
     )
     assert frproject == FR_PROJECT
 
@@ -46,11 +45,11 @@ def test_FRProject_data_sb3_to_pmp():
 
 
 def test_FRProject_from_file():
-    FRProject.from_file("tests/_assets_/testing_blocks.pmp", info_api)
-    FRProject.from_file("tests/_assets_/scratch_project.sb3", info_api) 
+    FRProject.from_file("tests/_assets_/testing_blocks.pmp")
+    FRProject.from_file("tests/_assets_/scratch_project.sb3") 
     # TODO: use smaller examples and check equality
     with raises(AssertionError):
-        FRProject.from_file("abc/def/ghi/christ_loves_u.bible", info_api)
+        FRProject.from_file("abc/def/ghi/christ_loves_u.bible")
 
 
 def test_FRProject_post_init():
@@ -58,7 +57,6 @@ def test_FRProject_post_init():
         FRProject.from_data(
             data=PROJECT_DATA | {"extensionData": 7}, 
             asset_files=PROJECT_ASSET_FILES,
-            info_api=info_api,
         )
 
 

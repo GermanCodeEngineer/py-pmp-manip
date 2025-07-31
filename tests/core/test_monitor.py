@@ -696,7 +696,7 @@ def info_api_extended():
     info_api_extended = copy(info_api)
     info_api_extended.opcode_info = copy(info_api.opcode_info) 
     # make sure the internals of the DualKeyDict are shallow copied as well
-    from example_extensions.gen_opcode_info.dumbExample import dumbExample
+    from tests._example_extensions_.gen_opcode_info.dumbExample import dumbExample
     info_api_extended.add_group(dumbExample)
     return info_api_extended
 

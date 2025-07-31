@@ -68,7 +68,7 @@ class FRBlock:
         else:
             mutation = None
         return cls(
-            opcode    = opcode,
+            opcode    = data["opcode"  ],
             next      = data["next"    ],
             parent    = data["parent"  ],
             inputs    = deepcopy(tuplify(data["inputs"])),

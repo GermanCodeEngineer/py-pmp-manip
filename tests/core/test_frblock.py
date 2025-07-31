@@ -10,7 +10,10 @@ from pmp_manip.opcode_info.data import info_api
 from pmp_manip.utility          import string_to_sha256, PP_DeserializationError, PP_ConversionError
 
 from pmp_manip.core.block_interface import FirstToInterIF
-from pmp_manip.core.block_mutation  import FRCustomBlockMutation, SRCustomBlockArgumentMutation
+from pmp_manip.core.block_mutation  import (
+    FRCustomBlockMutation, FRCustomBlockArgumentMutation, 
+    SRCustomBlockArgumentMutation
+)
 from pmp_manip.core.block           import FRBlock, IRBlock
 from pmp_manip.core.vars_lists      import variable_sha256, list_sha256
 
@@ -28,7 +31,7 @@ def fti_if():
 
 def test_FRBlock_from_data():
     data = ALL_FR_BLOCK_DATAS["d"]
-    frblock = FRBlock.from_data(data, info_api=info_api)
+    frblock = FRBlock.from_data(data)
     assert isinstance(frblock, FRBlock)
     assert frblock.opcode    == data["opcode"]
     assert frblock.next      == data["next"]
@@ -42,28 +45,26 @@ def test_FRBlock_from_data():
     assert frblock.shadow    == data["shadow"]
     assert frblock.top_level == data["topLevel"]
 
-def test_FRBlock_from_data_comment():
+def test_FRBlock_from_data_comment_without_mutation():
     data = ALL_FR_BLOCK_DATAS["b"]
-    frblock = FRBlock.from_data(data, info_api=info_api)
+    frblock = FRBlock.from_data(data)
     assert isinstance(frblock, FRBlock)
     assert frblock.x       is None
     assert frblock.y       is None
     assert frblock.comment == data["comment"]
 
-def test_FRBlock_from_data_invalid_mutation():
-    data = ALL_FR_BLOCK_DATAS["d"] | {"mutation": {...}}
-    with raises(PP_DeserializationError):
-        FRBlock.from_data(data, info_api=info_api)
-
-def test_FRBlock_from_data_missing_mutation():
-    data = ALL_FR_BLOCK_DATAS["j"].copy()
-    del data["mutation"]
-    with raises(PP_DeserializationError):
-        FRBlock.from_data(data, info_api=info_api)
+def test_FRBlock_from_data_with_mutation():
+    data = ALL_FR_BLOCK_DATAS["j"]
+    frblock = FRBlock.from_data(data)
+    assert frblock.mutation == FRCustomBlockArgumentMutation(
+        tag_name="mutation",
+        children=[],
+        color=("#FF6680", "#FF4D6A", "#FF3355"),
+    )
 
 def test_FRBlock_from_data_valid_mutation():
     data = ALL_FR_BLOCK_DATAS["a"]
-    frblock = FRBlock.from_data(data, info_api=info_api)
+    frblock = FRBlock.from_data(data)
     assert isinstance(frblock, FRBlock)
     assert frblock.mutation == FRCustomBlockMutation(
         tag_name="mutation",

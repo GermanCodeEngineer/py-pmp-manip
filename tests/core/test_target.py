@@ -56,7 +56,7 @@ def context():
 
 
 def test_FRTarget_from_data_common():
-    result = FRTarget._from_data_common(SPRITE_DATA, info_api)
+    result = FRTarget._from_data_common(SPRITE_DATA)
     goal = {
         "is_stage": False,
         "name": "Sprite1",
@@ -201,7 +201,7 @@ def test_FRTarget_to_second_variables_lists_invalid():
 
 
 def test_FRStage_from_to_data():
-    frstage = FRStage.from_data(STAGE_DATA, info_api)
+    frstage = FRStage.from_data(STAGE_DATA)
     assert frstage == FR_STAGE
 
     assert frstage.to_data() == STAGE_DATA
@@ -209,7 +209,7 @@ def test_FRStage_from_to_data():
 def test_FRStage_from_data_missing_id():
     stage_data = copy(STAGE_DATA)
     del stage_data["id"]
-    frstage = FRStage.from_data(stage_data, info_api)
+    frstage = FRStage.from_data(stage_data)
     target_stage = copy(FR_STAGE)
     target_stage.id = string_to_sha256("_stage_", secondary=SHA256_SEC_TARGET_NAME) # constant default value
     assert frstage == target_stage
@@ -222,7 +222,7 @@ def test_FRStage_to_second():
 
 
 def test_FRSprite_from_to_data():
-    frsprite = FRSprite.from_data(SPRITE_DATA, info_api)
+    frsprite = FRSprite.from_data(SPRITE_DATA)
     assert frsprite == FR_SPRITE
 
     assert frsprite.to_data() == SPRITE_DATA
@@ -230,7 +230,7 @@ def test_FRSprite_from_to_data():
 def test_FRSprite_from_data_missing_id():
     sprite_data = copy(SPRITE_DATA)
     del sprite_data["id"]
-    frsprite = FRSprite.from_data(sprite_data, info_api)
+    frsprite = FRSprite.from_data(sprite_data)
     target_sprite = copy(FR_SPRITE)
     target_sprite.id = string_to_sha256(target_sprite.name, SHA256_SEC_TARGET_NAME)
     assert frsprite == target_sprite

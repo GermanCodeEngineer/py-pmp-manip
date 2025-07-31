@@ -100,13 +100,12 @@ class FRProject:
         return project_data
 
     @classmethod
-    def from_file(cls, file_path: str, info_api: OpcodeInfoAPI) -> "FRProject":
+    def from_file(cls, file_path: str) -> "FRProject":
         """
         Reads project data from a project file(.sb3 or .pmp) and creates a FRProject from it
 
         Args:
             file_path: file path to the .sb3 or .pmp file
-            info_api: the opcode info api used to fetch information about opcodes
         
         Returns:
             the FRProject
@@ -118,7 +117,7 @@ class FRProject:
         del contents["project.json"]
         if   file_path.endswith(".sb3"):
             project_data = FRProject._data_sb3_to_pmp(project_data)
-        return FRProject.from_data(project_data, asset_files=KeyReprDict(contents), info_api=info_api)
+        return FRProject.from_data(project_data, asset_files=KeyReprDict(contents))
 
     def __post_init__(self) -> None:
         """

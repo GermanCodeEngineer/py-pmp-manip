@@ -1,5 +1,5 @@
 from copy   import deepcopy
-from pytest import fixture, raises
+from pytest import fixture, raises, MonkeyPatch
 
 from pmp_manip.important_consts import SHA256_SEC_MAIN_ARGUMENT_NAME
 from pmp_manip.utility          import (
@@ -39,7 +39,7 @@ def itf_if():
         sprite_name="_stage_",
     )
 
-@fixture(autouse=True)
+@fixture()
 def reset_frmutation_subclass_info():
     """
     Automatically snapshot and restore FRMutation._subclasses_info_
@@ -58,7 +58,7 @@ EXAMPLE_ARG_DEFAULTS = ["", "false"]
 
 
 
-def test_FRMutation_init_subclass():
+def test_FRMutation_init_subclass(reset_frmutation_subclass_info):
     class_names = {cls.__name__ for cls in FRMutation._subclasses_info_.keys()}
     assert "Dummy_FRMutation" not in class_names
     @grepr_dataclass(grepr_fields=["abx"])
@@ -76,7 +76,7 @@ def test_FRMutation_init_subclass():
     assert FRMutation._subclasses_info_[Dummy_FRMutation] == ({"tagName", "children",  "abx", "iop"}, {"pkl"})
 
 
-def test_FRMutation_find_from_data_subcls():
+def test_FRMutation_find_from_data_subclasses(reset_frmutation_subclass_info):
     @grepr_dataclass(grepr_fields=["size"])
     class Dummy1_FRMutation(FRMutation, required_properties={"size"}):
         size: float
@@ -123,10 +123,40 @@ def test_FRMutation_find_from_data_subcls():
         def to_data(self): pass
         def to_second(self, ticfti_if): pass
     
-    assert FRMutation._find_from_data_subclasses({"smartActivated": True})
+    basis = {"tagName": "mutation", "children": []}
+    
+    matches = FRMutation._find_from_data_subclasses(basis|{"smartActivated": True})
+    assert matches == [Dummy2_FRMutation, Dummy3_FRMutation]
+
+    matches = FRMutation._find_from_data_subclasses(basis|{"size": 93.7})
+    assert matches == [Dummy1_FRMutation]
+
+    matches = FRMutation._find_from_data_subclasses(basis|{"smartActivated": False, "titleText": "Hi"})
+    assert matches == [Dummy2_FRMutation]
+    
+    matches = FRMutation._find_from_data_subclasses(basis|{"abcv": []})
+    assert matches == []
+    #raise Exception()
 
 
-def test_FRMutation_from_data_and_post_init():
+def test_FRMutation_from_data_and_post_init(monkeypatch: MonkeyPatch):
+    def fake_ffds(_1=None, _2=None): return [FRCustomBlockMutation, FRCustomBlockCallMutation]
+    monkeypatch.setattr(FRMutation, "_find_from_data_subclasses", fake_ffds)
+    with raises(PP_DeserializationError):
+        FRMutation.from_data({...:...}) # does not matter
+    
+    def fake_ffds(_1=None, _2=None): return [FRStopScriptMutation]
+    monkeypatch.setattr(FRMutation, "_find_from_data_subclasses", fake_ffds)
+    mutation_data = {"tagName": "mutation", "children": [], "hasnext": gdumps(True)}
+    assert FRMutation.from_data(mutation_data) == FRStopScriptMutation(
+        tag_name="mutation", children=[], has_next=True
+    )
+    
+    def fake_ffds(_1=None, _2=None): return []
+    monkeypatch.setattr(FRMutation, "_find_from_data_subclasses", fake_ffds)
+    with raises(PP_DeserializationError):
+        FRMutation.from_data({...:...}) # does not matter
+    
     class DummyFRMutation(FRMutation, required_properties=set()):
         @classmethod
         def from_data(cls, data) -> "DummyFRMutation":
