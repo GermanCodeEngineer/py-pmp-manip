@@ -113,7 +113,11 @@ class FRProject:
         assert file_path.endswith(".sb3") or file_path.endswith(".pmp")
         contents = read_all_files_of_zip(file_path)
         project_data = loads(contents["project.json"].decode())
-        print(FRProject.__repr__(project_data))
+        
+        project_data["targets"] = project_data["targets"][0:2]
+        with open("log_raw.lua", "w") as file:
+            file.write(FRProject.__repr__(project_data))
+        
         del contents["project.json"]
         if   file_path.endswith(".sb3"):
             project_data = FRProject._data_sb3_to_pmp(project_data)
@@ -126,7 +130,7 @@ class FRProject:
         Returns:
             None
         """
-        if self.extension_data != {}: raise PP_ThanksError()
+        # TODO #if self.extension_data != {}: raise PP_ThanksError()
 
     def to_file(self, file_path: str) -> None:
         """

@@ -64,6 +64,7 @@ class FRBlock:
             the FRBlock
         """
         if "mutation" in data:
+            print("ON Mutation of opcode", repr(data["opcode"]))
             mutation = FRMutation.from_data(data["mutation"])
         else:
             mutation = None

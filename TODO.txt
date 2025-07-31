@@ -19,3 +19,4 @@ TODOs:
     - error messages: use only one of "x" 'x' ˋxˋ
     - explore "customFonts"
     - disambig raw data vs. json data
+    - explore extensionData (example of "2D MAINCRAFT")

@@ -51,18 +51,18 @@ class FRMutation(ABC):
         data_properties = set(data.keys())
         matches = []
         for subcls, subcls_info in FRMutation._subclasses_info_.items():
-            print("\n\n")
-            print("considered", subcls.__name__)
+            #print("\n\n")
+            #print("considered", subcls.__name__)
             required_properties, optional_properties = subcls_info
             if not required_properties.issubset(data_properties):
-                print("req dismatch", "req", required_properties, "got", data_properties)
+                #print("req dismatch", "req", required_properties, "got", data_properties)
                 continue
             unrecognized_properties = (data_properties - required_properties)
-            print("--> unreq", unrecognized_properties)
+            #print("--> unreq", unrecognized_properties)
             if not unrecognized_properties.issubset(optional_properties):
-                print("opt dismatch")
+                #print("opt dismatch")
                 continue
-            print("match")
+            #print("match")
             matches.append(subcls)
         return matches
 
