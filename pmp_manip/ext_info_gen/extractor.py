@@ -15,13 +15,13 @@ from validators             import url as validators_url
 from warnings               import warn
 
 from pmp_manip.utility            import (
-    read_file_text,
+    read_file_text, repr_tree,
     PP_InvalidExtensionCodeSourceError, 
     PP_NetworkFetchError, PP_UnexpectedFetchError, PP_FileFetchError, PP_FileNotFoundError, 
     PP_JsNodeTreeToJsonConversionError, PP_InvalidExtensionCodeSyntaxError, PP_BadExtensionCodeFormatError,    PP_InvalidTranslationMessageError,
     PP_UnexpectedPropertyAccessWarning, PP_UnexpectedNotPossibleFeatureWarning,
     NotSetType, NotSet,
-    write_file_text, repr_tree, # temporary
+    write_file_text, # temporary
 )
 
 
@@ -193,8 +193,7 @@ def ts_node_to_json(
                  f"Defaulting to None{ColorStyle.RESET_ALL}", PP_UnexpectedPropertyAccessWarning)
             return None
 
-        print(type(node), dir(node))
-        raise PP_JsNodeTreeToJsonConversionError(f"Unsupported member expression format: {node.sexp()}")
+        raise PP_JsNodeTreeToJsonConversionError(f"Unsupported member expression format:\n{repr_tree(node, indent=1)}")
 
     elif node.type == "object":
         result = {}
@@ -389,14 +388,14 @@ def extract_extension_info(js_code: str) -> dict[str, Any]:
             message_lines.append(f"    At line {line}, col {col}: {code_seg}")
         raise PP_InvalidExtensionCodeSyntaxError("\n".join(message_lines))    
     
-    write_file_text("parsed_ast.lua", repr_tree(root_node, js_code.encode()))
+    write_file_text("parsed_ast.lua", repr_tree(root_node))
     #write_file_text("parsed_ast.lua", repr(root.body[0].body.body[0].value.body.body[0].argument))
     #raise Exception(r"$\/\$STOP$/\/$")
             
    
     try:
         main_body = get_main_body(root_node)
-        print("####", ("\n"+100*"="+"\n").join([x.text.decode()[:200] for x in main_body]))
+        #print("####", ("\n"+100*"="+"\n").join([x.text.decode()[:200] for x in main_body]))
         class_name = get_registered_class_name(main_body)
         class_node = get_class_def_by_name(main_body, class_name)
         getInfo_method = get_class_method_def_by_name(class_node, method_name="getInfo")

@@ -1,6 +1,7 @@
 from aenum       import Enum
 from copy        import copy
 from dataclasses import dataclass
+from tree_sitter import Node
 from typing      import Any
 
 from pmp_manip.utility.dual_key_dict import DualKeyDict
@@ -147,18 +148,18 @@ class GEnum(Enum):
     def __repr__(self) -> str:
         return self.__class__.__name__ + "." + self.name
 
-def repr_tree(node, source_code, indent=0): # TODO: reconsider
-    """Nicely formatted repr of a tree-sitter node and its children."""
+def repr_tree(node: Node, indent=0): # TODO: reconsider
+    """Nicely formatted repr of a tree-sitter node and its (named) children."""
     indent_str = "  " * indent
     node_type = node.type
 
     if node.child_count == 0:
-        text = source_code[node.start_byte:node.end_byte].decode("utf8")
+        text = node.text.decode()
         return f"{indent_str}{node_type} ({repr(text)})"
 
     lines = [f"{indent_str}{node_type}:"]
-    for child in node.children:
-        lines.append(repr_tree(child, source_code, indent + 1))
+    for child in node.named_children:
+        lines.append(repr_tree(child, indent + 1))
     return "\n".join(lines)
 
 

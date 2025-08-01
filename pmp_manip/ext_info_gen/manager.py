@@ -61,7 +61,7 @@ def generate_extension_info_py_file(source: str, extension_id: str, tolerate_fil
         py_fingerprint = ContentFingerprint.from_json(file_cache["pyFingerprint"])
         try:
             last_update_time = datetime.fromisoformat(file_cache["lastUpdate"])
-        except ValueError as error:
+        except ValueError:
             return ... # is_too_old would become True and ... would be returned anyway
         
         try:
@@ -157,11 +157,12 @@ __all__ = ["generate_extension_info_py_file"]
 if __name__ == "__main__":
     init_config(get_default_config())
     for extension_id, extension in [
-        ("asyncexample",        "example_extensions/js_extension/asyncexample.js"),
-        ("dumbExample",         "example_extensions/js_extension/dumbExample.js"),
-        ("truefantombase",      "https://extensions.turbowarp.org/true-fantom/base.js"),
-        ("pmControlsExpansion", "example_extensions/js_extension/pmControlsExpansion.js"),
-        ("gpusb3",              "https://extensions.penguinmod.com/extensions/derpygamer2142/gpusb3.js"),
-        ("P7BoxPhys",           "https://extensions.penguinmod.com/extensions/pooiod/Box2D.js"),
+#        ("asyncexample",        "example_extensions/js_extension/asyncexample.js"),
+#        ("dumbExample",         "example_extensions/js_extension/dumbExample.js"),
+#        ("truefantombase",      "https://extensions.turbowarp.org/true-fantom/base.js"),
+#        ("pmControlsExpansion", "example_extensions/js_extension/pmControlsExpansion.js"),
+#        ("gpusb3",              "https://extensions.penguinmod.com/extensions/derpygamer2142/gpusb3.js"),
+#        ("P7BoxPhys",           "https://extensions.penguinmod.com/extensions/pooiod/Box2D.js"),
+        ("griffpatch", "https://extensions.turbowarp.org/box2d.js")
     ]:
         generate_extension_info_py_file(extension, extension_id, tolerate_file_path=True)
