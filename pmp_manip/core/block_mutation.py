@@ -120,14 +120,19 @@ class FRMutation(ABC):
             the SRMutation
         """
 
-@grepr_dataclass(grepr_fields=["color"])
-class FRCustomBlockArgumentMutation(FRMutation, required_properties={"color"}):
+@grepr_dataclass(grepr_fields=["color",  "warp", "edited", "has_next"])
+class FRCustomBlockArgumentMutation(FRMutation, required_properties={"color"}, optional_properties={"warp", "edited", "hasnext"}):
     """
     The first representation for the mutation of a custom block's argument reporter
     """
     
     color: tuple[str, str, str]
     _argument_name: str | None = field(init=False)
+    
+    warp: bool # shouldn't exist and if present seems to be False
+    edited: bool # shouldn't exist and if present seems to be False
+    has_next: bool # shouldn't exist and if present seems to be False
+    
     
     @classmethod
     def from_data(cls, data: dict[str, str]) -> "FRCustomBlockArgumentMutation":
@@ -139,11 +144,32 @@ class FRCustomBlockArgumentMutation(FRMutation, required_properties={"color"}):
         
         Returns:
             the FRCustomBlockArgumentMutation
+        
+        Raises:
+            PP_DeserializationError: if 'warp', 'edited' or 'hasnext' is neither False nor unset
         """
+        warp     = data.get("warp"   , False)
+        edited   = data.get("edited" , False)
+        has_next = data.get("hasnext", False)
+        
+        if   warp == False: pass
+        elif warp == gdumps(False): warp = False
+        else: raise PP_DeserializationError(f"Invalid value for 'warp', expected it to either not be set or to be False: {warp}")
+        if   edited == False: pass
+        elif edited == gdumps(False): edited = False
+        else: raise PP_DeserializationError(f"Invalid value for 'edited', expected it to either not be set or to be False: {edited}")
+        if   has_next == False: pass
+        elif has_next == gdumps(False): has_next = False
+        else: raise PP_DeserializationError(f"Invalid value for 'hasnext', expected it to either not be set or to be False: {has_next}")
+        
         return cls(
             tag_name = data["tagName" ],
             children = data["children"],
             color    = tuple(loads(data["color"])),
+            
+            warp     = warp,
+            edited   = edited,
+            has_next = has_next,
         )
 
     def to_data(self) -> dict[str, Any]:
@@ -235,7 +261,7 @@ class FRCustomBlockMutation(FRMutation,
             warp = data["warp"]
         elif isinstance(data["warp"], str):
             warp = loads(data["warp"])
-        else: raise PP_DeserializationError(f"Invalid value for warp: {data['warp']}")
+        else: raise PP_DeserializationError(f"Invalid value for 'warp': {data['warp']}")
         return cls(
             tag_name          = data["tagName" ],
             children          = data["children"],

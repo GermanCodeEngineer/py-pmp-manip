@@ -132,6 +132,42 @@ class FRProject:
         """
         # TODO #if self.extension_data != {}: raise PP_ThanksError()
 
+    def gen_opcode_info_for_all_extensions(self) -> list[str]:
+        """
+        For every extension of the project generate the required opcode info py file.
+        If cached versions exists and they are up to date, they will be kept and not replaced.
+        Returns the file paths of the generated py files
+        
+        Raises:
+            PP_FailedFileWriteError: if the cache file or generated extension info file or its directory couldn't be written/created
+            PP_InvalidExtensionCodeSourceError: If the source data URI, URL or file_path is invalid or if a file path is passed even tough tolerate_file_paths is False or if the passed value is an invalid source
+            PP_NetworkFetchError: For any network-related error
+            PP_UnexpectedFetchError: For any other unexpected error while fetching URL
+            PP_FileFetchError: If the source file cannot be read
+            PP_InvalidExtensionCodeSyntaxError: if the extension code is syntactically invalid 
+            PP_BadExtensionCodeFormatError: if the extension code is badly formatted, so that the extension information cannot be extracted
+            PP_UnknownExtensionAttributeError: if the extension or a block has an unknown attribute
+            PP_InvalidCustomMenuError: if the information about a menu is invalid
+            PP_InvalidCustomBlockError: if information of a block is invalid
+            PP_NotImplementedError: if an XML block is included in the extension info
+            PP_ThanksError: if a block argument uses the mysterious Scratch.ArgumentType.SEPERATOR
+    
+        Warnings:
+            PP_UnexpectedPropertyAccessWarning: if a property of 'this' is accessed in the getInfo method of the extension code
+            PP_UnexpectedNotPossibleFeatureWarning: if an impossible to implement feature is used (eg. ternary expr) in the getInfo method of the extension code
+        """
+        from pmp_manip.ext_info_gen import generate_extension_info_py_file
+        
+        file_paths = []
+        for extension_id, extension_url in self.extension_urls.items():
+            file_path = generate_extension_info_py_file(
+                    source=extension_url, 
+                    extension_id=extension_id,
+                    tolerate_file_path=False,
+            )
+            file_paths.append(file_path)
+        return file_paths
+
     def to_file(self, file_path: str) -> None:
         """
         Writes the project data to a project file(.sb3 or .pmp)

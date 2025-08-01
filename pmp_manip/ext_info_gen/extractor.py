@@ -4,12 +4,14 @@ from colorama               import Fore as ColorFore, Style as ColorStyle
 from collections.abc        import Iterator
 from json                   import dumps
 from os                     import path
+from pathlib                import Path
 from requests               import get as requests_get, RequestException
 from tree_sitter            import Parser, Language, Node, Tree
 from tree_sitter_javascript import language as get_js_language_basis
 from typing                 import Any, Callable
 from types                  import NotImplementedType
 from urllib.parse           import unquote
+from validators             import url as validators_url
 from warnings               import warn
 
 from pmp_manip.utility            import (
@@ -80,15 +82,16 @@ SCRATCH_STUB = {
 _js_parser: Parser | None = None
 
 
-def fetch_js_code(source: str) -> str:
+def fetch_js_code(source: str, tolerate_file_path: bool) -> str:
     """
     Fetch the extension's JS code from a file path, HTTPS URL, or JavaScript Data URI
 
     Args:
         source: The file path, HTTPS URL, or data URI of the extension source code
+        tolerate_file_path: wether to allow file paths as extension sources
 
     Raises:
-        PP_InvalidExtensionCodeSourceError: If the source data URI is invalid
+        PP_InvalidExtensionCodeSourceError: If the source data URI, URL or file_path is invalid or if a file path is passed even tough tolerate_file_paths is False or if the passed value is an invalid source
         PP_NetworkFetchError: For any network-related error
         PP_UnexpectedFetchError: For any other unexpected error while fetching URL
         PP_FileNotFoundError: If the local file does not exist
@@ -107,6 +110,9 @@ def fetch_js_code(source: str) -> str:
 
     elif source.startswith("http://") or source.startswith("https://"):
         print(f"--> Fetching from URL: {source}")
+        
+        if not validators_url(source):
+            raise PP_InvalidExtensionCodeSourceError(f"Invalid URL: {source}")
         try:
             response = requests_get(source, timeout=10)
             response.raise_for_status()
@@ -117,7 +123,15 @@ def fetch_js_code(source: str) -> str:
             raise PP_UnexpectedFetchError(f"Unexpected error while fetching {source}: {error}") from error
 
     else:
+        if not tolerate_file_path:
+            raise PP_InvalidExtensionCodeSourceError(f"Fetching by a file path is forbidden: {source}")
+        
         print(f"--> Reading from file: {source}")
+        try:
+            Path(source)  # Validates that the path can be created
+        except (TypeError, ValueError) as error:
+            raise PP_InvalidExtensionCodeSourceError(f"Invalid file path or extension source {source}: {error}") from error
+        
         if not path.exists(source):
             raise PP_FileNotFoundError(f"File not found: {source}")
         try:
@@ -179,6 +193,7 @@ def ts_node_to_json(
                  f"Defaulting to None{ColorStyle.RESET_ALL}", PP_UnexpectedPropertyAccessWarning)
             return None
 
+        print(type(node), dir(node))
         raise PP_JsNodeTreeToJsonConversionError(f"Unsupported member expression format: {node.sexp()}")
 
     elif node.type == "object":

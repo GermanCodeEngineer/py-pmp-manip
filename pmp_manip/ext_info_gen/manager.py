@@ -17,17 +17,18 @@ from pmp_manip.ext_info_gen.generator import generate_opcode_info_group, generat
 CACHE_FILENAME = "cache.json"
 
 
-def generate_extension_info_py_file(source: str, extension_id: str) -> str:
+def generate_extension_info_py_file(source: str, extension_id: str, tolerate_file_path: bool) -> str:
     """
-    Generate a python file, which stores information about the blocks of the given extension and is required for the core module. Returns the file path of the python file
+    Generate a python file, which stores information about the blocks of the given extension and is required for the core module. If a cached version exists and is up to date, it will be kept. Returns the file path of the python file
 
     Args:
-        source: the file path or https URL or JS Data URI of the extension code
+        source: the file path or https URL or JS Data URI of the extension code(if tolerate_file_paths)
         extension_id: the unique identifier of the extension 
+        tolerate_file_path: wether to allow file paths as extension sources
     
     Raises:
         PP_FailedFileWriteError: if the cache file or generated extension info file or its directory couldn't be written/created
-        PP_InvalidExtensionCodeSourceError: If the source data URI is invalid
+        PP_InvalidExtensionCodeSourceError: If the source data URI, URL or file_path is invalid or if a file path is passed even tough tolerate_file_paths is False or if the passed value is an invalid source
         PP_NetworkFetchError: For any network-related error
         PP_UnexpectedFetchError: For any other unexpected error while fetching URL
         PP_FileNotFoundError: If the local source file does not exist
@@ -42,8 +43,7 @@ def generate_extension_info_py_file(source: str, extension_id: str) -> str:
 
     Warnings:
         PP_UnexpectedPropertyAccessWarning: if a property of 'this' is accessed in the getInfo method of the extension code
-        PP_UnexpectedNotPossibleFeatureWarning: if a impossible to implement feature is used (eg. ternary expr) in the getInfo method of the extension code
-
+        PP_UnexpectedNotPossibleFeatureWarning: if an impossible to implement feature is used (eg. ternary expr) in the getInfo method of the extension code
     """
     def consider_state(by_url: bool) -> bool|EllipsisType:
         """
@@ -109,15 +109,17 @@ def generate_extension_info_py_file(source: str, extension_id: str) -> str:
     else:
         cache = {}
     file_cache = cache.get(destination_file_name, None)
-
-    should_continue = consider_state(by_url=(source.startswith("http://") or source.startswith("https://")))
+    
+    is_url = (source.startswith("http://") or source.startswith("https://"))
+    should_continue = consider_state(by_url=is_url)
+    
     if should_continue is False: # neither True nor Ellipsis
         print("PY STILL UP TO DATE")
         file_cache["lastUpdate"] = datetime.now(timezone.utc).isoformat()
         update_cache(cache)
         return destination_file_path
     
-    js_code = fetch_js_code(source)
+    js_code = fetch_js_code(source, tolerate_file_path)
     if file_cache is not None:
         js_fingerprint = ContentFingerprint.from_json(file_cache["jsFingerprint"])
         if (should_continue is ...) and js_fingerprint.matches(js_code):
@@ -132,12 +134,12 @@ def generate_extension_info_py_file(source: str, extension_id: str) -> str:
     try:
         makedirs(cfg.ext_info_gen.gen_opcode_info_dir, exist_ok=True)
     except Exception as error:
-        raise PP_FailedFileWriteError(f"Couldn't create directory of the extension info file at {cfg.ext_info_gen.gen_opcode_info_dir}: {error}") from error
+        raise PP_FailedFileWriteError(f"Couldn't create directory of the extension info file at {cfg.ext_info_gen.gen_opcode_info_dir}. Is your configuration correct?: {error}") from error
 
     try:
         write_file_text(destination_file_path, file_code)
     except PP_FailedFileWriteError as error:
-        raise PP_FailedFileWriteError(f"Couldn't write extension info file to {cache_file_path}: {error}") from error
+        raise PP_FailedFileWriteError(f"Couldn't write extension info file to {cache_file_path}. Is your configuration correct?: {error}") from error
 
     cache[destination_file_name] = {
         "jsFingerprint": ContentFingerprint.from_value(js_code).to_json(),
@@ -162,4 +164,4 @@ if __name__ == "__main__":
         ("gpusb3",              "https://extensions.penguinmod.com/extensions/derpygamer2142/gpusb3.js"),
         ("P7BoxPhys",           "https://extensions.penguinmod.com/extensions/pooiod/Box2D.js"),
     ]:
-        generate_extension_info_py_file(extension, extension_id)
+        generate_extension_info_py_file(extension, extension_id, tolerate_file_path=True)

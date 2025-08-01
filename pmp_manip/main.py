@@ -18,6 +18,9 @@ project = FRProject.from_file(file_path)
 with open("log_first.lua", "w") as file:
     file.write(FRProject.__repr__(project))
 
+project.gen_opcode_info_for_all_extensions()
+input()
+
 new_project = project.to_second(info_api)
 del project
 new_project.validate(info_api=info_api)
