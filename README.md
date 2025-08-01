@@ -47,13 +47,15 @@ For more config details, see [docs/config.md](docs/config.md)
 ```
 py-pmp-manip/
 ├── pmp_manip/         # Source Code
-│   ├── config/               # Configuration schema and lifecycle
-│   ├── core/                 # Core functionality
-│   ├── ext_info_gen/         # information generator for custom extensions
-│   ├── opcode_info/          # Contains an API for and the information about all the blocks
-│   ├── utility/              # Utilities for other modules
-│   └── important_consts.py   # Common important constants
+│   ├── config/                  # Configuration schema and lifecycle
+│   ├── core/                    # Core functionality
+│   ├── ext_info_gen/            # information generator for custom extensions
+│   ├── opcode_info/             # Contains an API for and the information about all the blocks
+│   ├── utility/                 # Utilities for other modules
+│   └── important_consts.py      # Common important constants
 ├── docs/              # Documentation
+├── scripts/           # Independent project-related scripts
+│   └── update_pyproject_toml.py # Updates pyproject.toml with version and dependencies
 └── tests/             # Unit tests
 ```
 
