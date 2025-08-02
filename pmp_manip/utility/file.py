@@ -4,7 +4,7 @@ import zipfile
 from pmp_manip.utility.errors import (
     PP_PathError, 
     PP_TypeError, PP_ValueError, 
-    PP_FileNotFoundError, PP_FailedFileWriteError, PP_FailedFileReadError,
+    PP_FileNotFoundError, PP_FailedFileWriteError, PP_FailedFileReadError, PP_FailedFileDeleteError,
 )
 
 def read_all_files_of_zip(zip_path: str) -> dict[str, bytes]:
@@ -97,6 +97,32 @@ def write_file_text(file_path: str, text: str, encoding: str = "utf-8") -> None:
     except (FileNotFoundError, OSError, PermissionError, IsADirectoryError, Exception) as error:
         raise PP_FailedFileWriteError(f"Failed to write to {repr(file_path)}") from error
 
+def delete_file(file_path: str) -> None:
+    """
+    Delete a file from the filesystem
+
+    Args:
+        file_path: Path to the file to delete
+
+    Raises:
+        PP_TypeError: If `file_path` is not a string
+        PP_ValueError: If `file_path` is invalid or not a proper file path
+        PP_FailedFileDeleteError: If an OS-level error occurs (e.g., file not found, permission denied,
+                                  is a directory, or other I/O-related failure)
+    """
+    if not isinstance(file_path, str):
+        raise PP_TypeError(f"'file_path' must be a str, not {type(file_path).__name__}")
+
+    try:
+        os.remove(file_path)
+
+    except TypeError as error:
+        raise PP_TypeError(str(error)) from error
+    except ValueError as error:
+        raise PP_ValueError(str(error)) from error
+    except (FileNotFoundError, PermissionError, IsADirectoryError, OSError, Exception) as error:
+        raise PP_FailedFileDeleteError(f"Failed to delete file at {repr(file_path)}") from error
+
 def create_zip_file(zip_path: str, contents: dict[str, bytes]) -> None:
     """
     Creates a ZIP file at `zip_path` containing the given contents
@@ -105,12 +131,12 @@ def create_zip_file(zip_path: str, contents: dict[str, bytes]) -> None:
         file_path: Destination path for the ZIP file
         contents: A dictionary where keys are filenames (inside the ZIP)
                   and values are their corresponding file contents in bytes
-    """
+    """ # TODO: add good error handling
     #zip_path = ensure_correct_path(zip_path)
     with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_DEFLATED) as zip_out:
         for name, data in contents.items():
             zip_out.writestr(name, data)
 
 
-__all__ = ["read_all_files_of_zip", "read_file_text", "write_file_text", "create_zip_file"]
+__all__ = ["read_all_files_of_zip", "read_file_text", "write_file_text", "delete_file", "create_zip_file"]
 

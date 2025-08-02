@@ -5,12 +5,10 @@ from tree_sitter            import Parser, Language, Node, Tree
 from tree_sitter_javascript import language as get_js_language_basis
 from typing                 import Any, Callable
 from types                  import NotImplementedType
-from urllib.parse           import unquote
 from warnings               import warn
 
 from pmp_manip.utility            import (
-    read_file_text, repr_tree, gdumps,
-    PP_FileNotFoundError, 
+    repr_tree, gdumps,
     PP_JsNodeTreeToJsonConversionError, PP_InvalidExtensionCodeSyntaxError, PP_BadExtensionCodeFormatError,    PP_InvalidTranslationMessageError,
     PP_UnexpectedPropertyAccessWarning, PP_UnexpectedNotPossibleFeatureWarning,
     NotSetType, NotSet,

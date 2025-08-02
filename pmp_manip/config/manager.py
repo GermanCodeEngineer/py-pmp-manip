@@ -74,6 +74,7 @@ def get_default_config() -> "MasterConfig":
         ext_info_gen=ExtInfoGenConfig(
             gen_opcode_info_dir="example_extensions/gen_opcode_info/", # TODO: find perm solution
             js_fetch_interval=timedelta(days=3),
+            node_js_exec_timeout=1.0,
         ),
         validation=ValidationConfig(
             raise_if_monitor_position_outside_stage=True,

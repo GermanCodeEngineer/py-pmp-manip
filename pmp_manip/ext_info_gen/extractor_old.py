@@ -1,11 +1,16 @@
-from os           import remove as os_remove
-from subprocess   import run as run_subprocess
+from json         import loads
+from subprocess   import run as run_subprocess, TimeoutExpired, SubprocessError
 from tempfile     import NamedTemporaryFile
+from typing       import Any
 
-#from pypenguin.utility         import (
-#    grepr, read_file_text, write_file_text, DualKeyDict, PypenguinEnum, ContentFingerprint,
-#    ThanksError, UnknownExtensionAttributeError,
-#)
+from pmp_manip.config  import get_config
+from pmp_manip.utility import (
+    delete_file,
+    PP_FailedFileWriteError, PP_FailedFileDeleteError, 
+    PP_NoNodeJSInstalledError, 
+    PP_ExtensionExecutionTimeoutError, PP_ExtensionExecutionErrorInJavascript, PP_UnexpectedExtensionExecutionError,
+    PP_ExtensionJSONDecodeError, PP_UnknownExtensionAttributeError, 
+)
 
 EXTRACTOR_PATH = "pypenguin/ext_info_gen/extractor.js"
    
@@ -23,28 +28,23 @@ def extract_extension_info(js_code: str, code_encoding: str = "utf-8") -> dict[s
 
     Raises:
         PP_FailedFileWriteError: if the JS code couldn't be written to a temporary file (eg. OS Error or Unicode Error)
+        PP_NoNodeJSInstalledError: if Node.js is not installed or not found in PATH
+        PP_ExtensionExecutionTimeoutError: if the Node.js execution subprocess took too long
+
     """
     try:
         with NamedTemporaryFile(
             mode="w", suffix=".js", 
             encoding=code_encoding, delete=False,
         ) as temp_file:
-            temp_js.write(js_code)
-            temp_js_path = temp_js.name
+            temp_file.write(js_code)
+            temp_js_path = temp_file.name
 
     except UnicodeDecodeError as error:
         raise PP_FailedFileWriteError(f"Failed to create or write javascript code to temporary file because of encoding failure: {error}") from error
     except (FileNotFoundError, OSError, PermissionError, IsADirectoryError, Exception) as error:
-        raise PP_FailedFileWriteError("Failed to create or write javascript code to temporary file") from error
+        raise PP_FailedFileWriteError(f"Failed to create or write javascript code to temporary file: {error}") from error
     
-    with NamedTemporaryFile(
-        mode="w", suffix=".js", 
-        encoding="utf-8", 
-        delete=False
-    ) as temp_js:
-        temp_js.write(js_code)
-        temp_js_path = temp_js.name
-
     try:
         print("--> Executing JavaScript via Node.js")
         result = run_subprocess(
@@ -52,27 +52,35 @@ def extract_extension_info(js_code: str, code_encoding: str = "utf-8") -> dict[s
             capture_output=True,
             text=True,
             encoding="utf-8",
-            timeout=1, # usually seems to take around 0.10-0.14 seconds on windows
+            timeout=get_config().ext_info_gen.node_js_exec_timeout,
         )
     except FileNotFoundError as error: # when python can't find the node executable
-        raise RuntimeError("Node.js is not installed or not found in PATH.") from error
+        raise PP_NoNodeJSInstalledError(f"Node.js is not installed or not found in PATH: {error}") from error
+    except TimeoutExpired as error:
+        raise PP_ExtensionExecutionTimeoutError(f"Node.js subprocess trying to execute extension code took too long: {error}") from error
+    except (SubprocessError, OSError, PermissionError, Exception) as error:
+        # TODO: add detailed response handling
+        raise PP_UnexpectedExtensionExecutionError(f"Failed to run Node.js subprocess (to execute extension code): {error}") from error
     finally:
-        os_remove(temp_js_path)
+        try:
+            delete_file(temp_js_path)
+        except PP_FailedFileDeleteError as error:
+            raise PP_FailedFileWriteError(f"Failed to remove temporary javascript file at {repr(temp_js_path)}: {error}") from error
 
     if result.returncode != 0:
-        raise RuntimeError(f"Error in sandboxed JS execution: {result.stderr}")
+        raise PP_ExtensionExecutionErrorInJavascript(f"Error in javascript execution: {result.stderr}")
 
     try:
         extension_info = loads(result.stdout.strip().splitlines()[-1])  # last line = JSON
     except Exception as error:
-        raise RuntimeError(f"Invalid JSON output from container: {error}") from error
+        raise PP_ExtensionJSONDecodeError(f"Invalid JSON output from container: {error}") from error
 
     for attr in extension_info.keys():
         if attr not in {
             "name", "color1", "color2", "color3", "menuIconURI",
             "docsURI", "isDynamic", "id", "blocks", "menus"
         }:
-            raise UnknownExtensionAttributeError(attr)
+            raise PP_UnknownExtensionAttributeError(attr)
 
     return extension_info
 

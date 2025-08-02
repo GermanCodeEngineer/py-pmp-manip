@@ -110,13 +110,23 @@ class PP_NetworkFetchError(PP_FetchError): pass
 class PP_UnexpectedFetchError(PP_FetchError): pass
 class PP_FileFetchError(PP_FetchError): pass
 
-# extractor.py
-class PP_JsNodeTreeToJsonConversionError(PP_Error): pass
+# extractor.py / extractor_old.py
+class PP_NoNodeJSInstalledError(PP_Error): pass
+
+class PP_ExtensionExecutionError(PP_Error): pass
+class PP_ExtensionExecutionTimeoutError(PP_ExtensionExecutionError): pass
+class PP_ExtensionExecutionErrorInJavascript(PP_ExtensionExecutionError): pass
+class PP_UnexpectedExtensionExecutionError(PP_ExtensionExecutionError): pass
+
+class PP_ExtensionJSONDecodeError(PP_Error): pass
+
 
 class PP_BadOrInvalidExtensionCodeError(PP_Error): pass
 class PP_InvalidExtensionCodeSyntaxError(PP_BadOrInvalidExtensionCodeError): pass
 class PP_BadExtensionCodeFormatError(PP_BadOrInvalidExtensionCodeError): pass
 class PP_InvalidTranslationMessageError(PP_BadOrInvalidExtensionCodeError): pass
+
+class PP_JsNodeTreeToJsonConversionError(PP_Error): pass
 
 # generator.py
 class PP_InvalidExtensionInformationError(PP_Error): pass
@@ -141,6 +151,7 @@ class PP_ConfigurationError(PP_Error): pass
 
 class PP_FailedFileWriteError(PP_Error): pass
 class PP_FailedFileReadError(PP_Error): pass
+class PP_FailedFileDeleteError(PP_Error): pass
 
 ###############################################################
 #                     COPIED BUILT-IN ERRORS                  #

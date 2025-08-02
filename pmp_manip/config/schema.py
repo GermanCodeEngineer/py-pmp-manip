@@ -56,6 +56,7 @@ class ExtInfoGenConfig(ConfigBase):
     
     gen_opcode_info_dir: str
     js_fetch_interval: timedelta
+    node_js_exec_timeout: float
     
     def validate(self, path: list) -> None:
         """
@@ -69,6 +70,7 @@ class ExtInfoGenConfig(ConfigBase):
         """
         AA_TYPE(self, path, "gen_opcode_info_dir", str) # TODO: possibly add check if path is valid
         AA_TYPE(self, path, "js_fetch_interval", timedelta)
+        AA_TYPE(self, path, "node_js_exec_timeout", float)
 
 @grepr_dataclass(grepr_fields=["raise_if_monitor_position_outside_stage", "raise_if_monitor_bigger_then_stage"])
 class ValidationConfig(ConfigBase):
