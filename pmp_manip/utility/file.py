@@ -79,7 +79,7 @@ def write_file_text(file_path: str, text: str, encoding: str = "utf-8") -> None:
         PP_TypeError: If `text` is not a string or another type-related issue occurs
         PP_ValueError: If the file is in an invalid state or mode for writing
         PP_FailedFileWriteError: If an OS-level error occurs (e.g., file not found, permission denied,
-                                 is a directory, or other I/O-related failure)
+                                 is a directory, or other I/O-related failure) or `text` is not compatible with `encoding`
     """
     if not isinstance(text, str):
         raise PP_TypeError(f"'text' argument must be a str, not {type(text).__name__}")
@@ -92,6 +92,8 @@ def write_file_text(file_path: str, text: str, encoding: str = "utf-8") -> None:
         raise PP_TypeError(str(error)) from error
     except ValueError as error:
         raise PP_ValueError(str(error)) from error
+    except UnicodeDecodeError as error:
+        raise PP_FailedFileWriteError(f"Failed to write to {repr(file_path)} because of encoding failure: {error}") from error
     except (FileNotFoundError, OSError, PermissionError, IsADirectoryError, Exception) as error:
         raise PP_FailedFileWriteError(f"Failed to write to {repr(file_path)}") from error
 

@@ -102,7 +102,7 @@ class PP_SameValueTwiceError(PP_ValidationError):
 #                 ERRORS FOR THE EXT INFO GEN                 #
 ###############################################################
 
-# extractor.py
+# fetch_js.py
 class PP_InvalidExtensionCodeSourceError(PP_Error): pass
 
 class PP_FetchError(PP_Error): pass
@@ -110,8 +110,7 @@ class PP_NetworkFetchError(PP_FetchError): pass
 class PP_UnexpectedFetchError(PP_FetchError): pass
 class PP_FileFetchError(PP_FetchError): pass
 
-class PP_FileNotFoundError(PP_Error): pass
-
+# extractor.py
 class PP_JsNodeTreeToJsonConversionError(PP_Error): pass
 
 class PP_BadOrInvalidExtensionCodeError(PP_Error): pass
@@ -120,7 +119,6 @@ class PP_BadExtensionCodeFormatError(PP_BadOrInvalidExtensionCodeError): pass
 class PP_InvalidTranslationMessageError(PP_BadOrInvalidExtensionCodeError): pass
 
 # generator.py
-
 class PP_InvalidExtensionInformationError(PP_Error): pass
 class PP_InvalidCustomMenuError(PP_InvalidExtensionInformationError): pass
 class PP_InvalidCustomBlockError(PP_InvalidExtensionInformationError): pass
@@ -152,13 +150,14 @@ class PP_NotImplementedError(PP_Error): pass
 class PP_TypeError(PP_Error): pass
 class PP_ValueError(PP_Error): pass
 class PP_AttributeError(PP_Error): pass
+class PP_FileNotFoundError(PP_Error): pass
 
 ###############################################################
 #                         SPECIAL ERRORS                      #
 ###############################################################
 
 class PP_UnsupportedOSError(PP_Error): pass
-class PP_SetupRequiredError(PP_Error): pass
+class PP_SetupRequiredError(PP_Error): pass # TODO: comment unused errors
 class PP_TempNotImplementedError(PP_Error):
     """Occurs on features that are not YET implemented"""
 

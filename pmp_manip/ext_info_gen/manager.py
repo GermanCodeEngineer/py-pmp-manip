@@ -10,7 +10,8 @@ from pmp_manip.utility         import (
     PP_FailedFileWriteError, 
 )
 
-from pmp_manip.ext_info_gen.extractor import fetch_js_code, extract_extension_info
+from pmp_manip.ext_info_gen.extractor import extract_extension_info
+from pmp_manip.ext_info_gen.fetch_js  import fetch_js_code
 from pmp_manip.ext_info_gen.generator import generate_opcode_info_group, generate_file_code
 
 
@@ -94,7 +95,7 @@ def generate_extension_info_py_file(source: str, extension_id: str, tolerate_fil
         try:
             write_file_text(cache_file_path, cache_str)
         except PP_FailedFileWriteError as error:
-            raise PP_FailedFileWriteError(f"Couldn't update cache at {cache_file_path}: {error}") from error
+            raise PP_FailedFileWriteError(f"Couldn't update cache at {repr(cache_file_path)}: {error}") from error
 
     cfg = get_config()
     destination_file_name = f"{extension_id}.py"

@@ -32,6 +32,9 @@ old_project = new_project.to_first(info_api, target_platform=TargetPlatform.PENG
 #old_project.extension_urls["truefantombase"] = "https://extensions.turbowarp.org/true-fantom/base.js"
 #old_project.to_file("assets/from_online/changed_plaformer.sb3")
 
-
+# Step 1: Get old extractor code
+# Step 2: Add "safe extension source websites" config
+# Step 3: Implement interface to choose direct exec vs. static analysis
+# Step 2.5/3.5: Search the list of trusted websites that PM uses
 
 
