@@ -1,6 +1,5 @@
 __pycache__/
-example_extensions/gen_opcode_info/
-.vscode
+gen_ext_opcode_info/
 .coverage
 htmlcov/
 build/

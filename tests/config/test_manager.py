@@ -55,7 +55,7 @@ def test_get_config_not_configured(monkeypatch: MonkeyPatch):
 def test_get_default_config():
     assert get_default_config() == MasterConfig(
         ext_info_gen=ExtInfoGenConfig(
-            gen_opcode_info_dir="example_extensions/gen_opcode_info/", 
+            gen_opcode_info_dir="gen_ext_opcode_info", 
             js_fetch_interval=timedelta(days=3),
         ),
         validation=ValidationConfig(

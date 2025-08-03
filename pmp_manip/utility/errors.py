@@ -7,7 +7,7 @@ class PP_PathError(PP_Error): pass
 
 class PP_ThanksError(PP_Error):
     def __init__(self):
-        super().__init__("Your project is unique! It could help me with my research! Please create an issue with your project attached! https://github.com/Fritzforcode/py-pmp-manip/issues/new/")
+        super().__init__("Your project is unique! It could help me with my research! Please create an issue with your project attached! https://github.com/GermanCodeEngineer/py-pmp-manip/issues/new/")
 
 
 ###############################################################

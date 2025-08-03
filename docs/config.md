@@ -60,7 +60,7 @@ Returns a pre-built `MasterConfig` with safe, reasonable defaults. This can be u
 
 | argument                                  | type               | purpose                                                                                                              | default                               |
 |-------------------------------------------|--------------------|----------------------------------------------------------------------------------------------------------------------|---------------------------------------|
-| `gen_opcode_info_dir`                     | directory path str | directory used to store the generated <br>extension opcode info files in                                             | "example_extensions/gen_opcode_info/" |
+| `gen_opcode_info_dir`                     | directory path str | directory used to store the generated <br>extension opcode info files in                                             | "gen_ext_opcode_info" |
 | `js_fetch_interval`                       | datetime.timedelta | if the extension is accessed through a link, <br>it will only be fetched again after this interval has passed        | timedelta(days=3)                     |
 | `node_js_exec_timeout`                    | float (secs)       | if the extension code is directly executed, <br>the timeout secs of the Node.js suprocess                            | 1.0 (secs)                            |
 | `raise_if_monitor_position_outside_stage` | bool               | during validation an ValidationError will be raised <br>if a monitor's position is outside the stage edges           | True                                  |

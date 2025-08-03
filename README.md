@@ -20,7 +20,7 @@ pip install py-pmp-manip
 ```
 Or clone directly:
 ```bash
-git clone https://github.com/Fritzforcode/py-pmp-manip.git
+git clone https://github.com/GermanCodeEngineer/py-pmp-manip.git
 cd py-pmp-manip
 pip install -e .
 ```

@@ -5,7 +5,7 @@ description = "Python tool for creating, editing and inspecting Penguinmod(.pmp)
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "GPL-3.0-or-later" }
-authors = [{ name = "anonymous" }]
+authors = [{name = "GermanCodeEngineer", email = "germancodeengineer@proton.me"}]
 # auto generated, don't edit by hand:
 dependencies = [
     "Pillow==11.3.0",
@@ -25,9 +25,9 @@ dependencies = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/Fritzforcode/py-pmp-manip/"
-"Repository" = "https://github.com/Fritzforcode/py-pmp-manip/"
-"Issues" = "https://github.com/Fritzforcode/py-pmp-manip/issues/"
+"Homepage" = "https://github.com/GermanCodeEngineer/py-pmp-manip/"
+"Repository" = "https://github.com/GermanCodeEngineer/py-pmp-manip/"
+"Issues" = "https://github.com/GermanCodeEngineer/py-pmp-manip/issues/"
 
 [project.optional-dependencies]
 dev = [
