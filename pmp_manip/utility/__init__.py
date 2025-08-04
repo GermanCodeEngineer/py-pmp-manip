@@ -1,5 +1,6 @@
 from pmp_manip.utility.compare       import *
 from pmp_manip.utility.data          import *
+from pmp_manip.utility.decorators    import *
 from pmp_manip.utility.dual_key_dict import *
 from pmp_manip.utility.errors        import *
 from pmp_manip.utility.file          import *

@@ -3,7 +3,7 @@ from hashlib import sha256, md5
 from json    import dumps
 from typing  import Any
 
-from pmp_manip.utility.repr import grepr_dataclass
+from pmp_manip.utility.decorators import grepr_dataclass
 
 
 _TOKEN_CHARSET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!#%()*+,-./:;=?@[]^_`{|}~"

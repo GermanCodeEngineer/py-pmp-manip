@@ -1,10 +1,10 @@
-from base64                 import b64encode
 from pytest                 import raises, MonkeyPatch
-from requests               import HTTPError, RequestException
+from requests               import HTTPError
 
 from pmp_manip.utility            import (
     PP_InvalidExtensionCodeSourceError, 
-    PP_NetworkFetchError, PP_UnexpectedFetchError, PP_FileFetchError, PP_FileNotFoundError,
+    PP_NetworkFetchError, PP_UnexpectedFetchError, PP_FileFetchError, 
+    PP_FileNotFoundError, PP_FailedFileReadError,
 )
 
 

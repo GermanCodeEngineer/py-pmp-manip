@@ -17,7 +17,9 @@ TODOs:
     - make sure: js execution in ext_info_gen is safe
     - simplify new opcode input/dropdown representation brackets
     - disambig error messages: use only one of "x" 'x' ˋxˋ
-    - disambig error messages: when to use repr() and when not
+    - disambig error messages: when to use repr() and when not (also use !r instead of repr())
     - disambig raw data vs. json data
     - explore "customFonts"
     - explore extensionData (example of "2D MAINCRAFT")
+    - spit into internal and public functions/methods etc
+        => add enforce_argument_types decorator to public ones

@@ -57,6 +57,8 @@ def process_all_menus(menus: dict[str, dict[str, Any]|list]) -> tuple[type[Input
         try:
             assert isinstance(menu_info, (dict, list))
             if   isinstance(menu_info, dict):
+                if "items" not in menu_info:
+                    raise PP_InvalidCustomMenuError(f"Invalid custom menu {menu_block_id!r} is missing attribute 'items'")
                 possible_values = menu_info["items"]
                 accept_reporters = menu_info.get("acceptReporters", False)
             elif isinstance(menu_info, list):
@@ -71,12 +73,16 @@ def process_all_menus(menus: dict[str, dict[str, Any]|list]) -> tuple[type[Input
             
             new_possible_values = []
             old_possible_values = []
-            for possible_value in possible_values:
+            for i, possible_value in enumerate(possible_values):
                 assert isinstance(possible_value, (str, dict))
                 if   isinstance(possible_value, str):
                     new_possible_values.append(possible_value)
                     old_possible_values.append(possible_value)
                 elif isinstance(possible_value, dict):
+                    if "text" not in possible_value:
+                        raise PP_InvalidCustomMenuError(f"Invalid custom menu {menu_block_id!r}: item {i} is missing attribute 'text'")
+                    if "value" not in possible_value:
+                        raise PP_InvalidCustomMenuError(f"Invalid custom menu {menu_block_id!r}: item {i} is missing attribute 'value'")
                     new_possible_values.append(possible_value["text"])
                     old_possible_values.append(possible_value["value"])
             
@@ -98,8 +104,6 @@ def process_all_menus(menus: dict[str, dict[str, Any]|list]) -> tuple[type[Input
                 extend_enum(ExtensionInputType, menu_block_id, input_type_info)
         except AssertionError as error:
             raise PP_InvalidCustomMenuError(f"Invalid custom menu {repr(menu_block_id)}: {menu_info}") from error
-        except KeyError as error:
-            raise PP_InvalidCustomMenuError(f"Invalid custom menu {repr(menu_block_id)} is missing attribute {error}") from error
     return (ExtensionInputType, ExtensionDropdownType)
 
 def generate_block_opcode_info(

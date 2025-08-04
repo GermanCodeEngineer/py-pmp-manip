@@ -77,7 +77,6 @@ def test_FirstToInterIF_get_cb_mutation(fti_if: FirstToInterIF):
     assert fti_if_copy == fti_if
     
 
-
 def test_FirstToInterIF_get_comment(fti_if: FirstToInterIF):
     fti_if_copy = deepcopy(fti_if)
     assert fti_if_copy.get_comment("s") == ALL_SR_COMMENTS["s"]
@@ -88,6 +87,7 @@ def test_FirstToInterIF_get_comment_not_found(fti_if: FirstToInterIF):
     with raises(PP_ConversionError):
         fti_if_copy.get_comment("qqq")
     assert fti_if_copy == fti_if
+
 
 
 def test_InterToFirstIF_post_init():

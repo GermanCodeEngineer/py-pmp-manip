@@ -1,6 +1,4 @@
 from aenum       import Enum
-from copy        import copy
-from dataclasses import dataclass
 from tree_sitter import Node
 from typing      import Any
 
@@ -15,10 +13,7 @@ class KeyReprDict(dict):
     def __repr__(self) -> str:
         return grepr(self)
 
-def grepr(obj, /, safe_dkd=False, level_offset=0, annotate_fields=True, include_attributes=False, *, indent=4) -> str:
-    def _is_dict(obj):
-        return isinstance(obj, dict) and not isinstance(obj, KeyReprDict)
-    
+def grepr(obj, /, safe_dkd=False, level_offset=0, annotate_fields=True, include_attributes=False, *, indent=4) -> str:    
     def _grepr(obj, level=level_offset) -> tuple[str, bool]:
         is_compatible = bool(getattr(obj, "_grepr", False)) and not(isinstance(obj, type)) # the class also has _grepr
         if indent is not None:
@@ -106,41 +101,6 @@ def grepr(obj, /, safe_dkd=False, level_offset=0, annotate_fields=True, include_
         return _grepr(obj)[0]
     return repr(obj)
 
-def grepr_dataclass(*, grepr_fields: list[str],
-        init: bool = True, eq: bool = True, order: bool = False, 
-        unsafe_hash: bool = False, frozen: bool = False, 
-        match_args: bool = True, kw_only: bool = False, 
-        slots: bool = False, weakref_slot: bool = False,
-    ):
-    """
-    A decorator which combines @dataclass and a good representation system.
-    Args:
-        grepr_fields: fields for the good repr implementation
-        parent_cls: class whose fields will also be included in the good repr impletementation
-        init...: dataclass parameters
-    """
-    def decorator(cls: type):
-        def __repr__(self) -> str:
-            return grepr(self)
-        cls.__repr__ = __repr__
-        cls._grepr = True
-        nonlocal grepr_fields
-        fields = copy(grepr_fields)
-        for base in cls.__bases__:
-            if not getattr(base, "_grepr", False): continue
-            for field in base._grepr_fields:
-                if field in fields: continue
-                fields.append(field)
-        cls._grepr_fields = fields
-        cls = dataclass(cls, 
-            init=init, repr=False, eq=eq,
-            order=order, unsafe_hash=unsafe_hash, frozen=frozen,
-            match_args=match_args, kw_only=kw_only,
-            slots=slots, weakref_slot=weakref_slot,
-        )
-        return cls
-    return decorator
-
 class GEnum(Enum):
     name: str
     value: Any
@@ -163,5 +123,5 @@ def repr_tree(node: Node, indent=0): # TODO: reconsider
     return "\n".join(lines)
 
 
-__all__ = ["KeyReprDict", "grepr", "grepr_dataclass", "GEnum", "repr_tree"]
+__all__ = ["KeyReprDict", "grepr", "GEnum", "repr_tree"]
 

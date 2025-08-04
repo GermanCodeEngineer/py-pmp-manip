@@ -6,7 +6,7 @@ from typing       import Any
 
 from pmp_manip.config          import get_config, init_config, get_default_config
 from pmp_manip.utility         import (
-    read_file_text, write_file_text, ContentFingerprint,
+    read_file_text, write_file_text, enforce_argument_types, ContentFingerprint,
     PP_FailedFileWriteError, 
 )
 
@@ -18,6 +18,7 @@ from pmp_manip.ext_info_gen.generator import generate_opcode_info_group, generat
 CACHE_FILENAME = "cache.json"
 
 
+@enforce_argument_types
 def generate_extension_info_py_file(source: str, extension_id: str, tolerate_file_path: bool) -> str:
     """
     Generate a python file, which stores information about the blocks of the given extension and is required for the core module. If a cached version exists and is up to date, it will be kept. Returns the file path of the python file
