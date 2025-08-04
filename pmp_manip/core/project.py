@@ -130,7 +130,7 @@ class FRProject:
         Returns:
             None
         """
-        # TODO #if self.extension_data != {}: raise PP_ThanksError()
+        # TODO #if self.extension_data != {}: raise PP_ThanksError() # also uncomment test
 
     def gen_opcode_info_for_all_extensions(self) -> list[str]:
         """

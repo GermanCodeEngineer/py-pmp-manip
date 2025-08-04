@@ -210,6 +210,28 @@ def test_FRCustomBlockArgumentMutation_from_to_data_and_to_second(fti_if: FirstT
     assert srmutation.prototype_color == colors[1]
     assert srmutation.outline_color == colors[2]
 
+def test_FRCustomBlockArgumentMutation_from_data_stringified_invalid():
+    colors = ["#FF6680", "#FF4D6A", "#FF3355"]
+    data = {
+        "tagName": "mutation", 
+        "children": [], 
+        "color": gdumps(colors),
+        "warp": gdumps(False),
+        "edited": gdumps(False),
+        "hasnext": gdumps(False),
+    }
+    frmutation = FRCustomBlockArgumentMutation.from_data(data)
+    assert frmutation.warp is False
+    assert frmutation.edited is False
+    assert frmutation.has_next is False
+    
+    with raises(PP_DeserializationError):
+        FRCustomBlockArgumentMutation.from_data(data | {"warp": "null"})
+    with raises(PP_DeserializationError):
+        FRCustomBlockArgumentMutation.from_data(data | {"edited": None})
+    with raises(PP_DeserializationError):
+        FRCustomBlockArgumentMutation.from_data(data | {"hasnext": 1})
+
 def test_FRCustomBlockArgumentMutation_to_second_without_storing_argument(fti_if: FirstToInterIF):
     data = {
         "tagName": "mutation",

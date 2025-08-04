@@ -127,12 +127,11 @@ class FRCustomBlockArgumentMutation(FRMutation, required_properties={"color"}, o
     """
     
     color: tuple[str, str, str]
+    warp: bool = False # shouldn't exist and if present seems to be False
+    edited: bool = False # shouldn't exist and if present seems to be False
+    has_next: bool = False # shouldn't exist and if present seems to be False
+
     _argument_name: str | None = field(init=False)
-    
-    warp: bool # shouldn't exist and if present seems to be False
-    edited: bool # shouldn't exist and if present seems to be False
-    has_next: bool # shouldn't exist and if present seems to be False
-    
     
     @classmethod
     def from_data(cls, data: dict[str, str]) -> "FRCustomBlockArgumentMutation":

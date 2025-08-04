@@ -18,15 +18,17 @@ project = FRProject.from_file(file_path)
 with open("log_first.lua", "w") as file:
     file.write(FRProject.__repr__(project))
 
-project.gen_opcode_info_for_all_extensions()
-input()
+print(FRProject.__repr__(dict(project.extension_urls)))
 
-new_project = project.to_second(info_api)
-del project
-new_project.validate(info_api=info_api)
-print(new_project)
+#project.gen_opcode_info_for_all_extensions()
+#input()
 
-old_project = new_project.to_first(info_api, target_platform=TargetPlatform.PENGUINMOD)
+#new_project = project.to_second(info_api)
+#del project
+#new_project.validate(info_api=info_api)
+#print(new_project)
+
+#old_project = new_project.to_first(info_api, target_platform=TargetPlatform.PENGUINMOD)
 
 #old_project.extensions.append("truefantombase")
 #old_project.extension_urls["truefantombase"] = "https://extensions.turbowarp.org/true-fantom/base.js"

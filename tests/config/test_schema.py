@@ -37,6 +37,7 @@ def test_ExtInfoGenConfig_validate():
     config = ExtInfoGenConfig(
         gen_opcode_info_dir=".",
         js_fetch_interval=timedelta(days=1),
+        node_js_exec_timeout=1.0,
     )
     config.validate(path=[])
     
@@ -100,7 +101,11 @@ def test_MasterConfig_validate():
         obj=config,
         attr_tests=[
             ("ext_info_gen", {}, PP_TypeValidationError),
-            ("ext_info_gen", ExtInfoGenConfig(gen_opcode_info_dir=".", js_fetch_interval=3), PP_TypeValidationError),
+            ("ext_info_gen", ExtInfoGenConfig(
+                    gen_opcode_info_dir=".", 
+                    js_fetch_interval=3,
+                    node_js_exec_timeout=1.0,
+                ), PP_TypeValidationError),
             ("validation", config.ext_info_gen, PP_TypeValidationError),
             ("platform_meta", [], PP_TypeValidationError),
         ],

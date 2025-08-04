@@ -22,12 +22,12 @@ def fetch_js_code(source: str, tolerate_file_path: bool) -> str:
 
     Raises:
         PP_InvalidExtensionCodeSourceError: If the source data URI, URL or file_path is invalid or if a file path is passed even tough tolerate_file_paths is False or if the passed value is an invalid source
-        PP_NetworkFetchError: For any network-related error
+        PP_NetworkFetchError: For any network-related error (like 404 (not found))
         PP_UnexpectedFetchError: For any other unexpected error while fetching URL
         PP_FileNotFoundError: If the local file does not exist
         PP_FileFetchError: If the file cannot be read
     """
-    if source.startswith("data:"):
+    if   isinstance(source, str) and source.startswith("data:"):
         print("--> Fetching from data URI")
         try:
             meta, encoded = source.split(",", 1)
@@ -38,13 +38,13 @@ def fetch_js_code(source: str, tolerate_file_path: bool) -> str:
         except Exception as error:
             raise PP_InvalidExtensionCodeSourceError(f"Failed to decode data URI: {error}") from error
 
-    elif source.startswith("http://") or source.startswith("https://"):
+    elif isinstance(source, str) and (source.startswith("http://") or source.startswith("https://")):
         print(f"--> Fetching from URL: {source}")
         
         if not validators_url(source):
             raise PP_InvalidExtensionCodeSourceError(f"Invalid URL: {source}")
         try:
-            response = requests_get(source, timeout=10)
+            response = requests_get(source, timeout=10) # TODO: possibly make configurable?
             response.raise_for_status()
             return response.text
         except RequestException as error:
@@ -53,14 +53,14 @@ def fetch_js_code(source: str, tolerate_file_path: bool) -> str:
             raise PP_UnexpectedFetchError(f"Unexpected error while fetching {source}: {error}") from error
 
     else:
-        if not tolerate_file_path:
-            raise PP_InvalidExtensionCodeSourceError(f"Fetching by a file path is forbidden: {source}")
-        
-        print(f"--> Reading from file: {source}")
         try:
             Path(source)  # Validates that the path can be created
         except (TypeError, ValueError) as error:
-            raise PP_InvalidExtensionCodeSourceError(f"Invalid file path or extension source {source}: {error}") from error
+            raise PP_InvalidExtensionCodeSourceError(f"Invalid file path or other extension source {source}: {error}") from error
+        
+        print(f"--> Reading from file: {source}")
+        if not tolerate_file_path:
+            raise PP_InvalidExtensionCodeSourceError(f"Fetching by a file path is forbidden: {source}")
         
         if not path.exists(source):
             raise PP_FileNotFoundError(f"File not found: {source}")

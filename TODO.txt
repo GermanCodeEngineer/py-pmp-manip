@@ -16,7 +16,8 @@ TODOs:
     - check if dropdown validation where only default kind: allows non strings? (should not)
     - make sure: js execution in ext_info_gen is safe
     - simplify new opcode input/dropdown representation brackets
-    - error messages: use only one of "x" 'x' ˋxˋ
-    - explore "customFonts"
+    - disambig error messages: use only one of "x" 'x' ˋxˋ
+    - disambig error messages: when to use repr() and when not
     - disambig raw data vs. json data
+    - explore "customFonts"
     - explore extensionData (example of "2D MAINCRAFT")
