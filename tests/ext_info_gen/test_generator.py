@@ -104,3 +104,8 @@ def test_process_all_menus_possible_value_missing_text_value():
             "SOME_MENU": {"items": [{"text": "Hi :)"}]}
         })
 
+
+
+def test_generate_block_opcode_info
+
+

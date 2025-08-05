@@ -108,7 +108,7 @@ def process_all_menus(menus: dict[str, dict[str, Any]|list]) -> tuple[type[Input
 
 def generate_block_opcode_info(
         block_info: dict[str, Any], 
-        menus: dict[str, dict[str, Any]],
+        menus: dict[str, dict[str, Any] | list],
         input_type_cls: type[InputType],
         dropdown_type_cls: type[DropdownType],
         extension_id: str,

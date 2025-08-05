@@ -1,3 +1,4 @@
+from os           import path, pardir
 from json         import loads
 from subprocess   import run as run_subprocess, TimeoutExpired, SubprocessError
 from tempfile     import NamedTemporaryFile
@@ -12,10 +13,10 @@ from pmp_manip.utility import (
     PP_ExtensionJSONDecodeError, PP_UnknownExtensionAttributeError, 
 )
 
-EXTRACTOR_PATH = "pypenguin/ext_info_gen/extractor.js"
+EXTRACTOR_PATH = path.join(path.split(__file__)[0], "direct_extractor.js")
    
 
-def extract_extension_info(js_code: str, code_encoding: str = "utf-8") -> dict[str, Any]:
+def extract_extension_info_directly(js_code: str, code_encoding: str = "utf-8") -> dict[str, Any]:
     """
     Extract the return value of the getInfo method of the extension class based on the extension's javascript code,
     A node subprocess is run, which lets the outer code run and then calls and logs the return value of the getInfo method of the extension class.
@@ -27,10 +28,13 @@ def extract_extension_info(js_code: str, code_encoding: str = "utf-8") -> dict[s
         code_encoding: the text encoding of `js_code`
 
     Raises:
-        PP_FailedFileWriteError: if the JS code couldn't be written to a temporary file (eg. OS Error or Unicode Error)
+        PP_FailedFileWriteError(unlikely): if the JS code couldn't be written to a temporary file (eg. OS Error or Unicode Error)
+        PP_FailedFileDeleteError(unlikely): if the temporary Javscript file couldn't be deleted
         PP_NoNodeJSInstalledError: if Node.js is not installed or not found in PATH
         PP_ExtensionExecutionTimeoutError: if the Node.js execution subprocess took too long
-
+        PP_ExtensionExecutionErrorInJavascript: if an error occurs inside the actual extension code
+        PP_UnexpectedExtensionExecutionError: if some other error raises during the subprocess call (eg. Permission or OS Error)
+        PP_ExtensionJSONDecodeError(unlikely): if the json output of the subprocess is invalid
     """
     try:
         with NamedTemporaryFile(
@@ -59,32 +63,29 @@ def extract_extension_info(js_code: str, code_encoding: str = "utf-8") -> dict[s
     except TimeoutExpired as error:
         raise PP_ExtensionExecutionTimeoutError(f"Node.js subprocess trying to execute extension code took too long: {error}") from error
     except (SubprocessError, OSError, PermissionError, Exception) as error:
-        # TODO: add detailed response handling
         raise PP_UnexpectedExtensionExecutionError(f"Failed to run Node.js subprocess (to execute extension code): {error}") from error
     finally:
         try:
             delete_file(temp_js_path)
         except PP_FailedFileDeleteError as error:
-            raise PP_FailedFileWriteError(f"Failed to remove temporary javascript file at {repr(temp_js_path)}: {error}") from error
+            raise PP_FailedFileDeleteError(f"Failed to remove temporary javascript file at {temp_js_path!r}: {error}") from error
 
     if result.returncode != 0:
-        raise PP_ExtensionExecutionErrorInJavascript(f"Error in javascript execution: {result.stderr}")
+        if   result.returncode == 1:
+            # Registration error
+            raise PP_ExtensionExecutionErrorInJavascript(f"[ExtensionDeveloperResponsible] Extension was not registered")
+        else:  # result.returncode == 2 or others
+            # Script execution error
+            raise PP_ExtensionExecutionErrorInJavascript(f"Error in extension javascript execution: {result.stderr}")
 
     try:
         extension_info = loads(result.stdout.strip().splitlines()[-1])  # last line = JSON
     except Exception as error:
-        raise PP_ExtensionJSONDecodeError(f"Invalid JSON output from container: {error}") from error
-
-    for attr in extension_info.keys():
-        if attr not in {
-            "name", "color1", "color2", "color3", "menuIconURI",
-            "docsURI", "isDynamic", "id", "blocks", "menus"
-        }:
-            raise PP_UnknownExtensionAttributeError(attr)
+        raise PP_ExtensionJSONDecodeError(f"Invalid Extension Info JSON returned from Node.js subprocess: {error}") from error
 
     return extension_info
 
 
-__all__ = ["extract_getinfo"]
+__all__ = ["extract_extension_info_directly"]
 
 
