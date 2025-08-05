@@ -194,7 +194,7 @@ def ts_node_to_json(
     print("Unprocessable:", node.text.decode())
     raise PP_JsNodeTreeToJsonConversionError(f"Unsupported node type: {node.type}")
 
-def extract_extension_info(js_code: str) -> dict[str, Any]:
+def extract_extension_info_safely(js_code: str) -> dict[str, Any]:
     """
     Extract the return value of the getInfo method of the extension class based on an AST of the extension's JS code.
     Does NOT actually execute any JavaScript code (for security lol)
@@ -400,5 +400,5 @@ def extract_extension_info(js_code: str) -> dict[str, Any]:
     return extension_info
 
 
-__all__ = ["fetch_js_code", "extract_extension_info"]
+__all__ = ["fetch_js_code", "extract_extension_info_safely"]
 

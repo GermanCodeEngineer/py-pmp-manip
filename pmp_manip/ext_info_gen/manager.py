@@ -10,9 +10,10 @@ from pmp_manip.utility         import (
     PP_FailedFileWriteError, 
 )
 
-from pmp_manip.ext_info_gen.extractor import extract_extension_info
-from pmp_manip.ext_info_gen.fetch_js  import fetch_js_code
-from pmp_manip.ext_info_gen.generator import generate_opcode_info_group, generate_file_code
+#from pmp_manip.ext_info_gen.direct_extractor import extract_extension_info_directly
+from pmp_manip.ext_info_gen.fetch_js         import fetch_js_code
+from pmp_manip.ext_info_gen.generator        import generate_opcode_info_group, generate_file_code
+from pmp_manip.ext_info_gen.safe_extractor   import extract_extension_info_safely
 
 
 CACHE_FILENAME = "cache.json"
@@ -130,7 +131,8 @@ def generate_extension_info_py_file(source: str, extension_id: str, tolerate_fil
             print("PY & JS STILL UP TO DATE")
             return destination_file_path
     
-    extension_info = extract_extension_info(js_code)
+    extension_info = extract_extension_info_safely(js_code)
+    write_file_text("last.json", dumps(extension_info, indent=4)) # TODO: temp
     info_group, input_type_cls, dropdown_type_cls = generate_opcode_info_group(extension_info)
     file_code = generate_file_code(info_group, input_type_cls, dropdown_type_cls)
     try:
@@ -163,8 +165,8 @@ if __name__ == "__main__":
 #        ("dumbExample",         "example_extensions/dumbExample.js"),
 #        ("truefantombase",      "https://extensions.turbowarp.org/true-fantom/base.js"),
 #        ("pmControlsExpansion", "example_extensions/pmControlsExpansion.js"),
-#        ("gpusb3",              "https://extensions.penguinmod.com/extensions/derpygamer2142/gpusb3.js"),
+        ("gpusb3",              "https://extensions.penguinmod.com/extensions/derpygamer2142/gpusb3.js"),
 #        ("P7BoxPhys",           "https://extensions.penguinmod.com/extensions/pooiod/Box2D.js"),
-        ("griffpatch", "https://extensions.turbowarp.org/box2d.js")
+#        ("griffpatch", "https://extensions.turbowarp.org/box2d.js")
     ]:
         generate_extension_info_py_file(extension, extension_id, tolerate_file_path=True)

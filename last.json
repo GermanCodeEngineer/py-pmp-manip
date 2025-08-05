@@ -1,0 +1,1484 @@
+{
+    "id": "gpusb3",
+    "name": "GPU.sb3",
+    "color1": "#4287f5",
+    "color2": "#166af2",
+    "color3": "#032966",
+    "docsURI": "https://extensions.derpygamer2142.com/docs/gpusb3",
+    "blocks": [
+
+        {
+            "opcode": "compileStart",
+            "blockType": "command",
+            "text": "compile shaders "
+        },
+        {
+            "opcode": "onError",
+            "blockType": "event",
+            "text": "when error thrown",
+            "isEdgeActivated": false
+        },
+        {
+            "opcode": "clearError",
+            "blockType": "command",
+            "text": "clear current error"
+        },
+        {
+            "opcode": "init",
+            "blockType": "command",
+            "text": "Reconnect to GPU"
+        },
+        {
+            "opcode": "runGPU",
+            "blockType": "command",
+            "text": "Run shader [GPUFUNC] using bind group [BINDGROUP] dimensions x: [X] y: [Y] z: [Z]",
+            "arguments": {
+                "GPUFUNC": {
+                    "type": "string",
+                    "defaultValue": "myShader"
+                },
+                "BINDGROUP": {
+                    "type": "string",
+                    "defaultValue": "myBindGroup"
+                },
+                "X": {
+                    "type": "number",
+                    "defaultValue": 1
+                },
+                "Y": {
+                    "type": "number",
+                    "defaultValue": 1
+                },
+                "Z": {
+                    "type": "number",
+                    "defaultValue": 1
+                }
+            }
+        },
+        {
+            "blockType": "label",
+            "text": "Data input blocks"
+        },
+        {
+            "opcode": "createBindGroupLayout",
+            "blockType": "conditional",
+            "text": "Create bind group layout called [NAME]",
+            "arguments": {
+                "NAME": {
+                    "type": "string",
+                    "defaultValue": "myBindGroupLayout"
+                }
+            }
+        },
+        {
+            "opcode": "bindGroupLayoutEntry",
+            "blockType": "command",
+            "text": "Add bind group layout entry with binding [BINDING] for type [TYPE] and descriptor [DESC]",
+            "arguments": {
+                "BINDING": {
+                    "type": "number",
+                    "defaultValue": 0
+                },
+                "TYPE": {
+                    "type": "string",
+                    "menu": "BGLENTRYTYPES",
+                    "defaultValue": "buffer"
+                },
+                "DESC": {
+                    "type": "string",
+                    "defaultValue": ""
+                }
+            }
+        },
+        {
+            "opcode": "bufferEntryDescriptor",
+            "blockType": "reporter",
+            "text": "Buffer layout entry descriptor with usage type [TYPE]",
+            "arguments": {
+                "TYPE": {
+                    "type": "string",
+                    "menu": "BUFFERENTRYTYPE"
+                }
+            }
+        },
+        {
+            "opcode": "textureEntryDescriptor",
+            "blockType": "reporter",
+            "text": "Texture layout entry descriptor with usage type [TYPE] and format [FORMAT]",
+            "arguments": {
+                "TYPE": {
+                    "type": "string",
+                    "menu": "TEXTUREENTRYTYPE"
+                },
+                "FORMAT": {
+                    "type": "string",
+                    "menu": "TEXTURECOLORFORMATS"
+                }
+            }
+        },
+        {
+            "hideFromPalette": true,
+            "opcode": "samplerEntryDescriptor",
+            "blockType": "reporter",
+            "text": "Sampler layout entry descriptor with sample type [TYPE]",
+            "arguments": {
+                "TYPE": {
+                    "type": "string",
+                    "menu": "SAMPLERENTRYTYPE"
+                }
+            }
+        },
+        {
+            "opcode": "createBindGroup",
+            "blockType": "conditional",
+            "text": "Create bind group called [NAME] using layout [LAYOUT]",
+            "arguments": {
+                "NAME": {
+                    "type": "string",
+                    "defaultValue": "myBindGroup"
+                },
+                "LAYOUT": {
+                    "type": "string",
+                    "defaultValue": "myBindGroupLayout"
+                }
+            }
+        },
+        {
+            "opcode": "bindGroupEntry",
+            "blockType": "command",
+            "text": "Add bind group entry with binding [BINDING] of type [TYPE] using resource named [RESOURCE]",
+            "arguments": {
+                "BINDING": {
+                    "type": "number",
+                    "defaultValue": 0
+                },
+                "TYPE": {
+                    "type": "string",
+                    "menu": "BGLENTRYTYPES",
+                    "defaultValue": "buffer"
+                },
+                "RESOURCE": {
+                    "type": "string",
+                    "defaultValue": "myBuffer"
+                }
+            }
+        },
+        {
+            "blockType": "command",
+            "opcode": "createBuffer",
+            "text": "Create buffer called [NAME] with size(in bytes) [SIZE] and usage flags [USAGE]",
+            "arguments": {
+                "NAME": {
+                    "type": "string",
+                    "defaultValue": "myBuffer"
+                },
+                "SIZE": {
+                    "type": "number",
+                    "defaultValue": 8
+                },
+                "USAGE": {
+                    "type": "number",
+                    "defaultValue": 140
+                }
+            }
+        },
+        {
+            "opcode": "bufferUsage",
+            "blockType": "reporter",
+            "text": "Buffer usage [USAGE]",
+            "arguments": {
+                "USAGE": {
+                    "type": "string",
+                    "menu": "BUFFERUSAGE",
+                    "defaultValue": "STORAGE"
+                }
+            }
+        },
+        {
+            "opcode": "createTexture",
+            "blockType": "command",
+            "text": "Create texture called [NAME] width dimensions [WIDTH] [HEIGHT], color format [FORMAT] and usage [USAGE]",
+            "arguments": {
+                "NAME": {
+                    "type": "string",
+                    "defaultValue": "myTexture"
+                },
+                "WIDTH": {
+                    "type": "number",
+                    "defaultValue": 150
+                },
+                "HEIGHT": {
+                    "type": "number",
+                    "defaultValue": 150
+                },
+                "FORMAT": {
+                    "type": "string",
+                    "menu": "TEXTURECOLORFORMATS"
+                },
+                "USAGE": {
+                    "type": "number",
+                    "defaultValue": 6
+                }
+            }
+        },
+        {
+            "opcode": "textureUsage",
+            "blockType": "reporter",
+            "text": "Texture usage [USAGE]",
+            "arguments": {
+                "USAGE": {
+                    "type": "string",
+                    "menu": "TEXTUREUSAGE",
+                    "defaultValue": "STORAGE_BINDING"
+                }
+            }
+        },
+        {
+            "hideFromPalette": true,
+            "opcode": "createSampler",
+            "blockType": "command",
+            "text": "Create texture sampler called [NAME] with U address mode [UMODE] and v address mode [VMODE] and mag filter [MAGFILTER]",
+            "arguments": {
+                "NAME": {
+                    "type": "string",
+                    "defaultValue": "mySampler"
+                },
+                "UMODE": {
+                    "menu": "ADDRESSMODES"
+                },
+                "VMODE": {
+                    "menu": "ADDRESSMODES"
+                },
+                "MAGFILTER": {
+                    "menu": "FILTERMODES"
+                }
+            }
+        },
+        {
+            "blockType": "reporter",
+            "opcode": "binaryOr",
+            "text": "Usage [A] | [B]",
+            "arguments": {
+                "A": {
+                    "type": "number",
+                    "defaultValue": 128
+                },
+                "B": {
+                    "type": "number",
+                    "defaultValue": 4
+                }
+            }
+        },
+        {
+            "opcode": "genF32",
+            "blockType": "reporter",
+            "hideFromPalette": true,
+            "text": "F32 array from array [ARRAY]",
+            "arguments": {
+                "ARRAY": {
+                    "type": "string",
+                    "defaultValue": "[1,2,3]"
+                }
+            }
+        },
+        {
+            "opcode": "copyTextureToBuffer",
+            "blockType": "command",
+            "text": "Copy texture [TEXTURE] to buffer [BUFFER] with dimensions [WIDTH] [HEIGHT]",
+            "arguments": {
+                "TEXTURE": {
+                    "type": "string",
+                    "defaultValue": "myTexture"
+                },
+                "BUFFER": {
+                    "type": "string",
+                    "defaultValue": "myBuffer"
+                },
+                "WIDTH": {
+                    "type": "number",
+                    "defaultValue": 15
+                },
+                "HEIGHT": {
+                    "type": "number",
+                    "defaultValue": 15
+                }
+            }
+        },
+        {
+            "opcode": "writeBuffer",
+            "blockType": "command",
+            "text": "Write [SIZE] elements of data from arraybuffer [ARRAY] to buffer [BUFFER] from offset [OFF1] to offset [OFF2]",
+            "arguments": {
+                "SIZE": {
+                    "type": "number",
+                    "defaultValue": 3
+                },
+                "ARRAY": {
+                    "type": "string"
+                },
+                "BUFFER": {
+                    "type": "string",
+                    "defaultValue": "myBuffer"
+                },
+                "OFF1": {
+                    "type": "number",
+                    "defaultValue": 0
+                },
+                "OFF2": {
+                    "type": "number",
+                    "defaultValue": 0
+                }
+            }
+        },
+        {
+            "opcode": "copyBufferToBuffer",
+            "blockType": "command",
+            "text": "Copy [NUMBYTES] bytes of data from buffer [BUF1] from  position [BUF1OFF] to buffer [BUF2] at position [BUF2OFF]",
+            "arguments": {
+                "NUMBYTES": {
+                    "type": "number",
+                    "defaultValue": 256
+                },
+                "BUF1": {
+                    "type": "string",
+                    "defaultValue": "myBuffer1"
+                },
+                "BUF1OFF": {
+                    "type": "number",
+                    "defaultValue": 0
+                },
+                "BUF2": {
+                    "type": "string",
+                    "defaultValue": "myBuffer2"
+                },
+                "BUF2OFF": {
+                    "type": "number",
+                    "defaultValue": 0
+                }
+            }
+        },
+        {
+            "hideFromPalette": true,
+            "opcode": "clearBuffer",
+            "blockType": "command",
+            "text": "Clear [NUMBYTES] bytes(-1 for all) of buffer [BUFFER] from offset [OFFSET]",
+            "arguments": {
+                "NUMBYTES": {
+                    "type": "number",
+                    "defaultValue": 128
+                },
+                "BUFFER": {
+                    "type": "string",
+                    "defaultValue": "myBuffer"
+                },
+                "OFFSET": {
+                    "type": "number",
+                    "defaultValue": 128
+                }
+            }
+        },
+        {
+            "opcode": "readBuffer",
+            "blockType": "command",
+            "text": "Read buffer [BUFFER] to arraybuffer [ARRAYBUFFER]",
+            "arguments": {
+                "BUFFER": {
+                    "type": "string",
+                    "defaultValue": "myBuffer"
+                },
+                "ARRAYBUFFER": {
+                    "type": "string",
+                    "defaultValue": "myArrayBuffer"
+                }
+            }
+        },
+        {
+            "opcode": "writeTexture",
+            "blockType": "command",
+            "text": "Write texture data from [IMAGE] to texture [TEXTURE]",
+            "arguments": {
+                "IMAGE": {
+                    "type": "string",
+                    "menu": "IMAGELIST"
+                },
+                "TEXTURE": {
+                    "type": "string",
+                    "defaultValue": "myTexture"
+                }
+            }
+        },
+        {
+            "blockType": "label",
+            "text": "ArrayBuffer blocks"
+        },
+        {
+            "opcode": "listABs",
+            "blockType": "reporter",
+            "text": "List arraybuffers"
+        },
+        {
+            "opcode": "createAB",
+            "blockType": "command",
+            "text": "Create arraybuffer called [ARRAYBUFFER] with length [LENGTH]",
+            "arguments": {
+                "ARRAYBUFFER": {
+                    "type": "string",
+                    "defaultValue": "myArrayBuffer"
+                },
+                "LENGTH": {
+                    "type": "number",
+                    "defaultValue": 16
+                }
+            }
+        },
+        {
+            "opcode": "createABFromArray",
+            "blockType": "command",
+            "text": "Create arraybuffer and view called [ARRAYBUFFER] from array [ARRAY] of type [TYPE] ",
+            "arguments": {
+                "ARRAYBUFFER": {
+                    "type": "string",
+                    "defaultValue": "myArrayBuffer"
+                },
+                "ARRAY": {
+                    "type": "string",
+                    "defaultValue": "[1,2,3]"
+                },
+                "TYPE": {
+                    "type": "string",
+                    "menu": "TYPEDARRAYTYPES"
+                }
+            }
+        },
+        {
+            "opcode": "deleteAB",
+            "blockType": "command",
+            "text": "Delete arraybuffer [ARRAYBUFFER]",
+            "arguments": {
+                "ARRAYBUFFER": {
+                    "type": "string",
+                    "defaultValue": "myArrayBuffer"
+                }
+            }
+        },
+        {
+            "opcode": "resizeAB",
+            "blockType": "command",
+            "text": "Resize arraybuffer [ARRAYBUFFER] to [SIZE] bytes",
+            "arguments": {
+                "ARRAYBUFFER": {
+                    "type": "string",
+                    "menu": "ARRAYBUFFERS"
+                },
+                "SIZE": {
+                    "type": "number",
+                    "defaultValue": 16
+                }
+            }
+        },
+        {
+            "opcode": "listViews",
+            "blockType": "reporter",
+            "text": "List views"
+        },
+        {
+            "opcode": "createABView",
+            "blockType": "command",
+            "text": "View arraybuffer [ARRAYBUFFER] as [TYPE] called [NAME]",
+            "arguments": {
+                "ARRAYBUFFER": {
+                    "type": "string",
+                    "menu": "ARRAYBUFFERS"
+                },
+                "TYPE": {
+                    "type": "string",
+                    "menu": "TYPEDARRAYTYPES"
+                },
+                "NAME": {
+                    "type": "string",
+                    "defaultValue": "myView"
+                }
+            }
+        },
+        {
+            "opcode": "deleteView",
+            "blockType": "command",
+            "text": "Delete view [NAME]",
+            "arguments": {
+                "NAME": {
+                    "type": "string",
+                    "defaultValue": "myView"
+                }
+            }
+        },
+        {
+            "opcode": "setItemInView",
+            "blockType": "command",
+            "text": "Set item [INDEX] of view [VIEW] to [VALUE]",
+            "arguments": {
+                "INDEX": {
+                    "type": "number",
+                    "defaultValue": 0
+                },
+                "VIEW": {
+                    "type": "string",
+                    "defaultValue": "myView"
+                },
+                "VALUE": {
+                    "type": "number",
+                    "defaultValue": 255
+                }
+            }
+        },
+        {
+            "opcode": "setView",
+            "blockType": "command",
+            "text": "Copy data from array [ARRAY] to view [VIEW] from index [INDEX]",
+            "arguments": {
+                "ARRAY": {
+                    "type": "string",
+                    "defaultValue": "[1,2,3]"
+                },
+                "VIEW": {
+                    "type": "string",
+                    "defaultValue": "myView"
+                },
+                "INDEX": {
+                    "type": "number",
+                    "defaultValue": 0
+                }
+            }
+        },
+        {
+            "opcode": "fillView",
+            "blockType": "command",
+            "text": "Fill items [START] to [END] of view [VIEW] with [VALUE]",
+            "arguments": {
+                "START": {
+                    "type": "number",
+                    "defaultValue": 0
+                },
+                "END": {
+                    "type": "number",
+                    "defaultValue": 5
+                },
+                "VIEW": {
+                    "type": "string",
+                    "defaultValue": "myView"
+                },
+                "VALUE": {
+                    "type": "number",
+                    "defaultValue": 3
+                }
+            }
+        },
+        {
+            "opcode": "itemOfView",
+            "blockType": "reporter",
+            "text": "Item [INDEX] of arraybuffer view [VIEW]",
+            "arguments": {
+                "INDEX": {
+                    "type": "number",
+                    "defaultValue": 0
+                },
+                "VIEW": {
+                    "type": "string",
+                    "defaultValue": "myView"
+                }
+            }
+        },
+        {
+            "opcode": "sliceView",
+            "blockType": "reporter",
+            "text": "Items [START] to [END] of view [VIEW]",
+            "arguments": {
+                "START": {
+                    "type": "number",
+                    "defaultValue": 0
+                },
+                "END": {
+                    "type": "number",
+                    "defaultValue": 3
+                },
+                "VIEW": {
+                    "type": "string",
+                    "defaultValue": "myView"
+                }
+            }
+        },
+        {
+            "opcode": "viewToArray",
+            "blockType": "reporter",
+            "text": "Get view [VIEW] as array",
+            "arguments": {
+                "VIEW": {
+                    "type": "string",
+                    "defaultValue": "myView"
+                }
+            }
+        },
+        {
+            "opcode": "propFromView",
+            "blockType": "reporter",
+            "text": "[PROP] of view [VIEW]",
+            "arguments": {
+                "PROP": {
+                    "type": "string",
+                    "menu": "TYPEDARRAYPROPS"
+                },
+                "VIEW": {
+                    "type": "string",
+                    "defaultValue": "myView"
+                }
+            }
+        },
+        {
+            "blockType": "label",
+            "text": "WGSL Blocks"
+        },
+        {
+            "opcode": "declareVar",
+            "blockType": "command",
+            "text": "declare [VARTYPE] variable as [NAME] with value [VALUE]: [TYPE]",
+            "arguments": {
+                "VARTYPE": {
+                    "type": "string",
+                    "menu": "VARTYPES",
+                    "defaultValue": "var"
+                },
+                "NAME": {
+                    "type": "string",
+                    "defaultValue": "someVariable"
+                },
+                "VALUE": {
+                    "type": "string",
+                    "defaultValue": 12
+                },
+                "TYPE": {
+                    "type": "string",
+                    "menu": "TYPES",
+                    "defaultValue": "auto"
+                }
+            }
+        },
+        {
+            "opcode": "bindInput",
+            "blockType": "command",
+            "text": "Bind shader resource # [BINDNUM] to variable [VARNAME] with settings [SETTINGS] type [INPUTTYPE]",
+            "arguments": {
+                "BINDNUM": {
+                    "type": "number",
+                    "defaultValue": 0
+                },
+                "VARNAME": {
+                    "type": "string",
+                    "defaultValue": "data"
+                },
+                "SETTINGS": {
+                    "type": "string",
+                    "defaultValue": "storage, read_write"
+                },
+                "INPUTTYPE": {
+                    "type": "string",
+                    "defaultValue": "array<f32>"
+                }
+            }
+        },
+        {
+            "opcode": "variableUsage",
+            "blockType": "reporter",
+            "text": "Variable usage [USAGE] next [NEXT]",
+            "arguments": {
+                "USAGE": {
+                    "type": "string",
+                    "menu": "VARUSAGE",
+                    "defaultValue": "read_write"
+                },
+                "NEXT": {
+                    "type": "string",
+                    "defaultValue": ""
+                }
+            }
+        },
+        {
+            "opcode": "varOp",
+            "blockType": "command",
+            "text": "Variable [VARNAME] [VAROP]  [INPUT]",
+            "arguments": {
+                "VARNAME": {
+                    "type": "string",
+                    "defaultValue": "someVariable"
+                },
+                "VAROP": {
+                    "type": "string",
+                    "menu": "VAROPS",
+                    "defaultValue": "+="
+                },
+                "INPUT": {
+                    "type": "string",
+                    "defaultValue": "8"
+                }
+            }
+        },
+        {
+            "opcode": "getVar",
+            "blockType": "reporter",
+            "text": "Get variable [NAME]",
+            "arguments": {
+                "NAME": {
+                    "type": "string",
+                    "defaultValue": "someVariable"
+                }
+            }
+        },
+        {
+            "blockType": "label",
+            "text": "      "
+        },
+        {
+            "opcode": "variablePointer",
+            "blockType": "reporter",
+            "text": "Pointer to variable [VAR]",
+            "arguments": {
+                "VAR": {
+                    "type": "string",
+                    "defaultValue": "myVariable"
+                }
+            }
+        },
+        {
+            "opcode": "indexObject",
+            "blockType": "reporter",
+            "text": "In object [ARRAY] get index [INDEX]",
+            "arguments": {
+                "ARRAY": {
+                    "type": "string",
+                    "defaultValue": "someArray"
+                },
+                "INDEX": {
+                    "type": "number",
+                    "defaultValue": 0
+                }
+            }
+        },
+        {
+            "opcode": "getProp",
+            "blockType": "reporter",
+            "text": "In object [OBJECT] get property [PROP]",
+            "arguments": {
+                "OBJECT": {
+                    "type": "string",
+                    "defaultValue": "someObject"
+                },
+                "PROP": {
+                    "type": "string",
+                    "defaultValue": ""
+                }
+            }
+        },
+        {
+            "opcode": "constructFromType",
+            "blockType": "reporter",
+            "text": "Construct type [TYPE] with values [VALUES]",
+            "arguments": {
+                "TYPE": {
+                    "type": "string",
+                    "menu": "RAWTYPES",
+                    "defaultValue": "f32"
+                },
+                "VALUES": {
+                    "type": "string",
+                    "defaultValue": ""
+                }
+            }
+        },
+        {
+            "opcode": "typeConstructor",
+            "blockType": "reporter",
+            "text": "Create type [TYPE] of [SUBTYPE], length(array only!) [LENGTH]",
+            "arguments": {
+                "TYPE": {
+                    "type": "string",
+                    "menu": "CONSTRUCTABLETYPES",
+                    "defaultValue": "vec3"
+                },
+                "SUBTYPE": {
+                    "type": "string",
+                    "defaultValue": ""
+                },
+                "LENGTH": {
+                    "type": "number",
+                    "defaultValue": ""
+                }
+            }
+        },
+        {
+            "opcode": "matrixType",
+            "blockType": "reporter",
+            "text": "Matrix type with [COLUMNS] columns and [ROWS] rows",
+            "arguments": {
+                "COLUMNS": {
+                    "type": "number",
+                    "defaultValue": 2
+                },
+                "ROWS": {
+                    "type": "number",
+                    "defaultValue": 2
+                }
+            }
+        },
+        {
+            "opcode": "textureType",
+            "blockType": "reporter",
+            "text": "Texture type of [TYPE] with access [ACCESS]",
+            "arguments": {
+                "TYPE": {
+                    "type": "string",
+                    "menu": "TEXTURECOLORFORMATS"
+                },
+                "ACCESS": {
+                    "type": "string",
+                    "menu": "VARIABLEACCESSTYPES"
+                }
+            }
+        },
+        {
+            "opcode": "declareStruct",
+            "blockType": "conditional",
+            "text": "Declare struct called [NAME]",
+            "arguments": {
+                "NAME": {
+                    "type": "string",
+                    "defaultValue": "MyStruct"
+                }
+            }
+        },
+        {
+            "opcode": "structProperty",
+            "blockType": "command",
+            "text": "Add property called [PROPERTY] with type [TYPE] to struct",
+            "arguments": {
+                "PROPERTY": {
+                    "type": "string",
+                    "defaultValue": "someProperty"
+                },
+                "TYPE": {
+                    "type": "string",
+                    "defaultValue": "f32",
+                    "menu": "RAWTYPES"
+                }
+            }
+        },
+        {
+            "opcode": "structType",
+            "blockType": "reporter",
+            "text": "Type of struct [STRUCT]",
+            "arguments": {
+                "STRUCT": {
+                    "type": "string",
+                    "defaultValue": "MyStruct"
+                }
+            }
+        },
+        {
+            "hideFromPalette": true,
+            "opcode": "samplerType",
+            "blockType": "reporter",
+            "text": "Sampler type"
+        },
+        {
+            "opcode": "rootType",
+            "blockType": "reporter",
+            "text": "Base type [TYPE]",
+            "arguments": {
+                "TYPE": {
+                    "type": "string",
+                    "menu": "RAWTYPES",
+                    "defaultValue": "f32"
+                }
+            }
+        },
+        {
+            "blockType": "label",
+            "text": "      "
+        },
+        {
+            "opcode": "wgslFunc",
+            "blockType": "reporter",
+            "text": "WGSL builtin [OPERATION] with args [VALUE]",
+            "arguments": {
+                "OPERATION": {
+                    "type": "string",
+                    "menu": "WGSLFUNCS",
+                    "defaultValue": "trunc"
+                },
+                "VALUE": {
+                    "type": "string",
+                    "defaultValue": "12.345"
+                }
+            }
+        },
+        {
+            "opcode": "funcArgs",
+            "blockType": "reporter",
+            "text": "Func arg input [ARG], next [NEXT]",
+            "arguments": {
+                "ARG": {
+                    "type": "string",
+                    "defaultValue": "15"
+                },
+                "NEXT": {
+                    "type": "string",
+                    "defaultValue": ""
+                }
+            }
+        },
+        
+        {
+            "opcode": "wgslForLoop",
+            "blockType": "conditional",
+            "text": "For [VARNAME] in range [START], [END]",
+            "arguments": {
+                "VARNAME": {
+                    "type": "string",
+                    "defaultValue": "i"
+                },
+                "START": {
+                    "type": "number",
+                    "defaultValue": 0
+                },
+                "END": {
+                    "type": "number",
+                    "defaultValue": 10
+                }
+            },
+            "branchCount": 1
+        },
+        {
+            "opcode": "wgslWhileLoop",
+            "blockType": "conditional",
+            "text": "While [COND]",
+            "arguments": {
+                "COND": {
+                    "type": "string",
+                    "defaultValue": ""
+                }
+            },
+            "branchCount": 1
+        },
+        {
+            "opcode": "continue",
+            "blockType": "command",
+            "isTerminal": true,
+            "text": "continue"
+        },
+        {
+            "opcode": "defFunc",
+            "blockType": "conditional",
+            "text": "Def function [FUNCNAME] that returns type [TYPE] with args [ARGS]",
+            "arguments": {
+                "FUNCNAME": {
+                    "type": "string",
+                    "defaultValue": "myFunc"
+                },
+                "TYPE": {
+                    "type": "string",
+                    "menu": "FUNCTYPES",
+                    "defaultValue": "void"
+                }
+            }
+        },
+        {
+            "opcode": "defFuncArgs",
+            "blockType": "reporter",
+            "text": "Def arg [ARGNAME]: [ARGTYPE], next [NEXTARG]",
+            "arguments": {
+                "ARGNAME": {
+                    "type": "string",
+                    "defaultValue": "someArg"
+                },
+                "ARGTYPE": {
+                    "type": "string",
+                    "menu": "RAWTYPES",
+                    "defaultValue": "i32"
+                },
+                "NEXTARG": {
+                    "type": "string",
+                    "defaultValue": ""
+                }
+            }
+        },
+        {
+            "opcode": "getFuncArg",
+            "blockType": "reporter",
+            "text": "Get function arg [ARGNAME]",
+            "arguments": {
+                "ARGNAME": {
+                    "type": "string",
+                    "defaultValue": "someArg"
+                }
+            }
+        },
+        {
+            "opcode": "funcReturn",
+            "blockType": "command",
+            "isTerminal": true,
+            "text": "Return [TORETURN]",
+            "arguments": {
+                "TORETURN": {
+                    "type": "string",
+                    "defaultValue": ""
+                }
+            }
+        },
+        {
+            "opcode": "c_runFunc",
+            "blockType": "command",
+            "text": "Run function [FUNCNAME] with args [ARGS]",
+            "arguments": {
+                "FUNCNAME": {
+                    "type": "string",
+                    "defaultValue": "myFunc"
+                },
+                "ARGS": {
+                    "type": "string",
+                    "defaultValue": ""
+                }
+            }
+        },
+        {
+            "opcode": "r_runFunc",
+            "blockType": "reporter",
+            "text": "Run function [FUNCNAME] with args [ARGS]",
+            "arguments": {
+                "FUNCNAME": {
+                    "type": "string",
+                    "defaultValue": "myFunc"
+                },
+                "ARGS": {
+                    "type": "string",
+                    "defaultValue": ""
+                }
+            }
+        },
+        {
+            "blockType": "label",
+            "text": "Thread safety"
+        },
+        {
+            "opcode": "atomicType",
+            "blockType": "reporter",
+            "text": "Create atomic of type [BASE]",
+            "arguments": {
+                "BASE": {
+                    "type": "string",
+                    "defaultValue": "i32",
+                    "menu": "ATOMICBASES"
+                }
+            }
+        },
+        {
+            "opcode": "atomicLoad",
+            "blockType": "reporter",
+            "text": "Load atomic [ATOMIC]",
+            "arguments": {
+                "ATOMIC": {
+                    "type": "string",
+                    "defaultValue": "myAtomic"
+                }
+            }
+        },
+        {
+            "opcode": "c_atomicFunc",
+            "blockType": "command",
+            "text": "Perform operation [OP] on atomic [ATOMIC] with value [VALUE]",
+            "arguments": {
+                "OP": {
+                    "type": "string",
+                    "menu": "ATOMICFUNCTIONS",
+                    "defaultValue": "atomicStore"
+                },
+                "ATOMIC": {
+                    "type": "string",
+                    "defaultValue": "myAtomic"
+                },
+                "VALUE": {
+                    "type": "number",
+                    "defaultValue": 15
+                }
+            }
+        },
+        {
+            "opcode": "r_atomicFunc",
+            "blockType": "reporter",
+            "text": "Perform operation [OP] on atomic [ATOMIC] with value [VALUE]",
+            "arguments": {
+                "OP": {
+                    "type": "string",
+                    "menu": "ATOMICFUNCTIONS",
+                    "defaultValue": "atomicStore"
+                },
+                "ATOMIC": {
+                    "type": "string",
+                    "defaultValue": "myAtomic"
+                },
+                "VALUE": {
+                    "type": "number",
+                    "defaultValue": 15
+                }
+            }
+        },
+        {
+            "opcode": "barrier",
+            "blockType": "command",
+            "text": "Barrier [TYPE]",
+            "arguments": {
+                "TYPE": {
+                    "type": "string",
+                    "menu": "BARRIERFUNCTIONS"
+                }
+            }
+        },
+        {
+            "blockType": "label",
+            "text": "      "
+        },
+        {
+            "opcode": "c_arbitraryWGSL",
+            "blockType": "command",
+            "text": "Arbitrary WGSL [TEXT]",
+            "arguments": {
+                "TEXT": {
+                    "type": "string"
+                }
+            }
+        },
+        {
+            "opcode": "r_arbitraryWGSL",
+            "blockType": "reporter",
+            "text": "Arbitrary WGSL [TEXT]",
+            "arguments": {
+                "TEXT": {
+                    "type": "string"
+                }
+            }
+        }
+    ],
+    "menus": {
+        "TYPES": {
+            "acceptReporters": true,
+            "items": [
+                "i32",
+                "u32",
+                "f32",
+                "bool",
+                "auto"
+            ]
+        },
+        "VARTYPES": {
+            "acceptReporters": true,
+            "items": [
+                "var",
+                "let",
+                "const"
+            ]
+        },
+        "VAROPS": {
+            "acceptReporters": true,
+            "items": [
+                "=",
+                "+=",
+                "-=",
+                "*=",
+                "/=",
+                "%=",
+                "&=",
+                "|=",
+                "^=",
+                ">>=",
+                "<<="
+            ]
+        },
+        "WGSLFUNCS": {
+            "acceptReporters": true,
+            "items": [
+                "all",
+                "any",
+                "arrayLength",
+                "asinh",
+                "bitcast",
+                "bool",
+                "cosh",
+                "countLeadingZeros",
+                "countOneBits",
+                "countTrailingZeros",
+                "degrees",
+                "determinant",
+                "exp",
+                "exp2",
+                "f32",
+                "firstLeadingBit",
+                "firstTrailingBit",
+                "fract",
+                "frexp",
+                "i32",
+                "inverseSqrt",
+                "length",
+                "log",
+                "log2",
+                "modf",
+                "normalize",
+                "pack2x16float",
+                "pack2x16snorm",
+                "pack2x16unorm",
+                "pack4x8snorm",
+                "pack4x8unorm",
+                "quantizeToF16",
+                "radians",
+                "reverseBits",
+                "saturate",
+                "sign",
+                "sinh",
+                "tanh",
+                "textureDimensions",
+                "textureLoad",
+                "textureStore",
+                "textureNumLayers",
+                "textureNumLevels",
+                "textureNumSamples",
+                "transpose",
+                "trunc",
+                "u32",
+                "unpack2x16float",
+                "unpack2x16snorm",
+                "unpack2x16unorm",
+                "unpack4x8snorm",
+                "unpack4x8unorm"
+            ]
+        },
+        "FUNCTYPES": {
+            "acceptReporters": true,
+            "items": [
+                "i32",
+                "u32",
+                "f32",
+                "bool",
+                "void"
+            ]
+        },
+        "RAWTYPES": {
+            "acceptReporters": true,
+            "items": [
+                "i32",
+                "u32",
+                "f32",
+                "bool"
+            ]
+        },
+        "BGLENTRYTYPES": {
+            "acceptReporters": true,
+            "items": [
+                "buffer",
+                "storageTexture"
+            ]
+        },
+        "CONSTRUCTABLETYPES": {
+            "acceptReporters": true,
+            "items": [
+                "vec2",
+                "vec3",
+                "vec4",
+                "array"
+            ]
+        },
+        "BUFFERUSAGE": {
+            "acceptReporters": true,
+            "items": [
+                "COPY_SRC",
+                "COPY_DST",
+                "MAP_READ",
+                "MAP_WRITE",
+                "QUERY_RESOLVE",
+                "STORAGE",
+                "UNIFORM"
+            ]
+        },
+        "BUFFERENTRYTYPE": {
+            "acceptReporters": true,
+            "items": [
+                "read-only-storage",
+                "storage",
+                "uniform"
+            ]
+        },
+        "VARUSAGE": {
+            "acceptReporters": true,
+            "items": [
+                "read",
+                "write",
+                "read_write",
+                "function",
+                "private",
+                "workgroup",
+                "uniform",
+                "storage"
+            ]
+        },
+        "ATOMICBASES": {
+            "acceptReporters": true,
+            "items": [
+                "i32",
+                "u32"
+            ]
+        },
+        "ATOMICFUNCTIONS": {
+            "acceptReporters": true,
+            "items": [
+                "atomicStore",
+                "atomicAdd",
+                "atomicSub",
+                "atomicMax",
+                "atomicMin",
+                "atomicAnd",
+                "atomicOr",
+                "atomicXor",
+                "atomicExchange",
+                "atomicCompareExchangeWeak"
+            ]
+        },
+        "BARRIERFUNCTIONS": {
+            "acceptReporters": true,
+            "items": [
+                "storageBarrier",
+                "workgroupBarrier",
+                "textureBarrier"
+            ]
+        },
+        "TYPEDARRAYTYPES": {
+            "acceptReporters": true,
+            "items": [
+                "Int32Array",
+                "Uint32Array",
+                "Float32Array",
+                "Int8Array",
+                "Uint8Array",
+                "Uint8ClampedArray",
+                "Int16Array",
+                "Uint16Array",
+                "BigInt64Array",
+                "BigUint64Array",
+                "Float64Array"
+            ]
+        },
+        "ARRAYBUFFERS": {
+            "acceptReporters": true,
+            "items": "getArrayBuffersMenu"
+        },
+        "TYPEDARRAYPROPS": {
+            "acceptReporters": true,
+            "items": [
+                "BYTES_PER_ELEMENT",
+                "byteLength",
+                "length"
+            ]
+        },
+        "TEXTURECOLORFORMATS": {
+            "acceptReporters": true,
+            "items": [
+                "r8unorm",
+                "r8snorm",
+                "r8uint",
+                "r8sint",
+                "r16uint",
+                "r16sint",
+                "r16float",
+                "rg8unorm",
+                "rg8snorm",
+                "rg8uint",
+                "rg8sint",
+                "r32uint",
+                "r32sint",
+                "r32float",
+                "rg16uint",
+                "rg16sint",
+                "rg16float",
+                "rgba8unorm",
+                "rgba8snorm",
+                "rgba8uint",
+                "rgba8sint",
+                "bgra8unorm",
+                "bgra8unorm-srgb",
+                "rg32uint",
+                "rg32sint",
+                "rg32float",
+                "rgba16uint",
+                "rgba16sint",
+                "rgba16float",
+                "rgba32uint",
+                "rgba32sint",
+                "rgba32float"
+            ]
+        },
+        "TEXTUREUSAGE": {
+            "acceptReporters": true,
+            "items": [
+                "COPY_SRC",
+                "COPY_DST",
+                "TEXTURE_BINDING",
+                "STORAGE_BINDING"
+            ]
+        },
+        "IMAGELIST": {
+            "acceptReporters": true,
+            "items": "getImageList"
+        },
+        "ADDRESSMODES": {
+            "acceptReporters": true,
+            "items": [
+                "clamp-to-edge",
+                "repeat",
+                "mirror-repeat"
+            ]
+        },
+        "FILTERMODES": {
+            "acceptReporters": true,
+            "items": [
+                "nearest",
+                "filter"
+            ]
+        },
+        "TEXTUREENTRYTYPE": {
+            "acceptReporters": true,
+            "items": [
+                "write-only",
+                "read-only",
+                "read-write"
+            ]
+        },
+        "SAMPLERENTRYTYPE": {
+            "acceptReporters": true,
+            "items": [
+                "float",
+                "unfilterable-float",
+                "sint",
+                "uint"
+            ]
+        },
+        "TEXTUREBASETYPES": {
+            "acceptReporters": true,
+            "items": [
+                "f32",
+                "i32",
+                "u32"
+            ]
+        },
+        "VARIABLEACCESSTYPES": {
+            "acceptReporters": true,
+            "items": [
+                "read",
+                "write",
+                "read_write"
+            ]
+        }
+    }
+}

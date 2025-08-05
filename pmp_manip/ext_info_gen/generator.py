@@ -275,7 +275,7 @@ def generate_block_opcode_info(
                         )
                         inputs.set(key1=argument_name, key2=argument_name, value=input_info)
                     
-                    if   inputs.has_key1(argument_name):
+                    if   inputs   .has_key1(argument_name):
                         input_type = inputs.get_by_key1(argument_name).type
                         opening, closing = get_input_argument_brackets(input_type)
                     elif dropdowns.has_key1(argument_name):

@@ -1,4 +1,4 @@
-from pytest import raises
+from pytest import raises, fixture
 
 from pmp_manip.opcode_info.api import (
     OpcodeInfoGroup, OpcodeInfo, OpcodeType, MonitorIdBehaviour,
@@ -13,8 +13,396 @@ from pmp_manip.utility         import (
     PP_UnknownExtensionAttributeError, 
 )
 
-from pmp_manip.ext_info_gen.generator import process_all_menus
-    
+from pmp_manip.ext_info_gen.generator import process_all_menus, generate_block_opcode_info
+
+
+# random collection from mulitple extensions
+EXAMPLE_BLOCK_DATA = [
+    {
+        "opcode": "compileHat",
+        "blockType": "event",
+        "text": "Define shader [NAME] using bind group layout [BGL]",
+        "isEdgeActivated": False,
+        "arguments": {
+            "NAME": {
+                "type": "string",
+                "defaultValue": "myShader"
+            },
+            "BGL": {
+                "defaultValue": "myBindGroupLayout"
+            }
+        }
+    },
+    {
+        "opcode": "computeFunc",
+        "blockType": "conditional",
+        "text": "Computer shader with workgroup size [WGSIZE]",
+        "arguments": {
+            "WGSIZE": {
+                "type": "string",
+                "defaultValue": "[1]"
+            }
+        },
+        "branchCount": 1
+    },
+    {
+        "opcode": "break",
+        "blockType": "command",
+        "isTerminal": True,
+        "text": "break"
+    },
+    {
+        "opcode": "asNewBroadCastArgBlock",
+        "text": "thread  data",
+        "blockType": "reporter",
+        "disableMonitor": True
+    },
+    {
+        "opcode": "error",
+        "blockType": "reporter",
+        "text": "Error"
+    },
+    {
+        "opcode": "ifElseIf",
+        "text": [
+            "if [CONDITION1] then",
+            "else if [CONDITION2] then"
+        ],
+        "branchCount": 2,
+        "blockType": "conditional",
+        "arguments": {
+            "CONDITION1": { "type": "Boolean" },
+            "CONDITION2": { "type": "Boolean" }
+        }
+    },
+    {
+        "opcode": "ifElseIfElse",
+        "text": [
+            "if [CONDITION1] then",
+            "else if [CONDITION2] then",
+            "else"
+        ],
+        "branchCount": 3,
+        "blockType": "conditional",
+        "arguments": {
+            "CONDITION1": { "type": "Boolean" },
+            "CONDITION2": { "type": "Boolean" }
+        }
+    },
+    {
+        "disableMonitor": True,
+        "opcode": "project2DBehindCam",
+        "blockType": "Boolean",
+        "text": "is [a] behind camera?",
+        "arguments": {
+            "a": {
+                "type": "string",
+                "defaultValue": "[0,0,100]"
+            }
+        }
+    },
+    {
+        "blockType": "label",
+        "text": "Data input blocks"
+    },
+    {
+        "opcode": "bindGroupLayoutEntry",
+        "blockType": "command",
+        "text": "Add bind group layout entry with binding [BINDING] for type [TYPE] and descriptor [DESC]",
+        "arguments": {
+            "BINDING": {
+                "type": "number",
+                "defaultValue": 0
+            },
+            "TYPE": {
+                "type": "string",
+                "menu": "BGLENTRYTYPES",
+                "defaultValue": "buffer"
+            }
+        }
+    },
+    {
+        "opcode": "setSomeVar",
+        "blockType": "command",
+        "text": "set some var [VaRiAbLe] to [VaLuE]",
+        "arguments": {
+            "VaRiAbLe": {"type": "variable"},
+            "VaLuE": {"type": "string"}
+        }
+    },
+    {
+        "opcode": "restartFromTheTop",
+        "text": "restart from the top [ICON]",
+        "blockType": "command",
+        "isTerminal": True,
+        "arguments": {
+            "ICON": {
+                "type": "image",
+                "dataURI": "static/blocks-media/repeat.svg"
+            }
+        }
+    },
+    {
+        "opcode": "bufferEntryDescriptor",
+        "blockType": "reporter",
+        "text": "Buffer layout entry descriptor with usage type [TYPE]",
+        "arguments": {
+            "TYPE": {
+                "type": "string",
+                "menu": "BUFFERENTRYTYPE"
+            }
+        }
+    },
+    {
+        "opcode": "variableUsage",
+        "blockType": "reporter",
+        "text": "Variable usage [USAGE] next [NEXT]",
+        "arguments": {
+            "USAGE": {
+                "type": "string",
+                "menu": "VARUSAGE",
+                "defaultValue": "read_write"
+            },
+            "NEXT": {
+                "type": "string",
+                "defaultValue": ""
+            }
+        }
+    },
+]
+EXAMPLE_MENU_DATA = {
+    "BGLENTRYTYPES": {
+        "acceptReporters": True,
+        "items": [
+            "buffer",
+            "storageTexture"
+        ]
+    },
+    "BUFFERENTRYTYPE": {
+        "items": [
+            "read-only-storage",
+            "storage",
+            "uniform"
+        ]
+    },
+    "VARUSAGE": [
+        "read",
+        "write",
+        "read_write",
+        "function",
+        "private",
+        "workgroup",
+        "uniform",
+        "storage"
+    ],
+}
+
+@fixture
+def input_type_cls():
+    cls, _ = process_all_menus(EXAMPLE_MENU_DATA)
+    return cls
+
+@fixture
+def dropdown_type_cls():
+    _, cls = process_all_menus(EXAMPLE_MENU_DATA)
+    return cls
+
+@fixture
+def example_opcode_blocks(input_type_cls, dropdown_type_cls):
+    return [
+        (OpcodeInfo(
+            opcode_type=OpcodeType.HAT,
+            inputs=DualKeyDict({
+                ("NAME", "NAME"): InputInfo(type=BuiltinInputType.TEXT, menu=None),
+                ("BGL", "BGL"): InputInfo(type=BuiltinInputType.TEXT, menu=None),
+            }),
+            dropdowns=DualKeyDict(),
+            can_have_monitor=False,
+            monitor_id_behaviour=None,
+            has_shadow=False,
+            has_variable_id=False,
+            special_cases={},
+            old_mutation_cls=None,
+            new_mutation_cls=None,
+        ), "someExtension::Define shader (NAME) using bind group layout (BGL)"), 
+        (OpcodeInfo(
+            opcode_type=OpcodeType.STATEMENT,
+            inputs=DualKeyDict({
+                ("WGSIZE", "WGSIZE"): InputInfo(type=BuiltinInputType.TEXT, menu=None),
+                ("SUBSTACK", "SUBSTACK"): InputInfo(type=BuiltinInputType.SCRIPT, menu=None),
+            }),
+            dropdowns=DualKeyDict(),
+            can_have_monitor=False,
+            monitor_id_behaviour=None,
+            has_shadow=False,
+            has_variable_id=False,
+            special_cases={},
+            old_mutation_cls=None,
+            new_mutation_cls=None,
+        ), "someExtension::Computer shader with workgroup size (WGSIZE) {SUBSTACK}"), 
+        (OpcodeInfo(
+            opcode_type=OpcodeType.ENDING_STATEMENT,
+            inputs=DualKeyDict(),
+            dropdowns=DualKeyDict(),
+            can_have_monitor=False,
+            monitor_id_behaviour=None,
+            has_shadow=False,
+            has_variable_id=False,
+            special_cases={},
+            old_mutation_cls=None,
+            new_mutation_cls=None,
+        ), "someExtension::break"), 
+        (OpcodeInfo(
+            opcode_type=OpcodeType.STRING_REPORTER,
+            inputs=DualKeyDict(),
+            dropdowns=DualKeyDict(),
+            can_have_monitor=False,
+            monitor_id_behaviour=None,
+            has_shadow=False,
+            has_variable_id=False,
+            special_cases={},
+            old_mutation_cls=None,
+            new_mutation_cls=None,
+        ), "someExtension::thread data"), 
+        (OpcodeInfo(
+            opcode_type=OpcodeType.STRING_REPORTER,
+            inputs=DualKeyDict(),
+            dropdowns=DualKeyDict(),
+            can_have_monitor=True,
+            monitor_id_behaviour=MonitorIdBehaviour.OPCFULL,
+            has_shadow=False,
+            has_variable_id=False,
+            special_cases={},
+            old_mutation_cls=None,
+            new_mutation_cls=None,
+        ), "someExtension::Error"), 
+        (OpcodeInfo(
+            opcode_type=OpcodeType.STATEMENT,
+            inputs=DualKeyDict({
+                ("CONDITION1", "CONDITION1"): InputInfo(type=BuiltinInputType.BOOLEAN, menu=None),
+                ("CONDITION2", "CONDITION2"): InputInfo(type=BuiltinInputType.BOOLEAN, menu=None),
+                ("SUBSTACK", "SUBSTACK"): InputInfo(type=BuiltinInputType.SCRIPT, menu=None),
+                ("SUBSTACK2", "SUBSTACK2"): InputInfo(type=BuiltinInputType.SCRIPT, menu=None),
+            }),
+            dropdowns=DualKeyDict(),
+            can_have_monitor=False,
+            monitor_id_behaviour=None,
+            has_shadow=False,
+            has_variable_id=False,
+            special_cases={},
+            old_mutation_cls=None,
+            new_mutation_cls=None,
+        ), "someExtension::if <CONDITION1> then {SUBSTACK} else if <CONDITION2> then {SUBSTACK2}"), 
+        (OpcodeInfo(
+            opcode_type=OpcodeType.STATEMENT,
+            inputs=DualKeyDict({
+                ("CONDITION1", "CONDITION1"): InputInfo(type=BuiltinInputType.BOOLEAN, menu=None),
+                ("CONDITION2", "CONDITION2"): InputInfo(type=BuiltinInputType.BOOLEAN, menu=None),
+                ("SUBSTACK", "SUBSTACK"): InputInfo(type=BuiltinInputType.SCRIPT, menu=None),
+                ("SUBSTACK2", "SUBSTACK2"): InputInfo(type=BuiltinInputType.SCRIPT, menu=None),
+                ("SUBSTACK3", "SUBSTACK3"): InputInfo(type=BuiltinInputType.SCRIPT, menu=None),
+            }),
+            dropdowns=DualKeyDict(),
+            can_have_monitor=False,
+            monitor_id_behaviour=None,
+            has_shadow=False,
+            has_variable_id=False,
+            special_cases={},
+            old_mutation_cls=None,
+            new_mutation_cls=None,
+        ), "someExtension::if <CONDITION1> then {SUBSTACK} else if <CONDITION2> then {SUBSTACK2} else {SUBSTACK3}"), 
+        (OpcodeInfo(
+            opcode_type=OpcodeType.BOOLEAN_REPORTER,
+            inputs=DualKeyDict({
+                ("a", "a"): InputInfo(type=BuiltinInputType.TEXT, menu=None),
+            }),
+            dropdowns=DualKeyDict(),
+            can_have_monitor=False,
+            monitor_id_behaviour=None,
+            has_shadow=False,
+            has_variable_id=False,
+            special_cases={},
+            old_mutation_cls=None,
+            new_mutation_cls=None,
+        ), "someExtension::is (a) behind camera?"), (None, None), 
+        (OpcodeInfo(
+            opcode_type=OpcodeType.STATEMENT,
+            inputs=DualKeyDict({
+                ("BINDING", "BINDING"): InputInfo(type=BuiltinInputType.NUMBER, menu=None),
+                ("TYPE", "TYPE"): InputInfo(
+                    type=input_type_cls.BGLENTRYTYPES,
+                    menu=MenuInfo(opcode="someExtension_menu_BGLENTRYTYPES", inner="BGLENTRYTYPES"),
+                ),
+                ("DESC", "DESC"): InputInfo(type=BuiltinInputType.TEXT, menu=None),
+            }),
+            dropdowns=DualKeyDict(),
+            can_have_monitor=False,
+            monitor_id_behaviour=None,
+            has_shadow=False,
+            has_variable_id=False,
+            special_cases={},
+            old_mutation_cls=None,
+            new_mutation_cls=None,
+        ), "someExtension::Add bind group layout entry with binding (BINDING) for type ([TYPE]) and descriptor (DESC)"), 
+        (OpcodeInfo(
+            opcode_type=OpcodeType.STATEMENT,
+            inputs=DualKeyDict({
+                ("VaLuE", "VaLuE"): InputInfo(type=BuiltinInputType.TEXT, menu=None),
+            }),
+            dropdowns=DualKeyDict({
+                ("VaRiAbLe", "VaRiAbLe"): DropdownInfo(type=BuiltinDropdownType.VARIABLE),
+            }),
+            can_have_monitor=False,
+            monitor_id_behaviour=None,
+            has_shadow=False,
+            has_variable_id=True,
+            special_cases={},
+            old_mutation_cls=None,
+            new_mutation_cls=None,
+        ), "someExtension::set some var [VaRiAbLe] to (VaLuE)"), 
+        (OpcodeInfo(
+            opcode_type=OpcodeType.ENDING_STATEMENT,
+            inputs=DualKeyDict(),
+            dropdowns=DualKeyDict(),
+            can_have_monitor=False,
+            monitor_id_behaviour=None,
+            has_shadow=False,
+            has_variable_id=False,
+            special_cases={},
+            old_mutation_cls=None,
+            new_mutation_cls=None,
+        ), "someExtension::restart from the top"), 
+        (OpcodeInfo(
+            opcode_type=OpcodeType.STRING_REPORTER,
+            inputs=DualKeyDict(),
+            dropdowns=DualKeyDict({
+                ("TYPE", "TYPE"): DropdownInfo(type=dropdown_type_cls.BUFFERENTRYTYPE),
+            }),
+            can_have_monitor=True,
+            monitor_id_behaviour=MonitorIdBehaviour.OPCFULL_PARAMS,
+            has_shadow=False,
+            has_variable_id=True,
+            special_cases={},
+            old_mutation_cls=None,
+            new_mutation_cls=None,
+        ), "someExtension::Buffer layout entry descriptor with usage type [TYPE]"), 
+        (OpcodeInfo(
+            opcode_type=OpcodeType.STRING_REPORTER,
+            inputs=DualKeyDict({
+                ("NEXT", "NEXT"): InputInfo(type=BuiltinInputType.TEXT, menu=None),
+            }),
+            dropdowns=DualKeyDict({
+                ("USAGE", "USAGE"): DropdownInfo(type=dropdown_type_cls.VARUSAGE),
+            }),
+            can_have_monitor=False,
+            monitor_id_behaviour=None,
+            has_shadow=False,
+            has_variable_id=True,
+            special_cases={},
+            old_mutation_cls=None,
+            new_mutation_cls=None,
+        ), "someExtension::Variable usage [USAGE] next (NEXT)")
+    ]
 
 
 def test_process_all_menus_valid():
@@ -106,6 +494,23 @@ def test_process_all_menus_possible_value_missing_text_value():
 
 
 
-def test_generate_block_opcode_info
-
-
+def test_generate_block_opcode_info(input_type_cls, dropdown_type_cls, example_opcode_blocks):
+    block_data = EXAMPLE_BLOCK_DATA[0]
+    opcode_block = generate_block_opcode_info(
+        block_info=block_data,
+        menus=EXAMPLE_MENU_DATA,
+        input_type_cls=input_type_cls,
+        dropdown_type_cls=dropdown_type_cls,
+        extension_id="someExtension",
+    )
+    assert opcode_block == example_opcode_blocks[0]
+    #r = []
+    #for block in EXAMPLE_BLOCK_DATA:
+    #    r.append(generate_block_opcode_info(
+    #        block_info=block,
+    #        menus=EXAMPLE_MENU_DATA,
+    #        input_type_cls=input_type_cls,
+    #        dropdown_type_cls=dropdown_type_cls,
+    #        extension_id="someExtension",
+    #    ))
+    #print(r)
