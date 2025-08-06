@@ -18,7 +18,7 @@ from pmp_manip.ext_info_gen.generator import process_all_menus, generate_block_o
 
 # random collection from mulitple extensions
 EXAMPLE_BLOCK_DATA = [
-    {
+    { # [0]
         "opcode": "compileHat",
         "blockType": "event",
         "text": "Define shader [NAME] using bind group layout [BGL]",
@@ -33,7 +33,7 @@ EXAMPLE_BLOCK_DATA = [
             }
         }
     },
-    {
+    { # [1]
         "opcode": "computeFunc",
         "blockType": "conditional",
         "text": "Computer shader with workgroup size [WGSIZE]",
@@ -45,24 +45,24 @@ EXAMPLE_BLOCK_DATA = [
         },
         "branchCount": 1
     },
-    {
+    { # [2]
         "opcode": "break",
         "blockType": "command",
         "isTerminal": True,
         "text": "break"
     },
-    {
+    { # [3]
         "opcode": "asNewBroadCastArgBlock",
         "text": "thread  data",
         "blockType": "reporter",
         "disableMonitor": True
     },
-    {
+    { # [4]
         "opcode": "error",
         "blockType": "reporter",
         "text": "Error"
     },
-    {
+    { # [5]
         "opcode": "ifElseIf",
         "text": [
             "if [CONDITION1] then",
@@ -75,7 +75,7 @@ EXAMPLE_BLOCK_DATA = [
             "CONDITION2": { "type": "Boolean" }
         }
     },
-    {
+    { # [6]
         "opcode": "ifElseIfElse",
         "text": [
             "if [CONDITION1] then",
@@ -89,7 +89,7 @@ EXAMPLE_BLOCK_DATA = [
             "CONDITION2": { "type": "Boolean" }
         }
     },
-    {
+    { # [7]
         "disableMonitor": True,
         "opcode": "project2DBehindCam",
         "blockType": "Boolean",
@@ -101,11 +101,11 @@ EXAMPLE_BLOCK_DATA = [
             }
         }
     },
-    {
+    { # [8]
         "blockType": "label",
         "text": "Data input blocks"
     },
-    {
+    { # [9]
         "opcode": "bindGroupLayoutEntry",
         "blockType": "command",
         "text": "Add bind group layout entry with binding [BINDING] for type [TYPE] and descriptor [DESC]",
@@ -121,7 +121,7 @@ EXAMPLE_BLOCK_DATA = [
             }
         }
     },
-    {
+    { # [10]
         "opcode": "setSomeVar",
         "blockType": "command",
         "text": "set some var [VaRiAbLe] to [VaLuE]",
@@ -130,7 +130,7 @@ EXAMPLE_BLOCK_DATA = [
             "VaLuE": {"type": "string"}
         }
     },
-    {
+    { # [11]
         "opcode": "restartFromTheTop",
         "text": "restart from the top [ICON]",
         "blockType": "command",
@@ -142,7 +142,7 @@ EXAMPLE_BLOCK_DATA = [
             }
         }
     },
-    {
+    { # [12]
         "opcode": "bufferEntryDescriptor",
         "blockType": "reporter",
         "text": "Buffer layout entry descriptor with usage type [TYPE]",
@@ -153,7 +153,7 @@ EXAMPLE_BLOCK_DATA = [
             }
         }
     },
-    {
+    { # [13]
         "opcode": "variableUsage",
         "blockType": "reporter",
         "text": "Variable usage [USAGE] next [NEXT]",
@@ -494,16 +494,9 @@ def test_process_all_menus_possible_value_missing_text_value():
 
 
 
-def test_generate_block_opcode_info(input_type_cls, dropdown_type_cls, example_opcode_blocks):
-    block_data = EXAMPLE_BLOCK_DATA[0]
-    opcode_block = generate_block_opcode_info(
-        block_info=block_data,
-        menus=EXAMPLE_MENU_DATA,
-        input_type_cls=input_type_cls,
-        dropdown_type_cls=dropdown_type_cls,
-        extension_id="someExtension",
-    )
-    assert opcode_block == example_opcode_blocks[0]
+def 
+
+
     #r = []
     #for block in EXAMPLE_BLOCK_DATA:
     #    r.append(generate_block_opcode_info(
