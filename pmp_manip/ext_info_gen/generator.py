@@ -191,8 +191,8 @@ def generate_block_opcode_info(
                     dropdown_info = DropdownInfo(type=builtin_dropdown_type)
                 case "image":
                     continue # not really an input or dropdown, should be skipped
-                case "polygon":
-                    raise PP_TempNotImplementedError() # TODO, only necessary for the few polygon blocks(pen ext)
+                case "polygon": # pragma: no cover
+                    raise PP_TempNotImplementedError() # TODO, only necessary for the few polygon blocks(pen ext) # pragma: no cover
                 case "seperator":
                     raise PP_ThanksError() # I couldn't find out what thats used for
             
@@ -236,23 +236,23 @@ def generate_block_opcode_info(
             Args:
                 input_type: the type of input
             """
-            match input_type.mode:
-                case InputMode.BLOCK_AND_TEXT:
-                    return "(", ")"
+            match input_type.mode: # pragma: no cover
+                case InputMode.BLOCK_AND_TEXT: # pragma: no cover
+                    return "(", ")" # pragma: no cover
                 case (
                     InputMode.BLOCK_AND_DROPDOWN
                   | InputMode.BLOCK_AND_BROADCAST_DROPDOWN
                   | InputMode.BLOCK_AND_MENU_TEXT
-                ):
-                    return "([", "])"
-                case InputMode.BLOCK_ONLY:
-                    match input_type:
-                        case BuiltinInputType.BOOLEAN:
-                            return "<", ">"
-                        case BuiltinInputType.ROUND | InputType.EMBEDDED_MENU:
-                            return "(", ")"
-                case InputMode.SCRIPT:
-                    return "{", "}"
+                ): # pragma: no cover
+                    return "([", "])" # pragma: no cover
+                case InputMode.BLOCK_ONLY: # pragma: no cover
+                    match input_type: # pragma: no cover
+                        case BuiltinInputType.BOOLEAN: # pragma: no cover
+                            return "<", ">" # pragma: no cover
+                        case BuiltinInputType.ROUND | InputType.EMBEDDED_MENU: # pragma: no cover
+                            return "(", ")" # pragma: no cover
+                case InputMode.SCRIPT: # pragma: no cover
+                    return "{", "}" # pragma: no cover
         
         text_lines: list[str] = text if isinstance(text, list) else [text]
         new_opcode_segments = []

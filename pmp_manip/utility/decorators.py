@@ -179,8 +179,8 @@ def grepr_dataclass(*, grepr_fields: list[str],
         init...: dataclass parameters
     """
     def decorator(cls: type):
-        def __repr__(self) -> str:
-            return grepr(self)
+        def __repr__(self, *args, **kwargs) -> str:
+            return grepr(self, *args, **kwargs)
         cls.__repr__ = __repr__
         cls._grepr = True
         nonlocal grepr_fields
