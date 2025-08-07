@@ -1,5 +1,5 @@
 from copy   import copy
-from typing import TypeVar, Generic, Iterator, Iterable, Any
+from typing import TypeVar, Generic, Iterator, Any
 
 
 _K1 = TypeVar("_K1")

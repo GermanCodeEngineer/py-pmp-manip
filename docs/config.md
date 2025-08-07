@@ -58,18 +58,19 @@ Returns a pre-built `MasterConfig` with safe, reasonable defaults. This can be u
 
 ## Configuration Fields
 
-| argument                                  | type               | purpose                                                                                                              | default                               |
-|-------------------------------------------|--------------------|----------------------------------------------------------------------------------------------------------------------|---------------------------------------|
-| `gen_opcode_info_dir`                     | directory path str | directory used to store the generated <br>extension opcode info files in                                             | "gen_ext_opcode_info" |
-| `js_fetch_interval`                       | datetime.timedelta | if the extension is accessed through a link, <br>it will only be fetched again after this interval has passed        | timedelta(days=3)                     |
-| `node_js_exec_timeout`                    | float (secs)       | if the extension code is directly executed, <br>the timeout secs of the Node.js suprocess                            | 1.0 (secs)                            |
-| `raise_if_monitor_position_outside_stage` | bool               | during validation an ValidationError will be raised <br>if a monitor's position is outside the stage edges           | True                                  |
-| `raise_if_monitor_bigger_then_stage`      | bool               | during validation an ValidationError will be raised <br>if a list monitor's size is bigger then the stage            | True                                  |
-| `stage_width`                             | int                | used to calculate the above two raise_if... and to calculate <br>monitor positions seen from the center of the stage | 480                                   |
-| `stage_height`                            | int                | used to calculate the above two raise_if... and to calculate <br>monitor positions seen from the center of the stage | 360                                   |
-| `scratch_semver`                          | version no. str    | holds up to date version of Scratch <br>for project meta generation                                                  | "3.0.0"                               |
-| `scratch_vm`                              | version no. str    | holds up to date version of the Scratch VM.<br>"                                                                     | "11.1.0"                              |
-| `penguinmod_vm`                           | version no. str    | holds up to date version of the PenguinMod VM.<br>"                                                                  | "0.2.0"                               |
+| argument                                  | type                          | purpose                                                                                                              | default                               |
+|-------------------------------------------|-------------------------------|----------------------------------------------------------------------------------------------------------------------|---------------------------------------|
+| `gen_opcode_info_dir`                     | directory path str            | directory used to store the generated <br>extension opcode info files in                                             | "gen_ext_opcode_info"                 |
+| `js_fetch_interval`                       | datetime.timedelta            | if the extension is accessed through a link, <br>it will only be fetched again after this interval has passed        | timedelta(days=3)                     |
+| `node_js_exec_timeout`                    | float (secs)                  | if the extension code is directly executed, <br>the timeout secs of the Node.js suprocess                            | 1.0 (secs)                            |
+| `is_trusted_extension_origin_handler`     | Callable(str -> bool) or None | takes the ext source and returns wether an unknown extension source can be trusted and <br> if it will therefore be directly executed         | None                                  |
+| `raise_if_monitor_position_outside_stage` | bool                          | during validation an ValidationError will be raised <br>if a monitor's position is outside the stage edges           | True                                  |
+| `raise_if_monitor_bigger_then_stage`      | bool                          | during validation an ValidationError will be raised <br>if a list monitor's size is bigger then the stage            | True                                  |
+| `stage_width`                             | int                           | used to calculate the above two raise_if... and to calculate <br>monitor positions seen from the center of the stage | 480                                   |
+| `stage_height`                            | int                           | used to calculate the above two raise_if... and to calculate <br>monitor positions seen from the center of the stage | 360                                   |
+| `scratch_semver`                          | version no. str               | holds up to date version of Scratch <br>for project meta generation                                                  | "3.0.0"                               |
+| `scratch_vm`                              | version no. str               | holds up to date version of the Scratch VM.<br>"                                                                     | "11.1.0"                              |
+| `penguinmod_vm`                           | version no. str               | holds up to date version of the PenguinMod VM.<br>"                                                                  | "0.2.0"                               |
 
 ---
 
@@ -113,6 +114,8 @@ init_config(MasterConfig(
     ext_info_gen=ExtInfoGenConfig(
         gen_opcode_info_dir="my/output/dir",
         js_fetch_interval=timedelta(days=2),
+        node_js_exec_timeout=1.5,
+        is_trusted_extension_origin_handler=lambda source: source.startswith("https://example.com/"),
     ),
     validation=ValidationConfig(
         raise_if_monitor_position_outside_stage=True,

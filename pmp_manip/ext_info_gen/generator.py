@@ -166,8 +166,6 @@ def generate_block_opcode_info(
                             menu=None,
                         )
                     else:
-                        if builitin_input_type is not BuiltinInputType.TEXT:
-                            raise ValueError(f"Argument {repr(argument_id)}: If 'menu' exists, 'type' should be Scratch.ArgumentType.STRING(='string')")
                         if argument_menu not in menus:
                             raise ValueError(f"Argument {repr(argument_id)}: 'menu' must refer to an existing menu")
                         menu_info = menus[argument_menu]
@@ -296,6 +294,7 @@ def generate_block_opcode_info(
         return f"{extension_id}::{" ".join(new_opcode_segments)}" 
     
     try:
+        print(block_info)
         block_type: str = block_info["blockType"]
         branch_count: int = block_info.get("branchCount", 0)
         is_terminal: bool = block_info.get("isTerminal", False)
@@ -342,8 +341,8 @@ def generate_block_opcode_info(
             if attr not in {
                 "opcode", "blockType", "text", "arguments", "branchCount", "isTerminal", "disableMonitor", 
                 # irrelevant for my purpose:
-                "alignments", "hideFromPalette", "filter",
-                "shouldRestartExistingThreads", "isEdgeActivated",
+                "alignments", "hideFromPalette", "filter", "shouldRestartExistingThreads", 
+                "isEdgeActivated", "func", # TODO: find all remaining attriubtes
             }:
                 block_opcode = repr(block_info.get('opcode', 'Unknown'))
                 raise PP_UnknownExtensionAttributeError(f"Unknown or not (yet) implemented block attribute (block {block_opcode}): {repr(attr)}")
@@ -391,9 +390,9 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
     # Relevant of the returned attributes: ["id", "blocks", "menus"]
     for attr in extension_info.keys():
         if attr not in {
-            "name", "color1", "color2", "color3", "menuIconURI", "docsURI", "isDynamic", "orderBlocks",
-            "id", "blocks", "menus",
-         }:
+            "name", "color1", "color2", "color3", "menuIconURI", "blockIconURI", "docsURI", "isDynamic", "orderBlocks",
+            "id", "blocks", "menus", # TODO: find all remaining attriubtes
+        }:
             raise PP_UnknownExtensionAttributeError(f"Unknown or not (yet) implemented extension attribute: {repr(attr)}")
 
     
@@ -405,15 +404,19 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
     )
     input_type_cls, dropdown_type_cls = process_all_menus(menus)
     
-    for block_info in extension_info.get("blocks", []):
-        block_info: dict[str, Any]
-        opcode_info, new_opcode = generate_block_opcode_info(
-            block_info, 
-            menus=menus, 
-            input_type_cls=input_type_cls,
-            dropdown_type_cls=dropdown_type_cls,
-            extension_id=extension_id,
-        )
+    for i, block_info in enumerate(extension_info.get("blocks", [])):
+        if isinstance(block_info, str):
+            continue # ignore eg. "---"
+        elif isinstance(block_info, dict):
+            opcode_info, new_opcode = generate_block_opcode_info(
+                block_info, 
+                menus=menus, 
+                input_type_cls=input_type_cls,
+                dropdown_type_cls=dropdown_type_cls,
+                extension_id=extension_id,
+            )
+        else:
+            raise PP_InvalidCustomBlockError(f"Invalid block info: Expected type str or dict (block {i}): {block_info}")
         
         if opcode_info is not None:
             old_opcode: str = f"{extension_id}_{block_info['opcode']}" # 'opcode' is guaranteed to exist
@@ -463,7 +466,7 @@ def generate_file_code(
         f"from {DATA_IMPORTS_IMPORT_PATH} import *",
         generate_enum_code(dropdown_type_cls),
         generate_enum_code(input_type_cls),
-        f"{info_group.name} = {grepr(info_group, safe_dkd=True)}",
+        f"ext_{info_group.name} = {grepr(info_group, safe_dkd=True)}",
     ))
     return file_code
 

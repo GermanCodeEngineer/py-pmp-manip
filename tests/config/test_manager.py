@@ -58,6 +58,7 @@ def test_get_default_config():
             gen_opcode_info_dir="gen_ext_opcode_info", 
             js_fetch_interval=timedelta(days=3),
             node_js_exec_timeout=1.0,
+            is_trusted_extension_origin_handler=None,
         ),
         validation=ValidationConfig(
             raise_if_monitor_position_outside_stage=True, 

@@ -7,9 +7,9 @@
 from abc         import ABC, abstractmethod
 from datetime    import timedelta
 from dataclasses import field, FrozenInstanceError
-from typing      import Any
+from typing      import Any, Callable
 
-from pmp_manip.utility import grepr_dataclass, AA_TYPE
+from pmp_manip.utility import grepr_dataclass, AA_TYPE, AA_NONE_OR_CALLABLE
 
 
 @grepr_dataclass(grepr_fields=[])
@@ -48,7 +48,7 @@ class ConfigBase(ABC):
             PP_ValidationError: if the Config is invalid
         """
 
-@grepr_dataclass(grepr_fields=["gen_opcode_info_dir", "js_fetch_interval"])
+@grepr_dataclass(grepr_fields=["gen_opcode_info_dir", "js_fetch_interval", "node_js_exec_timeout", "is_trusted_extension_origin_handler"])
 class ExtInfoGenConfig(ConfigBase):
     """
     The configuration for the extension info generator module
@@ -57,6 +57,7 @@ class ExtInfoGenConfig(ConfigBase):
     gen_opcode_info_dir: str
     js_fetch_interval: timedelta
     node_js_exec_timeout: float
+    is_trusted_extension_origin_handler: Callable[[str], bool] | None
     
     def validate(self, path: list) -> None:
         """
@@ -71,6 +72,7 @@ class ExtInfoGenConfig(ConfigBase):
         AA_TYPE(self, path, "gen_opcode_info_dir", str) # TODO: possibly add check if path is valid
         AA_TYPE(self, path, "js_fetch_interval", timedelta)
         AA_TYPE(self, path, "node_js_exec_timeout", float)
+        AA_NONE_OR_CALLABLE(self, path, "is_trusted_extension_origin_handler")
 
 @grepr_dataclass(grepr_fields=["raise_if_monitor_position_outside_stage", "raise_if_monitor_bigger_then_stage"])
 class ValidationConfig(ConfigBase):

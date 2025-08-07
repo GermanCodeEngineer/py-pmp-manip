@@ -178,6 +178,11 @@ def AA_ALNUM(obj, path, attr, condition=None):
     if not attr_value.isalnum():
         raise PP_InvalidValueError(path, f"{descr} must contain only alpha-numeric characters")
 
+def AA_NONE_OR_CALLABLE(obj, path, attr, condition=None) -> None:
+    attr_value, descr = _value_and_descr(obj, attr)
+    if (attr_value is not None) and not(callable(attr_value)):
+        raise PP_TypeValidationError(path, f"{descr} must be None or a callable object(e.g. function, lambda) not {_repr_type(attr_value.__class__)}", condition)
+
 def is_valid_js_data_uri(s) -> bool:
     pattern = r"^data:application/javascript(;charset=[^,]+)?,.*"
     return re.match(pattern, s) is not None
@@ -198,7 +203,7 @@ __all__ = [
     "AA_TYPE", "AA_TYPES", "AA_NONE", "AA_NONE_OR_TYPE", 
     "AA_LIST_OF_TYPE", "AA_LIST_OF_TYPES", "AA_TUPLE_OF_TYPES", "AA_DICT_OF_TYPE",
     "AA_MIN", "AA_MAX", "AA_RANGE", "AA_MIN_LEN", "AA_EXACT_LEN", "AA_COORD_PAIR", "AA_BOXED_COORD_PAIR",
-    "AA_JSON_COMPATIBLE", "AA_HEX_COLOR", "AA_ALNUM",
+    "AA_JSON_COMPATIBLE", "AA_HEX_COLOR", "AA_ALNUM", "AA_NONE_OR_CALLABLE",
     "AA_EQUAL", "AA_NOT_EQUAL", "AA_BIGGER_OR_EQUAL", "AA_NOT_ONE_OF", 
     "is_valid_js_data_uri", "is_valid_url",
 ]

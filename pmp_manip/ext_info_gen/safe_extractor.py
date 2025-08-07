@@ -3,7 +3,7 @@ from colorama               import Fore as ColorFore, Style as ColorStyle
 from collections.abc        import Iterator
 from tree_sitter            import Parser, Language, Node, Tree
 from tree_sitter_javascript import language as get_js_language_basis
-from typing                 import Any, Callable
+from typing                 import Any
 from types                  import NotImplementedType
 from warnings               import warn
 

@@ -7,8 +7,8 @@ from pmp_manip.opcode_info.api import (
     DropdownValueRule,
 )
 from pmp_manip.utility         import (
-    grepr, DualKeyDict, GEnum,
-    PP_ThanksError, PP_TempNotImplementedError, PP_NotImplementedError,
+    DualKeyDict,
+    PP_ThanksError, PP_NotImplementedError,
     PP_InvalidCustomMenuError, PP_InvalidCustomBlockError,
     PP_UnknownExtensionAttributeError, 
 )
@@ -712,27 +712,6 @@ def test_generate_block_opcode_info_unknown_attribute(input_type_cls, dropdown_t
             extension_id="someExtension",
         )
 
-def test_generate_block_opcode_info_invalid_menu_arg_type(input_type_cls, dropdown_type_cls):
-    block_data = {
-        "opcode": "bufferEntryDescriptor",
-        "blockType": "reporter",
-        "text": "Buffer layout entry descriptor with usage type [TYPE]",
-        "arguments": {
-            "TYPE": {
-                "type": "number",
-                "menu": "BUFFERENTRYTYPE"
-            }
-        }
-    }
-    with raises(PP_InvalidCustomBlockError):
-        generate_block_opcode_info(
-            block_info=block_data,
-            menus=EXAMPLE_MENU_DATA,
-            input_type_cls=input_type_cls,
-            dropdown_type_cls=dropdown_type_cls,
-            extension_id="someExtension",
-        )
-
 def test_generate_block_opcode_info_non_existant_menu_arg(input_type_cls, dropdown_type_cls):
     block_data = {
         "opcode": "bufferEntryDescriptor",
@@ -867,6 +846,7 @@ def test_generate_opcode_info_group():
                     }
                 }
             },
+            "---",
             {
                 "opcode": "playEffect",
                 "text": "play effect [EFFECT]",
@@ -928,6 +908,15 @@ def test_generate_opcode_info_group_unkown_attribute():
     with raises(PP_UnknownExtensionAttributeError):
         generate_opcode_info_group(extension_info)
 
+def test_generate_opcode_info_group_invalid_block_type():
+    extension_info = {
+        "id": "someExt",
+        "blocks": [
+            ["doSth", "do sth"]
+        ]
+    }
+    with raises(PP_InvalidCustomBlockError):
+        generate_opcode_info_group(extension_info)
 
 
 def test_generate_file_code():
@@ -981,7 +970,7 @@ class ExtensionDropdownType(DropdownType):
 class ExtensionInputType(InputType):
     pass
 
-modasyncexample = OpcodeInfoGroup(
+ext_modasyncexample = OpcodeInfoGroup(
     name="modasyncexample",
     opcode_info=DualKeyDict({
         ("modasyncexample_wait", "modasyncexample::wait (TIME) seconds"): OpcodeInfo(

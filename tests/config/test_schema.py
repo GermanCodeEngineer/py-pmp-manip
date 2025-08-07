@@ -34,10 +34,12 @@ def test_ConfigBase_setattr_frozen():
 
 
 def test_ExtInfoGenConfig_validate():
+    handler = (lambda source: source == "https://raw.githubusercontent.com/Logise1123/FirebaseDB-/refs/heads/main/db.js")
     config = ExtInfoGenConfig(
         gen_opcode_info_dir=".",
         js_fetch_interval=timedelta(days=1),
         node_js_exec_timeout=1.0,
+        is_trusted_extension_origin_handler=handler,
     )
     config.validate(path=[])
     
@@ -46,6 +48,9 @@ def test_ExtInfoGenConfig_validate():
         attr_tests=[
             ("gen_opcode_info_dir", 5, PP_TypeValidationError),
             ("js_fetch_interval", {}, PP_TypeValidationError),
+            ("node_js_exec_timeout", [], PP_TypeValidationError),
+            ("is_trusted_extension_origin_handler", "https://raw.githubusercontent.com/Logise1123/FirebaseDB-/refs/heads/main/db.js", PP_TypeValidationError),
+
         ],
         validate_func=ExtInfoGenConfig.validate,
         func_args=[[]],
@@ -105,6 +110,7 @@ def test_MasterConfig_validate():
                     gen_opcode_info_dir=".", 
                     js_fetch_interval=3,
                     node_js_exec_timeout=1.0,
+                    is_trusted_extension_origin_handler=None,
                 ), PP_TypeValidationError),
             ("validation", config.ext_info_gen, PP_TypeValidationError),
             ("platform_meta", [], PP_TypeValidationError),
