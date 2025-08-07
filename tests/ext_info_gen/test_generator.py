@@ -13,7 +13,10 @@ from pmp_manip.utility         import (
     PP_UnknownExtensionAttributeError, 
 )
 
-from pmp_manip.ext_info_gen.generator import process_all_menus, generate_block_opcode_info, generate_opcode_info_group
+from pmp_manip.ext_info_gen.generator import (
+    process_all_menus, generate_block_opcode_info, generate_opcode_info_group,
+    generate_file_code,
+)
 
 
 # random collection from mulitple extensions
@@ -356,7 +359,7 @@ def example_opcode_blocks(input_type_cls, dropdown_type_cls):
             can_have_monitor=False,
             monitor_id_behaviour=None,
             has_shadow=False,
-            has_variable_id=True,
+            has_variable_id=False,
             special_cases={},
             old_mutation_cls=None,
             new_mutation_cls=None,
@@ -398,7 +401,7 @@ def example_opcode_blocks(input_type_cls, dropdown_type_cls):
             can_have_monitor=False,
             monitor_id_behaviour=None,
             has_shadow=False,
-            has_variable_id=True,
+            has_variable_id=False,
             special_cases={},
             old_mutation_cls=None,
             new_mutation_cls=None,
@@ -864,12 +867,22 @@ def test_generate_opcode_info_group():
                     }
                 }
             },
-            {}, # HERE add menu block
-        ]
+            {
+                "opcode": "playEffect",
+                "text": "play effect [EFFECT]",
+                "blockType": "command",
+                "arguments": {
+                    "EFFECT": {"type": "string", "menu": "soundEffectMenu"},
+                },
+            },
+        ],
+        "menus": {
+            "soundEffectMenu": {"items": ["sound a", "sound b", "sound c"]},
+        },
     }
     info_group, input_type_cls, dropdown_type_cls = generate_opcode_info_group(extension_info)
 
-    assert info_group == OpcodeInfoGroup(
+    goal = OpcodeInfoGroup(
         name="modasyncexample",
         opcode_info=DualKeyDict({
             ("modasyncexample_wait", "modasyncexample::wait (TIME) seconds"): OpcodeInfo(
@@ -886,11 +899,144 @@ def test_generate_opcode_info_group():
                 }),
                 dropdowns=DualKeyDict(),
             ),
+            ("modasyncexample_playEffect", "modasyncexample::play effect [EFFECT]"): OpcodeInfo(
+                opcode_type=OpcodeType.STATEMENT,
+                inputs=DualKeyDict(),
+                dropdowns=DualKeyDict({
+                    ("EFFECT", "EFFECT"): DropdownInfo(type=dropdown_type_cls.soundEffectMenu),
+                }),
+            ),
+            ("modasyncexample_menu_soundEffectMenu", "modasyncexample_menu_soundEffectMenu"): OpcodeInfo(
+                opcode_type=OpcodeType.MENU,
+            ),
         }),
     )
-
+    assert info_group == goal
+    
     input_type_members    = {member.name: member.value for member in input_type_cls   }
     dropdown_type_members = {member.name: member.value for member in dropdown_type_cls}
     assert set(input_type_members   .keys()) == set()
-    assert set(dropdown_type_members.keys()) == set()
+    assert set(dropdown_type_members.keys()) == {"soundEffectMenu"}
+    assert dropdown_type_members["soundEffectMenu"] == DropdownTypeInfo(
+        direct_values=["sound a", "sound b", "sound c"],
+    )
 
+def test_generate_opcode_info_group_unkown_attribute():
+    extension_info = {
+        "someUnkownAttribute": "someValue",
+    }
+    with raises(PP_UnknownExtensionAttributeError):
+        generate_opcode_info_group(extension_info)
+
+
+
+def test_generate_file_code():
+    class ExtensionInputType(InputType):
+        pass
+    class ExtensionDropdownType(DropdownType):
+        soundEffectMenu = DropdownTypeInfo(
+            direct_values=["sound a", "sound b", "sound c"],
+        )
+    info_group = OpcodeInfoGroup(
+        name="modasyncexample",
+        opcode_info=DualKeyDict({
+            ("modasyncexample_wait", "modasyncexample::wait (TIME) seconds"): OpcodeInfo(
+                opcode_type=OpcodeType.STATEMENT,
+                inputs=DualKeyDict({
+                    ("TIME", "TIME"): InputInfo(type=BuiltinInputType.NUMBER, menu=None),
+                }),
+                dropdowns=DualKeyDict(),
+            ),
+            ("modasyncexample_fetch", "modasyncexample::fetch (URL)"): OpcodeInfo(
+                opcode_type=OpcodeType.STRING_REPORTER,
+                inputs=DualKeyDict({
+                    ("URL", "URL"): InputInfo(type=BuiltinInputType.TEXT, menu=None),
+                }),
+                dropdowns=DualKeyDict(),
+            ),
+            ("modasyncexample_playEffect", "modasyncexample::play effect [EFFECT]"): OpcodeInfo(
+                opcode_type=OpcodeType.STATEMENT,
+                inputs=DualKeyDict(),
+                dropdowns=DualKeyDict({
+                    ("EFFECT", "EFFECT"): DropdownInfo(type=ExtensionDropdownType.soundEffectMenu),
+                }),
+            ),
+            ("modasyncexample_menu_soundEffectMenu", "modasyncexample_menu_soundEffectMenu"): OpcodeInfo(
+                opcode_type=OpcodeType.MENU,
+            ),
+        }),
+    )
+    
+    file_code = generate_file_code(info_group, ExtensionInputType, ExtensionDropdownType)
+    assert file_code == """from pmp_manip.opcode_info.data_imports import *
+
+class ExtensionDropdownType(DropdownType):
+    soundEffectMenu = DropdownTypeInfo(
+        direct_values=["sound a", "sound b", "sound c"],
+        rules=[],
+        old_direct_values=["sound a", "sound b", "sound c"],
+        fallback=None,
+    )
+
+class ExtensionInputType(InputType):
+    pass
+
+modasyncexample = OpcodeInfoGroup(
+    name="modasyncexample",
+    opcode_info=DualKeyDict({
+        ("modasyncexample_wait", "modasyncexample::wait (TIME) seconds"): OpcodeInfo(
+            opcode_type=OpcodeType.STATEMENT,
+            inputs=DualKeyDict({
+                ("TIME", "TIME"): InputInfo(type=BuiltinInputType.NUMBER, menu=None),
+            }),
+            dropdowns=DualKeyDict(),
+            can_have_monitor=False,
+            monitor_id_behaviour=None,
+            has_shadow=False,
+            has_variable_id=False,
+            special_cases={},
+            old_mutation_cls=None,
+            new_mutation_cls=None,
+        ),
+        ("modasyncexample_fetch", "modasyncexample::fetch (URL)"): OpcodeInfo(
+            opcode_type=OpcodeType.STRING_REPORTER,
+            inputs=DualKeyDict({
+                ("URL", "URL"): InputInfo(type=BuiltinInputType.TEXT, menu=None),
+            }),
+            dropdowns=DualKeyDict(),
+            can_have_monitor=False,
+            monitor_id_behaviour=None,
+            has_shadow=False,
+            has_variable_id=False,
+            special_cases={},
+            old_mutation_cls=None,
+            new_mutation_cls=None,
+        ),
+        ("modasyncexample_playEffect", "modasyncexample::play effect [EFFECT]"): OpcodeInfo(
+            opcode_type=OpcodeType.STATEMENT,
+            inputs=DualKeyDict(),
+            dropdowns=DualKeyDict({
+                ("EFFECT", "EFFECT"): DropdownInfo(type=ExtensionDropdownType.soundEffectMenu),
+            }),
+            can_have_monitor=False,
+            monitor_id_behaviour=None,
+            has_shadow=False,
+            has_variable_id=False,
+            special_cases={},
+            old_mutation_cls=None,
+            new_mutation_cls=None,
+        ),
+        ("modasyncexample_menu_soundEffectMenu", "modasyncexample_menu_soundEffectMenu"): OpcodeInfo(
+            opcode_type=OpcodeType.MENU,
+            inputs=DualKeyDict(),
+            dropdowns=DualKeyDict(),
+            can_have_monitor=False,
+            monitor_id_behaviour=None,
+            has_shadow=True,
+            has_variable_id=False,
+            special_cases={},
+            old_mutation_cls=None,
+            new_mutation_cls=None,
+        ),
+    }),
+)"""

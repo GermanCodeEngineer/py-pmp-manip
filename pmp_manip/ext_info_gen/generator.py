@@ -362,7 +362,7 @@ def generate_block_opcode_info(
             dropdowns=dropdowns,
             can_have_monitor=can_have_monitor,
             monitor_id_behaviour=monitor_id_hehaviour,
-            has_variable_id=bool(dropdowns), # if there are any dropdowns
+            has_variable_id=(can_have_monitor and bool(dropdowns)), # if there are any dropdowns
         )
         
     except (KeyError, ValueError) as error:
