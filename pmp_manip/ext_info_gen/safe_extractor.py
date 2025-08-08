@@ -3,13 +3,13 @@ from colorama               import Fore as ColorFore, Style as ColorStyle
 from collections.abc        import Iterator
 from tree_sitter            import Parser, Language, Node, Tree
 from tree_sitter_javascript import language as get_js_language_basis
-from typing                 import Any
+from typing                 import Any, Callable
 from types                  import NotImplementedType
 from warnings               import warn
 
 from pmp_manip.utility            import (
     repr_tree, gdumps,
-    PP_JsNodeTreeToJsonConversionError, PP_InvalidExtensionCodeSyntaxError, PP_BadExtensionCodeFormatError,    PP_InvalidTranslationMessageError,
+    PP_JsNodeTreeToJsonConversionError, PP_InvalidExtensionCodeSyntaxError, PP_BadExtensionCodeFormatError, PP_InvalidTranslationMessageError,
     PP_UnexpectedPropertyAccessWarning, PP_UnexpectedNotPossibleFeatureWarning,
     NotSetType, NotSet,
     write_file_text, # temporary
@@ -85,7 +85,7 @@ def get_js_parser() -> Parser:
 
 def ts_node_to_json(
     node: Node | str | int | float | bool | None, 
-    call_handler=None,
+    call_handler: Callable[[Node], Any | NotImplementedType] | None = None,
 ) -> Any | NotSetType:
     """
     Recursively converts a tree sitter Syntax Tree into a plain JSON-compatible Python structure
@@ -158,7 +158,7 @@ def ts_node_to_json(
         return array
 
     elif node.type == "string":
-        return literal_eval(node.text.decode().replace('`', '"'))
+        return literal_eval(node.text.decode())
     
     elif node.type == "number":
         code = node.text.decode()
@@ -191,7 +191,6 @@ def ts_node_to_json(
     elif (node.type == "comment"):
         return NotSet
 
-    print("Unprocessable:", node.text.decode())
     raise PP_JsNodeTreeToJsonConversionError(f"Unsupported node type: {node.type}")
 
 def extract_extension_info_safely(js_code: str) -> dict[str, Any]:
@@ -368,8 +367,6 @@ def extract_extension_info_safely(js_code: str) -> dict[str, Any]:
         return gdumps(value)
     
     def handle_call(node: Node) -> NotImplementedType | Any:
-        if node.type != "call_expression":
-            return NotImplemented
         callee_node = node.child_by_field_name("function")
         arguments_node = node.child_by_field_name("arguments")
 
@@ -400,5 +397,5 @@ def extract_extension_info_safely(js_code: str) -> dict[str, Any]:
     return extension_info
 
 
-__all__ = ["fetch_js_code", "extract_extension_info_safely"]
+__all__ = ["extract_extension_info_safely"]
 

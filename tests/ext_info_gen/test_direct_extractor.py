@@ -1,17 +1,12 @@
-from json         import loads
-from os           import path, pardir
 from pytest       import raises, MonkeyPatch
-from subprocess   import run as run_subprocess, TimeoutExpired, SubprocessError
-from tempfile     import NamedTemporaryFile
-from typing       import Any
+from subprocess   import run as run_subprocess, TimeoutExpired
 
-from pmp_manip.config  import get_config
 from pmp_manip.utility import (
     delete_file,
     PP_FailedFileWriteError, PP_FailedFileDeleteError, 
     PP_NoNodeJSInstalledError, 
     PP_ExtensionExecutionTimeoutError, PP_ExtensionExecutionErrorInJavascript, PP_UnexpectedExtensionExecutionError,
-    PP_ExtensionJSONDecodeError, PP_UnknownExtensionAttributeError, 
+    PP_ExtensionJSONDecodeError, 
 )
 
 EXAMPLE_EXTENSION_CODE = """// Name: Base
@@ -216,7 +211,11 @@ def test_extract_extension_info_directly():
         "menus": {
             "base_menu": {
                 "acceptReporters": True,
-                "items": ["2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36"],
+                "items": [
+                    "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", 
+                    "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", 
+                    "31", "32", "33", "34", "35", "36",
+                ],
             },
         },
     }
@@ -277,12 +276,12 @@ def test_extract_extension_info_directly_temp_delete_error(monkeypatch: MonkeyPa
     finally:
         delete_file(temp_file_path)
 
-def test_extract_extension_info_directly_not_registered(monkeypatch: MonkeyPatch):
+def test_extract_extension_info_directly_not_registered():
     from pmp_manip.ext_info_gen.direct_extractor import extract_extension_info_directly
     with raises(PP_ExtensionExecutionErrorInJavascript):
         extract_extension_info_directly("")
 
-def test_extract_extension_info_directly_some_other_js_error(monkeypatch: MonkeyPatch):
+def test_extract_extension_info_directly_some_other_js_error():
     from pmp_manip.ext_info_gen.direct_extractor import extract_extension_info_directly
     code = EXAMPLE_EXTENSION_CODE.replace("const icon =\n    \"data:image/svg+xml;base64,PHN2ZyB...LS0+\";\n", "")
     with raises(PP_ExtensionExecutionErrorInJavascript):

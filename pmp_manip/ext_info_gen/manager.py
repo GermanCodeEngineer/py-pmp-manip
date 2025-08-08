@@ -7,7 +7,7 @@ from typing       import Any
 from pmp_manip.config          import get_config, init_config, get_default_config
 from pmp_manip.utility         import (
     read_file_text, write_file_text, enforce_argument_types, ContentFingerprint,
-    PP_Error, PP_FailedFileWriteError, PP_ExtensionFetchError,
+    PP_Error, PP_FailedFileWriteError, PP_ThanksError, PP_ExtensionFetchError,
     PP_DirectExtensionInfoExtractionError, PP_SafeExtensionInfoExtractionError,
     PP_NoNodeJSInstalledError, PP_ExtensionInfoConvertionError,
 )

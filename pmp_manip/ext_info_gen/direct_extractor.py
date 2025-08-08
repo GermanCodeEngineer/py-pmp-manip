@@ -1,5 +1,5 @@
 from json         import loads
-from os           import path, pardir
+from os           import path
 from subprocess   import run as run_subprocess, TimeoutExpired, SubprocessError
 from tempfile     import NamedTemporaryFile
 from typing       import Any
@@ -10,10 +10,10 @@ from pmp_manip.utility import (
     PP_FailedFileWriteError, PP_FailedFileDeleteError, 
     PP_NoNodeJSInstalledError, 
     PP_ExtensionExecutionTimeoutError, PP_ExtensionExecutionErrorInJavascript, PP_UnexpectedExtensionExecutionError,
-    PP_ExtensionJSONDecodeError, PP_UnknownExtensionAttributeError, 
+    PP_ExtensionJSONDecodeError, 
 )
 
-EXTRACTOR_PATH = path.join(path.split(__file__)[0], "direct_extractor.js")
+EXTRACTOR_PATH = path.join(path.dirname(__file__), "direct_extractor.js")
    
 
 def extract_extension_info_directly(js_code: str, code_encoding: str = "utf-8") -> dict[str, Any]:
