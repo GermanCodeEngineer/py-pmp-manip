@@ -78,6 +78,7 @@ class PP_InvalidDropdownValueError(PP_PathValidationError): pass
 
 class PP_InvalidOpcodeError(PP_PathValidationError): pass
 class PP_InvalidBlockShapeError(PP_PathValidationError): pass
+class PP_InvalidDirPathError(PP_PathValidationError): pass
 
 class PP_SpriteLayerStackError(PP_PathValidationError): pass
 
@@ -110,7 +111,7 @@ class PP_NetworkFetchError(PP_FetchError): pass
 class PP_UnexpectedFetchError(PP_FetchError): pass
 class PP_FileFetchError(PP_FetchError): pass
 
-# extractor.py / extractor_old.py
+# direct_extractor.py / safe_extractor.py
 class PP_NoNodeJSInstalledError(PP_Error): pass
 
 class PP_ExtensionExecutionError(PP_Error): pass
@@ -134,6 +135,11 @@ class PP_InvalidCustomMenuError(PP_InvalidExtensionInformationError): pass
 class PP_InvalidCustomBlockError(PP_InvalidExtensionInformationError): pass
 class PP_UnknownExtensionAttributeError(PP_InvalidExtensionInformationError): pass
 
+# manager.py
+class PP_ExtensionFetchError(PP_Error): """Groups any error in fetch_js"""
+class PP_DirectExtensionInfoExtractionError(PP_Error): """Groups any error in extract_extension_info_directly"""
+class PP_SafeExtensionInfoExtractionError(PP_Error): """Groups any error in extract_extension_info_safely"""
+class PP_ExtensionInfoConvertionError(PP_Error): """Groups any error in generate_opcode_info_group"""
 
 
 

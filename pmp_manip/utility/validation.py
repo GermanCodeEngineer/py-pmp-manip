@@ -1,6 +1,8 @@
 import json
+import os
 import re
 from typing       import Any
+from pathlib      import Path
 from urllib.parse import urlparse
 
 from pmp_manip.utility.errors import PP_TypeValidationError, PP_RangeValidationError, PP_InvalidValueError
@@ -187,6 +189,21 @@ def is_valid_js_data_uri(s) -> bool:
     pattern = r"^data:application/javascript(;charset=[^,]+)?,.*"
     return re.match(pattern, s) is not None
 
+def is_valid_directory_path(path_str: str) -> bool:
+    path = Path(path_str)
+
+    if path.exists():
+        return path.is_dir()
+    
+    try:
+        # Try to find a parent directory that exists
+        parent = path.parent
+        while not parent.exists():
+            parent = parent.parent
+        return os.access(parent, os.W_OK)
+    except Exception:
+        return False
+
 def is_valid_url(url: str) -> bool:
     try:
         result = urlparse(url)
@@ -205,6 +222,6 @@ __all__ = [
     "AA_MIN", "AA_MAX", "AA_RANGE", "AA_MIN_LEN", "AA_EXACT_LEN", "AA_COORD_PAIR", "AA_BOXED_COORD_PAIR",
     "AA_JSON_COMPATIBLE", "AA_HEX_COLOR", "AA_ALNUM", "AA_NONE_OR_CALLABLE",
     "AA_EQUAL", "AA_NOT_EQUAL", "AA_BIGGER_OR_EQUAL", "AA_NOT_ONE_OF", 
-    "is_valid_js_data_uri", "is_valid_url",
+    "is_valid_js_data_uri", "is_valid_directory_path", "is_valid_url",
 ]
 

@@ -1,11 +1,9 @@
 const fs = require("fs");
 const path = require("path");
-const https = require("https");
-const { URL } = require("url");
 
 // ---- Scratch stub ----
 
-function createTranslate(vm) {
+function createTranslate() {
     const translateFn = function (message, args) {
         if (message && typeof message === "object") {
             // already in expected format
@@ -17,35 +15,15 @@ function createTranslate(vm) {
         return message.default || "";
     };
 
-    const generateId = defaultMessage => `_${defaultMessage}`;
-
-    const getLocale = () => {
-        if (vm && vm.getLocale) return vm.getLocale();
-        if (typeof navigator !== "undefined") return navigator.language;
-        return "en";
-    };
-
-    let storedTranslations = {};
-    translateFn.setup = newTranslations => {
-        if (newTranslations) {
-            storedTranslations = newTranslations;
-        }
-        // simulate the behavior of format-message.namespace().setup()
-    };
+    translateFn.setup = (newTranslations => {});
 
     Object.defineProperty(translateFn, "language", {
         configurable: true,
         enumerable: true,
-        get: () => getLocale()
+        get: (() => "en")
     });
 
     translateFn.setup({});
-
-    if (vm && vm.on) {
-        vm.on("LOCALE_CHANGED", () => {
-            translateFn.setup(null);
-        });
-    }
 
     return translateFn;
 }
@@ -65,7 +43,7 @@ register = (ext) => {
     globalThis._scratchExtension = ext;
 };
 
-globalThis.Scratch = {
+globalThis.Scratch = { // Must be kept in sync with safe_extractor.py
     ArgumentAlignment: {
         "DEFAULT": null,
         "LEFT": "LEFT",

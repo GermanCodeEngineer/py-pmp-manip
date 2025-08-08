@@ -294,7 +294,6 @@ def generate_block_opcode_info(
         return f"{extension_id}::{" ".join(new_opcode_segments)}" 
     
     try:
-        print(block_info)
         block_type: str = block_info["blockType"]
         branch_count: int = block_info.get("branchCount", 0)
         is_terminal: bool = block_info.get("isTerminal", False)
@@ -444,8 +443,6 @@ def generate_file_code(
         info_group: the group of information about the blocks of the given extension
         input_type_cls: the generated class containing the custom input types
         dropdown_type_cls: the generated class containing the custom dropdown types
-    
-    Raises: Never
     """
     def generate_enum_code(enum_cls: type[GEnum]) -> str:
         """

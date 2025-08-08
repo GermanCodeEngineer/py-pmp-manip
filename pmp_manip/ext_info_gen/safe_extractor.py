@@ -16,7 +16,7 @@ from pmp_manip.utility            import (
 )
 
 
-SCRATCH_STUB = { # Must be kept in sync with extractor.js
+SCRATCH_STUB = { # Must be kept in sync with direct_extractor.js
     "ArgumentAlignment": {
         "DEFAULT": None,
         "LEFT": "LEFT",

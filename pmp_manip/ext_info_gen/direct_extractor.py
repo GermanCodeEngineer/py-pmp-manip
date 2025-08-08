@@ -1,5 +1,5 @@
-from os           import path, pardir
 from json         import loads
+from os           import path, pardir
 from subprocess   import run as run_subprocess, TimeoutExpired, SubprocessError
 from tempfile     import NamedTemporaryFile
 from typing       import Any
@@ -44,9 +44,7 @@ def extract_extension_info_directly(js_code: str, code_encoding: str = "utf-8") 
             temp_file.write(js_code)
             temp_js_path = temp_file.name
 
-    except UnicodeDecodeError as error:
-        raise PP_FailedFileWriteError(f"Failed to create or write javascript code to temporary file because of encoding failure: {error}") from error
-    except (FileNotFoundError, OSError, PermissionError, IsADirectoryError, Exception) as error:
+    except (FileNotFoundError, OSError, PermissionError, UnicodeEncodeError) as error:
         raise PP_FailedFileWriteError(f"Failed to create or write javascript code to temporary file: {error}") from error
     
     try:
@@ -62,7 +60,7 @@ def extract_extension_info_directly(js_code: str, code_encoding: str = "utf-8") 
         raise PP_NoNodeJSInstalledError(f"Node.js is not installed or not found in PATH: {error}") from error
     except TimeoutExpired as error:
         raise PP_ExtensionExecutionTimeoutError(f"Node.js subprocess trying to execute extension code took too long: {error}") from error
-    except (SubprocessError, OSError, PermissionError, Exception) as error:
+    except (SubprocessError, OSError, PermissionError) as error:
         raise PP_UnexpectedExtensionExecutionError(f"Failed to run Node.js subprocess (to execute extension code): {error}") from error
     finally:
         try:
@@ -73,7 +71,7 @@ def extract_extension_info_directly(js_code: str, code_encoding: str = "utf-8") 
     if result.returncode != 0:
         if   result.returncode == 1:
             # Registration error
-            raise PP_ExtensionExecutionErrorInJavascript(f"[ExtensionDeveloperResponsible] Extension was not registered")
+            raise PP_ExtensionExecutionErrorInJavascript(f"Extension was not registered. This is the fault of the extension developer")
         else:  # result.returncode == 2 or others
             # Script execution error
             raise PP_ExtensionExecutionErrorInJavascript(f"Error in extension javascript execution: {result.stderr}")

@@ -409,6 +409,7 @@ def example_opcode_blocks(input_type_cls, dropdown_type_cls):
     ]
 
 
+
 def test_process_all_menus_valid():
     menu_data = { # mostly copied from https://extensions.penguinmod.com/extensions/derpygamer2142/gpusb3.js
         "TYPES": {

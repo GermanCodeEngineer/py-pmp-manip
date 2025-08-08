@@ -47,9 +47,8 @@ def read_file_text(file_path: str, encoding: str = "utf-8") -> str:
 
     Raises:
         PP_TypeError: If an argument is of the wrong type
-        PP_ValueError: If the file is in an invalid state (e.g. closed or unreadable)
         PP_FileNotFoundError: If the file was not found
-        PP_FailedFileReadError: For OS-related errors like, permission denied, invalid path, or decoding failures
+        PP_FailedFileReadError: For OS-related errors like, closed, permission denied, invalid path, or decoding failures
     """
     try:
         with open(file_path, "r", encoding=encoding) as file:
@@ -57,11 +56,9 @@ def read_file_text(file_path: str, encoding: str = "utf-8") -> str:
 
     except TypeError as error:
         raise PP_TypeError(str(error)) from error
-    except ValueError as error:
-        raise PP_ValueError(str(error)) from error
     except FileNotFoundError as error:
         raise PP_FileNotFoundError(f"Failed to read, file does not exist: {error}") from error
-    except (PermissionError, IsADirectoryError,
+    except (ValueError, PermissionError, IsADirectoryError,
             NotADirectoryError, UnicodeDecodeError, OSError, Exception) as error:
         raise PP_FailedFileReadError(f"Failed to read from {repr(file_path)}") from error
 

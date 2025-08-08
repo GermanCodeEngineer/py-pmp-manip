@@ -9,7 +9,7 @@ from datetime    import timedelta
 from dataclasses import field, FrozenInstanceError
 from typing      import Any, Callable
 
-from pmp_manip.utility import grepr_dataclass, AA_TYPE, AA_NONE_OR_CALLABLE
+from pmp_manip.utility import grepr_dataclass, is_valid_directory_path, AA_TYPE, AA_NONE_OR_CALLABLE
 
 
 @grepr_dataclass(grepr_fields=[])
@@ -68,8 +68,11 @@ class ExtInfoGenConfig(ConfigBase):
         
         Raises:
             PP_ValidationError: if the ExtInfoGenConfig is invalid
+            PP_InvalidDirPathError: if the extension opcode info dir is invalid
         """
         AA_TYPE(self, path, "gen_opcode_info_dir", str) # TODO: possibly add check if path is valid
+        if not is_valid_directory_path(self.gen_opcode_info_dir):
+            raise PP_InvalidDirPathError("Invalid extension opcode info directory: {self.gen_opcode_info_dir}")
         AA_TYPE(self, path, "js_fetch_interval", timedelta)
         AA_TYPE(self, path, "node_js_exec_timeout", float)
         AA_NONE_OR_CALLABLE(self, path, "is_trusted_extension_origin_handler")
