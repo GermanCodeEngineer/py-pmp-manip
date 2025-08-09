@@ -193,6 +193,96 @@ def ts_node_to_json(
 
     raise PP_JsNodeTreeToJsonConversionError(f"Unsupported node type: {node.type}")
 
+def _get_main_body(root_node: Node) -> list[Node]:
+    """
+    Get the main code body
+    
+    Args:
+        root_node: the JavaScript Syntax Tree
+    """
+    # Check for IIFE '((Scratch) => {...})(Scratch)' (sandboxed style)
+    if root_node.type == "program":
+        last = root_node.children[-1]
+        if last.type == "expression_statement" and last.named_children:
+            expr = last.named_children[0]
+            if expr.type == "call_expression":
+                func = expr.child_by_field_name("function")
+                if   func and func.type == "parenthesized_expression":
+                    func = func.named_children[0]
+                if   func and func.type == "arrow_function":
+                    body = func.child_by_field_name("body")
+                    if body and body.type == "statement_block":
+                        return body.named_children
+                elif func and func.type == "function_expression":
+                    body = func.child_by_field_name("body")
+                    if body and body.type == "statement_block":
+                        return body.named_children
+
+    # Otherwise assume unsandboxed style
+    return root_node.named_children
+
+def _get_registered_class_name(code_body: list[Node]) -> str:
+    """
+    Get the name of the class, whose instance is registered with Scratch.extensions.register 
+    
+    Args:
+        code_body: the code body to search in
+    
+    Raises:
+        PP_BadExtensionCodeFormatError: if the code is not formatted like expected or the register call is not found
+    """
+    for statement in reversed(code_body): # register() is usually last
+        if statement.type != "expression_statement":
+            continue
+        expr = statement.named_children[0]
+        if expr.type != "call_expression":
+            continue
+        callee = expr.child_by_field_name("function")
+        if callee and callee.type == "member_expression":
+            if callee.text.decode() == "Scratch.extensions.register":
+                arg = expr.child_by_field_name("arguments").named_children[0]
+                if arg.type == "new_expression":
+                    class_id = arg.child_by_field_name("constructor")
+                    return class_id.text.decode()
+    raise PP_BadExtensionCodeFormatError("Could not find registered class name")
+
+def _get_class_def_by_name(code_body: list[Node], class_name: str) -> Node:
+    """
+    Get a class definition in the code body by its name
+    
+    Args:
+        code_body: the code body to search in
+        class_name: the name of the class to search
+    
+    Raises:
+        PP_BadExtensionCodeFormatError: if the class is not found
+    """
+    for statement in code_body:
+        if statement.type == "class_declaration":
+            id_node = statement.child_by_field_name("name")
+            if id_node and (id_node.text.decode() == class_name):
+                return statement
+    raise PP_BadExtensionCodeFormatError(f"Class '{class_name}' not found")
+
+def _get_class_method_def_by_name(class_node: Node, method_name: str) -> Node:
+    """
+    Get a classes method definition by its name
+    
+    Args:
+        class_node: the definition node of the class
+        method_name: the name of the method to search
+    
+    Raises:
+        PP_BadExtensionCodeFormatError: if the method is not found
+    """
+    body = class_node.child_by_field_name("body")
+    for item in body.named_children:
+        if item.type == "method_definition":
+            name_node = item.child_by_field_name("name")
+            if name_node.text.decode() == method_name:
+                return item
+    raise PP_BadExtensionCodeFormatError(f"Method '{method_name}' not found")
+    
 def extract_extension_info_safely(js_code: str) -> dict[str, Any]:
     """
     Extract the return value of the getInfo method of the extension class based on an AST of the extension's JS code.
@@ -209,97 +299,7 @@ def extract_extension_info_safely(js_code: str) -> dict[str, Any]:
     Warnings:
         PP_UnexpectedPropertyAccessWarning: if a property of 'this' is accessed in the getInfo method
         PP_UnexpectedNotPossibleFeatureWarning: if a impossible to implement feature is used (eg. ternary expr) in the getInfo method
-    """    
-    def get_main_body(root_node: Node) -> list[Node]:
-        """
-        Get the main code body
-        
-        Args:
-            root_node: the JavaScript Syntax Tree
-        """
-        # Check for IIFE '((Scratch) => {...})(Scratch)'(sandboxed style)
-        if root_node.type == "program":
-            last = root_node.children[-1]
-            if last.type == "expression_statement" and last.named_children:
-                expr = last.named_children[0]
-                if expr.type == "call_expression":
-                    func = expr.child_by_field_name("function")
-                    if func.type == "parenthesized_expression":
-                        func = func.named_children[0]
-                    if   func and func.type == "arrow_function":
-                        body = func.child_by_field_name("body")
-                        if body and body.type == "statement_block":
-                            return body.named_children
-                    elif func and func.type == "function_expression":
-                        body = func.child_by_field_name("body")
-                        if body and body.type == "statement_block":
-                            return body.named_children
-
-        # Otherwise assume unsandboxed style
-        return root_node.named_children
-    
-    def get_registered_class_name(code_body: list[Node]) -> str:
-        """
-        Get the name of the class, whose instance is registered with Scratch.extensions.register 
-        
-        Args:
-            code_body: the code body to search in
-        
-        Raises:
-            PP_BadExtensionCodeFormatError: if the code is not formatted like expected or the register call is not found
-        """
-        for statement in reversed(code_body): # register() is usually last
-            if statement.type != "expression_statement":
-                continue
-            expr = statement.named_children[0]
-            if expr.type != "call_expression":
-                continue
-            callee = expr.child_by_field_name("function")
-            if callee and callee.type == "member_expression":
-                if callee.text.decode() == "Scratch.extensions.register":
-                    arg = expr.child_by_field_name("arguments").named_children[0]
-                    if arg.type == "new_expression":
-                        class_id = arg.child_by_field_name("constructor")
-                        return class_id.text.decode()
-        raise PP_BadExtensionCodeFormatError("Could not find registered class name")
-
-    def get_class_def_by_name(code_body: list[Node], class_name: str) -> Node:
-        """
-        Get a class definition in the code body by its name
-        
-        Args:
-            code_body: the code body to search in
-            class_name: the name of the class to search
-        
-        Raises:
-            PP_BadExtensionCodeFormatError: if the class is not found
-        """
-        for statement in code_body:
-            if statement.type == "class_declaration":
-                id_node = statement.child_by_field_name("name")
-                if id_node and (id_node.text.decode() == class_name):
-                    return statement
-        raise PP_BadExtensionCodeFormatError(f"Class '{class_name}' not found")
-    
-    def get_class_method_def_by_name(class_node: Node, method_name: str) -> Node:
-        """
-        Get a classes method definition by its name
-        
-        Args:
-            class_node: the definition node of the class
-            method_name: the name of the method to search
-        
-        Raises:
-            PP_BadExtensionCodeFormatError: if the method is not found
-        """
-        body = class_node.child_by_field_name("body")
-        for item in body.named_children:
-            if item.type == "method_definition":
-                name_node = item.child_by_field_name("name")
-                if name_node.text.decode() == method_name:
-                    return item
-        raise PP_BadExtensionCodeFormatError(f"Method '{method_name}' not found")
-    
+    """
     def find_error_nodes(node: Node) -> Iterator[Node]:
         if node.type == "ERROR":
             yield node
@@ -310,7 +310,7 @@ def extract_extension_info_safely(js_code: str) -> dict[str, Any]:
     try:
         tree: Tree = parser.parse(js_code.encode())
         root_node = tree.root_node
-    except Exception as error:
+    except (TypeError, ValueError, RuntimeError) as error:
         raise PP_InvalidExtensionCodeSyntaxError(str(error)) from error # unlikely, but for safety
     if root_node.has_error:
         message_lines = ["Syntax error(s) detected:"]
@@ -323,15 +323,14 @@ def extract_extension_info_safely(js_code: str) -> dict[str, Any]:
     
     write_file_text("parsed_ast.lua", repr_tree(root_node))
     #write_file_text("parsed_ast.lua", repr(root.body[0].body.body[0].value.body.body[0].argument))
-    #raise Exception(r"$\/\$STOP$/\/$")
-            
+    
    
     try:
-        main_body = get_main_body(root_node)
+        main_body = _get_main_body(root_node)
         #print("####", ("\n"+100*"="+"\n").join([x.text.decode()[:200] for x in main_body]))
-        class_name = get_registered_class_name(main_body)
-        class_node = get_class_def_by_name(main_body, class_name)
-        getInfo_method = get_class_method_def_by_name(class_node, method_name="getInfo")
+        class_name = _get_registered_class_name(main_body)
+        class_node = _get_class_def_by_name(main_body, class_name)
+        getInfo_method = _get_class_method_def_by_name(class_node, method_name="getInfo")
 
         getInfo_func_expr = getInfo_method.child_by_field_name("body")
         assert (getInfo_func_expr is not None) and (getInfo_func_expr.type == "statement_block"), "Invalid getInfo method declaration"
@@ -356,7 +355,7 @@ def extract_extension_info_safely(js_code: str) -> dict[str, Any]:
         else:
             pass  # will trigger error below if needed
 
-        if not isinstance(message, str) or not message:
+        if not(isinstance(message, str)) or not(message):
             raise PP_InvalidTranslationMessageError(f"Invalid or empty message passed to Scratch.translate: {repr(message)}")
 
         return message
