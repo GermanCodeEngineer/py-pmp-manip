@@ -12,7 +12,6 @@ from pmp_manip.utility            import (
     PP_JsNodeTreeToJsonConversionError, PP_InvalidExtensionCodeSyntaxError, PP_BadExtensionCodeFormatError, PP_InvalidTranslationMessageError,
     PP_UnexpectedPropertyAccessWarning, PP_UnexpectedNotPossibleFeatureWarning,
     NotSetType, NotSet,
-    write_file_text, # temporary
 )
 
 
@@ -321,13 +320,9 @@ def extract_extension_info_safely(js_code: str) -> dict[str, Any]:
             message_lines.append(f"    At line {line}, col {col}: {code_seg}")
         raise PP_InvalidExtensionCodeSyntaxError("\n".join(message_lines))    
     
-    write_file_text("parsed_ast.lua", repr_tree(root_node))
-    #write_file_text("parsed_ast.lua", repr(root.body[0].body.body[0].value.body.body[0].argument))
-    
    
     try:
         main_body = _get_main_body(root_node)
-        #print("####", ("\n"+100*"="+"\n").join([x.text.decode()[:200] for x in main_body]))
         class_name = _get_registered_class_name(main_body)
         class_node = _get_class_def_by_name(main_body, class_name)
         getInfo_method = _get_class_method_def_by_name(class_node, method_name="getInfo")

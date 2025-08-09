@@ -4,13 +4,16 @@ from dataclasses     import dataclass
 from functools       import wraps
 from inspect         import signature
 from types           import NoneType, UnionType
-from typing          import get_type_hints, get_origin, get_args, Callable, Any
+from typing          import get_type_hints, get_origin, get_args, Callable, Any, ParamSpec, TypeVar
 
 from pmp_manip.utility.dual_key_dict import DualKeyDict
 from pmp_manip.utility.repr          import grepr
 
 
-def enforce_argument_types(func: Callable) -> Callable:
+PARAM_SPEC = ParamSpec("PARAM_SPEC")  # captures original parameters
+RETURN_T = TypeVar("RETURN_T")    # captures original return type
+
+def enforce_argument_types(func: Callable[PARAM_SPEC, RETURN_T]) -> Callable[PARAM_SPEC, RETURN_T]:
     """
     Decorator that enforces runtime type checks on function arguments
     based on the function's type annotations

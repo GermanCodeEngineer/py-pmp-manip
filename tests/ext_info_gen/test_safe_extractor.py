@@ -1,21 +1,13 @@
-from ast                    import literal_eval
-from colorama               import Fore as ColorFore, Style as ColorStyle
-from collections.abc        import Iterator
 from pytest                 import raises, warns
-from tree_sitter            import Parser, Language, Node, Tree
-from tree_sitter_javascript import language as get_js_language_basis
+from tree_sitter            import Parser, Node
 from typing                 import Any
 from types                  import NotImplementedType
-from warnings               import warn
-import pytest
-from pmp_manip.ext_info_gen import safe_extractor
 from pmp_manip.utility import PP_BadExtensionCodeFormatError
 
 from pmp_manip.utility            import (
-    repr_tree, gdumps,
     PP_JsNodeTreeToJsonConversionError, PP_InvalidExtensionCodeSyntaxError, PP_BadExtensionCodeFormatError, PP_InvalidTranslationMessageError,
     PP_UnexpectedPropertyAccessWarning, PP_UnexpectedNotPossibleFeatureWarning,
-    NotSetType, NotSet,
+    NotSet,
 )
 
 from pmp_manip.ext_info_gen.safe_extractor import (

@@ -167,7 +167,8 @@ class PP_NotImplementedError(PP_Error): pass
 class PP_TypeError(PP_Error): pass
 class PP_ValueError(PP_Error): pass
 class PP_AttributeError(PP_Error): pass
-class PP_FileNotFoundError(PP_Error): pass
+class PP_OSError(PP_Error): pass
+class PP_FileNotFoundError(PP_OSError): pass
 
 ###############################################################
 #                         SPECIAL ERRORS                      #

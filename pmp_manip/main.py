@@ -15,8 +15,8 @@ info_api.add_group(scratch_music)
 
 project = FRProject.from_file(file_path)
 #print(project)
-with open("log_first.lua", "w") as file:
-    file.write(FRProject.__repr__(project))
+#with open("log_first.lua", "w") as file:
+#    file.write(FRProject.__repr__(project))
 
 print(FRProject.__repr__(dict(project.extension_urls)))
 

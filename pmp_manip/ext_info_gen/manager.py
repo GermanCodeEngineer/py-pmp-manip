@@ -6,7 +6,7 @@ from typing       import Any
 
 from pmp_manip.config          import get_config, init_config, get_default_config
 from pmp_manip.utility         import (
-    read_file_text, write_file_text, enforce_argument_types, ContentFingerprint,
+    read_file_text, write_file_text, file_exists, enforce_argument_types, ContentFingerprint,
     PP_Error, PP_FailedFileWriteError, PP_ThanksError, PP_ExtensionFetchError,
     PP_DirectExtensionInfoExtractionError, PP_SafeExtensionInfoExtractionError,
     PP_NoNodeJSInstalledError, PP_ExtensionInfoConvertionError,
@@ -36,13 +36,13 @@ def is_trusted_extension_origin(source: str) -> bool:
     # taken from https://github.com/PenguinMod/penguinmod.github.io/blob/develop/src/containers/tw-security-manager.jsx#L26 (07.08.2025)
     if ( 
         # Always trust our official extension repostiory.
-        source.startswith('https://extensions.turbowarp.org/') or
-        source.startswith('https://extensions.penguinmod.com/') or
-        source.startswith('https://penguinmod-extensions-gallery.vercel.app/') or
+        source.startswith("https://extensions.turbowarp.org/") or
+        source.startswith("https://extensions.penguinmod.com/") or
+        source.startswith("https://penguinmod-extensions-gallery.vercel.app/") or
 
         # Trust other people's galleries. These can be removed in the future, they will just show a pop-up on load if they are.
-        source.startswith('https://sharkpools-extensions.vercel.app/') or # SharkPool
-        source.startswith('https://pen-group.github.io/') # Pen-Group / ObviousAlexC
+        source.startswith("https://sharkpools-extensions.vercel.app/") or # SharkPool
+        source.startswith("https://pen-group.github.io/") # Pen-Group / ObviousAlexC
     ):
         return True
 
@@ -51,6 +51,44 @@ def is_trusted_extension_origin(source: str) -> bool:
         return True
 
     return False
+
+def _consider_state(dest_file_name: str, dest_file_path: str, cache: dict[str, dict[str, Any]], by_url: bool) -> str:
+    """
+    Returns wether the extensions JavaScript should be fetched again and the python file should be (re-)generated
+
+    Args:
+        by_url: wether the extension is loaded by URL
+    """
+    if not file_exists(dest_file_path):
+        return STATUS_REGEN
+    
+    if dest_file_name not in cache:
+        return STATUS_REGEN
+    
+    file_cache = cache[dest_file_name]
+    try:
+        py_fingerprint = ContentFingerprint.from_json(file_cache["pyFingerprint"])
+    except (TypeError, KeyError):
+        py_fingerprint = None
+    try:
+        last_update_time = datetime.fromisoformat(file_cache["lastUpdate"])
+    except ValueError:
+        return STATUS_CHECK_JS # is_too_old would become True and CHECK_JS would be returned anyway
+    
+    try:
+        python_code = read_file_text(dest_file_path)
+    except PP_Error:
+        return STATUS_CHECK_JS # is_too_old would become True and CHECK_JS would be returned anyway
+    
+    if by_url:
+        is_too_old = (datetime.now(timezone.utc) - last_update_time) > get_config().ext_info_gen.js_fetch_interval 
+        # /\ wether the last JS fetch is too long ago
+    else:
+        is_too_old = True # fetching the JS is not expensive in this case
+    if (py_fingerprint is not None) and py_fingerprint.matches(python_code): # if the python code was NOT manipulated
+        return STATUS_CHECK_JS if is_too_old else STATUS_KEEP
+    else:
+        return STATUS_CHECK_JS
 
 @enforce_argument_types
 def generate_extension_info_py_file(
@@ -114,39 +152,6 @@ def generate_extension_info_py_file(
         PP_UnexpectedPropertyAccessWarning: if a property of 'this' is accessed in the getInfo method of the extension code in safe analysis
         PP_UnexpectedNotPossibleFeatureWarning: if an impossible to implement feature is used (eg. ternary expr) in the getInfo method of the extension code in safe analysis
     """
-    def consider_state(by_url: bool) -> str:
-        """
-        Returns wether the extensions JavaScript should be fetched again and the python file should be (re-)generated
-
-        Args:
-            by_url: wether the extension is loaded by URL
-        """
-        if not path.exists(destination_file_path):
-            return STATUS_REGEN
-        
-        if destination_file_name not in cache:
-            return STATUS_REGEN
-        
-        py_fingerprint = ContentFingerprint.from_json(file_cache["pyFingerprint"])
-        try:
-            last_update_time = datetime.fromisoformat(file_cache["lastUpdate"])
-        except ValueError:
-            return STATUS_CHECK_JS # is_too_old would become True and CHECK_JS would be returned anyway
-        
-        try:
-            python_code = read_file_text(destination_file_path)
-        except PP_Error:
-            return STATUS_CHECK_JS # is_too_old would become True and CHECK_JS would be returned anyway
-        
-        if by_url:
-            is_too_old = (datetime.now(timezone.utc) - last_update_time) > get_config().ext_info_gen.js_fetch_interval 
-            # /\ wether the last JS fetch is too long ago
-        else:
-            is_too_old = True # fetching the JS is not expensive in this case
-        if py_fingerprint.matches(python_code): # if the python code was NOT manipulated
-            return STATUS_CHECK_JS if is_too_old else STATUS_KEEP
-        else:
-            return STATUS_CHECK_JS
 
     def update_cache(cache: dict[str, dict[str, Any]]):
         """
@@ -167,27 +172,32 @@ def generate_extension_info_py_file(
 
     cfg = get_config()
     logger = getLogger(__name__)
-    destination_file_name = f"{extension_id}.py"
-    destination_file_path = path.join(cfg.ext_info_gen.gen_opcode_info_dir, destination_file_name)
+    dest_file_name = f"{extension_id}.py"
+    dest_file_path = path.join(cfg.ext_info_gen.gen_opcode_info_dir, dest_file_name)
     cache_file_path = path.join(cfg.ext_info_gen.gen_opcode_info_dir, CACHE_FILENAME)
     cache: dict[str, dict[str, Any]]
-    if path.exists(cache_file_path):
+    if file_exists(cache_file_path):
         try:
             cache = loads(read_file_text(cache_file_path))
         except (PP_Error, JSONDecodeError):
             cache = {}
     else:
         cache = {}
-    file_cache = cache.get(destination_file_name, None)
+    file_cache = cache.get(dest_file_name, None)
     
     is_url = (source.startswith("http://") or source.startswith("https://"))
-    should_continue = consider_state(by_url=is_url)
+    status = _consider_state(
+        dest_file_name, dest_file_path,
+        cache, by_url=is_url,
+    )
+    print(("status", status))
+
     
-    if should_continue == STATUS_KEEP:
+    if status == STATUS_KEEP:
         logger.info("Python extension info file is still up to date")
         file_cache["lastUpdate"] = datetime.now(timezone.utc).isoformat()
         update_cache(cache)
-        return destination_file_path
+        return dest_file_path
     
     try:
         js_code = fetch_js_code(source, tolerate_file_path)
@@ -199,11 +209,11 @@ def generate_extension_info_py_file(
     
     if file_cache is not None:
         js_fingerprint = ContentFingerprint.from_json(file_cache["jsFingerprint"])
-        if (should_continue is STATUS_CHECK_JS) and js_fingerprint.matches(js_code):
+        if (status is STATUS_CHECK_JS) and js_fingerprint.matches(js_code):
             file_cache["lastUpdate"] = datetime.now(timezone.utc).isoformat()
             update_cache(cache)
             logger.info("Python extension info file is still up to date as the extension code has not changed")
-            return destination_file_path
+            return dest_file_path
     
     if is_trusted_extension_origin(source):
         logger.info("Extracting extension info through direct execution")
@@ -243,18 +253,18 @@ def generate_extension_info_py_file(
         raise PP_FailedFileWriteError(f"Couldn't create directory of the extension info file at {cfg.ext_info_gen.gen_opcode_info_dir}. Is your configuration correct?: {error}") from error
 
     try:
-        write_file_text(destination_file_path, file_code)
+        write_file_text(dest_file_path, file_code)
     except PP_FailedFileWriteError as error:
         raise PP_FailedFileWriteError(f"Couldn't write extension info file to {cache_file_path}. Is your configuration correct?: {error}") from error
 
-    cache[destination_file_name] = {
+    cache[dest_file_name] = {
         "jsFingerprint": ContentFingerprint.from_value(js_code).to_json(),
         "pyFingerprint": ContentFingerprint.from_value(file_code).to_json(),
         "lastUpdate"   : datetime.now(timezone.utc).isoformat(),
     }
     update_cache(cache)
     logger.info("Successfully (re-)generated python extension info file")
-    return destination_file_path
+    return dest_file_path
 
 
 __all__ = ["generate_extension_info_py_file"]

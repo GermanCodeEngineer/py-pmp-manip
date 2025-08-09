@@ -2,9 +2,8 @@ import os
 import zipfile
 
 from pmp_manip.utility.errors import (
-    PP_PathError, 
     PP_TypeError, PP_ValueError, 
-    PP_FileNotFoundError, PP_FailedFileWriteError, PP_FailedFileReadError, PP_FailedFileDeleteError,
+    PP_OSError, PP_FileNotFoundError, PP_FailedFileWriteError, PP_FailedFileReadError, PP_FailedFileDeleteError,
 )
 
 def read_all_files_of_zip(zip_path: str) -> dict[str, bytes]:
@@ -59,7 +58,7 @@ def read_file_text(file_path: str, encoding: str = "utf-8") -> str:
     except FileNotFoundError as error:
         raise PP_FileNotFoundError(f"Failed to read, file does not exist: {error}") from error
     except (ValueError, PermissionError, IsADirectoryError,
-            NotADirectoryError, UnicodeDecodeError, OSError, Exception) as error:
+            NotADirectoryError, UnicodeDecodeError, OSError) as error:
         raise PP_FailedFileReadError(f"Failed to read from {repr(file_path)}") from error
 
 def write_file_text(file_path: str, text: str, encoding: str = "utf-8") -> None:
@@ -91,7 +90,7 @@ def write_file_text(file_path: str, text: str, encoding: str = "utf-8") -> None:
         raise PP_ValueError(str(error)) from error
     except UnicodeDecodeError as error:
         raise PP_FailedFileWriteError(f"Failed to write to {repr(file_path)} because of encoding failure: {error}") from error
-    except (FileNotFoundError, OSError, PermissionError, IsADirectoryError, Exception) as error:
+    except (FileNotFoundError, OSError, PermissionError, IsADirectoryError) as error:
         raise PP_FailedFileWriteError(f"Failed to write to {repr(file_path)}") from error
 
 def delete_file(file_path: str) -> None:
@@ -117,7 +116,7 @@ def delete_file(file_path: str) -> None:
         raise PP_TypeError(str(error)) from error
     except ValueError as error:
         raise PP_ValueError(str(error)) from error
-    except (FileNotFoundError, PermissionError, IsADirectoryError, OSError, Exception) as error:
+    except (FileNotFoundError, PermissionError, IsADirectoryError, OSError) as error:
         raise PP_FailedFileDeleteError(f"Failed to delete file at {repr(file_path)}") from error
 
 def create_zip_file(zip_path: str, contents: dict[str, bytes]) -> None:
@@ -134,6 +133,23 @@ def create_zip_file(zip_path: str, contents: dict[str, bytes]) -> None:
         for name, data in contents.items():
             zip_out.writestr(name, data)
 
+def file_exists(file_path: str) -> bool:
+    """
+    Checks if a file exists at the specified path
 
-__all__ = ["read_all_files_of_zip", "read_file_text", "write_file_text", "delete_file", "create_zip_file"]
+    Args:
+        file_path: the path to check
+    """
+    try:
+        return os.path.exists(file_path)
+    
+    except TypeError as error:
+        raise PP_TypeError(str(error)) from error
+    except ValueError as error:
+        raise PP_ValueError(str(error)) from error
+    except OSError as error:
+        raise PP_OSError(str(error)) from error
+
+
+__all__ = ["read_all_files_of_zip", "read_file_text", "write_file_text", "delete_file", "create_zip_file", "file_exists"]
 

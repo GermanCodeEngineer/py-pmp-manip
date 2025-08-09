@@ -24,3 +24,4 @@ TODOs:
     - spit into internal and public functions/methods etc
         => add enforce_argument_types decorator to public ones
     - rename PP_ to sth like MN(P)_ to represent Manip not Pypenguin anymore
+    - replace remaining io actions with wrappers (eg. file_exists instead of os.path.exists)
