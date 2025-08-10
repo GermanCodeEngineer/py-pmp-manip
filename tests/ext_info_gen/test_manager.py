@@ -4,27 +4,25 @@ from logging      import getLogger
 from os           import path, makedirs
 from pathlib      import Path
 from pytest       import raises, fixture, mark, MonkeyPatch
+from types        import SimpleNamespace
 from typing       import Any
 
 from pmp_manip.config          import get_config, init_config, get_default_config
 from pmp_manip.utility         import (
     read_file_text, write_file_text, enforce_argument_types, ContentFingerprint,
-    PP_Error, PP_FailedFileWriteError, PP_ThanksError, PP_ExtensionFetchError,
+    PP_Error, PP_FailedFileReadError, PP_FailedFileWriteError, PP_ThanksError, PP_NetworkFetchError, PP_ExtensionFetchError,
     PP_DirectExtensionInfoExtractionError, PP_SafeExtensionInfoExtractionError,
     PP_NoNodeJSInstalledError, PP_ExtensionInfoConvertionError,
 )
 
-from   pmp_manip.ext_info_gen.manager import is_trusted_extension_origin, generate_extension_info_py_file
 import pmp_manip.ext_info_gen.manager as manager_mod
 
-@fixture(autouse=True)
-def reset_config(monkeypatch: MonkeyPatch, tmp_path: Path):
-    """Reset config for each test and point gen_opcode_info_dir to tmpdir."""
-    cfg = get_default_config()
-    cfg.ext_info_gen.gen_opcode_info_dir = str(tmp_path)
-    monkeypatch.setattr("pmp_manip.config.manager._config_instance", cfg)
-    monkeypatch.setattr("pmp_manip.config.get_config", lambda: cfg)
-    yield
+def _make_cache(file_name:str, js_code:str="some jsCode", py_code:str="some py_code", last_update:str=datetime.now(timezone.utc).isoformat()):
+    return {file_name: {
+        "jsFingerprint": ContentFingerprint.from_value(js_code).to_json(),
+        "pyFingerprint": ContentFingerprint.from_value(py_code).to_json(),
+        "lastUpdate"   : last_update,
+    }}
 
    
 
@@ -37,7 +35,7 @@ def test_is_trusted_extension_origin_without_handler():
         ("https://pen-group.github.io/extensions/extensions/PenP/v7.js", True),
         ("https://raw.githubusercontent.com/Logise1123/FirebaseDB-/refs/heads/main/db.js", False),
     ]:
-        assert is_trusted_extension_origin(source) == should_be_trusted
+        assert manager_mod.is_trusted_extension_origin(source) == should_be_trusted
 
 def test_is_trusted_extension_origin_with_handler(monkeypatch: MonkeyPatch):    
     def is_trusted_handler(source: str) -> bool:
@@ -45,143 +43,259 @@ def test_is_trusted_extension_origin_with_handler(monkeypatch: MonkeyPatch):
 
     modified_cfg = get_default_config()
     modified_cfg.ext_info_gen.is_trusted_extension_origin_handler = is_trusted_handler
-    import pmp_manip.config.manager as manager_mod
-    monkeypatch.setattr(manager_mod, "_config_instance", modified_cfg)
+    import pmp_manip.config.manager as cfg_manager_mod
+    monkeypatch.setattr(cfg_manager_mod, "_config_instance", modified_cfg)
     
     source = "https://raw.githubusercontent.com/Logise1123/FirebaseDB-/refs/heads/main/db.js"
-    assert is_trusted_extension_origin(source) == True
-    assert is_trusted_extension_origin(source.replace("Logise1123", "SomeUser")) == False
+    assert manager_mod.is_trusted_extension_origin(source) == True
+    assert manager_mod.is_trusted_extension_origin(source.replace("Logise1123", "SomeUser")) == False
 
     
 
-def _make_cache_file(tmp_path: Path, name, py_code, js_code, last_update=None):
-    """Helper to create a valid cache file."""
-    if last_update is None:
-        last_update = datetime.now(timezone.utc).isoformat()
-    cache_data = {
-        f"{name}.py": {
-            "jsFingerprint": ContentFingerprint.from_value(js_code).to_json(),
-            "pyFingerprint": ContentFingerprint.from_value(py_code).to_json(),
-            "lastUpdate": last_update,
-        }
-    }
-    cache_path = tmp_path / manager_mod.CACHE_FILENAME
-    print("AT", cache_path, cache_data)
-    cache_path.write_text(dumps(cache_data))
-    return cache_path
+def test_consider_state_file_doesnt_exist(monkeypatch: MonkeyPatch):
+    monkeypatch.setattr(manager_mod, "file_exists", lambda p: False)
+    assert manager_mod._consider_state(
+        "someExt.py", "some_dir/someExt.py",
+        cache={"someExt.py": ...}, js_fetch_expensive=True,
+    ) == manager_mod.STATUS_REGEN
+
+def test_consider_state_file_not_in_cache(monkeypatch: MonkeyPatch):
+    monkeypatch.setattr(manager_mod, "file_exists", lambda p: True)
+    assert manager_mod._consider_state(
+        "someExt.py", "some_dir/someExt.py",
+        cache={}, js_fetch_expensive=True,
+    ) == manager_mod.STATUS_REGEN
+
+def test_consider_state_file_invalid_last_update(monkeypatch: MonkeyPatch):
+    monkeypatch.setattr(manager_mod, "file_exists", lambda p: True)
+    cache = _make_cache("someExt.py", last_update="some-invalid-date")
+    assert manager_mod._consider_state(
+        "someExt.py", "some_dir/someExt.py",
+        cache=cache, js_fetch_expensive=True,
+    ) == manager_mod.STATUS_CHECK_JS
+
+def test_consider_state_file_file_read_error(monkeypatch: MonkeyPatch):
+    def fake_read_file_text(*args, **kwargs): raise PP_FailedFileReadError()
+    monkeypatch.setattr(manager_mod, "file_exists", lambda p: True)
+    monkeypatch.setattr(manager_mod, "read_file_text", fake_read_file_text)
+    cache = _make_cache("someExt.py")
+    assert manager_mod._consider_state(
+        "someExt.py", "some_dir/someExt.py",
+        cache=cache, js_fetch_expensive=True,
+    ) == manager_mod.STATUS_CHECK_JS
+
+def test_consider_state_file_invalid_py_findgerprint(monkeypatch: MonkeyPatch):
+    monkeypatch.setattr(manager_mod, "file_exists", lambda p: True)
+    monkeypatch.setattr(manager_mod, "read_file_text", lambda p: "some py_code")
+    cache = _make_cache("someExt.py")
+    cache["someExt.py"]["pyFingerprint"] = ...
+    assert manager_mod._consider_state(
+        "someExt.py", "some_dir/someExt.py",
+        cache=cache, js_fetch_expensive=True,
+    ) == manager_mod.STATUS_CHECK_JS
+
+def test_consider_state_file_invalid_expensive_too_old_matches(monkeypatch: MonkeyPatch):
+    monkeypatch.setattr(manager_mod, "file_exists", lambda p: True)
+    monkeypatch.setattr(manager_mod, "read_file_text", lambda p: "some py_code")
+    last_update = datetime.now(timezone.utc) - get_config().ext_info_gen.js_fetch_interval - timedelta(minutes=5)
+    cache = _make_cache("someExt.py", 
+        py_code="some py_code", # matches will be True
+        last_update=last_update.isoformat(), # => 5 minutes after timeout
+    ) 
+    assert manager_mod._consider_state(
+        "someExt.py", "some_dir/someExt.py",
+        cache=cache, js_fetch_expensive=True,
+    ) == manager_mod.STATUS_CHECK_JS
+
+def test_consider_state_file_invalid_expensive_too_old_no_match(monkeypatch: MonkeyPatch):
+    monkeypatch.setattr(manager_mod, "file_exists", lambda p: True)
+    monkeypatch.setattr(manager_mod, "read_file_text", lambda p: "some py_code")
+    last_update = datetime.now(timezone.utc) - get_config().ext_info_gen.js_fetch_interval - timedelta(minutes=5)
+    cache = _make_cache("someExt.py", 
+        py_code="some diff py_code", # matches will be False
+        last_update=last_update.isoformat(), # => 5 minutes after timeout
+    ) 
+    assert manager_mod._consider_state(
+        "someExt.py", "some_dir/someExt.py",
+        cache=cache, js_fetch_expensive=True,
+    ) == manager_mod.STATUS_CHECK_JS
+
+def test_consider_state_file_invalid_expensive_not_too_old_matches(monkeypatch: MonkeyPatch):
+    monkeypatch.setattr(manager_mod, "file_exists", lambda p: True)
+    monkeypatch.setattr(manager_mod, "read_file_text", lambda p: "some py_code")
+    last_update = datetime.now(timezone.utc) - get_config().ext_info_gen.js_fetch_interval + timedelta(minutes=5)
+    cache = _make_cache("someExt.py", 
+        py_code="some py_code", # matches will be True
+        last_update=last_update.isoformat(), # => 5 minutes before timeout
+    ) 
+    assert manager_mod._consider_state(
+        "someExt.py", "some_dir/someExt.py",
+        cache=cache, js_fetch_expensive=True,
+    ) == manager_mod.STATUS_KEEP
+
+def test_consider_state_file_invalid_expensive_not_too_old_no_match(monkeypatch: MonkeyPatch):
+    monkeypatch.setattr(manager_mod, "file_exists", lambda p: True)
+    monkeypatch.setattr(manager_mod, "read_file_text", lambda p: "some py_code")
+    last_update = datetime.now(timezone.utc) - get_config().ext_info_gen.js_fetch_interval + timedelta(minutes=5)
+    cache = _make_cache("someExt.py", 
+        py_code="some diff py_code", # matches will be False
+        last_update=last_update.isoformat(), # => 5 minutes before timeout
+    ) 
+    assert manager_mod._consider_state(
+        "someExt.py", "some_dir/someExt.py",
+        cache=cache, js_fetch_expensive=True,
+    ) == manager_mod.STATUS_CHECK_JS
+
+def test_consider_state_file_invalid_not_expensive_matches(monkeypatch: MonkeyPatch):
+    monkeypatch.setattr(manager_mod, "file_exists", lambda p: True)
+    monkeypatch.setattr(manager_mod, "read_file_text", lambda p: "some py_code")
+    cache = _make_cache("someExt.py", 
+        py_code="some py_code", # matches will be True
+    ) 
+    assert manager_mod._consider_state(
+        "someExt.py", "some_dir/someExt.py",
+        cache=cache, js_fetch_expensive=False,
+    ) == manager_mod.STATUS_CHECK_JS
+
+def test_consider_state_file_invalid_not_expensive_no_match(monkeypatch: MonkeyPatch):
+    monkeypatch.setattr(manager_mod, "file_exists", lambda p: True)
+    monkeypatch.setattr(manager_mod, "read_file_text", lambda p: "some py_code")
+    cache = _make_cache("someExt.py", 
+        py_code="some diff py_code", # matches will be False
+    ) 
+    assert manager_mod._consider_state(
+        "someExt.py", "some_dir/someExt.py",
+        cache=cache, js_fetch_expensive=False,
+    ) == manager_mod.STATUS_CHECK_JS
 
 
-def test_generate_extension_info_py_file_keep_branch(monkeypatch: MonkeyPatch, tmp_path: Path):
-    # Prepare cache + destination file
-    py_code = "print('hello')"
-    js_code = "console.log('hi')"
-    ext_id = "ext1"
-    dest_file = tmp_path / f"{ext_id}.py"
-    dest_file.write_text(py_code)
-    _make_cache_file(tmp_path, ext_id, py_code, js_code)
 
-    monkeypatch.setattr(manager_mod, "read_file_text", lambda p: py_code)
-    monkeypatch.setattr(manager_mod, "fetch_js_code", lambda s, t: js_code)
+def test_get_cache_file_doesnt_exist(monkeypatch: MonkeyPatch):
+    monkeypatch.setattr(manager_mod, "file_exists", lambda p: False)
+    manager_mod._get_cache(cache_file_path="cache.json") == {}
 
-    # Force consider_state to return KEEP
-    monkeypatch.setattr(manager_mod, "generate_opcode_info_group", lambda info: ("grp", "in", "dr"))
-    monkeypatch.setattr(manager_mod, "generate_file_code", lambda *a: "code")
-    monkeypatch.setattr(manager_mod, "extract_extension_info_directly", lambda js: {"ok": True})
-    monkeypatch.setattr(manager_mod, "extract_extension_info_safely", lambda js: {"ok": True})
+def test_get_cache_file_file_read_error(monkeypatch: MonkeyPatch):
+    def fake_read_file_text(*args, **kwargs): raise PP_FailedFileReadError()
+    monkeypatch.setattr(manager_mod, "file_exists", lambda p: True)
+    monkeypatch.setattr(manager_mod, "read_file_text", fake_read_file_text)
+    manager_mod._get_cache(cache_file_path="cache.json") == {}
 
-    # Actually run
-    result = manager_mod.generate_extension_info_py_file("https://some.url/ext.js", ext_id, tolerate_file_path=True)
-    assert result.endswith(f"{ext_id}.py")
-    # Should not overwrite the file
-    assert dest_file.read_text() == py_code
+def test_get_cache_file_decode_error(monkeypatch: MonkeyPatch):
+    monkeypatch.setattr(manager_mod, "file_exists", lambda p: True)
+    monkeypatch.setattr(manager_mod, "read_file_text", lambda p: '{"x": 1,}') # invalid json
+    manager_mod._get_cache(cache_file_path="cache.json") == {}
 
-def test_generate_extension_info_py_file_check_js_fingerprint_match(monkeypatch: MonkeyPatch, tmp_path: Path):
-    # Force STATUS_CHECK_JS
-    py_code = "print('hi')"
-    js_code = "console.log('hi')"
-    ext_id = "ext2"
-    dest_file = tmp_path / f"{ext_id}.py"
-    dest_file.write_text(py_code)
-    _make_cache_file(tmp_path, ext_id, py_code, js_code,
-                    last_update=(datetime.now(timezone.utc) - timedelta(days=10)).isoformat())
-
-    monkeypatch.setattr(manager_mod, "read_file_text", lambda p: py_code)
-    monkeypatch.setattr(manager_mod, "fetch_js_code", lambda s, t: js_code)
-    monkeypatch.setattr(manager_mod, "ContentFingerprint.from_json", ContentFingerprint.from_json)
-
-    result = manager_mod.generate_extension_info_py_file("https://some.url/ext.js", ext_id, True)
-    assert result.endswith(f"{ext_id}.py")
-
-@mark.parametrize("trusted", [True, False])
-def test_generate_extension_info_py_file_regen_branch_success(monkeypatch: MonkeyPatch, tmp_path: Path, trusted):
-    ext_id = "ext3"
-    js_code = "console.log('hi')"
-    py_code = "print('py')"
-
-    monkeypatch.setattr(manager_mod, "read_file_text", lambda p: "anything")
-    monkeypatch.setattr(manager_mod, "fetch_js_code", lambda s, t: js_code)
-    monkeypatch.setattr(manager_mod, "is_trusted_extension_origin", lambda s: trusted)
-    if trusted:
-        monkeypatch.setattr(manager_mod, "extract_extension_info_directly", lambda js: {"info": 1})
-    else:
-        monkeypatch.setattr(manager_mod, "extract_extension_info_safely", lambda js: {"info": 1})
-    monkeypatch.setattr(manager_mod, "generate_opcode_info_group", lambda info: ("grp", "in", "dr"))
-    monkeypatch.setattr(manager_mod, "generate_file_code", lambda *a: py_code)
-    monkeypatch.setattr(manager_mod, "write_file_text", lambda p, t: None)
-
-    result = manager_mod.generate_extension_info_py_file("https://whatever.js", ext_id, True)
-    assert path.exists(result)
+def test_get_cache_file_success(monkeypatch: MonkeyPatch):
+    monkeypatch.setattr(manager_mod, "file_exists", lambda p: True)
+    cache = _make_cache(file_name="myExt.py")
+    monkeypatch.setattr(manager_mod, "read_file_text", lambda p: dumps(cache)) # invalid json
+    assert manager_mod._get_cache(cache_file_path="cache.json") == cache
 
 
-@mark.parametrize("exc,wrapped", [
-    (PP_Error("x"), PP_ExtensionFetchError),
-    (PP_NoNodeJSInstalledError("x"), PP_NoNodeJSInstalledError),
-])
-def test_generate_extension_info_py_file_fetch_errors(monkeypatch: MonkeyPatch, tmp_path: Path, exc, wrapped):
-    monkeypatch.setattr(manager_mod, "read_file_text", lambda p: "anything")
-    monkeypatch.setattr(manager_mod, "fetch_js_code", lambda s, t: (_ for _ in ()).throw(exc))
 
-    if issubclass(wrapped, PP_Error):
-        with raises(wrapped):
-            manager_mod.generate_extension_info_py_file("https://whatever.js", "extid", True)
-    else:
-        with raises(wrapped):
-            manager_mod.generate_extension_info_py_file("https://whatever.js", "extid", True, bundle_errors=False)
+def test_update_cache_write_error(monkeypatch: MonkeyPatch):
+    def fake_write_file_text(*args, **kwargs): raise PP_FailedFileWriteError()
+    monkeypatch.setattr(manager_mod, "write_file_text", fake_write_file_text)
+    cache = _make_cache(file_name="myExt.py")
+    with raises(PP_FailedFileWriteError):
+        manager_mod._update_cache(
+            cache, cache_file_path="cache.json", dest_file_name="myExt.py",
+            js_code="some jsCode", py_code="some py_code",
+        )
+
+def test_update_cache_new_entry(monkeypatch: MonkeyPatch):
+    def fake_write_file_text(file_path: str, text: str):
+        assert file_path == "cache.json"
+        cache_data: dict[str, dict[str, Any]] = loads(text)
+        assert set(cache_data.keys()) == {"_", "myExt.py"}
+        assert set(cache_data["myExt.py"].keys()) == {"jsFingerprint", "pyFingerprint", "lastUpdate"}
+        assert ContentFingerprint.from_json(cache_data["myExt.py"]["jsFingerprint"]).matches("some jsCode")
+        assert ContentFingerprint.from_json(cache_data["myExt.py"]["pyFingerprint"]).matches("some py_code")
+        assert (datetime.fromisoformat(cache_data["myExt.py"]["lastUpdate"]) - datetime.now(timezone.utc)) < timedelta(minutes=1)
+
+    monkeypatch.setattr(manager_mod, "write_file_text", fake_write_file_text)
+    cache = {}
+    manager_mod._update_cache(
+        cache, cache_file_path="cache.json", dest_file_name="myExt.py",
+        js_code="some jsCode", py_code="some py_code",
+    )
+
+def test_update_cache_update_entry(monkeypatch: MonkeyPatch):
+    def fake_write_file_text(file_path: str, text: str):
+        assert file_path == "cache.json"
+        cache_data: dict[str, dict[str, Any]] = loads(text)
+        assert set(cache_data.keys()) == {"_", "myExt.py"}
+        assert set(cache_data["myExt.py"].keys()) == {"jsFingerprint", "pyFingerprint", "lastUpdate"}
+        assert cache_data["myExt.py"]["jsFingerprint"] == old_cache["myExt.py"]["jsFingerprint"]
+        assert cache_data["myExt.py"]["pyFingerprint"] == old_cache["myExt.py"]["pyFingerprint"]
+        assert (datetime.fromisoformat(cache_data["myExt.py"]["lastUpdate"]) - datetime.now(timezone.utc)) < timedelta(minutes=1)
+
+    monkeypatch.setattr(manager_mod, "write_file_text", fake_write_file_text)
+    last_update = datetime.now() - timedelta(days=1)
+    old_cache = _make_cache(file_name="myExt.py", last_update=last_update.isoformat())
+    manager_mod._update_cache(
+        old_cache, cache_file_path="cache.json", dest_file_name="myExt.py",
+        js_code=None, py_code=None,
+    )
 
 
-@mark.parametrize("funcname,wrapped", [
-    ("extract_extension_info_directly", PP_DirectExtensionInfoExtractionError),
-    ("extract_extension_info_safely", PP_SafeExtensionInfoExtractionError),
-])
-def test_generate_extension_info_py_file_extraction_errors(monkeypatch: MonkeyPatch, tmp_path: Path, funcname, wrapped):
-    monkeypatch.setattr(manager_mod, "read_file_text", lambda p: "anything")
-    monkeypatch.setattr(manager_mod, "fetch_js_code", lambda s, t: "js")
-    monkeypatch.setattr(manager_mod, "is_trusted_extension_origin", lambda s: funcname.endswith("directly"))
-    monkeypatch.setattr(manager_mod, funcname, lambda js: (_ for _ in ()).throw(PP_Error("x")))
 
-    with raises(wrapped):
-        manager_mod.generate_extension_info_py_file("https://whatever.js", "extid", True)
+def test_generate_extension_info_py_file_kept_unconditionally(monkeypatch: MonkeyPatch):
+    def fake_update_cache(
+        old_cache: dict[str, dict[str, Any]], cache_file_path: str, dest_file_name: str, 
+        js_code: str | None, py_code: str | None,
+    ):
+        assert old_cache == made_cache
+        assert cache_file_path == path.join("gen_ext_opcode_info", "cache.json")
+        assert dest_file_name == "myExt.py"
+        assert js_code is None
+        assert py_code is None
+    made_cache = _make_cache("myExt.py")
+    monkeypatch.setattr(manager_mod, "_get_cache", lambda p: made_cache)
+    monkeypatch.setattr(manager_mod, "_consider_state", lambda dn, dp, c, js_fetch_expensive: manager_mod.STATUS_KEEP)
+    monkeypatch.setattr(manager_mod, "_update_cache", fake_update_cache)
 
+    manager_mod.generate_extension_info_py_file(
+        source="https://someurl.cool/myExt.js", extension_id="myExt",
+        tolerate_file_path=False, bundle_errors=True,
+    )
 
-def test_generate_extension_info_py_file_conversion_error(monkeypatch: MonkeyPatch, tmp_path: Path):
-    monkeypatch.setattr(manager_mod, "read_file_text", lambda p: "anything")
-    monkeypatch.setattr(manager_mod, "fetch_js_code", lambda s, t: "js")
-    monkeypatch.setattr(manager_mod, "is_trusted_extension_origin", lambda s: True)
-    monkeypatch.setattr(manager_mod, "extract_extension_info_directly", lambda js: {"ok": 1})
-    monkeypatch.setattr(manager_mod, "generate_opcode_info_group", lambda info: (_ for _ in ()).throw(PP_Error("bad")))
+def test_generate_extension_info_py_file_fetch_error(monkeypatch: MonkeyPatch):
+    def fake_fetch_js_code(source: str, tolerate_file_path: bool):
+        raise PP_NetworkFetchError()
+    made_cache = _make_cache("myExt.py")
+    monkeypatch.setattr(manager_mod, "_get_cache", lambda p: made_cache)
+    monkeypatch.setattr(manager_mod, "_consider_state", lambda dn, dp, c, js_fetch_expensive: manager_mod.STATUS_CHECK_JS)
+    monkeypatch.setattr(manager_mod, "fetch_js_code", fake_fetch_js_code)
+    
+    with raises(PP_ExtensionFetchError):
+        manager_mod.generate_extension_info_py_file(
+            source="https://someurl.cool/myExt.js", extension_id="myExt",
+            tolerate_file_path=False, bundle_errors=True,
+        )
+    with raises(PP_NetworkFetchError):
+        manager_mod.generate_extension_info_py_file(
+            source="https://someurl.cool/myExt.js", extension_id="myExt",
+            tolerate_file_path=False, bundle_errors=False,
+        )
 
-    with raises(PP_ExtensionInfoConvertionError):
-        manager_mod.generate_extension_info_py_file("https://whatever.js", "extid", True)
+def test_generate_extension_info_py_file_kept_conditionally(monkeypatch: MonkeyPatch):
+    def fake_update_cache(
+        old_cache: dict[str, dict[str, Any]], cache_file_path: str, dest_file_name: str, 
+        js_code: str | None, py_code: str | None,
+    ):
+        assert old_cache == made_cache
+        assert cache_file_path == path.join("gen_ext_opcode_info", "cache.json")
+        assert dest_file_name == "myExt.py"
+        assert js_code is None
+        assert py_code is None
+    made_cache = _make_cache("myExt.py", js_code="js code of myExt")
+    monkeypatch.setattr(manager_mod, "_get_cache", lambda p: made_cache)
+    monkeypatch.setattr(manager_mod, "_consider_state", lambda dn, dp, c, js_fetch_expensive: manager_mod.STATUS_CHECK_JS)
+    monkeypatch.setattr(manager_mod, "fetch_js_code", lambda s, tolerate_file_path: "js code of myExt")
+    monkeypatch.setattr(manager_mod, "_update_cache", fake_update_cache)
 
-
-def test_generate_extension_info_py_file_thanks_error_passes(monkeypatch: MonkeyPatch, tmp_path: Path):
-    monkeypatch.setattr(manager_mod, "read_file_text", lambda p: "anything")
-    monkeypatch.setattr(manager_mod, "fetch_js_code", lambda s, t: "js")
-    monkeypatch.setattr(manager_mod, "is_trusted_extension_origin", lambda s: True)
-    monkeypatch.setattr(manager_mod, "extract_extension_info_directly", lambda js: {"ok": 1})
-    monkeypatch.setattr(manager_mod, "generate_opcode_info_group", lambda info: (_ for _ in ()).throw(PP_ThanksError("thx")))
-
-    with raises(PP_ThanksError):
-        manager_mod.generate_extension_info_py_file("https://whatever.js", "extid", True)
-
-# Stopped in tpgTAHc; above is TRASH
+    manager_mod.generate_extension_info_py_file(
+        source="https://someurl.cool/myExt.js", extension_id="myExt",
+        tolerate_file_path=False, bundle_errors=True,
+    )

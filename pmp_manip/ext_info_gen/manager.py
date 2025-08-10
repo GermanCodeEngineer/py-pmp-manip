@@ -7,7 +7,7 @@ from typing       import Any
 from pmp_manip.config          import get_config, init_config, get_default_config
 from pmp_manip.utility         import (
     read_file_text, write_file_text, file_exists, enforce_argument_types, ContentFingerprint,
-    PP_Error, PP_FailedFileWriteError, PP_ThanksError, PP_ExtensionFetchError,
+    PP_Error, PP_FailedFileReadError, PP_FailedFileWriteError, PP_ThanksError, PP_ExtensionFetchError,
     PP_DirectExtensionInfoExtractionError, PP_SafeExtensionInfoExtractionError,
     PP_NoNodeJSInstalledError, PP_ExtensionInfoConvertionError,
 )
@@ -52,12 +52,12 @@ def is_trusted_extension_origin(source: str) -> bool:
 
     return False
 
-def _consider_state(dest_file_name: str, dest_file_path: str, cache: dict[str, dict[str, Any]], by_url: bool) -> str:
+def _consider_state(dest_file_name: str, dest_file_path: str, cache: dict[str, dict[str, Any]], js_fetch_expensive: bool) -> str:
     """
     Returns wether the extensions JavaScript should be fetched again and the python file should be (re-)generated
 
     Args:
-        by_url: wether the extension is loaded by URL
+        js_fetch_expensive: wether it is expensive to fetch the extension's JS code (wether it is loaded by URL)
     """
     if not file_exists(dest_file_path):
         return STATUS_REGEN
@@ -66,10 +66,6 @@ def _consider_state(dest_file_name: str, dest_file_path: str, cache: dict[str, d
         return STATUS_REGEN
     
     file_cache = cache[dest_file_name]
-    try:
-        py_fingerprint = ContentFingerprint.from_json(file_cache["pyFingerprint"])
-    except (TypeError, KeyError):
-        py_fingerprint = None
     try:
         last_update_time = datetime.fromisoformat(file_cache["lastUpdate"])
     except ValueError:
@@ -80,15 +76,68 @@ def _consider_state(dest_file_name: str, dest_file_path: str, cache: dict[str, d
     except PP_Error:
         return STATUS_CHECK_JS # is_too_old would become True and CHECK_JS would be returned anyway
     
-    if by_url:
-        is_too_old = (datetime.now(timezone.utc) - last_update_time) > get_config().ext_info_gen.js_fetch_interval 
+    try:
+        py_fingerprint = ContentFingerprint.from_json(file_cache["pyFingerprint"])
+    except (TypeError, KeyError):
+        return STATUS_CHECK_JS # would be returned anyway in every subscenario
+    
+    if js_fetch_expensive:
+        is_too_old = (datetime.now(timezone.utc) - last_update_time) > get_config().ext_info_gen.js_fetch_interval
         # /\ wether the last JS fetch is too long ago
+        #if is_too_old:
+        #    raise Exception()
     else:
         is_too_old = True # fetching the JS is not expensive in this case
-    if (py_fingerprint is not None) and py_fingerprint.matches(python_code): # if the python code was NOT manipulated
+    if py_fingerprint.matches(python_code): # if the python code was NOT manipulated
         return STATUS_CHECK_JS if is_too_old else STATUS_KEEP
     else:
         return STATUS_CHECK_JS
+
+def _get_cache(cache_file_path: str) -> dict[str, dict[str, Any]]:
+    """
+    Safely get the cache data stored in the cache file
+
+    Args:
+        cache_file_path: the full file path of the cache file
+    """
+    if not file_exists(cache_file_path):
+        return {}
+    try:
+        return loads(read_file_text(cache_file_path))
+    except (PP_FailedFileReadError, JSONDecodeError):
+        return {}
+
+def _update_cache(
+        old_cache: dict[str, dict[str, Any]], cache_file_path: str, dest_file_name: str, 
+        js_code: str | None, py_code: str | None,
+) -> None:
+    """
+    Updates the cache file
+    
+    Args:
+        old_cache: the cache data
+        cache_file_path: the full file path of the cache file
+        dest_file_name: the file name of the generated ext info file
+        js_code: the extension's javascript code
+        py_code: the generated python code
+    
+    Raises:
+        PP_FailedFileWriteError: if the cache file couldn't be written
+    """
+    if dest_file_name in old_cache:
+        old_cache[dest_file_name]["lastUpdate"] = datetime.now(timezone.utc).isoformat()
+    else:
+        old_cache[dest_file_name] = {
+            "jsFingerprint": ContentFingerprint.from_value(js_code).to_json(),
+            "pyFingerprint": ContentFingerprint.from_value(py_code).to_json(),
+            "lastUpdate"   : datetime.now(timezone.utc).isoformat(),
+        }
+    cache = {"_": "Please DO NOT MESS WITH THIS FILE. If you want to be safe just delete it and it will be regenerated"} | old_cache
+    cache_str = dumps(cache, indent=4)
+    try:
+        write_file_text(cache_file_path, cache_str)
+    except PP_FailedFileWriteError as error:
+        raise PP_FailedFileWriteError(f"Couldn't update cache at {repr(cache_file_path)}: {error}") from error
 
 @enforce_argument_types
 def generate_extension_info_py_file(
@@ -115,19 +164,19 @@ def generate_extension_info_py_file(
         PP_FailedFileWriteError(unlikely): if the cache file or generated extension info file or its directory couldn't be written/created
     
     Raises (if NOT bundled):
-        # created here or not bundled anyway:
+        ### created here or not bundled anyway:
         PP_ConfigurationError: if configuration has not been initialized
         PP_FailedFileWriteError(unlikely): if the cache file or generated extension info file or its directory couldn't be written/created
         PP_NoNodeJSInstalledError(not bundled): if Node.js is not installed or not found in PATH
         
-        # inherited from fetch_js => PP_ExtensionFetchError if bundled
+        ### inherited from fetch_js => PP_ExtensionFetchError if bundled
         PP_InvalidExtensionCodeSourceError: If the source data URI, URL or file_path is invalid or if a file path is passed even tough tolerate_file_paths is False or if the passed value is an invalid source
         PP_NetworkFetchError: For any network-related error (like 404 (not found))
         PP_UnexpectedFetchError: For any other unexpected error while fetching URL
         PP_FileNotFoundError: If the local source file does not exist
         PP_FileFetchError: If the source file cannot be read
         
-        # inherited from extract_extension_info_directly => PP_DirectExtensionInfoExtractionError if bundled
+        ### inherited from extract_extension_info_directly => PP_DirectExtensionInfoExtractionError if bundled
         PP_FailedFileWriteError(unlikely): if the JS code couldn't be written to a temporary file (eg. OS Error or Unicode Error)
         PP_FailedFileDeleteError(unlikely): if the temporary Javscript file couldn't be deleted
         PP_NoNodeJSInstalledError(not bundled): if Node.js is not installed or not found in PATH
@@ -136,12 +185,12 @@ def generate_extension_info_py_file(
         PP_UnexpectedExtensionExecutionError: if some other error raises during the subprocess call (eg. Permission or OS Error)
         PP_ExtensionJSONDecodeError(unlikely): if the json output of the subprocess is invalid
 
-        # inherited from extract_extension_info_safely => PP_SafeExtensionInfoExtractionError if bundled
+        ### inherited from extract_extension_info_safely => PP_SafeExtensionInfoExtractionError if bundled
         PP_InvalidExtensionCodeSyntaxError: if the extension code is syntactically invalid 
         PP_BadExtensionCodeFormatError: if the extension code is badly formatted, so that the extension information cannot be extracted
         PP_InvalidTranslationMessageError: if Scratch.translate is called with an invalid message
         
-        # inherited from generate_opcode_info_group => PP_ExtensionInfoConvertionError if bundled
+        ### inherited from generate_opcode_info_group => PP_ExtensionInfoConvertionError if bundled
         PP_UnknownExtensionAttributeError: if the extension or a block has an unknown attribute
         PP_InvalidCustomMenuError: if the information about a menu is invalid
         PP_InvalidCustomBlockError: if information of a block is invalid
@@ -152,51 +201,22 @@ def generate_extension_info_py_file(
         PP_UnexpectedPropertyAccessWarning: if a property of 'this' is accessed in the getInfo method of the extension code in safe analysis
         PP_UnexpectedNotPossibleFeatureWarning: if an impossible to implement feature is used (eg. ternary expr) in the getInfo method of the extension code in safe analysis
     """
-
-    def update_cache(cache: dict[str, dict[str, Any]]):
-        """
-        Updates the cache file
-        
-        Args:
-            cache: the cache data
-        
-        Raises:
-            PP_FailedFileWriteError: if the cache file couldn't be written
-        """
-        cache = {"_": "Please DO NOT TOUCH this file. If you want to be safe just delete it and it will be regenerated"} | cache
-        cache_str = dumps(cache, indent=4)
-        try:
-            write_file_text(cache_file_path, cache_str)
-        except PP_FailedFileWriteError as error:
-            raise PP_FailedFileWriteError(f"Couldn't update cache at {repr(cache_file_path)}: {error}") from error
-
     cfg = get_config()
     logger = getLogger(__name__)
     dest_file_name = f"{extension_id}.py"
     dest_file_path = path.join(cfg.ext_info_gen.gen_opcode_info_dir, dest_file_name)
     cache_file_path = path.join(cfg.ext_info_gen.gen_opcode_info_dir, CACHE_FILENAME)
-    cache: dict[str, dict[str, Any]]
-    if file_exists(cache_file_path):
-        try:
-            cache = loads(read_file_text(cache_file_path))
-        except (PP_Error, JSONDecodeError):
-            cache = {}
-    else:
-        cache = {}
+    cache = _get_cache(cache_file_path)
     file_cache = cache.get(dest_file_name, None)
     
-    is_url = (source.startswith("http://") or source.startswith("https://"))
     status = _consider_state(
         dest_file_name, dest_file_path,
-        cache, by_url=is_url,
+        cache, js_fetch_expensive=(source.startswith("http://") or source.startswith("https://")),
     )
-    print(("status", status))
-
     
     if status == STATUS_KEEP:
         logger.info("Python extension info file is still up to date")
-        file_cache["lastUpdate"] = datetime.now(timezone.utc).isoformat()
-        update_cache(cache)
+        _update_cache(cache, cache_file_path, dest_file_name, js_code=None, py_code=None)
         return dest_file_path
     
     try:
@@ -207,13 +227,16 @@ def generate_extension_info_py_file(
         else:
             raise
     
-    if file_cache is not None:
-        js_fingerprint = ContentFingerprint.from_json(file_cache["jsFingerprint"])
-        if (status is STATUS_CHECK_JS) and js_fingerprint.matches(js_code):
-            file_cache["lastUpdate"] = datetime.now(timezone.utc).isoformat()
-            update_cache(cache)
-            logger.info("Python extension info file is still up to date as the extension code has not changed")
-            return dest_file_path
+    if (file_cache is not None) and (status == STATUS_CHECK_JS):
+        try:
+            js_fingerprint = ContentFingerprint.from_json(file_cache["jsFingerprint"])
+        except (TypeError, KeyError):
+            pass
+        else:
+            if js_fingerprint.matches(js_code):
+                _update_cache(cache, cache_file_path, dest_file_name, js_code=None, py_code=None)
+                logger.info("Python extension info file is still up to date as the extension code has not changed")
+                return dest_file_path
     
     if is_trusted_extension_origin(source):
         logger.info("Extracting extension info through direct execution")
@@ -257,12 +280,7 @@ def generate_extension_info_py_file(
     except PP_FailedFileWriteError as error:
         raise PP_FailedFileWriteError(f"Couldn't write extension info file to {cache_file_path}. Is your configuration correct?: {error}") from error
 
-    cache[dest_file_name] = {
-        "jsFingerprint": ContentFingerprint.from_value(js_code).to_json(),
-        "pyFingerprint": ContentFingerprint.from_value(file_code).to_json(),
-        "lastUpdate"   : datetime.now(timezone.utc).isoformat(),
-    }
-    update_cache(cache)
+    _update_cache(cache, cache_file_path, dest_file_name, js_code, file_code)
     logger.info("Successfully (re-)generated python extension info file")
     return dest_file_path
 
