@@ -183,7 +183,7 @@ def grepr_dataclass(*, grepr_fields: list[str],
     """
     def decorator(cls: type):
         def __repr__(self, *args, **kwargs) -> str:
-            return gself, *args, **kwargs!r
+            return grepr(self, *args, **kwargs)
 
         cls.__repr__ = __repr__
         cls._grepr = True

@@ -162,12 +162,11 @@ class FRProject:
         for extension_id, extension_url in self.extension_urls.items():
             try: 
                 file_path = generate_extension_info_py_file(
-                        source=extension_url, 
-                        extension_id=extension_id,
-                        tolerate_file_path=False,
+                    source=extension_url, 
+                    extension_id=extension_id,
+                    tolerate_file_path=False,
                 )
-            except Exception as error:
-                raise Exception(f"In extension {extension_id!r} at {extension_url[:50]}: {error}") from error
+            except: pass
             file_paths.append(file_path)
         return file_paths
 
@@ -558,7 +557,6 @@ class SRProject:
                 for block in script.blocks:
                     broadcast_messages.extend(block.find_broadcast_messages())
         return broadcast_messages
-    
     
     def to_first(self, info_api: OpcodeInfoAPI, target_platform: TargetPlatform) -> FRProject:
         """

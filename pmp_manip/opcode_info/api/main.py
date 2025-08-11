@@ -1,8 +1,9 @@
-from typing      import TYPE_CHECKING, Type, Iterable
 from dataclasses import field
+from importlib   import import_module
+from typing      import TYPE_CHECKING, Type, Iterable
 
 from pmp_manip.utility import (
-    DualKeyDict, grepr_dataclass, GEnum, 
+    DualKeyDict, grepr_dataclass, enforce_argument_types, GEnum, 
     MANIP_UnknownOpcodeError, MANIP_SameOpcodeTwiceError,
 )
 
@@ -15,6 +16,15 @@ if TYPE_CHECKING:
     from pmp_manip.core.block_mutation  import FRMutation, SRMutation
     from pmp_manip.core.block           import FRBlock, IRBlock, SRBlock
 
+
+class ExtensionRef(GEnum):
+    """
+    A reference to an extension and its opcode info file
+    """
+    value: str
+
+    @property
+    def group_id(self) -> str: return self.value
 
 class OpcodeType(GEnum):
     """
@@ -468,9 +478,6 @@ class OpcodeInfoAPI:
         
         Args:
             group: the category or extension
-        
-        Returns:
-            None       
         """
         for old_opcode, new_opcode, opcode_info in group.opcode_info.items_key1_key2():
             if self.opcode_info.has_key1(old_opcode) or self.opcode_info.has_key2(new_opcode):
@@ -481,6 +488,32 @@ class OpcodeInfoAPI:
                 value = opcode_info,
             )
     
+    @enforce_argument_types
+    def add_extension(self, extension_ref: ExtensionRef) -> None:
+        """
+        Add an extension to the API
+        
+        Args:
+            extension_ref: the reference to the extension
+        """
+        module_name = f"pmp_manip.opcode_info.data.{extension_ref.group_id}"
+        try:
+            # Attempt dynamic import
+            module = import_module(module_name)
+        except ModuleNotFoundError as error:
+            raise PP_ExtensionModuleImportError(f"Failed to import python module of extension {extension_ref!r} at {module_name!r}") from error
+        except (SyntaxError, ImportError, Exception) as error:
+            raise PP_ExtensionModuleImportError(f"Unexpected error importing python module of extension {extension_ref!r} at {module_name!r}") from error
+        # HERE
+        try:
+            info_group = getattr(module, group_id)
+        except AttributeError as e:
+            raise AttributeError(f"Module {module_name!r} has no attribute {group_id!r}") from e
+
+        if not isinstance(info_group, (types.ModuleType, object)):
+            raise TypeError(
+                f"Attribute {group_id!r} in module {module_name!r} has unexpected type: {type(info_group).__name__}"
+            )
     
     # Get all opcodes
     @property
@@ -596,7 +629,7 @@ class OpcodeInfoAPI:
         info = self.get_info_by_old_safe(old)
         if info is not None:
             return info
-        raise MANIP_UnknownOpcodeError(f"Could not find OpcodeInfo by old opcode {old!r}")
+        raise MANIP_UnknownOpcodeError(f"Could not find OpcodeInfo by old opcode {old!r}. Have you possibly forgotten to add an extension?")
     
     
     # Fetching info by new opcode
@@ -631,5 +664,5 @@ class OpcodeInfoAPI:
         raise MANIP_UnknownOpcodeError(f"Could not find OpcodeInfo by new opcode {new!r}")
 
 
-__all__ = ["OpcodeType", "MonitorIdBehaviour", "OpcodeInfo", "OpcodeInfoGroup", "OpcodeInfoAPI"]
+__all__ = ["ExtensionRef", "OpcodeType", "MonitorIdBehaviour", "OpcodeInfo", "OpcodeInfoGroup", "OpcodeInfoAPI"]
 

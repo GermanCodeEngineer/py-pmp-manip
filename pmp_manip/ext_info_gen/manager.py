@@ -150,7 +150,6 @@ def generate_extension_info_py_file(
         bundle_errors: wether to bundle similar errors for more compact handling (see Raises)
     
     Raises (if bundled):
-        MANIP_ConfigurationError: if configuration has not been initialized
         MANIP_NoNodeJSInstalledError(not bundled): if Node.js is not installed or not found in PATH
         MANIP_ExtensionFetchError: if the extension code could not be fetched for some reason
         MANIP_DirectExtensionInfoExtractionError: if the extension info could not be extracted through direct execution
@@ -161,7 +160,6 @@ def generate_extension_info_py_file(
     
     Raises (if NOT bundled):
         ### created here or not bundled anyway:
-        MANIP_ConfigurationError: if configuration has not been initialized
         MANIP_FailedFileWriteError(unlikely): if the cache file or generated extension info file or its directory could not be written/created
         MANIP_NoNodeJSInstalledError(not bundled): if Node.js is not installed or not found in PATH
         
@@ -211,7 +209,7 @@ def generate_extension_info_py_file(
     )
     
     if status == STATUS_KEEP:
-        logger.info("Python extension info file is still up to date")
+        logger.info(f"Extension {extension_id!r}: Python extension info file is still up to date")
         _update_cache(cache, cache_file_path, dest_file_name, js_code=None, py_code=None)
         return dest_file_path
     
@@ -219,9 +217,9 @@ def generate_extension_info_py_file(
         js_code = fetch_js_code(source, tolerate_file_path)
     except MANIP_Error as error:
         if bundle_errors:
-            raise MANIP_ExtensionFetchError(f"Failed to fetch extension code: {error}") from error
+            raise MANIP_ExtensionFetchError(f"Error in extension {extension_id!r}: Failed to fetch extension code: {error}") from error
         else:
-            raise
+            raise type(error)(f"Error in extension {extension_id!r}: {str(error)}") from error
     
     if (file_cache is not None) and (status == STATUS_CHECK_JS):
         try:
@@ -231,29 +229,35 @@ def generate_extension_info_py_file(
         else:
             if js_fingerprint.matches(js_code):
                 _update_cache(cache, cache_file_path, dest_file_name, js_code=None, py_code=None)
-                logger.info("Python extension info file is still up to date as the extension code has not changed")
+                logger.info(f"Extension {extension_id!r}: Python extension info file is still up to date as the extension code has not changed")
                 return dest_file_path
     
     if is_trusted_extension_origin(source):
-        logger.info("Extracting extension info through direct execution")
+        logger.info(f"Extension {extension_id!r}: Extracting extension info through direct execution")
         try:
             extension_info = extract_extension_info_directly(js_code)
         except MANIP_NoNodeJSInstalledError:
             raise
         except MANIP_Error as error:
             if bundle_errors:
-                raise MANIP_DirectExtensionInfoExtractionError(f"Failed to extract extension info through direct execution: {error}") from error
+                raise MANIP_DirectExtensionInfoExtractionError(
+                    f"Error in extension {extension_id!r}: Failed to extract extension info through direct execution: {error}"
+                ) from error
             else:
-                raise
+                raise type(error)(f"Error in extension {extension_id!r}: {str(error)}") from error
     else:
-        logger.info("Extracting extension info through safe static analysis")
+        logger.info(f"Extension {extension_id!r}: Extracting extension info through safe static analysis")
         try:
             extension_info = extract_extension_info_safely(js_code)
         except MANIP_Error as error:
             if bundle_errors:
-                raise MANIP_SafeExtensionInfoExtractionError(f"Failed to extract extension info through safe analysis: {error}") from error
+                raise MANIP_SafeExtensionInfoExtractionError(
+                    f"Error in extension {extension_id!r}: Failed to extract extension info through safe analysis: {error}. "
+                    f"You can choose to let the code execute directly, which is more likely to work. "
+                    f"See https://github.com/GermanCodeEngineer/py-pmp-manip/blob/main/docs/ext_info_gen.md"
+                ) from error
             else:
-                raise
+                raise type(error)(f"Error in extension {extension_id!r}: {str(error)}") from error
     
     try:
         info_group, input_type_cls, dropdown_type_cls = generate_opcode_info_group(extension_info)
@@ -261,22 +265,30 @@ def generate_extension_info_py_file(
         raise
     except MANIP_Error as error:
         if bundle_errors:
-            raise MANIP_ExtensionInfoConvertionError(f"Failed to convert extension info into required format: {error}") from error
+            raise MANIP_ExtensionInfoConvertionError(
+                f"Error in extension {extension_id!r}: Failed to convert extension info into required format: {error}"
+            ) from error
         else:
-            raise
+            raise type(error)(f"Error in extension {extension_id!r}: {str(error)}") from error
     
     file_code = generate_file_code(info_group, input_type_cls, dropdown_type_cls)
     try:
         makedirs(cfg.ext_info_gen.gen_opcode_info_dir, exist_ok=True)
     except OSError as error:
-        raise MANIP_FailedFileWriteError(f"Could not create directory of the extension info file at {cfg.ext_info_gen.gen_opcode_info_dir!r}. Is your configuration correct?: {error}") from error
+        raise MANIP_FailedFileWriteError(
+            f"Error in extension {extension_id!r}: Could not create directory of the extension info file at "
+            f"{cfg.ext_info_gen.gen_opcode_info_dir!r}. Is your configuration correct?: {error}"
+        ) from error
 
     try:
         write_file_text(dest_file_path, file_code)
     except MANIP_FailedFileWriteError as error:
-        raise MANIP_FailedFileWriteError(f"Could not write extension info file to {cache_file_path!r}. Is your configuration correct?: {error}") from error
+        raise MANIP_FailedFileWriteError(
+            f"Error in extension {extension_id!r}: Could not write extension info file to {cache_file_path!r}. "
+            f"Is your configuration correct?: {error}"
+        ) from error
 
-    logger.info("Successfully (re-)generated python extension info file")
+    logger.info(f"Extension {extension_id!r}: Successfully (re-)generated python extension info file")
     _update_cache(cache, cache_file_path, dest_file_name, js_code, file_code)
     return dest_file_path
 
