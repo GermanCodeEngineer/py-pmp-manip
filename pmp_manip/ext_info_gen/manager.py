@@ -61,37 +61,33 @@ def _consider_state(dest_file_name: str, dest_file_path: str, cache: dict[str, d
     """
     if not file_exists(dest_file_path):
         return STATUS_REGEN
-    
     if dest_file_name not in cache:
         return STATUS_REGEN
-    
-    file_cache = cache[dest_file_name]
-    try:
-        last_update_time = datetime.fromisoformat(file_cache["lastUpdate"])
-    except ValueError:
-        return STATUS_CHECK_JS # is_too_old would become True and CHECK_JS would be returned anyway
-    
     try:
         python_code = read_file_text(dest_file_path)
     except PP_Error:
-        return STATUS_CHECK_JS # is_too_old would become True and CHECK_JS would be returned anyway
-    
+        return STATUS_REGEN # we can't know if python code has changed, so regenerate
+    file_cache = cache[dest_file_name]
     try:
         py_fingerprint = ContentFingerprint.from_json(file_cache["pyFingerprint"])
     except (TypeError, KeyError):
-        return STATUS_CHECK_JS # would be returned anyway in every subscenario
+        return STATUS_REGEN # we can't know if python code has changed, so regenerate
     
-    if js_fetch_expensive:
-        is_too_old = (datetime.now(timezone.utc) - last_update_time) > get_config().ext_info_gen.js_fetch_interval
-        # /\ wether the last JS fetch is too long ago
-        #if is_too_old:
-        #    raise Exception()
-    else:
-        is_too_old = True # fetching the JS is not expensive in this case
-    if py_fingerprint.matches(python_code): # if the python code was NOT manipulated
-        return STATUS_CHECK_JS if is_too_old else STATUS_KEEP
-    else:
+    if not py_fingerprint.matches(python_code): # if the python code was manipulated
+        return STATUS_REGEN
+    
+    if not js_fetch_expensive:
         return STATUS_CHECK_JS
+    
+    try:
+        last_update_time = datetime.fromisoformat(file_cache["lastUpdate"])
+    except ValueError:
+        return STATUS_CHECK_JS # we can't know if last fetch is too long ago, assume worst case
+    
+    timediff = (datetime.now(timezone.utc) - last_update_time)
+    too_long_ago = (timediff > get_config().ext_info_gen.js_fetch_interval)
+    # wether the last JS fetch is too long ago
+    return STATUS_CHECK_JS if too_long_ago else STATUS_KEEP
 
 def _get_cache(cache_file_path: str) -> dict[str, dict[str, Any]]:
     """
@@ -161,7 +157,7 @@ def generate_extension_info_py_file(
         PP_SafeExtensionInfoExtractionError: if the extension info couldn't be extracted through safe analysis
         PP_ExtensionInfoConvertionError: if the extracted extension info couldn't be converted into the format of this project
         PP_ThanksError(unlikely, not bundled): if a block argument uses the mysterious Scratch.ArgumentType.SEPERATOR
-        PP_FailedFileWriteError(unlikely): if the cache file or generated extension info file or its directory couldn't be written/created
+        PP_FailedFileWriteError(unlikely): if the generated extension info file or cache file or their directory couldn't be written/created
     
     Raises (if NOT bundled):
         ### created here or not bundled anyway:
@@ -280,17 +276,17 @@ def generate_extension_info_py_file(
     except PP_FailedFileWriteError as error:
         raise PP_FailedFileWriteError(f"Couldn't write extension info file to {cache_file_path}. Is your configuration correct?: {error}") from error
 
-    _update_cache(cache, cache_file_path, dest_file_name, js_code, file_code)
     logger.info("Successfully (re-)generated python extension info file")
+    _update_cache(cache, cache_file_path, dest_file_name, js_code, file_code)
     return dest_file_path
 
 
 __all__ = ["generate_extension_info_py_file"]
 
 
-if __name__ == "__main__":
-    init_config(get_default_config())
-    for extension_id, extension in [
+if __name__ == "__main__": # pragma: no cover
+    init_config(get_default_config()) # pragma: no cover
+    for extension_id, extension in [ # pragma: no cover
         ("asyncexample",        "example_extensions/asyncexample.js"),
         ("dumbExample",         "example_extensions/dumbExample.js"),
         ("truefantombase",      "https://extensions.turbowarp.org/true-fantom/base.js"),
@@ -299,4 +295,4 @@ if __name__ == "__main__":
         ("P7BoxPhys",           "https://extensions.penguinmod.com/extensions/pooiod/Box2D.js"),
         ("griffpatch",           "https://extensions.turbowarp.org/box2d.js")
     ]:
-        generate_extension_info_py_file(extension, extension_id, tolerate_file_path=True)
+        generate_extension_info_py_file(extension, extension_id, tolerate_file_path=True) # pragma: no cover

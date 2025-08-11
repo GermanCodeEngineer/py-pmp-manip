@@ -12,7 +12,8 @@ from pmp_manip.utility         import (
     read_file_text, write_file_text, enforce_argument_types, ContentFingerprint,
     PP_Error, PP_FailedFileReadError, PP_FailedFileWriteError, PP_ThanksError, PP_NetworkFetchError, PP_ExtensionFetchError,
     PP_DirectExtensionInfoExtractionError, PP_SafeExtensionInfoExtractionError,
-    PP_NoNodeJSInstalledError, PP_ExtensionInfoConvertionError,
+    PP_NoNodeJSInstalledError, PP_DirectExtensionInfoExtractionError, PP_ExtensionInfoConvertionError,
+    PP_ExtensionExecutionErrorInJavascript, PP_BadExtensionCodeFormatError, PP_InvalidCustomBlockError,
 )
 
 import pmp_manip.ext_info_gen.manager as manager_mod
@@ -66,14 +67,6 @@ def test_consider_state_file_not_in_cache(monkeypatch: MonkeyPatch):
         cache={}, js_fetch_expensive=True,
     ) == manager_mod.STATUS_REGEN
 
-def test_consider_state_file_invalid_last_update(monkeypatch: MonkeyPatch):
-    monkeypatch.setattr(manager_mod, "file_exists", lambda p: True)
-    cache = _make_cache("someExt.py", last_update="some-invalid-date")
-    assert manager_mod._consider_state(
-        "someExt.py", "some_dir/someExt.py",
-        cache=cache, js_fetch_expensive=True,
-    ) == manager_mod.STATUS_CHECK_JS
-
 def test_consider_state_file_file_read_error(monkeypatch: MonkeyPatch):
     def fake_read_file_text(*args, **kwargs): raise PP_FailedFileReadError()
     monkeypatch.setattr(manager_mod, "file_exists", lambda p: True)
@@ -82,9 +75,9 @@ def test_consider_state_file_file_read_error(monkeypatch: MonkeyPatch):
     assert manager_mod._consider_state(
         "someExt.py", "some_dir/someExt.py",
         cache=cache, js_fetch_expensive=True,
-    ) == manager_mod.STATUS_CHECK_JS
+    ) == manager_mod.STATUS_REGEN
 
-def test_consider_state_file_invalid_py_findgerprint(monkeypatch: MonkeyPatch):
+def test_consider_state_file_invalid_py_fingerprint(monkeypatch: MonkeyPatch):
     monkeypatch.setattr(manager_mod, "file_exists", lambda p: True)
     monkeypatch.setattr(manager_mod, "read_file_text", lambda p: "some py_code")
     cache = _make_cache("someExt.py")
@@ -92,9 +85,43 @@ def test_consider_state_file_invalid_py_findgerprint(monkeypatch: MonkeyPatch):
     assert manager_mod._consider_state(
         "someExt.py", "some_dir/someExt.py",
         cache=cache, js_fetch_expensive=True,
+    ) == manager_mod.STATUS_REGEN
+
+def test_consider_state_file_no_match(monkeypatch: MonkeyPatch):
+    monkeypatch.setattr(manager_mod, "file_exists", lambda p: True)
+    monkeypatch.setattr(manager_mod, "read_file_text", lambda p: "some py_code")
+    cache = _make_cache("someExt.py", 
+        py_code="some diff py_code", # matches will be False
+    ) 
+    assert manager_mod._consider_state(
+        "someExt.py", "some_dir/someExt.py",
+        cache=cache, js_fetch_expensive=True,
+    ) == manager_mod.STATUS_REGEN
+
+def test_consider_state_file_matches_not_expensive(monkeypatch: MonkeyPatch):
+    monkeypatch.setattr(manager_mod, "file_exists", lambda p: True)
+    monkeypatch.setattr(manager_mod, "read_file_text", lambda p: "some py_code")
+    cache = _make_cache("someExt.py", 
+        py_code="some py_code", # matches will be True
+    ) 
+    assert manager_mod._consider_state(
+        "someExt.py", "some_dir/someExt.py",
+        cache=cache, js_fetch_expensive=False,
     ) == manager_mod.STATUS_CHECK_JS
 
-def test_consider_state_file_invalid_expensive_too_old_matches(monkeypatch: MonkeyPatch):
+def test_consider_state_file_matches_expensive_invalid_last_update(monkeypatch: MonkeyPatch):
+    monkeypatch.setattr(manager_mod, "file_exists", lambda p: True)
+    monkeypatch.setattr(manager_mod, "read_file_text", lambda p: "some py_code")
+    cache = _make_cache("someExt.py", 
+        py_code="some py_code", # matches will be True
+        last_update="some-invalid-date",
+    )
+    assert manager_mod._consider_state(
+        "someExt.py", "some_dir/someExt.py",
+        cache=cache, js_fetch_expensive=True,
+    ) == manager_mod.STATUS_CHECK_JS
+
+def test_consider_state_file_matches_exensive_too_old(monkeypatch: MonkeyPatch):
     monkeypatch.setattr(manager_mod, "file_exists", lambda p: True)
     monkeypatch.setattr(manager_mod, "read_file_text", lambda p: "some py_code")
     last_update = datetime.now(timezone.utc) - get_config().ext_info_gen.js_fetch_interval - timedelta(minutes=5)
@@ -107,20 +134,7 @@ def test_consider_state_file_invalid_expensive_too_old_matches(monkeypatch: Monk
         cache=cache, js_fetch_expensive=True,
     ) == manager_mod.STATUS_CHECK_JS
 
-def test_consider_state_file_invalid_expensive_too_old_no_match(monkeypatch: MonkeyPatch):
-    monkeypatch.setattr(manager_mod, "file_exists", lambda p: True)
-    monkeypatch.setattr(manager_mod, "read_file_text", lambda p: "some py_code")
-    last_update = datetime.now(timezone.utc) - get_config().ext_info_gen.js_fetch_interval - timedelta(minutes=5)
-    cache = _make_cache("someExt.py", 
-        py_code="some diff py_code", # matches will be False
-        last_update=last_update.isoformat(), # => 5 minutes after timeout
-    ) 
-    assert manager_mod._consider_state(
-        "someExt.py", "some_dir/someExt.py",
-        cache=cache, js_fetch_expensive=True,
-    ) == manager_mod.STATUS_CHECK_JS
-
-def test_consider_state_file_invalid_expensive_not_too_old_matches(monkeypatch: MonkeyPatch):
+def test_consider_state_file_matches_expensive_not_too_old(monkeypatch: MonkeyPatch):
     monkeypatch.setattr(manager_mod, "file_exists", lambda p: True)
     monkeypatch.setattr(manager_mod, "read_file_text", lambda p: "some py_code")
     last_update = datetime.now(timezone.utc) - get_config().ext_info_gen.js_fetch_interval + timedelta(minutes=5)
@@ -132,41 +146,6 @@ def test_consider_state_file_invalid_expensive_not_too_old_matches(monkeypatch: 
         "someExt.py", "some_dir/someExt.py",
         cache=cache, js_fetch_expensive=True,
     ) == manager_mod.STATUS_KEEP
-
-def test_consider_state_file_invalid_expensive_not_too_old_no_match(monkeypatch: MonkeyPatch):
-    monkeypatch.setattr(manager_mod, "file_exists", lambda p: True)
-    monkeypatch.setattr(manager_mod, "read_file_text", lambda p: "some py_code")
-    last_update = datetime.now(timezone.utc) - get_config().ext_info_gen.js_fetch_interval + timedelta(minutes=5)
-    cache = _make_cache("someExt.py", 
-        py_code="some diff py_code", # matches will be False
-        last_update=last_update.isoformat(), # => 5 minutes before timeout
-    ) 
-    assert manager_mod._consider_state(
-        "someExt.py", "some_dir/someExt.py",
-        cache=cache, js_fetch_expensive=True,
-    ) == manager_mod.STATUS_CHECK_JS
-
-def test_consider_state_file_invalid_not_expensive_matches(monkeypatch: MonkeyPatch):
-    monkeypatch.setattr(manager_mod, "file_exists", lambda p: True)
-    monkeypatch.setattr(manager_mod, "read_file_text", lambda p: "some py_code")
-    cache = _make_cache("someExt.py", 
-        py_code="some py_code", # matches will be True
-    ) 
-    assert manager_mod._consider_state(
-        "someExt.py", "some_dir/someExt.py",
-        cache=cache, js_fetch_expensive=False,
-    ) == manager_mod.STATUS_CHECK_JS
-
-def test_consider_state_file_invalid_not_expensive_no_match(monkeypatch: MonkeyPatch):
-    monkeypatch.setattr(manager_mod, "file_exists", lambda p: True)
-    monkeypatch.setattr(manager_mod, "read_file_text", lambda p: "some py_code")
-    cache = _make_cache("someExt.py", 
-        py_code="some diff py_code", # matches will be False
-    ) 
-    assert manager_mod._consider_state(
-        "someExt.py", "some_dir/someExt.py",
-        cache=cache, js_fetch_expensive=False,
-    ) == manager_mod.STATUS_CHECK_JS
 
 
 
@@ -255,10 +234,11 @@ def test_generate_extension_info_py_file_kept_unconditionally(monkeypatch: Monke
     monkeypatch.setattr(manager_mod, "_consider_state", lambda dn, dp, c, js_fetch_expensive: manager_mod.STATUS_KEEP)
     monkeypatch.setattr(manager_mod, "_update_cache", fake_update_cache)
 
-    manager_mod.generate_extension_info_py_file(
+    dest_file_path = manager_mod.generate_extension_info_py_file(
         source="https://someurl.cool/myExt.js", extension_id="myExt",
         tolerate_file_path=False, bundle_errors=True,
     )
+    assert dest_file_path == path.join("gen_ext_opcode_info", "myExt.py")
 
 def test_generate_extension_info_py_file_fetch_error(monkeypatch: MonkeyPatch):
     def fake_fetch_js_code(source: str, tolerate_file_path: bool):
@@ -295,7 +275,206 @@ def test_generate_extension_info_py_file_kept_conditionally(monkeypatch: MonkeyP
     monkeypatch.setattr(manager_mod, "fetch_js_code", lambda s, tolerate_file_path: "js code of myExt")
     monkeypatch.setattr(manager_mod, "_update_cache", fake_update_cache)
 
-    manager_mod.generate_extension_info_py_file(
+    dest_file_path = manager_mod.generate_extension_info_py_file(
         source="https://someurl.cool/myExt.js", extension_id="myExt",
         tolerate_file_path=False, bundle_errors=True,
     )
+    assert dest_file_path == path.join("gen_ext_opcode_info", "myExt.py")
+
+def test_generate_extension_info_py_file_trusted_no_nodejs_error(monkeypatch: MonkeyPatch):
+    def fake_extract_extension_info_directly(js_code: str, code_encoding: str = "utf-8"):
+        raise PP_NoNodeJSInstalledError()
+    made_cache = _make_cache("myExt.py", js_code="js code of myExt")
+    monkeypatch.setattr(manager_mod, "_get_cache", lambda p: made_cache)
+    monkeypatch.setattr(manager_mod, "_consider_state", lambda dn, dp, c, js_fetch_expensive: manager_mod.STATUS_REGEN)
+    monkeypatch.setattr(manager_mod, "fetch_js_code", lambda s, tolerate_file_path: "js code of myExt")
+    monkeypatch.setattr(manager_mod, "extract_extension_info_directly", fake_extract_extension_info_directly)
+    
+    with raises(PP_NoNodeJSInstalledError):
+        manager_mod.generate_extension_info_py_file(
+            source="https://extensions.penguinmod.com/extensions/myUser/myExt.js", extension_id="myExt",
+            tolerate_file_path=False, bundle_errors=False,
+        )
+    with raises(PP_NoNodeJSInstalledError):
+        manager_mod.generate_extension_info_py_file(
+            source="https://extensions.penguinmod.com/extensions/myUser/myExt.js", extension_id="myExt",
+            tolerate_file_path=False, bundle_errors=True,
+        )
+
+def test_generate_extension_info_py_file_direct_ext_exec_error(monkeypatch: MonkeyPatch):
+    def fake_extract_extension_info_directly(js_code: str, code_encoding: str = "utf-8"):
+        assert js_code == "js code of myExt"
+        assert code_encoding == "utf-8"
+        raise PP_ExtensionExecutionErrorInJavascript()
+    made_cache = _make_cache("myExt.py", js_code="js code of myExt")
+    monkeypatch.setattr(manager_mod, "_get_cache", lambda p: made_cache)
+    monkeypatch.setattr(manager_mod, "_consider_state", lambda dn, dp, c, js_fetch_expensive: manager_mod.STATUS_REGEN)
+    monkeypatch.setattr(manager_mod, "fetch_js_code", lambda s, tolerate_file_path: "js code of myExt")
+    monkeypatch.setattr(manager_mod, "extract_extension_info_directly", fake_extract_extension_info_directly)
+    
+    with raises(PP_ExtensionExecutionErrorInJavascript):
+        manager_mod.generate_extension_info_py_file(
+            source="https://extensions.penguinmod.com/extensions/myUser/myExt.js", extension_id="myExt",
+            tolerate_file_path=False, bundle_errors=False,
+        )
+    with raises(PP_DirectExtensionInfoExtractionError):
+        manager_mod.generate_extension_info_py_file(
+            source="https://extensions.penguinmod.com/extensions/myUser/myExt.js", extension_id="myExt",
+            tolerate_file_path=False, bundle_errors=True,
+        )
+
+def test_generate_extension_info_py_file_safe_bad_ext_code_error(monkeypatch: MonkeyPatch):
+    def fake_extract_extension_info_safely(js_code: str, code_encoding: str = "utf-8"):
+        assert js_code == "js code of myExt"
+        assert code_encoding == "utf-8"
+        raise PP_BadExtensionCodeFormatError()
+    made_cache = _make_cache("myExt.py", js_code="js code of myExt")
+    monkeypatch.setattr(manager_mod, "_get_cache", lambda p: made_cache)
+    monkeypatch.setattr(manager_mod, "_consider_state", lambda dn, dp, c, js_fetch_expensive: manager_mod.STATUS_REGEN)
+    monkeypatch.setattr(manager_mod, "fetch_js_code", lambda s, tolerate_file_path: "js code of myExt")
+    monkeypatch.setattr(manager_mod, "extract_extension_info_safely", fake_extract_extension_info_safely)
+    
+    with raises(PP_BadExtensionCodeFormatError):
+        manager_mod.generate_extension_info_py_file(
+            source="https://untrusted.example.com/myExt.js", extension_id="myExt",
+            tolerate_file_path=False, bundle_errors=False,
+        )
+    with raises(PP_SafeExtensionInfoExtractionError):
+        manager_mod.generate_extension_info_py_file(
+            source="https://untrusted.example.com/myExt.js", extension_id="myExt",
+            tolerate_file_path=False, bundle_errors=True,
+        )
+
+def test_generate_extension_info_py_file_generator_thanks_error(monkeypatch: MonkeyPatch):
+    def fake_generate_opcode_info_group(extension_info: dict[str, Any]): raise PP_ThanksError()
+    made_cache = _make_cache("myExt.py", js_code="js code of myExt")
+    monkeypatch.setattr(manager_mod, "_get_cache", lambda p: made_cache)
+    monkeypatch.setattr(manager_mod, "_consider_state", lambda dn, dp, c, js_fetch_expensive: manager_mod.STATUS_REGEN)
+    monkeypatch.setattr(manager_mod, "fetch_js_code", lambda s, tolerate_file_path: "js code of myExt")
+    monkeypatch.setattr(manager_mod, "extract_extension_info_directly", lambda c: {"msg": "some ext info"})
+    monkeypatch.setattr(manager_mod, "generate_opcode_info_group", fake_generate_opcode_info_group)    
+    
+    with raises(PP_ThanksError):
+        manager_mod.generate_extension_info_py_file(
+            source="https://extensions.penguinmod.com/extensions/myUser/myExt.js", extension_id="myExt",
+            tolerate_file_path=False, bundle_errors=False,
+        )
+    with raises(PP_ThanksError):
+        manager_mod.generate_extension_info_py_file(
+            source="https://extensions.penguinmod.com/extensions/myUser/myExt.js", extension_id="myExt",
+            tolerate_file_path=False, bundle_errors=True,
+        )
+
+def test_generate_extension_info_py_file_generator_convertion_error(monkeypatch: MonkeyPatch):
+    def fake_generate_opcode_info_group(extension_info: dict[str, Any]): raise PP_InvalidCustomBlockError()
+    made_cache = _make_cache("myExt.py", js_code="js code of myExt")
+    monkeypatch.setattr(manager_mod, "_get_cache", lambda p: made_cache)
+    monkeypatch.setattr(manager_mod, "_consider_state", lambda dn, dp, c, js_fetch_expensive: manager_mod.STATUS_REGEN)
+    monkeypatch.setattr(manager_mod, "fetch_js_code", lambda s, tolerate_file_path: "js code of myExt")
+    monkeypatch.setattr(manager_mod, "extract_extension_info_directly", lambda c: {"msg": "some ext info"})
+    monkeypatch.setattr(manager_mod, "generate_opcode_info_group", fake_generate_opcode_info_group)    
+    
+    with raises(PP_InvalidCustomBlockError):
+        manager_mod.generate_extension_info_py_file(
+            source="https://extensions.penguinmod.com/extensions/myUser/myExt.js", extension_id="myExt",
+            tolerate_file_path=False, bundle_errors=False,
+        )
+    with raises(PP_ExtensionInfoConvertionError):
+        manager_mod.generate_extension_info_py_file(
+            source="https://extensions.penguinmod.com/extensions/myUser/myExt.js", extension_id="myExt",
+            tolerate_file_path=False, bundle_errors=True,
+        )
+
+def test_generate_extension_info_py_file_make_file_dir_error(monkeypatch: MonkeyPatch):
+    def fake_makedirs(p, exist_ok=False): raise OSError()
+    made_cache = _make_cache("myExt.py", js_code="js code of myExt")
+    monkeypatch.setattr(manager_mod, "_get_cache", lambda p: made_cache)
+    monkeypatch.setattr(manager_mod, "_consider_state", lambda dn, dp, c, js_fetch_expensive: manager_mod.STATUS_REGEN)
+    monkeypatch.setattr(manager_mod, "fetch_js_code", lambda s, tolerate_file_path: "js code of myExt")
+    monkeypatch.setattr(manager_mod, "extract_extension_info_directly", lambda c: {"msg": "some ext info"})
+    monkeypatch.setattr(manager_mod, "generate_opcode_info_group", lambda e: (None, None, None))
+    monkeypatch.setattr(manager_mod, "generate_file_code", lambda ig, it, dt: "py code of myExt")  
+    monkeypatch.setattr(manager_mod, "makedirs", fake_makedirs)  
+    
+    with raises(PP_FailedFileWriteError):
+        manager_mod.generate_extension_info_py_file(
+            source="https://extensions.penguinmod.com/extensions/myUser/myExt.js", extension_id="myExt",
+            tolerate_file_path=False, bundle_errors=True,
+        )
+
+def test_generate_extension_info_py_file_write_file_error(monkeypatch: MonkeyPatch):
+    def fake_write_file_text(p, t):
+        assert p == path.join("gen_ext_opcode_info", "myExt.py")
+        assert t == "py code of myExt"
+        raise PP_FailedFileWriteError()
+    made_cache = _make_cache("myExt.py", js_code="js code of myExt")
+    monkeypatch.setattr(manager_mod, "_get_cache", lambda p: made_cache)
+    monkeypatch.setattr(manager_mod, "_consider_state", lambda dn, dp, c, js_fetch_expensive: manager_mod.STATUS_REGEN)
+    monkeypatch.setattr(manager_mod, "fetch_js_code", lambda s, tolerate_file_path: "js code of myExt")
+    monkeypatch.setattr(manager_mod, "extract_extension_info_directly", lambda c: {"msg": "some ext info"})
+    monkeypatch.setattr(manager_mod, "generate_opcode_info_group", lambda e: (None, None, None))
+    monkeypatch.setattr(manager_mod, "generate_file_code", lambda ig, it, dt: "py code of myExt")  
+    monkeypatch.setattr(manager_mod, "makedirs", lambda p, exist_ok: None)
+    monkeypatch.setattr(manager_mod, "write_file_text", fake_write_file_text)
+    
+    with raises(PP_FailedFileWriteError):
+        manager_mod.generate_extension_info_py_file(
+            source="https://extensions.penguinmod.com/extensions/myUser/myExt.js", extension_id="myExt",
+            tolerate_file_path=False, bundle_errors=True,
+        )
+
+def test_generate_extension_info_py_file_success(monkeypatch: MonkeyPatch):
+    def fake_update_cache(
+        old_cache: dict[str, dict[str, Any]], cache_file_path: str, dest_file_name: str, 
+        js_code: str | None, py_code: str | None,
+    ):
+        assert old_cache == made_cache
+        assert cache_file_path == path.join("gen_ext_opcode_info", "cache.json")
+        assert dest_file_name == "myExt.py"
+        assert js_code == "js code of myExt"
+        assert py_code == "py code of myExt"
+    made_cache = _make_cache("myExt.py", js_code="js code of myExt")
+    monkeypatch.setattr(manager_mod, "_get_cache", lambda p: made_cache)
+    monkeypatch.setattr(manager_mod, "_consider_state", lambda dn, dp, c, js_fetch_expensive: manager_mod.STATUS_REGEN)
+    monkeypatch.setattr(manager_mod, "fetch_js_code", lambda s, tolerate_file_path: "js code of myExt")
+    monkeypatch.setattr(manager_mod, "extract_extension_info_directly", lambda c: {"msg": "some ext info"})
+    monkeypatch.setattr(manager_mod, "generate_opcode_info_group", lambda e: (None, None, None))
+    monkeypatch.setattr(manager_mod, "generate_file_code", lambda ig, it, dt: "py code of myExt")  
+    monkeypatch.setattr(manager_mod, "makedirs", lambda p, exist_ok: None)
+    monkeypatch.setattr(manager_mod, "write_file_text", lambda p, t: None)
+    monkeypatch.setattr(manager_mod, "_update_cache", fake_update_cache)
+    
+    dest_file_path = manager_mod.generate_extension_info_py_file(
+        source="https://extensions.penguinmod.com/extensions/myUser/myExt.js", extension_id="myExt",
+        tolerate_file_path=False, bundle_errors=True,
+    )
+    assert dest_file_path == path.join("gen_ext_opcode_info", "myExt.py")
+
+def test_generate_extension_info_py_file_invalid_js_fingerprint(monkeypatch: MonkeyPatch):
+    def fake_update_cache(
+        old_cache: dict[str, dict[str, Any]], cache_file_path: str, dest_file_name: str, 
+        js_code: str | None, py_code: str | None,
+    ):
+        assert old_cache == made_cache
+        assert cache_file_path == path.join("gen_ext_opcode_info", "cache.json")
+        assert dest_file_name == "myExt.py"
+        assert js_code == "js code of myExt"
+        assert py_code == "py code of myExt"
+    made_cache = _make_cache("myExt.py", js_code="js code of myExt")
+    made_cache["myExt.py"]["jsFingerprint"] = ...
+    monkeypatch.setattr(manager_mod, "_get_cache", lambda p: made_cache)
+    monkeypatch.setattr(manager_mod, "_consider_state", lambda dn, dp, c, js_fetch_expensive: manager_mod.STATUS_CHECK_JS)
+    monkeypatch.setattr(manager_mod, "fetch_js_code", lambda s, tolerate_file_path: "js code of myExt")
+    monkeypatch.setattr(manager_mod, "extract_extension_info_directly", lambda c: {"msg": "some ext info"})
+    monkeypatch.setattr(manager_mod, "generate_opcode_info_group", lambda e: (None, None, None))
+    monkeypatch.setattr(manager_mod, "generate_file_code", lambda ig, it, dt: "py code of myExt")  
+    monkeypatch.setattr(manager_mod, "makedirs", lambda p, exist_ok: None)
+    monkeypatch.setattr(manager_mod, "write_file_text", lambda p, t: None)
+    monkeypatch.setattr(manager_mod, "_update_cache", fake_update_cache)
+    
+    dest_file_path = manager_mod.generate_extension_info_py_file(
+        source="https://extensions.penguinmod.com/extensions/myUser/myExt.js", extension_id="myExt",
+        tolerate_file_path=False, bundle_errors=True,
+    )
+    assert dest_file_path == path.join("gen_ext_opcode_info", "myExt.py")
+

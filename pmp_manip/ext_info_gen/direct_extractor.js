@@ -95,7 +95,7 @@ globalThis.Scratch = { // Must be kept in sync with safe_extractor.py
         "register": register,
         "isPenguinMod": true
     },
-    translate: createTranslate(null),
+    translate: createTranslate(),
 
     vm: {
         runtime: {
