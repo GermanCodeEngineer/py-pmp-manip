@@ -2,9 +2,9 @@ from pytest                 import raises, MonkeyPatch
 from requests               import HTTPError
 
 from pmp_manip.utility            import (
-    PP_InvalidExtensionCodeSourceError, 
-    PP_NetworkFetchError, PP_UnexpectedFetchError, PP_FileFetchError, 
-    PP_FileNotFoundError, PP_FailedFileReadError,
+    MANIP_InvalidExtensionCodeSourceError, 
+    MANIP_NetworkFetchError, MANIP_UnexpectedFetchError, MANIP_FileFetchError, 
+    MANIP_FileNotFoundError, MANIP_FailedFileReadError,
 )
 
 
@@ -97,7 +97,7 @@ class ServerExtension {
       .then(response => response.text())
       .catch(error => {
         console.error('Failed to load data:', error);
-        return "can't get data";
+        return "can not get data";
       });
   }
 }
@@ -147,14 +147,14 @@ def test_fetch_js_code_data_uri_without_b64():
 def test_fetch_js_code_data_uri_invalid():
     from pmp_manip.ext_info_gen.fetch_js import fetch_js_code
     data_uri = DATA_URI1_RAW.replace(",", "#") # "," is required
-    with raises(PP_InvalidExtensionCodeSourceError):
+    with raises(MANIP_InvalidExtensionCodeSourceError):
         fetch_js_code(data_uri, tolerate_file_path=False)
 
 
 def test_fetch_js_code_url_invalid():
     from pmp_manip.ext_info_gen.fetch_js import fetch_js_code
     url = "https://extensions...penguinmod.com/extensions/MubiLop/toastnotifs.js" # "..."
-    with raises(PP_InvalidExtensionCodeSourceError):
+    with raises(MANIP_InvalidExtensionCodeSourceError):
         fetch_js_code(url, tolerate_file_path=False)
 
 def test_fetch_js_code_url_request_exception(monkeypatch: MonkeyPatch):
@@ -167,7 +167,7 @@ def test_fetch_js_code_url_request_exception(monkeypatch: MonkeyPatch):
 
     from pmp_manip.ext_info_gen.fetch_js import fetch_js_code
     url = "https://extensions.penguinmod.com/extensions/NonExistantUser/NonExistantExt.js"
-    with raises(PP_NetworkFetchError):
+    with raises(MANIP_NetworkFetchError):
         fetch_js_code(url, tolerate_file_path=False) # internal 404
 
 def test_fetch_js_code_url_unexpected_exception(monkeypatch: MonkeyPatch):
@@ -179,7 +179,7 @@ def test_fetch_js_code_url_unexpected_exception(monkeypatch: MonkeyPatch):
         
     from pmp_manip.ext_info_gen.fetch_js import fetch_js_code
     url = "https://raw.githubusercontent.com/Logise1123/FirebaseDB-/refs/heads/main/db.js"
-    with raises(PP_UnexpectedFetchError):
+    with raises(MANIP_UnexpectedFetchError):
         fetch_js_code(url, tolerate_file_path=False)
 
 def test_fetch_js_code_url_working(monkeypatch: MonkeyPatch):
@@ -198,28 +198,28 @@ def test_fetch_js_code_url_working(monkeypatch: MonkeyPatch):
 
 def test_fetch_js_code_file_invalid_path(monkeypatch: MonkeyPatch):
     from pmp_manip.ext_info_gen.fetch_js import fetch_js_code
-    with raises(PP_InvalidExtensionCodeSourceError):
+    with raises(MANIP_InvalidExtensionCodeSourceError):
         fetch_js_code(25953, tolerate_file_path=True)
     
 def test_fetch_js_code_file_not_allowed(monkeypatch: MonkeyPatch):
     from pmp_manip.ext_info_gen.fetch_js import fetch_js_code
-    with raises(PP_InvalidExtensionCodeSourceError):
+    with raises(MANIP_InvalidExtensionCodeSourceError):
         fetch_js_code("vvv/aaa.xxx", tolerate_file_path=False)
 
 def test_fetch_js_code_file_doesnt_exist(monkeypatch: MonkeyPatch):
     from pmp_manip.ext_info_gen.fetch_js import fetch_js_code
-    with raises(PP_FileNotFoundError):
+    with raises(MANIP_FileNotFoundError):
         fetch_js_code("www/bbb.yyy", tolerate_file_path=True)
 
 def test_fetch_js_code_file_couldnt_read(monkeypatch: MonkeyPatch):
     def fake_read_file_text(*args, **kwargs) -> str:
-        raise PP_FailedFileReadError()
+        raise MANIP_FailedFileReadError()
     
     from pmp_manip.ext_info_gen import fetch_js as fetch_js_mod
     monkeypatch.setattr(fetch_js_mod, "read_file_text", fake_read_file_text)
     from pmp_manip.ext_info_gen.fetch_js import fetch_js_code
     
-    with raises(PP_FileFetchError):
+    with raises(MANIP_FileFetchError):
         fetch_js_code(__file__, tolerate_file_path=True)
     # i needed a file that exists, so ...
 

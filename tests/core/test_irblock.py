@@ -3,7 +3,7 @@ from dataclasses import field
 from pytest      import raises
 
 from pmp_manip.opcode_info.data import info_api
-from pmp_manip.utility          import grepr_dataclass, PP_ConversionError
+from pmp_manip.utility          import grepr_dataclass, MANIP_ConversionError
 
 from pmp_manip.core.block_interface import InterToFirstIF
 from pmp_manip.core.block           import IRBlock
@@ -309,7 +309,7 @@ def test_IRBlock_to_second_immediate_block():
 def test_IRBlock_to_second_invalid_script_count():
     irblock = deepcopy(ALL_IR_BLOCKS["c"])
     irblock.inputs["a text arg"].references = ["b", "d", "e"]
-    with raises(PP_ConversionError):
+    with raises(MANIP_ConversionError):
         irblock.to_second(
             all_blocks=ALL_IR_BLOCKS,
             info_api=info_api,
@@ -318,7 +318,7 @@ def test_IRBlock_to_second_invalid_script_count():
 def test_IRBlock_to_second_missing_input():
     irblock = deepcopy(ALL_IR_BLOCKS["o"])
     del irblock.inputs["VALUE"]
-    with raises(PP_ConversionError):
+    with raises(MANIP_ConversionError):
         irblock.to_second(
             all_blocks=ALL_IR_BLOCKS,
             info_api=info_api,

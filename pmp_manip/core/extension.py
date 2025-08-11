@@ -1,4 +1,4 @@
-from pmp_manip.utility import grepr_dataclass, AA_TYPE, AA_ALNUM, is_valid_js_data_uri, is_valid_url, PP_InvalidValueError
+from pmp_manip.utility import grepr_dataclass, AA_TYPE, AA_ALNUM, is_valid_js_data_uri, is_valid_url, MANIP_InvalidValueError
 
 
 @grepr_dataclass(grepr_fields=["id"])
@@ -12,7 +12,7 @@ class SRExtension:
 
     def validate(self, path: list) -> None:
         """
-        Ensure a SRExtension is valid, raise PP_ValidationError if not
+        Ensure a SRExtension is valid, raise MANIP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -21,7 +21,7 @@ class SRExtension:
             None
         
         Raises:
-            PP_ValidationError: if the SRExtension is invalid
+            MANIP_ValidationError: if the SRExtension is invalid
         """
         AA_TYPE(self, path, "id", str) # TODO: possibly verify its one of PenguinMod's extension if not custom
         AA_ALNUM(self, path, "id")
@@ -30,7 +30,7 @@ class SRBuiltinExtension(SRExtension):
     """
     The second representation for a builtin extension.
     Creating an extension and adding it to a project is equivalent to clicking the "add extension" button.
-    Builtin Extensions don't specify a url
+    Builtin Extensions do not specify a url
     """
 
 @grepr_dataclass(grepr_fields=["url"])
@@ -46,7 +46,7 @@ class SRCustomExtension(SRExtension):
     
     def validate(self, path: list):
         """
-        Ensure a SRCustomExtension is valid, raise PP_ValidationError if not
+        Ensure a SRCustomExtension is valid, raise MANIP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -55,14 +55,14 @@ class SRCustomExtension(SRExtension):
             None
         
         Raises:
-            PP_ValidationError: if the SRCustomExtension is invalid
-            PP_InvalidValueError(PP_ValidationError): if the url is invalid
+            MANIP_ValidationError: if the SRCustomExtension is invalid
+            MANIP_InvalidValueError(MANIP_ValidationError): if the url is invalid
         """
         super().validate(path)
 
         AA_TYPE(self, path, "url", str)
         if not (is_valid_url(self.url) or is_valid_js_data_uri(self.url)):
-            raise PP_InvalidValueError(path, f"url of {self.__class__.__name__} must be either a valid url or a valid javascript data uri.")
+            raise MANIP_InvalidValueError(path, f"url of {self.__class__.__name__} must be either a valid url or a valid javascript data uri.")
 
 
 __all__ = ["SRExtension", "SRCustomExtension"]

@@ -3,10 +3,10 @@ from subprocess   import run as run_subprocess, TimeoutExpired
 
 from pmp_manip.utility import (
     delete_file,
-    PP_FailedFileWriteError, PP_FailedFileDeleteError, 
-    PP_NoNodeJSInstalledError, 
-    PP_ExtensionExecutionTimeoutError, PP_ExtensionExecutionErrorInJavascript, PP_UnexpectedExtensionExecutionError,
-    PP_ExtensionJSONDecodeError, 
+    MANIP_FailedFileWriteError, MANIP_FailedFileDeleteError, 
+    MANIP_NoNodeJSInstalledError, 
+    MANIP_ExtensionExecutionTimeoutError, MANIP_ExtensionExecutionErrorInJavascript, MANIP_UnexpectedExtensionExecutionError,
+    MANIP_ExtensionJSONDecodeError, 
 )
 
 EXAMPLE_EXTENSION_CODE = """// Name: Base
@@ -223,7 +223,7 @@ def test_extract_extension_info_directly():
 def test_extract_extension_info_directly_write_error():
     from pmp_manip.ext_info_gen.direct_extractor import extract_extension_info_directly
     # Contains an unpaired high surrogate (U+D800)
-    with raises(PP_FailedFileWriteError):
+    with raises(MANIP_FailedFileWriteError):
         extract_extension_info_directly("this will fail: \ud800")
         
 def test_extract_extension_info_directly_not_installed(monkeypatch: MonkeyPatch):
@@ -234,7 +234,7 @@ def test_extract_extension_info_directly_not_installed(monkeypatch: MonkeyPatch)
     monkeypatch.setattr(direct_extractor_mod, "run_subprocess", fake_run_subprocess)
     from pmp_manip.ext_info_gen.direct_extractor import extract_extension_info_directly
     
-    with raises(PP_NoNodeJSInstalledError):
+    with raises(MANIP_NoNodeJSInstalledError):
         extract_extension_info_directly(EXAMPLE_EXTENSION_CODE)
 
 def test_extract_extension_info_directly_timeout_expired(monkeypatch: MonkeyPatch):
@@ -245,7 +245,7 @@ def test_extract_extension_info_directly_timeout_expired(monkeypatch: MonkeyPatc
     monkeypatch.setattr(direct_extractor_mod, "run_subprocess", fake_run_subprocess)
     from pmp_manip.ext_info_gen.direct_extractor import extract_extension_info_directly
     
-    with raises(PP_ExtensionExecutionTimeoutError):
+    with raises(MANIP_ExtensionExecutionTimeoutError):
         extract_extension_info_directly(EXAMPLE_EXTENSION_CODE)
 
 def test_extract_extension_info_directly_unexpected_error(monkeypatch: MonkeyPatch):
@@ -256,7 +256,7 @@ def test_extract_extension_info_directly_unexpected_error(monkeypatch: MonkeyPat
     monkeypatch.setattr(direct_extractor_mod, "run_subprocess", fake_run_subprocess)
     from pmp_manip.ext_info_gen.direct_extractor import extract_extension_info_directly
     
-    with raises(PP_UnexpectedExtensionExecutionError):
+    with raises(MANIP_UnexpectedExtensionExecutionError):
         extract_extension_info_directly(EXAMPLE_EXTENSION_CODE)
 
 def test_extract_extension_info_directly_temp_delete_error(monkeypatch: MonkeyPatch):
@@ -264,27 +264,27 @@ def test_extract_extension_info_directly_temp_delete_error(monkeypatch: MonkeyPa
     def fake_delete_file(file, *args, **kwargs):
         nonlocal temp_file_path
         temp_file_path = file
-        raise PP_FailedFileDeleteError()
+        raise MANIP_FailedFileDeleteError()
 
     import pmp_manip.ext_info_gen.direct_extractor as direct_extractor_mod
     monkeypatch.setattr(direct_extractor_mod, "delete_file", fake_delete_file)
     from pmp_manip.ext_info_gen.direct_extractor import extract_extension_info_directly
     
     try:
-        with raises(PP_FailedFileDeleteError):
+        with raises(MANIP_FailedFileDeleteError):
             extract_extension_info_directly(EXAMPLE_EXTENSION_CODE)
     finally:
         delete_file(temp_file_path)
 
 def test_extract_extension_info_directly_not_registered():
     from pmp_manip.ext_info_gen.direct_extractor import extract_extension_info_directly
-    with raises(PP_ExtensionExecutionErrorInJavascript):
+    with raises(MANIP_ExtensionExecutionErrorInJavascript):
         extract_extension_info_directly("")
 
 def test_extract_extension_info_directly_some_other_js_error():
     from pmp_manip.ext_info_gen.direct_extractor import extract_extension_info_directly
     code = EXAMPLE_EXTENSION_CODE.replace("const icon =\n    \"data:image/svg+xml;base64,PHN2ZyB...LS0+\";\n", "")
-    with raises(PP_ExtensionExecutionErrorInJavascript):
+    with raises(MANIP_ExtensionExecutionErrorInJavascript):
         extract_extension_info_directly(code)
 
 def test_extract_extension_info_directly_json_decode_error(monkeypatch: MonkeyPatch):
@@ -297,5 +297,5 @@ def test_extract_extension_info_directly_json_decode_error(monkeypatch: MonkeyPa
     monkeypatch.setattr(direct_extractor_mod, "run_subprocess", fake_run_subprocess)
     from pmp_manip.ext_info_gen.direct_extractor import extract_extension_info_directly
     
-    with raises(PP_ExtensionJSONDecodeError):
+    with raises(MANIP_ExtensionJSONDecodeError):
         extract_extension_info_directly(EXAMPLE_EXTENSION_CODE)

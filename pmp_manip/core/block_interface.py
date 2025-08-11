@@ -1,13 +1,12 @@
 from dataclasses import field
 
 from pmp_manip.opcode_info.api  import DropdownValueKind
-from pmp_manip.utility import grepr_dataclass, number_to_token, PP_ConversionError, PP_ValidationError
+from pmp_manip.utility import grepr_dataclass, number_to_token, MANIP_ConversionError, MANIP_ValidationError
 
 from pmp_manip.core.block_mutation import FRCustomBlockMutation, SRCustomBlockMutation
-from pmp_manip.core.block          import FRBlock, IRBlock, SRBlock, SRScript, SRInputValue
+from pmp_manip.core.block          import FRBlock, IRBlock, SRBlock, SRScript
 from pmp_manip.core.comment        import FRComment, SRComment
 from pmp_manip.core.custom_block   import SRCustomBlockOpcode
-from pmp_manip.core.dropdown       import SRDropdownValue
 from pmp_manip.core.vars_lists     import variable_sha256, list_sha256
 
 
@@ -43,7 +42,7 @@ class FirstToInterIF:
         """
         if block_id in self.blocks:
             return self.blocks[block_id]
-        raise PP_ConversionError(f"Block with id {repr(block_id)} not found")
+        raise MANIP_ConversionError(f"Block with id {block_id!r} not found")
     
     def schedule_block_deletion(self, block_id: str) -> None:
         """
@@ -72,7 +71,7 @@ class FirstToInterIF:
             if not isinstance(block.mutation, FRCustomBlockMutation): continue
             if block.mutation.proccode == proccode:
                 return block.mutation
-        raise PP_ConversionError(f"Mutation of proccode {repr(proccode)} not found")
+        raise MANIP_ConversionError(f"Mutation of proccode {proccode!r} not found")
 
     def get_comment(self, comment_id: str) -> SRComment:
         """
@@ -86,7 +85,7 @@ class FirstToInterIF:
         """
         if comment_id in self.block_comments:
             return self.block_comments[comment_id]
-        raise PP_ConversionError(f"Comment with id {repr(comment_id)} not found")
+        raise MANIP_ConversionError(f"Comment with id {comment_id!r} not found")
 
 @grepr_dataclass(grepr_fields=[
     "blocks", 
@@ -121,7 +120,7 @@ class InterToFirstIF:
             if isinstance(getattr(block, "mutation", None), SRCustomBlockMutation):
                 frmutation: "FRCustomBlockMutation" = block.mutation.to_first(itf_if=self)
                 if frmutation.proccode in self._cb_mutations:
-                    raise PP_ConversionError(f"Two custom blocks cannot be defined with the same proccode(essentially custom opcode text): {repr(frmutation.proccode)}")
+                    raise MANIP_ConversionError(f"Two custom blocks cannot be defined with the same proccode(essentially custom opcode text): {frmutation.proccode!r}")
                 self._cb_mutations[frmutation.proccode] = frmutation
         
     def get_next_block_id(self, comment=False) -> str:
@@ -176,7 +175,7 @@ class InterToFirstIF:
         """
         if proccode in self._cb_mutations:
             return self._cb_mutations[proccode]
-        raise PP_ConversionError(f"Mutation of proccode {repr(proccode)} not found")
+        raise MANIP_ConversionError(f"Mutation of proccode {proccode!r} not found")
 
     def get_sr_cb_mutation(self, custom_opcode: SRCustomBlockOpcode) -> "SRCustomBlockMutation":
         """
@@ -192,7 +191,7 @@ class InterToFirstIF:
             if not isinstance(block.mutation, SRCustomBlockMutation): continue
             if block.mutation.custom_opcode == custom_opcode:
                 return block.mutation
-        raise PP_ConversionError(f"Mutation of custom opcode {custom_opcode} not found")
+        raise MANIP_ConversionError(f"Mutation of custom opcode {custom_opcode!r} not found")
 
     def get_variable_sha256(self, variable_name: str) -> str:
         """
@@ -209,7 +208,7 @@ class InterToFirstIF:
         elif variable_name in self.local_vars:
             sprite_name = "_stage_" if self.sprite_name is None else self.sprite_name
         else:
-            raise PP_ConversionError(f"Variable {repr(variable_name)} not found")
+            raise MANIP_ConversionError(f"Variable {variable_name!r} not found")
         return variable_sha256(variable_name, sprite_name)
 
     def get_list_sha256(self, list_name: str) -> str:
@@ -227,7 +226,7 @@ class InterToFirstIF:
         elif list_name in self.local_lists:
             sprite_name = "_stage_" if self.sprite_name is None else self.sprite_name
         else:
-            raise PP_ConversionError(f"List {repr(list_name)} not found")
+            raise MANIP_ConversionError(f"List {list_name!r} not found")
         return list_sha256(list_name, sprite_name)
 
 @grepr_dataclass(grepr_fields=["scripts", "cb_mutations"])
@@ -238,7 +237,7 @@ class SecondReprIF:
 
     scripts: list["SRScript"]
     cb_mutations: dict[SRCustomBlockOpcode, "SRCustomBlockMutation"] = field(init=False, default_factory=dict)
-    # Safe access is needed because blocks haven't actually been validated yet (see get_all_blocks)
+    # Safe access is needed because blocks have not actually been validated yet (see get_all_blocks)
     
     def __post_init__(self) -> None:
         """
@@ -329,7 +328,7 @@ class SecondToInterIF(SecondReprIF):
         """
         if custom_opcode in self.cb_mutations:
             return self.cb_mutations[custom_opcode]
-        raise PP_ConversionError(f"Mutation of custom_opcode {custom_opcode} not found")
+        raise MANIP_ConversionError(f"Mutation of custom_opcode {custom_opcode!r} not found")
 
 
 class ValidationIF(SecondReprIF):
@@ -349,7 +348,7 @@ class ValidationIF(SecondReprIF):
         """
         if custom_opcode in self.cb_mutations:
             return self.cb_mutations[custom_opcode]
-        raise PP_ValidationError(f"Mutation of custom_opcode {custom_opcode} not found")
+        raise MANIP_ValidationError(f"Mutation of custom_opcode {custom_opcode!r} not found")
 
 
 __all__ = ["FirstToInterIF", "InterToFirstIF", "SecondReprIF", "SecondToInterIF", "ValidationIF"]

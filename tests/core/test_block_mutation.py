@@ -4,8 +4,8 @@ from pytest import fixture, raises, MonkeyPatch
 from pmp_manip.important_consts import SHA256_SEC_MAIN_ARGUMENT_NAME
 from pmp_manip.utility          import (
     string_to_sha256, gdumps, grepr_dataclass,
-    PP_DeserializationError, PP_ConversionError, PP_ThanksError, 
-    PP_TypeValidationError, PP_InvalidValueError
+    MANIP_DeserializationError, MANIP_ConversionError, MANIP_ThanksError, 
+    MANIP_TypeValidationError, MANIP_InvalidValueError
 )
 
 from pmp_manip.core.block_interface import FirstToInterIF, InterToFirstIF
@@ -142,7 +142,7 @@ def test_FRMutation_find_from_data_subclasses(reset_frmutation_subclass_info):
 def test_FRMutation_from_data_and_post_init(monkeypatch: MonkeyPatch):
     def fake_ffds(_1=None, _2=None): return [FRCustomBlockMutation, FRCustomBlockCallMutation]
     monkeypatch.setattr(FRMutation, "_find_from_data_subclasses", fake_ffds)
-    with raises(PP_DeserializationError):
+    with raises(MANIP_DeserializationError):
         FRMutation.from_data({...:...}) # does not matter
     
     def fake_ffds(_1=None, _2=None): return [FRStopScriptMutation]
@@ -154,7 +154,7 @@ def test_FRMutation_from_data_and_post_init(monkeypatch: MonkeyPatch):
     
     def fake_ffds(_1=None, _2=None): return []
     monkeypatch.setattr(FRMutation, "_find_from_data_subclasses", fake_ffds)
-    with raises(PP_DeserializationError):
+    with raises(MANIP_DeserializationError):
         FRMutation.from_data({...:...}) # does not matter
     
     class DummyFRMutation(FRMutation, required_properties=set()):
@@ -176,13 +176,13 @@ def test_FRMutation_from_data_and_post_init(monkeypatch: MonkeyPatch):
     assert frmutation.tag_name == data["tagName"]
     assert frmutation.children == data["children"]
 
-    with raises(PP_ThanksError):
+    with raises(MANIP_ThanksError):
         DummyFRMutation.from_data({
             "tagName": "something else", # invalid
             "children": [],
         })
     
-    with raises(PP_ThanksError):
+    with raises(MANIP_ThanksError):
         DummyFRMutation.from_data({
             "tagName": "mutation",
             "children": {}, # invalid
@@ -225,11 +225,11 @@ def test_FRCustomBlockArgumentMutation_from_data_stringified_invalid():
     assert frmutation.edited is False
     assert frmutation.has_next is False
     
-    with raises(PP_DeserializationError):
+    with raises(MANIP_DeserializationError):
         FRCustomBlockArgumentMutation.from_data(data | {"warp": "null"})
-    with raises(PP_DeserializationError):
+    with raises(MANIP_DeserializationError):
         FRCustomBlockArgumentMutation.from_data(data | {"edited": None})
-    with raises(PP_DeserializationError):
+    with raises(MANIP_DeserializationError):
         FRCustomBlockArgumentMutation.from_data(data | {"hasnext": 1})
 
 def test_FRCustomBlockArgumentMutation_to_second_without_storing_argument(fti_if: FirstToInterIF):
@@ -240,7 +240,7 @@ def test_FRCustomBlockArgumentMutation_to_second_without_storing_argument(fti_if
     }
     frmutation = FRCustomBlockArgumentMutation.from_data(data)
 
-    with raises(PP_ConversionError):
+    with raises(MANIP_ConversionError):
         frmutation.to_second(fti_if)
 
 
@@ -352,9 +352,9 @@ def test_FRCustomBlockMutation_from_data_warp():
     FRCustomBlockMutation    .from_data(data | {"warp": True })
     FRCustomBlockCallMutation.from_data(data | {"warp": False})
 
-    with raises(PP_DeserializationError):
+    with raises(MANIP_DeserializationError):
         FRCustomBlockMutation    .from_data(data | {"warp": 123})
-    with raises(PP_DeserializationError):
+    with raises(MANIP_DeserializationError):
         FRCustomBlockCallMutation.from_data(data | {"warp": []})
     
 
@@ -389,13 +389,13 @@ def test_SRCustomBlockArgumentMutation_validate():
     execute_attr_validation_tests(
         obj=srmutation,
         attr_tests=[
-            ("argument_name", 5, PP_TypeValidationError),
-            ("main_color", {}, PP_TypeValidationError),
-            ("main_color", "", PP_InvalidValueError),
-            ("prototype_color", [], PP_TypeValidationError),
-            ("prototype_color", "#abc", PP_InvalidValueError),
-            ("outline_color", (), PP_TypeValidationError),
-            ("outline_color", "255", PP_InvalidValueError),
+            ("argument_name", 5, MANIP_TypeValidationError),
+            ("main_color", {}, MANIP_TypeValidationError),
+            ("main_color", "", MANIP_InvalidValueError),
+            ("prototype_color", [], MANIP_TypeValidationError),
+            ("prototype_color", "#abc", MANIP_InvalidValueError),
+            ("outline_color", (), MANIP_TypeValidationError),
+            ("outline_color", "255", MANIP_InvalidValueError),
         ],
         validate_func=SRCustomBlockArgumentMutation.validate,
         func_args=[[]],
@@ -432,14 +432,14 @@ def test_SRCustomBlockMutation_validate():
     execute_attr_validation_tests(
         obj=srmutation,
         attr_tests=[
-            ("custom_opcode", "some custom opcode", PP_TypeValidationError),
-            ("no_screen_refresh", None, PP_TypeValidationError),
-            ("main_color", {}, PP_TypeValidationError),
-            ("main_color", "", PP_InvalidValueError),
-            ("prototype_color", [], PP_TypeValidationError),
-            ("prototype_color", "#abc", PP_InvalidValueError),
-            ("outline_color", (), PP_TypeValidationError),
-            ("outline_color", "255", PP_InvalidValueError),
+            ("custom_opcode", "some custom opcode", MANIP_TypeValidationError),
+            ("no_screen_refresh", None, MANIP_TypeValidationError),
+            ("main_color", {}, MANIP_TypeValidationError),
+            ("main_color", "", MANIP_InvalidValueError),
+            ("prototype_color", [], MANIP_TypeValidationError),
+            ("prototype_color", "#abc", MANIP_InvalidValueError),
+            ("outline_color", (), MANIP_TypeValidationError),
+            ("outline_color", "255", MANIP_InvalidValueError),
         ],
         validate_func=SRCustomBlockMutation.validate,
         func_args=[[]],
@@ -483,7 +483,7 @@ def test_SRCustomBlockCallMutation_validate():
     execute_attr_validation_tests(
         obj=srmutation,
         attr_tests=[
-            ("custom_opcode", "some custom opcode", PP_TypeValidationError),
+            ("custom_opcode", "some custom opcode", MANIP_TypeValidationError),
         ],
         validate_func=SRCustomBlockCallMutation.validate,
         func_args=[[]],
@@ -532,7 +532,7 @@ def test_SRStopScriptMutation_validate():
     execute_attr_validation_tests(
         obj=srmutation,
         attr_tests=[
-            ("is_ending_statement", {...}, PP_TypeValidationError),
+            ("is_ending_statement", {...}, MANIP_TypeValidationError),
         ],
         validate_func=SRStopScriptMutation.validate,
         func_args=[[]],

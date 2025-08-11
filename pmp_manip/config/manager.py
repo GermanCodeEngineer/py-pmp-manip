@@ -7,7 +7,7 @@
 from colorama import init as colorama_init
 from datetime import timedelta
 
-from pmp_manip.utility import PP_ConfigurationError, PP_ValidationError
+from pmp_manip.utility import MANIP_ConfigurationError, MANIP_ValidationError
 
 from pmp_manip.config.schema import *
 
@@ -25,19 +25,19 @@ def init_config(config: MasterConfig) -> None:
         config: The configuration object to initialize with
 
     Raises:
-        PP_ConfigurationError: If configuration is already initialized or validation fails
+        MANIP_ConfigurationError: If configuration is already initialized or validation fails
         TypeError: If the provided config is not an instance of MasterConfig
     """
     global _config_instance
     
     if _config_instance is not None:
-        raise PP_ConfigurationError("Configuration has already been initialized.")
+        raise MANIP_ConfigurationError("Configuration has already been initialized")
     if not isinstance(config, MasterConfig):
         raise TypeError("Expected a MasterConfig instance")
     try:
         config.validate()
-    except PP_ValidationError as error:
-        raise PP_ConfigurationError("Invalid Configuration") from error
+    except MANIP_ValidationError as error:
+        raise MANIP_ConfigurationError("Invalid Configuration") from error
     
     config.ext_info_gen ._frozen_ = True
     config.validation   ._frozen_ = True
@@ -56,11 +56,11 @@ def get_config() -> MasterConfig:
         MasterConfig: The active project configuration
 
     Raises:
-        PP_ConfigurationError: If configuration has not been initialized
+        MANIP_ConfigurationError: If configuration has not been initialized
     """
     global _config_instance
     if _config_instance is None:
-        raise PP_ConfigurationError("Configuration has not been initialized.")
+        raise MANIP_ConfigurationError("Configuration has not been initialized")
     return _config_instance
 
 def get_default_config() -> "MasterConfig":

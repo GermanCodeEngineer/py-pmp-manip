@@ -9,7 +9,7 @@ from datetime    import timedelta
 from dataclasses import field, FrozenInstanceError
 from typing      import Any, Callable
 
-from pmp_manip.utility import grepr_dataclass, is_valid_directory_path, AA_TYPE, AA_NONE_OR_CALLABLE
+from pmp_manip.utility import grepr_dataclass, is_valid_directory_path, AA_TYPE, AA_NONE_OR_CALLABLE, MANIP_InvalidDirPathError
 
 
 @grepr_dataclass(grepr_fields=[])
@@ -33,19 +33,19 @@ class ConfigBase(ABC):
            dataclasses.FrozenInstanceError: if _frozen_ is True
         """
         if self._frozen_:
-            raise FrozenInstanceError(f"cannot assign to field {repr(attr)}")
+            raise FrozenInstanceError(f"cannot assign to field {attr!r}")
         super().__setattr__(attr, value)        
     
     @abstractmethod
     def validate(self, path: list) -> None:
         """
-        Ensure a Config is valid, raise PP_ValidationError if not
+        Ensure a Config is valid, raise MANIP_ValidationError if not
         
         Args:
             path: the path from the top of the config tree to itself. Used for better error messages
         
         Raises:
-            PP_ValidationError: if the Config is invalid
+            MANIP_ValidationError: if the Config is invalid
         """
 
 @grepr_dataclass(grepr_fields=["gen_opcode_info_dir", "js_fetch_interval", "node_js_exec_timeout", "is_trusted_extension_origin_handler"])
@@ -61,18 +61,18 @@ class ExtInfoGenConfig(ConfigBase):
     
     def validate(self, path: list) -> None:
         """
-        Ensure a ExtInfoGenConfig is valid, raise PP_ValidationError if not
+        Ensure a ExtInfoGenConfig is valid, raise MANIP_ValidationError if not
         
         Args:
             path: the path from the top of the config tree to itself. Used for better error messages
         
         Raises:
-            PP_ValidationError: if the ExtInfoGenConfig is invalid
-            PP_InvalidDirPathError: if the extension opcode info dir is invalid
+            MANIP_ValidationError: if the ExtInfoGenConfig is invalid
+            MANIP_InvalidDirPathError: if the extension opcode info dir is invalid
         """
         AA_TYPE(self, path, "gen_opcode_info_dir", str) # TODO: possibly add check if path is valid
         if not is_valid_directory_path(self.gen_opcode_info_dir):
-            raise PP_InvalidDirPathError("Invalid extension opcode info directory: {self.gen_opcode_info_dir}")
+            raise MANIP_InvalidDirPathError("Invalid extension opcode info directory: {self.gen_opcode_info_dir}")
         AA_TYPE(self, path, "js_fetch_interval", timedelta)
         AA_TYPE(self, path, "node_js_exec_timeout", float)
         AA_NONE_OR_CALLABLE(self, path, "is_trusted_extension_origin_handler")
@@ -88,13 +88,13 @@ class ValidationConfig(ConfigBase):
 
     def validate(self, path: list) -> None:
         """
-        Ensure a ValidationConfig is valid, raise PP_ValidationError if not
+        Ensure a ValidationConfig is valid, raise MANIP_ValidationError if not
         
         Args:
             path: the path from the top of the config tree to itself. Used for better error messages
         
         Raises:
-            PP_ValidationError: if the ValidationConfig is invalid
+            MANIP_ValidationError: if the ValidationConfig is invalid
         """
         AA_TYPE(self, path, "raise_if_monitor_position_outside_stage", bool)
         AA_TYPE(self, path, "raise_if_monitor_bigger_then_stage", bool)
@@ -112,13 +112,13 @@ class PlatformMetaConfig(ConfigBase):
 
     def validate(self, path: list) -> None:
         """
-        Ensure a PlatformMetaConfig is valid, raise PP_ValidationError if not
+        Ensure a PlatformMetaConfig is valid, raise MANIP_ValidationError if not
         
         Args:
             path: the path from the top of the config tree to itself. Used for better error messages
         
         Raises:
-            PP_ValidationError: if the PlatformMetaConfig is invalid
+            MANIP_ValidationError: if the PlatformMetaConfig is invalid
         """
         AA_TYPE(self, path, "scratch_semver", str) # TODO: possibly implement stricter validation
         AA_TYPE(self, path, "scratch_vm"    , str)
@@ -136,13 +136,13 @@ class MasterConfig(ConfigBase):
 
     def validate(self, path: list = []) -> None:
         """
-        Ensure a MasterConfig is valid, raise PP_ValidationError if not
+        Ensure a MasterConfig is valid, raise MANIP_ValidationError if not
         
         Args:
             path: the path from the top of the config tree to itself. Used for better error messages
         
         Raises:
-            PP_ValidationError: if the MasterConfig is invalid
+            MANIP_ValidationError: if the MasterConfig is invalid
         """
         AA_TYPE(self, path, "ext_info_gen" , ExtInfoGenConfig  )
         AA_TYPE(self, path, "validation"   , ValidationConfig  )

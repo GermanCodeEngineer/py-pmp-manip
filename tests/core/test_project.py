@@ -5,8 +5,8 @@ from uuid   import uuid4
 from pmp_manip.utility            import (
     gdumps,
     KeyReprDict,
-    PP_ThanksError, PP_TypeValidationError, PP_RangeValidationError, 
-    PP_SameValueTwiceError, PP_SpriteLayerStackError,
+    MANIP_ThanksError, MANIP_TypeValidationError, MANIP_RangeValidationError, 
+    MANIP_SameValueTwiceError, MANIP_SpriteLayerStackError,
 )
 from pmp_manip.opcode_info.data import info_api
 
@@ -54,7 +54,7 @@ def test_FRProject_from_file():
 
 def test_FRProject_post_init():
     ... # TODO
-    #with raises(PP_ThanksError):
+    #with raises(MANIP_ThanksError):
     #    FRProject.from_data(
     #        data=PROJECT_DATA | {"extensionData": 7}, 
     #        asset_files=PROJECT_ASSET_FILES,
@@ -192,25 +192,25 @@ def test_SRProject_validate():
     execute_attr_validation_tests(
         obj=srproject,
         attr_tests=[
-            ("stage", 5, PP_TypeValidationError),
-            ("sprites", (), PP_TypeValidationError),
-            ("sprites", [6.7], PP_TypeValidationError),
-            ("sprite_layer_stack", None, PP_TypeValidationError),
-            ("sprite_layer_stack", [None], PP_TypeValidationError),
-            ("sprite_layer_stack", [uuid4(), uuid4()], PP_RangeValidationError), # must have exactly 1 item
-            ("all_sprite_variables", {}, PP_TypeValidationError),
-            ("all_sprite_variables", ["bye"], PP_TypeValidationError),
-            ("all_sprite_lists", set(), PP_TypeValidationError),
-            ("all_sprite_lists", [{}], PP_TypeValidationError),
-            ("tempo", 5.6, PP_TypeValidationError),
-            ("tempo", 10, PP_RangeValidationError), # too low
-            ("video_transparency", "invalid", PP_TypeValidationError),
-            ("video_state", "on", PP_TypeValidationError),
-            ("text_to_speech_language", "fr", PP_TypeValidationError),
-            ("global_monitors", (), PP_TypeValidationError),
-            ("global_monitors", [[]], PP_TypeValidationError),
-            ("extensions", 7, PP_TypeValidationError),
-            ("extensions", ["jgJSON"], PP_TypeValidationError),
+            ("stage", 5, MANIP_TypeValidationError),
+            ("sprites", (), MANIP_TypeValidationError),
+            ("sprites", [6.7], MANIP_TypeValidationError),
+            ("sprite_layer_stack", None, MANIP_TypeValidationError),
+            ("sprite_layer_stack", [None], MANIP_TypeValidationError),
+            ("sprite_layer_stack", [uuid4(), uuid4()], MANIP_RangeValidationError), # must have exactly 1 item
+            ("all_sprite_variables", {}, MANIP_TypeValidationError),
+            ("all_sprite_variables", ["bye"], MANIP_TypeValidationError),
+            ("all_sprite_lists", set(), MANIP_TypeValidationError),
+            ("all_sprite_lists", [{}], MANIP_TypeValidationError),
+            ("tempo", 5.6, MANIP_TypeValidationError),
+            ("tempo", 10, MANIP_RangeValidationError), # too low
+            ("video_transparency", "invalid", MANIP_TypeValidationError),
+            ("video_state", "on", MANIP_TypeValidationError),
+            ("text_to_speech_language", "fr", MANIP_TypeValidationError),
+            ("global_monitors", (), MANIP_TypeValidationError),
+            ("global_monitors", [[]], MANIP_TypeValidationError),
+            ("extensions", 7, MANIP_TypeValidationError),
+            ("extensions", ["jgJSON"], MANIP_TypeValidationError),
         ],
         validate_func=SRProject.validate,
         func_args=[info_api],
@@ -228,7 +228,7 @@ def test_SRProject_validate_same_sprite_name():
     sprite2 = SRSprite.create_empty(name="sprite1")
     srproject.sprites = [sprite1, sprite2]
     srproject.sprite_layer_stack = [sprite2.uuid, sprite1.uuid]
-    with raises(PP_SameValueTwiceError):
+    with raises(MANIP_SameValueTwiceError):
         srproject.validate(info_api)
 
 def test_SRProject_validate_sprites_same_sprite_uuid():
@@ -239,7 +239,7 @@ def test_SRProject_validate_sprites_same_sprite_uuid():
     sprite2.__dict__["uuid"] = uuid
     srproject.sprites = [sprite1, sprite2]
     srproject.sprite_layer_stack = [uuid, uuid]
-    with raises(PP_SameValueTwiceError):
+    with raises(MANIP_SameValueTwiceError):
         srproject._validate_sprites([], info_api)
 
 def test_SRProject_validate_sprites_invalid_layer_stack():
@@ -251,11 +251,11 @@ def test_SRProject_validate_sprites_invalid_layer_stack():
     srproject._validate_sprites([], info_api)
 
     srproject.sprite_layer_stack = [sprite1.uuid, uuid4()]
-    with raises(PP_SpriteLayerStackError):
+    with raises(MANIP_SpriteLayerStackError):
         srproject._validate_sprites([], info_api)
 
     srproject.sprite_layer_stack = [sprite1.uuid, sprite1.uuid]
-    with raises(PP_SameValueTwiceError):
+    with raises(MANIP_SameValueTwiceError):
         srproject._validate_sprites([], info_api)
     
 
@@ -276,7 +276,7 @@ def test_SRProject_validate_var_names_same_global():
         SRVariable(name="same var", current_value=5),
         SRVariable(name="same var", current_value=";)"),
     ]
-    with raises(PP_SameValueTwiceError):
+    with raises(MANIP_SameValueTwiceError):
         srproject._validate_var_names([])
 
 def test_SRProject_validate_var_names_same_inter():
@@ -285,7 +285,7 @@ def test_SRProject_validate_var_names_same_inter():
     sprite = SRSprite.create_empty(name="Sprite1")
     sprite.sprite_only_variables = [SRVariable(name="same var", current_value=")=")]
     srproject.sprites = [sprite]
-    with raises(PP_SameValueTwiceError):
+    with raises(MANIP_SameValueTwiceError):
         srproject._validate_var_names([])
 
 
@@ -306,7 +306,7 @@ def test_SRProject_validate_list_names_same_global():
         SRList(name="same list", current_value=[5]),
         SRList(name="same list", current_value=[";)"]),
     ]
-    with raises(PP_SameValueTwiceError):
+    with raises(MANIP_SameValueTwiceError):
         srproject._validate_list_names([])
 
 def test_SRProject_validate_list_names_same_inter():
@@ -315,7 +315,7 @@ def test_SRProject_validate_list_names_same_inter():
     sprite = SRSprite.create_empty(name="Sprite1")
     sprite.sprite_only_lists = [SRList(name="same var", current_value=[")=", "(="])]
     srproject.sprites = [sprite]
-    with raises(PP_SameValueTwiceError):
+    with raises(MANIP_SameValueTwiceError):
         srproject._validate_list_names([])
 
 
@@ -325,7 +325,7 @@ def test_SRProject_find_broadcast_messages():
 
 def test_SRProject_to_first_main():
     srproject = deepcopy(SR_PROJECT)
-    srproject.sprites[0].scripts = [] # pretend there are no blocks, because they can't be easily compared and are tested elsewhere
+    srproject.sprites[0].scripts = [] # pretend there are no blocks, because they can not be easily compared and are tested elsewhere
     expected_frproject = deepcopy(FR_PROJECT) 
     for target in expected_frproject.targets:
         target.costumes = [costume.to_second(PROJECT_ASSET_FILES).to_first()[0] for costume in target.costumes]

@@ -7,9 +7,9 @@ from typing       import Any
 from pmp_manip.config          import get_config, init_config, get_default_config
 from pmp_manip.utility         import (
     read_file_text, write_file_text, file_exists, enforce_argument_types, ContentFingerprint,
-    PP_Error, PP_FailedFileReadError, PP_FailedFileWriteError, PP_ThanksError, PP_ExtensionFetchError,
-    PP_DirectExtensionInfoExtractionError, PP_SafeExtensionInfoExtractionError,
-    PP_NoNodeJSInstalledError, PP_ExtensionInfoConvertionError,
+    MANIP_Error, MANIP_FailedFileReadError, MANIP_FailedFileWriteError, MANIP_ThanksError, MANIP_ExtensionFetchError,
+    MANIP_DirectExtensionInfoExtractionError, MANIP_SafeExtensionInfoExtractionError,
+    MANIP_NoNodeJSInstalledError, MANIP_ExtensionInfoConvertionError,
 )
 
 from pmp_manip.ext_info_gen.direct_extractor import extract_extension_info_directly
@@ -65,13 +65,13 @@ def _consider_state(dest_file_name: str, dest_file_path: str, cache: dict[str, d
         return STATUS_REGEN
     try:
         python_code = read_file_text(dest_file_path)
-    except PP_Error:
-        return STATUS_REGEN # we can't know if python code has changed, so regenerate
+    except MANIP_Error:
+        return STATUS_REGEN # we can not know if python code has changed, so regenerate
     file_cache = cache[dest_file_name]
     try:
         py_fingerprint = ContentFingerprint.from_json(file_cache["pyFingerprint"])
     except (TypeError, KeyError):
-        return STATUS_REGEN # we can't know if python code has changed, so regenerate
+        return STATUS_REGEN # we can not know if python code has changed, so regenerate
     
     if not py_fingerprint.matches(python_code): # if the python code was manipulated
         return STATUS_REGEN
@@ -82,7 +82,7 @@ def _consider_state(dest_file_name: str, dest_file_path: str, cache: dict[str, d
     try:
         last_update_time = datetime.fromisoformat(file_cache["lastUpdate"])
     except ValueError:
-        return STATUS_CHECK_JS # we can't know if last fetch is too long ago, assume worst case
+        return STATUS_CHECK_JS # we can not know if last fetch is too long ago, assume worst case
     
     timediff = (datetime.now(timezone.utc) - last_update_time)
     too_long_ago = (timediff > get_config().ext_info_gen.js_fetch_interval)
@@ -100,7 +100,7 @@ def _get_cache(cache_file_path: str) -> dict[str, dict[str, Any]]:
         return {}
     try:
         return loads(read_file_text(cache_file_path))
-    except (PP_FailedFileReadError, JSONDecodeError):
+    except (MANIP_FailedFileReadError, JSONDecodeError):
         return {}
 
 def _update_cache(
@@ -118,7 +118,7 @@ def _update_cache(
         py_code: the generated python code
     
     Raises:
-        PP_FailedFileWriteError: if the cache file couldn't be written
+        MANIP_FailedFileWriteError: if the cache file could not be written
     """
     if dest_file_name in old_cache:
         old_cache[dest_file_name]["lastUpdate"] = datetime.now(timezone.utc).isoformat()
@@ -132,8 +132,8 @@ def _update_cache(
     cache_str = dumps(cache, indent=4)
     try:
         write_file_text(cache_file_path, cache_str)
-    except PP_FailedFileWriteError as error:
-        raise PP_FailedFileWriteError(f"Couldn't update cache at {repr(cache_file_path)}: {error}") from error
+    except MANIP_FailedFileWriteError as error:
+        raise MANIP_FailedFileWriteError(f"Could not update cache at {cache_file_path!r}: {error}") from error
 
 @enforce_argument_types
 def generate_extension_info_py_file(
@@ -150,52 +150,52 @@ def generate_extension_info_py_file(
         bundle_errors: wether to bundle similar errors for more compact handling (see Raises)
     
     Raises (if bundled):
-        PP_ConfigurationError: if configuration has not been initialized
-        PP_NoNodeJSInstalledError(not bundled): if Node.js is not installed or not found in PATH
-        PP_ExtensionFetchError: if the extension code couldn't be fetched for some reason
-        PP_DirectExtensionInfoExtractionError: if the extension info couldn't be extracted through direct execution
-        PP_SafeExtensionInfoExtractionError: if the extension info couldn't be extracted through safe analysis
-        PP_ExtensionInfoConvertionError: if the extracted extension info couldn't be converted into the format of this project
-        PP_ThanksError(unlikely, not bundled): if a block argument uses the mysterious Scratch.ArgumentType.SEPERATOR
-        PP_FailedFileWriteError(unlikely): if the generated extension info file or cache file or their directory couldn't be written/created
+        MANIP_ConfigurationError: if configuration has not been initialized
+        MANIP_NoNodeJSInstalledError(not bundled): if Node.js is not installed or not found in PATH
+        MANIP_ExtensionFetchError: if the extension code could not be fetched for some reason
+        MANIP_DirectExtensionInfoExtractionError: if the extension info could not be extracted through direct execution
+        MANIP_SafeExtensionInfoExtractionError: if the extension info could not be extracted through safe analysis
+        MANIP_ExtensionInfoConvertionError: if the extracted extension info could not be converted into the format of this project
+        MANIP_ThanksError(unlikely, not bundled): if a block argument uses the mysterious Scratch.ArgumentType.SEPERATOR
+        MANIP_FailedFileWriteError(unlikely): if the generated extension info file or cache file or their directory could not be written/created
     
     Raises (if NOT bundled):
         ### created here or not bundled anyway:
-        PP_ConfigurationError: if configuration has not been initialized
-        PP_FailedFileWriteError(unlikely): if the cache file or generated extension info file or its directory couldn't be written/created
-        PP_NoNodeJSInstalledError(not bundled): if Node.js is not installed or not found in PATH
+        MANIP_ConfigurationError: if configuration has not been initialized
+        MANIP_FailedFileWriteError(unlikely): if the cache file or generated extension info file or its directory could not be written/created
+        MANIP_NoNodeJSInstalledError(not bundled): if Node.js is not installed or not found in PATH
         
-        ### inherited from fetch_js => PP_ExtensionFetchError if bundled
-        PP_InvalidExtensionCodeSourceError: If the source data URI, URL or file_path is invalid or if a file path is passed even tough tolerate_file_paths is False or if the passed value is an invalid source
-        PP_NetworkFetchError: For any network-related error (like 404 (not found))
-        PP_UnexpectedFetchError: For any other unexpected error while fetching URL
-        PP_FileNotFoundError: If the local source file does not exist
-        PP_FileFetchError: If the source file cannot be read
+        ### inherited from fetch_js => MANIP_ExtensionFetchError if bundled
+        MANIP_InvalidExtensionCodeSourceError: If the source data URI, URL or file_path is invalid or if a file path is passed even tough tolerate_file_paths is False or if the passed value is an invalid source
+        MANIP_NetworkFetchError: For any network-related error (like 404 (not found))
+        MANIP_UnexpectedFetchError: For any other unexpected error while fetching URL
+        MANIP_FileNotFoundError: If the local source file does not exist
+        MANIP_FileFetchError: If the source file cannot be read
         
-        ### inherited from extract_extension_info_directly => PP_DirectExtensionInfoExtractionError if bundled
-        PP_FailedFileWriteError(unlikely): if the JS code couldn't be written to a temporary file (eg. OS Error or Unicode Error)
-        PP_FailedFileDeleteError(unlikely): if the temporary Javscript file couldn't be deleted
-        PP_NoNodeJSInstalledError(not bundled): if Node.js is not installed or not found in PATH
-        PP_ExtensionExecutionTimeoutError: if the Node.js execution subprocess took too long
-        PP_ExtensionExecutionErrorInJavascript: if an error occurs inside the actual extension code
-        PP_UnexpectedExtensionExecutionError: if some other error raises during the subprocess call (eg. Permission or OS Error)
-        PP_ExtensionJSONDecodeError(unlikely): if the json output of the subprocess is invalid
+        ### inherited from extract_extension_info_directly => MANIP_DirectExtensionInfoExtractionError if bundled
+        MANIP_FailedFileWriteError(unlikely): if the JS code could not be written to a temporary file (eg. OS Error or Unicode Error)
+        MANIP_FailedFileDeleteError(unlikely): if the temporary Javscript file could not be deleted
+        MANIP_NoNodeJSInstalledError(not bundled): if Node.js is not installed or not found in PATH
+        MANIP_ExtensionExecutionTimeoutError: if the Node.js execution subprocess took too long
+        MANIP_ExtensionExecutionErrorInJavascript: if an error occurs inside the actual extension code
+        MANIP_UnexpectedExtensionExecutionError: if some other error raises during the subprocess call (eg. Permission or OS Error)
+        MANIP_ExtensionJSONDecodeError(unlikely): if the json output of the subprocess is invalid
 
-        ### inherited from extract_extension_info_safely => PP_SafeExtensionInfoExtractionError if bundled
-        PP_InvalidExtensionCodeSyntaxError: if the extension code is syntactically invalid 
-        PP_BadExtensionCodeFormatError: if the extension code is badly formatted, so that the extension information cannot be extracted
-        PP_InvalidTranslationMessageError: if Scratch.translate is called with an invalid message
+        ### inherited from extract_extension_info_safely => MANIP_SafeExtensionInfoExtractionError if bundled
+        MANIP_InvalidExtensionCodeSyntaxError: if the extension code is syntactically invalid 
+        MANIP_BadExtensionCodeFormatError: if the extension code is badly formatted, so that the extension information cannot be extracted
+        MANIP_InvalidTranslationMessageError: if Scratch.translate is called with an invalid message
         
-        ### inherited from generate_opcode_info_group => PP_ExtensionInfoConvertionError if bundled
-        PP_UnknownExtensionAttributeError: if the extension or a block has an unknown attribute
-        PP_InvalidCustomMenuError: if the information about a menu is invalid
-        PP_InvalidCustomBlockError: if information of a block is invalid
-        PP_NotImplementedError: if an XML block is included in the extension info
-        PP_ThanksError(unlikely, not bundled): if a block argument uses the mysterious Scratch.ArgumentType.SEPERATOR
+        ### inherited from generate_opcode_info_group => MANIP_ExtensionInfoConvertionError if bundled
+        MANIP_UnknownExtensionAttributeError: if the extension or a block has an unknown attribute
+        MANIP_InvalidCustomMenuError: if the information about a menu is invalid
+        MANIP_InvalidCustomBlockError: if information of a block is invalid
+        MANIP_NotImplementedError: if an XML block is included in the extension info
+        MANIP_ThanksError(unlikely, not bundled): if a block argument uses the mysterious Scratch.ArgumentType.SEPERATOR
 
     Warnings:
-        PP_UnexpectedPropertyAccessWarning: if a property of 'this' is accessed in the getInfo method of the extension code in safe analysis
-        PP_UnexpectedNotPossibleFeatureWarning: if an impossible to implement feature is used (eg. ternary expr) in the getInfo method of the extension code in safe analysis
+        MANIP_UnexpectedPropertyAccessWarning: if a property of 'this' is accessed in the getInfo method of the extension code in safe analysis
+        MANIP_UnexpectedNotPossibleFeatureWarning: if an impossible to implement feature is used (eg. ternary expr) in the getInfo method of the extension code in safe analysis
     """
     cfg = get_config()
     logger = getLogger(__name__)
@@ -217,9 +217,9 @@ def generate_extension_info_py_file(
     
     try:
         js_code = fetch_js_code(source, tolerate_file_path)
-    except PP_Error as error:
+    except MANIP_Error as error:
         if bundle_errors:
-            raise PP_ExtensionFetchError(f"Failed to fetch extension code: {error}") from error
+            raise MANIP_ExtensionFetchError(f"Failed to fetch extension code: {error}") from error
         else:
             raise
     
@@ -238,30 +238,30 @@ def generate_extension_info_py_file(
         logger.info("Extracting extension info through direct execution")
         try:
             extension_info = extract_extension_info_directly(js_code)
-        except PP_NoNodeJSInstalledError:
+        except MANIP_NoNodeJSInstalledError:
             raise
-        except PP_Error as error:
+        except MANIP_Error as error:
             if bundle_errors:
-                raise PP_DirectExtensionInfoExtractionError(f"Failed to extract extension info through direct execution: {error}") from error
+                raise MANIP_DirectExtensionInfoExtractionError(f"Failed to extract extension info through direct execution: {error}") from error
             else:
                 raise
     else:
         logger.info("Extracting extension info through safe static analysis")
         try:
             extension_info = extract_extension_info_safely(js_code)
-        except PP_Error as error:
+        except MANIP_Error as error:
             if bundle_errors:
-                raise PP_SafeExtensionInfoExtractionError(f"Failed to extract extension info through safe analysis: {error}") from error
+                raise MANIP_SafeExtensionInfoExtractionError(f"Failed to extract extension info through safe analysis: {error}") from error
             else:
                 raise
     
     try:
         info_group, input_type_cls, dropdown_type_cls = generate_opcode_info_group(extension_info)
-    except PP_ThanksError:
+    except MANIP_ThanksError:
         raise
-    except PP_Error as error:
+    except MANIP_Error as error:
         if bundle_errors:
-            raise PP_ExtensionInfoConvertionError(f"Failed to convert extension info into required format: {error}") from error
+            raise MANIP_ExtensionInfoConvertionError(f"Failed to convert extension info into required format: {error}") from error
         else:
             raise
     
@@ -269,12 +269,12 @@ def generate_extension_info_py_file(
     try:
         makedirs(cfg.ext_info_gen.gen_opcode_info_dir, exist_ok=True)
     except OSError as error:
-        raise PP_FailedFileWriteError(f"Couldn't create directory of the extension info file at {cfg.ext_info_gen.gen_opcode_info_dir}. Is your configuration correct?: {error}") from error
+        raise MANIP_FailedFileWriteError(f"Could not create directory of the extension info file at {cfg.ext_info_gen.gen_opcode_info_dir!r}. Is your configuration correct?: {error}") from error
 
     try:
         write_file_text(dest_file_path, file_code)
-    except PP_FailedFileWriteError as error:
-        raise PP_FailedFileWriteError(f"Couldn't write extension info file to {cache_file_path}. Is your configuration correct?: {error}") from error
+    except MANIP_FailedFileWriteError as error:
+        raise MANIP_FailedFileWriteError(f"Could not write extension info file to {cache_file_path!r}. Is your configuration correct?: {error}") from error
 
     logger.info("Successfully (re-)generated python extension info file")
     _update_cache(cache, cache_file_path, dest_file_name, js_code, file_code)

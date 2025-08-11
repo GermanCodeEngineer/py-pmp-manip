@@ -8,7 +8,7 @@ from pmp_manip.important_consts import SHA256_SEC_MAIN_ARGUMENT_NAME
 from pmp_manip.utility          import (
     grepr_dataclass, string_to_sha256, gdumps,
     AA_TYPE, AA_HEX_COLOR,
-    PP_ThanksError, PP_ConversionError, PP_DeserializationError, 
+    MANIP_ThanksError, MANIP_ConversionError, MANIP_DeserializationError, 
 )
 
 
@@ -77,17 +77,17 @@ class FRMutation(ABC):
             data: the json data
 
         Raises:
-            PP_DeserializationError: if no or mulitple matching block mutation subclasses are found
+            MANIP_DeserializationError: if no or mulitple matching block mutation subclasses are found
         """
         subclass_matches = FRMutation._find_from_data_subclasses(data)
         if   len(subclass_matches) >= 2:
             subclasses_string = ", ".join([cls.__name__ for cls in subclass_matches])
-            raise PP_DeserializationError(f"Found multiple matching block mutation subclasses"
+            raise MANIP_DeserializationError(f"Found multiple matching block mutation subclasses"
                 f"({subclasses_string}) for data: {data}")
         elif len(subclass_matches) == 1:
             return subclass_matches[0].from_data(data)
         elif len(subclass_matches) == 0:
-            raise PP_DeserializationError(f"Couldn't find matching block mutation subclass for data: {data}")
+            raise MANIP_DeserializationError(f"Could not find matching block mutation subclass for data: {data}")
 
     @abstractmethod
     def to_data(self) -> dict[str, Any]:
@@ -106,7 +106,7 @@ class FRMutation(ABC):
             None
         """
         if (self.tag_name != "mutation") or (self.children != []):
-            raise PP_ThanksError()
+            raise MANIP_ThanksError()
 
     @abstractmethod
     def to_second(self, fti_if: "FirstToInterIF") -> "SRMutation":
@@ -127,9 +127,9 @@ class FRCustomBlockArgumentMutation(FRMutation, required_properties={"color"}, o
     """
     
     color: tuple[str, str, str]
-    warp: bool = False # shouldn't exist and if present seems to be False
-    edited: bool = False # shouldn't exist and if present seems to be False
-    has_next: bool = False # shouldn't exist and if present seems to be False
+    warp: bool = False # should not exist and if present seems to be False
+    edited: bool = False # should not exist and if present seems to be False
+    has_next: bool = False # should not exist and if present seems to be False
 
     _argument_name: str | None = field(init=False)
     
@@ -145,7 +145,7 @@ class FRCustomBlockArgumentMutation(FRMutation, required_properties={"color"}, o
             the FRCustomBlockArgumentMutation
         
         Raises:
-            PP_DeserializationError: if 'warp', 'edited' or 'hasnext' is neither False nor unset
+            MANIP_DeserializationError: if 'warp', 'edited' or 'hasnext' is neither False nor unset
         """
         warp     = data.get("warp"   , False)
         edited   = data.get("edited" , False)
@@ -153,13 +153,13 @@ class FRCustomBlockArgumentMutation(FRMutation, required_properties={"color"}, o
         
         if   warp == False: pass
         elif warp == gdumps(False): warp = False
-        else: raise PP_DeserializationError(f"Invalid value for 'warp', expected it to either not be set or to be False: {warp}")
+        else: raise MANIP_DeserializationError(f"Invalid value for 'warp', expected it to either not be set or to be False: {warp!r}")
         if   edited == False: pass
         elif edited == gdumps(False): edited = False
-        else: raise PP_DeserializationError(f"Invalid value for 'edited', expected it to either not be set or to be False: {edited}")
+        else: raise MANIP_DeserializationError(f"Invalid value for 'edited', expected it to either not be set or to be False: {edited!r}")
         if   has_next == False: pass
         elif has_next == gdumps(False): has_next = False
-        else: raise PP_DeserializationError(f"Invalid value for 'hasnext', expected it to either not be set or to be False: {has_next}")
+        else: raise MANIP_DeserializationError(f"Invalid value for 'hasnext', expected it to either not be set or to be False: {has_next!r}")
         
         return cls(
             tag_name = data["tagName" ],
@@ -197,7 +197,7 @@ class FRCustomBlockArgumentMutation(FRMutation, required_properties={"color"}, o
     def store_argument_name(self, name: str) -> None:
         """
         Temporarily store the argument name so it can be used later when the step method is called.
-        I know doing it this way isn't very great; there should be no huge consequences though
+        I know doing it this way is not very great; there should be no huge consequences though
         
         Args:
             name: the argument name
@@ -218,7 +218,7 @@ class FRCustomBlockArgumentMutation(FRMutation, required_properties={"color"}, o
             the SRCustomBlockArgumentMutation
         """
         if getattr(self, "_argument_name", None) is None:
-            raise PP_ConversionError("Argument name must be set before SR conversion")
+            raise MANIP_ConversionError("Argument name must be set before SR conversion")
         return SRCustomBlockArgumentMutation(
             argument_name   = self._argument_name,
             main_color      = self.color[0],
@@ -260,7 +260,7 @@ class FRCustomBlockMutation(FRMutation,
             warp = data["warp"]
         elif isinstance(data["warp"], str):
             warp = loads(data["warp"])
-        else: raise PP_DeserializationError(f"Invalid value for 'warp': {data['warp']}")
+        else: raise MANIP_DeserializationError(f"Invalid value for 'warp': {data['warp']}")
         return cls(
             tag_name          = data["tagName" ],
             children          = data["children"],
@@ -350,7 +350,7 @@ class FRCustomBlockCallMutation(FRMutation,
             warp = data["warp"]
         elif isinstance(data["warp"], str):
             warp = loads(data["warp"])
-        else: raise PP_DeserializationError(f"Invalid value for warp: {data['warp']}")
+        else: raise MANIP_DeserializationError(f"Invalid value for 'warp': {data['warp']}")
         return cls(
             tag_name     = data["tagName" ],
             children     = data["children"],
@@ -462,7 +462,7 @@ class SRMutation(ABC):
     @abstractmethod
     def validate(self, path: list) -> None:
         """
-        Ensure the SRMutation is valid, raise PP_ValidationError if not
+        Ensure the SRMutation is valid, raise MANIP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -471,7 +471,7 @@ class SRMutation(ABC):
             None
         
         Raises:
-            PP_ValidationError: if the SRMutation is invalid
+            MANIP_ValidationError: if the SRMutation is invalid
         """
 
     @abstractmethod
@@ -501,7 +501,7 @@ class SRCustomBlockArgumentMutation(SRMutation):
 
     def validate(self, path: list) -> None:
         """
-        Ensure the SRCustomBlockArgumentMutation is valid, raise PP_ValidationError if not
+        Ensure the SRCustomBlockArgumentMutation is valid, raise MANIP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -510,7 +510,7 @@ class SRCustomBlockArgumentMutation(SRMutation):
             None
         
         Raises:
-            PP_ValidationError: if the SRCustomBlockArgumentMutation is invalid
+            MANIP_ValidationError: if the SRCustomBlockArgumentMutation is invalid
         """
         AA_TYPE(self, path, "argument_name", str)
         AA_HEX_COLOR(self, path, "main_color")
@@ -551,7 +551,7 @@ class SRCustomBlockMutation(SRMutation):
     
     def validate(self, path: list) -> None:
         """
-        Ensure the SRCustomBlockMutation is valid, raise PP_ValidationError if not
+        Ensure the SRCustomBlockMutation is valid, raise MANIP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -560,7 +560,7 @@ class SRCustomBlockMutation(SRMutation):
             None
         
         Raises:
-            PP_ValidationError: if the SRCustomBlockMutation is invalid
+            MANIP_ValidationError: if the SRCustomBlockMutation is invalid
         """
         AA_TYPE(self, path, "custom_opcode", SRCustomBlockOpcode)
         AA_TYPE(self, path, "no_screen_refresh", bool)
@@ -616,7 +616,7 @@ class SRCustomBlockCallMutation(SRMutation):
     
     def validate(self, path: list) -> None:
         """
-        Ensure the SRCustomBlockCallMutation is valid, raise PP_ValidationError if not
+        Ensure the SRCustomBlockCallMutation is valid, raise MANIP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -625,7 +625,7 @@ class SRCustomBlockCallMutation(SRMutation):
             None
         
         Raises:
-            PP_ValidationError: if the SRCustomBlockCallMutation is invalid
+            MANIP_ValidationError: if the SRCustomBlockCallMutation is invalid
         """
         AA_TYPE(self, path, "custom_opcode", SRCustomBlockOpcode)
 
@@ -677,7 +677,7 @@ class SRStopScriptMutation(SRMutation):
 
     def validate(self, path: list) -> None:
         """
-        Ensure the SRStopScriptMutation is valid, raise PP_ValidationError if not
+        Ensure the SRStopScriptMutation is valid, raise MANIP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -686,7 +686,7 @@ class SRStopScriptMutation(SRMutation):
             None
         
         Raises:
-            PP_ValidationError: if the SRStopScriptMutation is invalid
+            MANIP_ValidationError: if the SRStopScriptMutation is invalid
         """
         AA_TYPE(self, path, "is_ending_statement", bool)
 

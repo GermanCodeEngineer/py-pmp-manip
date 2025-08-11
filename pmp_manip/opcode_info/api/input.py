@@ -21,7 +21,7 @@ class InputMode(GEnum):
     def can_be_missing(self) -> bool:
         """
         Return wether an input of this mode is allowed to be missing. 
-        (I didn't come up with some inputs just disappearing when empty; go ask the Scratch Team)
+        (I did not come up with some inputs just disappearing when empty; go ask the Scratch Team)
 
         Returns:
             wether an input of this mode is allowed to be missing

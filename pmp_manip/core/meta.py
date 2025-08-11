@@ -1,7 +1,7 @@
 from typing import Any
 
 from pmp_manip.config  import get_config
-from pmp_manip.utility import grepr_dataclass, PP_ThanksError
+from pmp_manip.utility import grepr_dataclass, MANIP_ThanksError
 
 
 PENGUINMOD_PLATFORM_META_DATA = {
@@ -103,8 +103,8 @@ class FRMeta:
         """
         cfg = get_config()
         if (self.semver != cfg.platform_meta.scratch_semver) or (self.vm not in {cfg.platform_meta.scratch_vm, cfg.platform_meta.penguinmod_vm}):
-            # agent can be anything i don't care
-            raise PP_ThanksError() # project must be older or newer
+            # agent can be anything i do not care
+            raise MANIP_ThanksError() # project must be older or newer
 
 @grepr_dataclass(grepr_fields=["name", "url", "version"])
 class FRPenguinModPlatformMeta:
@@ -158,7 +158,7 @@ class FRPenguinModPlatformMeta:
             or (self.url != PENGUINMOD_PLATFORM_META_DATA["url"])
             or (self.version != PENGUINMOD_PLATFORM_META_DATA["version"])
         ):
-            raise PP_ThanksError()
+            raise MANIP_ThanksError()
 
 
 __all__ = ["FRMeta", "FRPenguinModPlatformMeta"]

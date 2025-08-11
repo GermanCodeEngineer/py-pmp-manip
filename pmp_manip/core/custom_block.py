@@ -4,7 +4,7 @@ from pmp_manip.opcode_info.api import InputType, BuiltinInputType, InputInfo, Op
 from pmp_manip.utility         import (
     grepr_dataclass, GEnum,
     AA_TYPE, AA_TUPLE_OF_TYPES, AA_MIN_LEN, AA_NOT_EQUAL,
-    PP_SameValueTwiceError, PP_ConversionError,
+    MANIP_SameValueTwiceError, MANIP_ConversionError,
 )
 
 @grepr_dataclass(grepr_fields=["segments"], frozen=True, unsafe_hash=True)
@@ -99,8 +99,8 @@ class SRCustomBlockOpcode:
             None
         
         Raises:
-            PP_ValidationError: if the SRCustomBlockOpcode is invalid
-            PP_SameValueTwiceError(PP_ValidationError): if two arguments have the same name
+            MANIP_ValidationError: if the SRCustomBlockOpcode is invalid
+            MANIP_SameValueTwiceError(MANIP_ValidationError): if two arguments have the same name
         """
         AA_TUPLE_OF_TYPES(self, path, "segments", (str, SRCustomBlockArgument))
         AA_MIN_LEN(self, path, "segments", min_len=1)
@@ -112,8 +112,8 @@ class SRCustomBlockOpcode:
                 segment.validate(current_path)
                 if segment.name in names:
                     other_path = names[segment.name]
-                    raise PP_SameValueTwiceError(other_path, current_path, 
-                        f"Two arguments of a {self.__class__.__name__} mustn't have the same name",
+                    raise MANIP_SameValueTwiceError(other_path, current_path, 
+                        f"Two arguments of a {self.__class__.__name__} must not have the same name",
                     )
                 names[segment.name] = current_path
 
@@ -137,7 +137,7 @@ class SRCustomBlockArgument:
             None
         
         Raises:
-            PP_ValidationError: if the SRCustomBlockArgument is invalid
+            MANIP_ValidationError: if the SRCustomBlockArgument is invalid
         """
         AA_TYPE(self, path, "name", str)
         AA_NOT_EQUAL(self, path, "name", value="")
@@ -182,7 +182,7 @@ class SRCustomBlockOptype(GEnum):
         for value, optype_candidate in cls._value2member_map_.items():
             if value[1] == code:
                 return optype_candidate
-        raise PP_ConversionError(f"Couldn't find video state enum for video state code: {repr(code)}")
+        raise MANIP_ConversionError(f"Could not find video state enum for video state code: {code}")
 
     def to_code(self) -> str:
         """

@@ -1,4 +1,4 @@
-from pmp_manip.utility import GEnum, PP_ConversionError
+from pmp_manip.utility import GEnum, MANIP_ConversionError
 
 
 class SRCodeEnum(GEnum):
@@ -19,7 +19,7 @@ class SRCodeEnum(GEnum):
         """
         if code in cls._value2member_map_:
             return cls._value2member_map_[code]
-        raise PP_ConversionError(f"Couldn't find an enum for code: {repr(code)}")
+        raise MANIP_ConversionError(f"Could not find an enum for code: {code}")
 
     def to_code(self) -> str:
         """

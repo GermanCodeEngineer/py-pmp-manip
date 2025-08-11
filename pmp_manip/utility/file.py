@@ -2,8 +2,8 @@ import os
 import zipfile
 
 from pmp_manip.utility.errors import (
-    PP_TypeError, PP_ValueError, 
-    PP_OSError, PP_FileNotFoundError, PP_FailedFileWriteError, PP_FailedFileReadError, PP_FailedFileDeleteError,
+    MANIP_TypeError, MANIP_ValueError, 
+    MANIP_OSError, MANIP_FileNotFoundError, MANIP_FailedFileWriteError, MANIP_FailedFileReadError, MANIP_FailedFileDeleteError,
 )
 
 def read_all_files_of_zip(zip_path: str) -> dict[str, bytes]:
@@ -45,21 +45,21 @@ def read_file_text(file_path: str, encoding: str = "utf-8") -> str:
         str: The contents of the file.
 
     Raises:
-        PP_TypeError: If an argument is of the wrong type
-        PP_FileNotFoundError: If the file was not found
-        PP_FailedFileReadError: For OS-related errors like, closed, permission denied, invalid path, or decoding failures
+        MANIP_TypeError: If an argument is of the wrong type
+        MANIP_FileNotFoundError: If the file was not found
+        MANIP_FailedFileReadError: For OS-related errors like, closed, permission denied, invalid path, or decoding failures
     """
     try:
         with open(file_path, "r", encoding=encoding) as file:
             return file.read()
 
     except TypeError as error:
-        raise PP_TypeError(str(error)) from error
+        raise MANIP_TypeError(str(error)) from error
     except FileNotFoundError as error:
-        raise PP_FileNotFoundError(f"Failed to read, file does not exist: {error}") from error
+        raise MANIP_FileNotFoundError(f"Failed to read, file does not exist: {error}") from error
     except (ValueError, PermissionError, IsADirectoryError,
             NotADirectoryError, UnicodeDecodeError, OSError) as error:
-        raise PP_FailedFileReadError(f"Failed to read from {repr(file_path)}") from error
+        raise MANIP_FailedFileReadError(f"Failed to read from {file_path!r}") from error
 
 def write_file_text(file_path: str, text: str, encoding: str = "utf-8") -> None:
 
@@ -72,26 +72,26 @@ def write_file_text(file_path: str, text: str, encoding: str = "utf-8") -> None:
         encoding: the text encoding to use
     
     Raises:
-        PP_TypeError: If `text` is not a string or another type-related issue occurs
-        PP_ValueError: If the file is in an invalid state or mode for writing
-        PP_FailedFileWriteError: If an OS-level error occurs (e.g., file not found, permission denied,
+        MANIP_TypeError: If `text` is not a string or another type-related issue occurs
+        MANIP_ValueError: If the file is in an invalid state or mode for writing
+        MANIP_FailedFileWriteError: If an OS-level error occurs (e.g., file not found, permission denied,
                                  is a directory, or other I/O-related failure) or `text` is not compatible with `encoding`
     """
     if not isinstance(text, str):
-        raise PP_TypeError(f"'text' argument must be a str, not {type(text).__name__}")
+        raise MANIP_TypeError(f"'text' argument must be a str, not {type(text).__name__!r}")
 
     try:
         with open(file_path, mode="w", encoding=encoding) as file:
             file.write(text)
 
     except TypeError as error:
-        raise PP_TypeError(str(error)) from error
+        raise MANIP_TypeError(str(error)) from error
     except ValueError as error:
-        raise PP_ValueError(str(error)) from error
+        raise MANIP_ValueError(str(error)) from error
     except UnicodeDecodeError as error:
-        raise PP_FailedFileWriteError(f"Failed to write to {repr(file_path)} because of encoding failure: {error}") from error
+        raise MANIP_FailedFileWriteError(f"Failed to write to {file_path!r} because of encoding failure: {error}") from error
     except (FileNotFoundError, OSError, PermissionError, IsADirectoryError) as error:
-        raise PP_FailedFileWriteError(f"Failed to write to {repr(file_path)}") from error
+        raise MANIP_FailedFileWriteError(f"Failed to write to {file_path!r}") from error
 
 def delete_file(file_path: str) -> None:
     """
@@ -101,23 +101,23 @@ def delete_file(file_path: str) -> None:
         file_path: Path to the file to delete
 
     Raises:
-        PP_TypeError: If `file_path` is not a string
-        PP_ValueError: If `file_path` is invalid or not a proper file path
-        PP_FailedFileDeleteError: If an OS-level error occurs (e.g., file not found, permission denied,
+        MANIP_TypeError: If `file_path` is not a string
+        MANIP_ValueError: If `file_path` is invalid or not a proper file path
+        MANIP_FailedFileDeleteError: If an OS-level error occurs (e.g., file not found, permission denied,
                                   is a directory, or other I/O-related failure)
     """
     if not isinstance(file_path, str):
-        raise PP_TypeError(f"'file_path' must be a str, not {type(file_path).__name__}")
+        raise MANIP_TypeError(f"'file_path' must be a str, not {type(file_path).__name__!r}")
 
     try:
         os.remove(file_path)
 
     except TypeError as error:
-        raise PP_TypeError(str(error)) from error
+        raise MANIP_TypeError(str(error)) from error
     except ValueError as error:
-        raise PP_ValueError(str(error)) from error
+        raise MANIP_ValueError(str(error)) from error
     except (FileNotFoundError, PermissionError, IsADirectoryError, OSError) as error:
-        raise PP_FailedFileDeleteError(f"Failed to delete file at {repr(file_path)}") from error
+        raise MANIP_FailedFileDeleteError(f"Failed to delete file at {file_path!r}") from error
 
 def create_zip_file(zip_path: str, contents: dict[str, bytes]) -> None:
     """
@@ -144,11 +144,11 @@ def file_exists(file_path: str) -> bool:
         return os.path.exists(file_path)
     
     except TypeError as error:
-        raise PP_TypeError(str(error)) from error
+        raise MANIP_TypeError(str(error)) from error
     except ValueError as error:
-        raise PP_ValueError(str(error)) from error
+        raise MANIP_ValueError(str(error)) from error
     except OSError as error:
-        raise PP_OSError(str(error)) from error
+        raise MANIP_OSError(str(error)) from error
 
 
 __all__ = ["read_all_files_of_zip", "read_file_text", "write_file_text", "delete_file", "create_zip_file", "file_exists"]

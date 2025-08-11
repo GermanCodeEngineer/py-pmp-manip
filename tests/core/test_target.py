@@ -8,8 +8,8 @@ from pmp_manip.opcode_info.api  import DropdownValueKind
 from pmp_manip.opcode_info.data import info_api
 from pmp_manip.utility          import (
     string_to_sha256, lists_equal_ignore_order, xml_equal,
-    PP_ThanksError, PP_ConversionError, PP_TypeValidationError, PP_RangeValidationError, 
-    PP_SameValueTwiceError, PP_InvalidValueError
+    MANIP_ThanksError, MANIP_ConversionError, MANIP_TypeValidationError, MANIP_RangeValidationError, 
+    MANIP_SameValueTwiceError, MANIP_InvalidValueError
 )
 
 from pmp_manip.core.asset           import SRVectorCostume, SRSound
@@ -86,7 +86,7 @@ def test_FRTarget_post_init():
         def to_second(self, asset_files, info_api):
             pass
 
-    with raises(PP_ThanksError):
+    with raises(MANIP_ThanksError):
         DummyFRTarget(
             is_stage=...,
             name=...,
@@ -190,12 +190,12 @@ def test_FRTarget_to_second_variables_lists():
 def test_FRTarget_to_second_variables_lists_invalid():
     frsprite = copy(FR_STAGE)
     frsprite.variables = {"b-bPdkv!fE]yunTdvpQi": ("some other var", None, None)}
-    with raises(PP_ConversionError):
+    with raises(MANIP_ConversionError):
         frsprite._to_second_variables_lists()
 
     frsprite = copy(FR_STAGE)
     frsprite.lists = {"LSfpvIEwXe-upUsR|ypy": ("some other list", None, None)}
-    with raises(PP_ConversionError):
+    with raises(MANIP_ConversionError):
         frsprite._to_second_variables_lists()
 
 
@@ -261,20 +261,20 @@ def test_SRTarget_validate():
     execute_attr_validation_tests(
         obj=srtarget,
         attr_tests=[
-            ("scripts", 5, PP_TypeValidationError),
-            ("scripts", [5], PP_TypeValidationError),
-            ("comments", (), PP_TypeValidationError),
-            ("comments", [()], PP_TypeValidationError),
-            ("costumes", {}, PP_TypeValidationError),
-            ("costumes", [], PP_RangeValidationError),
-            ("costumes", [{}], PP_TypeValidationError),
-            ("costume_index", "costume1", PP_TypeValidationError),
-            ("costume_index", 3, PP_RangeValidationError),
-            ("sounds", "a str", PP_TypeValidationError),
-            ("sounds", ["a str"], PP_TypeValidationError),
-            ("volume", [], PP_TypeValidationError),
-            ("volume", -5, PP_RangeValidationError),
-            ("volume", 105, PP_RangeValidationError),
+            ("scripts", 5, MANIP_TypeValidationError),
+            ("scripts", [5], MANIP_TypeValidationError),
+            ("comments", (), MANIP_TypeValidationError),
+            ("comments", [()], MANIP_TypeValidationError),
+            ("costumes", {}, MANIP_TypeValidationError),
+            ("costumes", [], MANIP_RangeValidationError),
+            ("costumes", [{}], MANIP_TypeValidationError),
+            ("costume_index", "costume1", MANIP_TypeValidationError),
+            ("costume_index", 3, MANIP_RangeValidationError),
+            ("sounds", "a str", MANIP_TypeValidationError),
+            ("sounds", ["a str"], MANIP_TypeValidationError),
+            ("volume", [], MANIP_TypeValidationError),
+            ("volume", -5, MANIP_RangeValidationError),
+            ("volume", 105, MANIP_RangeValidationError),
         ],
         validate_func=SRTarget.validate,
         func_args=[[], info_api],
@@ -296,7 +296,7 @@ def test_SRTarget_validate_same_costume_name():
         SRVectorCostume.create_empty(name="costume1"),
         SRVectorCostume.create_empty(name="costume1"),
     ]
-    with raises(PP_SameValueTwiceError):
+    with raises(MANIP_SameValueTwiceError):
         srtarget.validate([], info_api)
 
 def test_SRTarget_validate_same_sound_name():
@@ -305,7 +305,7 @@ def test_SRTarget_validate_same_sound_name():
         SRSound(name="Hello there!", file_extension="wav", content=AudioSegment.silent(duration=0)),
         SRSound(name="Hello there!", file_extension="wav", content=AudioSegment.silent(duration=0)),
     ]
-    with raises(PP_SameValueTwiceError):
+    with raises(MANIP_SameValueTwiceError):
         srtarget.validate([], info_api)
 
 
@@ -341,7 +341,7 @@ def test_SRTarget_validate_scripts_same_custom_opcode(context):
         cb_def_script,
         copy(cb_def_script),
     ]
-    with raises(PP_SameValueTwiceError):
+    with raises(MANIP_SameValueTwiceError):
         srtarget.validate_scripts([], info_api, context)
 
 
@@ -476,7 +476,7 @@ def test_SRSprite_create_empty():
 def test_SRSprite_setattr():
     srsprite = SR_SPRITE
     with raises(AttributeError):
-        srsprite.uuid = "something doesn't matter"
+        srsprite.uuid = "something does not matter"
 
 
 def test_SRSprite_validate():
@@ -486,23 +486,23 @@ def test_SRSprite_validate():
     execute_attr_validation_tests(
         obj=srsprite,
         attr_tests=[
-            ("name", False, PP_TypeValidationError),
-            ("name", "_stage_", PP_InvalidValueError),
-            ("sprite_only_variables", (), PP_TypeValidationError),
-            ("sprite_only_variables", [()], PP_TypeValidationError),
-            ("sprite_only_lists", {}, PP_TypeValidationError),
-            ("sprite_only_lists", [{}], PP_TypeValidationError),
-            ("local_monitors", None, PP_TypeValidationError),
-            ("local_monitors", [None], PP_TypeValidationError),
-            ("is_visible", "a str", PP_TypeValidationError),
-            ("position", 45, PP_TypeValidationError),
-            ("position", ("", ""), PP_TypeValidationError),
-            ("size", "100", PP_TypeValidationError),
-            ("size", -4, PP_RangeValidationError),
-            ("direction", [], PP_TypeValidationError),
-            ("direction", 190, PP_RangeValidationError),
-            ("is_draggable", [], PP_TypeValidationError),
-            ("rotation_style", "don't rotate", PP_TypeValidationError),
+            ("name", False, MANIP_TypeValidationError),
+            ("name", "_stage_", MANIP_InvalidValueError),
+            ("sprite_only_variables", (), MANIP_TypeValidationError),
+            ("sprite_only_variables", [()], MANIP_TypeValidationError),
+            ("sprite_only_lists", {}, MANIP_TypeValidationError),
+            ("sprite_only_lists", [{}], MANIP_TypeValidationError),
+            ("local_monitors", None, MANIP_TypeValidationError),
+            ("local_monitors", [None], MANIP_TypeValidationError),
+            ("is_visible", "a str", MANIP_TypeValidationError),
+            ("position", 45, MANIP_TypeValidationError),
+            ("position", ("", ""), MANIP_TypeValidationError),
+            ("size", "100", MANIP_TypeValidationError),
+            ("size", -4, MANIP_RangeValidationError),
+            ("direction", [], MANIP_TypeValidationError),
+            ("direction", 190, MANIP_RangeValidationError),
+            ("is_draggable", [], MANIP_TypeValidationError),
+            ("rotation_style", "don't rotate", MANIP_TypeValidationError),
         ],
         validate_func=SRSprite.validate,
         func_args=[[], info_api],
@@ -521,7 +521,7 @@ def test_SRSprite_validate_vars_lists():
 def test_SRSprite_validate_uuid():
     srsprite = SRSprite.create_empty(name="my sprite")
     srsprite.__dict__["uuid"] = "abc-def-ghi"
-    with raises(PP_TypeValidationError):
+    with raises(MANIP_TypeValidationError):
         srsprite.validate([], info_api)
 
 

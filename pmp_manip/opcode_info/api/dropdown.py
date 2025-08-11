@@ -1,7 +1,7 @@
 from dataclasses import field
 from typing      import Any, Callable
 
-from pmp_manip.utility import grepr_dataclass, remove_duplicates, GEnum, PP_BlameDevsError
+from pmp_manip.utility import grepr_dataclass, remove_duplicates, GEnum, MANIP_BlameDevsError
 
 from pmp_manip.core.context import PartialContext, CompleteContext
 
@@ -172,7 +172,7 @@ class DropdownType(GEnum):
                 if default_kind is None:
                     default_kind = rule_default_kind
                 else:
-                    raise PP_BlameDevsError(f"Got multiple default dropdown value kinds for {self}: {default_kind} and {rule_default_kind}")
+                    raise MANIP_BlameDevsError(f"Got multiple default dropdown value kinds for {self!r}: {default_kind} and {rule_default_kind}")
         return default_kind
 
     @property
@@ -190,7 +190,7 @@ class DropdownType(GEnum):
                 if default_kind is None:
                     default_kind = rule_default_kind
                 else:
-                    raise PP_BlameDevsError(f"Got multiple default dropdown value kinds for {self}: {default_kind} and {rule_default_kind}")
+                    raise MANIP_BlameDevsError(f"Got multiple default dropdown value kinds for {self!r}: {default_kind} and {rule_default_kind}")
         return default_kind
 
     @property
@@ -208,7 +208,7 @@ class DropdownType(GEnum):
                 if validate_func is None:
                     validate_func = rule_validate_func
                 else:
-                    raise PP_BlameDevsError(f"Got multiple post validation functions for {self}: {validate_func} and {rule_validate_func}")
+                    raise MANIP_BlameDevsError(f"Got multiple post validation functions for {self!r}: {validate_func} and {rule_validate_func}")
         return validate_func
 
     def calculate_possible_new_dropdown_values(self, context: PartialContext|CompleteContext) -> list[tuple[DropdownValueKind, Any]]:
@@ -308,7 +308,7 @@ class DropdownType(GEnum):
                     values.extend(context.scope_lists)
                 
                 case DropdownValueRule.BROADCAST_MSG | DropdownValueRule.FONT:
-                    pass # Can't be guessed
+                    pass # can not be guessed
                 case DropdownValueRule.MATRIX:
                     pass # Could theoretically be guessed, but there are 3_3554_432 (2^25) possibilities
 
@@ -338,7 +338,7 @@ class DropdownType(GEnum):
                     case DropdownValueRule.OTHER_SPRITE:
                         values.append((DropdownValueKind.STAGE, "stage"))
                     case DropdownValueRule.OTHER_SPRITE_EXCEPT_STAGE:
-                        pass # Can't be guessed, but don't include stage
+                        pass # can not be guessed, but do not include stage
                     case DropdownValueRule.MYSELF:
                         values.append((DropdownValueKind.MYSELF, "myself"))
                     case DropdownValueRule.MYSELF_IF_SPRITE:
@@ -384,7 +384,7 @@ class DropdownType(GEnum):
                     
                     case (DropdownValueRule.COSTUME  | DropdownValueRule.BACKDROP | DropdownValueRule.SOUND 
                         | DropdownValueRule.VARIABLE | DropdownValueRule.LIST     | DropdownValueRule.BROADCAST_MSG | DropdownValueRule.FONT):
-                        pass # Can't be guessed
+                        pass # can not be guessed
                     case DropdownValueRule.MATRIX:
                         pass # Could theoretically be guessed, but there are 3_3554_432 (2^25) possibilities
         if self.type_info.fallback is not None:
@@ -435,7 +435,7 @@ class DropdownType(GEnum):
                 
                 case (DropdownValueRule.COSTUME  | DropdownValueRule.BACKDROP | DropdownValueRule.SOUND 
                     | DropdownValueRule.VARIABLE | DropdownValueRule.LIST     | DropdownValueRule.BROADCAST_MSG | DropdownValueRule.FONT):
-                        pass # Can't be guessed
+                        pass # can not be guessed
                 case DropdownValueRule.MATRIX:
                     pass # Could theoretically be guessed, but there are 3_3554_432 (2^25) possibilities
         if self.type_info.fallback is not None:

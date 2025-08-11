@@ -6,7 +6,7 @@ from pmp_manip.opcode_info.api  import OpcodeInfoAPI, MonitorIdBehaviour
 from pmp_manip.utility          import (
     grepr_dataclass, string_to_sha256,
     AA_TYPE, AA_TYPES, AA_DICT_OF_TYPE, AA_COORD_PAIR, AA_BOXED_COORD_PAIR, AA_EQUAL, AA_BIGGER_OR_EQUAL, 
-    PP_InvalidOpcodeError, PP_MissingDropdownError, PP_UnnecessaryDropdownError, PP_ThanksError,
+    MANIP_InvalidOpcodeError, MANIP_MissingDropdownError, MANIP_UnnecessaryDropdownError, MANIP_ThanksError,
 )
 from pmp_manip.important_consts import (
     OPCODE_VAR_VALUE, OPCODE_LIST_VALUE, NEW_OPCODE_VAR_VALUE, NEW_OPCODE_LIST_VALUE, 
@@ -128,7 +128,7 @@ class FRMonitor:
             None
         """
         if not isinstance(self.params, dict):
-            raise PP_ThanksError()
+            raise MANIP_ThanksError()
         if self.opcode == OPCODE_VAR_VALUE:
             valid = self.mode in {"default", "large", "slider"}
         elif self.opcode == OPCODE_LIST_VALUE:
@@ -136,9 +136,9 @@ class FRMonitor:
         else:
             valid = self.mode == "default"
         if not valid:
-            raise PP_ThanksError()
+            raise MANIP_ThanksError()
         if self.variable_type is not None:
-            raise PP_ThanksError()
+            raise MANIP_ThanksError()
 
     def to_second(self, info_api: OpcodeInfoAPI, sprite_names: list[str]) -> "SRMonitor | None":
         """
@@ -214,18 +214,18 @@ class SRMonitor:
             None
         """
         if   self.opcode == NEW_OPCODE_VAR_VALUE:
-            assert isinstance(self, SRVariableMonitor), f"Must be a SRVariableMonitor instance if opcode is {repr(NEW_OPCODE_VAR_VALUE)}"
+            assert isinstance(self, SRVariableMonitor), f"Must be a SRVariableMonitor instance if opcode is {NEW_OPCODE_VAR_VALUE!r}"
         elif self.opcode == NEW_OPCODE_LIST_VALUE:
-            assert isinstance(self, SRListMonitor), f"Must be a SRListMonitor instance if opcode is {repr(NEW_OPCODE_LIST_VALUE)}"
+            assert isinstance(self, SRListMonitor), f"Must be a SRListMonitor instance if opcode is {NEW_OPCODE_LIST_VALUE!r}"
         else:
             assert not isinstance(self, (SRVariableMonitor, SRListMonitor)), (
-                f"Mustn't be a SRVariableMonitor or SRListMonitor if opcode "
-                f"is neither {repr(NEW_OPCODE_VAR_VALUE)} nor {repr(NEW_OPCODE_LIST_VALUE)}")
+                f"must not be a SRVariableMonitor or SRListMonitor if opcode "
+                f"is neither {NEW_OPCODE_VAR_VALUE!r} nor {NEW_OPCODE_LIST_VALUE!r}")
             
     
     def validate(self, path: list, info_api: OpcodeInfoAPI) -> None:
         """
-        Ensure a SRMonitor is valid, raise PP_ValidationError if not
+        Ensure a SRMonitor is valid, raise MANIP_ValidationError if not
         To validate the exact dropdown values you should additionally call the validate_dropdown_values method
         
         Args:
@@ -236,10 +236,10 @@ class SRMonitor:
             None
         
         Raises:
-            PP_ValidationError: if the SRMonitor is invalid
-            PP_InvalidOpcodeError(PP_ValidationError): if the opcode is not a defined opcode
-            PP_UnnecessaryDropdownError(PP_ValidationError): if a key of dropdowns is not expected for the specific opcode
-            PP_MissingDropdownError(PP_ValidationError): if an expected key of dropdowns for the specific opcode is missing
+            MANIP_ValidationError: if the SRMonitor is invalid
+            MANIP_InvalidOpcodeError(MANIP_ValidationError): if the opcode is not a defined opcode
+            MANIP_UnnecessaryDropdownError(MANIP_ValidationError): if a key of dropdowns is not expected for the specific opcode
+            MANIP_MissingDropdownError(MANIP_ValidationError): if an expected key of dropdowns for the specific opcode is missing
         """
         AA_TYPE(self, path, "opcode", str)
         AA_DICT_OF_TYPE(self, path, "dropdowns", key_t=str, value_t=SRDropdownValue)
@@ -255,7 +255,7 @@ class SRMonitor:
         cls_name = self.__class__.__name__
         opcode_info = info_api.get_info_by_new_safe(self.opcode)
         if (opcode_info is None) or (not opcode_info.can_have_monitor):
-            raise PP_InvalidOpcodeError(path, 
+            raise MANIP_InvalidOpcodeError(path, 
                 f"opcode of {cls_name} must be a defined opcode. That block must be able to have monitors",
             )
         
@@ -263,13 +263,13 @@ class SRMonitor:
         for new_dropdown_id, dropdown_value in self.dropdowns.items():
             dropdown_value.validate(path+["dropdowns", (new_dropdown_id,)])
             if new_dropdown_id not in new_dropdown_ids:
-                raise PP_UnnecessaryDropdownError(path, 
-                    f"dropdowns of {cls_name} with opcode {repr(self.opcode)} includes unnecessary dropdown {repr(new_dropdown_id)}",
+                raise MANIP_UnnecessaryDropdownError(path, 
+                    f"dropdowns of {cls_name} with opcode {self.opcode!r} includes unnecessary dropdown {new_dropdown_id!r}",
                 )
         for new_dropdown_id in new_dropdown_ids:
             if new_dropdown_id not in self.dropdowns:
-                raise PP_MissingDropdownError(path, 
-                    f"dropdowns of {cls_name} with opcode {repr(self.opcode)} is missing dropdown {repr(new_dropdown_id)}",
+                raise MANIP_MissingDropdownError(path, 
+                    f"dropdowns of {cls_name} with opcode {self.opcode!r} is missing dropdown {new_dropdown_id!r}",
                 )
     
     def validate_dropdown_values(self, 
@@ -278,7 +278,7 @@ class SRMonitor:
         context: PartialContext | CompleteContext,
      ) -> None:
         """
-        Ensure the dropdown values of a SRMonitor are valid, raise PP_ValidationError if not
+        Ensure the dropdown values of a SRMonitor are valid, raise MANIP_ValidationError if not
         For validation of the monitor itself, call the validate method
         
         Args:
@@ -290,7 +290,7 @@ class SRMonitor:
             None
         
         Raises:
-            PP_ValidationError: if some of the dropdown values of the SRMonitor are invalid
+            MANIP_ValidationError: if some of the dropdown values of the SRMonitor are invalid
         """
         opcode_info = info_api.get_info_by_new(self.opcode)
         for new_dropdown_id, dropdown in self.dropdowns.items():
@@ -424,7 +424,7 @@ class SRVariableMonitor(SRMonitor):
     
     def validate(self, path: list, info_api: OpcodeInfoAPI):
         """
-        Ensure a SRVariableMonitor is valid, raise PP_ValidationError if not
+        Ensure a SRVariableMonitor is valid, raise MANIP_ValidationError if not
         To validate the exact dropdown values you should additionally call the validate_dropdown_values method
         
         Args:
@@ -435,7 +435,7 @@ class SRVariableMonitor(SRMonitor):
             None
         
         Raises:
-            PP_ValidationError: if the SRVariableMonitor is invalid
+            MANIP_ValidationError: if the SRVariableMonitor is invalid
         """
         super().validate(path, info_api)
         AA_EQUAL(self, path, "opcode", NEW_OPCODE_VAR_VALUE)
@@ -463,7 +463,7 @@ class SRListMonitor(SRMonitor):
     
     def validate(self, path: list, info_api: OpcodeInfoAPI):
         """
-        Ensure a SRListMonitor is valid, raise PP_ValidationError if not
+        Ensure a SRListMonitor is valid, raise MANIP_ValidationError if not
         To validate the exact dropdown values you should additionally call the validate_dropdown_values method
         
         Args:
@@ -474,7 +474,7 @@ class SRListMonitor(SRMonitor):
             None
         
         Raises:
-            PP_ValidationError: if the SRListMonitor is invalid
+            MANIP_ValidationError: if the SRListMonitor is invalid
         """
         super().validate(path, info_api)
         AA_EQUAL(self, path, "opcode", NEW_OPCODE_LIST_VALUE)

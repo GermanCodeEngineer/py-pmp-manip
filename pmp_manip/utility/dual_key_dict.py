@@ -34,6 +34,7 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
         from pmp_manip.utility.repr import grepr
         return grepr(self)
 
+
     def set(self, key1: _K1, key2: _K2, value: _V) -> None:
         # TODO: if alredy set: make sure key1 and key2 point to the same entry
         self._values[key1] = value
@@ -71,10 +72,10 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
 
     # Dict-like behavior (explicitly discouraged)
     def __iter__(self):
-        raise NotImplementedError("Don't iterate DualKeyDict directly. Use keys_key1, keys_key2, values, items_key1, items_key2 etc")
+        raise NotImplementedError("Do not iterate DualKeyDict directly. Use keys_key1, keys_key2, values, items_key1, items_key2 etc")
 
     def __contains__(self, key: Any) -> bool:
-        raise NotImplementedError("Don't check whether a DualKeyDict contains something like a normal dict. Use has_key1 or has_key2 instead")
+        raise NotImplementedError("Do not check whether a DualKeyDict contains something like a normal dict. Use has_key1 or has_key2 instead")
 
     # Dict-like behavior
     def __len__(self) -> int:

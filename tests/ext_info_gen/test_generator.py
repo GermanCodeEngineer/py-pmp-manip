@@ -8,9 +8,9 @@ from pmp_manip.opcode_info.api import (
 )
 from pmp_manip.utility         import (
     DualKeyDict,
-    PP_ThanksError, PP_NotImplementedError,
-    PP_InvalidCustomMenuError, PP_InvalidCustomBlockError,
-    PP_UnknownExtensionAttributeError, 
+    MANIP_ThanksError, MANIP_NotImplementedError,
+    MANIP_InvalidCustomMenuError, MANIP_InvalidCustomBlockError,
+    MANIP_UnknownExtensionAttributeError, 
 )
 
 from pmp_manip.ext_info_gen.generator import (
@@ -464,35 +464,35 @@ def test_process_all_menus_valid():
     )
 
 def test_process_all_menus_invalid_menu_type():
-    with raises(PP_InvalidCustomMenuError):
+    with raises(MANIP_InvalidCustomMenuError):
         process_all_menus({
             "SOME_MENU": (True, ["i32", "u32", "f32", "bool", "auto"])
         })
 
 def test_process_all_menus_invalid_menu_items_type():
-    with raises(PP_InvalidCustomMenuError):
+    with raises(MANIP_InvalidCustomMenuError):
         process_all_menus({
             "SOME_MENU": {"items": {"a", "b", "c"}}
         })
 
 def test_process_all_menus_invalid_menu_possible_value_type():
-    with raises(PP_InvalidCustomMenuError):
+    with raises(MANIP_InvalidCustomMenuError):
         process_all_menus({
             "SOME_MENU": {"items": [("Hi, How are you?", "hi_1")]}
         })
 
 def test_process_all_menus_missing_items():
-    with raises(PP_InvalidCustomMenuError):
+    with raises(MANIP_InvalidCustomMenuError):
         process_all_menus({
             "SOME_MENU": {"acceptReporters": True},
         })
 
 def test_process_all_menus_possible_value_missing_text_value():
-    with raises(PP_InvalidCustomMenuError):
+    with raises(MANIP_InvalidCustomMenuError):
         process_all_menus({
             "SOME_MENU": {"items": [{"value": "hi"}]}
         })
-    with raises(PP_InvalidCustomMenuError):
+    with raises(MANIP_InvalidCustomMenuError):
         process_all_menus({
             "SOME_MENU": {"items": [{"text": "Hi :)"}]}
         })
@@ -660,7 +660,7 @@ def test_generate_block_opcode_info_invalid_is_terminal(input_type_cls, dropdown
         "isTerminal": True,
         "text": "break"
     }
-    with raises(PP_InvalidCustomBlockError):
+    with raises(MANIP_InvalidCustomBlockError):
         generate_block_opcode_info(
             block_info=block_data,
             menus=EXAMPLE_MENU_DATA,
@@ -672,9 +672,9 @@ def test_generate_block_opcode_info_invalid_is_terminal(input_type_cls, dropdown
 def test_generate_block_opcode_info_xml_block(input_type_cls, dropdown_type_cls):
     block_data = {
         "blockType": "xml",
-        "xml": ..., # doesn't matter
+        "xml": ..., # does not matter
     }
-    with raises(PP_NotImplementedError):
+    with raises(MANIP_NotImplementedError):
         generate_block_opcode_info(
             block_info=block_data,
             menus=EXAMPLE_MENU_DATA,
@@ -687,7 +687,7 @@ def test_generate_block_opcode_info_invalid_block_type(input_type_cls, dropdown_
     block_data = {
         "blockType": "undefinedBlockType",
     }
-    with raises(PP_InvalidCustomBlockError):
+    with raises(MANIP_InvalidCustomBlockError):
         generate_block_opcode_info(
             block_info=block_data,
             menus=EXAMPLE_MENU_DATA,
@@ -704,7 +704,7 @@ def test_generate_block_opcode_info_unknown_attribute(input_type_cls, dropdown_t
         "text": "break",
         "undefinedProperty": "some value",
     }
-    with raises(PP_UnknownExtensionAttributeError):
+    with raises(MANIP_UnknownExtensionAttributeError):
         generate_block_opcode_info(
             block_info=block_data,
             menus=EXAMPLE_MENU_DATA,
@@ -725,7 +725,7 @@ def test_generate_block_opcode_info_non_existant_menu_arg(input_type_cls, dropdo
             }
         }
     }
-    with raises(PP_InvalidCustomBlockError):
+    with raises(MANIP_InvalidCustomBlockError):
         generate_block_opcode_info(
             block_info=block_data,
             menus=EXAMPLE_MENU_DATA,
@@ -748,7 +748,7 @@ def test_generate_block_opcode_info_invalid_branch_count_text(input_type_cls, dr
             "CONDITION2": { "type": "Boolean" }
         }
     }
-    with raises(PP_InvalidCustomBlockError):
+    with raises(MANIP_InvalidCustomBlockError):
         generate_block_opcode_info(
             block_info=block_data,
             menus=EXAMPLE_MENU_DATA,
@@ -769,7 +769,7 @@ def test_generate_block_opcode_info_with_seperator_arg(input_type_cls, dropdown_
         },
         "branchCount": 1
     }
-    with raises(PP_ThanksError):
+    with raises(MANIP_ThanksError):
         generate_block_opcode_info(
             block_info=block_data,
             menus=EXAMPLE_MENU_DATA,
@@ -783,7 +783,7 @@ def test_generate_block_opcode_info_missing_attribute(input_type_cls, dropdown_t
         "blockType": "command",
         "text": "some text",
     }
-    with raises(PP_InvalidCustomBlockError):
+    with raises(MANIP_InvalidCustomBlockError):
         generate_block_opcode_info(
             block_info=block_data,
             menus=EXAMPLE_MENU_DATA,
@@ -796,7 +796,7 @@ def test_generate_block_opcode_info_missing_attribute(input_type_cls, dropdown_t
         "opcode": "someOpcode",
         "text": "some text",
     }
-    with raises(PP_InvalidCustomBlockError):
+    with raises(MANIP_InvalidCustomBlockError):
         generate_block_opcode_info(
             block_info=block_data,
             menus=EXAMPLE_MENU_DATA,
@@ -809,7 +809,7 @@ def test_generate_block_opcode_info_missing_attribute(input_type_cls, dropdown_t
         "opcode": "someOpcode",
         "blockType": "command",
     }
-    with raises(PP_InvalidCustomBlockError):
+    with raises(MANIP_InvalidCustomBlockError):
         generate_block_opcode_info(
             block_info=block_data,
             menus=EXAMPLE_MENU_DATA,
@@ -906,7 +906,7 @@ def test_generate_opcode_info_group_unkown_attribute():
     extension_info = {
         "someUnkownAttribute": "someValue",
     }
-    with raises(PP_UnknownExtensionAttributeError):
+    with raises(MANIP_UnknownExtensionAttributeError):
         generate_opcode_info_group(extension_info)
 
 def test_generate_opcode_info_group_invalid_block_type():
@@ -916,7 +916,7 @@ def test_generate_opcode_info_group_invalid_block_type():
             ["doSth", "do sth"]
         ]
     }
-    with raises(PP_InvalidCustomBlockError):
+    with raises(MANIP_InvalidCustomBlockError):
         generate_opcode_info_group(extension_info)
 
 

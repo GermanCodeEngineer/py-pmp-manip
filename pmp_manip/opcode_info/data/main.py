@@ -8,7 +8,7 @@ from pmp_manip.important_consts import (
     OPCODE_CB_DEF, NEW_OPCODE_CB_DEF, OPCODE_CB_DEF_RET, NEW_OPCODE_CB_DEF_REP,
     SHA256_SEC_LOCAL_ARGUMENT_NAME,
 )
-from pmp_manip.utility          import string_to_sha256, DualKeyDict, PP_InvalidValueError
+from pmp_manip.utility          import string_to_sha256, DualKeyDict, MANIP_InvalidValueError
 
 from pmp_manip.opcode_info.api import (
     OpcodeInfo, OpcodeType, OpcodeInfoGroup, OpcodeInfoAPI, 
@@ -203,7 +203,7 @@ def _f9c8_6ab0(block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None") 
     from pmp_manip.core.block import FRBlock
     if isinstance(block, FRBlock):
         old_mutation: FRCustomBlockCallMutation = block.mutation
-        assert fti_if is not None, "When a FRBlock is given, fti_if mustn't be None"
+        assert fti_if is not None, "When a FRBlock is given, fti_if must not be None"
         mutation: SRCustomBlockCallMutation = old_mutation.to_second(fti_if=fti_if)
     else:
         mutation: SRCustomBlockCallMutation = block.mutation
@@ -274,7 +274,7 @@ def _d0e6_50e9(block: "FRBlock", block_id: str, fti_if: "FirstToInterIF") -> "IR
         inputs       = ...,
         dropdowns    = ...,
         position     = ...,
-        comment      = ..., # Can't possibly have a comment
+        comment      = ..., # can not possibly have a comment
         mutation     = ...,
         next         = ...,
         is_top_level = ...,
@@ -367,10 +367,10 @@ def _26f9_8217(path:list, block: "SRBlock") -> None:
     mutation: SRCustomBlockMutation = block.mutation
     if block.opcode == NEW_OPCODE_CB_DEF:
         if mutation.optype.is_reporter():
-            raise PP_InvalidValueError(path, f"If mutation.optype of a {block.__class__.__name__} is ...REPORTER, opcode should be {repr(NEW_OPCODE_CB_DEF_REP)}")
+            raise MANIP_InvalidValueError(path, f"If mutation.optype of a {block.__class__.__name__} is any ...REPORTER optype, opcode should be {NEW_OPCODE_CB_DEF_REP!r}")
     elif block.opcode == NEW_OPCODE_CB_DEF_REP:
         if not mutation.optype.is_reporter():
-            raise PP_InvalidValueError(path, f"If mutation.optype of a {block.__class__.__name__} is NOT ...REPORTER, opcode should be {repr(NEW_OPCODE_CB_DEF)}")
+            raise MANIP_InvalidValueError(path, f"If mutation.optype of a {block.__class__.__name__} is NOT any ...REPORTER optype, opcode should be {NEW_OPCODE_CB_DEF!r}")
     else: raise ValueError()
 info_api.add_opcodes_case(ANY_OPCODE_CB_DEF, SpecialCase(
     type=SpecialCaseType.POST_VALIDATION,

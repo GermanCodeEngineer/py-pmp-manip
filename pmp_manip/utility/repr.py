@@ -115,7 +115,7 @@ def repr_tree(node: Node, indent=0): # TODO: reconsider
 
     if node.child_count == 0:
         text = node.text.decode()
-        return f"{indent_str}{node_type} ({repr(text)})"
+        return f"{indent_str}{node_type} ({text!r})"
 
     lines = [f"{indent_str}{node_type}:"]
     for child in node.named_children:

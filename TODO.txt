@@ -16,12 +16,10 @@ TODOs:
     - check if dropdown validation where only default kind: allows non strings? (should not)
     - make sure: js execution in ext_info_gen is safe
     - simplify new opcode input/dropdown representation brackets
-    - disambig error messages: use only one of "x" 'x' ˋxˋ
-    - disambig error messages: when to use repr() and when not (also use !r instead of repr())
     - disambig raw data vs. json data
     - explore "customFonts"
     - explore extensionData (example of "2D MAINCRAFT")
     - spit into internal and public functions/methods etc
         => add enforce_argument_types decorator to public ones
-    - rename PP_ to sth like MN(P)_ to represent Manip not Pypenguin anymore
     - replace remaining io actions with wrappers (eg. file_exists instead of os.path.exists)
+    - possibly reform special case system with custom classes possibly even with metaclass

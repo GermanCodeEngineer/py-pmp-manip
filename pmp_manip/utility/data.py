@@ -59,7 +59,7 @@ def string_to_sha256(primary: str, secondary: str|None=None, tertiary: str|None=
     if (secondary is None) and (tertiary is not None):
         raise ValueError("secondary must NOT be None if tertiary is not None")
 
-    # return f"<p={repr(primary)} s={repr(secondary)} t={repr(tertiary)}>" # for debugging
+    # return f"<p={primary!r} s={secondary!r} t={tertiary!r}>" # for debugging
     if   (secondary is     None) and (tertiary is     None):
         return _string_to_sha256(primary  , digits=20)
     elif (secondary is not None) and (tertiary is     None):

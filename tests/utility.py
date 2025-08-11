@@ -2,7 +2,7 @@ from typing      import Any, Type, Callable, TypeVar
 from copy        import copy, deepcopy
 from pytest      import raises
 
-from pmp_manip.utility import PP_ValidationError
+from pmp_manip.utility import MANIP_ValidationError
 from pmp_manip.core.block   import FRBlock
 from pmp_manip.core.comment import FRComment
 
@@ -21,7 +21,7 @@ _AVTT = TypeVar("_AVTT")
 
 def execute_attr_validation_tests(
         obj: _AVTT, 
-        attr_tests: list[tuple[str, Any, Type[PP_ValidationError]]], 
+        attr_tests: list[tuple[str, Any, Type[MANIP_ValidationError]]], 
         validate_func: Callable[[_AVTT], None],
         func_args: list[Any]=[],
     ) -> None:

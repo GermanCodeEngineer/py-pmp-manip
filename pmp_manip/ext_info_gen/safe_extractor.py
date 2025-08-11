@@ -9,8 +9,8 @@ from warnings               import warn
 
 from pmp_manip.utility            import (
     repr_tree, gdumps,
-    PP_JsNodeTreeToJsonConversionError, PP_InvalidExtensionCodeSyntaxError, PP_BadExtensionCodeFormatError, PP_InvalidTranslationMessageError,
-    PP_UnexpectedPropertyAccessWarning, PP_UnexpectedNotPossibleFeatureWarning,
+    MANIP_JsNodeTreeToJsonConversionError, MANIP_InvalidExtensionCodeSyntaxError, MANIP_BadExtensionCodeFormatError, MANIP_InvalidTranslationMessageError,
+    MANIP_UnexpectedPropertyAccessWarning, MANIP_UnexpectedNotPossibleFeatureWarning,
     NotSetType, NotSet,
 )
 
@@ -63,8 +63,8 @@ SCRATCH_STUB = { # Must be kept in sync with direct_extractor.js
         "STAGE": "stage"
     },
     "extensions": {
-        #"unsandboxed": True , # hasn't ever been needed, uncomment when needed
-        #"isPenguinMod": True, # hasn't ever been needed, uncomment when needed
+        #"unsandboxed": True , # has not ever been needed, uncomment when needed
+        #"isPenguinMod": True, # has not ever been needed, uncomment when needed
         # .register is handled somewhere else
     },
 }
@@ -97,11 +97,11 @@ def ts_node_to_json(
         A Python object representing the JSON-equivalent value: dict, list, str, int, float, bool, or None
 
     Raises:
-        PP_JsNodeTreeToJsonConversionError: If an unsupported node type or a member expression of unexptected format is encountered
+        MANIP_JsNodeTreeToJsonConversionError: If an unsupported node type or a member expression of unexptected format is encountered
     
     Warnings:
-        PP_UnexpectedPropertyAccessWarning: if a property of 'this' is accessed
-        PP_UnexpectedNotPossibleFeatureWarning: if a impossible to implement feature is used (eg. ternary expr)
+        MANIP_UnexpectedPropertyAccessWarning: if a property of 'this' is accessed
+        MANIP_UnexpectedNotPossibleFeatureWarning: if a impossible to implement feature is used (eg. ternary expr)
     """
 
     if isinstance(node, (str, int, float, bool, type(None))):
@@ -123,17 +123,17 @@ def ts_node_to_json(
 
         elif object_node.type == "this":
             warn(f"{ColorFore.YELLOW}Tried to access property of 'this': {property_node.text.decode()}. "
-                 f"Defaulting to None{ColorStyle.RESET_ALL}", PP_UnexpectedPropertyAccessWarning)
+                 f"Defaulting to None{ColorStyle.RESET_ALL}", MANIP_UnexpectedPropertyAccessWarning)
             return None
 
-        raise PP_JsNodeTreeToJsonConversionError(f"Unsupported member expression format:\n{repr_tree(node, indent=1)}")
+        raise MANIP_JsNodeTreeToJsonConversionError(f"Unsupported member expression format:\n{repr_tree(node, indent=1)}")
 
     elif node.type == "object":
         result = {}
         for prop in node.named_children:
             if   prop.type == "comment": continue
             elif prop.type != "pair":
-                raise PP_JsNodeTreeToJsonConversionError(f"Unsupported property type: {prop.type}")
+                raise MANIP_JsNodeTreeToJsonConversionError(f"Unsupported property type: {prop.type}")
 
             key_node = prop.child_by_field_name("key")
             value_node = prop.child_by_field_name("value")
@@ -143,7 +143,7 @@ def ts_node_to_json(
             elif key_node.type == "string":
                 key = literal_eval(key_node.text.decode().replace('`', '"'))
             else:
-                raise PP_JsNodeTreeToJsonConversionError(f"Unsupported key type: {key_node.type}")
+                raise MANIP_JsNodeTreeToJsonConversionError(f"Unsupported key type: {key_node.type}")
 
             result[key] = ts_node_to_json(value_node, call_handler) # cant return NotSet
         return result
@@ -178,7 +178,7 @@ def ts_node_to_json(
         "template_string", 
         "ternary_expression", "binary_expression", "unary_expression"
     }:
-        warn(f"{ColorFore.YELLOW}Not Implementable Feature {repr(node.type)} encountered. Defaulting to None{ColorStyle.RESET_ALL}", PP_UnexpectedNotPossibleFeatureWarning)
+        warn(f"{ColorFore.YELLOW}Not Implementable Feature {node.type!r} encountered. Defaulting to None{ColorStyle.RESET_ALL}", MANIP_UnexpectedNotPossibleFeatureWarning)
         return None
         # I am assuming/hoping that only less/not relevant properties are generated with these features
 
@@ -190,7 +190,7 @@ def ts_node_to_json(
     elif (node.type == "comment"):
         return NotSet
 
-    raise PP_JsNodeTreeToJsonConversionError(f"Unsupported node type: {node.type}")
+    raise MANIP_JsNodeTreeToJsonConversionError(f"Unsupported node type: {node.type}")
 
 def _get_main_body(root_node: Node) -> list[Node]:
     """
@@ -228,7 +228,7 @@ def _get_registered_class_name(code_body: list[Node]) -> str:
         code_body: the code body to search in
     
     Raises:
-        PP_BadExtensionCodeFormatError: if the code is not formatted like expected or the register call is not found
+        MANIP_BadExtensionCodeFormatError: if the code is not formatted like expected or the register call is not found
     """
     for statement in reversed(code_body): # register() is usually last
         if statement.type != "expression_statement":
@@ -243,7 +243,7 @@ def _get_registered_class_name(code_body: list[Node]) -> str:
                 if arg.type == "new_expression":
                     class_id = arg.child_by_field_name("constructor")
                     return class_id.text.decode()
-    raise PP_BadExtensionCodeFormatError("Could not find registered class name")
+    raise MANIP_BadExtensionCodeFormatError("Could not find registered class name")
 
 def _get_class_def_by_name(code_body: list[Node], class_name: str) -> Node:
     """
@@ -254,14 +254,14 @@ def _get_class_def_by_name(code_body: list[Node], class_name: str) -> Node:
         class_name: the name of the class to search
     
     Raises:
-        PP_BadExtensionCodeFormatError: if the class is not found
+        MANIP_BadExtensionCodeFormatError: if the class is not found
     """
     for statement in code_body:
         if statement.type == "class_declaration":
             id_node = statement.child_by_field_name("name")
             if id_node and (id_node.text.decode() == class_name):
                 return statement
-    raise PP_BadExtensionCodeFormatError(f"Class '{class_name}' not found")
+    raise MANIP_BadExtensionCodeFormatError(f"Class {class_name!r} not found")
 
 def _get_class_method_def_by_name(class_node: Node, method_name: str) -> Node:
     """
@@ -272,7 +272,7 @@ def _get_class_method_def_by_name(class_node: Node, method_name: str) -> Node:
         method_name: the name of the method to search
     
     Raises:
-        PP_BadExtensionCodeFormatError: if the method is not found
+        MANIP_BadExtensionCodeFormatError: if the method is not found
     """
     body = class_node.child_by_field_name("body")
     for item in body.named_children:
@@ -280,7 +280,7 @@ def _get_class_method_def_by_name(class_node: Node, method_name: str) -> Node:
             name_node = item.child_by_field_name("name")
             if name_node.text.decode() == method_name:
                 return item
-    raise PP_BadExtensionCodeFormatError(f"Method '{method_name}' not found")
+    raise MANIP_BadExtensionCodeFormatError(f"Method {method_name!r} not found")
     
 def extract_extension_info_safely(js_code: str) -> dict[str, Any]:
     """
@@ -291,13 +291,13 @@ def extract_extension_info_safely(js_code: str) -> dict[str, Any]:
         js_code: the extension source code
     
     Raises:
-        PP_InvalidExtensionCodeSyntaxError: if the extension code is syntactically invalid 
-        PP_BadExtensionCodeFormatError: if the extension code is badly formatted, so that the extension information cannot be extracted
-        PP_InvalidTranslationMessageError: if Scratch.translate is called with an invalid message
+        MANIP_InvalidExtensionCodeSyntaxError: if the extension code is syntactically invalid 
+        MANIP_BadExtensionCodeFormatError: if the extension code is badly formatted, so that the extension information cannot be extracted
+        MANIP_InvalidTranslationMessageError: if Scratch.translate is called with an invalid message
     
     Warnings:
-        PP_UnexpectedPropertyAccessWarning: if a property of 'this' is accessed in the getInfo method
-        PP_UnexpectedNotPossibleFeatureWarning: if a impossible to implement feature is used (eg. ternary expr) in the getInfo method
+        MANIP_UnexpectedPropertyAccessWarning: if a property of 'this' is accessed in the getInfo method
+        MANIP_UnexpectedNotPossibleFeatureWarning: if a impossible to implement feature is used (eg. ternary expr) in the getInfo method
     """
     def find_error_nodes(node: Node) -> Iterator[Node]:
         if node.type == "ERROR":
@@ -310,7 +310,7 @@ def extract_extension_info_safely(js_code: str) -> dict[str, Any]:
         tree: Tree = parser.parse(js_code.encode())
         root_node = tree.root_node
     except (TypeError, ValueError, RuntimeError) as error:
-        raise PP_InvalidExtensionCodeSyntaxError(str(error)) from error # unlikely, but for safety
+        raise MANIP_InvalidExtensionCodeSyntaxError(str(error)) from error # unlikely, but for safety
     if root_node.has_error:
         message_lines = ["Syntax error(s) detected:"]
         error_nodes = find_error_nodes(root_node)
@@ -318,7 +318,7 @@ def extract_extension_info_safely(js_code: str) -> dict[str, Any]:
             line, col = error_node.start_point
             code_seg = error_node.text.decode()[:50].replace("\n", "\\n")
             message_lines.append(f"    At line {line}, col {col}: {code_seg}")
-        raise PP_InvalidExtensionCodeSyntaxError("\n".join(message_lines))    
+        raise MANIP_InvalidExtensionCodeSyntaxError("\n".join(message_lines))    
     
    
     try:
@@ -337,7 +337,7 @@ def extract_extension_info_safely(js_code: str) -> dict[str, Any]:
         assert (return_value is not None) and (return_value.type == "object"), "Invalid or Failed to process getInfo return value"
 
     except AssertionError as error:
-        raise PP_BadExtensionCodeFormatError(f"Cannot extract extension information: Bad extension code format: {error}") from error
+        raise MANIP_BadExtensionCodeFormatError(f"Cannot extract extension information: Bad extension code format: {error}") from error
     
     def handle_Scratch_translate(arguments_node: Node) -> str:
         arg_node = arguments_node.named_children[0]
@@ -351,7 +351,7 @@ def extract_extension_info_safely(js_code: str) -> dict[str, Any]:
             pass  # will trigger error below if needed
 
         if not(isinstance(message, str)) or not(message):
-            raise PP_InvalidTranslationMessageError(f"Invalid or empty message passed to Scratch.translate: {repr(message)}")
+            raise MANIP_InvalidTranslationMessageError(f"Invalid or empty message passed to Scratch.translate: {message}")
 
         return message
     
@@ -386,8 +386,8 @@ def extract_extension_info_safely(js_code: str) -> dict[str, Any]:
 
     try:
         extension_info = ts_node_to_json(return_value, call_handler=handle_call)
-    except PP_JsNodeTreeToJsonConversionError as error:
-        raise PP_BadExtensionCodeFormatError(f"Cannot extract extension information: Bad extension code format: getInfo method should return static value: \n{error}") from error
+    except MANIP_JsNodeTreeToJsonConversionError as error:
+        raise MANIP_BadExtensionCodeFormatError(f"Cannot extract extension information: Bad extension code format: getInfo method should return static value: \n{error}") from error
     return extension_info
 
 

@@ -1,7 +1,7 @@
 from pytest import fixture, raises
 
 from pmp_manip.opcode_info.api import BuiltinDropdownType, DropdownValueKind
-from pmp_manip.utility         import PP_TypeValidationError, PP_InvalidDropdownValueError
+from pmp_manip.utility         import MANIP_TypeValidationError, MANIP_InvalidDropdownValueError
 
 from pmp_manip.core.context  import PartialContext
 from pmp_manip.core.dropdown import SRDropdownValue
@@ -47,8 +47,8 @@ def test_SRDropdownValue_validate():
     execute_attr_validation_tests(
         obj=dropdown_value,
         attr_tests=[
-            ("kind", {}, PP_TypeValidationError),
-            ("value", set(), PP_TypeValidationError),
+            ("kind", {}, MANIP_TypeValidationError),
+            ("value", set(), MANIP_TypeValidationError),
         ],
         validate_func=SRDropdownValue.validate,
         func_args=[[]],
@@ -62,14 +62,14 @@ def test_SRDropdownValue_validate_value(context):
     execute_attr_validation_tests(
         obj=dropdown_value,
         attr_tests=[
-            ("value", "a non existing sprite", PP_InvalidDropdownValueError),
+            ("value", "a non existing sprite", MANIP_InvalidDropdownValueError),
         ],
         validate_func=SRDropdownValue.validate_value,
         func_args=[[], BuiltinDropdownType.MOUSE_OR_OTHER_SPRITE, context],
     )
 
     dropdown_value = SRDropdownValue(kind=DropdownValueKind.SOUND, value="a message")
-    with raises(PP_InvalidDropdownValueError):
+    with raises(MANIP_InvalidDropdownValueError):
         dropdown_value.validate_value([], BuiltinDropdownType.BROADCAST, context)
 
 def test_SRDropdownValue_validate_value_with_post_validate_func(context):
@@ -77,11 +77,11 @@ def test_SRDropdownValue_validate_value_with_post_validate_func(context):
     dropdown_value.validate_value([], BuiltinDropdownType.MATRIX, context)
 
     dropdown_value = SRDropdownValue(kind=DropdownValueKind.STANDARD, value="10110") # too short
-    with raises(PP_InvalidDropdownValueError):
+    with raises(MANIP_InvalidDropdownValueError):
         dropdown_value.validate_value([], BuiltinDropdownType.MATRIX, context)
     
     dropdown_value = SRDropdownValue(kind=DropdownValueKind.STANDARD, value="2112022311310111012121112") # only 0 or 1 are allowed
-    with raises(PP_InvalidDropdownValueError):
+    with raises(MANIP_InvalidDropdownValueError):
         dropdown_value.validate_value([], BuiltinDropdownType.MATRIX, context)
 
 

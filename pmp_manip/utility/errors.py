@@ -1,11 +1,11 @@
-class PP_Error(Exception):
+class MANIP_Error(Exception):
     pass
 
 
-class PP_BlameDevsError(PP_Error): pass
-class PP_PathError(PP_Error): pass
+class MANIP_BlameDevsError(MANIP_Error): pass
+class MANIP_PathError(MANIP_Error): pass
 
-class PP_ThanksError(PP_Error):
+class MANIP_ThanksError(MANIP_Error):
     def __init__(self):
         super().__init__("Your project is unique! It could help me with my research! Please create an issue with your project attached! https://github.com/GermanCodeEngineer/py-pmp-manip/issues/new/")
 
@@ -14,15 +14,15 @@ class PP_ThanksError(PP_Error):
 #                ERRORS FOR THE OPCODE INFO API               #
 ###############################################################
 
-class PP_OpcodeInfoError(PP_Error): pass
-class PP_UnknownOpcodeError(PP_OpcodeInfoError): pass
-class PP_SameOpcodeTwiceError(PP_OpcodeInfoError): pass
+class MANIP_OpcodeInfoError(MANIP_Error): pass
+class MANIP_UnknownOpcodeError(MANIP_OpcodeInfoError): pass
+class MANIP_SameOpcodeTwiceError(MANIP_OpcodeInfoError): pass
 
 ###############################################################
 #                  ERRORS FOR DESERIALIZATION                 #
 ###############################################################
 
-class PP_DeserializationError(PP_Error):
+class MANIP_DeserializationError(MANIP_Error):
     def __init__(self, msg: str) -> None:
         super().__init__(f"Issue during deserialization: {msg}")
 
@@ -30,7 +30,7 @@ class PP_DeserializationError(PP_Error):
 #         ERRORS FOR CONVERSION BETWEEN REPRESENTATIONS       #
 ###############################################################
 
-class PP_ConversionError(PP_Error): pass
+class MANIP_ConversionError(MANIP_Error): pass
 
 ###############################################################
 #                    ERRORS FOR VALIDATION                    #
@@ -48,9 +48,9 @@ def _generate_path_string(path: list) -> str:
         else: raise ValueError()
     return path_string
 
-class PP_ValidationError(PP_Error): pass
+class MANIP_ValidationError(MANIP_Error): pass
 
-class PP_PathValidationError(PP_ValidationError):
+class MANIP_PathValidationError(MANIP_ValidationError):
     def __init__(self, path: list, msg: str, condition: str|None = None) -> None:
         self.path      = path
         self.msg       = msg
@@ -65,24 +65,24 @@ class PP_PathValidationError(PP_ValidationError):
         full_message += msg
         super().__init__(full_message)
     
-class PP_TypeValidationError(PP_PathValidationError): pass
-class PP_InvalidValueError(PP_PathValidationError): pass
-class PP_RangeValidationError(PP_PathValidationError): pass
+class MANIP_TypeValidationError(MANIP_PathValidationError): pass
+class MANIP_InvalidValueError(MANIP_PathValidationError): pass
+class MANIP_RangeValidationError(MANIP_PathValidationError): pass
 
-class PP_MissingInputError(PP_PathValidationError): pass
-class PP_UnnecessaryInputError(PP_PathValidationError): pass
-class PP_MissingDropdownError(PP_PathValidationError): pass
-class PP_UnnecessaryDropdownError(PP_PathValidationError): pass
+class MANIP_MissingInputError(MANIP_PathValidationError): pass
+class MANIP_UnnecessaryInputError(MANIP_PathValidationError): pass
+class MANIP_MissingDropdownError(MANIP_PathValidationError): pass
+class MANIP_UnnecessaryDropdownError(MANIP_PathValidationError): pass
 
-class PP_InvalidDropdownValueError(PP_PathValidationError): pass
+class MANIP_InvalidDropdownValueError(MANIP_PathValidationError): pass
 
-class PP_InvalidOpcodeError(PP_PathValidationError): pass
-class PP_InvalidBlockShapeError(PP_PathValidationError): pass
-class PP_InvalidDirPathError(PP_PathValidationError): pass
+class MANIP_InvalidOpcodeError(MANIP_PathValidationError): pass
+class MANIP_InvalidBlockShapeError(MANIP_PathValidationError): pass
+class MANIP_InvalidDirPathError(MANIP_PathValidationError): pass
 
-class PP_SpriteLayerStackError(PP_PathValidationError): pass
+class MANIP_SpriteLayerStackError(MANIP_PathValidationError): pass
 
-class PP_SameValueTwiceError(PP_ValidationError):
+class MANIP_SameValueTwiceError(MANIP_ValidationError):
     def __init__(self, path1: list, path2: list, msg: str, condition: str|None = None) -> None:
         self.path1     = path1
         self.path2     = path2
@@ -104,42 +104,42 @@ class PP_SameValueTwiceError(PP_ValidationError):
 ###############################################################
 
 # fetch_js.py
-class PP_InvalidExtensionCodeSourceError(PP_Error): pass
+class MANIP_InvalidExtensionCodeSourceError(MANIP_Error): pass
 
-class PP_FetchError(PP_Error): pass
-class PP_NetworkFetchError(PP_FetchError): pass
-class PP_UnexpectedFetchError(PP_FetchError): pass
-class PP_FileFetchError(PP_FetchError): pass
+class MANIP_FetchError(MANIP_Error): pass
+class MANIP_NetworkFetchError(MANIP_FetchError): pass
+class MANIP_UnexpectedFetchError(MANIP_FetchError): pass
+class MANIP_FileFetchError(MANIP_FetchError): pass
 
 # direct_extractor.py / safe_extractor.py
-class PP_NoNodeJSInstalledError(PP_Error): pass
+class MANIP_NoNodeJSInstalledError(MANIP_Error): pass
 
-class PP_ExtensionExecutionError(PP_Error): pass
-class PP_ExtensionExecutionTimeoutError(PP_ExtensionExecutionError): pass
-class PP_ExtensionExecutionErrorInJavascript(PP_ExtensionExecutionError): pass
-class PP_UnexpectedExtensionExecutionError(PP_ExtensionExecutionError): pass
+class MANIP_ExtensionExecutionError(MANIP_Error): pass
+class MANIP_ExtensionExecutionTimeoutError(MANIP_ExtensionExecutionError): pass
+class MANIP_ExtensionExecutionErrorInJavascript(MANIP_ExtensionExecutionError): pass
+class MANIP_UnexpectedExtensionExecutionError(MANIP_ExtensionExecutionError): pass
 
-class PP_ExtensionJSONDecodeError(PP_Error): pass
+class MANIP_ExtensionJSONDecodeError(MANIP_Error): pass
 
 
-class PP_BadOrInvalidExtensionCodeError(PP_Error): pass
-class PP_InvalidExtensionCodeSyntaxError(PP_BadOrInvalidExtensionCodeError): pass
-class PP_BadExtensionCodeFormatError(PP_BadOrInvalidExtensionCodeError): pass
-class PP_InvalidTranslationMessageError(PP_BadOrInvalidExtensionCodeError): pass
+class MANIP_BadOrInvalidExtensionCodeError(MANIP_Error): pass
+class MANIP_InvalidExtensionCodeSyntaxError(MANIP_BadOrInvalidExtensionCodeError): pass
+class MANIP_BadExtensionCodeFormatError(MANIP_BadOrInvalidExtensionCodeError): pass
+class MANIP_InvalidTranslationMessageError(MANIP_BadOrInvalidExtensionCodeError): pass
 
-class PP_JsNodeTreeToJsonConversionError(PP_Error): pass
+class MANIP_JsNodeTreeToJsonConversionError(MANIP_Error): pass
 
 # generator.py
-class PP_InvalidExtensionInformationError(PP_Error): pass
-class PP_InvalidCustomMenuError(PP_InvalidExtensionInformationError): pass
-class PP_InvalidCustomBlockError(PP_InvalidExtensionInformationError): pass
-class PP_UnknownExtensionAttributeError(PP_InvalidExtensionInformationError): pass
+class MANIP_InvalidExtensionInformationError(MANIP_Error): pass
+class MANIP_InvalidCustomMenuError(MANIP_InvalidExtensionInformationError): pass
+class MANIP_InvalidCustomBlockError(MANIP_InvalidExtensionInformationError): pass
+class MANIP_UnknownExtensionAttributeError(MANIP_InvalidExtensionInformationError): pass
 
 # manager.py
-class PP_ExtensionFetchError(PP_Error): """Groups any error in fetch_js"""
-class PP_DirectExtensionInfoExtractionError(PP_Error): """Groups any error in extract_extension_info_directly"""
-class PP_SafeExtensionInfoExtractionError(PP_Error): """Groups any error in extract_extension_info_safely"""
-class PP_ExtensionInfoConvertionError(PP_Error): """Groups any error in generate_opcode_info_group"""
+class MANIP_ExtensionFetchError(MANIP_Error): """Groups any error in fetch_js"""
+class MANIP_DirectExtensionInfoExtractionError(MANIP_Error): """Groups any error in extract_extension_info_directly"""
+class MANIP_SafeExtensionInfoExtractionError(MANIP_Error): """Groups any error in extract_extension_info_safely"""
+class MANIP_ExtensionInfoConvertionError(MANIP_Error): """Groups any error in generate_opcode_info_group"""
 
 
 
@@ -148,63 +148,63 @@ class PP_ExtensionInfoConvertionError(PP_Error): """Groups any error in generate
 #                      ERRORS FOR THE CONFIG                  #
 ###############################################################
 
-class PP_ConfigurationError(PP_Error): pass
+class MANIP_ConfigurationError(MANIP_Error): pass
 
 
 ###############################################################
 #                       ERRORS FOR UTILITY                    #
 ###############################################################
 
-class PP_FailedFileWriteError(PP_Error): pass
-class PP_FailedFileReadError(PP_Error): pass
-class PP_FailedFileDeleteError(PP_Error): pass
+class MANIP_FailedFileWriteError(MANIP_Error): pass
+class MANIP_FailedFileReadError(MANIP_Error): pass
+class MANIP_FailedFileDeleteError(MANIP_Error): pass
 
 ###############################################################
 #                     COPIED BUILT-IN ERRORS                  #
 ###############################################################
 
-class PP_NotImplementedError(PP_Error): pass
-class PP_TypeError(PP_Error): pass
-class PP_ValueError(PP_Error): pass
-class PP_AttributeError(PP_Error): pass
-class PP_OSError(PP_Error): pass
-class PP_FileNotFoundError(PP_OSError): pass
+class MANIP_NotImplementedError(MANIP_Error): pass
+class MANIP_TypeError(MANIP_Error): pass
+class MANIP_ValueError(MANIP_Error): pass
+class MANIP_AttributeError(MANIP_Error): pass
+class MANIP_OSError(MANIP_Error): pass
+class MANIP_FileNotFoundError(MANIP_OSError): pass
 
 ###############################################################
 #                         SPECIAL ERRORS                      #
 ###############################################################
 
-class PP_UnsupportedOSError(PP_Error): pass
-class PP_SetupRequiredError(PP_Error): pass # TODO: comment unused errors
-class PP_TempNotImplementedError(PP_Error):
+class MANIP_UnsupportedOSError(MANIP_Error): pass
+class MANIP_SetupRequiredError(MANIP_Error): pass # TODO: comment unused errors
+class MANIP_TempNotImplementedError(MANIP_Error):
     """Occurs on features that are not YET implemented"""
 
 
 """__all__ = [
-    "PP_Error", "PP_BlameDevsError", "PP_ThanksError", 
+    "MANIP_Error", "MANIP_BlameDevsError", "MANIP_ThanksError", 
     
     
-    "PP_OpcodeInfoError", "PP_UnknownOpcodeError", "PP_SameOpcodeTwiceError", 
+    "MANIP_OpcodeInfoError", "MANIP_UnknownOpcodeError", "MANIP_SameOpcodeTwiceError", 
     
     
-    "PP_DeserializationError", "PP_ConversionError",
+    "MANIP_DeserializationError", "MANIP_ConversionError",
     
     
-    "PP_ValidationError", "PP_PathValidationError", "PP_TypeValidationError", "PP_InvalidValueError",
-    "PP_RangeValidationError", "PP_MissingInputError", "PP_UnnecessaryInputError", 
-    "PP_MissingDropdownError", "PP_UnnecessaryDropdownError", "PP_InvalidDropdownValueError", 
-    "PP_InvalidOpcodeError", "PP_InvalidBlockShapeError", "PP_SpriteLayerStackError", 
-    "PP_SameValueTwiceError",
+    "MANIP_ValidationError", "MANIP_PathValidationError", "MANIP_TypeValidationError", "MANIP_InvalidValueError",
+    "MANIP_RangeValidationError", "MANIP_MissingInputError", "MANIP_UnnecessaryInputError", 
+    "MANIP_MissingDropdownError", "MANIP_UnnecessaryDropdownError", "MANIP_InvalidDropdownValueError", 
+    "MANIP_InvalidOpcodeError", "MANIP_InvalidBlockShapeError", "MANIP_SpriteLayerStackError", 
+    "MANIP_SameValueTwiceError",
     
     
-    "PP_InvalidExtensionSourceError", 
-    "PP_FetchError", "PP_NetworkFetchError", "PP_UnexpectedFetchError", "PP_FileFetchError",
-    "PP_JsParsingError", 
-    "PP_InvalidExtensionCodeError", "PP_EsprimaToJsonConversionError", 
+    "MANIP_InvalidExtensionSourceError", 
+    "MANIP_FetchError", "MANIP_NetworkFetchError", "MANIP_UnexpectedFetchError", "MANIP_FileFetchError",
+    "MANIP_JsParsingError", 
+    "MANIP_InvalidExtensionCodeError", "MANIP_EsprimaToJsonConversionError", 
     
-    "PP_UnknownExtensionAttributeError",
+    "MANIP_UnknownExtensionAttributeError",
     
     
-    "PP_ConfigurationError", 
+    "MANIP_ConfigurationError", 
 ]""" # TODO: when done with error update: reintroduce maintanence
 

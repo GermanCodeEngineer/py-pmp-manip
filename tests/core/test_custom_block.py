@@ -2,7 +2,7 @@ from pytest import fixture, raises
 
 from pmp_manip.opcode_info.api import BuiltinInputType, InputInfo, OpcodeType
 from pmp_manip.utility         import (
-    PP_TypeValidationError, PP_RangeValidationError, PP_SameValueTwiceError, PP_InvalidValueError, PP_ConversionError,
+    MANIP_TypeValidationError, MANIP_RangeValidationError, MANIP_SameValueTwiceError, MANIP_InvalidValueError, MANIP_ConversionError,
 )
 
 from pmp_manip.core.custom_block import (
@@ -53,10 +53,10 @@ def test_SRCustomBlockOpcode_corresponding_input_info(segments):
 def test_SRCustomBlockOpcode_validate(segments):
     custom_opcode = SRCustomBlockOpcode(segments=segments)
     custom_opcode.validate([])
-    # can't use execute_attr_validation_tests because frozen=True
-    with raises(PP_TypeValidationError): SRCustomBlockOpcode(segments=5).validate([])
-    with raises(PP_RangeValidationError): SRCustomBlockOpcode(segments=()).validate([])
-    with raises(PP_TypeValidationError): SRCustomBlockOpcode(segments=(-94,)).validate([])
+    # can not use execute_attr_validation_tests because frozen=True
+    with raises(MANIP_TypeValidationError): SRCustomBlockOpcode(segments=5).validate([])
+    with raises(MANIP_RangeValidationError): SRCustomBlockOpcode(segments=()).validate([])
+    with raises(MANIP_TypeValidationError): SRCustomBlockOpcode(segments=(-94,)).validate([])
 
 def test_SRCustomBlockOpcode_validate_same_arg_name_twice():
     custom_opcode = SRCustomBlockOpcode(segments=(
@@ -66,7 +66,7 @@ def test_SRCustomBlockOpcode_validate_same_arg_name_twice():
         SRCustomBlockArgument(type=SRCustomBlockArgumentType.BOOLEAN, name="the same arg name"),
         ";;;",
     ))
-    with raises(PP_SameValueTwiceError):
+    with raises(MANIP_SameValueTwiceError):
         custom_opcode.validate(path=[])
 
 
@@ -74,10 +74,10 @@ def test_SRCustomBlockOpcode_validate_same_arg_name_twice():
 def test_SRCustomBlockArgument_validate():
     argument = SRCustomBlockArgument(name="some arg name", type=SRCustomBlockArgumentType.STRING_NUMBER)
     argument.validate(path=[])
-    # can't use execute_attr_validation_tests because frozen=True
-    with raises(PP_TypeValidationError): SRCustomBlockArgument(name=[], type=argument.type).validate([])
-    with raises(PP_InvalidValueError): SRCustomBlockArgument(name="", type=argument.type).validate([])
-    with raises(PP_TypeValidationError): SRCustomBlockArgument(name=argument.name, type=True).validate([])
+    # can not use execute_attr_validation_tests because frozen=True
+    with raises(MANIP_TypeValidationError): SRCustomBlockArgument(name=[], type=argument.type).validate([])
+    with raises(MANIP_InvalidValueError): SRCustomBlockArgument(name="", type=argument.type).validate([])
+    with raises(MANIP_TypeValidationError): SRCustomBlockArgument(name=argument.name, type=True).validate([])
 
 
 
@@ -95,7 +95,7 @@ def test_SRCustomBlockOptype_from_code():
     assert SRCustomBlockOptype.from_code("string"   ) == SRCustomBlockOptype.STRING_REPORTER
     assert SRCustomBlockOptype.from_code("number"   ) == SRCustomBlockOptype.NUMBER_REPORTER
     assert SRCustomBlockOptype.from_code("boolean"  ) == SRCustomBlockOptype.BOOLEAN_REPORTER
-    with raises(PP_ConversionError):
+    with raises(MANIP_ConversionError):
         SRCustomBlockOptype.from_code("something else")
 
 

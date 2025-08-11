@@ -3,7 +3,7 @@ from dataclasses import field
 
 from pmp_manip.utility import (
     DualKeyDict, grepr_dataclass, GEnum, 
-    PP_UnknownOpcodeError, PP_SameOpcodeTwiceError,
+    MANIP_UnknownOpcodeError, MANIP_SameOpcodeTwiceError,
 )
 
 from pmp_manip.opcode_info.api.input        import InputInfo
@@ -90,8 +90,10 @@ class OpcodeInfo:
             self.has_shadow = (self.opcode_type is OpcodeType.MENU)
         if self.can_have_monitor:
             assert self.monitor_id_behaviour is not None, repr(self)
+
         else:
             assert self.monitor_id_behaviour is None, repr(self)
+
     
     # Special Cases
     def add_special_case(self, special_case: SpecialCase) -> None:
@@ -472,7 +474,7 @@ class OpcodeInfoAPI:
         """
         for old_opcode, new_opcode, opcode_info in group.opcode_info.items_key1_key2():
             if self.opcode_info.has_key1(old_opcode) or self.opcode_info.has_key2(new_opcode):
-                raise PP_SameOpcodeTwiceError(f"Must not add opcode {(old_opcode, new_opcode)} twice")
+                raise MANIP_SameOpcodeTwiceError(f"Must not add opcode {(old_opcode, new_opcode)!r} twice")
             self.opcode_info.set(
                 key1  = old_opcode,
                 key2  = new_opcode,
@@ -518,7 +520,7 @@ class OpcodeInfoAPI:
         return None
     def get_new_by_old(self, old: str) -> str:
         """
-        Get the new opcode for an old opcode, raise PP_UnknownOpcodeError if the old opcode is unknown.
+        Get the new opcode for an old opcode, raise MANIP_UnknownOpcodeError if the old opcode is unknown.
         Use this one, if you do NOT want to handle the unknown case yourself
         
         Args:
@@ -530,7 +532,7 @@ class OpcodeInfoAPI:
         new = self.get_new_by_old_safe(old)
         if new is not None:
             return new
-        raise PP_UnknownOpcodeError(f"Could not find new opcode for old opcode {repr(old)}")
+        raise MANIP_UnknownOpcodeError(f"Could not find new opcode for old opcode {old!r}")
     
     
     # Get old opcode for new opcode
@@ -550,7 +552,7 @@ class OpcodeInfoAPI:
         return None
     def get_old_by_new(self, new: str) -> str:
         """
-        Get the old opcode for an new opcode, raise PP_UnknownOpcodeError if the new opcode is unknown.
+        Get the old opcode for an new opcode, raise MANIP_UnknownOpcodeError if the new opcode is unknown.
         Use this one, if you do NOT want to handle the unknown case yourself
         
         Args:
@@ -562,7 +564,7 @@ class OpcodeInfoAPI:
         old = self.get_old_by_new_safe(new)
         if old is not None:
             return old
-        raise PP_UnknownOpcodeError(f"Could not find old opcode for new opcode {repr(new)}")
+        raise MANIP_UnknownOpcodeError(f"Could not find old opcode for new opcode {new!r}")
     
     
     # Fetching info by old opcode
@@ -582,7 +584,7 @@ class OpcodeInfoAPI:
         return None
     def get_info_by_old(self, old: str) -> OpcodeInfo:
         """
-        Get the opcode infotamtion by old opcode, raise PP_UnknownOpcodeError if the old opcode is unknown.
+        Get the opcode infotamtion by old opcode, raise MANIP_UnknownOpcodeError if the old opcode is unknown.
         Use this one, if you do NOT want to handle the unknown case yourself
         
         Args:
@@ -594,7 +596,7 @@ class OpcodeInfoAPI:
         info = self.get_info_by_old_safe(old)
         if info is not None:
             return info
-        raise PP_UnknownOpcodeError(f"Could not find OpcodeInfo by old opcode {repr(old)}")
+        raise MANIP_UnknownOpcodeError(f"Could not find OpcodeInfo by old opcode {old!r}")
     
     
     # Fetching info by new opcode
@@ -614,7 +616,7 @@ class OpcodeInfoAPI:
         return None 
     def get_info_by_new(self, new: str) -> OpcodeInfo:
         """
-        Get the opcode infotamtion by new opcode, raise PP_UnknownOpcodeError if the new opcode is unknown.
+        Get the opcode infotamtion by new opcode, raise MANIP_UnknownOpcodeError if the new opcode is unknown.
         Use this one, if you do NOT want to handle the unknown case yourself
         
         Args:
@@ -626,7 +628,7 @@ class OpcodeInfoAPI:
         info = self.get_info_by_new_safe(new)
         if info is not None:
             return info
-        raise PP_UnknownOpcodeError(f"Could not find OpcodeInfo by new opcode {repr(new)}")
+        raise MANIP_UnknownOpcodeError(f"Could not find OpcodeInfo by new opcode {new!r}")
 
 
 __all__ = ["OpcodeType", "MonitorIdBehaviour", "OpcodeInfo", "OpcodeInfoGroup", "OpcodeInfoAPI"]

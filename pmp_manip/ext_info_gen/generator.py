@@ -90,7 +90,7 @@ def process_all_menus(menus: dict[str, dict[str, Any]|list]) -> tuple[type[Input
                 direct_values     = new_possible_values,
                 rules             = rules, # we assume the possible menu values are static
                 old_direct_values = old_possible_values,
-                fallback          = None, # there can't be a fallback when the possible values are static
+                fallback          = None, # there can not be a fallback when the possible values are static
             )
             custom_dropdown_type = extend_enum(ExtensionDropdownType, menu_block_id, dropdown_type_info)
     
@@ -192,7 +192,7 @@ def generate_block_opcode_info(
                 case "polygon": # pragma: no cover
                     raise PP_TempNotImplementedError() # TODO, only necessary for the few polygon blocks(pen ext) # pragma: no cover
                 case "seperator":
-                    raise PP_ThanksError() # I couldn't find out what thats used for
+                    raise PP_ThanksError() # I could not find out what thats used for
             
             if (input_info is not None) and (dropdown_info is None):
                 inputs.set(key1=argument_id, key2=argument_id, value=input_info)
@@ -224,7 +224,7 @@ def generate_block_opcode_info(
             branch_count: the count of substacks the block has
         
         Raises:
-            ValueError: if 'branchCount' and 'text' don't match    
+            ValueError: if 'branchCount' and 'text' do not match    
         """
         
         def get_input_argument_brackets(input_type: InputType) -> tuple[str, str]:

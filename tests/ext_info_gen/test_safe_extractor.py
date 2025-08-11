@@ -2,11 +2,11 @@ from pytest                 import raises, warns
 from tree_sitter            import Parser, Node
 from typing                 import Any
 from types                  import NotImplementedType
-from pmp_manip.utility import PP_BadExtensionCodeFormatError
+from pmp_manip.utility import MANIP_BadExtensionCodeFormatError
 
 from pmp_manip.utility            import (
-    PP_JsNodeTreeToJsonConversionError, PP_InvalidExtensionCodeSyntaxError, PP_BadExtensionCodeFormatError, PP_InvalidTranslationMessageError,
-    PP_UnexpectedPropertyAccessWarning, PP_UnexpectedNotPossibleFeatureWarning,
+    MANIP_JsNodeTreeToJsonConversionError, MANIP_InvalidExtensionCodeSyntaxError, MANIP_BadExtensionCodeFormatError, MANIP_InvalidTranslationMessageError,
+    MANIP_UnexpectedPropertyAccessWarning, MANIP_UnexpectedNotPossibleFeatureWarning,
     NotSet,
 )
 
@@ -149,26 +149,26 @@ def test_ts_node_to_json_Scratch_property():
     
     tree = parser.parse("Scratch.ArgumentType".encode())
     expr_statement = tree.root_node.named_children[0]
-    with raises(PP_JsNodeTreeToJsonConversionError):
+    with raises(MANIP_JsNodeTreeToJsonConversionError):
         ts_node_to_json(expr_statement.named_children[0])
     
     tree = parser.parse("Scratch.x".encode())
     expr_statement = tree.root_node.named_children[0]
-    with raises(PP_JsNodeTreeToJsonConversionError):
+    with raises(MANIP_JsNodeTreeToJsonConversionError):
         ts_node_to_json(expr_statement.named_children[0])
 
 def test_ts_node_to_json_this_property():
     parser = get_js_parser()
     tree = parser.parse("this.sth".encode())
     expr_statement = tree.root_node.named_children[0]
-    with warns(PP_UnexpectedPropertyAccessWarning):
+    with warns(MANIP_UnexpectedPropertyAccessWarning):
         assert ts_node_to_json(expr_statement.named_children[0]) == None
 
 def test_ts_node_to_json_other_property():
     parser = get_js_parser()
     tree = parser.parse("sth1.sth2".encode())
     expr_statement = tree.root_node.named_children[0]
-    with raises(PP_JsNodeTreeToJsonConversionError):
+    with raises(MANIP_JsNodeTreeToJsonConversionError):
         ts_node_to_json(expr_statement.named_children[0])
 
 def test_ts_node_to_json_object():
@@ -181,12 +181,12 @@ def test_ts_node_to_json_object_invalid_property_key_type():
     parser = get_js_parser()
     tree = parser.parse('{...a}'.encode())
     expr_statement = tree.root_node.named_children[0]
-    with raises(PP_JsNodeTreeToJsonConversionError):
+    with raises(MANIP_JsNodeTreeToJsonConversionError):
         ts_node_to_json(expr_statement.named_children[0])
     
     tree = parser.parse('{[""]: 3}'.encode())
     expr_statement = tree.root_node.named_children[0]
-    with raises(PP_JsNodeTreeToJsonConversionError):
+    with raises(MANIP_JsNodeTreeToJsonConversionError):
         ts_node_to_json(expr_statement.named_children[0])
 
 def test_ts_node_to_json_array():
@@ -239,7 +239,7 @@ def test_ts_node_to_json_impossible_feature():
     parser = get_js_parser()
     tree = parser.parse("`Hello, ${name}`".encode())
     expr_statement = tree.root_node.named_children[0]
-    with warns(PP_UnexpectedNotPossibleFeatureWarning):
+    with warns(MANIP_UnexpectedNotPossibleFeatureWarning):
         assert ts_node_to_json(expr_statement.named_children[0]) == None
 
 def test_ts_node_to_json_call():
@@ -260,7 +260,7 @@ def test_ts_node_to_json_call():
     parser = get_js_parser()
     tree = parser.parse("hex(45)".encode())
     expr_statement = tree.root_node.named_children[0]
-    with raises(PP_JsNodeTreeToJsonConversionError):
+    with raises(MANIP_JsNodeTreeToJsonConversionError):
         ts_node_to_json(expr_statement.named_children[0], call_handler=None)
     assert ts_node_to_json(expr_statement.named_children[0], call_handler=handle_call) == "0x2d"
 
@@ -274,7 +274,7 @@ def test_ts_node_to_json_unsupported_type():
     parser = get_js_parser()
     tree = parser.parse("class X {}".encode())
     statement = tree.root_node.named_children[0]
-    with raises(PP_JsNodeTreeToJsonConversionError):
+    with raises(MANIP_JsNodeTreeToJsonConversionError):
         ts_node_to_json(statement)
 
 
@@ -309,7 +309,7 @@ def test_get_registered_class_name_and_errors():
 
     bad_code = "console.log('no register here')"
     tree = parser.parse(bad_code.encode())
-    with raises(PP_BadExtensionCodeFormatError):
+    with raises(MANIP_BadExtensionCodeFormatError):
         _get_registered_class_name(tree.root_node.named_children)
 
 
@@ -322,7 +322,7 @@ def test_get_class_def_by_name_and_errors():
     node = _get_class_def_by_name(body, "MyExt")
     assert node.type == "class_declaration"
 
-    with raises(PP_BadExtensionCodeFormatError):
+    with raises(MANIP_BadExtensionCodeFormatError):
         _get_class_def_by_name(body, "OtherExt")
 
 
@@ -335,7 +335,7 @@ def test_get_class_method_def_by_name_and_errors():
     method_node = _get_class_method_def_by_name(class_node, "myMethod")
     assert method_node.type == "method_definition"
 
-    with raises(PP_BadExtensionCodeFormatError):
+    with raises(MANIP_BadExtensionCodeFormatError):
         _get_class_method_def_by_name(class_node, "nope")
 
 
@@ -358,12 +358,12 @@ def test_extract_extension_info_safely_sandboxed():
 
 def test_extract_extension_info_safely_invalid_syntax():
     bad_code = "class X { getInfo() { return { id: 'x' "  # missing closing braces
-    with raises(PP_InvalidExtensionCodeSyntaxError):
+    with raises(MANIP_InvalidExtensionCodeSyntaxError):
         extract_extension_info_safely(bad_code)
 
 def test_extract_extension_info_safely_missing_getInfo():
     bad_code = "class X { someMethod() {} } Scratch.extensions.register(new X())"
-    with raises(PP_BadExtensionCodeFormatError):
+    with raises(MANIP_BadExtensionCodeFormatError):
         extract_extension_info_safely(bad_code)
 
 def test_extract_extension_info_safely_bad_translate_usage():
@@ -377,7 +377,7 @@ def test_extract_extension_info_safely_bad_translate_usage():
     }
     Scratch.extensions.register(new X())
     """
-    with raises(PP_InvalidTranslationMessageError):
+    with raises(MANIP_InvalidTranslationMessageError):
         extract_extension_info_safely(bad_code)
 
     bad_code = """
@@ -390,7 +390,7 @@ def test_extract_extension_info_safely_bad_translate_usage():
     }
     Scratch.extensions.register(new X())
     """
-    with raises(PP_InvalidTranslationMessageError):
+    with raises(MANIP_InvalidTranslationMessageError):
         extract_extension_info_safely(bad_code)
 
 
@@ -399,7 +399,7 @@ def test_extract_extension_info_safely_error_in_parse():
         def encode(self): # to replace str.encode
             return self
     
-    with raises(PP_InvalidExtensionCodeSyntaxError):
+    with raises(MANIP_InvalidExtensionCodeSyntaxError):
         extract_extension_info_safely(Something())
 
 def test_extract_extension_info_safely_with_translate_and_stringify():
@@ -464,7 +464,7 @@ def test_extract_extension_info_safely_with_call_handler_not_implemented():
     }
     Scratch.extensions.register(new X())
     """
-    with raises(PP_BadExtensionCodeFormatError):
+    with raises(MANIP_BadExtensionCodeFormatError):
         extract_extension_info_safely(bad_code)
 
 def test_extract_extension_info_safely_missing_return():
@@ -476,6 +476,6 @@ def test_extract_extension_info_safely_missing_return():
     }
     Scratch.extensions.register(new X())
     """
-    with raises(PP_BadExtensionCodeFormatError):
+    with raises(MANIP_BadExtensionCodeFormatError):
         extract_extension_info_safely(bad_code)
 

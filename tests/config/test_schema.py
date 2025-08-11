@@ -2,7 +2,7 @@ from dataclasses import FrozenInstanceError
 from datetime    import timedelta
 from pytest      import raises
 
-from pmp_manip.utility import grepr_dataclass, PP_TypeValidationError
+from pmp_manip.utility import grepr_dataclass, MANIP_TypeValidationError
 
 from pmp_manip.config.manager import get_default_config
 from pmp_manip.config.schema  import ConfigBase, MasterConfig, ExtInfoGenConfig, ValidationConfig, PlatformMetaConfig
@@ -46,10 +46,10 @@ def test_ExtInfoGenConfig_validate():
     execute_attr_validation_tests(
         obj=config,
         attr_tests=[
-            ("gen_opcode_info_dir", 5, PP_TypeValidationError),
-            ("js_fetch_interval", {}, PP_TypeValidationError),
-            ("node_js_exec_timeout", [], PP_TypeValidationError),
-            ("is_trusted_extension_origin_handler", "https://raw.githubusercontent.com/Logise1123/FirebaseDB-/refs/heads/main/db.js", PP_TypeValidationError),
+            ("gen_opcode_info_dir", 5, MANIP_TypeValidationError),
+            ("js_fetch_interval", {}, MANIP_TypeValidationError),
+            ("node_js_exec_timeout", [], MANIP_TypeValidationError),
+            ("is_trusted_extension_origin_handler", "https://raw.githubusercontent.com/Logise1123/FirebaseDB-/refs/heads/main/db.js", MANIP_TypeValidationError),
 
         ],
         validate_func=ExtInfoGenConfig.validate,
@@ -68,8 +68,8 @@ def test_ValidationConfig_validate():
     execute_attr_validation_tests(
         obj=config,
         attr_tests=[
-            ("raise_if_monitor_position_outside_stage", set(), PP_TypeValidationError),
-            ("raise_if_monitor_bigger_then_stage", None, PP_TypeValidationError),
+            ("raise_if_monitor_position_outside_stage", set(), MANIP_TypeValidationError),
+            ("raise_if_monitor_bigger_then_stage", None, MANIP_TypeValidationError),
         ],
         validate_func=ValidationConfig.validate,
         func_args=[[]],
@@ -88,9 +88,9 @@ def test_PlatformMetaConfig_validate():
     execute_attr_validation_tests(
         obj=config,
         attr_tests=[
-            ("scratch_semver", 31, PP_TypeValidationError),
-            ("scratch_vm", (11, 1, 0), PP_TypeValidationError),
-            ("penguinmod_vm", 2.0, PP_TypeValidationError),
+            ("scratch_semver", 31, MANIP_TypeValidationError),
+            ("scratch_vm", (11, 1, 0), MANIP_TypeValidationError),
+            ("penguinmod_vm", 2.0, MANIP_TypeValidationError),
         ],
         validate_func=PlatformMetaConfig.validate,
         func_args=[[]],
@@ -105,15 +105,15 @@ def test_MasterConfig_validate():
     execute_attr_validation_tests(
         obj=config,
         attr_tests=[
-            ("ext_info_gen", {}, PP_TypeValidationError),
+            ("ext_info_gen", {}, MANIP_TypeValidationError),
             ("ext_info_gen", ExtInfoGenConfig(
                     gen_opcode_info_dir=".", 
                     js_fetch_interval=3,
                     node_js_exec_timeout=1.0,
                     is_trusted_extension_origin_handler=None,
-                ), PP_TypeValidationError),
-            ("validation", config.ext_info_gen, PP_TypeValidationError),
-            ("platform_meta", [], PP_TypeValidationError),
+                ), MANIP_TypeValidationError),
+            ("validation", config.ext_info_gen, MANIP_TypeValidationError),
+            ("platform_meta", [], MANIP_TypeValidationError),
         ],
         validate_func=MasterConfig.validate,
         func_args=[[]],
