@@ -581,7 +581,7 @@ class SRProject:
                     broadcast_messages.extend(block.find_broadcast_messages())
         return broadcast_messages
     
-    def to_first(self, info_api: OpcodeInfoAPI, target_platform: TargetPlatform) -> FRProject:
+    def to_first(self, info_api: OpcodeInfoAPI, target_platform: TargetPlatform = TargetPlatform.PENGUINMOD) -> FRProject:
         """
         Converts a SRProject into a FRProject
         

@@ -1,5 +1,5 @@
 from typing      import Any
-from copy        import copy, deepcopy
+from copy        import deepcopy
 from dataclasses import field
 from abc         import abstractmethod, ABC
 from uuid        import uuid4, UUID

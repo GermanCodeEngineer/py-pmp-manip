@@ -252,7 +252,7 @@ def generate_extension_info_py_file(
         except MANIP_Error as error:
             if bundle_errors:
                 raise MANIP_SafeExtensionInfoExtractionError(
-                    f"Error in extension {extension_id!r}: Failed to extract extension info through safe analysis: {error}. "
+                    f"Error in extension {extension_id!r}: Failed to extract extension info through safe analysis: {error}\n"
                     f"You can choose to let the code execute directly, which is more likely to work. "
                     f"See https://github.com/GermanCodeEngineer/py-pmp-manip/blob/main/docs/ext_info_gen.md"
                 ) from error
@@ -305,6 +305,6 @@ if __name__ == "__main__": # pragma: no cover
         ("pmControlsExpansion", "example_extensions/pmControlsExpansion.js"),
         ("gpusb3",              "https://extensions.penguinmod.com/extensions/derpygamer2142/gpusb3.js"),
         ("P7BoxPhys",           "https://extensions.penguinmod.com/extensions/pooiod/Box2D.js"),
-        ("griffpatch",           "https://extensions.turbowarp.org/box2d.js")
+        ("griffpatch",          "https://extensions.turbowarp.org/box2d.js"),
     ]:
         generate_extension_info_py_file(extension, extension_id, tolerate_file_path=True) # pragma: no cover

@@ -97,7 +97,7 @@ class ServerExtension {
       .then(response => response.text())
       .catch(error => {
         console.error('Failed to load data:', error);
-        return "can not get data";
+        return "can't get data";
       });
   }
 }

@@ -687,10 +687,10 @@ class SRBlock:
     """
     
     opcode: str
-    inputs: dict[str, "SRInputValue"]
-    dropdowns: dict[str, SRDropdownValue]
-    comment: SRComment | None
-    mutation: "SRMutation | None"
+    inputs: dict[str, "SRInputValue"] = field(default_factory=dict)
+    dropdowns: dict[str, SRDropdownValue] = field(default_factory=dict)
+    comment: SRComment | None = None
+    mutation: "SRMutation | None" = None
     
     def validate(self, 
         path: list, 

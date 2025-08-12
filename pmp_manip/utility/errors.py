@@ -20,6 +20,7 @@ class MANIP_SameOpcodeTwiceError(MANIP_OpcodeInfoError): pass
 
 class MANIP_ExtensionModuleNotFoundError(MANIP_Error): pass
 class MANIP_UnexpectedExtensionModuleImportError(MANIP_Error): pass
+class MANIP_UnknownBuiltinExtensionError(MANIP_Error): pass
 
 ###############################################################
 #                  ERRORS FOR DESERIALIZATION                 #

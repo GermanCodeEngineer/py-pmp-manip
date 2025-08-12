@@ -7,7 +7,7 @@ from typing      import TYPE_CHECKING, Type, Iterable
 from pmp_manip.utility import (
     grepr_dataclass, enforce_argument_types, file_exists, GEnum, DualKeyDict, 
     MANIP_UnknownOpcodeError, MANIP_SameOpcodeTwiceError,
-    MANIP_ExtensionModuleNotFoundError, MANIP_UnexpectedExtensionModuleImportError,
+    MANIP_ExtensionModuleNotFoundError, MANIP_UnexpectedExtensionModuleImportError, MANIP_UnknownBuiltinExtensionError,
 )
 
 from pmp_manip.opcode_info.api.input        import InputInfo
@@ -20,12 +20,12 @@ if TYPE_CHECKING:
     from pmp_manip.core.block           import FRBlock, IRBlock, SRBlock
 
 
-@grepr_dataclass(grepr_fields=["group_id", "module_dir"])
+@grepr_dataclass(grepr_fields=["id", "module_dir"])
 class ExtensionRef:
     """
     A reference to an extension and its opcode info file
     """
-    group_id: str
+    id: str
     module_dir: str
 
 BUILTIN_MODULE_DIR = "pmp_manip/opcode_info/data/"
@@ -517,13 +517,13 @@ class OpcodeInfoAPI:
             MANIP_ExtensionModuleNotFoundError: If the extension's python module does not exist
             MANIP_UnexpectedExtensionModuleImportError: If the extension's python module can not be loaded e.g. because it is malformed
         """
-        module_path = path.join(extension_ref.module_dir, f"{extension_ref.group_id}.py")
+        module_path = path.join(extension_ref.module_dir, f"{extension_ref.id}.py")
         # Validate file existence
         if not file_exists(module_path):
             raise MANIP_ExtensionModuleNotFoundError(f"Python module of extension {extension_ref!r} was not found. Did you forget to generate it?")
     
         # Generate a unique module name to avoid clashes in sys.modules
-        module_name = f"_dynamic_module_{extension_ref.group_id}"
+        module_name = f"_dynamic_module_{extension_ref.id}"
     
         try:
             spec = importutil.spec_from_file_location(module_name, module_path)
@@ -543,8 +543,8 @@ class OpcodeInfoAPI:
             ) from error
     
         try:
-            group = getattr(module, extension_ref.group_id)
-        except AttributeError as erro:
+            group = getattr(module, f"ext_{extension_ref.id}")
+        except AttributeError as error:
             raise MANIP_UnexpectedExtensionModuleImportError(
                 f"Python module of extension {extension_ref!r} is malformed. "
                  "Please try deleting cache and regenerating it or create a GitHub issue"
@@ -587,11 +587,11 @@ class OpcodeInfoAPI:
         
         for custom_ext_id, extension_source in custom_ext_id_to_source.items():
             module_path = generate_extension_info_py_file(
-                source=extension_source,  extension_id=builtin_ext_id,
+                source=extension_source,  extension_id=custom_ext_id,
                 tolerate_file_path=False, bundle_errors=True,
             )
             extension_ref = ExtensionRef(
-                group_id   = custom_ext_id,
+                id         = custom_ext_id,
                 module_dir = path.dirname(module_path),
             )
             self.add_extension(extension_ref)        
