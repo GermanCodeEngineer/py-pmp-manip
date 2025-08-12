@@ -14,11 +14,11 @@ from .pypenguin_old.utility import CostumeBitmapResolutionConst, CostumeRotation
 # ------
 # Errors
 # ------
-class PP_PathError      (Exception): pass
-class FileNotFound   (PP_PathError): pass
-class DirNotFound    (PP_PathError): pass
-class InvalidFilePath(PP_PathError): pass
-class InvalidDirPath (PP_PathError): pass
+class MANIP_PathError      (Exception): pass
+class FileNotFound   (MANIP_PathError): pass
+class DirNotFound    (MANIP_PathError): pass
+class InvalidFilePath(MANIP_PathError): pass
+class InvalidDirPath (MANIP_PathError): pass
 
 # -----------------------
 # File and Image Handling Functions
@@ -57,7 +57,7 @@ def ensureCorrectPath(path, targetFolderName=None, ensureIsValid=False, ensureEx
             parentPath = os.path.dirname(currentPath)
             
             if parentPath == currentPath:
-                raise PP_PathError(f"Target folder '{targetFolderName}' not found in the path '{initialPath}'")
+                raise MANIP_PathError(f"Target folder '{targetFolderName}' not found in the path '{initialPath}'")
             
             currentPath = parentPath
 

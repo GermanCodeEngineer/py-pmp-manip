@@ -6,7 +6,8 @@ from uuid   import UUID
 from pmp_manip.important_consts import SHA256_SEC_TARGET_NAME
 from pmp_manip.opcode_info.api  import OpcodeInfoAPI, DropdownValueKind
 from pmp_manip.utility          import (
-    grepr_dataclass, read_all_files_of_zip, create_zip_file, string_to_sha256, gdumps, KeyReprDict,
+    grepr_dataclass, enforce_argument_types, 
+    read_all_files_of_zip, create_zip_file, string_to_sha256, gdumps, KeyReprDict,
     AA_TYPE, AA_NONE_OR_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_RANGE, AA_EXACT_LEN,
     MANIP_ThanksError, MANIP_SameValueTwiceError, MANIP_SpriteLayerStackError,
 )
@@ -132,43 +133,31 @@ class FRProject:
         """
         # TODO #if self.extension_data != {}: raise MANIP_ThanksError() # also uncomment test
 
-    def gen_opcode_info_for_all_extensions(self) -> list[str]:
+    @enforce_argument_types
+    def add_all_extensions_to_info_api(self, info_api: OpcodeInfoAPI) -> None:
         """
-        For every extension of the project generate the required opcode info py file.
-        If cached versions exists and they are up to date, they will be kept and not replaced.
-        Returns the file paths of the generated py files
+        For every extension of the project generate and import the required opcode info py file and add it to the OpcodeInfoAPI.
+        If cached versions exist and they are up to date, they will be kept and not replaced.
+        [WARNING] Does not copy info_api, but modifies it
         
         Raises:
-            MANIP_FailedFileWriteError: if the cache file or generated extension info file or its directory could not be written/created
-            MANIP_InvalidExtensionCodeSourceError: If the source data URI, URL or file_path is invalid or if a file path is passed even tough tolerate_file_paths is False or if the passed value is an invalid source
-            MANIP_NetworkFetchError: For any network-related error
-            MANIP_UnexpectedFetchError: For any other unexpected error while fetching URL
-            MANIP_FileFetchError: If the source file cannot be read
-            MANIP_InvalidExtensionCodeSyntaxError: if the extension code is syntactically invalid 
-            MANIP_BadExtensionCodeFormatError: if the extension code is badly formatted, so that the extension information cannot be extracted
-            MANIP_UnknownExtensionAttributeError: if the extension or a block has an unknown attribute
-            MANIP_InvalidCustomMenuError: if the information about a menu is invalid
-            MANIP_InvalidCustomBlockError: if information of a block is invalid
-            MANIP_NotImplementedError: if an XML block is included in the extension info
-            MANIP_ThanksError: if a block argument uses the mysterious Scratch.ArgumentType.SEPERATOR
+            MANIP_UnknownBuiltinExtensionError: if one tries to add an unknown or not yet implemented builtin extension
+            MANIP_ExtensionModuleNotFoundError: If the extension's python module does not exist
+            MANIP_UnexpectedExtensionModuleImportError: If the extension's python module can not be loaded e.g. because it is malformed
+            MANIP_NoNodeJSInstalledError: if Node.js is not installed or not found in PATH
+            MANIP_ExtensionFetchError: if the extension code could not be fetched for some reason
+            MANIP_DirectExtensionInfoExtractionError: if the extension info could not be extracted through direct execution
+            MANIP_SafeExtensionInfoExtractionError: if the extension info could not be extracted through safe analysis
+            MANIP_ExtensionInfoConvertionError: if the extracted extension info could not be converted into the format of this project
+            MANIP_ThanksError(unlikely): if a block argument uses the mysterious Scratch.ArgumentType.SEPERATOR
+            MANIP_FailedFileWriteError(unlikely): if the generated extension info file or cache file or their directory could not be written/created
     
         Warnings:
-            MANIP_UnexpectedPropertyAccessWarning: if a property of 'this' is accessed in the getInfo method of the extension code
-            MANIP_UnexpectedNotPossibleFeatureWarning: if an impossible to implement feature is used (eg. ternary expr) in the getInfo method of the extension code
+            MANIP_UnexpectedPropertyAccessWarning: if a property of 'this' is accessed in the getInfo method of the extension code in safe analysis
+            MANIP_UnexpectedNotPossibleFeatureWarning: if an impossible to implement feature is used (eg. ternary expr) in the getInfo method of the extension code in safe analysis
         """
-        from pmp_manip.ext_info_gen import generate_extension_info_py_file
-        
-        file_paths = []
-        for extension_id, extension_url in self.extension_urls.items():
-            try: 
-                file_path = generate_extension_info_py_file(
-                    source=extension_url, 
-                    extension_id=extension_id,
-                    tolerate_file_path=False,
-                )
-            except: pass
-            file_paths.append(file_path)
-        return file_paths
+        builtin_ext_ids = [ext_id for ext_id in self.extensions if ext_id not in self.extension_urls]
+        info_api._add_all_extensions_of_project(self.extension_urls, builtin_ext_ids)        
 
     def to_file(self, file_path: str) -> None:
         """
@@ -542,6 +531,40 @@ class SRProject:
                     other_path = defined_lists[list_.name]
                     raise MANIP_SameValueTwiceError(other_path, current_path, "Two lists must not have the same name")
                 defined_lists[list_.name] = current_path
+    
+    @enforce_argument_types
+    def add_all_extensions_to_info_api(self, info_api: OpcodeInfoAPI) -> OpcodeInfoAPI:
+        """
+        For every extension of the project generate and import the required opcode info py file and add it to the OpcodeInfoAPI.
+        If cached versions exist and they are up to date, they will be kept and not replaced.
+        [WARNING] Does not copy info_api, but modifies it
+        
+        Raises:
+            MANIP_UnknownBuiltinExtensionError: if one tries to add an unknown or not yet implemented builtin extension
+            MANIP_ExtensionModuleNotFoundError: If the extension's python module does not exist
+            MANIP_UnexpectedExtensionModuleImportError: If the extension's python module can not be loaded e.g. because it is malformed
+            MANIP_NoNodeJSInstalledError: if Node.js is not installed or not found in PATH
+            MANIP_ExtensionFetchError: if the extension code could not be fetched for some reason
+            MANIP_DirectExtensionInfoExtractionError: if the extension info could not be extracted through direct execution
+            MANIP_SafeExtensionInfoExtractionError: if the extension info could not be extracted through safe analysis
+            MANIP_ExtensionInfoConvertionError: if the extracted extension info could not be converted into the format of this project
+            MANIP_ThanksError(unlikely): if a block argument uses the mysterious Scratch.ArgumentType.SEPERATOR
+            MANIP_FailedFileWriteError(unlikely): if the generated extension info file or cache file or their directory could not be written/created
+    
+        Warnings:
+            MANIP_UnexpectedPropertyAccessWarning: if a property of 'this' is accessed in the getInfo method of the extension code in safe analysis
+            MANIP_UnexpectedNotPossibleFeatureWarning: if an impossible to implement feature is used (eg. ternary expr) in the getInfo method of the extension code in safe analysis
+        """
+        custom_ext_id_to_source = {}
+        builtin_ext_ids = []
+        for extension in self.extensions:
+            if   isinstance(extension, SRBuiltinExtension):
+                builtin_ext_ids.append(extension.id)                
+            elif isinstance(extension, SRCustomExtension):
+                custom_ext_id_to_source[extension.id] = extension.url
+        
+        info_api._add_all_extensions_of_project(custom_ext_id_to_source, builtin_ext_ids)
+        return info_api
     
     def _find_broadcast_messages(self) -> list[str]:
         """

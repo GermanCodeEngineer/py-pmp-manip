@@ -1,10 +1,13 @@
 from dataclasses import field
-from importlib   import import_module
+from importlib   import util as importutil
+from os          import path
+from sys         import modules as sys_modules
 from typing      import TYPE_CHECKING, Type, Iterable
 
 from pmp_manip.utility import (
-    DualKeyDict, grepr_dataclass, enforce_argument_types, GEnum, 
+    grepr_dataclass, enforce_argument_types, file_exists, GEnum, DualKeyDict, 
     MANIP_UnknownOpcodeError, MANIP_SameOpcodeTwiceError,
+    MANIP_ExtensionModuleNotFoundError, MANIP_UnexpectedExtensionModuleImportError,
 )
 
 from pmp_manip.opcode_info.api.input        import InputInfo
@@ -17,14 +20,28 @@ if TYPE_CHECKING:
     from pmp_manip.core.block           import FRBlock, IRBlock, SRBlock
 
 
-class ExtensionRef(GEnum):
+@grepr_dataclass(grepr_fields=["group_id", "module_dir"])
+class ExtensionRef:
     """
     A reference to an extension and its opcode info file
     """
-    value: str
+    group_id: str
+    module_dir: str
 
-    @property
-    def group_id(self) -> str: return self.value
+BUILTIN_MODULE_DIR = "pmp_manip/opcode_info/data/"
+class BuiltinExtensionRef:
+    makeymakey   = ExtensionRef("scratch_makey_makey"   , BUILTIN_MODULE_DIR)
+    music        = ExtensionRef("scratch_music"         , BUILTIN_MODULE_DIR)
+    pen          = ExtensionRef("scratch_pen"           , BUILTIN_MODULE_DIR)
+    text2speech  = ExtensionRef("scratch_text_to_speech", BUILTIN_MODULE_DIR)
+    text         = ExtensionRef("scratch_text"          , BUILTIN_MODULE_DIR)
+    translate    = ExtensionRef("scratch_translate"     , BUILTIN_MODULE_DIR)
+    videoSensing = ExtensionRef("scratch_video_sensing" , BUILTIN_MODULE_DIR)
+
+    tw_files     = ExtensionRef("tw_files"              , BUILTIN_MODULE_DIR)
+    lmsTempVars2 = ExtensionRef("tw_temporary_variables", BUILTIN_MODULE_DIR)
+
+    jgJSON       = ExtensionRef("pm_json"               , BUILTIN_MODULE_DIR)
 
 class OpcodeType(GEnum):
     """
@@ -495,25 +512,89 @@ class OpcodeInfoAPI:
         
         Args:
             extension_ref: the reference to the extension
-        """
-        module_name = f"pmp_manip.opcode_info.data.{extension_ref.group_id}"
-        try:
-            # Attempt dynamic import
-            module = import_module(module_name)
-        except ModuleNotFoundError as error:
-            raise PP_ExtensionModuleImportError(f"Failed to import python module of extension {extension_ref!r} at {module_name!r}") from error
-        except (SyntaxError, ImportError, Exception) as error:
-            raise PP_ExtensionModuleImportError(f"Unexpected error importing python module of extension {extension_ref!r} at {module_name!r}") from error
-        # HERE
-        try:
-            info_group = getattr(module, group_id)
-        except AttributeError as e:
-            raise AttributeError(f"Module {module_name!r} has no attribute {group_id!r}") from e
 
-        if not isinstance(info_group, (types.ModuleType, object)):
-            raise TypeError(
-                f"Attribute {group_id!r} in module {module_name!r} has unexpected type: {type(info_group).__name__}"
+        Raises:
+            MANIP_ExtensionModuleNotFoundError: If the extension's python module does not exist
+            MANIP_UnexpectedExtensionModuleImportError: If the extension's python module can not be loaded e.g. because it is malformed
+        """
+        module_path = path.join(extension_ref.module_dir, f"{extension_ref.group_id}.py")
+        # Validate file existence
+        if not file_exists(module_path):
+            raise MANIP_ExtensionModuleNotFoundError(f"Python module of extension {extension_ref!r} was not found. Did you forget to generate it?")
+    
+        # Generate a unique module name to avoid clashes in sys.modules
+        module_name = f"_dynamic_module_{extension_ref.group_id}"
+    
+        try:
+            spec = importutil.spec_from_file_location(module_name, module_path)
+            if spec is None or spec.loader is None:
+                raise MANIP_UnexpectedExtensionModuleImportError(
+                    f"Can not create spec for python module of extension {extension_ref!r}"
+                )
+    
+            module = importutil.module_from_spec(spec)
+            sys_modules[module_name] = module  # Required so relative imports work
+    
+            spec.loader.exec_module(module)
+        except (SyntaxError, ImportError, OSError, Exception) as error:
+            raise MANIP_UnexpectedExtensionModuleImportError(
+                f"Unexpected error importing python module of extension {extension_ref!r}: {error}. "
+                 "Please try deleting cache and regenerating it or create a GitHub issue"
+            ) from error
+    
+        try:
+            group = getattr(module, extension_ref.group_id)
+        except AttributeError as erro:
+            raise MANIP_UnexpectedExtensionModuleImportError(
+                f"Python module of extension {extension_ref!r} is malformed. "
+                 "Please try deleting cache and regenerating it or create a GitHub issue"
+            ) from error
+        
+        self.add_group(group)    
+   
+    def _add_all_extensions_of_project(self, custom_ext_id_to_source: dict[str, str], builtin_ext_ids: list[str]) -> None:
+        """
+        For every extension of a project generate and import the required opcode info py file.
+        If cached versions exist and they are up to date, they will be kept and not replaced
+        
+        Args:
+            custom_ext_id_to_source: maps custom extension id to extension source(probably a URL) of the project
+            builtin_ext_ids: the builtin extensions of the project
+        
+        Raises:
+            MANIP_UnknownBuiltinExtensionError: if one tries to add an unknown or not yet implemented builtin extension
+            MANIP_ExtensionModuleNotFoundError: If the extension's python module does not exist
+            MANIP_UnexpectedExtensionModuleImportError: If the extension's python module can not be loaded e.g. because it is malformed
+            MANIP_NoNodeJSInstalledError: if Node.js is not installed or not found in PATH
+            MANIP_ExtensionFetchError: if the extension code could not be fetched for some reason
+            MANIP_DirectExtensionInfoExtractionError: if the extension info could not be extracted through direct execution
+            MANIP_SafeExtensionInfoExtractionError: if the extension info could not be extracted through safe analysis
+            MANIP_ExtensionInfoConvertionError: if the extracted extension info could not be converted into the format of this project
+            MANIP_ThanksError(unlikely): if a block argument uses the mysterious Scratch.ArgumentType.SEPERATOR
+            MANIP_FailedFileWriteError(unlikely): if the generated extension info file or cache file or their directory could not be written/created
+    
+        Warnings:
+            MANIP_UnexpectedPropertyAccessWarning: if a property of 'this' is accessed in the getInfo method of the extension code in safe analysis
+            MANIP_UnexpectedNotPossibleFeatureWarning: if an impossible to implement feature is used (eg. ternary expr) in the getInfo method of the extension code in safe analysis
+        """
+        from pmp_manip.ext_info_gen import generate_extension_info_py_file
+                
+        for builtin_ext_id in builtin_ext_ids:
+            if not hasattr(BuiltinExtensionRef, builtin_ext_id):
+                raise MANIP_UnknownBuiltinExtensionError(f"Unknown or not (yet) implemented builtin extension: {builtin_ext_id}")
+            extension_ref = getattr(BuiltinExtensionRef, builtin_ext_id)
+            self.add_extension(extension_ref)
+        
+        for custom_ext_id, extension_source in custom_ext_id_to_source.items():
+            module_path = generate_extension_info_py_file(
+                source=extension_source,  extension_id=builtin_ext_id,
+                tolerate_file_path=False, bundle_errors=True,
             )
+            extension_ref = ExtensionRef(
+                group_id   = custom_ext_id,
+                module_dir = path.dirname(module_path),
+            )
+            self.add_extension(extension_ref)        
     
     # Get all opcodes
     @property
@@ -664,5 +745,8 @@ class OpcodeInfoAPI:
         raise MANIP_UnknownOpcodeError(f"Could not find OpcodeInfo by new opcode {new!r}")
 
 
-__all__ = ["ExtensionRef", "OpcodeType", "MonitorIdBehaviour", "OpcodeInfo", "OpcodeInfoGroup", "OpcodeInfoAPI"]
+__all__ = [
+    "ExtensionRef", "BuiltinExtensionRef", 
+    "OpcodeType", "MonitorIdBehaviour", "OpcodeInfo", "OpcodeInfoGroup", "OpcodeInfoAPI",
+]
 

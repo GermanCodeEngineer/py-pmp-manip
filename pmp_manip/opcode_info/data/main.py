@@ -8,10 +8,13 @@ from pmp_manip.important_consts import (
     OPCODE_CB_DEF, NEW_OPCODE_CB_DEF, OPCODE_CB_DEF_RET, NEW_OPCODE_CB_DEF_REP,
     SHA256_SEC_LOCAL_ARGUMENT_NAME,
 )
-from pmp_manip.utility          import string_to_sha256, DualKeyDict, GEnum, MANIP_InvalidValueError
+from pmp_manip.utility          import (
+    file_exists, string_to_sha256, 
+    DualKeyDict, GEnum, 
+    MANIP_InvalidValueError,
+)
 
 from pmp_manip.opcode_info.api import (
-    ExtensionRef,
     OpcodeInfo, OpcodeType, OpcodeInfoGroup, OpcodeInfoAPI, 
     InputInfo, InputType, BuiltinInputType,
     DropdownInfo, BuiltinDropdownType, 
@@ -379,21 +382,5 @@ info_api.add_opcodes_case(ANY_OPCODE_CB_DEF, SpecialCase(
 ))
 
 
-
-class BuiltinExtensionRef(ExtensionRef):
-    makeymakey   = "scratch_makey_makey"
-    music        = "scratch_music"
-    pen          = "scratch_pen"
-    text2speech  = "scratch_text_to_speech"
-    text         = "scratch_text"
-    translate    = "scratch_translate"
-    videoSensing = "scratch_video_sensing"
-
-    tw_files     = "tw_files"
-    lmsTempVars2 = "tw_temporary_variables"
-
-    jgJSON       = "pm_json"
-
-
-__all__ = ["info_api", "BuiltinExtensionRef"]
+__all__ = ["info_api"]
 

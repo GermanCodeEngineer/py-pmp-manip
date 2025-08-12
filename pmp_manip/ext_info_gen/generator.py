@@ -9,9 +9,9 @@ from pmp_manip.opcode_info.api import (
 )
 from pmp_manip.utility         import (
     grepr, DualKeyDict, GEnum,
-    PP_ThanksError, PP_TempNotImplementedError, PP_NotImplementedError,
-    PP_InvalidCustomMenuError, PP_InvalidCustomBlockError,
-    PP_UnknownExtensionAttributeError, 
+    MANIP_ThanksError, MANIP_TempNotImplementedError, MANIP_NotImplementedError,
+    MANIP_InvalidCustomMenuError, MANIP_InvalidCustomBlockError,
+    MANIP_UnknownExtensionAttributeError, 
 )
 
 
@@ -43,7 +43,7 @@ def process_all_menus(menus: dict[str, dict[str, Any]|list]) -> tuple[type[Input
         menus: the dict mapping menu id to menu information
     
     Raises:
-        PP_InvalidCustomMenuError: if the information about a menu is invalid 
+        MANIP_InvalidCustomMenuError: if the information about a menu is invalid 
     """
     class ExtensionInputType(InputType):
         pass
@@ -58,7 +58,7 @@ def process_all_menus(menus: dict[str, dict[str, Any]|list]) -> tuple[type[Input
             assert isinstance(menu_info, (dict, list))
             if   isinstance(menu_info, dict):
                 if "items" not in menu_info:
-                    raise PP_InvalidCustomMenuError(f"Invalid custom menu {menu_block_id!r} is missing attribute 'items'")
+                    raise MANIP_InvalidCustomMenuError(f"Invalid custom menu {menu_block_id!r} is missing attribute 'items'")
                 possible_values = menu_info["items"]
                 accept_reporters = menu_info.get("acceptReporters", False)
             elif isinstance(menu_info, list):
@@ -80,9 +80,9 @@ def process_all_menus(menus: dict[str, dict[str, Any]|list]) -> tuple[type[Input
                     old_possible_values.append(possible_value)
                 elif isinstance(possible_value, dict):
                     if "text" not in possible_value:
-                        raise PP_InvalidCustomMenuError(f"Invalid custom menu {menu_block_id!r}: item {i} is missing attribute 'text'")
+                        raise MANIP_InvalidCustomMenuError(f"Invalid custom menu {menu_block_id!r}: item {i} is missing attribute 'text'")
                     if "value" not in possible_value:
-                        raise PP_InvalidCustomMenuError(f"Invalid custom menu {menu_block_id!r}: item {i} is missing attribute 'value'")
+                        raise MANIP_InvalidCustomMenuError(f"Invalid custom menu {menu_block_id!r}: item {i} is missing attribute 'value'")
                     new_possible_values.append(possible_value["text"])
                     old_possible_values.append(possible_value["value"])
             
@@ -103,7 +103,7 @@ def process_all_menus(menus: dict[str, dict[str, Any]|list]) -> tuple[type[Input
                 )
                 extend_enum(ExtensionInputType, menu_block_id, input_type_info)
         except AssertionError as error:
-            raise PP_InvalidCustomMenuError(f"Invalid custom menu {repr(menu_block_id)}: {menu_info}") from error
+            raise MANIP_InvalidCustomMenuError(f"Invalid custom menu {repr(menu_block_id)}: {menu_info}") from error
     return (ExtensionInputType, ExtensionDropdownType)
 
 def generate_block_opcode_info(
@@ -124,10 +124,10 @@ def generate_block_opcode_info(
         extension_id: the id of the extension
     
     Raises:
-        PP_InvalidCustomBlockError: if the block information is invalid
-        PP_NotImplementedError: if an XML block is given to this function
-        PP_UnknownExtensionAttributeError: if the block has an unknown attribute
-        PP_ThanksError: if an argument uses the mysterious Scratch.ArgumentType.SEPERATOR
+        MANIP_InvalidCustomBlockError: if the block information is invalid
+        MANIP_NotImplementedError: if an XML block is given to this function
+        MANIP_UnknownExtensionAttributeError: if the block has an unknown attribute
+        MANIP_ThanksError: if an argument uses the mysterious Scratch.ArgumentType.SEPERATOR
     """
     def process_arguments(
             arguments: dict[str, dict[str, Any]], 
@@ -146,8 +146,8 @@ def generate_block_opcode_info(
         
         Raises:
             ValueError: if a non-existant menu is referenced or a menu link is combined with a not matching argument type
-            PP_TempNotImplementedError: ...
-            PP_ThanksError: if the mysterious Scratch.ArgumentType.SEPERATOR is used
+            MANIP_TempNotImplementedError: ...
+            MANIP_ThanksError: if the mysterious Scratch.ArgumentType.SEPERATOR is used
         """
         inputs: DualKeyDict[str, str, InputInfo] = DualKeyDict()
         dropdowns: DualKeyDict[str, str, DropdownInfo] = DualKeyDict()
@@ -190,9 +190,9 @@ def generate_block_opcode_info(
                 case "image":
                     continue # not really an input or dropdown, should be skipped
                 case "polygon": # pragma: no cover
-                    raise PP_TempNotImplementedError() # TODO, only necessary for the few polygon blocks(pen ext) # pragma: no cover
+                    raise MANIP_TempNotImplementedError() # TODO, only necessary for the few polygon blocks(pen ext) # pragma: no cover
                 case "seperator":
-                    raise PP_ThanksError() # I could not find out what thats used for
+                    raise MANIP_ThanksError() # I could not find out what thats used for
             
             if (input_info is not None) and (dropdown_info is None):
                 inputs.set(key1=argument_id, key2=argument_id, value=input_info)
@@ -318,7 +318,7 @@ def generate_block_opcode_info(
             case "label" | "button":
                 return (None, None) # not really block, but a label or button, can just be skipped
             case "xml":
-                raise PP_NotImplementedError("XML blocks are NOT supported. It is pretty much impossible to translate one into a database entry.") # TODO: reconsider
+                raise MANIP_NotImplementedError("XML blocks are NOT supported. It is pretty much impossible to translate one into a database entry.") # TODO: reconsider
             case _:
                 raise ValueError(f"Unknown value for blockType: {repr(block_type)}")
         
@@ -344,7 +344,7 @@ def generate_block_opcode_info(
                 "isEdgeActivated", "func", # TODO: find all remaining attriubtes
             }:
                 block_opcode = repr(block_info.get('opcode', 'Unknown'))
-                raise PP_UnknownExtensionAttributeError(f"Unknown or not (yet) implemented block attribute (block {block_opcode}): {repr(attr)}")
+                raise MANIP_UnknownExtensionAttributeError(f"Unknown or not (yet) implemented block attribute (block {block_opcode}): {repr(attr)}")
     
         new_opcode = generate_new_opcode(
             text=block_info["text"],
@@ -366,9 +366,9 @@ def generate_block_opcode_info(
     except (KeyError, ValueError) as error:
         block_opcode = repr(block_info.get('opcode', 'Unknown'))
         if   isinstance(error, KeyError):
-            raise PP_InvalidCustomBlockError(f"Invalid block info missing attribute {error} (block {block_opcode}): {block_info}") from error
+            raise MANIP_InvalidCustomBlockError(f"Invalid block info missing attribute {error} (block {block_opcode}): {block_info}") from error
         elif isinstance(error, ValueError):
-            raise PP_InvalidCustomBlockError(f"Invalid block info (block {block_opcode}): {error}: {block_info}") from error
+            raise MANIP_InvalidCustomBlockError(f"Invalid block info (block {block_opcode}): {error}: {block_info}") from error
     
     return (opcode_info, new_opcode)
 
@@ -380,11 +380,11 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
         extension_info: the raw extension information
     
     Raises:
-        PP_UnknownExtensionAttributeError: if the extension or a block has an unknown attribute
-        PP_InvalidCustomMenuError: if the information about a menu is invalid
-        PP_InvalidCustomBlockError: if information of a block is invalid
-        PP_NotImplementedError: if an XML block is included in the extension info
-        PP_ThanksError: if a block argument uses the mysterious Scratch.ArgumentType.SEPERATOR
+        MANIP_UnknownExtensionAttributeError: if the extension or a block has an unknown attribute
+        MANIP_InvalidCustomMenuError: if the information about a menu is invalid
+        MANIP_InvalidCustomBlockError: if information of a block is invalid
+        MANIP_NotImplementedError: if an XML block is included in the extension info
+        MANIP_ThanksError: if a block argument uses the mysterious Scratch.ArgumentType.SEPERATOR
     """
     # Relevant of the returned attributes: ["id", "blocks", "menus"]
     for attr in extension_info.keys():
@@ -392,7 +392,7 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
             "name", "color1", "color2", "color3", "menuIconURI", "blockIconURI", "docsURI", "isDynamic", "orderBlocks",
             "id", "blocks", "menus", # TODO: find all remaining attriubtes
         }:
-            raise PP_UnknownExtensionAttributeError(f"Unknown or not (yet) implemented extension attribute: {repr(attr)}")
+            raise MANIP_UnknownExtensionAttributeError(f"Unknown or not (yet) implemented extension attribute: {repr(attr)}")
 
     
     extension_id = extension_info["id"] # TODO: get correct name
@@ -415,7 +415,7 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
                 extension_id=extension_id,
             )
         else:
-            raise PP_InvalidCustomBlockError(f"Invalid block info: Expected type str or dict (block {i}): {block_info}")
+            raise MANIP_InvalidCustomBlockError(f"Invalid block info: Expected type str or dict (block {i}): {block_info}")
         
         if opcode_info is not None:
             old_opcode: str = f"{extension_id}_{block_info['opcode']}" # 'opcode' is guaranteed to exist

@@ -23,3 +23,4 @@ TODOs:
         => add enforce_argument_types decorator to public ones
     - replace remaining io actions with wrappers (eg. file_exists instead of os.path.exists)
     - possibly reform special case system with custom classes possibly even with metaclass
+    - add copy method to OpcodeInfoAPI and possibly others

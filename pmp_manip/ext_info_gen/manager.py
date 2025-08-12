@@ -141,7 +141,7 @@ def generate_extension_info_py_file(
     tolerate_file_path: bool, bundle_errors: bool = True,
 ) -> str:
     """
-    Generate a python file, which stores information about the blocks of the given extension and is required for the core module. If a cached version exists and is up to date, it will be kept. Returns the file path of the python file. Uses logging
+    Generate a python file, which stores information about the blocks of the given extension and is required for the core module. If a cached version exist and is up to date, it will be kept. Returns the file path of the python file. Uses logging
 
     Args:
         source: the file path or https URL or JS Data URI of the extension code(if tolerate_file_paths)
