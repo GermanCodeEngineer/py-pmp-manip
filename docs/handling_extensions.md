@@ -12,15 +12,13 @@ If your project uses a builtin extension, such as Scratch’s **music extension*
 **Example without adding the extension (will fail):**
 
 ```python
-from pmp_manip import FRProject
-from pmp_manip.opcode_info.data import info_api
-from pmp_manip.config import get_default_config, init_config
+from pmp_manip import get_default_config, init_config, FRProject, info_api
 
 # Init the required configuration
 cfg = get_default_config()
 init_config(cfg)
 
-frproject = FRProject.from_file(file_path="path/to/my_music_project.py")
+frproject = FRProject.from_file(file_path="path/to/my_music_project.pmp")
 srproject = frproject.to_second(info_api)
 print("Project was converted successfully :)")
 ```
@@ -37,10 +35,10 @@ This error occurs because that project uses Scratch's **music extension** and `i
 ### Adding a Builtin Extension manually
 
 ```python
-from pmp_manip import FRProject
-from pmp_manip.opcode_info.api import BuiltinExtensionRef
-from pmp_manip.opcode_info.data import info_api
-from pmp_manip.config import get_default_config, init_config
+from pmp_manip import (
+    get_default_config, init_config, FRProject,
+    BuiltinExtensionRef, info_api,
+)
 
 cfg = get_default_config()
 init_config(cfg)
@@ -48,7 +46,7 @@ init_config(cfg)
 # Add the music extension
 info_api.add_extension(BuiltinExtensionRef.music)
 
-frproject = FRProject.from_file(file_path="path/to/my_music_project.py")
+frproject = FRProject.from_file(file_path="path/to/my_music_project.pmp")
 srproject = frproject.to_second(info_api)
 print("Project was converted successfully :)")
 ```
@@ -61,15 +59,16 @@ If you do not want to manually add extensions or need custom extensions,
 you can **automatically detect and add all required extensions** for a project.
 
 ```python
-from pmp_manip import FRProject
-from pmp_manip.opcode_info.data import info_api
-from pmp_manip.config import get_default_config, init_config
+from pmp_manip import (
+    get_default_config, init_config, FRProject,
+    info_api,
+)
 
 cfg = get_default_config()
 init_config(cfg)
 
 # Load the project
-frproject = FRProject.from_file(file_path="path/to/my_music_project.py")
+frproject = FRProject.from_file(file_path="path/to/my_music_project.pmp")
 
 # Automatically add all needed extensions
 frproject.add_all_extensions_to_info_api(info_api)
@@ -94,9 +93,11 @@ print("Project was converted successfully :)")
 For **custom extensions**, you can create and attach them manually.
 
 ```python
-from pmp_manip import SRProject, SRCustomExtension, SRScript, SRBlock
-from pmp_manip.opcode_info.data import info_api
-from pmp_manip.config import get_default_config, init_config
+from pmp_manip import (
+    get_default_config, init_config,
+    SRProject, SRCustomExtension, SRScript, SRBlock,
+    info_api,
+)
 
 cfg = get_default_config()
 init_config(cfg)
@@ -136,7 +137,7 @@ Unsupported member expression format:
   member_expression:
     identifier ('BlockType')
     property_identifier ('COMMAND')
-You can choose to let the code execute directly, which is more likely to work. See https://github.com/GermanCodeEngineer/py-pmp-manip/blob/main/docs/ext_info_gen.md
+You can choose to let the code execute directly, which is more likely to work. See https://github.com/GermanCodeEngineer/py-pmp-manip/blob/main/docs/handling_extensions.md
 ```
 
 ---
@@ -147,9 +148,11 @@ If you trust the extension source (e.g., a known developer or a verified domain)
 you can configure the extension info generator to treat it as trusted.
 
 ```python
-from pmp_manip import SRProject, SRCustomExtension, SRScript, SRBlock
-from pmp_manip.opcode_info.data import info_api
-from pmp_manip.config import get_default_config, init_config
+from pmp_manip import (
+    get_default_config, init_config,
+    SRProject, SRCustomExtension, SRScript, SRBlock,
+    info_api,
+)
 
 cfg = get_default_config()
 
@@ -189,8 +192,7 @@ print("Project was modified and converted into PenguinMod format successfully :)
 ---
 
 ### References
-
-* For a documentation overview or read all pages of the tutoral, see [docs/index.md](index.md) 
-* For an explaination of config, see [docs/config.md](config.md)
-* For all config options, see [config.md#extinfogenconfig](config.md#extinfogenconfig)
+* For a **documentation overview** and **all pages** of the tutorial, see [docs/index.md](index.md)
+* For an **explaination of the config**, see [docs/config.md](config.md)
+* For **all config options**, see [config.md#ExtInfoGenConfig](config.md#extinfogenconfig)
 

@@ -136,6 +136,5 @@ init_config(MasterConfig(
 ```
 
 ### References
-
-* For a documentation overview and a broader usage tutorial, see [docs/index.md](docs/index.md) 
-
+* For a **documentation overview** and **all pages** of the tutorial, see [docs/index.md](index.md)
+* Next Page: **Loading and Creating Projects**, see [docs/load_create.md](load_create.md)

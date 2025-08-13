@@ -254,7 +254,7 @@ def generate_extension_info_py_file(
                 raise MANIP_SafeExtensionInfoExtractionError(
                     f"Error in extension {extension_id!r}: Failed to extract extension info through safe analysis: {error}\n"
                     f"You can choose to let the code execute directly, which is more likely to work. "
-                    f"See https://github.com/GermanCodeEngineer/py-pmp-manip/blob/main/docs/ext_info_gen.md"
+                    f"See https://github.com/GermanCodeEngineer/py-pmp-manip/blob/main/docs/handling_extensions.md"
                 ) from error
             else:
                 raise type(error)(f"Error in extension {extension_id!r}: {str(error)}") from error

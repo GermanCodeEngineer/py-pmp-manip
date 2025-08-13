@@ -4,14 +4,18 @@ from dataclasses     import dataclass
 from functools       import wraps
 from inspect         import signature
 from types           import NoneType, UnionType
-from typing          import get_type_hints, get_origin, get_args, Callable, Any, ParamSpec, TypeVar
+from typing          import (
+    Any, Callable, ParamSpec, TypeVar, 
+    get_origin, get_args, get_type_hints,
+)
 
 from pmp_manip.utility.dual_key_dict import DualKeyDict
 from pmp_manip.utility.repr          import grepr
 
 
-PARAM_SPEC = ParamSpec("PARAM_SPEC")  # captures original parameters
-RETURN_T = TypeVar("RETURN_T")    # captures original return type
+PARAM_SPEC = ParamSpec("PARAM_SPEC")
+RETURN_T = TypeVar("RETURN_T")
+
 
 def enforce_argument_types(func: Callable[PARAM_SPEC, RETURN_T]) -> Callable[PARAM_SPEC, RETURN_T]:
     """
@@ -25,81 +29,92 @@ def enforce_argument_types(func: Callable[PARAM_SPEC, RETURN_T]) -> Callable[PAR
     - Callable (verifies the object is callable)
     - Custom DualKeyDict[K1, K2, V]
 
+    Works with:
+    - Functions
+    - Instance methods
+    - Class methods
+    - Static methods
+
     Args:
         func: the function to wrap
 
     Raises:
         TypeError: if any argument does not match its annotated type
     """
+    # Unwrap and rewrap classmethod/staticmethod
+    if isinstance(func, (classmethod, staticmethod)):
+        original_func = func.__func__
+        wrapped = enforce_argument_types(original_func)
+        return type(func)(wrapped)
+
     sig = signature(func)
     type_hints = get_type_hints(func)
 
     @wraps(func)
-    def decorator(*args, **kwargs) -> Any:
+    def wrapper(*args: PARAM_SPEC.args, **kwargs: PARAM_SPEC.kwargs) -> RETURN_T:
         bound_args = sig.bind(*args, **kwargs)
         bound_args.apply_defaults()
 
-        for name, value in bound_args.arguments.items():
+        skip_first = False
+        # Instance or class method — skip 'self' or 'cls'
+        if bound_args.arguments:
+            first_name = next(iter(bound_args.arguments))
+            if first_name in ("self", "cls"):
+                skip_first = True
+
+        for i, (name, value) in enumerate(bound_args.arguments.items()):
+            if skip_first and i == 0:
+                continue
             if name in type_hints:
                 expected_type = type_hints[name]
                 _check_type(value, expected_type, name)
 
         return func(*args, **kwargs)
 
-    return decorator
+    return wrapper
 
-def _check_type(value, expected_type, name, _path="") -> None:
+
+def _check_type(value: Any, expected_type: Any, name: str, _path: str = "") -> None:
     """
-    Recursively checks that a given value matches the expected type
-
-    Supports:
-    - Basic types: int, str, etc.
-    - Generic containers: list[T], tuple[T1, T2], set[T], dict[K, V]
-    - Union types: int | str
-    - Optional types: str | None
-    - Callable: ensures the value is callable
-    - DualKeyDict[K1, K2, V]: verifies all keys and values
+    Recursively checks that a given value matches the expected type.
 
     Args:
-        value: The actual value passed to the function
+        value: the actual value passed to the function
         expected_type: The type annotation from the function signature
-        name: The argument name (for error messages)
-        _path: Internal path used for nested data reporting
+        name: the argument name (for error messages)
+        _path: internal path used for nested data reporting
 
     Raises:
-        TypeError: if the value does not match the expected type
+        TypeError: If the value does not match the expected type
     """
     origin = get_origin(expected_type)
     args = get_args(expected_type)
     label = f"argument '{name}'{_path}"
 
-    # Basic types
+    # Any
+    if expected_type is Any:
+        return
+
+    # NoneType
+    if expected_type is NoneType:
+        if value is not None:
+            raise TypeError(f"{label} must be None, got {type(value)}")
+        return
+
+    # Non-generic types
     if origin is None:
         if not isinstance(value, expected_type):
             raise TypeError(f"{label} must be {expected_type}, got {type(value)}")
         return
 
-    # Union types (int | str | None etc.)
-    if origin is NoneType or origin is type(None):
-        if value is not None:
-            raise TypeError(f"{label} must be None, got {type(value)}")
-        return
-
-    if origin is None and expected_type is Any:
-        return  # skip check for Any
-
-    if origin is type(None):
-        if value is not None:
-            raise TypeError(f"{label} must be None, got {type(value)}")
-        return
-
-    if origin is Callable or origin is CallableABC:
+    # Callable
+    if origin in (Callable, CallableABC):
         if not callable(value):
             raise TypeError(f"{label} must be callable, got {type(value)}")
         return
 
-    # Union (int | str)
-    if origin is UnionType:  # Python 3.10+
+    # Union (including Optional)
+    if origin is UnionType:  # Python 3.10+ syntax `|`
         for subtype in args:
             try:
                 _check_type(value, subtype, name, _path)

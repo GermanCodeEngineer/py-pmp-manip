@@ -100,6 +100,7 @@ class FRProject:
             sprite_data["id"] = string_to_sha256(sprite_name, secondary=SHA256_SEC_TARGET_NAME)
         return project_data
 
+    @enforce_argument_types
     @classmethod
     def from_file(cls, file_path: str) -> "FRProject":
         """
@@ -155,6 +156,7 @@ class FRProject:
         builtin_ext_ids = [ext_id for ext_id in self.extensions if ext_id not in self.extension_urls]
         info_api._add_all_extensions_of_project(self.extension_urls, builtin_ext_ids)        
 
+    @enforce_argument_types
     def to_file(self, file_path: str) -> None:
         """
         Writes the project data to a project file(.sb3 or .pmp)
@@ -171,6 +173,7 @@ class FRProject:
         contents["project.json"] = gdumps(project_data).encode()
         create_zip_file(file_path, contents)
 
+    @enforce_argument_types
     def to_second(self, info_api: OpcodeInfoAPI) -> "SRProject":
         """
         Converts a FRProject into a SRProject
@@ -264,6 +267,7 @@ class SRProject:
     global_monitors: list[SRMonitor]
     extensions: list[SRExtension]
 
+    @enforce_argument_types
     @classmethod
     def create_empty(cls) -> "SRProject":
         """
@@ -326,6 +330,7 @@ class SRProject:
 
         return True
 
+    @enforce_argument_types
     def validate(self, info_api: OpcodeInfoAPI) -> None:
         """
         Ensure a SRProject is valid, raise MANIP_ValidationError if not
@@ -577,6 +582,7 @@ class SRProject:
                     broadcast_messages.extend(block.find_broadcast_messages())
         return broadcast_messages
     
+    @enforce_argument_types
     def to_first(self, info_api: OpcodeInfoAPI, target_platform: TargetPlatform = TargetPlatform.PENGUINMOD) -> FRProject:
         """
         Converts a SRProject into a FRProject

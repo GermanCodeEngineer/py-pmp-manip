@@ -37,9 +37,9 @@ cfg = get_default_config()
 cfg.ext_info_gen.gen_opcode_info_dir = "output/gen_opcode_info"
 init_config(cfg)
 ```
-
-For more config details, see [docs/config.md](docs/config.md)
-For a broader usage tutorial, see [docs/index.md](docs/index.md) 
+### References
+* For more **config details**, see [docs/config.md](docs/config.md)
+* For a **documentation overview** and a **broader usage tutorial**, see [docs/index.md](docs/index.md) 
 
 ---
 

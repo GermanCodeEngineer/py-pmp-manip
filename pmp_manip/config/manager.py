@@ -7,13 +7,14 @@
 from colorama import init as colorama_init
 from datetime import timedelta
 
-from pmp_manip.utility import MANIP_ConfigurationError, MANIP_ValidationError
+from pmp_manip.utility import enforce_argument_types, MANIP_ConfigurationError, MANIP_ValidationError
 
 from pmp_manip.config.schema import *
 
 
 _config_instance: MasterConfig | None = None
 
+@enforce_argument_types
 def init_config(config: MasterConfig) -> None:
     """
     Initializes the global configuration.
