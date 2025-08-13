@@ -1,5 +1,5 @@
 from typing      import Any
-from copy        import deepcopy
+from copy        import copy, deepcopy
 from dataclasses import field
 from abc         import abstractmethod, ABC
 from uuid        import uuid4, UUID
@@ -49,10 +49,10 @@ class FRTarget(ABC):
     @abstractmethod
     def from_data(cls, data: dict[str, Any]) -> "FRTarget":
         """
-        Deserializes raw data into a FRTarget
+        Deserializes json_data into a FRTarget
         
         Args:
-            data: the raw data
+            data: the json_data
         
         Returns:
             the FRTarget
@@ -64,7 +64,7 @@ class FRTarget(ABC):
         Prepare common fields for FRTarget and its subclasses
 
         Args:
-            data: the raw data
+            data: the json_data
 
         Returns:
             a dict containing the prepared values for common fields
@@ -72,10 +72,11 @@ class FRTarget(ABC):
         return dict(
             is_stage=data["isStage"],
             name=data["name"],
+            # TODO: after dropdown value typing: is this fine?:
             variables={key: tuple(value) for key, value in data["variables"].items()},
             lists={key: tuple(value) for key, value in data["lists"].items()},
-            broadcasts=data["broadcasts"],
-            custom_vars=data.get("customVars", []),
+            broadcasts=copy(data["broadcasts"]),
+            custom_vars=deepcopy(data.get("customVars", [])),
             blocks={
                 block_id: (
                     tuple(block_data)
@@ -123,9 +124,10 @@ class FRTarget(ABC):
         return {
             "isStage": self.is_stage,
             "name": self.name,
+            # TODO: after dropdown value typing: is this fine?:
             "variables": {key: list(value) for key, value in self.variables.items()},
             "lists": {key: list(value) for key, value in self.lists.items()},
-            "broadcasts": deepcopy(self.broadcasts),
+            "broadcasts": copy(self.broadcasts),
             "customVars": deepcopy(self.custom_vars),
             "blocks": {
                 block_id: (
@@ -190,32 +192,32 @@ class FRTarget(ABC):
                 floating_comments.append(new_comment)
 
         blocks = deepcopy(self.blocks)
-        for block_reference, block in blocks.items():
+        for block_id, block in blocks.items():
             if isinstance(block, tuple):
-                blocks[block_reference] = FRBlock.from_tuple(block, parent_id=None)
+                blocks[block_id] = FRBlock.from_tuple(block, parent_id=None)
 
         fti_if = FirstToInterIF(blocks=blocks, block_comments=attached_comments)
         new_blocks: dict["str", "IRBlock"] = {}
-        for block_reference, block in blocks.items():
+        for block_id, block in blocks.items():
             new_block = block.to_inter(
-                fti_if = fti_if,
-                info_api  = info_api,
-                own_id    = block_reference,
+                fti_if   = fti_if,
+                info_api = info_api,
+                own_id   = block_id,
             )
-            new_blocks[block_reference] = new_block
+            new_blocks[block_id] = new_block
 
-        for block_reference in fti_if.scheduled_block_deletions:
-            del new_blocks[block_reference]
+        for block_id in fti_if.scheduled_block_deletions:
+            del new_blocks[block_id]
         
         # Get all top level block ids
-        top_level_block_refs: list[str] = []
+        top_level_block_ids: list[str] = []
         [
-            top_level_block_refs.append(block_reference) 
-            if block.is_top_level else None for block_reference, block in new_blocks.items()
+            top_level_block_ids.append(block_id) 
+            if block.is_top_level else None for block_id, block in new_blocks.items()
         ]
         
         # Account for that one bug(not my fault), where a block is falsely independent
-        for block_reference, block in new_blocks.items():
+        for block_id, block in new_blocks.items():
             for input_value in block.inputs.values():
                 for sub_reference in input_value.references:
                     sub_block = new_blocks[sub_reference]
@@ -223,11 +225,11 @@ class FRTarget(ABC):
                         continue
                     sub_block.is_top_level = False
                     sub_block.position     = None
-                    top_level_block_refs.remove(sub_reference)
+                    top_level_block_ids.remove(sub_reference)
 
         new_scripts = []
-        for top_level_block_ref in top_level_block_refs:
-            block = new_blocks[top_level_block_ref]
+        for top_level_block_id in top_level_block_ids:
+            block = new_blocks[top_level_block_id]
             position, script_blocks = block.to_second(
                 all_blocks    = new_blocks,
                 info_api      = info_api,
@@ -271,7 +273,7 @@ class FRTarget(ABC):
         for list_ in self.lists.values():
             if len(list_) == 2:
                 new_lists.append(
-                    SRList(name=list_[0], current_value=list_[1])
+                    SRList(name=list_[0], current_value=copy(list_[1]))
                 )
             else:
                 raise MANIP_ConversionError(f"Invalid list data {list_}")
@@ -292,10 +294,10 @@ class FRStage(FRTarget):
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRStage":
         """
-        Deserializes raw data into a FRStage
+        Deserializes json_data into a FRStage
         
         Args:
-            data: the raw data
+            data: the json_data
         
         Returns:
             the FRStage
@@ -379,10 +381,10 @@ class FRSprite(FRTarget):
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRSprite":
         """
-        Deserializes raw data into a FRSprite
+        Deserializes json_data into a FRSprite
         
         Args:
-            data: the raw data
+            data: the json_data
         
         Returns:
             the FRSprite
@@ -660,9 +662,9 @@ class SRTarget:
         
         id_to_parent_id = {}
         for block_id, block in sti_if.produced_blocks.items():
-            block_references = block.get_references()
-            for block_reference in block_references:
-                id_to_parent_id[block_reference] = block_id
+            block_ids = block.get_references()
+            for block_id in block_ids:
+                id_to_parent_id[block_id] = block_id
         
         for block_id, block in sti_if.produced_blocks.items():
             old_block = block.to_first(

@@ -42,10 +42,10 @@ class FRProject:
         asset_files: dict[str, bytes], 
     ) -> "FRProject":
         """
-        Deserializes raw data into a FRProject
+        Deserializes json_data into a FRProject
         
         Args:
-            data: the raw data
+            data: the json_data
             asset_files: the contents of the costume and sound files
         
         Returns:
@@ -111,15 +111,11 @@ class FRProject:
         Returns:
             the FRProject
         """
-        assert file_path.endswith(".sb3") or file_path.endswith(".pmp")
+        assert file_path.endswith(".sb3") or file_path.endswith(".pmp") # TODO: remove
         contents = read_all_files_of_zip(file_path)
         project_data = loads(contents["project.json"].decode())
-        
-        project_data["targets"] = project_data["targets"][0:2]
-        with open("log_raw.lua", "w") as file:
-            file.write(FRProject.__repr__(project_data))
-        
         del contents["project.json"]
+
         if   file_path.endswith(".sb3"):
             project_data = FRProject._data_sb3_to_pmp(project_data)
         return FRProject.from_data(project_data, asset_files=KeyReprDict(contents))
@@ -169,7 +165,7 @@ class FRProject:
         Returns:
             the FRProject
         """
-        assert file_path.endswith(".sb3") or file_path.endswith(".pmp")
+        assert file_path.endswith(".sb3") or file_path.endswith(".pmp") # TODO: remove
         project_data, asset_files = self.to_data()
         contents = asset_files
         contents["project.json"] = gdumps(project_data).encode()

@@ -148,8 +148,8 @@ class FRBlock:
             "opcode"  : self.opcode,
             "next"    : self.next,
             "parent"  : self.parent,
-            "inputs"  : listify(self.inputs),
-            "fields"  : listify(self.fields),
+            "inputs"  : deepcopy(listify(self.inputs)),
+            "fields"  : deepcopy(listify(self.fields)),
             "shadow"  : self.shadow,
             "topLevel": self.top_level,
         }
@@ -210,14 +210,14 @@ class FRBlock:
         instead_handler = opcode_info.get_special_case(SpecialCaseType.INSTEAD_FIRST_TO_INTER)
         if instead_handler is None:
             new_inputs = self._to_inter_inputs(
-                fti_if  = fti_if,
-                info_api   = info_api,
+                fti_if      = fti_if,
+                info_api    = info_api,
                 opcode_info = opcode_info,
-                own_id     = own_id,
+                own_id      = own_id,
             )
             new_dropdowns = {}
             for dropdown_id, dropdown_value in self.fields.items():
-                new_dropdowns[dropdown_id] = dropdown_value[0]
+                new_dropdowns[dropdown_id] = dropdown_value[0] # TODO: after dropdown value typing: is this fine?
             
             new_block = IRBlock(
                 opcode       = self.opcode,
@@ -225,9 +225,8 @@ class FRBlock:
                 dropdowns    = new_dropdowns,
                 position     = (self.x, self.y) if self.top_level else None,
                 comment      = None if self.comment  is None else fti_if.get_comment(self.comment),
-                mutation     = None if self.mutation is None else self.mutation.to_second(
-                    fti_if = fti_if,
-                ),
+                # the result of get_comment is a comment which is not used by any block => fine
+                mutation     = None if self.mutation is None else self.mutation.to_second(fti_if),
                 next         = self.next,
                 is_top_level = self.top_level,
             )
@@ -256,7 +255,7 @@ class FRBlock:
         
         new_inputs = {}
         for input_id, input_value in self.inputs.items():
-            input_info = input_infos[input_id].type.mode
+            input_mode = input_infos[input_id].type.mode
 
             references      = []
             immediate_block = None
@@ -276,7 +275,7 @@ class FRBlock:
                 else: raise MANIP_ConversionError(f"Invalid input value {input_value!r} for input {input_id!r}")
 
             new_inputs[input_id] = IRInputValue(
-                mode            = input_info,
+                mode            = input_mode,
                 references      = references,
                 immediate_block = immediate_block,
                 text            = text,
@@ -372,11 +371,11 @@ class IRBlock:
             input_type = input_infos[input_id].type
             elements = input_value.references.copy()
             if input_value.immediate_block is not None:
-                frblock = input_value.immediate_block.to_first( # an immediate block can not have any references
+                frblock = input_value.immediate_block.to_first(
                     itf_if      = itf_if,
                     info_api    = info_api,
                     parent_id   = own_id,
-                    own_id      = None,
+                    own_id      = None, # an immediate block can not have any references => no own id needed?
                 )
                 elements.insert(0, frblock)
             match input_type.mode:
@@ -417,7 +416,7 @@ class IRBlock:
                     suffix    = None
                     sha256    = string_to_sha256(dropdown_value, secondary=SHA256_SEC_DROPDOWN_VALUE)
             if suffix is None:
-                old_fields[dropdown_id] = (dropdown_value, sha256)
+                old_fields[dropdown_id] = (dropdown_value, sha256) # TODO: after dropdown value typing: is this fine?
             else:
                 old_fields[dropdown_id] = (dropdown_value, sha256, suffix)                
         
@@ -569,8 +568,8 @@ class IRBlock:
             opcode    = info_api.get_new_by_old(self.opcode),
             inputs    = new_inputs,
             dropdowns = new_dropdowns,
-            comment   = self.comment,
-            mutation  = self.mutation,
+            comment   = deepcopy(self.comment),
+            mutation  = deepcopy(self.mutation),
         )
         new_blocks = [new_block]
         if self.next is not None:
@@ -974,8 +973,8 @@ class SRBlock:
             opcode       = info_api.get_old_by_new(self.opcode),
             inputs       = old_inputs,
             dropdowns    = old_dropdowns,
-            comment      = self.comment,
-            mutation     = self.mutation,
+            comment      = deepcopy(self.comment),
+            mutation     = deepcopy(self.mutation),
             position     = position,
             next         = next,
             is_top_level = is_top_level,

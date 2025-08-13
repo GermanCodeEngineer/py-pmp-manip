@@ -135,3 +135,7 @@ init_config(MasterConfig(
 # ... Use the pmp_manip module however you want from here
 ```
 
+### References
+
+* For a documentation overview and a broader usage tutorial, see [docs/index.md](docs/index.md) 
+

@@ -28,7 +28,7 @@ class SRDropdownValue:
         """
         return cls(
             kind=data[0],
-            value=data[1],
+            value=data[1], # TODO: after dropdown value typing: is this fine?
         )
 
     def to_tuple(self) -> tuple[DropdownValueKind, Any]:
@@ -38,7 +38,7 @@ class SRDropdownValue:
         Returns:
             the tuple of (kind, value)
         """
-        return (self.kind, self.value)
+        return (self.kind, self.value) # TODO: after dropdown value typing: is this fine?
 
     def validate(self, path: list) -> None:
         """

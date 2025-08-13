@@ -190,6 +190,7 @@ print("Project was modified and converted into PenguinMod format successfully :)
 
 ### References
 
-* [Configuration docs](config.md)
-* [Configuration options](config.md#extinfogenconfig)
+* For a documentation overview or read all pages of the tutoral, see [docs/index.md](index.md) 
+* For an explaination of config, see [docs/config.md](config.md)
+* For all config options, see [config.md#extinfogenconfig](config.md#extinfogenconfig)
 

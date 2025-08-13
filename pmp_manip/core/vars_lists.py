@@ -1,3 +1,5 @@
+from copy import copy
+
 from pmp_manip.important_consts import SHA256_SEC_VARIABLE, SHA256_SEC_LIST
 from pmp_manip.utility          import string_to_sha256, grepr_dataclass, AA_TYPE, AA_TYPES, AA_LIST_OF_TYPES
 
@@ -105,7 +107,7 @@ class SRList:
         Returns:
             the list tuple
         """
-        return (self.name, self.current_value)
+        return (self.name, copy(self.current_value))
 
 
 __all__ = ["variable_sha256", "list_sha256", "SRVariable", "SRCloudVariable", "SRList"]

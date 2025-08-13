@@ -298,7 +298,7 @@ def _f5d7_e3e2(block: "FRBlock", block_id: str, itf_if: "InterToFirstIF") -> "FR
 
     block = deepcopy(block)
     mutation: FRCustomBlockMutation = block.mutation
-    block.mutation = None
+    block.mutation       = None
     prototype_id         = itf_if.get_next_block_id()
     argument_block_ids   = [itf_if.get_next_block_id() for i in range(len(mutation.argument_names))]
 
@@ -336,7 +336,7 @@ def _f5d7_e3e2(block: "FRBlock", block_id: str, itf_if: "InterToFirstIF") -> "FR
             mutation  = FRCustomBlockArgumentMutation(
                 tag_name = "mutation", 
                 children = [], 
-                color    = mutation.color, # use the same colors as the prototype,
+                color    = copy(mutation.color), # use the same colors as the prototype,
             ),
         )
         itf_if.schedule_block_addition(argument_block_id, argument_block)

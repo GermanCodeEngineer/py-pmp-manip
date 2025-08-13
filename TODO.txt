@@ -1,26 +1,40 @@
-TODOs:
-    - todos + go over code
-    - test and document utility
-    - test and document opcode_info
-    - test ext_info_gen
-    - add specific reasons for ThanksError
-    - add all errors to docstrings
-    - possibly remove mode attribute of IRInputValue
-    - check uses of ALL_FR_BLOCKS_CLEAN vs. ALL_FR_BLOCKS
-    - change typing of dropdown values
-    - rename block_interface to sth like transformation_interface
-    - check for need of copy and deepcopy in transformation methods
-    - remove "Returns" section of docstrings to avoid doubling
-    - add "previous costume" and "next costume" to costume menu
-        => explore for similar updates
-    - check if dropdown validation where only default kind: allows non strings? (should not)
-    - make sure: js execution in ext_info_gen is safe
-    - simplify new opcode input/dropdown representation brackets
-    - disambig raw data vs. json data
-    - explore "customFonts"
-    - explore extensionData (example of "2D MAINCRAFT")
-    - spit into internal and public functions/methods etc
+TODOs Sorted by Priorites
+
+Special:
+    TODOs in Code + read through code, optimize here and there
+    Add documentation for basic stuff:
+        - Creating (SRProject > FRProject.to_file)
+        - Editing (FRProject.from_file > SRProject > FRRoject.to_file)
+        - Inspecting (FRPProject.from_file > SRProject)
+
+High: /
+
+Medium:
+    - XL: test and document opcode_info
+    - L: spit into internal and public functions/methods etc (easier in VSCode)
         => add enforce_argument_types decorator to public ones
-    - replace remaining io actions with wrappers (eg. file_exists instead of os.path.exists)
-    - possibly reform special case system with custom classes possibly even with metaclass
-    - add copy method to OpcodeInfoAPI and possibly others
+        => remove "Returns" section of docstrings to avoid doubling (easy to do simultaneously)
+    - [M.OPT]: add FRProject.from_file alternative, fetch from project link 
+    - S: explore extensionData (example of "2D MAINCRAFT")
+    - S: add "previous costume" and "next costume" to costume menu
+        => explore for similar updates
+
+Low:
+    - XL: test and document utility
+    - L: simplify new opcode input/dropdown representation brackets
+    - M: replace remaining io actions with wrappers (eg. file_exists instead of os.path.exists)
+    - M: possibly reform special case system with custom classes possibly even with metaclass
+    - S: add copy method to OpcodeInfoAPI and possibly others
+    - S: check if dropdown validation where only default kind: allows non strings? (should not)
+    - S: possibly remove mode attribute of IRInputValue
+    - S: check uses of ALL_FR_BLOCKS_CLEAN vs. ALL_FR_BLOCKS
+    - S: explore "customFonts" (example of "2D MAINCRAFT")
+    - S: create CONTRIBUTING.md
+
+Formatting:
+    - L: add all errors to docstrings
+    - M: add specific reasons for ThanksError
+    - M: change typing of dropdown values
+    - M: remove "Returns" section of docstrings to avoid doubling
+    - S: rename block_interface to sth like transformation_interface
+

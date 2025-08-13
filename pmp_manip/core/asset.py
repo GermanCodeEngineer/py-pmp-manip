@@ -316,7 +316,7 @@ class SRBitmapCostume(SRCostume):
             return False
         other: SRBitmapCostume = other
         return (
-            (self.has_double_resolution == other.has_double_resolution)
+            (self.has_double_resolution is other.has_double_resolution)
             and image_equal(self.content, other.content)
         )
     

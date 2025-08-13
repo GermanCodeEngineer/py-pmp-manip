@@ -58,10 +58,10 @@ class FRMonitor:
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRMonitor":
         """
-        Deserializes raw data into a FRMonitor
+        Deserializes json_data into a FRMonitor
         
         Args:
-            data: the raw data
+            data: the json_data
         
         Returns:
             the FRMonitor

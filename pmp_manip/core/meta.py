@@ -24,10 +24,10 @@ class FRMeta:
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRMeta":
         """
-        Deserializes raw data into a FRMeta
+        Deserializes json_data into a FRMeta
         
         Args:
-            data: the raw data
+            data: the json_data
         
         Returns:
             the FRMeta
@@ -119,10 +119,10 @@ class FRPenguinModPlatformMeta:
     @classmethod
     def from_data(cls, data: dict[str, str]) -> "FRPenguinModPlatformMeta":
         """
-        Deserializes raw data into a FRPenguinModPlatformMeta
+        Deserializes json_data into a FRPenguinModPlatformMeta
         
         Args:
-            data: the raw data
+            data: the json_data
         
         Returns:
             the FRPenguinModPlatformMeta

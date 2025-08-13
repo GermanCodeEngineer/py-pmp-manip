@@ -90,7 +90,7 @@ class SRCustomBlockOpcode:
     
     def validate(self, path: list) -> None:
         """
-        Ensures the custom block opcode is valid, raise if not
+        Ensures the custom block opcode is valid, raise MANIP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -128,7 +128,7 @@ class SRCustomBlockArgument:
 
     def validate(self, path: list) -> None:
         """
-        Ensures the custom block argument is valid, raise if not
+        Ensures the custom block argument is valid, raise MANIP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages

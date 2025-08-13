@@ -51,18 +51,12 @@ class FRMutation(ABC):
         data_properties = set(data.keys())
         matches = []
         for subcls, subcls_info in FRMutation._subclasses_info_.items():
-            #print("\n\n")
-            #print("considered", subcls.__name__)
             required_properties, optional_properties = subcls_info
             if not required_properties.issubset(data_properties):
-                #print("req dismatch", "req", required_properties, "got", data_properties)
                 continue
             unrecognized_properties = (data_properties - required_properties)
-            #print("--> unreq", unrecognized_properties)
             if not unrecognized_properties.issubset(optional_properties):
-                #print("opt dismatch")
                 continue
-            #print("match")
             matches.append(subcls)
         return matches
 
@@ -163,7 +157,7 @@ class FRCustomBlockArgumentMutation(FRMutation, required_properties={"color"}, o
         
         return cls(
             tag_name = data["tagName" ],
-            children = data["children"],
+            children = deepcopy(data["children"]),
             color    = tuple(loads(data["color"])),
             
             warp     = warp,
@@ -263,7 +257,7 @@ class FRCustomBlockMutation(FRMutation,
         else: raise MANIP_DeserializationError(f"Invalid value for 'warp': {data['warp']}")
         return cls(
             tag_name          = data["tagName" ],
-            children          = data["children"],
+            children          = deepcopy(data["children"]),
             proccode          = data["proccode"],
             argument_ids      = loads(data["argumentids"     ]),
             argument_names    = loads(data["argumentnames"   ]),
@@ -353,7 +347,7 @@ class FRCustomBlockCallMutation(FRMutation,
         else: raise MANIP_DeserializationError(f"Invalid value for 'warp': {data['warp']}")
         return cls(
             tag_name     = data["tagName" ],
-            children     = data["children"],
+            children     = deepcopy(data["children"]),
             proccode     = data["proccode"],
             argument_ids = loads(data["argumentids"]),
             warp         = warp,
@@ -421,7 +415,7 @@ class FRStopScriptMutation(FRMutation, required_properties={"hasnext"}):
         """
         return cls(
             tag_name = data["tagName" ],
-            children = data["children"],
+            children = deepcopy(data["children"]),
             has_next = loads(data["hasnext"]),
         )
 
@@ -582,8 +576,8 @@ class SRCustomBlockMutation(SRMutation):
         Returns:
             the FRCustomBlockMutation
         """
-        (proccode, argument_names, argument_defaults
-        ) = self.custom_opcode.to_proccode_argument_names_defaults()
+        result = self.custom_opcode.to_proccode_argument_names_defaults()
+        proccode, argument_names, argument_defaults = result
         argument_ids = [
             string_to_sha256(argument_name, secondary=SHA256_SEC_MAIN_ARGUMENT_NAME) 
             for argument_name in argument_names

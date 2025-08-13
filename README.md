@@ -39,7 +39,7 @@ init_config(cfg)
 ```
 
 For more config details, see [docs/config.md](docs/config.md)
-
+For a broader usage tutorial, see [docs/index.md](docs/index.md) 
 
 ---
 
@@ -78,6 +78,5 @@ GPLv3
 
 Pull requests, issues, and feedback are welcome!
 Please read the CONTRIBUTING.md guide before submitting code. 
-\# TODO
 
 ---

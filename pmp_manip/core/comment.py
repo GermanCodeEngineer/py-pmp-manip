@@ -62,11 +62,9 @@ class FRComment:
         Returns:
             wether it is an attached comment(True) or a floating comment(False) and the SRComment
         """
-        position = (self.x, self.y)
-        size = (self.width, self.height)
         comment = SRComment(
-            position=position,
-            size=size,
+            position=(self.x, self.y),
+            size=(self.width, self.height),
             is_minimized=self.minimized,
             text=self.text,
         )
