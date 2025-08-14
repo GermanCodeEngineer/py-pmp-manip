@@ -15,7 +15,7 @@ Medium:
         => add enforce_argument_types decorator to public ones
         => remove "Returns" section of docstrings to avoid doubling (easy to do simultaneously)
     - [M.OPT]: add FRProject.from_file alternative, fetch from project link 
-    - S/M: fix grepr (somehow looks off)
+    - S/M: implement variable_type and variable_id (example: "small_example")
     - S: explore extensionData (example of "2D MAINCRAFT")
     - S: add "previous costume" and "next costume" to costume menu
         => explore for similar updates

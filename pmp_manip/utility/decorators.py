@@ -3,11 +3,13 @@ from copy            import copy
 from dataclasses     import dataclass
 from functools       import wraps
 from inspect         import signature
+from sys             import modules as sys_modules
 from types           import NoneType, UnionType
 from typing          import (
     Any, Callable, ParamSpec, TypeVar, 
     get_origin, get_args, get_type_hints,
 )
+
 
 from pmp_manip.utility.dual_key_dict import DualKeyDict
 from pmp_manip.utility.repr          import grepr
@@ -42,19 +44,21 @@ def enforce_argument_types(func: Callable[PARAM_SPEC, RETURN_T]) -> Callable[PAR
         TypeError: if any argument does not match its annotated type
     """
     # Unwrap and rewrap classmethod/staticmethod
+    
     if isinstance(func, (classmethod, staticmethod)):
         original_func = func.__func__
         wrapped = enforce_argument_types(original_func)
         return type(func)(wrapped)
 
     sig = signature(func)
-    type_hints = get_type_hints(func)
 
     @wraps(func)
     def wrapper(*args: PARAM_SPEC.args, **kwargs: PARAM_SPEC.kwargs) -> RETURN_T:
+        # Moved get_type_hints into the wrapper, passing the defining module's globals
+        type_hints = get_type_hints(func, globalns=sys_modules[func.__module__].__dict__)
         bound_args = sig.bind(*args, **kwargs)
         bound_args.apply_defaults()
-
+        
         skip_first = False
         # Instance or class method — skip 'self' or 'cls'
         if bound_args.arguments:

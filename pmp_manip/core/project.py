@@ -1,3 +1,4 @@
+from __future__ import annotations
 from copy   import copy, deepcopy
 from json   import loads
 from typing import Any
@@ -267,7 +268,6 @@ class SRProject:
     global_monitors: list[SRMonitor]
     extensions: list[SRExtension]
 
-    @enforce_argument_types
     @classmethod
     def create_empty(cls) -> "SRProject":
         """

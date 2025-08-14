@@ -3,7 +3,8 @@
 ## Loading a Project from a file
 
 ### `FRProject.from_file(cls, file_path: str) -> FRProject`
-You can load a project from `.sb3` or `.pmp` file using `FRProject.from_file`:
+
+You can load a project from a .sb3 or .pmp file using FRProject.from_file:
 
 ```python
 from pmp_manip import get_default_config, init_config, FRProject
@@ -15,12 +16,17 @@ init_config(cfg)
 frproject = FRProject.from_file(file_path="path/to/my_project.pmp")
 print("Project was loaded from a file successfully :)")
 ```
-`frproject` is now an `FRProject`(First Representation Project) instance:
+Output:
 ```
 Project was loaded from a file successfully :)
 ```
 
-Let's compare `FRProject` and `SRProject`
+`frproject` is now an `FRProject` (First Representation Project) instance.
+
+
+---
+
+## Comparing FRProject and SRProject
 
 | attribute   | First Representatation (`FRProject`)         | Second Representation (`SRProject`)                      |
 |-------------|----------------------------------------------|----------------------------------------------------------|
@@ -29,15 +35,82 @@ Let's compare `FRProject` and `SRProject`
 | ex/import   | Yes through `.from_file` and `.to_file`      | No, Must be converted from and to `FRProject`            |
 | recommended | Nooooooooooooooooooooooooooooooo             | Yes, even has a `.validate` method to check for mistakes |
 
-It is recommended to always use `SRProject` for analyzation, modification etc. and only use `FRProject` to import from and export to files. To transform a `FRProject` into a `SRProject` we use `FRProject.to_second` 
+
+Recommendation:
+Always use `SRProject` for analysis and modifications, and only use `FRProject` to import from/export to files.
+
+
+---
+
+## Converting from FRProject to SRProject
+
 ### `FRProject.to_second(self, info_api: OpcodeInfoAPI) -> SRProject`
-* converts **First** to **Second** Representation
-* `info_api` and extensions will be discussed later in detail
+
+Converts First Representation --> Second Representation
+
+Requires info_api (it and projects with extensions will be discussed later)
 
 
+Example:
+
+```python
+from pmp_manip import get_default_config, init_config, FRProject, info_api
+
+cfg = get_default_config()
+init_config(cfg)
+
+frproject = FRProject.from_file(file_path="path/to/my_project.pmp")
+print("Project was loaded from a file successfully :)")
+
+# Use to_second to covert from First to Second Representation
+srproject = frproject.to_second(info_api)
+print("Project was converted into Second Representation successfully :)")
+```
+
+Output:
+```
+Project was loaded from a file successfully :)
+Project was converted into Second Representation successfully :)
+```
+
+srproject is now an SRProject instance - much easier to work with for edits.
 
 
+---
+
+## Creating an empty Project
+
+### `SRProject.create_empty(cls) -> SRProject`
+
+Creates a project with:
+* No sprites
+* No variables
+* Default settings
+* Everything in Second Representation.
+
+Example:
+
+```python
+from pmp_manip import get_default_config, init_config, SRProject
+
+cfg = get_default_config()
+init_config(cfg)
+
+srproject = SRProject.create_empty()
+print("Empty project was created successfully :)")
+```
+
+Output:
+```
+Empty project was created successfully :)
+```
+
+You now have a blank project to work with.
+(How to understand and modify projects will be covered in the next page.)
+
+
+---
 
 ### References
 * For a **documentation overview** and **all pages** of the tutorial, see [docs/index.md](index.md)
-* Next Page: **Handling Extension**, see [docs/handling_extensions.md](handling_extensions.md)
+* Next Page: **Working with Second Representation**, see [docs/second_repr.md](second_repr.md)
