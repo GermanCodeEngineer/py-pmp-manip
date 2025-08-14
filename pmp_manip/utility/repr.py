@@ -35,11 +35,18 @@ def grepr(obj, /, safe_dkd=False, level_offset=0, annotate_fields=True, include_
             
             if not obj:
                 return f"{opening}{closing}", True
-            strings = [_grepr(x, level)[0] for x in obj]
-            if len(obj) > 2 and (max(len(s) for s in strings) > 10):
-                return f"{opening}{prefix}{sep.join(strings)}{end_sep}{closing}", False
-            else:
+            
+            strings = []
+            allsimple = True
+            for i, item in enumerate(obj):
+                item_s, simple = _grepr(item, level)
+                allsimple = allsimple and simple and (len(item_s) <= 40)
+                strings.append(item_s)
+
+            if allsimple:
                 return f"{opening}{", ".join(strings)}{closing}", True
+            else:
+                return f"{opening}{prefix}{sep.join(strings)}{end_sep}{closing}", False
         
         elif isinstance(obj, DualKeyDict):
             if not obj:
