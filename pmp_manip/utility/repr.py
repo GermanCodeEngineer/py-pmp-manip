@@ -2,8 +2,6 @@ from aenum       import Enum
 from tree_sitter import Node
 from typing      import Any
 
-from pmp_manip.utility.dual_key_dict import DualKeyDict
-
 
 class KeyReprDict(dict):
     """
@@ -13,7 +11,8 @@ class KeyReprDict(dict):
     def __repr__(self) -> str:
         return grepr(self)
 
-def grepr(obj, /, safe_dkd=False, level_offset=0, annotate_fields=True, include_attributes=False, *, indent=4) -> str:    
+def grepr(obj, /, safe_dkd=False, level_offset=0, annotate_fields=True, include_attributes=False, *, indent=4) -> str:
+    from pmp_manip.utility.dual_key_dict import DualKeyDict
     def _grepr(obj, level=level_offset) -> tuple[str, bool]:
         is_compatible = bool(getattr(obj, "_grepr", False)) and not(isinstance(obj, type)) # the class also has _grepr
         if indent is not None:

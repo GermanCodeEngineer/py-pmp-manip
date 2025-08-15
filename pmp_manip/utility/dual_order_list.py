@@ -1,76 +1,98 @@
-from copy   import copy, deepcopy
-from typing import TypeVar, Generic, Iterable, NoReturn
+from copy   import deepcopy
+from typing import TypeVar, Generic, Iterable, NoReturn, Any
 
-from pmp_manip.utility.decorators import enforce_argument_types
-from pmp_manip.utility.errors     import MANIP_KeyError, MANIP_ValueError
+from pmp_manip.utility.decorators    import enforce_argument_types
+from pmp_manip.utility.dual_key_dict import DualKeyDict
+from pmp_manip.utility.errors        import MANIP_ValueError
 
 
-_K1 = TypeVar("_K1") # key1 type
-_K2 = TypeVar("_K2") # key2 type
-_V  = TypeVar("_V" ) # value type
+_IT = TypeVar("_IT") # Item Type
 # For method arguments:
-_ARG = TypeVar("_ARG")
-_ARG_K1 = TypeVar("_ARG_K1")
-_ARG_K2 = TypeVar("_ARG_K2")
-_ARG_V = TypeVar("_ARG_V")
+#_ARG = TypeVar("_ARG")
 
-class DualKeyDict(Generic[_K1, _K2, _V]):
+class DualOrderList(Generic[_IT]):
     """
-    A custom dictionary system, which allows access by key1 or key2
+    A custom list system, which allows the same elements to be accessable in two orders
     """
     
     
     # Initialization methods
     @enforce_argument_types
-    def __init__(self, iterable: dict[tuple[_K1, _K2], _V] | None = None, /) -> None:
-        self._values  : dict[_K1, _V ] = {}
-        self._k2_to_k1: dict[_K2, _K1] = {}
-        self._k1_to_k2: dict[_K1, _K2] = {}
-        if iterable is not None:
-            for keys, value in iterable.items():
-                key1, key2 = keys
-                self.set(key1, key2, value)
+    def __init__(self, iterable: DualKeyDict[int, int, _IT] | None = None, /) -> None:
+        max_index = len(iterable) - 1
+        for key1, key2 in iterable.keys_key1_key2():
+            if not isinstance(key1, int):
+                raise MANIP_ValueError(f"All key1's and key2's must be integers, not {type(key1)!r}: {key1}")
+            if (key1 < 0) or (key1 > max_index):
+                raise MANIP_ValueError(f"All key1's and key2's must be positive integers and at most {max_index!r}(len-1): {key1}")
+            
+            if not isinstance(key2, int):
+                raise MANIP_ValueError(f"All key1's and key2's must be integers, not {type(key2)!r}: {key2}")
+            if (key2 < 0) or (key2 > max_index):
+                raise MANIP_ValueError(f"All key1's and key2's must be positive integers and at most {max_index!r}(len-1): {key2}")
+            
+        self._contents: DualKeyDict[int, int, _IT] = iterable.copy()
+
     
     @enforce_argument_types
     @classmethod
-    def from_single_key_value(cls, iterable: Iterable[tuple[_K1, _V]], /) -> "DualKeyDict[_K1, _K1, _V]":
-        return DualKeyDict({
-            (key, key): value for key, value in iterable
-        })
-    
+    def from_single_order(cls, iterable: Iterable[_IT], /) -> "DualOrderList[_IT]":
+        dkd = DualKeyDict.from_single_key_value(enumerate(iterable))
+        return DualOrderList(dkd)
+
     @enforce_argument_types
     @classmethod
-    def from_both_keys(cls, iterable: Iterable[tuple[_K1, _K2]], value: _V, /) -> "DualKeyDict[_K1, _K2, _V]":
-        return DualKeyDict({
-            (key1, key2): value for key1, key2 in iterable
-        })
+    def from_single_order_and_index_list(cls, iterable: Iterable[_IT], index_map: list[int], /) -> "DualOrderList[_IT]":
+        """
+        Example: 
+        - iterable: ["a", "b", "c"]
+        - index_map: [1, 0, 2]  => index in index_map = index in Order2; item = index of target value in main iterable
+        => Order1: ["a", "b", "c"]
+        => Order2: ["b", "a", "c"]
+        """
+        iterable = list(iterable)
+        dkd = DualKeyDict()
+        for order2_index, order1_index in enumerate(index_map):
+            value = iterable[order1_index]
+            dkd.set(order1_index, order2_index, value)
+        return DualOrderList(dkd)
     
     
     # Copy methods
-    def copy(self) -> "DualKeyDict[_K1, _K2, _V]":
+    def copy(self) -> "DualOrderList[_IT]":
         return self.__copy__()
     
-    def __copy__(self) -> "DualKeyDict[_K1, _K2, _V]":
-        new = DualKeyDict()
-        new._values   = copy(self._values)
-        new._k2_to_k1 = copy(self._k2_to_k1)
-        new._k1_to_k2 = copy(self._k1_to_k2)
-        return new
+    def __copy__(self) -> "DualOrderList[_IT]":
+        return DualOrderList(self._contents) # __init__ copies anyway
     
-    def deepcopy(self) -> "DualKeyDict[_K1, _K2, _V]":
+    def deepcopy(self) -> "DualOrderList[_IT]":
         return self.__deepcopy__()
     
-    def __deepcopy__(self) -> "DualKeyDict[_K1, _K2, _V]":
-        new = DualKeyDict()
-        new._values   = deepcopy(self._values)
-        new._k2_to_k1 = deepcopy(self._k2_to_k1)
-        new._k1_to_k2 = deepcopy(self._k1_to_k2)
-        return new
+    def __deepcopy__(self) -> "DualOrderList[_IT]":
+        return DualOrderList(deepcopy(self._contents))
 
 
     # Value Update methods
+    def append(self, object: _IT) -> None:
+        index = len(self._contents)
+        self._contents.set(index, index, object)
+    
     @enforce_argument_types
-    def set(self, key1: _K1, key2: _K2, value: _V) -> None:
+    def extend(self, object: "DualOrderList[Any]") -> None:
+        offset = len(self)
+        for index1, index2, value in self._contents.items_key1_key2():
+            self._contents.set(
+                key1  = index1 + offset,
+                key2  = index2 + offset,
+                value = value,
+            )
+    
+    @enforce_argument_types
+    def set(self, index1: int, index2: int, value: Any) -> None:
+        if index1 == index2 == len(self):
+            self.append(value)
+
+    """def set(self, key1: _K1, key2: _K2, value: _V, /) -> None:
         has_key1 = self.has_key1(key1)
         has_key2 = self.has_key2(key2)
         
@@ -80,7 +102,7 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
         elif has_key2 and not(has_key1):
             real_key1 = self.get_key1_for_key2(key2)
             raise MANIP_ValueError(f"key2 {key2!r} already exists with different key1 {real_key1!r}")
-        elif has_key1 and (self.get_key2_for_key1(key1) != key2):
+        elif self.get_key2_for_key1(key1) != key2:
             real_key2 = self.get_key2_for_key1(key1)
             raise MANIP_ValueError(f"key1 {key1!r} exists with different key2 {real_key2!r}")
             
@@ -88,20 +110,17 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
         self._k2_to_k1[key2] = key1
         self._k1_to_k2[key1] = key2
     
-    @enforce_argument_types
-    def update_by_key1(self, key1: _K1, value: _V) -> None:
+    def update_by_key1(self, key1: _K1, value: _V, /) -> None:
         if not self.has_key1(key1):
             raise MANIP_KeyError("`update_by_key1` can not be used to add a new entry. Please use `set` instead")
         self._values[key1] = value
 
-    @enforce_argument_types
-    def update_by_key2(self, key2: _K2, value: _V) -> None:
+    def update_by_key2(self, key2: _K2, value: _V, /) -> None:
         if not self.has_key2(key2):
             raise MANIP_KeyError("`update_by_key2` can not be used to add a new entry. Please use `set` instead")
         key1 = self.get_key1_for_key2(key2)
         self._values[key1] = value
     
-    @enforce_argument_types
     def update(self, value: "DualKeyDict[_ARG_K1, _ARG_K2, _ARG_V]", /) -> "DualKeyDict[_K1|_ARG_K1, _K2|_ARG_K2, _V|_ARG_V]":
         return self.__ior__(value)
     
@@ -112,27 +131,23 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
 
 
     # Value Access methods
-    @enforce_argument_types
-    def get_by_key1(self, key1: _K1) -> _V:
+    def get_by_key1(self, key1: _K1, /) -> _V:
         try:
             return self._values[key1]
         except KeyError: pass
         raise MANIP_KeyError(f"key1 {key1!r} does not exist")
 
-    @enforce_argument_types
-    def get_by_key2(self, key2: _K2) -> _V:
+    def get_by_key2(self, key2: _K2, /) -> _V:
         key1 = self.get_key1_for_key2(key2) # we can just let a MANIP_KeyError raise and not do it ourselves
         return self._values[key1]
 
-    @enforce_argument_types
-    def get_by_key1_with_default(self, key1: _K1, default: _ARG) -> _V | _ARG:
+    def get_by_key1_with_default(self, key1: _K1, default: _ARG, /) -> _V | _ARG:
         try:
             return self.get_by_key1(key1)
         except MANIP_KeyError:
             return default
 
-    @enforce_argument_types
-    def get_by_key2_with_default(self, key2: _K2, default: _ARG) -> _V | _ARG:
+    def get_by_key2_with_default(self, key2: _K2, default: _ARG, /) -> _V | _ARG:
         try:
             return self.get_by_key2(key2)
         except MANIP_KeyError:
@@ -140,18 +155,15 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
 
     
     # Value Delete methods
-    @enforce_argument_types
-    def delete_by_key1(self, key1: _K1) -> None:
+    def delete_by_key1(self, key1: _K1, /) -> None:
         self.pop_by_key1(key1)
 
-    @enforce_argument_types
-    def delete_by_key2(self, key2: _K2) -> None:
+    def delete_by_key2(self, key2: _K2, /) -> None:
         self.pop_by_key2(key2)
     
     
     # Value Pop methods
-    @enforce_argument_types
-    def pop_by_key1(self, key1: _K1) -> _V:
+    def pop_by_key1(self, key1: _K1, /) -> _V:
         try:
             key2 = self._k1_to_k2.pop(key1)
         except KeyError: pass
@@ -160,8 +172,7 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
             return self._values.pop(key1)
         raise MANIP_KeyError(f"key1 {key1!r} does not exist")
 
-    @enforce_argument_types
-    def pop_by_key2(self, key2: _K2) -> _V:
+    def pop_by_key2(self, key2: _K2, /) -> _V:
         try:
             key1 = self._k2_to_k1.pop(key2)
         except KeyError: pass
@@ -170,15 +181,13 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
             return self._values.pop(key1)
         raise MANIP_KeyError(f"key2 {key2!r} does not exist")
 
-    @enforce_argument_types
-    def pop_by_key1_with_default(self, key1: _K1, default: _ARG) -> _V | _ARG:
+    def pop_by_key1_with_default(self, key1: _K1, default: _ARG, /) -> _V | _ARG:
         try:
             return self.pop_by_key1(key1)
         except MANIP_KeyError:
             return default
 
-    @enforce_argument_types
-    def pop_by_key2_with_default(self, key2: _K2, default: _ARG) -> _V | _ARG:
+    def pop_by_key2_with_default(self, key2: _K2, default: _ARG, /) -> _V | _ARG:
         try:
             return self.pop_by_key2(key2)
         except MANIP_KeyError:
@@ -186,8 +195,7 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
 
     
     # Key Update methods
-    @enforce_argument_types
-    def change_key1_by_key2(self, key2: _K2, new_key1: _K1) -> None:
+    def change_key1_by_key2(self, key2: _K2, new_key1: _K1, /) -> None:
         if not self.has_key2(key2):
             raise MANIP_KeyError(f"key2 {key2!r} does not exist")
         if self.has_key1(new_key1):
@@ -196,8 +204,7 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
         value = self.pop_by_key2(key2)
         self.set(new_key1, key2, value)
     
-    @enforce_argument_types
-    def change_key2_by_key1(self, key1: _K1, new_key2: _K2) -> None:
+    def change_key2_by_key1(self, key1: _K1, new_key2: _K2, /) -> None:
         if not self.has_key1(key1):
             raise MANIP_KeyError(f"key1 {key1!r} does not exist")
         if self.has_key2(new_key2):
@@ -207,8 +214,7 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
         self.set(key1, new_key2, value)        
 
 
-    @enforce_argument_types
-    def change_key1_key2_by_key1(self, old_key1: _K1, new_key1: _K1, new_key2: _K2) -> None:
+    def change_key1_key2_by_key1(self, old_key1: _K1, new_key1: _K1, new_key2: _K2, /) -> None:
         if not self.has_key1(old_key1):
             raise MANIP_KeyError(f"old key1 {old_key1!r} does not exist")
         if self.has_key1(new_key1):
@@ -220,8 +226,7 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
         value = self.pop_by_key1(old_key1)
         self.set(new_key1, new_key2, value)        
 
-    @enforce_argument_types
-    def change_key1_key2_by_key2(self, old_key2: _K2, new_key1: _K1, new_key2: _K2) -> None:
+    def change_key1_key2_by_key2(self, old_key2: _K2, new_key1: _K1, new_key2: _K2, /) -> None:
         if not self.has_key2(old_key2):
             raise MANIP_KeyError(f"old key2 {old_key2!r} does not exist")
         if self.has_key1(new_key1):
@@ -235,23 +240,19 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
     
 
     # Key Access methods
-    @enforce_argument_types
-    def has_key1(self, key1: _K1) -> bool:
+    def has_key1(self, key1: _K1, /) -> bool:
         return key1 in self._values
     
-    @enforce_argument_types
-    def has_key2(self, key2: _K2) -> bool:
+    def has_key2(self, key2: _K2, /) -> bool:
         return key2 in self._k2_to_k1
 
-    @enforce_argument_types
-    def get_key1_for_key2(self, key2: _K2) -> _K1:
+    def get_key1_for_key2(self, key2: _K2, /) -> _K1:
         try:
             return self._k2_to_k1[key2]
         except KeyError: pass
         raise MANIP_KeyError(f"key2 {key2!r} does not exist")
 
-    @enforce_argument_types
-    def get_key2_for_key1(self, key1: _K1) -> _K2:
+    def get_key2_for_key1(self, key1: _K1, /) -> _K2:
         try:
             return self._k1_to_k2[key1]
         except KeyError: pass
@@ -308,18 +309,17 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
     def __bool__(self) -> bool:
         return bool(len(self))
 
-    @enforce_argument_types
     def __or__(self, value: "DualKeyDict[_ARG_K1, _ARG_K2, _ARG_V]", /) -> "DualKeyDict[_K1|_ARG_K1, _K2|_ARG_K2, _V|_ARG_V]":
         copy = self.copy()
         return copy.__ior__(value)
 
-    @enforce_argument_types
     def __ror__(self, value: "DualKeyDict[_ARG_K1, _ARG_K2, _ARG_V]", /) -> "DualKeyDict[_K1|_ARG_K1, _K2|_ARG_K2, _V|_ARG_V]":
         copy = self.copy()
         return copy.__ior__(value)
 
-    @enforce_argument_types
     def __ior__(self, value: "DualKeyDict[_ARG_K1, _ARG_K2, _ARG_V]", /) -> "DualKeyDict[_K1|_ARG_K1, _K2|_ARG_K2, _V|_ARG_V]":
+        if not isinstance(value, DualKeyDict):
+            raise MANIP_ValueError(f"only argument must be DualKeyDict, not {type(value)!r}")
         for key1, key2, evalue in value.items_key1_key2():
             has_key1 = self.has_key1(key1)
             has_key2 = self.has_key2(key2)
@@ -356,8 +356,8 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
         raise NotImplementedError("Can not iterate DualKeyDict directly. Use `keys_key1`, `keys_key2, `values`, `items_key1`, `items_key2` etc. instead")
 
     def __contains__(self, key, /) -> NoReturn:
-        raise NotImplementedError("Can not check whether a DualKeyDict contains a key, as there are two sets of keys. Use `has_key1` or `has_key2` instead")
+        raise NotImplementedError("Can not check whether a DualKeyDict contains a key, as there are two sets of keys. Use `has_key1` or `has_key2` instead")"""
 
 
-__all__ = ["DualKeyDict"]
+__all__ = ["DualOrderList"]
 

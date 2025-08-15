@@ -169,6 +169,7 @@ class MANIP_FailedFileDeleteError(MANIP_Error): pass
 
 class MANIP_NotImplementedError(MANIP_Error): pass
 class MANIP_TypeError(MANIP_Error): pass
+class MANIP_KeyError(MANIP_Error): pass
 class MANIP_ValueError(MANIP_Error): pass
 class MANIP_AttributeError(MANIP_Error): pass
 class MANIP_OSError(MANIP_Error): pass

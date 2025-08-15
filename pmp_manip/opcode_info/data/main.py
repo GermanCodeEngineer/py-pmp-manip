@@ -212,7 +212,7 @@ def _f9c8_6ab0(block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None") 
     else:
         mutation: SRCustomBlockCallMutation = block.mutation
     
-    return DualKeyDict.from_same_keys(mutation.custom_opcode.corresponding_input_info)
+    return DualKeyDict.from_single_key_value(mutation.custom_opcode.corresponding_input_info.items())
 info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
     type=SpecialCaseType.GET_ALL_INPUT_IDS_INFO,
     function=_f9c8_6ab0,

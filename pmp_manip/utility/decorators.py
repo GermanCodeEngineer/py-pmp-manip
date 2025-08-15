@@ -11,7 +11,6 @@ from typing          import (
 )
 
 
-from pmp_manip.utility.dual_key_dict import DualKeyDict
 from pmp_manip.utility.repr          import grepr
 
 
@@ -54,13 +53,11 @@ def enforce_argument_types(func: Callable[PARAM_SPEC, RETURN_T]) -> Callable[PAR
 
     @wraps(func)
     def wrapper(*args: PARAM_SPEC.args, **kwargs: PARAM_SPEC.kwargs) -> RETURN_T:
-        # Moved get_type_hints into the wrapper, passing the defining module's globals
         type_hints = get_type_hints(func, globalns=sys_modules[func.__module__].__dict__)
         bound_args = sig.bind(*args, **kwargs)
         bound_args.apply_defaults()
         
         skip_first = False
-        # Instance or class method — skip 'self' or 'cls'
         if bound_args.arguments:
             first_name = next(iter(bound_args.arguments))
             if first_name in ("self", "cls"):
@@ -71,6 +68,11 @@ def enforce_argument_types(func: Callable[PARAM_SPEC, RETURN_T]) -> Callable[PAR
                 continue
             if name in type_hints:
                 expected_type = type_hints[name]
+                # Ignore TypeVar type hints
+                if getattr(expected_type, "__module__", None) == "typing" and getattr(expected_type, "__origin__", None) is None and getattr(expected_type, "__name__", None) == "TypeVar":
+                    continue
+                if type(expected_type).__name__ == "TypeVar":
+                    continue
                 _check_type(value, expected_type, name)
 
         return func(*args, **kwargs)
@@ -91,6 +93,8 @@ def _check_type(value: Any, expected_type: Any, name: str, _path: str = "") -> N
     Raises:
         TypeError: If the value does not match the expected type
     """
+    from collections.abc import Iterable as IterableABC
+    from pmp_manip.utility.dual_key_dict import DualKeyDict
     origin = get_origin(expected_type)
     args = get_args(expected_type)
     label = f"argument '{name}'{_path}"
@@ -105,8 +109,18 @@ def _check_type(value: Any, expected_type: Any, name: str, _path: str = "") -> N
             raise TypeError(f"{label} must be None, got {type(value)}")
         return
 
+    # Ignore TypeVar
+    if isinstance(expected_type, TypeVar) or type(expected_type).__name__ == "TypeVar":
+        return
+
     # Non-generic types
     if origin is None:
+        # Ignore typing generics (e.g., list[int])
+        if hasattr(expected_type, "__origin__") and expected_type.__origin__ is not None:
+            return
+        # Ignore TypeVar (redundant, but safe)
+        if isinstance(expected_type, TypeVar) or type(expected_type).__name__ == "TypeVar":
+            return
         if not isinstance(value, expected_type):
             raise TypeError(f"{label} must be {expected_type}, got {type(value)}")
         return
@@ -181,6 +195,15 @@ def _check_type(value: Any, expected_type: Any, name: str, _path: str = "") -> N
                 _check_type(k1, k1_type, name, _path + f"[key1={k1!r}]")
                 _check_type(k2, k2_type, name, _path + f"[key2={k2!r}]")
                 _check_type(v, v_type, name, _path + f"[key1={k1!r}, key2={k2!r}]")
+        return
+
+    # Iterable[T]
+    if origin in (IterableABC,):
+        if not isinstance(value, IterableABC):
+            raise TypeError(f"{label} must be an Iterable, got {type(value)}")
+        if args:
+            for i, item in enumerate(value):
+                _check_type(item, args[0], name, _path + f"[{i}]")
         return
 
     # Fallback
