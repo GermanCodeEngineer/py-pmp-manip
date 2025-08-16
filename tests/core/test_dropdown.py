@@ -18,10 +18,10 @@ def context():
         scope_variables=[my_variable, my_sprite_variable],
         scope_lists=[my_list, my_sprite_list],
 
-        all_sprite_variables=[my_variable],
+        global_variables=[my_variable],
 
-        sprite_only_variables=[my_sprite_variable],
-        sprite_only_lists=[my_sprite_list],
+        local_variables=[my_sprite_variable],
+        local_lists=[my_sprite_list],
 
         other_sprites=[(DropdownValueKind.SPRITE, "Sprite2"), (DropdownValueKind.SPRITE, "Player")],
         backdrops=[(DropdownValueKind.BACKDROP, "intro"), (DropdownValueKind.BACKDROP, "scene1")],

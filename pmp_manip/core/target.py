@@ -351,8 +351,8 @@ class FRStage(FRTarget):
             comments,
             costumes,
             sounds,
-            all_sprite_variables,
-            all_sprite_lists,
+            global_variables,
+            global_lists,
         ) = super()._to_second_common(asset_files, info_api)
         new_stage = SRStage(
             scripts       = scripts,
@@ -362,7 +362,7 @@ class FRStage(FRTarget):
             sounds        = sounds,
             volume        = self.volume,
         )
-        return (new_stage, all_sprite_variables, all_sprite_lists)
+        return (new_stage, global_variables, global_lists)
 
 @grepr_dataclass(grepr_fields=["visible", "x", "y", "size", "direction", "draggable", "rotation_style"],)
 class FRSprite(FRTarget):
@@ -444,8 +444,8 @@ class FRSprite(FRTarget):
             comments,
             costumes,
             sounds,
-            sprite_only_variables,
-            sprite_only_lists,
+            local_variables,
+            local_lists,
         ) = super()._to_second_common(asset_files, info_api)
         new_sprite = SRSprite(
             name                  = self.name,
@@ -455,8 +455,8 @@ class FRSprite(FRTarget):
             costumes              = costumes,
             sounds                = sounds,
             volume                = self.volume,
-            sprite_only_variables = sprite_only_variables,
-            sprite_only_lists     = sprite_only_lists,
+            local_variables = local_variables,
+            local_lists     = local_lists,
             local_monitors        = [], # will be filled later
             is_visible            = self.visible,
             position              = (self.x, self.y),
@@ -640,10 +640,10 @@ class SRTarget:
             new_monitors  = global_monitors
         elif isinstance(self, SRSprite):
             sprite_name   = self.name
-            new_variables = self.sprite_only_variables
-            new_lists     = self.sprite_only_lists
-            local_vars    = self.sprite_only_variables
-            local_lists   = self.sprite_only_lists
+            new_variables = self.local_variables
+            new_lists     = self.local_lists
+            local_vars    = self.local_variables
+            local_lists   = self.local_lists
             new_monitors  = self.local_monitors
         
         sti_if = SecondToInterIF(scripts=self.scripts)
@@ -780,16 +780,16 @@ class SRStage(SRTarget):
         )
         return (old_stage, old_global_monitors, asset_files)
 
-@grepr_dataclass(grepr_fields=["name", "sprite_only_variables", "sprite_only_lists", "local_monitors", "is_visible", "position", "size", "direction", "is_draggable", " rotation_style", "uuid"])
+@grepr_dataclass(grepr_fields=["name", "local_variables", "local_lists", "local_monitors", "is_visible", "position", "size", "direction", "is_draggable", " rotation_style", "uuid"])
 class SRSprite(SRTarget):
     """
     The second representation (SR) of a sprite, which is much more user friendly
     """
     
     name: str
-    sprite_only_variables: list[SRVariable]
-    sprite_only_lists: list[SRList]
-    local_monitors: list[SRMonitor] # TODO: disambig local vs. sprite_only
+    local_variables: list[SRVariable]
+    local_lists: list[SRList]
+    local_monitors: list[SRMonitor] # TODO: disambig local vs. local
     is_visible: bool
     position: tuple[int | float, int | float]
     size: int | float
@@ -814,8 +814,8 @@ class SRSprite(SRTarget):
             sounds=[],
             volume=100,
             name=name,
-            sprite_only_variables=[],
-            sprite_only_lists=[],
+            local_variables=[],
+            local_lists=[],
             local_monitors=[],
             is_visible=True,
             position=(0, 0),
@@ -848,8 +848,8 @@ class SRSprite(SRTarget):
         
         AA_TYPE(self, path, "name", str)
         AA_NOT_ONE_OF(self, path, "name", ["_myself_", "_stage_", "_mouse_", "_edge_"])
-        AA_LIST_OF_TYPE(self, path, "sprite_only_variables", SRVariable)
-        AA_LIST_OF_TYPE(self, path, "sprite_only_lists", SRList)
+        AA_LIST_OF_TYPE(self, path, "local_variables", SRVariable)
+        AA_LIST_OF_TYPE(self, path, "local_lists", SRList)
         AA_LIST_OF_TYPE(self, path, "local_monitors", SRMonitor)
         AA_TYPE(self, path, "is_visible", bool)
         AA_COORD_PAIR(self, path, "position")
@@ -862,10 +862,10 @@ class SRSprite(SRTarget):
         AA_TYPE(self, path, "uuid", UUID)
         
         
-        for i, variable in enumerate(self.sprite_only_variables):
-            variable.validate(path+["sprite_only_variables", i])
-        for i, list_ in enumerate(self.sprite_only_lists):
-            list_.validate(path+["sprite_only_lists", i])
+        for i, variable in enumerate(self.local_variables):
+            variable.validate(path+["local_variables", i])
+        for i, list_ in enumerate(self.local_lists):
+            list_.validate(path+["local_lists", i])
         
         for i, monitor in enumerate(self.local_monitors):
             monitor.validate(path+["local_monitors", i], info_api)

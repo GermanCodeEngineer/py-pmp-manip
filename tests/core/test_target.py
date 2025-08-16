@@ -44,10 +44,10 @@ def context():
         scope_variables=[my_variable, my_sprite_variable],
         scope_lists=[my_list, my_sprite_list],
 
-        all_sprite_variables=[my_variable],
+        global_variables=[my_variable],
 
-        sprite_only_variables=[my_sprite_variable],
-        sprite_only_lists=[my_sprite_list],
+        local_variables=[my_sprite_variable],
+        local_lists=[my_sprite_list],
 
         other_sprites=[(DropdownValueKind.SPRITE, "Sprite2"), (DropdownValueKind.SPRITE, "Player")],
         backdrops=[(DropdownValueKind.BACKDROP, "intro"), (DropdownValueKind.BACKDROP, "scene1")],
@@ -178,12 +178,12 @@ def test_FRTarget_to_second_variables_lists():
     frsprite.lists = {
         "S}|FmMKusDx]ogbnuxIa": ("some list", ["a", "b", "c", "$$$"]),
     }
-    sprite_only_variables, sprite_only_lists = frsprite._to_second_variables_lists()
-    assert sprite_only_variables == [
+    local_variables, local_lists = frsprite._to_second_variables_lists()
+    assert local_variables == [
         SRVariable(name="some var", current_value=55),
         SRCloudVariable(name="some cloud var", current_value="https://needgod.net/"),
     ]
-    assert sprite_only_lists == [
+    assert local_lists == [
         SRList(name="some list", current_value=["a", "b", "c", "$$$"]),
     ]
 
@@ -372,8 +372,8 @@ def test_SRTarget_to_first_common_sprite():
         asset_files,
     ) = srtarget._to_first_common(
         info_api,
-        global_vars=SR_PROJECT.all_sprite_variables,
-        global_lists=SR_PROJECT.all_sprite_lists,
+        global_vars=SR_PROJECT.global_variables,
+        global_lists=SR_PROJECT.global_lists,
         global_monitors=SR_PROJECT.global_monitors,
     )
     expected_comments = FR_SPRITE.comments | {
@@ -419,8 +419,8 @@ def test_SRTarget_to_first_common_stage():
         asset_files,
     ) = srtarget._to_first_common(
         info_api,
-        global_vars=SR_PROJECT.all_sprite_variables,
-        global_lists=SR_PROJECT.all_sprite_lists,
+        global_vars=SR_PROJECT.global_variables,
+        global_lists=SR_PROJECT.global_lists,
         global_monitors=SR_PROJECT.global_monitors,
     )
     # only variables, lists and monitors might differ from a sprite
@@ -439,8 +439,8 @@ def test_SRStage_to_first():
     expected_frstage.sounds   = [sound  .to_second(PROJECT_ASSET_FILES).to_first()[0] for sound   in expected_frstage.sounds  ]
     frstage, old_global_monitors, asset_files = srstage.to_first(
         info_api,
-        global_vars=SR_PROJECT.all_sprite_variables,
-        global_lists=SR_PROJECT.all_sprite_lists,
+        global_vars=SR_PROJECT.global_variables,
+        global_lists=SR_PROJECT.global_lists,
         global_monitors=SR_PROJECT.global_monitors,
         broadcast_messages=["my message"],
         tempo=expected_frstage.tempo,
@@ -461,8 +461,8 @@ def test_SRSprite_create_empty():
     assert srsprite.sounds == []
     assert srsprite.volume == 100
     assert srsprite.name == "Player"
-    assert srsprite.sprite_only_variables == []
-    assert srsprite.sprite_only_lists == []
+    assert srsprite.local_variables == []
+    assert srsprite.local_lists == []
     assert srsprite.local_monitors == []
     assert srsprite.is_visible is True
     assert srsprite.position == (0, 0)
@@ -488,10 +488,10 @@ def test_SRSprite_validate():
         attr_tests=[
             ("name", False, MANIP_TypeValidationError),
             ("name", "_stage_", MANIP_InvalidValueError),
-            ("sprite_only_variables", (), MANIP_TypeValidationError),
-            ("sprite_only_variables", [()], MANIP_TypeValidationError),
-            ("sprite_only_lists", {}, MANIP_TypeValidationError),
-            ("sprite_only_lists", [{}], MANIP_TypeValidationError),
+            ("local_variables", (), MANIP_TypeValidationError),
+            ("local_variables", [()], MANIP_TypeValidationError),
+            ("local_lists", {}, MANIP_TypeValidationError),
+            ("local_lists", [{}], MANIP_TypeValidationError),
             ("local_monitors", None, MANIP_TypeValidationError),
             ("local_monitors", [None], MANIP_TypeValidationError),
             ("is_visible", "a str", MANIP_TypeValidationError),
@@ -510,10 +510,10 @@ def test_SRSprite_validate():
 
 def test_SRSprite_validate_vars_lists():
     srsprite = SRSprite.create_empty(name="my sprite")
-    srsprite.sprite_only_variables = [
+    srsprite.local_variables = [
         SRVariable(name="my var", current_value="Günther Jauch")
     ]
-    srsprite.sprite_only_lists = [
+    srsprite.local_lists = [
         SRList(name="my var", current_value=["Günther Jauch", "Dieter Bohlen"])
     ]
     srsprite.validate([], info_api)
@@ -538,8 +538,8 @@ def test_SRSprite_to_first():
     expected_frsprite.sounds   = [sound  .to_second(PROJECT_ASSET_FILES).to_first()[0] for sound   in expected_frsprite.sounds  ]
     frsprite, old_local_monitors, asset_files = srsprite.to_first(
         info_api,
-        global_vars=SR_PROJECT.all_sprite_variables,
-        global_lists=SR_PROJECT.all_sprite_lists,
+        global_vars=SR_PROJECT.global_variables,
+        global_lists=SR_PROJECT.global_lists,
         layer_order=SR_PROJECT.sprite_layer_stack.index(SR_SPRITE.uuid)+1,
     )
     # blocks and comments are tested in _to_first_common, so just ignore:

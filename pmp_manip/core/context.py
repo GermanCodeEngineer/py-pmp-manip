@@ -4,7 +4,7 @@ if TYPE_CHECKING: from pmp_manip.opcode_info.api import DropdownValueKind
 from pmp_manip.utility import grepr_dataclass
 
 
-@grepr_dataclass(grepr_fields=["scope_variables", "scope_lists", "all_sprite_variables", "sprite_only_variables", "sprite_only_lists", "other_sprites", "backdrops"])
+@grepr_dataclass(grepr_fields=["scope_variables", "scope_lists", "global_variables", "local_variables", "local_lists", "other_sprites", "backdrops"])
 class PartialContext:
     """
     A temporary dataclass which stores the context for dropdown validation excluding sprite context
@@ -12,13 +12,13 @@ class PartialContext:
 
     scope_variables: list[tuple["DropdownValueKind", Any]]
     scope_lists: list[tuple["DropdownValueKind", Any]]
-    all_sprite_variables: list[tuple["DropdownValueKind", Any]]
-    sprite_only_variables: dict[str|None, list[tuple["DropdownValueKind", Any]]]
-    sprite_only_lists: dict[str|None, list[tuple["DropdownValueKind", Any]]]
+    global_variables: list[tuple["DropdownValueKind", Any]]
+    local_variables: dict[str|None, list[tuple["DropdownValueKind", Any]]]
+    local_lists: dict[str|None, list[tuple["DropdownValueKind", Any]]]
     other_sprites: list[tuple["DropdownValueKind", Any]]
     backdrops: list[tuple["DropdownValueKind", Any]]
 
-@grepr_dataclass(grepr_fields=["scope_variables", "scope_lists", "all_sprite_variables", "sprite_only_variables", "sprite_only_lists", "other_sprites", "backdrops", "costumes", "sounds", "is_stage"])
+@grepr_dataclass(grepr_fields=["scope_variables", "scope_lists", "global_variables", "local_variables", "local_lists", "other_sprites", "backdrops", "costumes", "sounds", "is_stage"])
 class CompleteContext:
     """
     A temporary dataclass which stores the context for dropdown validation including sprite context
@@ -26,9 +26,9 @@ class CompleteContext:
 
     scope_variables: list[tuple["DropdownValueKind", Any]]
     scope_lists: list[tuple["DropdownValueKind", Any]]
-    all_sprite_variables: list[tuple["DropdownValueKind", Any]]
-    sprite_only_variables: dict[str|None, list[tuple["DropdownValueKind", Any]]]
-    sprite_only_lists: dict[str|None, list[tuple["DropdownValueKind", Any]]]
+    global_variables: list[tuple["DropdownValueKind", Any]]
+    local_variables: dict[str|None, list[tuple["DropdownValueKind", Any]]]
+    local_lists: dict[str|None, list[tuple["DropdownValueKind", Any]]]
     other_sprites: list[tuple["DropdownValueKind", Any]]
     backdrops: list[tuple["DropdownValueKind", Any]]
 
@@ -55,9 +55,9 @@ class CompleteContext:
         return CompleteContext(
             scope_variables       = pc.scope_variables,
             scope_lists           = pc.scope_lists,
-            all_sprite_variables  = pc.all_sprite_variables,
-            sprite_only_variables = pc.sprite_only_variables,
-            sprite_only_lists     = pc.sprite_only_lists,
+            global_variables  = pc.global_variables,
+            local_variables = pc.local_variables,
+            local_lists     = pc.local_lists,
             other_sprites         = pc.other_sprites,
             backdrops             = pc.backdrops,
 

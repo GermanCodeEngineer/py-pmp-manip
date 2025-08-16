@@ -266,8 +266,8 @@ class DropdownType(GEnum):
                         (DropdownValueKind.STANDARD, "size"),
                         (DropdownValueKind.STANDARD, "volume"),
                     ])
-                    for sprite_only_variables in context.sprite_only_variables.values():
-                        values.extend(sprite_only_variables)
+                    for local_variables in context.local_variables.values():
+                        values.extend(local_variables)
 
                     raise Exception("TODO: ensure this works")
                 
@@ -280,7 +280,7 @@ class DropdownType(GEnum):
                         (DropdownValueKind.STANDARD, "backdrop name"), 
                         (DropdownValueKind.STANDARD, "volume"),
                     ])
-                    values.extend(context.all_sprite_variables)
+                    values.extend(context.global_variables)
                     values.extend([
                         (DropdownValueKind.STANDARD, "x position"), 
                         (DropdownValueKind.STANDARD, "y position"), 
@@ -291,8 +291,8 @@ class DropdownType(GEnum):
                         (DropdownValueKind.STANDARD, "size"),
                         (DropdownValueKind.STANDARD, "volume"),
                     ])
-                    for sprite_only_variables in context.sprite_only_variables.values():
-                        values.extend(sprite_only_variables)
+                    for local_variables in context.local_variables.values():
+                        values.extend(local_variables)
 
                 case DropdownValueRule.COSTUME:
                     values.extend(context.costumes)

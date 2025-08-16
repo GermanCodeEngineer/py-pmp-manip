@@ -12,10 +12,10 @@ def test_CompleteContext_from_partial():
         scope_variables=[my_variable, my_sprite_variable],
         scope_lists=[my_list, my_sprite_list],
 
-        all_sprite_variables=[my_variable],
+        global_variables=[my_variable],
 
-        sprite_only_variables=[my_sprite_variable],
-        sprite_only_lists=[my_sprite_list],
+        local_variables=[my_sprite_variable],
+        local_lists=[my_sprite_list],
 
         other_sprites=[(DropdownValueKind.SPRITE, "Sprite2"), (DropdownValueKind.SPRITE, "Player")],
         backdrops=[(DropdownValueKind.BACKDROP, "intro"), (DropdownValueKind.BACKDROP, "scene1")],
@@ -35,9 +35,9 @@ def test_CompleteContext_from_partial():
     assert isinstance(complete_context, CompleteContext)
     assert complete_context.scope_variables == partial_context.scope_variables
     assert complete_context.scope_lists == partial_context.scope_lists
-    assert complete_context.all_sprite_variables == partial_context.all_sprite_variables
-    assert complete_context.sprite_only_variables == partial_context.sprite_only_variables
-    assert complete_context.sprite_only_lists == partial_context.sprite_only_lists
+    assert complete_context.global_variables == partial_context.global_variables
+    assert complete_context.local_variables == partial_context.local_variables
+    assert complete_context.local_lists == partial_context.local_lists
     assert complete_context.other_sprites == partial_context.other_sprites
     assert complete_context.backdrops == partial_context.backdrops
     assert complete_context.costumes == costumes

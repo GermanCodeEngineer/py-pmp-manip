@@ -192,7 +192,7 @@ class FRProject:
         for target in self.targets:
             if  target.is_stage:
                 old_stage: FRStage = target
-                new_stage, all_sprite_variables, all_sprite_lists = old_stage.to_second(
+                new_stage, global_variables, global_lists = old_stage.to_second(
                     asset_files=self.asset_files, 
                     info_api=info_api,
                 )
@@ -239,8 +239,8 @@ class FRProject:
             stage                   = new_stage,
             sprites                 = new_sprites,
             sprite_layer_stack      = [pair[1] for pair in sorted(sprite_layer_stack_dict.items())],
-            all_sprite_variables    = all_sprite_variables,
-            all_sprite_lists        = all_sprite_lists,
+            global_variables    = global_variables,
+            global_lists        = global_lists,
             tempo                   = old_stage.tempo,
             video_transparency      = old_stage.video_transparency,
             video_state             = SRVideoState.from_code(old_stage.video_state),
@@ -250,7 +250,7 @@ class FRProject:
         )
 
 
-@grepr_dataclass(grepr_fields=["stage", "sprites", "sprite_layer_stack", "all_sprite_variables", "all_sprite_lists", "tempo", "video_transparency", "video_state", "text_to_speech_language", "global_monitors", "extensions"], eq=False)
+@grepr_dataclass(grepr_fields=["stage", "sprites", "sprite_layer_stack", "global_variables", "global_lists", "tempo", "video_transparency", "video_state", "text_to_speech_language", "global_monitors", "extensions"], eq=False)
 class SRProject:
     """
     The second representation (SR) of a Scratch/PenguinMod Project
@@ -259,8 +259,8 @@ class SRProject:
     stage: SRStage
     sprites: list[SRSprite]
     sprite_layer_stack: list[UUID]
-    all_sprite_variables: list[SRVariable]
-    all_sprite_lists: list[SRList]
+    global_variables: list[SRVariable]
+    global_lists: list[SRList]
     tempo: int
     video_transparency: int | float # There seems to be no limit
     video_state: SRVideoState
@@ -280,8 +280,8 @@ class SRProject:
             stage=SRStage.create_empty(),
             sprites=[],
             sprite_layer_stack=[],
-            all_sprite_variables=[],
-            all_sprite_lists=[],
+            global_variables=[],
+            global_lists=[],
             tempo=60,
             video_transparency=50,
             video_state=SRVideoState.ON,
@@ -308,8 +308,8 @@ class SRProject:
         if (
             self.stage != other.stage or
             self.sprites != other.sprites or
-            self.all_sprite_variables != other.all_sprite_variables or
-            self.all_sprite_lists != other.all_sprite_lists or
+            self.global_variables != other.global_variables or
+            self.global_lists != other.global_lists or
             self.tempo != other.tempo or
             self.video_transparency != other.video_transparency or
             self.text_to_speech_language != other.text_to_speech_language or
@@ -352,8 +352,8 @@ class SRProject:
         AA_EXACT_LEN(self, path, "sprite_layer_stack", 
             length=len(self.sprites), condition=f"In this case the project has {len(self.sprites)} sprites(s)"
         )
-        AA_LIST_OF_TYPE(self, path, "all_sprite_variables", SRVariable)
-        AA_LIST_OF_TYPE(self, path, "all_sprite_lists", SRList)
+        AA_LIST_OF_TYPE(self, path, "global_variables", SRVariable)
+        AA_LIST_OF_TYPE(self, path, "global_lists", SRList)
         AA_TYPE(self, path, "tempo", int)
         AA_RANGE(self, path, "tempo", min=20, max=500)
         AA_TYPES(self, path, "video_transparency", (int, float))
@@ -366,10 +366,10 @@ class SRProject:
 
         self._validate_sprites(path, info_api)
         
-        for i, variable in enumerate(self.all_sprite_variables):
-            variable.validate(path+["all_sprite_variables", i])
-        for i, list_ in enumerate(self.all_sprite_lists):
-            list_.validate(path+["all_sprite_lists", i])
+        for i, variable in enumerate(self.global_variables):
+            variable.validate(path+["global_variables", i])
+        for i, list_ in enumerate(self.global_lists):
+            list_.validate(path+["global_lists", i])
         
         self._validate_var_names(path)
         self._validate_list_names(path)
@@ -383,21 +383,21 @@ class SRProject:
         # 1. Ensure no same sprite name
         # 2. Validate Dropdown Values
         defined_sprites      = {}
-        sprite_only_variables = {None: []}
-        sprite_only_lists     = {None: []}
+        local_variables = {None: []}
+        local_lists     = {None: []}
         for i, sprite in enumerate(self.sprites):
             current_path = path+["sprites", i]
             if sprite.name in defined_sprites:
                 other_path = defined_sprites[sprite.name]
                 raise MANIP_SameValueTwiceError(other_path, current_path, "Two sprites must not have the same name")
             defined_sprites[sprite.name] = current_path
-            sprite_only_variables[sprite.name] = [
-                (DropdownValueKind.VARIABLE, variable.name) for variable in sprite.sprite_only_variables]
-            sprite_only_lists    [sprite.name] = [
-                (DropdownValueKind.LIST    , list_   .name) for list_    in sprite.sprite_only_lists]
+            local_variables[sprite.name] = [
+                (DropdownValueKind.VARIABLE, variable.name) for variable in sprite.local_variables]
+            local_lists    [sprite.name] = [
+                (DropdownValueKind.LIST    , list_   .name) for list_    in sprite.local_lists]
         
-        all_sprite_variables = [(DropdownValueKind.VARIABLE, variable.name) for variable in self.all_sprite_variables]
-        all_sprite_lists     = [(DropdownValueKind.LIST    , list_   .name) for list_    in self.all_sprite_lists    ]
+        global_variables = [(DropdownValueKind.VARIABLE, variable.name) for variable in self.global_variables]
+        global_lists     = [(DropdownValueKind.LIST    , list_   .name) for list_    in self.global_lists    ]
         backdrops            = [(DropdownValueKind.BACKDROP, backdrop.name) for backdrop in self.stage.costumes      ]
         for i, target in enumerate([self.stage]+self.sprites):
             if i == 0:
@@ -407,11 +407,11 @@ class SRProject:
                 target_key = target.name
                 current_path = path+["sprites", i-1]
             partial_context = PartialContext(
-                scope_variables       = all_sprite_variables + sprite_only_variables[target_key],
-                scope_lists           = all_sprite_lists     + sprite_only_lists    [target_key],
-                all_sprite_variables  = all_sprite_variables,
-                sprite_only_variables = sprite_only_variables,
-                sprite_only_lists     = sprite_only_lists,
+                scope_variables       = global_variables + local_variables[target_key],
+                scope_lists           = global_lists     + local_lists    [target_key],
+                global_variables  = global_variables,
+                local_variables = local_variables,
+                local_lists     = local_lists,
                 other_sprites         = [
                     (DropdownValueKind.SPRITE, sprite_name) for sprite_name in defined_sprites.keys()],
                 backdrops             = backdrops,
@@ -489,16 +489,16 @@ class SRProject:
             MANIP_SameValueTwiceError(MANIP_ValidationError): if the project contains vars with the same name
         """
         defined_variables = {}
-        for i, variable in enumerate(self.all_sprite_variables):
-            current_path = path+["all_sprite_variables", i]
+        for i, variable in enumerate(self.global_variables):
+            current_path = path+["global_variables", i]
             if variable.name in defined_variables:
                 other_path = defined_variables[variable.name]
                 raise MANIP_SameValueTwiceError(other_path, current_path, "Two variables must not have the same name")
             defined_variables[variable.name] = current_path
         
         for i, sprite in enumerate(self.sprites):
-            for j, variable in enumerate(sprite.sprite_only_variables):
-                current_path = path+["sprites", i, "sprite_only_variables", j]
+            for j, variable in enumerate(sprite.local_variables):
+                current_path = path+["sprites", i, "local_variables", j]
                 if variable.name in defined_variables:
                     other_path = defined_variables[variable.name]
                     raise MANIP_SameValueTwiceError(other_path, current_path, "Two variables must not have the same name")
@@ -518,16 +518,16 @@ class SRProject:
             MANIP_SameValueTwiceError(MANIP_ValidationError): if the project contains lists with the same name
         """
         defined_lists = {}
-        for i, list_ in enumerate(self.all_sprite_lists):
-            current_path = path+["all_sprite_lists", i]
+        for i, list_ in enumerate(self.global_lists):
+            current_path = path+["global_lists", i]
             if list_.name in defined_lists:
                 other_path = defined_lists[list_.name]
                 raise MANIP_SameValueTwiceError(other_path, current_path, "Two lists must npt have the same name")
             defined_lists[list_.name] = current_path
         
         for i, sprite in enumerate(self.sprites):
-            for j, list_ in enumerate(sprite.sprite_only_lists):
-                current_path = path+["sprites", i, "sprite_only_lists", j]
+            for j, list_ in enumerate(sprite.local_lists):
+                current_path = path+["sprites", i, "local_lists", j]
                 if list_.name in defined_lists:
                     other_path = defined_lists[list_.name]
                     raise MANIP_SameValueTwiceError(other_path, current_path, "Two lists must not have the same name")
@@ -600,8 +600,8 @@ class SRProject:
         tts_language = None if self.text_to_speech_language is None else self.text_to_speech_language.to_code()
         old_stage, old_global_monitors, stage_asset_files = self.stage.to_first(
             info_api                = info_api,
-            global_vars             = self.all_sprite_variables,
-            global_lists            = self.all_sprite_lists,
+            global_vars             = self.global_variables,
+            global_lists            = self.global_lists,
             global_monitors         = self.global_monitors,
             broadcast_messages      = self._find_broadcast_messages(),
             tempo                   = self.tempo,
@@ -616,8 +616,8 @@ class SRProject:
         for new_sprite in self.sprites:
             old_sprite, old_local_monitors, sprite_asset_files = new_sprite.to_first(
                 info_api     = info_api,
-                global_vars  = self.all_sprite_variables,
-                global_lists = self.all_sprite_lists,
+                global_vars  = self.global_variables,
+                global_lists = self.global_lists,
                 layer_order  = self.sprite_layer_stack.index(new_sprite.uuid) + 1,
             )
             old_targets.append(old_sprite)

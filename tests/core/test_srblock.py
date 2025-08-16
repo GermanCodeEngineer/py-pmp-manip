@@ -44,10 +44,10 @@ def context():
         scope_variables=[(DropdownValueKind.VARIABLE, "my variable")],
         scope_lists=[(DropdownValueKind.LIST, "my list")],
 
-        all_sprite_variables=[(DropdownValueKind.VARIABLE, "my variable")],
+        global_variables=[(DropdownValueKind.VARIABLE, "my variable")],
 
-        sprite_only_variables=[],
-        sprite_only_lists=[],
+        local_variables=[],
+        local_lists=[],
 
         other_sprites=[],
         backdrops=[],

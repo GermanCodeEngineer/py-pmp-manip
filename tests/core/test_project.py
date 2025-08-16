@@ -130,8 +130,8 @@ def test_SRProject_create_empty():
     assert isinstance(srproject, SRProject)
     assert isinstance(srproject.stage, SRStage)
     assert srproject.sprites == []
-    assert srproject.all_sprite_variables == []
-    assert srproject.all_sprite_lists == []
+    assert srproject.global_variables == []
+    assert srproject.global_lists == []
     assert srproject.tempo == 60
     assert srproject.video_transparency == 50
     assert srproject.video_state == SRVideoState.ON
@@ -157,7 +157,7 @@ def test_SRProject_eq_copy():
 def test_SRProject_eq_different():
     srproject_a = SRProject.create_empty()
     srproject_b = SRProject.create_empty()
-    srproject_b.all_sprite_variables = [SRVariable(name="an additional var", current_value="some value")]
+    srproject_b.global_variables = [SRVariable(name="an additional var", current_value="some value")]
     assert srproject_a != srproject_b
 
 def test_SRProject_eq_same_sprites():
@@ -198,10 +198,10 @@ def test_SRProject_validate():
             ("sprite_layer_stack", None, MANIP_TypeValidationError),
             ("sprite_layer_stack", [None], MANIP_TypeValidationError),
             ("sprite_layer_stack", [uuid4(), uuid4()], MANIP_RangeValidationError), # must have exactly 1 item
-            ("all_sprite_variables", {}, MANIP_TypeValidationError),
-            ("all_sprite_variables", ["bye"], MANIP_TypeValidationError),
-            ("all_sprite_lists", set(), MANIP_TypeValidationError),
-            ("all_sprite_lists", [{}], MANIP_TypeValidationError),
+            ("global_variables", {}, MANIP_TypeValidationError),
+            ("global_variables", ["bye"], MANIP_TypeValidationError),
+            ("global_lists", set(), MANIP_TypeValidationError),
+            ("global_lists", [{}], MANIP_TypeValidationError),
             ("tempo", 5.6, MANIP_TypeValidationError),
             ("tempo", 10, MANIP_RangeValidationError), # too low
             ("video_transparency", "invalid", MANIP_TypeValidationError),
@@ -262,7 +262,7 @@ def test_SRProject_validate_sprites_invalid_layer_stack():
 def test_SRProject_validate_var_names():
     srproject = SRProject.create_empty()
     sprite = SRSprite.create_empty(name="Sprite1")
-    sprite.sprite_only_variables = [
+    sprite.local_variables = [
         SRVariable(name="var1", current_value=")="),
         SRVariable(name="var2", current_value="(="),
     ]
@@ -272,7 +272,7 @@ def test_SRProject_validate_var_names():
 
 def test_SRProject_validate_var_names_same_global():
     srproject = SRProject.create_empty()
-    srproject.all_sprite_variables = [
+    srproject.global_variables = [
         SRVariable(name="same var", current_value=5),
         SRVariable(name="same var", current_value=";)"),
     ]
@@ -281,9 +281,9 @@ def test_SRProject_validate_var_names_same_global():
 
 def test_SRProject_validate_var_names_same_inter():
     srproject = SRProject.create_empty()
-    srproject.all_sprite_variables = [SRVariable(name="same var", current_value="(;")]
+    srproject.global_variables = [SRVariable(name="same var", current_value="(;")]
     sprite = SRSprite.create_empty(name="Sprite1")
-    sprite.sprite_only_variables = [SRVariable(name="same var", current_value=")=")]
+    sprite.local_variables = [SRVariable(name="same var", current_value=")=")]
     srproject.sprites = [sprite]
     with raises(MANIP_SameValueTwiceError):
         srproject._validate_var_names([])
@@ -292,7 +292,7 @@ def test_SRProject_validate_var_names_same_inter():
 def test_SRProject_validate_list_names():
     srproject = SRProject.create_empty()
     sprite = SRSprite.create_empty(name="Sprite1")
-    sprite.sprite_only_lists = [
+    sprite.local_lists = [
         SRList(name="list1", current_value=[")="]),
         SRList(name="list2", current_value=["(="]),
     ]
@@ -302,7 +302,7 @@ def test_SRProject_validate_list_names():
 
 def test_SRProject_validate_list_names_same_global():
     srproject = SRProject.create_empty()
-    srproject.all_sprite_lists = [
+    srproject.global_lists = [
         SRList(name="same list", current_value=[5]),
         SRList(name="same list", current_value=[";)"]),
     ]
@@ -311,9 +311,9 @@ def test_SRProject_validate_list_names_same_global():
 
 def test_SRProject_validate_list_names_same_inter():
     srproject = SRProject.create_empty()
-    srproject.all_sprite_lists = [SRList(name="same var", current_value=["(;", ");"])]
+    srproject.global_lists = [SRList(name="same var", current_value=["(;", ");"])]
     sprite = SRSprite.create_empty(name="Sprite1")
-    sprite.sprite_only_lists = [SRList(name="same var", current_value=[")=", "(="])]
+    sprite.local_lists = [SRList(name="same var", current_value=[")=", "(="])]
     srproject.sprites = [sprite]
     with raises(MANIP_SameValueTwiceError):
         srproject._validate_list_names([])

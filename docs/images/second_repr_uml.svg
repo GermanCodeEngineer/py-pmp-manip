@@ -429,8 +429,8 @@
 <text xml:space="preserve" text-anchor="start" x="70.5" y="-402" font-family="Helvetica,sans-Serif" font-size="10.00">stage: SRStage</text>
 <text xml:space="preserve" text-anchor="start" x="70.5" y="-389.25" font-family="Helvetica,sans-Serif" font-size="10.00">sprites: list[SRSprite]</text>
 <text xml:space="preserve" text-anchor="start" x="70.5" y="-376.5" font-family="Helvetica,sans-Serif" font-size="10.00">sprite_layer_stack: list[UUID]</text>
-<text xml:space="preserve" text-anchor="start" x="70.5" y="-363.75" font-family="Helvetica,sans-Serif" font-size="10.00">all_sprite_variables: list[SRVariable]</text>
-<text xml:space="preserve" text-anchor="start" x="70.5" y="-351" font-family="Helvetica,sans-Serif" font-size="10.00">all_sprite_lists: list[SRList]</text>
+<text xml:space="preserve" text-anchor="start" x="70.5" y="-363.75" font-family="Helvetica,sans-Serif" font-size="10.00">global_variables: list[SRVariable]</text>
+<text xml:space="preserve" text-anchor="start" x="70.5" y="-351" font-family="Helvetica,sans-Serif" font-size="10.00">global_lists: list[SRList]</text>
 <text xml:space="preserve" text-anchor="start" x="70.5" y="-338.25" font-family="Helvetica,sans-Serif" font-size="10.00">tempo: int</text>
 <text xml:space="preserve" text-anchor="start" x="70.5" y="-325.5" font-family="Helvetica,sans-Serif" font-size="10.00">video_transparency: int | float</text>
 <text xml:space="preserve" text-anchor="start" x="70.5" y="-312.75" font-family="Helvetica,sans-Serif" font-size="10.00">video_state: SRVideoState</text>
@@ -486,8 +486,8 @@
 <text xml:space="preserve" text-anchor="start" x="422" y="-550.25" font-family="Helvetica,sans-Serif" font-size="10.00">sounds: list[SRSound]</text>
 <text xml:space="preserve" text-anchor="start" x="422" y="-537.5" font-family="Helvetica,sans-Serif" font-size="10.00">volume: int | float</text>
 <text xml:space="preserve" text-anchor="start" x="422" y="-524.75" font-family="Helvetica,sans-Serif" font-size="10.00">name: str</text>
-<text xml:space="preserve" text-anchor="start" x="422" y="-512" font-family="Helvetica,sans-Serif" font-size="10.00">sprite_only_variables: list[SRVariable]</text>
-<text xml:space="preserve" text-anchor="start" x="422" y="-499.25" font-family="Helvetica,sans-Serif" font-size="10.00">sprite_only_lists: list[SRList]</text>
+<text xml:space="preserve" text-anchor="start" x="422" y="-512" font-family="Helvetica,sans-Serif" font-size="10.00">local_variables: list[SRVariable]</text>
+<text xml:space="preserve" text-anchor="start" x="422" y="-499.25" font-family="Helvetica,sans-Serif" font-size="10.00">local_lists: list[SRList]</text>
 <text xml:space="preserve" text-anchor="start" x="422" y="-486.5" font-family="Helvetica,sans-Serif" font-size="10.00">local_monitors: list[SRMonitor]</text>
 <text xml:space="preserve" text-anchor="start" x="422" y="-473.75" font-family="Helvetica,sans-Serif" font-size="10.00">is_visible: bool</text>
 <text xml:space="preserve" text-anchor="start" x="422" y="-461" font-family="Helvetica,sans-Serif" font-size="10.00">position: tuple[int | float, int | float]</text>

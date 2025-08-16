@@ -1677,8 +1677,8 @@ SR_SPRITE = SRSprite(
         ),
     ],
     volume=100,
-    sprite_only_variables=[],
-    sprite_only_lists=[],
+    local_variables=[],
+    local_lists=[],
     local_monitors=[
         SRMonitor( # [0] for [0]
             opcode="x position",
@@ -1699,10 +1699,10 @@ SR_PROJECT = SRProject(
     stage=SR_STAGE,
     sprites=[SR_SPRITE],
     sprite_layer_stack=[SR_SPRITE.uuid],
-    all_sprite_variables=[
+    global_variables=[
         SRVariable(name="my variable", current_value=0),
     ],
-    all_sprite_lists=[
+    global_lists=[
         SRList(name="my list", current_value=[]),
     ],
     tempo=60,
