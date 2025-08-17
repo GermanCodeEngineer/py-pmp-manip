@@ -1,13 +1,12 @@
 from dataclasses import field
 
-from pmp_manip.opcode_info.api  import DropdownValueKind
 from pmp_manip.utility import grepr_dataclass, number_to_token, MANIP_ConversionError, MANIP_ValidationError
 
 from pmp_manip.core.block_mutation import FRCustomBlockMutation, SRCustomBlockMutation
 from pmp_manip.core.block          import FRBlock, IRBlock, SRBlock, SRScript
 from pmp_manip.core.comment        import FRComment, SRComment
 from pmp_manip.core.custom_block   import SRCustomBlockOpcode
-from pmp_manip.core.vars_lists     import variable_sha256, list_sha256
+from pmp_manip.core.vars_lists     import _variable_sha256, _list_sha256
 
 
 @grepr_dataclass(grepr_fields=["blocks", "block_comments", "scheduled_block_deletions"])
@@ -209,7 +208,7 @@ class InterToFirstIF:
             sprite_name = "_stage_" if self.sprite_name is None else self.sprite_name
         else:
             raise MANIP_ConversionError(f"Variable {variable_name!r} not found")
-        return variable_sha256(variable_name, sprite_name)
+        return _variable_sha256(variable_name, sprite_name)
 
     def get_list_sha256(self, list_name: str) -> str:
         """
@@ -227,7 +226,7 @@ class InterToFirstIF:
             sprite_name = "_stage_" if self.sprite_name is None else self.sprite_name
         else:
             raise MANIP_ConversionError(f"List {list_name!r} not found")
-        return list_sha256(list_name, sprite_name)
+        return _list_sha256(list_name, sprite_name)
 
 @grepr_dataclass(grepr_fields=["scripts", "cb_mutations"])
 class SecondReprIF:

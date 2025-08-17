@@ -9,7 +9,7 @@ from pmp_manip.core.block_mutation  import FRCustomBlockMutation, SRCustomBlockM
 from pmp_manip.core.block           import FRBlock, IRBlock
 from pmp_manip.core.comment         import FRComment
 from pmp_manip.core.custom_block    import SRCustomBlockOptype, SRCustomBlockOpcode
-from pmp_manip.core.vars_lists      import variable_sha256, list_sha256
+from pmp_manip.core.vars_lists      import _variable_sha256, _list_sha256
 
 from tests.core.constants import (
     ALL_FR_BLOCKS_CLEAN, ALL_IR_BLOCKS, 
@@ -217,11 +217,11 @@ def test_InterToFirstIF_get_sr_cb_mutation(itf_if: InterToFirstIF):
 
 def test_InterToFirstIF_get_variable_sha256_global(itf_if: InterToFirstIF):
     sha256 = itf_if.get_variable_sha256("globvar")
-    assert sha256 == variable_sha256("globvar", sprite_name="_stage_")
+    assert sha256 == _variable_sha256("globvar", sprite_name="_stage_")
 
 def test_InterToFirstIF_get_variable_sha256_local(itf_if: InterToFirstIF):
     sha256 = itf_if.get_variable_sha256("locvar")
-    assert sha256 == variable_sha256("locvar", sprite_name=itf_if.sprite_name)
+    assert sha256 == _variable_sha256("locvar", sprite_name=itf_if.sprite_name)
 
 def test_InterToFirstIF_get_variable_sha256_undefined(itf_if: InterToFirstIF):
     with raises(MANIP_ConversionError):
@@ -230,11 +230,11 @@ def test_InterToFirstIF_get_variable_sha256_undefined(itf_if: InterToFirstIF):
 
 def test_InterToFirstIF_get_list_sha256_global(itf_if: InterToFirstIF):
     sha256 = itf_if.get_list_sha256("globlist")
-    assert sha256 == list_sha256("globlist", sprite_name="_stage_")
+    assert sha256 == _list_sha256("globlist", sprite_name="_stage_")
 
 def test_InterToFirstIF_get_list_sha256_local(itf_if: InterToFirstIF):
     sha256 = itf_if.get_list_sha256("loclist")
-    assert sha256 == list_sha256("loclist", sprite_name=itf_if.sprite_name)
+    assert sha256 == _list_sha256("loclist", sprite_name=itf_if.sprite_name)
 
 def test_InterToFirstIF_get_list_sha256_undefined(itf_if: InterToFirstIF):
     with raises(MANIP_ConversionError):

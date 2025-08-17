@@ -15,7 +15,7 @@ from pmp_manip.core.block_mutation  import (
     SRCustomBlockArgumentMutation
 )
 from pmp_manip.core.block           import FRBlock, IRBlock
-from pmp_manip.core.vars_lists      import variable_sha256, list_sha256
+from pmp_manip.core.vars_lists      import _variable_sha256, _list_sha256
 
 from tests.core.constants import ALL_FR_BLOCK_DATAS, ALL_FR_BLOCKS, ALL_FR_BLOCKS_CLEAN, ALL_IR_BLOCKS, ALL_SR_COMMENTS
 
@@ -85,7 +85,7 @@ def test_FRBlock_from_data_valid_mutation():
 
 
 def test_FRBlock_from_tuple_not_top_level():
-    data = [OPCODE_NUM_VAR_VALUE, "a variable", variable_sha256("my variable", sprite_name="_stage_")]
+    data = [OPCODE_NUM_VAR_VALUE, "a variable", _variable_sha256("my variable", sprite_name="_stage_")]
     parent_id = "m"
     frblock = FRBlock.from_tuple(data, parent_id=parent_id)
     assert isinstance(frblock, FRBlock)
@@ -94,7 +94,7 @@ def test_FRBlock_from_tuple_not_top_level():
     assert frblock.parent    == parent_id
     assert frblock.inputs    == {}
     assert frblock.fields    == {
-        "VARIABLE": ("a variable", variable_sha256("my variable", sprite_name="_stage_"), ""),
+        "VARIABLE": ("a variable", _variable_sha256("my variable", sprite_name="_stage_"), ""),
     }
     assert frblock.shadow    is False
     assert frblock.top_level is False
@@ -107,14 +107,14 @@ def test_FRBlock_from_tuple_not_top_level():
         FRBlock.from_tuple(data, parent_id=None)
 
 def test_FRBlock_from_tuple_list_top_level():
-    data = [OPCODE_NUM_LIST_VALUE, "a list", list_sha256("my list", sprite_name="_stage_"), 460, 628]
+    data = [OPCODE_NUM_LIST_VALUE, "a list", _list_sha256("my list", sprite_name="_stage_"), 460, 628]
     frblock = FRBlock.from_tuple(data, parent_id=None)
     assert isinstance(frblock, FRBlock)
     assert frblock.opcode    == OPCODE_LIST_VALUE
     assert frblock.next      is None
     assert frblock.parent    is None
     assert frblock.inputs    == {}
-    assert frblock.fields    == {"LIST": ("a list", list_sha256("my list", sprite_name="_stage_"), "list")}
+    assert frblock.fields    == {"LIST": ("a list", _list_sha256("my list", sprite_name="_stage_"), "list")}
     assert frblock.shadow    is False
     assert frblock.top_level is True
     assert frblock.x         == data[3]
@@ -162,7 +162,7 @@ def test_FRBlock_to_tuple_list():
     assert frblock.to_tuple() == ALL_FR_BLOCKS["p"]
 
 def test_FRBlock_to_tuple_variable_not_top_level():
-    sha256 = variable_sha256("my variable", sprite_name="_stage_")
+    sha256 = _variable_sha256("my variable", sprite_name="_stage_")
     frblock = FRBlock(
         opcode    = OPCODE_VAR_VALUE,
         next      = None,

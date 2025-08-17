@@ -9,7 +9,7 @@ from pmp_manip.opcode_info.api  import OpcodeInfoAPI, DropdownValueKind
 from pmp_manip.utility          import (
     grepr_dataclass, enforce_argument_types, 
     read_all_files_of_zip, create_zip_file, string_to_sha256, gdumps, KeyReprDict,
-    AA_TYPE, AA_NONE_OR_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_RANGE, AA_EXACT_LEN,
+    AA_TYPE, AA_NONE_OR_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_LIST_OF_TYPES, AA_RANGE, AA_EXACT_LEN,
     MANIP_ThanksError, MANIP_SameValueTwiceError, MANIP_SpriteLayerStackError,
 )
 

@@ -22,7 +22,7 @@ from pmp_manip.core.custom_block    import (
     SRCustomBlockOpcode, SRCustomBlockArgument, SRCustomBlockArgumentType,
 )
 from pmp_manip.core.enums           import SRSpriteRotationStyle
-from pmp_manip.core.target          import FRTarget, FRStage, FRSprite, SRTarget, SRSprite
+from pmp_manip.core.target          import FRTarget, FRStage, FRSprite, SRTarget, SRStage, SRSprite
 from pmp_manip.core.vars_lists      import SRVariable, SRCloudVariable, SRList
 
 from tests.core.constants import (
@@ -243,17 +243,6 @@ def test_FRSprite_to_second():
     assert srsprite == expected
 
 
-
-def test_SRTarget_create_empty():
-    srtarget = SRTarget.create_empty() 
-    assert isinstance(srtarget, SRTarget)
-    assert srtarget.scripts == []
-    assert srtarget.comments == []
-    assert srtarget.sounds == []
-    assert srtarget.costume_index == 0
-    assert srtarget.volume == 100
-
-
 def test_SRTarget_validate():
     srtarget = SR_STAGE
     srtarget.validate([], info_api)
@@ -281,7 +270,7 @@ def test_SRTarget_validate():
     )
 
 def test_SRTarget_validate_same_comment():
-    srtarget = SRTarget.create_empty()
+    srtarget = SRStage.create_empty()
     srtarget.comments = [SRComment(
         position=(10, 10),
         size=(52, 32),
@@ -291,7 +280,7 @@ def test_SRTarget_validate_same_comment():
     srtarget.validate([], info_api)
 
 def test_SRTarget_validate_same_costume_name():
-    srtarget = SRTarget.create_empty()
+    srtarget = SRStage.create_empty()
     srtarget.costumes = [
         SRVectorCostume.create_empty(name="costume1"),
         SRVectorCostume.create_empty(name="costume1"),
@@ -300,7 +289,7 @@ def test_SRTarget_validate_same_costume_name():
         srtarget.validate([], info_api)
 
 def test_SRTarget_validate_same_sound_name():
-    srtarget = SRTarget.create_empty()
+    srtarget = SRStage.create_empty()
     srtarget.sounds = [
         SRSound(name="Hello there!", file_extension="wav", content=AudioSegment.silent(duration=0)),
         SRSound(name="Hello there!", file_extension="wav", content=AudioSegment.silent(duration=0)),
@@ -315,7 +304,7 @@ def test_SRTarget_validate_scripts(context):
     srtarget.validate_scripts([], info_api, context)
 
 def test_SRTarget_validate_scripts_same_custom_opcode(context):
-    srtarget = SRTarget.create_empty()
+    srtarget = SRStage.create_empty()
     cb_def_script = SRScript(
         position=(0, 0),
         blocks=[
@@ -431,6 +420,19 @@ def test_SRTarget_to_first_common_stage():
     assert lists_equal_ignore_order(old_monitors, ALL_FR_MONITORS_CONVERTED[0:1])
 
 
+
+
+
+
+
+def test_SRStage_create_empty():
+    srtarget = SRStage.create_empty() 
+    assert isinstance(srtarget, SRStage)
+    assert srtarget.scripts == []
+    assert srtarget.comments == []
+    assert srtarget.sounds == []
+    assert srtarget.costume_index == 0
+    assert srtarget.volume == 100
 
 def test_SRStage_to_first():
     srstage = SR_STAGE

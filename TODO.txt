@@ -19,6 +19,8 @@ Medium:
     - S: explore extensionData (example of "2D MAINCRAFT")
     - S: add "previous costume" and "next costume" to costume menu
         => explore for similar updates
+    - S: add new rotation style(s)
+    - S: stop using aenum and find better solution for ext_info_gen instead of extend_enum
 
 Low:
     - XL: test and document utility
@@ -31,7 +33,6 @@ Low:
     - S: check uses of ALL_FR_BLOCKS_CLEAN vs. ALL_FR_BLOCKS
     - S: explore "customFonts" (example of "2D MAINCRAFT")
     - S: create CONTRIBUTING.md
-
 Formatting:
     - L: add all errors to docstrings
     - M: add specific reasons for ThanksError

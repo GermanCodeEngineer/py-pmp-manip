@@ -5,7 +5,7 @@ from pmp_manip.utility          import string_to_sha256, grepr_dataclass, AA_TYP
 
 
 
-def variable_sha256(variable_name: str, sprite_name: str):
+def _variable_sha256(variable_name: str, sprite_name: str):
     """
     A shortcut for computing a variable's sha256 hash
 
@@ -20,7 +20,7 @@ def variable_sha256(variable_name: str, sprite_name: str):
 
 
 
-def list_sha256(list_name: str, sprite_name: str):
+def _list_sha256(list_name: str, sprite_name: str):
     """
     A shortcut for computing a list's sha256 hash
 
@@ -56,7 +56,7 @@ class SRVariable:
         """
         AA_TYPE(self, path, "name", str)
         AA_TYPES(self, path, "current_value", (int, float, str, bool))
-        # Only the above types can be saved in Scratch Projects
+        # Only the above types can be saved in Scratch Project's Variables (JSON limitations)
     
     def to_tuple(self) -> tuple[str, str]:
         """
@@ -98,7 +98,7 @@ class SRList:
         """
         AA_TYPE(self, path, "name", str)
         AA_LIST_OF_TYPES(self, path, "current_value", (int, float, str, bool))
-        # Only the above types can be saved in Scratch Projects
+        # Only the above types can be saved in Scratch Project's Lists (JSON limitations)
 
     def to_tuple(self) -> tuple[str, str]:
         """
@@ -110,5 +110,5 @@ class SRList:
         return (self.name, copy(self.current_value))
 
 
-__all__ = ["variable_sha256", "list_sha256", "SRVariable", "SRCloudVariable", "SRList"]
+__all__ = ["SRVariable", "SRCloudVariable", "SRList"]
 

@@ -17,8 +17,9 @@ from pmp_manip.opcode_info.api  import (
 from pmp_manip.utility          import (
     grepr_dataclass, get_closest_matches, tuplify, listify, string_to_sha256,
     AA_TYPE, AA_NONE, AA_NONE_OR_TYPE, AA_COORD_PAIR, AA_LIST_OF_TYPE, AA_DICT_OF_TYPE, AA_MIN_LEN,
-    MANIP_DeserializationError, MANIP_ConversionError,
-    MANIP_UnnecessaryInputError, MANIP_MissingInputError, MANIP_UnnecessaryDropdownError, MANIP_MissingDropdownError, MANIP_InvalidOpcodeError, MANIP_InvalidBlockShapeError,
+    MANIP_ConversionError,
+    MANIP_UnnecessaryInputError, MANIP_MissingInputError, MANIP_UnnecessaryDropdownError, MANIP_MissingDropdownError, 
+    MANIP_InvalidOpcodeError, MANIP_InvalidBlockShapeError,
 )
 
 if TYPE_CHECKING: from pmp_manip.core.block_interface import (
@@ -28,7 +29,6 @@ from pmp_manip.core.block_mutation import FRMutation, SRMutation
 from pmp_manip.core.comment        import SRComment
 from pmp_manip.core.context        import CompleteContext
 from pmp_manip.core.dropdown       import SRDropdownValue
-from pmp_manip.core.vars_lists     import variable_sha256, list_sha256
 
 
 @grepr_dataclass(grepr_fields=["opcode", "next", "parent", "inputs", "fields", "shadow", "top_level", "x", "y", "comment", "mutation"])
@@ -980,7 +980,7 @@ class SRBlock:
             is_top_level = is_top_level,
         )
 
-@grepr_dataclass(grepr_fields=[], eq=False, init=False)
+@grepr_dataclass(grepr_fields=[], eq=False, init=False, forbid_init_only_subcls=True)
 class SRInputValue(ABC):
     """
     The second representation for a block input. 
@@ -994,19 +994,6 @@ class SRInputValue(ABC):
     block: SRBlock            | None = field(init=False)
     text: str                 | None = field(init=False)
     dropdown: SRDropdownValue | None = field(init=False)
-
-    def __init__(self) -> None:
-        """
-        Create a SRInputValue. 
-        **Please use the subclasses or the from_mode method for concrete data. This method will raise a NotImplementedError.**
-
-        Returns:
-            None
-
-        Raises:
-            NotImplementedError: always
-        """
-        raise NotImplementedError("Please use the subclasses or the from_mode method for concrete data")
 
     def __eq__(self, other) -> bool:
         """

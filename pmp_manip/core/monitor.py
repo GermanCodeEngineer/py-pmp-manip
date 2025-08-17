@@ -197,7 +197,7 @@ class FRMonitor:
                 is_visible  = self.visible,
             )
 
-@grepr_dataclass(grepr_fields=["opcode", "dropdowns", "sprite", "position", "is_visible"])
+@grepr_dataclass(grepr_fields=["opcode", "dropdowns", "position", "is_visible"])
 class SRMonitor:
     """
     The second representation for a monitor. It is much more user friendly

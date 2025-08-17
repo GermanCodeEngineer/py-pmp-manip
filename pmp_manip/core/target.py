@@ -8,7 +8,7 @@ from pmp_manip.important_consts import SHA256_SEC_TARGET_NAME, SHA256_SEC_BROADC
 from pmp_manip.opcode_info.api  import OpcodeInfoAPI, DropdownValueKind
 from pmp_manip.utility          import (
     string_to_sha256, grepr_dataclass, MANIP_ThanksError,
-    AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_MIN_LEN, AA_MIN, AA_RANGE, AA_COORD_PAIR, AA_NOT_ONE_OF, 
+    AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_LIST_OF_TYPES, AA_MIN_LEN, AA_MIN, AA_RANGE, AA_COORD_PAIR, AA_NOT_ONE_OF, 
     MANIP_SameValueTwiceError, MANIP_ConversionError,
 )
 
@@ -468,7 +468,10 @@ class FRSprite(FRTarget):
         return (new_sprite, None, None)
 
 
-@grepr_dataclass(grepr_fields=["scripts", "comments", "costumes", "sounds", "costume_index", "volume"])
+@grepr_dataclass(
+    grepr_fields=["scripts", "comments", "costumes", "sounds", "costume_index", "volume"], 
+    init=False, forbid_init_only_subcls=True, suggested_subcls_names=["SRStage", "SRSprite"],
+)
 class SRTarget:
     """
     The second representation (SR) of a target, which is much more user friendly. A target can be either a sprite or the stage
@@ -479,25 +482,6 @@ class SRTarget:
     sounds: list[SRSound]
     costume_index: int
     volume: int | float
-
-    # TODO: add init/post_init width NotImplementedError for this and other use cases
-
-    @classmethod
-    def create_empty(cls) -> "SRTarget":
-        """
-        Create an empty SRTarget with no scripts, costumes etc. and the default settings
-        
-        Returns:
-            the empty SRTarget
-        """
-        return cls(
-            scripts=[],
-            comments=[],
-            costumes=[SRVectorCostume.create_empty()],
-            sounds=[],
-            costume_index=0,
-            volume=100,
-        )
 
     def validate(self, path: list, info_api: OpcodeInfoAPI) -> None:
         """
@@ -708,10 +692,28 @@ class SRTarget:
         )        
         
 
+@grepr_dataclass(grepr_fields=[], init=True)
 class SRStage(SRTarget):
     """
     The second representation (SR) of the stage, which is much more user friendly
     """
+
+    @classmethod
+    def create_empty(cls) -> "SRTarget":
+        """
+        Create an empty SRTarget with no scripts, costumes etc. and the default settings
+        
+        Returns:
+            the empty SRTarget
+        """
+        return cls(
+            scripts=[],
+            comments=[],
+            costumes=[SRVectorCostume.create_empty()],
+            sounds=[],
+            costume_index=0,
+            volume=100,
+        )
 
     def to_first(self, 
         info_api: OpcodeInfoAPI,

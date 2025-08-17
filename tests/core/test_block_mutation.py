@@ -157,6 +157,7 @@ def test_FRMutation_from_data_and_post_init(monkeypatch: MonkeyPatch):
     with raises(MANIP_DeserializationError):
         FRMutation.from_data({...:...}) # does not matter
     
+    @grepr_dataclass(grepr_fields=["tag_name", "children"])
     class DummyFRMutation(FRMutation, required_properties=set()):
         @classmethod
         def from_data(cls, data) -> "DummyFRMutation":
@@ -165,7 +166,7 @@ def test_FRMutation_from_data_and_post_init(monkeypatch: MonkeyPatch):
                 children = data["children"],
             )
         def to_data(self): pass
-        def to_second(self, ticfti_if): pass
+        def to_second(self, fti_if): pass
 
     data = {
         "tagName": "mutation",

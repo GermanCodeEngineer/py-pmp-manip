@@ -6,16 +6,17 @@ from inspect         import signature
 from sys             import modules as sys_modules
 from types           import NoneType, UnionType
 from typing          import (
-    Any, Callable, ParamSpec, TypeVar, 
+    Any, Callable, ParamSpec, TypeVar, NoReturn,
     get_origin, get_args, get_type_hints,
 )
 
 
-from pmp_manip.utility.repr          import grepr
+from pmp_manip.utility.repr import grepr
 
 
 PARAM_SPEC = ParamSpec("PARAM_SPEC")
 RETURN_T = TypeVar("RETURN_T")
+TYPE_T = TypeVar("TYPE_T", bound=type)
 
 
 def enforce_argument_types(func: Callable[PARAM_SPEC, RETURN_T]) -> Callable[PARAM_SPEC, RETURN_T]:
@@ -215,18 +216,32 @@ def grepr_dataclass(*, grepr_fields: list[str],
         unsafe_hash: bool = False, frozen: bool = False, 
         match_args: bool = True, kw_only: bool = False, 
         slots: bool = False, weakref_slot: bool = False,
+        forbid_init_only_subcls: bool = False,
+        suggested_subcls_names: list[str] | None = None,
     ):
     """
     A decorator which combines @dataclass and a good representation system.
     Args:
         grepr_fields: fields for the good repr implementation
-        parent_cls: class whose fields will also be included in the good repr impletementation
         init...: dataclass parameters
+        forbid_init_only_subcls: add a __init__ method to raises a NotImplementedError, which tells the user to use the subclasses.
     """
-    def decorator(cls: type):
+    if init: assert not forbid_init_only_subcls
+    if init: assert suggested_subcls_names is None
+    def decorator(cls: TYPE_T) -> TYPE_T:
+        if forbid_init_only_subcls:
+            def __init__(self, *args, **kwargs) -> None | NoReturn:
+                if type(self) is cls:
+                    msg = f"Can not initialize parent class {cls!r} directly. Please use the subclasses"
+                    if suggested_subcls_names:
+                        msg += " "
+                        msg += ", ".join(suggested_subcls_names)
+                    msg += "."
+                    raise NotImplementedError(msg)
+            cls.__init__ = __init__
+
         def __repr__(self, *args, **kwargs) -> str:
             return grepr(self, *args, **kwargs)
-
         cls.__repr__ = __repr__
         cls._grepr = True
         nonlocal grepr_fields
@@ -237,6 +252,7 @@ def grepr_dataclass(*, grepr_fields: list[str],
                 if field in fields: continue
                 fields.append(field)
         cls._grepr_fields = fields
+
         cls = dataclass(cls, 
             init=init, repr=False, eq=eq,
             order=order, unsafe_hash=unsafe_hash, frozen=frozen,

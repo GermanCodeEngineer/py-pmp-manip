@@ -15,7 +15,7 @@ from pmp_manip.utility          import (
 if TYPE_CHECKING: from pmp_manip.core.block_interface import FirstToInterIF, InterToFirstIF
 from pmp_manip.core.custom_block import SRCustomBlockOpcode, SRCustomBlockOptype
 
-@grepr_dataclass(grepr_fields=["tag_name", "children"])
+@grepr_dataclass(grepr_fields=["tag_name", "children"], init=False, forbid_init_only_subcls=True)
 class FRMutation(ABC):
     """
     The first representation for the mutation of a block. Mutations hold special information, which only special blocks have
@@ -447,7 +447,7 @@ class FRStopScriptMutation(FRMutation, required_properties={"hasnext"}):
         )
 
 
-@grepr_dataclass(grepr_fields=[])
+@grepr_dataclass(grepr_fields=[], init=False, forbid_init_only_subcls=True)
 class SRMutation(ABC):
     """
     The second representation for the mutation of a block. Mutations hold special information, which only special blocks have. This representation is much more user friendly then the first representation

@@ -23,7 +23,7 @@ from pmp_manip.core.monitor         import (
     FRMonitor, SRMonitor, SRVariableMonitor, SRListMonitor, 
     STAGE_WIDTH, STAGE_HEIGHT,
 )
-from pmp_manip.core.vars_lists      import variable_sha256, list_sha256
+from pmp_manip.core.vars_lists      import _variable_sha256, _list_sha256
 
 from tests.utility import execute_attr_validation_tests
 from tests.core.constants import ALL_IR_BLOCKS
@@ -68,7 +68,7 @@ ALL_FR_MONITOR_DATAS = [
     },
     { # [2]
         "height": 0,
-        "id": variable_sha256("globl", sprite_name="_stage_"),
+        "id": _variable_sha256("globl", sprite_name="_stage_"),
         "isDiscrete": False,
         "mode": "slider",
         "opcode": "data_variable",
@@ -86,7 +86,7 @@ ALL_FR_MONITOR_DATAS = [
     },
     { # [3]
         "height": 0,
-        "id": variable_sha256("globl2", sprite_name="_stage_"),
+        "id": _variable_sha256("globl2", sprite_name="_stage_"),
         "isDiscrete": True,
         "mode": "default",
         "opcode": "data_variable",
@@ -104,7 +104,7 @@ ALL_FR_MONITOR_DATAS = [
     },
     { # [4]
         "height": 198,
-        "id": list_sha256("locl", sprite_name="Sprite1"),
+        "id": _list_sha256("locl", sprite_name="Sprite1"),
         "mode": "list",
         "opcode": "data_listcontents",
         "params": {"LIST": "locl"},
@@ -119,7 +119,7 @@ ALL_FR_MONITOR_DATAS = [
     },
     { # [5]
        "height": 147,
-       "id": list_sha256("globl", sprite_name="_stage_"),
+       "id": _list_sha256("globl", sprite_name="_stage_"),
        "mode": "list",
        "opcode": "data_listcontents",
        "params": {"LIST": "globl"},
@@ -134,7 +134,7 @@ ALL_FR_MONITOR_DATAS = [
     },
     { # [6]
         "height": 0,
-        "id": variable_sha256("locl", sprite_name="Sprite1"),
+        "id": _variable_sha256("locl", sprite_name="Sprite1"),
         "isDiscrete": True,
         "mode": "default",
         "opcode": "data_variable",
@@ -327,7 +327,7 @@ ALL_FR_MONITORS: list[FRMonitor] = [
         variable_id=None,
     ),
     FRMonitor( # [2]
-        id=variable_sha256("globl", sprite_name="_stage_"),
+        id=_variable_sha256("globl", sprite_name="_stage_"),
         mode="slider",
         opcode="data_variable",
         params={
@@ -347,7 +347,7 @@ ALL_FR_MONITORS: list[FRMonitor] = [
         variable_id=None,
     ),
     FRMonitor( # [3]
-        id=variable_sha256("globl2", sprite_name="_stage_"),
+        id=_variable_sha256("globl2", sprite_name="_stage_"),
         mode="default",
         opcode="data_variable",
         params={
@@ -367,7 +367,7 @@ ALL_FR_MONITORS: list[FRMonitor] = [
         variable_id=None,
     ),
     FRMonitor( # [4]
-        id=list_sha256("locl", sprite_name="Sprite1"),
+        id=_list_sha256("locl", sprite_name="Sprite1"),
         mode="list",
         opcode="data_listcontents",
         params={
@@ -387,7 +387,7 @@ ALL_FR_MONITORS: list[FRMonitor] = [
         variable_id=None,
     ),
     FRMonitor( # [5]
-        id=list_sha256("globl", sprite_name="_stage_"),
+        id=_list_sha256("globl", sprite_name="_stage_"),
         mode="list",
         opcode="data_listcontents",
         params={
@@ -407,7 +407,7 @@ ALL_FR_MONITORS: list[FRMonitor] = [
         variable_id=None,
     ),
     FRMonitor( # [6]
-        id=variable_sha256("locl", sprite_name="Sprite1"),
+        id=_variable_sha256("locl", sprite_name="Sprite1"),
         mode="default",
         opcode="data_variable",
         params={

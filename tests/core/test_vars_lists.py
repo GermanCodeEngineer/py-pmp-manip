@@ -3,21 +3,21 @@ from pytest import fixture
 from pmp_manip.important_consts import SHA256_SEC_VARIABLE, SHA256_SEC_LIST
 from pmp_manip.utility          import string_to_sha256, MANIP_TypeValidationError
 
-from pmp_manip.core.vars_lists import variable_sha256, list_sha256, SRVariable, SRCloudVariable, SRList
+from pmp_manip.core.vars_lists import _variable_sha256, _list_sha256, SRVariable, SRCloudVariable, SRList
 
 from tests.utility import execute_attr_validation_tests
 
 
 
 def test_variable_sha256():
-    result = variable_sha256("a var", sprite_name="my sprite")
+    result = _variable_sha256("a var", sprite_name="my sprite")
     expected = string_to_sha256("a var", secondary=SHA256_SEC_VARIABLE, tertiary="my sprite")
     assert result == expected
 
 
 
 def test_list_sha256():
-    result = list_sha256("a list", sprite_name="_stage_")
+    result = _list_sha256("a list", sprite_name="_stage_")
     expected = string_to_sha256("a list", secondary=SHA256_SEC_LIST, tertiary="_stage_")
     assert result == expected
 

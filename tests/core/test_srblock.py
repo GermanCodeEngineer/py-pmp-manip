@@ -418,14 +418,6 @@ def test_SRBlock_to_inter_block_and_menu_text(info_api_extended):
     }
 
 
-def test_SRInputValue_init():
-    class DummyInputValue(SRInputValue):
-        # fullfill abstract method requirement
-        def validate(self, *args, **kwargs): 
-            pass
-    with raises(NotImplementedError):
-        DummyInputValue()
-
 def test_SRInputValue_eq():
     sub_tests = [
         (False, 
