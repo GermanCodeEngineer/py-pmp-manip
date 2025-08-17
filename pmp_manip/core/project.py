@@ -14,7 +14,7 @@ from pmp_manip.utility          import (
 )
 
 from pmp_manip.core.context       import PartialContext
-from pmp_manip.core.extension     import SRExtension, SRCustomExtension, SRBuiltinExtension
+from pmp_manip.core.extension     import SRCustomExtension, SRBuiltinExtension
 from pmp_manip.core.meta          import FRMeta
 from pmp_manip.core.monitor       import FRMonitor, SRMonitor
 from pmp_manip.core.enums         import SRTTSLanguage, SRVideoState, TargetPlatform
@@ -239,18 +239,18 @@ class FRProject:
             stage                   = new_stage,
             sprites                 = new_sprites,
             sprite_layer_stack      = [pair[1] for pair in sorted(sprite_layer_stack_dict.items())],
-            global_variables    = global_variables,
-            global_lists        = global_lists,
+            global_variables        = global_variables,
+            global_lists            = global_lists,
+            global_monitors         = global_monitors,
+            extensions              = new_extensions,
             tempo                   = old_stage.tempo,
             video_transparency      = old_stage.video_transparency,
             video_state             = SRVideoState.from_code(old_stage.video_state),
             text_to_speech_language = new_tts_language,
-            global_monitors         = global_monitors,
-            extensions              = new_extensions,
         )
 
 
-@grepr_dataclass(grepr_fields=["stage", "sprites", "sprite_layer_stack", "global_variables", "global_lists", "tempo", "video_transparency", "video_state", "text_to_speech_language", "global_monitors", "extensions"], eq=False)
+@grepr_dataclass(grepr_fields=["stage", "sprites", "sprite_layer_stack", "global_variables", "global_lists", "global_monitors", "extensions", "tempo", "video_transparency", "video_state", "text_to_speech_language"], eq=False)
 class SRProject:
     """
     The second representation (SR) of a Scratch/PenguinMod Project
@@ -261,12 +261,12 @@ class SRProject:
     sprite_layer_stack: list[UUID]
     global_variables: list[SRVariable]
     global_lists: list[SRList]
+    global_monitors: list[SRMonitor]
+    extensions: list[SRBuiltinExtension | SRCustomExtension]
     tempo: int
     video_transparency: int | float # There seems to be no limit
     video_state: SRVideoState
     text_to_speech_language: SRTTSLanguage | None
-    global_monitors: list[SRMonitor]
-    extensions: list[SRExtension]
 
     @classmethod
     def create_empty(cls) -> "SRProject":
@@ -282,12 +282,12 @@ class SRProject:
             sprite_layer_stack=[],
             global_variables=[],
             global_lists=[],
+            global_monitors=[],
+            extensions=[],
             tempo=60,
             video_transparency=50,
             video_state=SRVideoState.ON,
             text_to_speech_language=None,
-            global_monitors=[],
-            extensions=[],
         )
 
     def __eq__(self, other) -> bool:
@@ -306,22 +306,23 @@ class SRProject:
             return NotImplemented
         
         if (
-            self.stage != other.stage or
-            self.sprites != other.sprites or
-            self.global_variables != other.global_variables or
-            self.global_lists != other.global_lists or
-            self.tempo != other.tempo or
-            self.video_transparency != other.video_transparency or
-            self.text_to_speech_language != other.text_to_speech_language or
-            self.global_monitors != other.global_monitors or
-            self.extensions != other.extensions
+            self.stage                   != other.stage or
+            self.sprites                 != other.sprites or
+            self.global_variables        != other.global_variables or
+            self.global_lists            != other.global_lists or
+            self.global_monitors         != other.global_monitors or
+            self.extensions              != other.extensions or
+            self.tempo                   != other.tempo or
+            self.video_transparency      != other.video_transparency or
+            self.video_state             != other.video_state or
+            self.text_to_speech_language != other.text_to_speech_language
         ):
             return False
 
         if len(self.sprite_layer_stack) != len(other.sprite_layer_stack):
             return False
 
-        self_uuid_to_sprite  = {sprite.uuid: sprite for sprite in self.sprites}
+        self_uuid_to_sprite  = {sprite.uuid: sprite for sprite in self .sprites}
         other_uuid_to_sprite = {sprite.uuid: sprite for sprite in other.sprites}
 
         for self_uuid, other_uuid in zip(self.sprite_layer_stack, other.sprite_layer_stack):
@@ -354,13 +355,13 @@ class SRProject:
         )
         AA_LIST_OF_TYPE(self, path, "global_variables", SRVariable)
         AA_LIST_OF_TYPE(self, path, "global_lists", SRList)
+        AA_LIST_OF_TYPE(self, path, "global_monitors", SRMonitor)
+        AA_LIST_OF_TYPES(self, path, "extensions", (SRBuiltinExtension, SRCustomExtension))
         AA_TYPE(self, path, "tempo", int)
         AA_RANGE(self, path, "tempo", min=20, max=500)
         AA_TYPES(self, path, "video_transparency", (int, float))
         AA_TYPE(self, path, "video_state", SRVideoState)
         AA_NONE_OR_TYPE(self, path, "text_to_speech_language", SRTTSLanguage)
-        AA_LIST_OF_TYPE(self, path, "global_monitors", SRMonitor)
-        AA_LIST_OF_TYPE(self, path, "extensions", SRExtension)
         
         self.stage.validate(path+["stage"], info_api)
 
@@ -407,14 +408,14 @@ class SRProject:
                 target_key = target.name
                 current_path = path+["sprites", i-1]
             partial_context = PartialContext(
-                scope_variables       = global_variables + local_variables[target_key],
-                scope_lists           = global_lists     + local_lists    [target_key],
-                global_variables  = global_variables,
-                local_variables = local_variables,
-                local_lists     = local_lists,
-                other_sprites         = [
+                scope_variables  = global_variables + local_variables[target_key],
+                scope_lists      = global_lists     + local_lists    [target_key],
+                global_variables = global_variables,
+                local_variables  = local_variables,
+                local_lists      = local_lists,
+                other_sprites    = [
                     (DropdownValueKind.SPRITE, sprite_name) for sprite_name in defined_sprites.keys()],
-                backdrops             = backdrops,
+                backdrops        = backdrops,
             )
             target.validate_scripts(
                 path     = current_path, 
@@ -522,7 +523,7 @@ class SRProject:
             current_path = path+["global_lists", i]
             if list_.name in defined_lists:
                 other_path = defined_lists[list_.name]
-                raise MANIP_SameValueTwiceError(other_path, current_path, "Two lists must npt have the same name")
+                raise MANIP_SameValueTwiceError(other_path, current_path, "Two lists must not have the same name")
             defined_lists[list_.name] = current_path
         
         for i, sprite in enumerate(self.sprites):

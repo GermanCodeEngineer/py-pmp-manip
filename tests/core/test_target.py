@@ -249,8 +249,8 @@ def test_SRTarget_create_empty():
     assert isinstance(srtarget, SRTarget)
     assert srtarget.scripts == []
     assert srtarget.comments == []
-    assert srtarget.costume_index == 0
     assert srtarget.sounds == []
+    assert srtarget.costume_index == 0
     assert srtarget.volume == 100
 
 
@@ -268,10 +268,10 @@ def test_SRTarget_validate():
             ("costumes", {}, MANIP_TypeValidationError),
             ("costumes", [], MANIP_RangeValidationError),
             ("costumes", [{}], MANIP_TypeValidationError),
-            ("costume_index", "costume1", MANIP_TypeValidationError),
-            ("costume_index", 3, MANIP_RangeValidationError),
             ("sounds", "a str", MANIP_TypeValidationError),
             ("sounds", ["a str"], MANIP_TypeValidationError),
+            ("costume_index", "costume1", MANIP_TypeValidationError),
+            ("costume_index", 3, MANIP_RangeValidationError),
             ("volume", [], MANIP_TypeValidationError),
             ("volume", -5, MANIP_RangeValidationError),
             ("volume", 105, MANIP_RangeValidationError),
@@ -457,8 +457,8 @@ def test_SRSprite_create_empty():
     assert isinstance(srsprite, SRSprite)
     assert srsprite.scripts == []
     assert srsprite.comments == []
-    assert srsprite.costume_index == 0
     assert srsprite.sounds == []
+    assert srsprite.costume_index == 0
     assert srsprite.volume == 100
     assert srsprite.name == "Player"
     assert srsprite.local_variables == []

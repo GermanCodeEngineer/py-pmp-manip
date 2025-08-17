@@ -1643,7 +1643,6 @@ SQUAWK_CONTENT = AudioSegment.from_file(
 SR_STAGE = SRStage(
     scripts=[],
     comments=[],
-    costume_index=0,
     costumes=[
         SRVectorCostume(
             name="backdrop1",
@@ -1653,6 +1652,7 @@ SR_STAGE = SRStage(
         ),
     ],
     sounds=[],
+    costume_index=0,
     volume=100,
 )
 
@@ -1660,7 +1660,6 @@ SR_SPRITE = SRSprite(
     name="Sprite1",
     scripts=ALL_SR_SCRIPTS,
     comments=[],
-    costume_index=0,
     costumes=[
         SRVectorCostume(
             name="costume1",
@@ -1676,6 +1675,7 @@ SR_SPRITE = SRSprite(
             content=SQUAWK_CONTENT,
         ),
     ],
+    costume_index=0,
     volume=100,
     local_variables=[],
     local_lists=[],
@@ -1705,10 +1705,6 @@ SR_PROJECT = SRProject(
     global_lists=[
         SRList(name="my list", current_value=[]),
     ],
-    tempo=60,
-    video_transparency=50,
-    video_state=SRVideoState.ON,
-    text_to_speech_language=None,
     global_monitors=[
         SRListMonitor(
             opcode="value of [LIST]",
@@ -1720,6 +1716,10 @@ SR_PROJECT = SRProject(
             size=(100, 120),
         ),
     ],
+    tempo=60,
+    video_transparency=50,
+    video_state=SRVideoState.ON,
+    text_to_speech_language=None,
     extensions=[],
 )
 

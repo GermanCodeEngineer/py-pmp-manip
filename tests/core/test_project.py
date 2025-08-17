@@ -132,11 +132,11 @@ def test_SRProject_create_empty():
     assert srproject.sprites == []
     assert srproject.global_variables == []
     assert srproject.global_lists == []
+    assert srproject.global_monitors == []
     assert srproject.tempo == 60
     assert srproject.video_transparency == 50
     assert srproject.video_state == SRVideoState.ON
     assert srproject.text_to_speech_language == None
-    assert srproject.global_monitors == []
     assert srproject.extensions == []
 
 
@@ -202,15 +202,15 @@ def test_SRProject_validate():
             ("global_variables", ["bye"], MANIP_TypeValidationError),
             ("global_lists", set(), MANIP_TypeValidationError),
             ("global_lists", [{}], MANIP_TypeValidationError),
+            ("global_monitors", (), MANIP_TypeValidationError),
+            ("global_monitors", [[]], MANIP_TypeValidationError),
+            ("extensions", 7, MANIP_TypeValidationError),
+            ("extensions", ["jgJSON"], MANIP_TypeValidationError),
             ("tempo", 5.6, MANIP_TypeValidationError),
             ("tempo", 10, MANIP_RangeValidationError), # too low
             ("video_transparency", "invalid", MANIP_TypeValidationError),
             ("video_state", "on", MANIP_TypeValidationError),
             ("text_to_speech_language", "fr", MANIP_TypeValidationError),
-            ("global_monitors", (), MANIP_TypeValidationError),
-            ("global_monitors", [[]], MANIP_TypeValidationError),
-            ("extensions", 7, MANIP_TypeValidationError),
-            ("extensions", ["jgJSON"], MANIP_TypeValidationError),
         ],
         validate_func=SRProject.validate,
         func_args=[info_api],

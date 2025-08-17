@@ -12,7 +12,7 @@ from pmp_manip.utility          import (
     MANIP_SameValueTwiceError, MANIP_ConversionError,
 )
 
-from pmp_manip.core.asset           import FRCostume, FRSound, SRCostume, SRVectorCostume, SRSound
+from pmp_manip.core.asset           import FRCostume, FRSound, SRVectorCostume, SRBitmapCostume, SRSound
 from pmp_manip.core.block_interface import SecondToInterIF, InterToFirstIF, FirstToInterIF, ValidationIF
 from pmp_manip.core.block_mutation  import SRCustomBlockMutation
 from pmp_manip.core.block           import FRBlock, IRBlock, SRScript
@@ -168,7 +168,7 @@ class FRTarget(ABC):
     def _to_second_common(self, asset_files: dict[str, bytes], info_api: OpcodeInfoAPI) -> tuple[
         list[SRScript], 
         list[SRComment], 
-        list[SRCostume], 
+        list[SRVectorCostume | SRBitmapCostume], 
         list[SRSound], 
         list[SRVariable], 
         list[SRList],
@@ -357,9 +357,9 @@ class FRStage(FRTarget):
         new_stage = SRStage(
             scripts       = scripts,
             comments      = comments,
-            costume_index = self.current_costume,
             costumes      = costumes,
             sounds        = sounds,
+            costume_index = self.current_costume,
             volume        = self.volume,
         )
         return (new_stage, global_variables, global_lists)
@@ -448,36 +448,36 @@ class FRSprite(FRTarget):
             local_lists,
         ) = super()._to_second_common(asset_files, info_api)
         new_sprite = SRSprite(
-            name                  = self.name,
-            scripts               = scripts,
-            comments              = comments,
-            costume_index         = self.current_costume,
-            costumes              = costumes,
-            sounds                = sounds,
-            volume                = self.volume,
+            name            = self.name,
+            scripts         = scripts,
+            comments        = comments,
+            costumes        = costumes,
+            sounds          = sounds,
+            costume_index   = self.current_costume,
+            volume          = self.volume,
             local_variables = local_variables,
             local_lists     = local_lists,
-            local_monitors        = [], # will be filled later
-            is_visible            = self.visible,
-            position              = (self.x, self.y),
-            size                  = self.size,
-            direction             = self.direction,
-            is_draggable          = self.draggable,
-            rotation_style        = SRSpriteRotationStyle.from_code(self.rotation_style),
+            local_monitors  = [], # will be filled later
+            is_visible      = self.visible,
+            position        = (self.x, self.y),
+            size            = self.size,
+            direction       = self.direction,
+            is_draggable    = self.draggable,
+            rotation_style  = SRSpriteRotationStyle.from_code(self.rotation_style),
         )
         return (new_sprite, None, None)
 
 
-@grepr_dataclass(grepr_fields=["scripts", "comments", "costume_index", "costumes", "sounds", "volume"])
+@grepr_dataclass(grepr_fields=["scripts", "comments", "costumes", "sounds", "costume_index", "volume"])
 class SRTarget:
     """
     The second representation (SR) of a target, which is much more user friendly. A target can be either a sprite or the stage
     """
     scripts: list[SRScript]
     comments: list[SRComment]
-    costume_index: int
-    costumes: list[SRCostume]
+    costumes: list[SRVectorCostume | SRBitmapCostume]
     sounds: list[SRSound]
+    costume_index: int
     volume: int | float
 
     # TODO: add init/post_init width NotImplementedError for this and other use cases
@@ -493,9 +493,9 @@ class SRTarget:
         return cls(
             scripts=[],
             comments=[],
-            costume_index=0,
             costumes=[SRVectorCostume.create_empty()],
             sounds=[],
+            costume_index=0,
             volume=100,
         )
 
@@ -516,13 +516,13 @@ class SRTarget:
         """
         AA_LIST_OF_TYPE(self, path, "scripts", SRScript)
         AA_LIST_OF_TYPE(self, path, "comments", SRComment)
-        AA_LIST_OF_TYPE(self, path, "costumes", SRCostume)
+        AA_LIST_OF_TYPES(self, path, "costumes", (SRVectorCostume, SRBitmapCostume))
         AA_MIN_LEN(self, path, "costumes", min_len=1)
+        AA_LIST_OF_TYPE(self, path, "sounds", SRSound)
         AA_TYPE(self, path, "costume_index", int)
         AA_RANGE(self, path, "costume_index", 
             min=0, max=len(self.costumes)-1, condition=f"In this case the sprite has {len(self.costumes)} costume(s)",
         )
-        AA_LIST_OF_TYPE(self, path, "sounds", SRSound)
         AA_TYPES(self, path, "volume", (int, float))
         AA_RANGE(self, path, "volume", min=0, max=100)
         
@@ -766,9 +766,9 @@ class SRStage(SRTarget):
             custom_vars             = [], # Seems to have no purpose
             blocks                  = old_blocks,
             comments                = old_comments,
-            current_costume         = self.costume_index,
             costumes                = old_costumes,
             sounds                  = old_sounds,
+            current_costume         = self.costume_index,
             volume                  = self.volume,
             layer_order             = 0, # stage is always on the bottom
             id                      = string_to_sha256("_stage_", secondary=SHA256_SEC_TARGET_NAME),
@@ -809,10 +809,11 @@ class SRSprite(SRTarget):
         return cls(
             scripts=[],
             comments=[],
-            costume_index=0,
             costumes=[SRVectorCostume.create_empty()],
             sounds=[],
+            costume_index=0,
             volume=100,
+            
             name=name,
             local_variables=[],
             local_lists=[],
@@ -936,9 +937,9 @@ class SRSprite(SRTarget):
             custom_vars             = [], # Seems to have no purpose
             blocks                  = old_blocks,
             comments                = old_comments,
-            current_costume         = self.costume_index,
             costumes                = old_costumes,
             sounds                  = old_sounds,
+            current_costume         = self.costume_index,
             volume                  = self.volume,
             layer_order             = layer_order,
             id                      = string_to_sha256(self.name, secondary=SHA256_SEC_TARGET_NAME),
