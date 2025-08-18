@@ -344,7 +344,7 @@ class SRProject:
         
         Raises:
             MANIP_ValidationError: if the SRProject is invalid
-            MANIP_SameValueTwiceError(MANIP_ValidationError): if two sprites have the same name
+            MANIP_SameValueTwiceError(MANIP_ValidationError): if two sprites or extensions have the same name
         """
         path = []
         AA_TYPE(self, path, "stage", SRStage)
@@ -380,6 +380,14 @@ class SRProject:
         
         for i, extension in enumerate(self.extensions):
             extension.validate(path+["extensions", i])
+        
+        defined_extensions = {}
+        for i, extension in enumerate(self.extensions):
+            current_path = path+["extensions", i]
+            if extension.name in defined_extensions:
+                other_path = defined_extensions[extension.name]
+                raise MANIP_SameValueTwiceError(other_path, current_path, "Two extensions must not have the same name")
+            defined_extensions[extension.name] = current_path
         
         # 1. Ensure no same sprite name
         # 2. Validate Dropdown Values

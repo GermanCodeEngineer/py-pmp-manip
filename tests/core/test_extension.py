@@ -1,13 +1,13 @@
 from pmp_manip.utility import MANIP_InvalidValueError
 
-from pmp_manip.core.extension import SRExtension, SRCustomExtension
+from pmp_manip.core.extension import SRExtension, SRBuiltinExtension, SRCustomExtension
 
 from tests.utility import execute_attr_validation_tests
 
 
 
 def test_SRExtension_validate():
-    extension = SRExtension(id="videoSensing")
+    extension = SRBuiltinExtension(id="videoSensing")
     extension.validate([])
 
     execute_attr_validation_tests(

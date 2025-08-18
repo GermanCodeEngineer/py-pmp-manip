@@ -228,7 +228,95 @@ Represents the monitor of a **list value block** of a global or local list. Inhe
 - **default value**: `(100, 120)`
 
 
+## `SRExtension`
+Common base for [`SRBuiltinExtension`](#srbuiltinextension) and [`SRCustomExtension`](#srcustomextension).
+#### `SRExtension.id`
+- **type**: `str`
+- **description**: The unique id of the extension(e.g. `"music"` or `"jgJSON"`).
+
+
+## `SRBuiltinExtension`
+Represents a builtin extension that PenguinMod recognizes. Inherits from [`SRExtension`](#srextension).
+Has no additional properties compared to `SRExtension`.
+
+
+## `SRCustomExtension`
+Represents a custom extension that PenguinMod does not recognize. Therefore needs a url source. Inherits from [`SRExtension`](#srextension).
+#### `SRCustomExtension.url`
+- **type**: `str` ()
+- **description**: The url source for getting the extension javascript source code. Must follow one of these patterns: `"http://..."`, `"https://..."` or `"data:application/javascript,..."`
+
+
+## `SRTTSLanguage`
+Enum Class. Represents a language for Scratch's Text to Speech Extension. 
+All supported languages are: `SRTTSLanguage.`...
+| enum name/language name  | BCP 47 language code |
+|--------------------------|----------------------|
+| `ARABIC`                 | `"ar"`               |
+| `CHINESE_MANDARIN`       | `"zh-cn"`            |
+| `DANISH`                 | `"da"`               |
+| `DUTCH`                  | `"nl"`               |
+| `ENGLISH`                | `"en"`               |
+| `FRENCH`                 | `"fr"`               |
+| `GERMAN`                 | `"de"`               |
+| `HINDI`                  | `"hi"`               |
+| `ICELANDIC`              | `"is"`               |
+| `ITALIAN`                | `"it"`               |
+| `JAPANESE`               | `"ja"`               |
+| `KOREAN`                 | `"ko"`               |
+| `NORWEGIAN`              | `"nb"`               |
+| `POLISH`                 | `"pl"`               |
+| `PORTUGUESE_BRAZILIAN`   | `"pt-br"`            |
+| `PORTUGUESE`             | `"pt"`               |
+| `ROMANIAN`               | `"ro"`               |
+| `RUSSIAN`                | `"ru"`               |
+| `SPANISH`                | `"es"`               |
+| `SPANISH_LATIN_AMERICAN` | `"es-419"`           |
+| `SWEDISH`                | `"sv"`               |
+| `TURKISH`                | `"tr"`               |
+| `WELSH`                  | `"cy"`               |
+
+
+## `SRScript`
+Represents a script i.e. a connected sequence of blocks in the "Code" tab of a sprite or the stage.
+#### `SRScript.position`
+- **type**: `tuple` of `int|float`(x position) and `int|float`(y position)
+- **description**: Stores the position of the script in the "Code" tab. Unlimited, but usually in the range of hundreds and thousands.
+#### `SRScript.blocks`
+- **type**: `list` of [`SRBlock`](#srblock)
+- **description**: Stores the script's sequence of blocks from top to bottom.
+
+## `SRBlock`
+Represents a single block in a script. Can be any shape of block(e.g. square, round, hat).
+#### `SRBlock.opcode`
+- **type**: `str`
+- **description**: The unique identifier for it's kind of block.
+#### `SRBlock.inputs`
+- **type**: `dict` of `str` keys and [`SRInputValue`](#srinputvalue) values (only of it's subclasses though)
+- **description**: The arguments fields of the block and their values. Includes text, number fields, round dropdowns one can insert blocks into and all others except for square dropdowns.
+#### `SRBlock.dropdowns`
+- **type**: `dict` of `str` keys and [`SRDropdownValue`](#srdropdownvalue) values
+- **description**: The argument fields of the block and their values. Only includes square dropdowns, not round dropdowns one can insert blocks into.
+#### `SRBlock.comment`
+- **type**: [`SRComment`](#srcomment) or `None`
+- **description**: The optional attached comment of the block.
+- **default value**`: `None`
+#### `SRBlock.mutation`
+- **type**: [`SRMutation`](#srmutation) or `None`
+- **description**: The optional mutation of the block for some opcodes(kinds of blocks). Most blocks do not need one.
+- **default value**`: `None`
+
+
+## `SRInputValue`
+Represents a single input field of a block. Can be any kind of field (e.g. text, number, round dropdown) except for a square dropdown. Common base for 
+#### `SRBlock.opcode`
+- **type**: `str`
+- **description**: The unique identifier for it's kind of block.
 
 
 
-
+TODOs:
+    note needs and create example project
+    => add images
+    => add content snippets from project example
+    

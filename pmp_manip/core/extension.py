@@ -1,7 +1,10 @@
 from pmp_manip.utility import grepr_dataclass, AA_TYPE, AA_ALNUM, is_valid_js_data_uri, is_valid_url, MANIP_InvalidValueError
 
 
-@grepr_dataclass(grepr_fields=["id"])
+@grepr_dataclass(
+    grepr_fields=["id"], init=False, 
+    forbid_init_only_subcls=True, suggested_subcls_names=["SRBuiltinExtension", "SRCustomExtension"],
+)
 class SRExtension:
     """
     The second representation for an extension.
@@ -26,6 +29,7 @@ class SRExtension:
         AA_TYPE(self, path, "id", str) # TODO: possibly verify its one of PenguinMod's extension if not custom
         AA_ALNUM(self, path, "id")
 
+@grepr_dataclass(grepr_fields=[])
 class SRBuiltinExtension(SRExtension):
     """
     The second representation for a builtin extension.
