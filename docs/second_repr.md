@@ -382,7 +382,6 @@ Stores additional information special to some kinds of blocks. Only needed for s
 * [`SRCustomBlockCallMutation`](#srcustomblockcallmutation)
 * [`SRStopScriptMutation`](#srstopscriptmutation)
 
-
 ## `SRCustomBlockArgumentMutation`
 Inherits from [`SRMutation`](#srmutation). Used and required only by opcodes `"argument_reporter_string_number"` and `"argument_reporter_boolean"`.
 #### `SRCustomBlockArgumentMutation.argument_name`
