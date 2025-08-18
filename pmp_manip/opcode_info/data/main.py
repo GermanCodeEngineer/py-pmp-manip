@@ -173,11 +173,11 @@ info_api.add_group(c_lists        )
 info_api.add_group(c_custom_blocks)
 
 # Mutations
-info_api.set_opcode_mutation_class(OPCODE_STOP_SCRIPT, old_cls=FRStopScriptMutation, new_cls=SRStopScriptMutation)
-info_api.set_opcode_mutation_class(OPCODE_CB_PROTOTYPE, old_cls=FRCustomBlockMutation, new_cls=None)
-info_api.set_opcodes_mutation_class(ANY_OPCODE_CB_DEF, old_cls=None, new_cls=SRCustomBlockMutation)
 info_api.set_opcodes_mutation_class(ANY_OPCODE_CB_ARG, old_cls=FRCustomBlockArgumentMutation, new_cls=SRCustomBlockArgumentMutation)
+info_api.set_opcodes_mutation_class(ANY_OPCODE_CB_DEF, old_cls=None, new_cls=SRCustomBlockMutation)
+info_api.set_opcode_mutation_class(OPCODE_CB_PROTOTYPE, old_cls=FRCustomBlockMutation, new_cls=None)
 info_api.set_opcode_mutation_class(OPCODE_CB_CALL, old_cls=FRCustomBlockCallMutation, new_cls=SRCustomBlockCallMutation)
+info_api.set_opcode_mutation_class(OPCODE_STOP_SCRIPT, old_cls=FRStopScriptMutation, new_cls=SRStopScriptMutation)
 
 # Special Cases
 def _149c_e47b(block: "SRBlock|IRBlock", validation_if: "ValidationIF") -> OpcodeType:

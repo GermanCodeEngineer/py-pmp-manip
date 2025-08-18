@@ -1,10 +1,12 @@
 from dataclasses import field
-from typing      import Any, Callable
+from typing      import TypeVar, Callable
 
 from pmp_manip.utility import grepr_dataclass, remove_duplicates, GEnum, MANIP_BlameDevsError
 
 from pmp_manip.core.context import PartialContext, CompleteContext
 
+
+DROPDOWN_VALUE_T = str | int
 
 class DropdownValueKind(GEnum):
     """
@@ -63,7 +65,7 @@ class DropdownValueRule(GEnum):
         return None
 
     @property
-    def post_validate_func(self) -> Callable[[tuple[DropdownValueKind, Any]], tuple[bool, str|None]] | None:
+    def post_validate_func(self) -> Callable[[tuple[DropdownValueKind, DROPDOWN_VALUE_T]], tuple[bool, str|None]] | None:
         """
         Gets the optional function, which checks if the dropdown value is legal, e.g. because creating a full whitelist is not reasonable
 
@@ -72,7 +74,7 @@ class DropdownValueRule(GEnum):
         """
         match self:
             case DropdownValueRule.MATRIX:
-                def _matrix_post_validate_func(dropdown_value: tuple[DropdownValueKind, Any]) -> tuple[bool, str|None]:
+                def _matrix_post_validate_func(dropdown_value: tuple[DropdownValueKind, DROPDOWN_VALUE_T]) -> tuple[bool, str|None]:
                     value: str = dropdown_value[1]
                     msg = 'Must be a string of 25 chars. Every char must be either "0" or "1"'
                     if len(value) != 25:
@@ -127,7 +129,7 @@ class DropdownTypeInfo:
     direct_values:     list[str | int | bool]  = field(default_factory=list)
     rules:             list[DropdownValueRule] = field(default_factory=list)
     old_direct_values: list[str | int | bool] | None = None  
-    fallback:          Any                    | None = None
+    fallback:          DROPDOWN_VALUE_T      | None = None
     
     def __post_init__(self) -> None:
         """
@@ -194,7 +196,7 @@ class DropdownType(GEnum):
         return default_kind
 
     @property
-    def post_validate_func(self) -> Callable[[tuple[DropdownValueKind, Any]], tuple[bool, str|None]] | None:
+    def post_validate_func(self) -> Callable[[tuple[DropdownValueKind, DROPDOWN_VALUE_T]], tuple[bool, str|None]] | None:
         """
         Gets the optional function, which checks if the dropdown value is legal, e.g. because creating a full whitelist is not reasonable
 
@@ -211,7 +213,7 @@ class DropdownType(GEnum):
                     raise MANIP_BlameDevsError(f"Got multiple post validation functions for {self!r}: {validate_func} and {rule_validate_func}")
         return validate_func
 
-    def calculate_possible_new_dropdown_values(self, context: PartialContext|CompleteContext) -> list[tuple[DropdownValueKind, Any]]:
+    def calculate_possible_new_dropdown_values(self, context: PartialContext|CompleteContext) -> list[tuple[DropdownValueKind, DROPDOWN_VALUE_T]]:
         """
         Calulate all the possible values for a SRDropdownValue in certain circumstances(given context)
 
@@ -296,12 +298,12 @@ class DropdownType(GEnum):
 
                 case DropdownValueRule.COSTUME:
                     values.extend(context.costumes)
-                    values.extend([(DropdownValueKind.COSTUME, i) for i in range(len(context.costumes))])
+                    values.extend([(DropdownValueKind.COSTUME, i+1) for i in range(len(context.costumes))])
                 case DropdownValueRule.BACKDROP:
                     values.extend(context.backdrops)
-                    values.extend([(DropdownValueKind.COSTUME, i) for i in range(len(context.backdrops))])
+                    values.extend([(DropdownValueKind.COSTUME, i+1) for i in range(len(context.backdrops))])
                 case DropdownValueRule.SOUND:
-                    values.extend(context.sounds)
+                    values.extend([(DropdownValueKind.SOUND, i+1) for i in range(len(context.sounds))])
                 case DropdownValueRule.VARIABLE:
                     values.extend(context.scope_variables)
                 case DropdownValueRule.LIST:
@@ -316,7 +318,7 @@ class DropdownType(GEnum):
             values.append(self.type_info.fallback)
         return remove_duplicates(values)
 
-    def guess_possible_new_dropdown_values(self, include_rules: bool) -> list[tuple[DropdownValueKind, Any]]:
+    def guess_possible_new_dropdown_values(self, include_rules: bool) -> list[tuple[DropdownValueKind, DROPDOWN_VALUE_T]]:
         """
         Guess all the possible values for a SRDropdownValue without context
 
@@ -386,12 +388,12 @@ class DropdownType(GEnum):
                         | DropdownValueRule.VARIABLE | DropdownValueRule.LIST     | DropdownValueRule.BROADCAST_MSG | DropdownValueRule.FONT):
                         pass # can not be guessed
                     case DropdownValueRule.MATRIX:
-                        pass # Could theoretically be guessed, but there are 3_3554_432 (2^25) possibilities
+                        pass # Could theoretically be guessed, but there are 3.3554.432 (2**(5*5)) possibilities
         if self.type_info.fallback is not None:
             values.append((DropdownValueKind.FALLBACK, self.type_info.fallback))
         return remove_duplicates(values)
 
-    def guess_possible_old_dropdown_values(self) -> list[Any]:
+    def guess_possible_old_dropdown_values(self) -> list[DROPDOWN_VALUE_T]:
         """
         Guess all the possible values for a dropdown value in first representation without context
 
@@ -442,7 +444,7 @@ class DropdownType(GEnum):
             values.append((DropdownValueKind.FALLBACK, self.type_info.fallback))
         return remove_duplicates(values)
 
-    def translate_old_to_new_value(self, old_value: Any) -> tuple[DropdownValueKind, Any]:
+    def translate_old_to_new_value(self, old_value: DROPDOWN_VALUE_T) -> tuple[DropdownValueKind, DROPDOWN_VALUE_T]:
         """
         Translate a dropdown value from first representation into a SRDropdownValue expressed as a tuple
 
@@ -452,9 +454,6 @@ class DropdownType(GEnum):
         Returns:
             the SRDropdownValue as a tuple => (kind, value)
         """
-        # TODO: add special case for this
-        if self == BuiltinDropdownType.EXPANDED_MINIMIZED and old_value == "FALSE": # To patch a mistake of the pen extension devs
-            old_value = False
         new_values = self.guess_possible_new_dropdown_values(include_rules=True)
         old_values = self.guess_possible_old_dropdown_values()
         
@@ -466,7 +465,7 @@ class DropdownType(GEnum):
             assert self.guess_default_kind is not None
             return (self.guess_default_kind, old_value)
 
-    def translate_new_to_old_value(self, new_value: tuple[DropdownValueKind, Any]) -> Any:
+    def translate_new_to_old_value(self, new_value: tuple[DropdownValueKind, DROPDOWN_VALUE_T]) -> DROPDOWN_VALUE_T:
         """
         Translate a SRDropdownValue expressed as a tuple info a dropdown value from first representation
 
@@ -571,7 +570,6 @@ class BuiltinDropdownType(DropdownType):
         direct_values=["pitch", "pan"],
         old_direct_values=["PITCH", "PAN"],
     )
-    BLOCK_TYPE = DropdownTypeInfo(direct_values=["instruction", "lastInstruction", "textReporter", "numberReporter", "booleanReporter"],)
     DRUM = DropdownTypeInfo(
         direct_values=["(1) Snare Drum", "(2) Bass Drum", "(3) Side Stick", "(4) Crash Cymbal", "(5) Open Hi-Hat", "(6) Closed Hi-Hat", "(7) Tambourine", "(8) Hand Clap", "(9) Claves", "(10) Wood Block", "(11) Cowbell", "(12) Triangle", "(13) Bongo", "(14) Conga", "(15) Cabasa", "(16) Guiro", "(17) Vibraslap", "(18) Cuica"],
         old_direct_values=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18"],
@@ -587,11 +585,6 @@ class BuiltinDropdownType(DropdownType):
         rules=[DropdownValueRule.FONT],
     )
     ON_OFF = DropdownTypeInfo(direct_values=["on", "off"])
-    EXPANDED_MINIMIZED = DropdownTypeInfo(
-        direct_values=["expanded", "minimized"],
-        old_direct_values=[True, False],
-    )
-    VERTEX_COUNT = DropdownTypeInfo(direct_values=[3, 4])
     PEN_PROPERTY = DropdownTypeInfo(direct_values=["color", "saturation", "brightness", "transparency"])
     ANIMATION_TECHNIQUE = DropdownTypeInfo(direct_values=["type", "rainbow", "zoom"])
     LEFT_CENTER_RIGHT = DropdownTypeInfo(direct_values=["left", "center", "right"])
@@ -640,6 +633,7 @@ class BuiltinDropdownType(DropdownType):
 
 
 __all__ = [
+    "DROPDOWN_VALUE_T",
     "DropdownValueKind", "DropdownInfo", "DropdownValueRule", 
     "DropdownTypeInfo", "DropdownType", "BuiltinDropdownType",
 ]

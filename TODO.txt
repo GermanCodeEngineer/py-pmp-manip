@@ -14,6 +14,7 @@ Medium:
     - L: spit into internal and public functions/methods etc (easier in VSCode)
         => add enforce_argument_types decorator to public ones
         => remove "Returns" section of docstrings to avoid doubling (easy to do simultaneously)
+    - M: implement difficult polygon block
     - [M.OPT]: add FRProject.from_file alternative, fetch from project link 
     - S/M: implement variable_type and variable_id (example: "small_example")
     - S: explore extensionData (example of "2D MAINCRAFT")
@@ -36,7 +37,6 @@ Low:
 Formatting:
     - L: add all errors to docstrings
     - M: add specific reasons for ThanksError
-    - M: change typing of dropdown values
     - M: remove "Returns" section of docstrings to avoid doubling
     - S: rename block_interface to sth like transformation_interface
 

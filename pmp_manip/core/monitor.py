@@ -2,7 +2,7 @@ from copy   import deepcopy
 from typing import Any
 
 from pmp_manip.config           import get_config
-from pmp_manip.opcode_info.api  import OpcodeInfoAPI, MonitorIdBehaviour
+from pmp_manip.opcode_info.api  import OpcodeInfoAPI, MonitorIdBehaviour, DROPDOWN_VALUE_T
 from pmp_manip.utility          import (
     grepr_dataclass, string_to_sha256,
     AA_TYPE, AA_TYPES, AA_DICT_OF_TYPE, AA_COORD_PAIR, AA_BOXED_COORD_PAIR, AA_EQUAL, AA_BIGGER_OR_EQUAL, 
@@ -37,9 +37,9 @@ class FRMonitor:
     id: str
     mode: str
     opcode: str
-    params: dict[str, Any]
+    params: dict[str, DROPDOWN_VALUE_T]
     sprite_name: str | None
-    value: Any # TODO: check if correct
+    value: DROPDOWN_VALUE_T
     x: int | float
     y: int | float
     visible: bool
@@ -303,7 +303,7 @@ class SRMonitor:
                 context       = context,
             )
     
-    def _generate_id(self, itf_if: InterToFirstIF, info_api: OpcodeInfoAPI, old_dropdown_values: list[Any]) -> str:
+    def _generate_id(self, itf_if: InterToFirstIF, info_api: OpcodeInfoAPI, old_dropdown_values: list[DROPDOWN_VALUE_T]) -> str:
         """
         Generates the id needed for a FRMonitor
 

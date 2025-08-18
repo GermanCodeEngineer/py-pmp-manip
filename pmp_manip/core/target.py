@@ -32,8 +32,8 @@ class FRTarget(ABC):
     
     is_stage: bool
     name: str
-    variables: dict[str, tuple[str, Any] | tuple[str, Any, bool]]
-    lists: dict[str, tuple[str, Any]]
+    variables: dict[str, tuple[str, (int|float|str|bool)] | tuple[str, (int|float|str|bool), bool]]
+    lists: dict[str, tuple[str, list[int|float|str|bool]]]
     broadcasts: dict[str, str]
     custom_vars: list
     blocks: dict[str, tuple | FRBlock]
@@ -72,7 +72,6 @@ class FRTarget(ABC):
         return dict(
             is_stage=data["isStage"],
             name=data["name"],
-            # TODO: after dropdown value typing: is this fine?:
             variables={key: tuple(value) for key, value in data["variables"].items()},
             lists={key: tuple(value) for key, value in data["lists"].items()},
             broadcasts=copy(data["broadcasts"]),
@@ -124,7 +123,6 @@ class FRTarget(ABC):
         return {
             "isStage": self.is_stage,
             "name": self.name,
-            # TODO: after dropdown value typing: is this fine?:
             "variables": {key: list(value) for key, value in self.variables.items()},
             "lists": {key: list(value) for key, value in self.lists.items()},
             "broadcasts": copy(self.broadcasts),
