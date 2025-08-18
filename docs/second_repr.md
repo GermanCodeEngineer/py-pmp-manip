@@ -97,7 +97,7 @@ Common base for [`SRStage`](#srstage) and [`SRSprite`](#srsprite).
 - **type**: `list` of [`SRComment`](#srcomment)
 - **description**: Stores all the comments, which are not attached to a block, in a sprite or the stage.
 #### `SRTarget.costumes`
-- **type**: `list` of [`SRVectorCostume`](#srvectorcostume) or [`SRBitmapCostume`](srbitmapcostume), see [`SRCostume`](#srcostume)(parent class)
+- **type**: `list` of [`SRVectorCostume`](#srvectorcostume) or [`SRBitmapCostume`](#srbitmapcostume), see [`SRCostume`](#srcostume)(parent class)
 - **description**: Stores all the costumes of a sprite or stage.
 - **note**: Must have at least one costume(hint: use `SRVectorCostume.create_empty` for an empty default costume)
 #### `SRTarget.sounds`
@@ -243,7 +243,7 @@ Has no additional properties compared to `SRExtension`.
 ## `SRCustomExtension`
 Represents a custom extension that PenguinMod does not recognize. Therefore needs a url source. Inherits from [`SRExtension`](#srextension).
 #### `SRCustomExtension.url`
-- **type**: `str` ()
+- **type**: `str`z
 - **description**: The url source for getting the extension javascript source code. Must follow one of these patterns: `"http://..."`, `"https://..."` or `"data:application/javascript,..."`
 
 
@@ -280,7 +280,7 @@ All supported languages are: `SRTTSLanguage.`...
 ## `SRScript`
 Represents a script i.e. a connected sequence of blocks in the "Code" tab of a sprite or the stage.
 #### `SRScript.position`
-- **type**: `tuple` of `int|float`(x position) and `int|float`(y position)
+- **type**: `tuple` of `int|float`(x position) and `int|float`(y position) Same system as with [`SRComment.position`](#srcommentposition).
 - **description**: Stores the position of the script in the "Code" tab. Unlimited, but usually in the range of hundreds and thousands.
 #### `SRScript.blocks`
 - **type**: `list` of [`SRBlock`](#srblock)
@@ -309,14 +309,157 @@ Represents a single block in a script. Can be any shape of block(e.g. square, ro
 
 ## `SRInputValue`
 Represents a single input field of a block. Can be any kind of field (e.g. text, number, round dropdown) except for a square dropdown. Common base for 
-#### `SRBlock.opcode`
+* [`SRBlockAndTextInputValue`](#srblockandtextinputvalue)
+* [`SRBlockAndDropdownInputValue`](#srblockanddropdowninputvalue)
+* [`SRBlockOnlyInputValue`](#srblockonlyinputvalue)
+* [`SRScriptInputValue`](#srscriptinputvalue)
+
+**these properties might but MUST NOT exist**, the subclasses specify below which properties they support:
+#### `SRInputValue.blocks`
+- **type**: `list` of [`SRBlock`](#srblock)
+- **description**: Stores the subscript's sequence of blocks from top to bottom (e.g. the "then" section of the "if" block).
+- **note**: Only exists for instances of [`SRScriptInputValue`](#srscriptinputvalue)
+#### `SRInputValue.block`
+- **type**: [`SRBlock`](#srblock) or `None`
+- **description**: Stores the optional block inserted into the argument text field, round dropdown menu etc.
+- **note**: Only exists for instances of [`SRBlockAndTextInputValue`](#srblockandtextinputvalue), [`SRBlockAndDropdownInputValue`](#srblockanddropdowninputvalue) and [`SRBlockOnlyInputValue`](#srblockonlyinputvalue).
+#### `SRInputValue.text`
 - **type**: `str`
-- **description**: The unique identifier for it's kind of block.
+- **description**: Stores the text/number/color field or similar of the input value.
+- **note**: Only exists for instances of [`SRBlockAndTextInputValue`](#srblockandtextinputvalue).
+#### `SRInputValue.dropdown`
+- **type**: [`SRDropdownValue`](#srdropdownvalue)
+- **description**: Stores the round dropdown menu of the input value.
+- **note**: Only exists for instances of [`SRBlockAndDropdownInputValue`](#srblockanddropdowninputvalue).
+
+### `SRBlockAndTextInputValue`
+Inherits from [`SRInputValue`](#srinputvalue).
+* **uses properties**: [`SRInputValue.block`](#srinputvalueblock), [`SRInputValue.text`](#srinputvaluetext)
+### `SRBlockAndDropdownInputValue`
+Inherits from [`SRInputValue`](#srinputvalue).
+* **uses properties**: [`SRInputValue.block`](#srinputvalueblock), [`SRInputValue.dropdown`](#srinputvaluedropdown)
+### `SRBlockOnlyInputValue`
+Inherits from [`SRInputValue`](#srinputvalue).
+* **uses properties**: [`SRInputValue.block`](#srinputvalueblock)
+### `SRScriptInputValue`
+Inherits from [`SRInputValue`](#srinputvalue).
+* **uses properties**: [`SRInputValue.blocks`](#srinputvalueblocks)
+
+
+## `SRDropdownValue`
+Represents a single dropdown field of a block. Can only be a square dropdown, which do not support inserting blocks into.
+#### `SRDropdownValue.kind`
+- **type**: [`DropdownValueKind`](#dropdownvaluekind)
+- **description**: Stores the kind of thing the dropdown value refers to (e.g. `VARIABLE`, `SPRITE`, `OBJECT` or `STANDARD`).
+#### `SRDropdownValue.value`
+- **type**: almost always `str` but rarely `int` too (for costume, backdrop and sound selection by index)
+- **description**: Stores the actual value of the dropdown value.
+
+## `DropdownValueKind`
+Enum Class. Represents a kind of dropdown value i.e. what it references if anything.
+All value kinds are: `DropdownValueKind.`...
+| enum name       | reference                                                                         |
+|-----------------|-----------------------------------------------------------------------------------|
+| `STANDARD`      | nothing                                                                           |
+| `SUGGESTION`    | nothing                                                                           |
+| `FALLBACK`      | nothing                                                                           |
+| `VARIABLE`      | a variable                                                                        |
+| `LIST`          | a list                                                                            |
+| `BROADCAST_MSG` | a broadcast message                                                               |
+| `STAGE`         | the stage                                                                         |
+| `SPRITE`        | a sprite                                                                          |
+| `MYSELF`        | the sprite the block is in                                                        |
+| `OBJECT`        | e.g. the mouse pointer, the stage edge                                            |
+| `COSTUME`       | a costume of the current sprite by name(`str` value)<br> or by index(`int` value) |
+| `BACKDROP`      | a backdrop by name(`str` value) or by index(`int` value)                          |
+| `SOUND`         | a sound by name(`str` value) or by index(`int` value)                             |
+
+
+## `SRMutation`
+Stores additional information special to some kinds of blocks. Only needed for some block opcodes(kinds of blocks). Common base for:
+* [`SRCustomBlockArgumentMutation`](#srcustomblockargumentmutation)
+* [`SRCustomBlockMutation`](#srcustomblockmutation)
+* [`SRCustomBlockCallMutation`](#srcustomblockcallmutation)
+* [`SRStopScriptMutation`](#srstopscriptmutation)
+
+## `SRCustomBlockArgumentMutation`
+Inherits from [`SRMutation`](#srmutation). Used and required only by opcodes `"argument_reporter_string_number"` and `"argument_reporter_boolean"`.
+#### `SRCustomBlockArgumentMutation.argument_name`
+- **type**: `str`
+- **description**: the name of the custom block argument which the argument reporter block is for.
+#### `SRCustomBlockArgumentMutation.main_color`
+- **type**: `str` (hex color code)
+- **description**: the main color of the custom block the argument reporter block is for.
+- **default value**: `"#FF6680"`
+#### `SRCustomBlockArgumentMutation.prototype_color`
+- **type**: `str` (hex color code)
+- **description**: the main color of the inner block of the "define" block the argument reporter block is for.
+- **default value**: `"#FF4D6A"`
+#### `SRCustomBlockArgumentMutation.outline_color`
+- **type**: `str` (hex color code)
+- **description**: the outline color of the inner block of the "define" block the argument reporter block is for.
+- **default value**: `"#FF3355"`
+
+
+
+
+
+## `SRComment`
+Represents a comment, which can be either atttached to a block or "freely floating" in the "Code" tab of a sprite or the stage.
+#### `SRComment.position`
+- **type**: `tuple` of `int|float`(x position) and `int|float`(y position)
+- **description**: Stores the position of the comment in the "Code" tab. Unlimited, but usually in the range of hundreds and thousands. Same system as with [`SRScript.position`](#srscriptposition).
+
+
+## `SRCostume`
+Represents a costume in the "Costumes" tab of a sprite or a backdrop in the "Backdrops" tab of the stage. Common base for [`SRVectorCostume`](#srvectorcostume) and [`SRBitmapCostume`](#srbitmapcostume).
+#### `SRCostume.name`
+- **type**: `str`
+- **description**: The name of the costume. Must be unique for each costume in a sprite.
+#### `SRCostume.file_extension`
+- **type**: `str`
+- **description**: The extension of the costume if saved as a file. Usually `"svg"`([`SRVectorCostume`](#srvectorcostume)) or `png`([`SRBitmapCostume`](#srbitmapcostume)).
+#### `SRCostume.rotation_center`
+- **type**: `tuple` of `int|float`(x position) and `int|float`(y position)
+- **description**: The coordinate the costume is centered at i.e. will be rotated around as a vector from the top left.
+#### `SRCostume.content`
+- **note**: exists on both possible subclasses just with a different type.
+
+
+## `SRVectorCostume`
+Represents a costume in "Vector" mode in the "Costumes" tab of a sprite or a backdrop in the "Backdrops" tab of the stage. It is based on an SVG image.
+#### `SRVectorCostume.content`
+- **type**: `_Element`(from package `lxml.etree`)
+- **description**: The actual SVG image basis of the costume as an XML element tree.
+
+
+## `SRBitmapCostume`
+Represents a costume in "Bitmap" mode in the "Costumes" tab of a sprite or a backdrop in the "Backdrops" tab of the stage. It is based on an bitmap image (e.g. a PNG).
+#### `SRBitmapCostume.content`
+- **type**: `Image`(from package `PIL.Image`)
+- **description**: The actual bitmap image basis of the costume as created by pillow's `Image.open`. PenguinMod seems to limit and reduce image size to `(480, 360)` when importing from a file.
+#### `SRBitmapCostume.has_double_resolution`
+- **type**: `bool`
+- **description**: Pretty useless. Seems to always be `True`. PenguinMod seems to limit and reduce image size to `(480, 360)` when importing from a file.
+
+## `SRSound`
+Represents a sound in the "Sounds" tab of a sprite or the stage.
+#### `SRSound.name`
+- **type**: `str`
+- **description**: The name of the sound. Must be unique for each sound in a sprite.
+#### `SRSound.file_extension`
+- **type**: `str`
+- **description**: The extension of the sound if saved as a file. Usually `"wav"` or `"mp3"`.
+#### `SRSound.content`
+- **type**: `AudioSegment`(from package `pydub`)
+- **description**: The actual audio segment basis of the sound as created by pydub's `AudioSegment.from_file`.
+
 
 
 
 TODOs:
-    note needs and create example project
-    => add images
-    => add content snippets from project example
+* note needs and create example project
+* => add images
+* => add content snippets from project example
+* make a for each block opcode docs gen script
     

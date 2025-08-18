@@ -13,6 +13,7 @@ from pmp_manip.opcode_info.api  import (
     OpcodeInfoAPI, OpcodeInfo, 
     InputInfo, InputType, InputMode, BuiltinDropdownType, DropdownValueKind,
     OpcodeType, SpecialCaseType,
+    DROPDOWN_VALUE_T,
 )
 from pmp_manip.utility          import (
     grepr_dataclass, get_closest_matches, tuplify, listify, string_to_sha256,
@@ -44,7 +45,7 @@ class FRBlock:
        tuple[int, str | tuple] 
      | tuple[int, str | tuple, str | tuple]
     )]
-    fields: dict[str, tuple[str, str] | tuple[str, str, str]]
+    fields: dict[str, tuple[DROPDOWN_VALUE_T, str] | tuple[DROPDOWN_VALUE_T, str, str]]
     shadow: bool
     top_level: bool
     x: int | float | None = None
@@ -217,7 +218,7 @@ class FRBlock:
             )
             new_dropdowns = {}
             for dropdown_id, dropdown_value in self.fields.items():
-                new_dropdowns[dropdown_id] = dropdown_value[0] # TODO: after dropdown value typing: is this fine?
+                new_dropdowns[dropdown_id] = dropdown_value[0]
             
             new_block = IRBlock(
                 opcode       = self.opcode,
@@ -292,7 +293,7 @@ class IRBlock:
     
     opcode: str
     inputs: dict[str, "IRInputValue"]
-    dropdowns: dict[str, Any]
+    dropdowns: dict[str, DROPDOWN_VALUE_T]
     comment: SRComment | None
     mutation: "SRMutation | None"
     position: tuple[int | float, int | float] | None
@@ -300,7 +301,7 @@ class IRBlock:
     is_top_level: bool
 
     @classmethod
-    def from_menu_dropdown_value(cls, dropdown_value: Any, input_info: InputInfo) -> "IRBlock":
+    def from_menu_dropdown_value(cls, dropdown_value: DROPDOWN_VALUE_T, input_info: InputInfo) -> "IRBlock":
         """
         Creates a IRBlock which only contains a menu SRDropdownValue
 
@@ -416,7 +417,7 @@ class IRBlock:
                     suffix    = None
                     sha256    = string_to_sha256(dropdown_value, secondary=SHA256_SEC_DROPDOWN_VALUE)
             if suffix is None:
-                old_fields[dropdown_id] = (dropdown_value, sha256) # TODO: after dropdown value typing: is this fine?
+                old_fields[dropdown_id] = (dropdown_value, sha256)
             else:
                 old_fields[dropdown_id] = (dropdown_value, sha256, suffix)                
         

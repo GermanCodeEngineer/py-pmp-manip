@@ -1,6 +1,4 @@
-from typing import Any
-
-from pmp_manip.opcode_info.api import DropdownType, DropdownValueKind
+from pmp_manip.opcode_info.api import DropdownType, DropdownValueKind, DROPDOWN_VALUE_T
 from pmp_manip.utility         import grepr_dataclass, AA_TYPE, AA_JSON_COMPATIBLE, MANIP_InvalidDropdownValueError
 
 from pmp_manip.core.context import PartialContext, CompleteContext
@@ -13,10 +11,10 @@ class SRDropdownValue:
     """
 
     kind: DropdownValueKind
-    value: Any
+    value: DROPDOWN_VALUE_T
     
     @classmethod
-    def from_tuple(cls, data: tuple[DropdownValueKind, Any]) -> "SRDropdownValue":
+    def from_tuple(cls, data: tuple[DropdownValueKind, DROPDOWN_VALUE_T]) -> "SRDropdownValue":
         """
         Deserializes a tuple into a SRDropdownValue
         
@@ -27,18 +25,18 @@ class SRDropdownValue:
             the SRDropdownValue
         """
         return cls(
-            kind=data[0],
-            value=data[1], # TODO: after dropdown value typing: is this fine?
+            kind  = data[0],
+            value = data[1],
         )
 
-    def to_tuple(self) -> tuple[DropdownValueKind, Any]:
+    def to_tuple(self) -> tuple[DropdownValueKind, DROPDOWN_VALUE_T]:
         """
         Serializes a SRDropdownValue into a tuple
         
         Returns:
             the tuple of (kind, value)
         """
-        return (self.kind, self.value) # TODO: after dropdown value typing: is this fine?
+        return (self.kind, self.value)
 
     def validate(self, path: list) -> None:
         """
