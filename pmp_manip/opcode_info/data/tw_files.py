@@ -1,6 +1,6 @@
 from pmp_manip.opcode_info.data_imports import *
 
-tw_files = OpcodeInfoGroup(name="tw_files", opcode_info=DualKeyDict({
+ext_tw_files = OpcodeInfoGroup(name="tw_files", opcode_info=DualKeyDict({
     ("twFiles_showPickerAs", "open a file as ([MODE])"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({

@@ -20,11 +20,14 @@ cfg = get_default_config()
 init_config(cfg)
 
 frproject = FRProject.from_file(file_path="path/to/my_project.pmp")
+frproject.add_all_extensions_to_info_api(info_api)
 
 srproject = frproject.to_second(info_api)
 print("The contents of the project are:")
 print(srproject)
 ```
+Note: `add_all_extensions_to_info_api` is discussed later in the tutorial
+
 Output(shortend):
 ```
 
@@ -43,6 +46,8 @@ Notes:
 
 ## `SRProject`
 The "root node" of a project in second representation.
+### Editor View
+![](images/project_view/srproject.png)
 #### `SRProject.stage`
 - **type**: [`SRStage`](#srstage)(subclass of [`SRTarget`](#srtarget))
 - **description**: The stage of the project.
@@ -53,7 +58,7 @@ The "root node" of a project in second representation.
 - **type**: `list` of `UUID`(from package `uuid`)
 - **description**: The order of sprites on the stage. Must contain all sprite UUIDs([`SRSprite.uuid`](#srspriteuuid)) in any order. Last UUID means sprite is on the highest layer and is rendered on top of all other sprites. First UUID means lowest layer.
 #### `SRProject.global_variables`
-- **type**: `list` of [`SRVariable`](#srvariable)
+- **type**: `list` of [`SRVariable`](#srvariable) or [`SRCloudVariable`](#srcloudvariable)(subclass)
 - **description**: The names and values of the "for all sprites" variables of the project. Local Variables are stored in specific sprites, see [`SRSprite.local_variables`](#srspritelocal_variables).
 #### `SRProject.global_lists`
 - **type**: `list` of [`SRList`](#srlist)
@@ -86,6 +91,7 @@ The "root node" of a project in second representation.
 - **description**: The "text to speech language" of Scratch's TTS extension (insignificant for most projects).
 - **note**: Equal to dropdown menu of "set language to" block.
 - **default value in editor**: `None`
+## Example
 
 
 ## `SRTarget`
@@ -124,11 +130,14 @@ Represents a sprite of the project. Inherits from [`SRTarget`](#srtarget).
 - **type**: `str` (Blacklist: `"_myself_"`, `"_stage_"`, `"_mouse_"`, `"_edge_"`)
 - **description**: The name of the sprite.
 #### `SRSprite.local_variables`
-- **type**: `list` of [`SRVariable`](#srvariable)
+- **type**: `list` of [`SRVariable`](#srvariable) or [`SRCloudVariable`](#srcloudvariable)(subclass)
 - **description**: The names and values of the "for this sprite only" variables of the sprite. Global Variables are stored in the project directly, see [`SRProject.global_variables`](#srprojectglobal_variables).
 #### `SRSprite.local_lists`
 - **type**: `list` of [`SRList`](#srlist)
 - **description**: The names and values of the "for this sprite only" lists of the sprite. Global Lists are stored in the project directly, see [`SRProject.global_lists`](#srprojectglobal_lists).
+#### `SRSprite.local_monitors`
+- **type**: `list` of [`SRMonitor`](#srmonitor), [`SRVariableMonitor`](#srvariablemonitor)(subclass) and [`SRListMonitor`](#srlistmonitor)(subclass)
+- **description**: The sprite-specific monitors of blocks shown or once shown on the stage. Global Monitors are stored in the project directly, see [`SRProject.global_monitors`](#srprojectglobal_monitors).
 #### `SRSprite.is_visible`
 - **type**: `bool`
 - **description**: Stores wether the sprite is shown on the stage.
@@ -168,6 +177,10 @@ Represents a "for all sprites"(global) or "for this sprite only"(local) variable
 #### `SRVariable.current_value`
 - **type**: usually `int`, `float` or `str`, but technically `bool` too (e.g. Infinity is saved as 0).
 - **description**: The current value of the variable.
+
+
+## `SRCloudVariable`
+Inherits from [`SRVariable`](#srvariable). Represents a cloud variable. Has no additional properties compared to `SRVariable`.
 
 
 ## `SRList`
@@ -455,13 +468,13 @@ Represents an argument of a [`SRCustomBlockOpcode`](#srcustomblockopcode). Immut
 ## `SRCustomBlockOptype`
 Enum Class. Represents the shape of a custom block (e.g. square statement, boolean, reporter)
 All possibly values are: `SRCustomBlockOptype.`...
-| enum name          | example                                                                           |
-|--------------------|-----------------------------------------------------------------------------------|
-| `STATEMENT`        |                                                                                   |
-| `ENDING_STATEMENT` |                                                                                   |
-| `STRING_REPORTER`  |                                                                                   |
-| `NUMBER_REPORTER`  |                                                                                   |
-| `BOOLEAN_REPORTER` |                                                                                   |
+| enum name          | example                         |
+|--------------------|---------------------------------|
+| `STATEMENT`        |                                 |
+| `ENDING_STATEMENT` |                                 |
+| `STRING_REPORTER`  |                                 |
+| `NUMBER_REPORTER`  |                                 |
+| `BOOLEAN_REPORTER` |                                 |
 
 
 ## `SRComment`
@@ -469,6 +482,17 @@ Represents a comment, which can be either atttached to a block or "freely floati
 #### `SRComment.position`
 - **type**: `tuple` of `int|float`(x position) and `int|float`(y position)
 - **description**: Stores the position of the comment in the "Code" tab. Unlimited, but usually in the range of hundreds and thousands. Same system as with [`SRScript.position`](#srscriptposition).
+#### `SRComment.size`
+- **type**: `tuple` of `int|float`(width) and `int|float`(height) minimum: `(52, 32)`
+- **description**: Stores the size of a comment.
+- **default value in editor**: `(200, 200)`
+#### `SRComment.is_minimized`
+- **type**: `bool`
+- **description**: Wether it is collapsed i.e. only a part of the comment is shown.
+- **default value in editor**: `False`
+#### `SRComment.text`
+- **type**: `str`
+- **description**: The actual text content of the comment.
 
 
 ## `SRCostume`
@@ -516,10 +540,43 @@ Represents a sound in the "Sounds" tab of a sprite or the stage.
 
 
 
-
+```
 TODOs:
 * note needs and create example project
 * => add images
 * => add content snippets from project example
 * make a for each block opcode docs gen script
-    
+
+stage and sprite with:
+    comment not minimized
+    script:
+        multiple blocks
+        one with inputs: BlockAndText, BlockAndDropdown, SubScript
+        one with dropdowns: one with/out reference
+        one with minimized comment
+        one with mutation
+        one with argumentMut
+        one with defMut: str and bool arg
+        one with callMut
+sprite with:
+    not empty vector and bitmap costume 
+    sound
+    second costume selected
+    draggable
+3 overlapping sprites in different order in editor vs. layer
+2 globvars:
+    int, str
+    one cloud
+    monitors:
+        one with slider and not allow ints
+2 globlists: 
+    int, float, str, Infinity
+    monitor with diff size
+2 globmons with dropdown
+1 globmon invisible
+2 locvars: float, str
+2 loclists: int, float, str
+2 locmons
+a custom and a builtin extension
+a text to speech language
+```

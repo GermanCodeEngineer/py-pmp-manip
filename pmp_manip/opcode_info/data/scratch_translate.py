@@ -1,6 +1,6 @@
 from pmp_manip.opcode_info.data_imports import *
 
-scratch_translate = OpcodeInfoGroup(name="scratch_translate", opcode_info=DualKeyDict({
+ext_scratch_translate = OpcodeInfoGroup(name="scratch_translate", opcode_info=DualKeyDict({
     ("translate_getTranslate", "translate (TEXT) to ([LANGUAGE])"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({

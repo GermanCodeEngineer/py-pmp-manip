@@ -1,6 +1,6 @@
 from pmp_manip.opcode_info.data_imports import *
 
-scratch_video_sensing = OpcodeInfoGroup(name="scratch_video_sensing", opcode_info=DualKeyDict({
+ext_scratch_video_sensing = OpcodeInfoGroup(name="scratch_video_sensing", opcode_info=DualKeyDict({
     ("videoSensing_whenMotionGreaterThan", "when video motion > (THRESHOLD)"): OpcodeInfo(
         opcode_type=OpcodeType.HAT,
         inputs=DualKeyDict({

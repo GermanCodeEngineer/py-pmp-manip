@@ -1,6 +1,6 @@
 from pmp_manip.opcode_info.data_imports import *
 
-scratch_makey_makey = OpcodeInfoGroup(name="scratch_makey_makey", opcode_info=DualKeyDict({
+ext_scratch_makey_makey = OpcodeInfoGroup(name="scratch_makey_makey", opcode_info=DualKeyDict({
     ("makeymakey_whenMakeyKeyPressed", "when ([MAKEY_KEY]) key pressed"): OpcodeInfo(
         opcode_type=OpcodeType.HAT,
         inputs=DualKeyDict({

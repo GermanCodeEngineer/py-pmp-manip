@@ -1,6 +1,6 @@
 from pmp_manip.opcode_info.data_imports import *
 
-scratch_text_to_speech = OpcodeInfoGroup(name="scratch_text_to_speech", opcode_info=DualKeyDict({
+ext_scratch_text_to_speech = OpcodeInfoGroup(name="scratch_text_to_speech", opcode_info=DualKeyDict({
     ("text2speech_speakAndWait", "speak (TEXT)"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({

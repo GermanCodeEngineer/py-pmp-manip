@@ -1,6 +1,6 @@
 from pmp_manip.opcode_info.data_imports import *
 
-scratch_music = OpcodeInfoGroup(name="scratch_music", opcode_info=DualKeyDict({
+ext_scratch_music = OpcodeInfoGroup(name="scratch_music", opcode_info=DualKeyDict({
     ("music_playDrumForBeats", "play drum ([DRUM]) for (BEATS) beats"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
@@ -53,13 +53,13 @@ scratch_music = OpcodeInfoGroup(name="scratch_music", opcode_info=DualKeyDict({
 
 }))
 
-scratch_music.add_opcode("note", "#music: NOTE MENU", OpcodeInfo(
+ext_scratch_music.add_opcode("note", "#music: NOTE MENU", OpcodeInfo(
     opcode_type=OpcodeType.MENU,
 ))
-scratch_music.add_opcode("music_menu_DRUM", "#music: DRUM MENU", OpcodeInfo(
+ext_scratch_music.add_opcode("music_menu_DRUM", "#music: DRUM MENU", OpcodeInfo(
     opcode_type=OpcodeType.MENU,
 ))
-scratch_music.add_opcode("music_menu_INSTRUMENT", "#music: INSTRUMENT MENU", OpcodeInfo(
+ext_scratch_music.add_opcode("music_menu_INSTRUMENT", "#music: INSTRUMENT MENU", OpcodeInfo(
     opcode_type=OpcodeType.MENU,
 ))
 

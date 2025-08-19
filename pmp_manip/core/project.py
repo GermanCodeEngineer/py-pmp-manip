@@ -136,7 +136,7 @@ class FRProject:
         """
         For every extension of the project generate and import the required opcode info py file and add it to the OpcodeInfoAPI.
         If cached versions exist and they are up to date, they will be kept and not replaced.
-        [WARNING] Does not copy info_api, but modifies it
+        **[WARNING] Does not copy info_api, but modifies it**
         
         Raises:
             MANIP_UnknownBuiltinExtensionError: if one tries to add an unknown or not yet implemented builtin extension

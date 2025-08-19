@@ -1,6 +1,6 @@
 from pmp_manip.core import *
 from pmp_manip.opcode_info.data import info_api
-from pmp_manip.opcode_info.data.scratch_music import scratch_music
+from pmp_manip.opcode_info.data.scratch_music import ext_scratch_music
 #from pmp_manip.opcode_info.data.gen_dumbExample import dumbExample
 from pmp_manip.config import *
 
@@ -11,7 +11,7 @@ file_path = "assets/from_online/ONLINE 2D MAINCRAFT.pmp"
 cfg = get_default_config()
 init_config(cfg)
 
-info_api.add_group(scratch_music)
+info_api.add_group(ext_scratch_music)
 
 project = FRProject.from_file(file_path)
 #print(project)

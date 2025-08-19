@@ -7,7 +7,8 @@ Special:
         - Editing (FRProject.from_file > SRProject > FRRoject.to_file)
         - Inspecting (FRPProject.from_file > SRProject)
 
-High: /
+High:
+    - implement "checkbox" block
 
 Medium:
     - XL: test and document opcode_info
@@ -21,7 +22,6 @@ Medium:
     - S: add "previous costume" and "next costume" to costume menu
         => explore for similar updates
     - S: add new rotation style(s)
-    - S: stop using aenum and find better solution for ext_info_gen instead of extend_enum
 
 Low:
     - XL: test and document utility
@@ -34,6 +34,8 @@ Low:
     - S: check uses of ALL_FR_BLOCKS_CLEAN vs. ALL_FR_BLOCKS
     - S: explore "customFonts" (example of "2D MAINCRAFT")
     - S: create CONTRIBUTING.md
+    - S: stop using aenum and find better solution for ext_info_gen instead of extend_enum
+
 Formatting:
     - L: add all errors to docstrings
     - M: add specific reasons for ThanksError

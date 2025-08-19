@@ -1,6 +1,6 @@
 from pmp_manip.opcode_info.data_imports import *
 
-pm_json = OpcodeInfoGroup(name="pm_json", opcode_info=DualKeyDict({
+ext_pm_json = OpcodeInfoGroup(name="pm_json", opcode_info=DualKeyDict({
     ("jgJSON_json_validate", "is json (JSON) valid?"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         inputs=DualKeyDict({

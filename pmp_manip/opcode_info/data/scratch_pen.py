@@ -1,6 +1,6 @@
 from pmp_manip.opcode_info.data_imports import *
 
-scratch_pen = OpcodeInfoGroup(name="scratch_pen", opcode_info=DualKeyDict({
+ext_scratch_pen = OpcodeInfoGroup(name="scratch_pen", opcode_info=DualKeyDict({
     ("pen_clear", "erase all"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
     ),

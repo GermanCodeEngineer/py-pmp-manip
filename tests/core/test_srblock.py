@@ -30,8 +30,8 @@ def info_api_extended():
     info_api_extended = copy(info_api)
     info_api_extended.opcode_info = copy(info_api.opcode_info) 
     # make sure the internals of the DualKeyDict are shallow copied as well
-    from pmp_manip.opcode_info.data.scratch_music import scratch_music
-    info_api_extended.add_group(scratch_music)
+    from pmp_manip.opcode_info.data.scratch_music import ext_scratch_music
+    info_api_extended.add_group(ext_scratch_music)
     return info_api_extended
 
 @fixture

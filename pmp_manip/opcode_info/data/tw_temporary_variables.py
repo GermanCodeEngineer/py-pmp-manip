@@ -1,6 +1,6 @@
 from pmp_manip.opcode_info.data_imports import *
 
-tw_temporary_variables = OpcodeInfoGroup(name="tw_temporary_variables", opcode_info=DualKeyDict({
+ext_tw_temporary_variables = OpcodeInfoGroup(name="tw_temporary_variables", opcode_info=DualKeyDict({
     ("lmsTempVars2_setThreadVariable", "set thread var (VARIABLE) to (VALUE)"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({

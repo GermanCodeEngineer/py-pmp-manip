@@ -1,6 +1,6 @@
 from pmp_manip.opcode_info.data_imports import *
 
-scratch_text = OpcodeInfoGroup(name="scratch_text", opcode_info=DualKeyDict({
+ext_scratch_text = OpcodeInfoGroup(name="scratch_text", opcode_info=DualKeyDict({
     ("text_setText", "show text (TEXT)"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
