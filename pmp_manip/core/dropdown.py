@@ -81,7 +81,7 @@ class SRDropdownValue:
         default_kind = dropdown_type.calculation_default_kind
         possible_values_string = (
             "No possible values" if possible_values == [] else
-            "".join(["\n- "+repr(value) for value in possible_values])
+            "".join([f"\n- SRDropdownValue{value!r}" for value in possible_values])
         )
         tuple_value = self.to_tuple()
         if tuple_value not in possible_values:

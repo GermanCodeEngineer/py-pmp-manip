@@ -68,24 +68,24 @@ The "root node" of a project in second representation.
 - **type**: `int` (minimum: `20`, maximum: `500`)
 - **description**: The music "tempo" of Scratch's Music extension in BPM (insignificant for most projects).
 - **note**: Equal to value of "tempo" block.
-- **default value**: `60`
+- **default value in editor**: `60`
 ### *`SRProject.video_transparency`*
 - **type**: `int` or `float` (normally between `0` and `100`) (seems not to have limits by Scratch)
 - **description**: The "video transparency" of Scratch's Video Sensing extension (insignificant for most projects).
 - **note**: Equal to input of "set video transparency to" block.
-- **default value**: `50`
+- **default value in editor**: `50`
 ### *`SRProject.video_state`*
 - **type**: `SRVideoState` (enum class)
 - **possible values**: `SRVideoState.ON`, `SRVideoState.ON_FLIPPED`, `SRVideoState.OFF`
 - **description**: The "state" of Scratch's Video Sensing extension (insignificant for most projects).
 - **note**: Equal to dropdown menu of "turn video ..." block.
-- **default value**: `SRVideoState.ON`
+- **default value in editor**: `SRVideoState.ON`
 ### *`SRProject.text_to_speech_language`*
 - **type**: [`SRTTSLanguage`](#srttslanguage) (enum class) or `None`
 - **possible values**: `SRTTSLanguage.ENGLISH`, `SRTTSLanguage.FRENCH`, `SRTTSLanguage.GERMAN` ...
 - **description**: The "text to speech language" of Scratch's TTS extension (insignificant for most projects).
 - **note**: Equal to dropdown menu of "set language to" block.
-- **default value**: `None`
+- **default value in editor**: `None`
 
 
 ## `SRTarget`
@@ -106,11 +106,11 @@ Common base for [`SRStage`](#srstage) and [`SRSprite`](#srsprite).
 #### `SRTarget.costume_index`
 - **type**: `int` (at least `0` and at most one less then the amount of costumes)
 - **description**: References the current costume of the sprite or stage in `costumes` by index.
-- **default value**: `0`
+- **default value in editor**: `0`
 #### `SRTarget.volume`
 - **type**: `int` (minimum: `0`, maximum: `100`)
 - **description**: The local volume for playing sounds from a sprite or stage.
-- **default value**: `100`
+- **default value in editor**: `100`
 
 
 ## `SRStage`
@@ -132,28 +132,28 @@ Represents a sprite of the project. Inherits from [`SRTarget`](#srtarget).
 #### `SRSprite.is_visible`
 - **type**: `bool`
 - **description**: Stores wether the sprite is shown on the stage.
-- **default value**: `True`
+- **default value in editor**: `True`
 #### `SRSprite.position`
 - **type**: `tuple` of `int|float`(x position) and `int|float`(y position)
 - **description**: Stores the position of the sprite on the stage. If the stage size was not changed, should be between `(-240, -180)` to `(240, 180)` (no enforced limit).
-- **default value**: random
+- **default value in editor**: random
 #### `SRSprite.size`
 - **type**: `int | float` (positive)
 - **description**: Stores the size of the sprite on the stage.
-- **default value**: `100`
+- **default value in editor**: `100`
 #### `SRSprite.direction`
 - **type**: `int | float` (minimum: `-180`, maximum: `-180`)
 - **description**: Stores the rotation direction of the sprite on the stage.
-- **default value**: `90` (Up: `0`, Right: `90`, Down: `180`, Left: `-90`)
+- **default value in editor**: `90` (Up: `0`, Right: `90`, Down: `180`, Left: `-90`)
 #### `SRSprite.is_draggable`
 - **type**: `bool`
 - **description**: Stores wether the sprite can be dragged across the stage in fullscreen mode.
-- **default value**: `False`
+- **default value in editor**: `False`
 #### `SRSprite.rotation_style`
 - **type**: `SRSpriteRotationStyle` (enum class)
 - **possible values**: `SRSpriteRotationStyle.ALL_AROUND`, `SRSpriteRotationStyle.LEFT_RIGHT`, `SRSpriteRotationStyle.DONT_ROTATE`
 - **description**: The way the sprite behaves when rotated.
-- **default value**: `SRSpriteRotationStyle.ALL_AROUND`
+- **default value in editor**: `SRSpriteRotationStyle.ALL_AROUND`
 #### `SRSprite.uuid`
 - **type**: `UUID`(from package `uuid`)
 - **description**: A unique id for the sprite. Only used for [`SRProject.sprite_layer_stack`](#srprojectsprite_layer_stack).
@@ -203,20 +203,20 @@ Represents the monitor of a **variable value block** of a global or local variab
 - **type**: `SRVariableMonitorReadoutMode` (enum class)
 - **possible values**: `SRVariableMonitorReadoutMode.NORMAL`, `SRVariableMonitorReadoutMode.LARGE`, `SRVariableMonitorReadoutMode.SLIDER`
 - **description**: Stores how a variable monitors is shown(e.g. only content(=`LARGE`), name and content(=`NORMAL`), with a slider to change value(=`SLIDER`))
-- **default value**: `SRVariableMonitorReadoutMode.NORMAL`
+- **default value in editor**: `SRVariableMonitorReadoutMode.NORMAL`
 #### `SRVariableMonitor.slider_min`
 - **type**: `int | float`
 - **description**: If [`readout_mode`](#srvariablemonitorreadout_mode) is `SLIDER`, the minimum value you can drag the slider to.
-- **default value**: `0`
+- **default value in editor**: `0`
 #### `SRVariableMonitor.slider_max`
 - **type**: `int | float`
 - **description**: If [`readout_mode`](#srvariablemonitorreadout_mode) is `SLIDER`, the maximum value you can drag the slider to.
-- **default value**: `100`
+- **default value in editor**: `100`
 #### `SRVariableMonitor.allow_only_integers`
 - **type**: `bool`
 - **description**: If [`readout_mode`](#srvariablemonitorreadout_mode) is `SLIDER`, wether you can drag the slider to a non-integer value.
 - **note**: is set in Scratch based on wether you enter a floating point value into either the slider minimum or maximum.
-- **default value**: `True`
+- **default value in editor**: `True`
 
 
 ## `SRListMonitor`
@@ -225,7 +225,7 @@ Represents the monitor of a **list value block** of a global or local list. Inhe
 - **type**: `tuple` of `int|float`(width) and `int|float`(height)
 - **description**: Stores the size of a list monitor as it can be resized.
 - **note**: You should change validation configuration to tolerant if you work with other stage sizes (See [config.md, section ValidationConfig](config.md#validationconfig)).
-- **default value**: `(100, 120)`
+- **default value in editor**: `(100, 120)`
 
 
 ## `SRExtension`
@@ -300,11 +300,11 @@ Represents a single block in a script. Can be any shape of block(e.g. square, ro
 #### `SRBlock.comment`
 - **type**: [`SRComment`](#srcomment) or `None`
 - **description**: The optional attached comment of the block.
-- **default value**`: `None`
+- **default value in editor**`: `None`
 #### `SRBlock.mutation`
 - **type**: [`SRMutation`](#srmutation) or `None`
 - **description**: The optional mutation of the block for some opcodes(kinds of blocks). Most blocks do not need one.
-- **default value**`: `None`
+- **default value in editor**`: `None`
 
 
 ## `SRInputValue`
@@ -380,35 +380,88 @@ Stores additional information special to some kinds of blocks. Only needed for s
 * [`SRCustomBlockArgumentMutation`](#srcustomblockargumentmutation)
 * [`SRCustomBlockMutation`](#srcustomblockmutation)
 * [`SRCustomBlockCallMutation`](#srcustomblockcallmutation)
-* [`SRStopScriptMutation`](#srstopscriptmutation)
 
 ## `SRCustomBlockArgumentMutation`
-Inherits from [`SRMutation`](#srmutation). Used and required only by opcodes `"argument_reporter_string_number"` and `"argument_reporter_boolean"`.
+Inherits from [`SRMutation`](#srmutation). Used and required only by opcodes `"custom block text arg [ARGUMENT]"` and `"custom block boolean arg [ARGUMENT]"`.
 #### `SRCustomBlockArgumentMutation.argument_name`
 - **type**: `str`
 - **description**: the name of the custom block argument which the argument reporter block is for.
 #### `SRCustomBlockArgumentMutation.main_color`
 - **type**: `str` (hex color code)
-- **description**: the main color of the custom block the argument reporter block is for.
-- **default value**: `"#FF6680"`
+- **description**: the main color of the "define" block the argument reporter block is for.
+- **default value in editor**: `"#FF6680"`
 #### `SRCustomBlockArgumentMutation.prototype_color`
 - **type**: `str` (hex color code)
 - **description**: the main color of the inner block of the "define" block the argument reporter block is for.
-- **default value**: `"#FF4D6A"`
+- **default value in editor**: `"#FF4D6A"`
 #### `SRCustomBlockArgumentMutation.outline_color`
 - **type**: `str` (hex color code)
 - **description**: the outline color of the inner block of the "define" block the argument reporter block is for.
-- **default value**: `"#FF3355"`
+- **default value in editor**: `"#FF3355"`
 
 
 ## `SRCustomBlockMutation`
-Inherits from [`SRMutation`](#srmutation). Used and required only by opcodes `"procedures_definition"` and `"procedures_definition_return"`.
+Inherits from [`SRMutation`](#srmutation). Used and required only by opcodes `"define custom block"` and `"define custom block reporter"`.
 #### `SRCustomBlockMutation.custom_opcode`
-- **type**: [`SRCustomBlockOpcode`](#srcustomblockopcode)
-- **description**: # HERE
+- **type**: [`SRCustomBlockOpcode`](#srcustomblockopcode)(`SRCustomBlockOpcode` is immutable and hashable)
+- **description**: Stores the name and argument field names and kinds of the custom block.
+#### `SRCustomBlockMutation.no_screen_refresh`
+- **type**: `bool`
+- **description**: Wether the "Run without screen refresh" box was ticked when creating the custom block.
+- **default value in editor**: `False`
+#### `SRCustomBlockMutation.optype`
+- **type**: [`SRCustomBlockOptype`](#srcustomblockoptype)
+- **description**: What shape of block the custom block is (e.g. square statement, boolean, reporter).
+- **default value in editor**: `SRCustomBlockMutation.STATEMENT`
+#### `SRCustomBlockMutation.main_color`
+- **type**: `str` (hex color code)
+- **description**: the main color of the "define" block.
+- **default value in editor**: `"#FF6680"`
+#### `SRCustomBlockMutation.prototype_color`
+- **type**: `str` (hex color code)
+- **description**: the main color of the inner block of the "define" block.
+- **default value in editor**: `"#FF4D6A"`
+#### `SRCustomBlockMutation.outline_color`
+- **type**: `str` (hex color code)
+- **description**: the outline color of the inner block of the "define" block the argument reporter block is for.
+- **default value in editor**: `"#FF3355"`
 
 
+## `SRCustomBlockCallMutation`
+Inherits from [`SRMutation`](#srmutation). Used and required only by opcode `"call custom block"`.
+#### `SRCustomBlockCallMutation.custom_opcode`
+- **type**: [`SRCustomBlockOpcode`](#srcustomblockopcode)(`SRCustomBlockOpcode` is immutable and hashable)
+- **description**: Stores the labels and argument field names and kinds of the custom block, this block will call, to reference it.
 
+
+## `SRCustomBlockOpcode`
+Represents the "opcode"(see [`SRBlock.opcode`](#srblockopcode)) of a custom block i.e. stores the labels and argument field names and kinds of a custom block. Immutable and Hashable.
+#### `SRCustomBlockOpcode.segments`
+- **type**: `tuple` of `str` or [`SRCustomBlockArgument`](#srcustomblockargument)
+- **description**: Stores the labels and argument field names and kinds of the custom block. A `str` item represents a label, a `SRCustomBlockArgument` represents an argument of the custom block.
+
+
+## `SRCustomBlockArgument`
+Represents an argument of a [`SRCustomBlockOpcode`](#srcustomblockopcode). Immutable and Hashable.
+#### `SRCustomBlockArgument.name`
+- **type**: `str` (not empty)
+- **description**: the name of the argument.
+#### `SRCustomBlockArgument.type`
+- **type**: `SRCustomBlockArgumentType` (enum class)
+- **possible values**: `SRCustomBlockArgumentType.STRING_NUMBER`, `SRCustomBlockArgumentType.BOOLEAN`
+- **description**: the kind of the argument (string or number vs. boolean).
+
+
+## `SRCustomBlockOptype`
+Enum Class. Represents the shape of a custom block (e.g. square statement, boolean, reporter)
+All possibly values are: `SRCustomBlockOptype.`...
+| enum name          | example                                                                           |
+|--------------------|-----------------------------------------------------------------------------------|
+| `STATEMENT`        |                                                                                   |
+| `ENDING_STATEMENT` |                                                                                   |
+| `STRING_REPORTER`  |                                                                                   |
+| `NUMBER_REPORTER`  |                                                                                   |
+| `BOOLEAN_REPORTER` |                                                                                   |
 
 
 ## `SRComment`

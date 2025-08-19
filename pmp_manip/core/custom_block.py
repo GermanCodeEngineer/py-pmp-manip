@@ -22,7 +22,7 @@ class SRCustomBlockOpcode:
         Creates a custom block opcode given the procedure code and the argument names
         
         Args:
-            proccode: the procedure core
+            proccode: the procedure code
             argument_names: the names of the arguments
         
         Returns:
@@ -106,6 +106,7 @@ class SRCustomBlockOpcode:
         AA_MIN_LEN(self, path, "segments", min_len=1)
 
         names = {}
+        last_was_label = False
         for i, segment in enumerate(self.segments):
             current_path = ["segments", i]
             if isinstance(segment, SRCustomBlockArgument):
@@ -116,6 +117,12 @@ class SRCustomBlockOpcode:
                         f"Two arguments of a {self.__class__.__name__} must not have the same name",
                     )
                 names[segment.name] = current_path
+                last_was_label = False
+            else:
+                if last_was_label:
+                    raise MANIP_TypeValidationError(path, f"A custom block opcode must not contain two labels in a row")
+                last_was_label = True
+                
 
 @grepr_dataclass(grepr_fields=["name", "type"], frozen=True, unsafe_hash=True)
 class SRCustomBlockArgument:

@@ -2,7 +2,7 @@ from abc         import ABC, abstractmethod
 from copy        import deepcopy
 from dataclasses import field
 from json        import loads
-from typing      import Any, ClassVar, TYPE_CHECKING
+from typing      import Any, ClassVar, NoReturn, TYPE_CHECKING
 
 from pmp_manip.important_consts import SHA256_SEC_MAIN_ARGUMENT_NAME
 from pmp_manip.utility          import (
@@ -432,19 +432,12 @@ class FRStopScriptMutation(FRMutation, required_properties={"hasnext"}):
             "hasnext" : gdumps(self.has_next),
         }
    
-    def to_second(self, fti_if: "FirstToInterIF") -> "SRStopScriptMutation":
+    def to_second(self, fti_if: "FirstToInterIF") -> NoReturn:
         """
-        Convert a FRStopScriptMutation into a SRStopScriptMutation
-        
-        Args:
-            fti_if: interface which allows the management of other blocks
-        
-        Returns:
-            the SRStopScriptMutation
+        A second representation of a stop script mutation does not exist. 
+        It would just store alredy known information in a second place.
         """
-        return SRStopScriptMutation(
-            is_ending_statement = not(self.has_next),
-        )
+        raise NotImplementedError("A second representation of a stop script mutation does not exist. It is not needed for a IRBlock or SRBlock")
 
 
 @grepr_dataclass(grepr_fields=[], init=False, forbid_init_only_subcls=True)
@@ -661,50 +654,11 @@ class SRCustomBlockCallMutation(SRMutation):
             ),
         )
 
-@grepr_dataclass(grepr_fields=["is_ending_statement"])
-class SRStopScriptMutation(SRMutation):
-    """
-    The second representation for the mutation of a "stop [this script v] block
-    """
-    
-    is_ending_statement: bool
-
-    def validate(self, path: list) -> None:
-        """
-        Ensure the SRStopScriptMutation is valid, raise MANIP_ValidationError if not
-        
-        Args:
-            path: the path from the project to itself. Used for better error messages
-        
-        Returns:
-            None
-        
-        Raises:
-            MANIP_ValidationError: if the SRStopScriptMutation is invalid
-        """
-        AA_TYPE(self, path, "is_ending_statement", bool)
-
-    def to_first(self, itf_if: "InterToFirstIF") -> FRStopScriptMutation:
-        """
-        Convert a SRStopScriptMutation into a FRStopScriptMutation
-        
-        Args:
-            fti_if: interface which allows the management of other blocks
-        
-        Returns:
-            the FRStopScriptMutation
-        """
-        return FRStopScriptMutation(
-            tag_name = "mutation",
-            children = [],
-            has_next = not(self.is_ending_statement),
-        )
-
 
 __all__ = [
-    "FRMutation", "FRCustomBlockArgumentMutation", 
-    "FRCustomBlockMutation", "FRCustomBlockCallMutation", "FRStopScriptMutation",
-    "SRMutation", "SRCustomBlockArgumentMutation", 
-    "SRCustomBlockMutation", "SRCustomBlockCallMutation", "SRStopScriptMutation",
+    "FRMutation", 
+    "FRCustomBlockArgumentMutation", "FRCustomBlockMutation", "FRCustomBlockCallMutation", "FRStopScriptMutation",
+    "SRMutation", 
+    "SRCustomBlockArgumentMutation", "SRCustomBlockMutation", "SRCustomBlockCallMutation",
 ]
 

@@ -38,7 +38,7 @@ if TYPE_CHECKING:
 
 from pmp_manip.core.block_mutation import (
     FRCustomBlockMutation, FRCustomBlockArgumentMutation, FRCustomBlockCallMutation, FRStopScriptMutation, 
-    SRCustomBlockMutation, SRCustomBlockArgumentMutation, SRCustomBlockCallMutation, SRStopScriptMutation,
+    SRCustomBlockMutation, SRCustomBlockArgumentMutation, SRCustomBlockCallMutation,
 )
 
 c_motion.add_opcode("motion_goto_menu", "#REACHABLE TARGET MENU (GO)", OpcodeInfo(
@@ -151,10 +151,10 @@ c_custom_blocks = OpcodeInfoGroup(
                 ("VALUE", "VALUE"): InputInfo(BuiltinInputType.TEXT),
             }),
         ),
-        (OPCODE_CB_ARG_TEXT, "value of text [ARGUMENT]"): OpcodeInfo(
+        (OPCODE_CB_ARG_TEXT, "custom block text arg [ARGUMENT]"): OpcodeInfo(
             opcode_type=OpcodeType.STRING_REPORTER,
         ),
-        (OPCODE_CB_ARG_BOOL, "value of boolean [ARGUMENT]"): OpcodeInfo(
+        (OPCODE_CB_ARG_BOOL, "custom block boolean arg [ARGUMENT]"): OpcodeInfo(
             opcode_type=OpcodeType.BOOLEAN_REPORTER,
         ),
     }),
@@ -177,13 +177,18 @@ info_api.set_opcodes_mutation_class(ANY_OPCODE_CB_ARG, old_cls=FRCustomBlockArgu
 info_api.set_opcodes_mutation_class(ANY_OPCODE_CB_DEF, old_cls=None, new_cls=SRCustomBlockMutation)
 info_api.set_opcode_mutation_class(OPCODE_CB_PROTOTYPE, old_cls=FRCustomBlockMutation, new_cls=None)
 info_api.set_opcode_mutation_class(OPCODE_CB_CALL, old_cls=FRCustomBlockCallMutation, new_cls=SRCustomBlockCallMutation)
-info_api.set_opcode_mutation_class(OPCODE_STOP_SCRIPT, old_cls=FRStopScriptMutation, new_cls=SRStopScriptMutation)
+info_api.set_opcode_mutation_class(OPCODE_STOP_SCRIPT, old_cls=FRStopScriptMutation, new_cls=None)
 
 # Special Cases
 def _149c_e47b(block: "SRBlock|IRBlock", validation_if: "ValidationIF") -> OpcodeType:
-    from pmp_manip.core.block_mutation import SRStopScriptMutation
-    mutation: SRStopScriptMutation = block.mutation
-    return OpcodeType.ENDING_STATEMENT if mutation.is_ending_statement else OpcodeType.STATEMENT
+    dropdown_value = block.dropdowns["TARGET"]
+    match dropdown_value.value:
+        case "all" | "this script":
+            return OpcodeType.ENDING_STATEMENT
+        case "other scripts in sprite":
+            return OpcodeType.STATEMENT
+        case _:
+            raise ValueError(f"Dropdown 'TARGET' is invalid. Please validate the project: {dropdown_value!r}")
 info_api.add_opcode_case(OPCODE_STOP_SCRIPT, SpecialCase(
     type=SpecialCaseType.GET_OPCODE_TYPE,
     function=_149c_e47b,
@@ -250,6 +255,16 @@ def _1a40_d676(block: "FRBlock", block_id: str, fti_if: "FirstToInterIF") -> "FR
 info_api.add_opcodes_case(ANY_OPCODE_CB_ARG, SpecialCase(
     type=SpecialCaseType.PRE_FIRST_TO_INTER, 
     function=_1a40_d676,
+))
+
+def _7fd4_5e99(block: "FRBlock", block_id: str, fti_if: "FirstToInterIF") -> "FRBlock":
+    # Remove the mutation, so that no mutation will be given to the IRBlock and SRBlock
+    block = copy(block)
+    block.mutation = None
+    return block
+info_api.add_opcode_case(OPCODE_STOP_SCRIPT, SpecialCase(
+    type=SpecialCaseType.PRE_FIRST_TO_INTER, 
+    function=_7fd4_5e99,
 ))
 
 def _4548_6eb6(block: "FRBlock", block_id: str, fti_if: "FirstToInterIF") -> "FRBlock":
@@ -364,9 +379,29 @@ info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
     function=_61f9_4fd5,
 ))
 
+def _5b5e_f1d7(block: "FRBlock", block_id: str, itf_if: "InterToFirstIF") -> "FRBlock":
+    # Add the mutation, so that a mutation will be given to the FRBlock
+    dropdown_value = block.fields["STOP_OPTION"][0]
+    match dropdown_value:
+        case "all" | "this script":
+            has_next = False
+        case "other scripts in sprite":
+            has_next = True
+        case _:
+            raise ValueError(f"Dropdown field 'STOP_OPTION' is invalid. Please validate the project: {dropdown_value!r}")
+    block = copy(block)
+    block.mutation = FRStopScriptMutation(
+        tag_name="mutation", children=[],
+        has_next=has_next,
+    )
+    return block
+info_api.add_opcode_case(OPCODE_STOP_SCRIPT, SpecialCase(
+    type=SpecialCaseType.POST_INTER_TO_FIRST, 
+    function=_5b5e_f1d7,
+))
 
 
-def _26f9_8217(path:list, block: "SRBlock") -> None:
+def _26f9_8217(path: list, block: "SRBlock") -> None:
     from pmp_manip.core.block_mutation import SRCustomBlockMutation
     mutation: SRCustomBlockMutation = block.mutation
     if block.opcode == NEW_OPCODE_CB_DEF:

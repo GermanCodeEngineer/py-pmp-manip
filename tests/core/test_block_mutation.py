@@ -14,7 +14,7 @@ from pmp_manip.core.block_mutation  import (
     FRCustomBlockArgumentMutation, FRCustomBlockMutation,
     FRCustomBlockCallMutation, FRStopScriptMutation,
     SRCustomBlockArgumentMutation, SRCustomBlockMutation,
-    SRCustomBlockCallMutation, SRStopScriptMutation
+    SRCustomBlockCallMutation,
 )
 from pmp_manip.core.custom_block    import SRCustomBlockOpcode, SRCustomBlockOptype
 
@@ -360,7 +360,7 @@ def test_FRCustomBlockMutation_from_data_warp():
     
 
 
-def test_FRStopScriptMutation_from_to_data_and_to_second(fti_if: FirstToInterIF):
+def test_FRStopScriptMutation_from_to_data(fti_if: FirstToInterIF):
     has_next = False
     data = {
         "tagName": "mutation",
@@ -371,10 +371,6 @@ def test_FRStopScriptMutation_from_to_data_and_to_second(fti_if: FirstToInterIF)
     assert frmutation.has_next == has_next
     
     assert frmutation.to_data() == data
-    
-    srmutation = frmutation.to_second(fti_if)
-    assert isinstance(srmutation, SRStopScriptMutation)
-    assert srmutation.is_ending_statement == (not frmutation.has_next)
 
 
 
@@ -520,34 +516,4 @@ def test_SRCustomBlockMutationCall_to_first(itf_if: InterToFirstIF):
         sprite_name="_stage_",
     )
     assert srmutation.to_first(dummy_if).returns is None
-
-
-
-def test_SRStopScriptMutation_validate():
-    srmutation = SRStopScriptMutation(
-        is_ending_statement=True,
-    )
-
-    srmutation.validate(path=[])
-
-    execute_attr_validation_tests(
-        obj=srmutation,
-        attr_tests=[
-            ("is_ending_statement", {...}, MANIP_TypeValidationError),
-        ],
-        validate_func=SRStopScriptMutation.validate,
-        func_args=[[]],
-    )
-    
-
-def test_SRStopScriptMutation_to_first(itf_if: InterToFirstIF):
-    srmutation = SRStopScriptMutation(
-        is_ending_statement=False,
-    )
-    assert srmutation.to_first(itf_if) == FRStopScriptMutation(
-        tag_name="mutation",
-        children=[],
-        has_next=True,
-    )
-
 
