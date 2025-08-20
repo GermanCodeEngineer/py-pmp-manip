@@ -217,7 +217,7 @@ class SRCostume(ABC):
             the FRCostume
         """
 
-@grepr_dataclass(grepr_fields=["content"], eq=False)
+@grepr_dataclass(grepr_fields=["content"], eq=True) # must be True for order to work, is overwritten
 class SRVectorCostume(SRCostume):
     """
     The second representation for a vector(SVG) costume. It is more user friendly then the first representation
@@ -291,7 +291,7 @@ class SRVectorCostume(SRCostume):
             bitmap_resolution = None, 
         ), file_bytes)
 
-@grepr_dataclass(grepr_fields=["content", "has_double_resolution"], eq=False)
+@grepr_dataclass(grepr_fields=["content", "has_double_resolution"], eq=True) # must be True for order to work, is overwritten
 class SRBitmapCostume(SRCostume):
     """
     The second representation for a bitmap(usually PNG) costume. It is more user friendly then the first representation

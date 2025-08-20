@@ -42,6 +42,7 @@ Notes:
     - Mutability (most, a few specified ones are immutable and hashable)
     - Validation (`validate` method, it is recommended to just validate the `SRProject` as a whole => easiest, you will not need to pass in anything but `info_api`)
     - Conversion (most, with `to_first` methods, it is recommended to just convert the project as a whole)
+    - Sorting (e.g. a `list[SomeSRThing]`)
 
 
 ## `SRProject`

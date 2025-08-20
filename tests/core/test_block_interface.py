@@ -2,7 +2,7 @@ from copy   import deepcopy
 from pytest import fixture, raises
 
 from pmp_manip.important_consts import SHA256_SEC_MAIN_ARGUMENT_NAME
-from pmp_manip.utility          import lists_equal_ignore_order, string_to_sha256, MANIP_ConversionError, MANIP_ValidationError
+from pmp_manip.utility          import lists_equal_ignore_order, assert_lists_equal_ignore_order, string_to_sha256, MANIP_ConversionError, MANIP_ValidationError
 
 from pmp_manip.core.block_interface import FirstToInterIF, InterToFirstIF, SecondReprIF, SecondToInterIF, ValidationIF
 from pmp_manip.core.block_mutation  import FRCustomBlockMutation, SRCustomBlockMutation
@@ -50,7 +50,7 @@ def validation_if():
 
 
 def test_FirstToInterIF_get_block_id_by_parent_id(fti_if: FirstToInterIF):
-    assert fti_if.get_block_ids_by_parent_id("c") == {"l", "k"}
+    assert fti_if.get_block_ids_by_parent_id("c") == {"l", "k", "x"}
 
 
 def test_FirstToInterIF_get_block(fti_if: FirstToInterIF):
@@ -290,7 +290,7 @@ def test_SecondReprIF_post_init_invalid_script_block():
 
 def test_SecondReprIF_get_all_blocks(sr_if: SecondReprIF):
     sr_if_copy = deepcopy(sr_if)
-    assert lists_equal_ignore_order(sr_if_copy._get_all_blocks(), ALL_SR_BLOCKS)
+    assert_lists_equal_ignore_order(sr_if_copy._get_all_blocks(), ALL_SR_BLOCKS)
     assert sr_if_copy == sr_if
 
 

@@ -7,8 +7,7 @@ Special:
         - Editing (FRProject.from_file > SRProject > FRRoject.to_file)
         - Inspecting (FRPProject.from_file > SRProject)
 
-High:
-    - implement "checkbox" block
+High: /
 
 Medium:
     - XL: test and document opcode_info

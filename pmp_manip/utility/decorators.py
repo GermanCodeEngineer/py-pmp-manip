@@ -212,7 +212,7 @@ def _check_type(value: Any, expected_type: Any, name: str, _path: str = "") -> N
         raise TypeError(f"{label} must be {expected_type}, got {type(value)}")
 
 def grepr_dataclass(*, grepr_fields: list[str],
-        init: bool = True, eq: bool = True, order: bool = False, 
+        init: bool = True, eq: bool = True, order: bool = True, 
         unsafe_hash: bool = False, frozen: bool = False, 
         match_args: bool = True, kw_only: bool = False, 
         slots: bool = False, weakref_slot: bool = False,
@@ -223,7 +223,7 @@ def grepr_dataclass(*, grepr_fields: list[str],
     A decorator which combines @dataclass and a good representation system.
     Args:
         grepr_fields: fields for the good repr implementation
-        init...: dataclass parameters
+        init...: dataclass parameters (except for order which is True by default here)
         forbid_init_only_subcls: add a __init__ method to raises a NotImplementedError, which tells the user to use the subclasses.
     """
     if init: assert not forbid_init_only_subcls

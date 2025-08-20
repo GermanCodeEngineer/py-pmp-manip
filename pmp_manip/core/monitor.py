@@ -137,9 +137,8 @@ class FRMonitor:
             valid = self.mode == "default"
         if not valid:
             raise MANIP_ThanksError()
-        # TODO
+        # TODO: implement variable_type
         #if self.variable_type not in {None, ""}:
-        #    print(self)
         #    raise MANIP_ThanksError()
 
     def to_second(self, info_api: OpcodeInfoAPI, sprite_names: list[str]) -> "SRMonitor | None":

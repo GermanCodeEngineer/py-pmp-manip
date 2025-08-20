@@ -1,3 +1,4 @@
+from __future__ import annotations
 from pmp_manip.utility import grepr_dataclass, GEnum
 
 from pmp_manip.opcode_info.api.dropdown import DropdownType, BuiltinDropdownType
@@ -9,8 +10,8 @@ class InputInfo:
     The information about a input of a certain opcode
     """
     
-    type: "InputType"
-    menu: "MenuInfo | None" = None
+    type: InputType
+    menu: MenuInfo | None = None
 
 class InputMode(GEnum):
     """

@@ -1,38 +1,44 @@
 [project]
 name = "py-pmp-manip"
-version = "0.1.0" # auto generated, don't edit by hand
+version = "1.0.0" # auto generated, don't edit by hand
 description = "Python tool for creating, editing and inspecting Penguinmod(.pmp) and Scratch(.sb3) files."
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "GPL-3.0-or-later" }
 authors = [{name = "GermanCodeEngineer", email = "germancodeengineer@proton.me"}]
+
 # auto generated, don't edit by hand:
 dependencies = [
     "Pillow==11.3.0",
-    "Requests==2.32.4",
+    "Requests==2.32.5",
     "aenum==3.1.16",
     "colorama==0.4.6",
-    "jsoncomment==0.4.2",
     "lxml==6.0.0",
-    "mutagen==1.47.0",
     "pydub==0.25.1",
-    "pytest==8.3.5",
-    "scipy==1.16.1",
-    "tomlkit==0.13.3",
     "tree_sitter==0.25.0",
     "tree_sitter_javascript==0.23.1",
     "validators==0.35.0",
 ]
 
-[project.urls]
-"Homepage" = "https://github.com/GermanCodeEngineer/py-pmp-manip/"
-"Repository" = "https://github.com/GermanCodeEngineer/py-pmp-manip/"
-"Issues" = "https://github.com/GermanCodeEngineer/py-pmp-manip/issues/"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: OS Independent",
+]
 
+[project.urls]
+Homepage = "https://github.com/GermanCodeEngineer/py-pmp-manip/"
+Repository = "https://github.com/GermanCodeEngineer/py-pmp-manip/"
+Issues = "https://github.com/GermanCodeEngineer/py-pmp-manip/issues/"
+long_description_content_type = "text/markdown"
+
+# auto generated, don't edit by hand:
 [project.optional-dependencies]
 dev = [
-    "pytest",
-    "pytest-cov"
+    "graphviz==0.21",
+    "pytest==8.3.4",
+    "tomlkit==0.13.3",
 ]
 
 [build-system]

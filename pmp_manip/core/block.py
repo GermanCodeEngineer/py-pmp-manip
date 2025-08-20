@@ -6,7 +6,7 @@ from typing      import Any, TYPE_CHECKING
 
 from pmp_manip.important_consts import (
     OPCODE_NUM_VAR_VALUE, OPCODE_VAR_VALUE, OPCODE_NUM_LIST_VALUE, OPCODE_LIST_VALUE,
-    ANY_TEXT_INPUT_NUM, OPCODE_CHECKBOX, NEW_OPCODE_CHECKBOX,
+    ANY_TEXT_INPUT_NUM, NEW_OPCODE_CHECKBOX,
     ANY_OPCODE_NUM_IMMEDIATE_BLOCK, ANY_OPCODE_IMMEDIATE_BLOCK, ANY_NEW_OPCODE_IMMEDIATE_BLOCK,
     SHA256_SEC_BROADCAST_MSG, SHA256_SEC_DROPDOWN_VALUE,
 )
@@ -1016,7 +1016,7 @@ class SRBlock:
             is_top_level = is_top_level,
         )
 
-@grepr_dataclass(grepr_fields=[], eq=False, init=False, forbid_init_only_subcls=True)
+@grepr_dataclass(grepr_fields=[], eq=False, order=False, init=False, forbid_init_only_subcls=True) # eq must be True for order to work, is overwritten
 class SRInputValue(ABC):
     """
     The second representation for a block input. 
@@ -1026,31 +1026,10 @@ class SRInputValue(ABC):
     """
     
     # these are not guaranteed to exist and are only listed for good typing
-    blocks: list[SRBlock]     | None = field(init=False) 
-    block: SRBlock            | None = field(init=False)
-    immediate: str | bool     | None = field(init=False)
-    dropdown: SRDropdownValue | None = field(init=False)
-
-    def __eq__(self, other) -> bool:
-        """
-        Return self == other
-
-        Args:
-            other: value to compare to
-        
-        Returns:
-            self == other
-        """
-        if not isinstance(other, SRInputValue):
-            return NotImplemented
-        if type(self) is not type(other):
-            return NotImplemented
-        return (
-                getattr(self, "blocks"   , None) == getattr(other, "blocks"   , None)
-            and getattr(self, "block"    , None) == getattr(other, "block"    , None)
-            and getattr(self, "immediate", None) == getattr(other, "immediate", None)
-            and getattr(self, "dropdown" , None) == getattr(other, "dropdown" , None)
-        )
+    blocks: list[SRBlock]     | None = field(init=False, repr=False, hash=False, compare=False) 
+    block: SRBlock            | None = field(init=False, repr=False, hash=False, compare=False)
+    immediate: str | bool     | None = field(init=False, repr=False, hash=False, compare=False)
+    dropdown: SRDropdownValue | None = field(init=False, repr=False, hash=False, compare=False)
 
     @classmethod
     def from_mode(cls,
@@ -1142,7 +1121,7 @@ class SRInputValue(ABC):
                 expects_reporter = True,
             )
 
-@grepr_dataclass(grepr_fields=["block", "immediate"], eq=False)
+@grepr_dataclass(grepr_fields=["block", "immediate"])
 class SRBlockAndTextInputValue(SRInputValue):
     """
     The second representation for a block input, which has an immediate text field and might contain a block
@@ -1182,7 +1161,7 @@ class SRBlockAndTextInputValue(SRInputValue):
         )
         AA_TYPE(self, path, "immediate", str)
 
-@grepr_dataclass(grepr_fields=["block", "dropdown"], eq=False)
+@grepr_dataclass(grepr_fields=["block", "dropdown"])
 class SRBlockAndDropdownInputValue(SRInputValue):
     """
     The second representation for a block input, which has a dropdown and might contain a block
@@ -1230,7 +1209,7 @@ class SRBlockAndDropdownInputValue(SRInputValue):
             context       = context,
         )
 
-@grepr_dataclass(grepr_fields=["block", "immediate"], eq=False)
+@grepr_dataclass(grepr_fields=["block", "immediate"])
 class SRBlockAndBoolInputValue(SRInputValue):
     """
     The second representation for a block input, which has an immediate boolean field and might contain a block
@@ -1270,7 +1249,7 @@ class SRBlockAndBoolInputValue(SRInputValue):
         )
         AA_TYPE(self, path, "immediate", bool)
 
-@grepr_dataclass(grepr_fields=["block"], eq=False)
+@grepr_dataclass(grepr_fields=["block"])
 class SRBlockOnlyInputValue(SRInputValue):
     """
     The second representation for a block input, which might contain a block
@@ -1308,7 +1287,7 @@ class SRBlockOnlyInputValue(SRInputValue):
             context       = context,
         )
 
-@grepr_dataclass(grepr_fields=["blocks"], eq=False)
+@grepr_dataclass(grepr_fields=["blocks"])
 class SRScriptInputValue(SRInputValue):
     """
     The second representation for a block input, which contains a substack of blocks

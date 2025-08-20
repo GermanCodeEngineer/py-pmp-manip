@@ -235,7 +235,7 @@ def test_SRBlock_find_broadcast_messages_script_none():
 
 
 def test_SRBlock_to_inter_block_and_text_block_only():
-    sti_if = TEST_SecondToInterIF(scripts=ALL_SR_SCRIPTS, _block_ids=["k", "l"])
+    sti_if = TEST_SecondToInterIF(scripts=ALL_SR_SCRIPTS, _block_ids=["k", "l", "x"])
     script = ALL_SR_SCRIPTS[4]
     srblock = script.blocks[0]
     irblock = srblock.to_inter(
@@ -248,7 +248,7 @@ def test_SRBlock_to_inter_block_and_text_block_only():
     assert irblock == ALL_IR_BLOCKS["c"]
     assert sti_if.produced_blocks == {
         id: ALL_IR_BLOCKS[id]
-        for id in {"k", "l"}
+        for id in {"k", "l", "x"}
     }
 
 def test_SRBlock_to_inter_script_block1():
@@ -287,7 +287,7 @@ def test_SRBlock_to_inter_script_block2_and_menu():
 
 
 def test_SRBlock_to_inter_substack():
-    sti_if = TEST_SecondToInterIF(scripts=ALL_SR_SCRIPTS, _block_ids=["o", "q"])
+    sti_if = TEST_SecondToInterIF(scripts=ALL_SR_SCRIPTS, _block_ids=["y", "o", "q"])
     script = ALL_SR_SCRIPTS[6]
     srblock = script.blocks[0]
     irblock = srblock.to_inter(
@@ -300,7 +300,7 @@ def test_SRBlock_to_inter_substack():
     assert irblock == ALL_IR_BLOCKS["n"]
     assert sti_if.produced_blocks == {
         id: ALL_IR_BLOCKS[id]
-        for id in {"o", "q"}
+        for id in {"y", "o", "q"}
     }
 
 def test_SRBlock_to_inter_immediate_block():
@@ -338,7 +338,7 @@ def test_SRBlock_to_inter_dropdown():
     }
 
 def test_SRBlock_to_inter_invalid_sub_script():
-    sti_if = TEST_SecondToInterIF(scripts=ALL_SR_SCRIPTS, _block_ids=[])
+    sti_if = TEST_SecondToInterIF(scripts=ALL_SR_SCRIPTS, _block_ids=["y"]) # "y": needed for generated checkbox block
     script = ALL_SR_SCRIPTS[6]
     srblock = deepcopy(script.blocks[0])
     srblock.inputs["THEN"].blocks = ["some invalid stuff"]
@@ -417,29 +417,6 @@ def test_SRBlock_to_inter_block_and_menu_text(info_api_extended):
             is_top_level=False,
         )
     }
-
-
-def test_SRInputValue_eq():
-    sub_tests = [
-        (False, 
-            SRBlockAndTextInputValue(block=None, immediate="a text field"), 
-            dict(),
-        ),
-        (False, 
-            SRBlockAndTextInputValue(block=None, immediate="a text field"), 
-            SRBlockOnlyInputValue(block=None),
-        ),
-        (False, 
-            SRBlockAndTextInputValue(block=None, immediate=""), 
-            SRBlockAndTextInputValue(block=ALL_SR_SCRIPTS[1].blocks[0], immediate="")
-        ),
-        (True, 
-            SRBlockAndTextInputValue(block=ALL_SR_SCRIPTS[1].blocks[0], immediate="a text field"), 
-            SRBlockAndTextInputValue(block=ALL_SR_SCRIPTS[1].blocks[0], immediate="a text field")
-        ),
-    ]
-    for target_result, a, b in sub_tests:
-        assert (a == b) == target_result    
 
 
 def test_SRInputValue_from_mode_block_and_text():

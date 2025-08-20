@@ -188,7 +188,7 @@ ALL_FR_BLOCK_DATAS = {
         "parent": None,
         "inputs": {
             string_to_sha256("a text arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME): [3, "k", [10, ""]],
-            string_to_sha256("a bool arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME): [2, "l"],
+            string_to_sha256("a bool arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME): [2, "l", "x"],
         },
         "fields": {},
         "shadow": False,
@@ -219,6 +219,17 @@ ALL_FR_BLOCK_DATAS = {
         "shadow": False,
         "topLevel": False,
     },
+    "x": {
+        "opcode": "checkbox",
+        "next": None,
+        "parent": "c",
+        "inputs": {},
+        "fields": {
+            "CHECKBOX": ["FALSE", string_to_sha256("FALSE", secondary=SHA256_SEC_DROPDOWN_VALUE)]
+        },
+        "shadow": False,
+        "topLevel": False,
+    },
     "k": {
         "opcode": "operator_length",
         "next": None,
@@ -236,6 +247,7 @@ ALL_FR_BLOCK_DATAS = {
         "next": None,
         "parent": None,
         "inputs": {
+            "CONDITION": [2, "y"],
             "SUBSTACK": [2, "o"],
         },
         "fields": {},
@@ -243,6 +255,17 @@ ALL_FR_BLOCK_DATAS = {
         "topLevel": True,
         "x": 528,
         "y": 1175,
+    },
+    "y": {
+        "opcode": "checkbox",
+        "next": None,
+        "parent": "n",
+        "inputs": {},
+        "fields": {
+            "CHECKBOX": ["FALSE", string_to_sha256("FALSE", secondary=SHA256_SEC_DROPDOWN_VALUE)]
+        },
+        "shadow": False,
+        "topLevel": False,
     },
     "o": {
         "opcode": "data_changevariableby",
@@ -482,7 +505,7 @@ ALL_FR_BLOCKS = {
         parent=None,
         inputs={
             string_to_sha256("a text arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME): (3, "k", (10, "")),
-            string_to_sha256("a bool arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME): (2, "l"),
+            string_to_sha256("a bool arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME): (2, "l", "x"),
         },
         fields={},
         shadow=False,
@@ -513,6 +536,17 @@ ALL_FR_BLOCKS = {
         shadow=False,
         top_level=False,
     ),
+    "x": FRBlock(
+        opcode="checkbox",
+        next=None,
+        parent="c",
+        inputs={},
+        fields={
+            "CHECKBOX": ("FALSE", string_to_sha256("FALSE", secondary=SHA256_SEC_DROPDOWN_VALUE))
+        },
+        shadow=False,
+        top_level=False,
+    ),
     "k": FRBlock(
         opcode="operator_length",
         next=None,
@@ -530,6 +564,7 @@ ALL_FR_BLOCKS = {
         next=None,
         parent=None,
         inputs={
+            "CONDITION": (2, "y"),
             "SUBSTACK": (2, "o"),
         },
         fields={},
@@ -537,6 +572,17 @@ ALL_FR_BLOCKS = {
         top_level=True,
         x=528,
         y=1175,
+    ),
+    "y": FRBlock(
+        opcode="checkbox",
+        next=None,
+        parent="n",
+        inputs={},
+        fields={
+            "CHECKBOX": ("FALSE", string_to_sha256("FALSE", secondary=SHA256_SEC_DROPDOWN_VALUE))
+        },
+        shadow=False,
+        top_level=False,
     ),
     "o": FRBlock(
         opcode="data_changevariableby",
@@ -846,7 +892,7 @@ ALL_IR_BLOCKS = {
             ),
             "a bool arg": IRInputValue(
                 mode=InputMode.BLOCK_AND_BOOL,
-                references=["l"],
+                references=["l", "x"],
                 immediate_block=None,
                 text=None,
             ),
@@ -871,6 +917,18 @@ ALL_IR_BLOCKS = {
         opcode="operator_falseBoolean",
         inputs={},
         dropdowns={},
+        comment=None,
+        mutation=None,
+        position=None,
+        next=None,
+        is_top_level=False,
+    ),
+    "x": IRBlock(
+        opcode="checkbox",
+        inputs={},
+        dropdowns={
+            "CHECKBOX": "FALSE",
+        },
         comment=None,
         mutation=None,
         position=None,
@@ -909,6 +967,12 @@ ALL_IR_BLOCKS = {
     "n": IRBlock(
         opcode="control_if",
         inputs={
+            "CONDITION": IRInputValue(
+                mode=InputMode.BLOCK_AND_BOOL,
+                references=["y"],
+                immediate_block=None,
+                text=None,
+            ),
             "SUBSTACK": IRInputValue(
                 mode=InputMode.SCRIPT,
                 references=["o"],
@@ -922,6 +986,18 @@ ALL_IR_BLOCKS = {
         position=(528, 1175),
         next=None,
         is_top_level=True,
+    ),
+    "y": IRBlock(
+        opcode="checkbox",
+        inputs={},
+        dropdowns={
+            "CHECKBOX": "FALSE",
+        },
+        comment=None,
+        mutation=None,
+        position=None,
+        next=None,
+        is_top_level=False,
     ),
     "o": IRBlock(
         opcode="data_changevariableby",

@@ -1,9 +1,10 @@
-from base64                 import b64decode
-from os                     import path
-from pathlib                import Path
-from requests               import get as requests_get, RequestException
-from urllib.parse           import unquote
-from validators             import url as validators_url
+from base64       import b64decode
+from logging      import getLogger
+from os           import path
+from pathlib      import Path
+from requests     import get as requests_get, RequestException
+from urllib.parse import unquote
+from validators   import url as validators_url
 
 from pmp_manip.utility            import (
     read_file_text,
@@ -27,8 +28,9 @@ def fetch_js_code(source: str, tolerate_file_path: bool) -> str:
         MANIP_FileNotFoundError: If the local file does not exist
         MANIP_FileFetchError: If the file cannot be read
     """
+    logger = getLogger()
     if   isinstance(source, str) and source.startswith("data:"):
-        print("--> Fetching from data URI")
+        logger.info("--> Fetching from data URI")
         try:
             meta, encoded = source.split(",", 1)
             if ";base64" in meta:
@@ -39,7 +41,7 @@ def fetch_js_code(source: str, tolerate_file_path: bool) -> str:
             raise MANIP_InvalidExtensionCodeSourceError(f"Failed to decode data URI: {error}") from error
 
     elif isinstance(source, str) and (source.startswith("http://") or source.startswith("https://")):
-        print(f"--> Fetching from URL: {source}")
+        logger.info(f"--> Fetching from URL: {source}")
         
         if not validators_url(source):
             raise MANIP_InvalidExtensionCodeSourceError(f"Invalid URL: {source}")
@@ -58,7 +60,7 @@ def fetch_js_code(source: str, tolerate_file_path: bool) -> str:
         except (TypeError, ValueError) as error:
             raise MANIP_InvalidExtensionCodeSourceError(f"Invalid file path or other extension source {source!r}: {error}") from error
         
-        print(f"--> Reading from file: {source}")
+        logger.info(f"--> Reading from file: {source}")
         if not tolerate_file_path:
             raise MANIP_InvalidExtensionCodeSourceError(f"Fetching by a file path is forbidden: {source}")
         

@@ -1,13 +1,13 @@
-from copy   import copy, deepcopy
-from uuid   import UUID
-from pydub  import AudioSegment
-from pytest import fixture, raises
+from copy     import copy, deepcopy
+from pydub    import AudioSegment
+from pytest   import fixture, raises
+from uuid     import UUID
 
 from pmp_manip.important_consts import SHA256_SEC_TARGET_NAME
 from pmp_manip.opcode_info.api  import DropdownValueKind
 from pmp_manip.opcode_info.data import info_api
 from pmp_manip.utility          import (
-    string_to_sha256, lists_equal_ignore_order, xml_equal,
+    string_to_sha256, assert_lists_equal_ignore_order, lists_equal_ignore_order, xml_equal,
     MANIP_ThanksError, MANIP_ConversionError, MANIP_TypeValidationError, MANIP_RangeValidationError, 
     MANIP_SameValueTwiceError, MANIP_InvalidValueError
 )
@@ -378,15 +378,15 @@ def test_SRTarget_to_first_common_sprite():
     }
     nested_generated_blocks, nested_generated_comments = nest_all_blocks_comments(old_blocks, old_comments)
     nested_expected_blocks , nested_expected_comments  = nest_all_blocks_comments(ALL_FR_BLOCKS, expected_comments)
-    assert lists_equal_ignore_order(nested_generated_blocks, nested_expected_blocks)
-    assert lists_equal_ignore_order(nested_generated_comments, nested_expected_comments)
+    assert_lists_equal_ignore_order(nested_generated_blocks, nested_expected_blocks)
+    assert_lists_equal_ignore_order(nested_generated_comments, nested_expected_comments)
 
     # standardize costume and sound hashes:
     assert old_costumes == [costume.to_second(PROJECT_ASSET_FILES).to_first()[0] for costume in FR_SPRITE.costumes]
     assert old_sounds   == [sound  .to_second(PROJECT_ASSET_FILES).to_first()[0] for sound   in FR_SPRITE.sounds  ]
     assert old_variables == FR_SPRITE.variables
     assert old_lists     == FR_SPRITE.lists
-    assert lists_equal_ignore_order(old_monitors, FR_PROJECT.monitors[1:2])
+    assert_lists_equal_ignore_order(old_monitors, FR_PROJECT.monitors[1:2])
     
     # asset_files cant easily be tested:
     assert len(asset_files) == 2 
@@ -417,7 +417,7 @@ def test_SRTarget_to_first_common_stage():
     assert old_comments == {}
     assert old_variables == FR_STAGE.variables
     assert old_lists     == FR_STAGE.lists
-    assert lists_equal_ignore_order(old_monitors, ALL_FR_MONITORS_CONVERTED[0:1])
+    assert_lists_equal_ignore_order(old_monitors, ALL_FR_MONITORS_CONVERTED[0:1])
 
 
 

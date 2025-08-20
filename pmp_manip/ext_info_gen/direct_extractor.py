@@ -48,7 +48,6 @@ def extract_extension_info_directly(js_code: str, code_encoding: str = "utf-8") 
         raise MANIP_FailedFileWriteError(f"Failed to create or write javascript code to temporary file: {error}") from error
     
     try:
-        print("--> Executing JavaScript via Node.js")
         result = run_subprocess(
             ["node", EXTRACTOR_PATH, temp_js_path],
             capture_output=True,

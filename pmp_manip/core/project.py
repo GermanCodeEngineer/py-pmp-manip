@@ -250,7 +250,7 @@ class FRProject:
         )
 
 
-@grepr_dataclass(grepr_fields=["stage", "sprites", "sprite_layer_stack", "global_variables", "global_lists", "global_monitors", "extensions", "tempo", "video_transparency", "video_state", "text_to_speech_language"], eq=False)
+@grepr_dataclass(grepr_fields=["stage", "sprites", "sprite_layer_stack", "global_variables", "global_lists", "global_monitors", "extensions", "tempo", "video_transparency", "video_state", "text_to_speech_language"], eq=True) # eq must be True for order to work, is overwritten
 class SRProject:
     """
     The second representation (SR) of a Scratch/PenguinMod Project
