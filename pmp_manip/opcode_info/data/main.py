@@ -3,7 +3,8 @@ from copy   import copy, deepcopy
 
 from pmp_manip.important_consts import (
     OPCODE_VAR_VALUE, NEW_OPCODE_VAR_VALUE, OPCODE_LIST_VALUE, NEW_OPCODE_LIST_VALUE, 
-    OPCODE_STOP_SCRIPT, OPCODE_CHECKBOX, OPCODE_CB_PROTOTYPE, ANY_OPCODE_CB_DEF, ANY_OPCODE_CB_ARG, 
+    OPCODE_STOP_SCRIPT, OPCODE_CHECKBOX, NEW_OPCODE_CHECKBOX,
+    OPCODE_CB_PROTOTYPE, ANY_OPCODE_CB_DEF, ANY_OPCODE_CB_ARG, 
     OPCODE_CB_CALL, NEW_OPCODE_CB_CALL, OPCODE_CB_ARG_TEXT, OPCODE_CB_ARG_BOOL, 
     OPCODE_CB_DEF, NEW_OPCODE_CB_DEF, OPCODE_CB_DEF_RET, NEW_OPCODE_CB_DEF_REP,
     SHA256_SEC_LOCAL_ARGUMENT_NAME,
@@ -160,6 +161,18 @@ c_custom_blocks = OpcodeInfoGroup(
     }),
 )
 
+g_special = OpcodeInfoGroup(
+    name="Special Blocks",
+    opcode_info = DualKeyDict({
+        (OPCODE_CHECKBOX, NEW_OPCODE_CHECKBOX): OpcodeInfo(
+            opcode_type=OpcodeType.NOT_RELEVANT,
+            dropdowns=DualKeyDict({
+                ("CHECKBOX", "CHECKBOX"): DropdownInfo(BuiltinDropdownType.CHECKBOX)
+            }),
+        ) 
+    })
+)
+
 info_api = OpcodeInfoAPI()
 info_api.add_group(c_motion       )
 info_api.add_group(c_looks        )
@@ -171,6 +184,7 @@ info_api.add_group(c_operators    )
 info_api.add_group(c_variables    )
 info_api.add_group(c_lists        )
 info_api.add_group(c_custom_blocks)
+info_api.add_group(g_special)
 
 # Mutations
 info_api.set_opcodes_mutation_class(ANY_OPCODE_CB_ARG, old_cls=FRCustomBlockArgumentMutation, new_cls=SRCustomBlockArgumentMutation)
@@ -285,15 +299,15 @@ info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
     function=_4548_6eb6,
 ))
 
-def _f545_6a61(block: "FRBlock", block_id: str, fti_if: "FirstToInterIF") -> "FRBlock":
-    # => Schedule to delete the block, as it is useless, **OR IS IT?**
-    # HERE
-    fti_if.schedule_block_deletion(block_id)
-    return block
-info_api.add_opcode_case(OPCODE_CHECKBOX, SpecialCase(
-    type=SpecialCaseType.PRE_FIRST_TO_INTER, 
-    function=_f545_6a61,
-))
+#def _f545_6a61(block: "FRBlock", block_id: str, fti_if: "FirstToInterIF") -> "FRBlock":
+#    # => Schedule to delete the block, as it is useless, **OR IS IT?**
+#    # HERE
+#    fti_if.schedule_block_deletion(block_id)
+#    return block
+#info_api.add_opcode_case(OPCODE_CHECKBOX, SpecialCase(
+#    type=SpecialCaseType.PRE_FIRST_TO_INTER, 
+#    function=_f545_6a61,
+#))
 
 
 def _d0e6_50e9(block: "FRBlock", block_id: str, fti_if: "FirstToInterIF") -> "IRBlock":

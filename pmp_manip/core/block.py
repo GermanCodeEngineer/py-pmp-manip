@@ -1,11 +1,12 @@
 from abc         import ABC, abstractmethod
 from copy        import deepcopy
 from dataclasses import field
+from json        import loads, dumps
 from typing      import Any, TYPE_CHECKING
 
 from pmp_manip.important_consts import (
     OPCODE_NUM_VAR_VALUE, OPCODE_VAR_VALUE, OPCODE_NUM_LIST_VALUE, OPCODE_LIST_VALUE,
-    ANY_TEXT_INPUT_NUM, 
+    ANY_TEXT_INPUT_NUM, OPCODE_CHECKBOX, NEW_OPCODE_CHECKBOX,
     ANY_OPCODE_NUM_IMMEDIATE_BLOCK, ANY_OPCODE_IMMEDIATE_BLOCK, ANY_NEW_OPCODE_IMMEDIATE_BLOCK,
     SHA256_SEC_BROADCAST_MSG, SHA256_SEC_DROPDOWN_VALUE,
 )
@@ -505,20 +506,42 @@ class IRBlock:
                 sub_block_b = None
             else: raise MANIP_ConversionError(f"Invalid script count: {script_count}")
             
-            input_blocks   = []
-            input_block    = None
-            input_text     = None
-            input_dropdown = None
+            input_blocks    = []
+            input_block     = None
+            input_immediate = None
+            input_dropdown  = None
             
             match input_value.mode:
                 case InputMode.BLOCK_AND_TEXT:
                     assert script_count in {0, 1}
-                    input_block = sub_block_a
-                    input_text  = input_value.text
+                    input_block     = sub_block_a
+                    input_immediate = input_value.text
                 case InputMode.BLOCK_AND_BROADCAST_DROPDOWN:
                     assert script_count in {0, 1}
                     input_block     = sub_block_a
                     input_dropdown  = input_value.text
+                case InputMode.BLOCK_AND_BOOL:
+                    assert script_count in {0, 1, 2} # this:
+                    # should be compatible with older projects too, which do not have CHECKBOX block yet
+                    checkbox_block = None
+                    if   script_count == 0:
+                        pass
+                    elif script_count == 1:
+                        if sub_block_a.opcode == NEW_OPCODE_CHECKBOX:
+                            checkbox_block = sub_block_a
+                        else:
+                            input_block    = sub_block_a
+                    elif script_count == 2:
+                        assert sub_block_a.opcode != NEW_OPCODE_CHECKBOX
+                        assert sub_block_b.opcode == NEW_OPCODE_CHECKBOX
+                        input_block    = sub_block_a
+                        checkbox_block = sub_block_b
+                    if checkbox_block is None:
+                        input_immediate = False 
+                        # use False instead of None -> a checkbox block will be added when converted to FR again
+                    else:
+                        checkbox_value = checkbox_block.dropdowns["CHECKBOX"].value
+                        input_immediate = loads(checkbox_value.lower()) # "FALSE" -> False, "TRUE" -> True
                 case InputMode.BLOCK_ONLY:
                     assert script_count in {0, 1}
                     input_block = sub_block_a
@@ -543,11 +566,11 @@ class IRBlock:
                 )
 
             new_inputs[new_input_id] = SRInputValue.from_mode(
-                mode     = input_value.mode,
-                blocks   = input_blocks,
-                block    = input_block,
-                text     = input_text,
-                dropdown = input_dropdown,
+                mode      = input_value.mode,
+                blocks    = input_blocks,
+                block     = input_block,
+                immediate = input_immediate,
+                dropdown  = input_dropdown,
             )
         
         # Check for missing inputs and give a default value where possible otherwise raise
@@ -555,7 +578,8 @@ class IRBlock:
             if new_input_id not in new_inputs:
                 input_mode = input_infos[new_input_id].type.mode
                 if input_mode.can_be_missing:
-                    new_inputs[new_input_id] = SRInputValue.from_mode(mode=input_mode)
+                    new_inputs[new_input_id] = SRInputValue.from_mode(mode=input_mode, immediate=False)
+                    # immediate must be False, SRBlockAndBoolInputValue might otherwise get None
                 else:
                     raise MANIP_ConversionError(f"For a block with opcode {self.opcode!r}, input {new_input_id!r} is missing")
         
@@ -755,11 +779,11 @@ class SRBlock:
                     f"inputs of {cls_name!r} with opcode {self.opcode!r} includes unnecessary input {new_input_id!r}",
                 )
             input.validate(
-                path           = path+["inputs", (new_input_id,)],
-                info_api       = info_api,
+                path          = path+["inputs", (new_input_id,)],
+                info_api      = info_api,
                 validation_if = validation_if,
-                context        = context,
-                input_type     = input_infos[new_input_id].type,
+                context       = context,
+                input_type    = input_infos[new_input_id].type,
             )
         for new_input_id in input_infos.keys():
             if new_input_id not in self.inputs:
@@ -848,7 +872,8 @@ class SRBlock:
                         broadcast_messages.append(input_value.dropdown.value)
             
             if   isinstance(input_value, 
-                (SRBlockAndTextInputValue, SRBlockAndDropdownInputValue, SRBlockOnlyInputValue)
+                (SRBlockAndTextInputValue, SRBlockAndDropdownInputValue, 
+                 SRBlockAndBoolInputValue, SRBlockOnlyInputValue)
             ):
                 sub_blocks = [] if input_value.block is None else [input_value.block]
             elif isinstance(input_value, SRScriptInputValue):
@@ -895,16 +920,26 @@ class SRBlock:
             old_input_id = new_old_input_ids[input_id]
             
             input_sub_scripts: list[list[SRBlock | IRBlock]] = []
-            input_text     = None
-            input_dropdown = None
+            input_immediate = None
+            input_dropdown  = None
 
             if isinstance(getattr(input_value, "block", None), SRBlock):
                 input_sub_scripts.append([input_value.block])
             match input_mode:
                 case InputMode.BLOCK_AND_TEXT:
-                    input_text = input_value.text
+                    input_immediate = input_value.immediate
                 case InputMode.BLOCK_AND_BROADCAST_DROPDOWN:
-                    input_text = input_value.dropdown.value
+                    input_immediate = input_value.dropdown.value
+                case InputMode.BLOCK_AND_BOOL:
+                    checkbox_value = dumps(input_value.immediate).upper()
+                    checkbox_block = SRBlock(
+                        opcode=NEW_OPCODE_CHECKBOX,
+                        inputs={},
+                        dropdowns={
+                            "CHECKBOX": SRDropdownValue(kind=DropdownValueKind.STANDARD, value=checkbox_value),
+                        },
+                    )
+                    input_sub_scripts.append([checkbox_block]) # important: must come after "block"
                 case InputMode.BLOCK_ONLY:
                     pass
                 case InputMode.SCRIPT:
@@ -955,7 +990,7 @@ class SRBlock:
                 mode            = input_mode,
                 references      = references,
                 immediate_block = immediate_block,
-                text            = input_text,
+                text            = input_immediate,
             )
             if (
                 not(input_mode.can_be_missing) or old_input_value.references
@@ -985,7 +1020,7 @@ class SRBlock:
 class SRInputValue(ABC):
     """
     The second representation for a block input. 
-    It can contain a substack of blocks, a block, a text field and a dropdown
+    It can contain a substack of blocks, a block, an immediate text or boolean field and a dropdown
     **Please use the subclasses instead**
     **Be careful when accessing fields**, because only the subclasses guarantee there existance
     """
@@ -993,7 +1028,7 @@ class SRInputValue(ABC):
     # these are not guaranteed to exist and are only listed for good typing
     blocks: list[SRBlock]     | None = field(init=False) 
     block: SRBlock            | None = field(init=False)
-    text: str                 | None = field(init=False)
+    immediate: str | bool     | None = field(init=False)
     dropdown: SRDropdownValue | None = field(init=False)
 
     def __eq__(self, other) -> bool:
@@ -1011,10 +1046,10 @@ class SRInputValue(ABC):
         if type(self) is not type(other):
             return NotImplemented
         return (
-                getattr(self, "blocks"  , None) == getattr(other, "blocks"  , None)
-            and getattr(self, "block"   , None) == getattr(other, "block"   , None)
-            and getattr(self, "text"    , None) == getattr(other, "text"    , None)
-            and getattr(self, "dropdown", None) == getattr(other, "dropdown", None)
+                getattr(self, "blocks"   , None) == getattr(other, "blocks"   , None)
+            and getattr(self, "block"    , None) == getattr(other, "block"    , None)
+            and getattr(self, "immediate", None) == getattr(other, "immediate", None)
+            and getattr(self, "dropdown" , None) == getattr(other, "dropdown" , None)
         )
 
     @classmethod
@@ -1022,7 +1057,7 @@ class SRInputValue(ABC):
         mode: InputMode,
         blocks: list[SRBlock]     | None = None,
         block: SRBlock            | None = None,
-        text: str                 | None = None,
+        immediate: str | bool     | None = None,
         dropdown: SRDropdownValue | None = None,
     ) -> "SRInputValue":
         """
@@ -1032,7 +1067,7 @@ class SRInputValue(ABC):
             mode: the input mode
             blocks: the substack blocks
             block: the block of the input
-            text: the text field of the input
+            immediate: the text or boolean field of the input
             dropdown: the dropdown of the input
         
         Returns:
@@ -1040,9 +1075,11 @@ class SRInputValue(ABC):
         """
         match mode:
             case InputMode.BLOCK_AND_TEXT:
-                return SRBlockAndTextInputValue(block=block, text=text)
+                return SRBlockAndTextInputValue(block=block, immediate=immediate)
             case InputMode.BLOCK_AND_DROPDOWN | InputMode.BLOCK_AND_BROADCAST_DROPDOWN | InputMode.BLOCK_AND_MENU_TEXT:
                 return SRBlockAndDropdownInputValue(block=block, dropdown=dropdown)
+            case InputMode.BLOCK_AND_BOOL:
+                return SRBlockAndBoolInputValue(block=block, immediate=immediate)
             case InputMode.BLOCK_ONLY:
                 return SRBlockOnlyInputValue(block=block)
             case InputMode.SCRIPT:
@@ -1100,19 +1137,19 @@ class SRInputValue(ABC):
             block.validate(
                 path             = path+["block"],
                 info_api         = info_api,
-                validation_if   = validation_if,
+                validation_if    = validation_if,
                 context          = context,
                 expects_reporter = True,
             )
 
-@grepr_dataclass(grepr_fields=["block", "text"], eq=False)
+@grepr_dataclass(grepr_fields=["block", "immediate"], eq=False)
 class SRBlockAndTextInputValue(SRInputValue):
     """
-    The second representation for a block input, which has a text field and might contain a block
+    The second representation for a block input, which has an immediate text field and might contain a block
     """
 
     block: SRBlock | None
-    text : str
+    immediate: str
 
     def validate(self, 
         path: list, 
@@ -1138,12 +1175,12 @@ class SRBlockAndTextInputValue(SRInputValue):
             MANIP_ValidationError: if the SRBlockAndTextInputValue is invalid
         """
         self._validate_block(
-            path           = path,
-            info_api       = info_api,
+            path          = path,
+            info_api      = info_api,
             validation_if = validation_if,
-            context        = context,
+            context       = context,
         )
-        AA_TYPE(self, path, "text", str)
+        AA_TYPE(self, path, "immediate", str)
 
 @grepr_dataclass(grepr_fields=["block", "dropdown"], eq=False)
 class SRBlockAndDropdownInputValue(SRInputValue):
@@ -1151,8 +1188,8 @@ class SRBlockAndDropdownInputValue(SRInputValue):
     The second representation for a block input, which has a dropdown and might contain a block
     """
     
-    block   : SRBlock         | None
-    dropdown: SRDropdownValue | None # TODO: check if this makes sense
+    block: SRBlock | None
+    dropdown: SRDropdownValue
 
     def validate(self, 
         path: list, 
@@ -1178,20 +1215,60 @@ class SRBlockAndDropdownInputValue(SRInputValue):
             MANIP_ValidationError: if the SRBlockAndDropdownInputValue is invalid
         """
         self._validate_block(
-            path           = path,
-            info_api       = info_api,
+            path          = path,
+            info_api      = info_api,
             validation_if = validation_if,
-            context        = context,
+            context       = context,
         )
-        AA_NONE_OR_TYPE(self, path, "dropdown", SRDropdownValue)
-        if self.dropdown is not None:
-            current_path = path+["dropdown"]
-            self.dropdown.validate(current_path)
-            self.dropdown.validate_value(
-                path          = current_path,
-                dropdown_type = input_type.corresponding_dropdown_type,
-                context       = context,
-            )
+        AA_TYPE(self, path, "dropdown", SRDropdownValue)
+        
+        current_path = path+["dropdown"]
+        self.dropdown.validate(current_path)
+        self.dropdown.validate_value(
+            path          = current_path,
+            dropdown_type = input_type.corresponding_dropdown_type,
+            context       = context,
+        )
+
+@grepr_dataclass(grepr_fields=["block", "immediate"], eq=False)
+class SRBlockAndBoolInputValue(SRInputValue):
+    """
+    The second representation for a block input, which has an immediate boolean field and might contain a block
+    """
+
+    block: SRBlock | None
+    immediate: bool # Can not be None, default is False (see IRBlock.to_second, case InputMode.BLOCK_AND_BOOL)
+
+    def validate(self, 
+        path: list, 
+        info_api: OpcodeInfoAPI,
+        validation_if: "ValidationIF", 
+        context: CompleteContext, 
+        input_type: InputType, 
+    ) -> None:
+        """
+        Ensures this input is valid, raise MANIP_ValidationError if not
+        
+        Args:
+            path: the path from the project to itself. Used for better error messages
+            info_api: the opcode info api used to fetch information about opcodes
+            validation_if: interface which allows the management of other blocks 
+            context: Context about parts of the project. Used to validate dropdowns
+            input_type: the type of this input. Used to valdiate dropdowns
+        
+        Returns:
+            None
+        
+        Raises:
+            MANIP_ValidationError: if the SRBlockAndBoolInputValue is invalid
+        """
+        self._validate_block(
+            path          = path,
+            info_api      = info_api,
+            validation_if = validation_if,
+            context       = context,
+        )
+        AA_TYPE(self, path, "immediate", bool)
 
 @grepr_dataclass(grepr_fields=["block"], eq=False)
 class SRBlockOnlyInputValue(SRInputValue):
@@ -1225,10 +1302,10 @@ class SRBlockOnlyInputValue(SRInputValue):
             MANIP_ValidationError: if the SRBlockOnlyInputValue is invalid
         """
         self._validate_block(
-            path           = path,
-            info_api       = info_api,
+            path          = path,
+            info_api      = info_api,
             validation_if = validation_if,
-            context        = context,
+            context       = context,
         )
 
 @grepr_dataclass(grepr_fields=["blocks"], eq=False)
@@ -1285,7 +1362,8 @@ class SRScriptInputValue(SRInputValue):
 
 __all__ = [
     "FRBlock", "IRBlock", "IRInputValue", 
-    "SRScript", "SRBlock", "SRInputValue", "SRBlockAndTextInputValue", 
-    "SRBlockAndDropdownInputValue", "SRBlockOnlyInputValue", "SRScriptInputValue",
+    "SRScript", "SRBlock", "SRInputValue", 
+    "SRBlockAndTextInputValue", "SRBlockAndDropdownInputValue", "SRBlockAndBoolInputValue",
+    "SRBlockOnlyInputValue", "SRScriptInputValue",
 ]
 

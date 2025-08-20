@@ -243,11 +243,13 @@ def generate_block_opcode_info(
                   | InputMode.BLOCK_AND_MENU_TEXT
                 ): # pragma: no cover
                     return "([", "])" # pragma: no cover
-                case InputMode.BLOCK_ONLY: # pragma: no cover
-                    match input_type: # pragma: no cover
+                case InputMode.BLOCK_AND_BOOL: # pragma: no cover
+                     match input_type: # pragma: no cover
                         case BuiltinInputType.BOOLEAN: # pragma: no cover
                             return "<", ">" # pragma: no cover
-                        case BuiltinInputType.ROUND | InputType.EMBEDDED_MENU: # pragma: no cover
+                case InputMode.BLOCK_ONLY: # pragma: no cover
+                    match input_type: # pragma: no cover
+                        case BuiltinInputType.ROUND: # pragma: no cover
                             return "(", ")" # pragma: no cover
                 case InputMode.SCRIPT: # pragma: no cover
                     return "{", "}" # pragma: no cover

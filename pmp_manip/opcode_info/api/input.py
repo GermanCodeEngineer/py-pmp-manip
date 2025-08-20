@@ -31,10 +31,11 @@ class InputMode(GEnum):
     # (can be missing?, index)
     BLOCK_AND_TEXT               = (False, 0)
     BLOCK_AND_MENU_TEXT          = (False, 1)
-    BLOCK_ONLY                   = (True , 2)
-    SCRIPT                       = (True , 3)
-    BLOCK_AND_BROADCAST_DROPDOWN = (False, 4)
-    BLOCK_AND_DROPDOWN           = (False, 5)
+    BLOCK_AND_BOOL               = (True , 2) # unsure, but lets respect older projects
+    BLOCK_ONLY                   = (True , 3)
+    SCRIPT                       = (True , 4)
+    BLOCK_AND_BROADCAST_DROPDOWN = (False, 5)
+    BLOCK_AND_DROPDOWN           = (False, 6)
 
 class InputType(GEnum):
     """
@@ -116,10 +117,11 @@ class BuiltinInputType(InputType):
     # BLOCK_AND_MENU_TEXT
     NOTE                = (InputMode.BLOCK_AND_MENU_TEXT, None, BuiltinDropdownType.NOTE, 0)
 
+    # BLOCK_AND_BOOL
+    BOOLEAN             = (InputMode.BLOCK_AND_BOOL, None, None, 0)
+    
     # BLOCK_ONLY
-    BOOLEAN             = (InputMode.BLOCK_ONLY, None, None, 0)
-    ROUND               = (InputMode.BLOCK_ONLY, None, None, 1)
-    EMBEDDED_MENU       = (InputMode.BLOCK_ONLY, None, None, 2) # TODO: check that it works and is used correctly
+    ROUND               = (InputMode.BLOCK_ONLY, None, None, 0)
 
     # SCRIPT
     SCRIPT              = (InputMode.SCRIPT, None, None, 0)

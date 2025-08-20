@@ -116,21 +116,21 @@ ext_scratch_pen = OpcodeInfoGroup(name="scratch_pen", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("pen_drawComplexShape", "draw triangle (TRIANGLE) with fill (COLOR)"): OpcodeInfo(
-        opcode_type=OpcodeType.STATEMENT,
-        inputs=DualKeyDict({
-            ("SHAPE", "TRIANGLE"): InputInfo(BuiltinInputType.EMBEDDED_MENU),
-            ("COLOR", "COLOR"): InputInfo(BuiltinInputType.COLOR),
-        }),
-    ),
+#    ("pen_drawComplexShape", "draw triangle (TRIANGLE) with fill (COLOR)"): OpcodeInfo(
+#        opcode_type=OpcodeType.STATEMENT,
+#        inputs=DualKeyDict({
+#            ("SHAPE", "TRIANGLE"): InputInfo(BuiltinInputType.EMBEDDED_MENU),
+#            ("COLOR", "COLOR"): InputInfo(BuiltinInputType.COLOR),
+#        }),
+#    ),
 
-    ("pen_draw4SidedComplexShape", "draw quadrilateral (QUADRILATERAL) with fill (COLOR)"): OpcodeInfo(
-        opcode_type=OpcodeType.STATEMENT,
-        inputs=DualKeyDict({
-            ("SHAPE", "QUADRILATERAL"): InputInfo(BuiltinInputType.EMBEDDED_MENU),
-            ("COLOR", "COLOR"): InputInfo(BuiltinInputType.COLOR),
-        }),
-    ),
+#    ("pen_draw4SidedComplexShape", "draw quadrilateral (QUADRILATERAL) with fill (COLOR)"): OpcodeInfo(
+#        opcode_type=OpcodeType.STATEMENT,
+#        inputs=DualKeyDict({
+#            ("SHAPE", "QUADRILATERAL"): InputInfo(BuiltinInputType.EMBEDDED_MENU),
+#            ("COLOR", "COLOR"): InputInfo(BuiltinInputType.COLOR),
+#        }),
+#    ),
 
     ("pen_drawArrayComplexShape", "draw polygon from points (POINTS) with fill (COLOR)"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,

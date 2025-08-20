@@ -1,4 +1,4 @@
-from __future__ import annotations
+from __future__ import annotations # TODO: remove?
 from copy   import copy, deepcopy
 from json   import loads
 from typing import Any
@@ -384,10 +384,10 @@ class SRProject:
         defined_extensions = {}
         for i, extension in enumerate(self.extensions):
             current_path = path+["extensions", i]
-            if extension.name in defined_extensions:
+            if extension.id in defined_extensions:
                 other_path = defined_extensions[extension.name]
-                raise MANIP_SameValueTwiceError(other_path, current_path, "Two extensions must not have the same name")
-            defined_extensions[extension.name] = current_path
+                raise MANIP_SameValueTwiceError(other_path, current_path, "Two extensions must not have the same id")
+            defined_extensions[extension.id] = current_path
         
         # 1. Ensure no same sprite name
         # 2. Validate Dropdown Values

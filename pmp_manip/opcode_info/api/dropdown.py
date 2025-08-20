@@ -630,6 +630,9 @@ class BuiltinDropdownType(DropdownType):
     VARIABLE = DropdownTypeInfo(rules=[DropdownValueRule.VARIABLE])
     LIST = DropdownTypeInfo(rules=[DropdownValueRule.LIST])
     BROADCAST = DropdownTypeInfo(rules=[DropdownValueRule.BROADCAST_MSG])
+    
+    # TEMPORARY ONES (do not exist in actual SR only during transformation)
+    CHECKBOX = DropdownTypeInfo(direct_values=["FALSE", "TRUE"])
 
 
 __all__ = [

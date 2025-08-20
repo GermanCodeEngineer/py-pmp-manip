@@ -14,7 +14,8 @@ from pmp_manip.core.block_interface import SecondToInterIF, ValidationIF
 from pmp_manip.core.block           import (
     IRBlock, IRInputValue,
     SRScript, SRBlock, SRInputValue, 
-    SRBlockAndTextInputValue, SRBlockOnlyInputValue, SRBlockAndDropdownInputValue, SRScriptInputValue,
+    SRBlockAndTextInputValue, SRBlockAndDropdownInputValue, SRBlockAndBoolInputValue,
+    SRBlockOnlyInputValue, SRScriptInputValue,
 )
 from pmp_manip.core.context         import CompleteContext
 from pmp_manip.core.dropdown        import SRDropdownValue
@@ -363,7 +364,7 @@ def test_SRBlock_to_inter_block_and_menu_text(info_api_extended):
                         block=None,
                         dropdown=SRDropdownValue(kind=DropdownValueKind.STANDARD, value="60"),
                     ),
-                    "BEATS": SRBlockAndTextInputValue(block=None, text="0.25"),
+                    "BEATS": SRBlockAndTextInputValue(block=None, immediate="0.25"),
                 },
                 dropdowns={},
                 comment=None,
@@ -421,20 +422,20 @@ def test_SRBlock_to_inter_block_and_menu_text(info_api_extended):
 def test_SRInputValue_eq():
     sub_tests = [
         (False, 
-            SRBlockAndTextInputValue(block=None, text="a text field"), 
+            SRBlockAndTextInputValue(block=None, immediate="a text field"), 
             dict(),
         ),
         (False, 
-            SRBlockAndTextInputValue(block=None, text="a text field"), 
+            SRBlockAndTextInputValue(block=None, immediate="a text field"), 
             SRBlockOnlyInputValue(block=None),
         ),
         (False, 
-            SRBlockAndTextInputValue(block=None, text=""), 
-            SRBlockAndTextInputValue(block=ALL_SR_SCRIPTS[1].blocks[0], text="")
+            SRBlockAndTextInputValue(block=None, immediate=""), 
+            SRBlockAndTextInputValue(block=ALL_SR_SCRIPTS[1].blocks[0], immediate="")
         ),
         (True, 
-            SRBlockAndTextInputValue(block=ALL_SR_SCRIPTS[1].blocks[0], text="a text field"), 
-            SRBlockAndTextInputValue(block=ALL_SR_SCRIPTS[1].blocks[0], text="a text field")
+            SRBlockAndTextInputValue(block=ALL_SR_SCRIPTS[1].blocks[0], immediate="a text field"), 
+            SRBlockAndTextInputValue(block=ALL_SR_SCRIPTS[1].blocks[0], immediate="a text field")
         ),
     ]
     for target_result, a, b in sub_tests:
@@ -445,11 +446,11 @@ def test_SRInputValue_from_mode_block_and_text():
     input_value = SRInputValue.from_mode(
         mode=InputMode.BLOCK_AND_TEXT,
         block=ALL_SR_SCRIPTS[1].blocks[0],
-        text="hi :)",
+        immediate="hi :)",
     )
     assert input_value == SRBlockAndTextInputValue(
         block=ALL_SR_SCRIPTS[1].blocks[0],
-        text="hi :)"
+        immediate="hi :)"
     )
 
 
@@ -501,7 +502,7 @@ def test_SRBlockAndTextInputValue_validate(validation_if, context):
     input_type = BuiltinInputType.TEXT
     input_value = SRBlockAndTextInputValue(
         block=ALL_SR_SCRIPTS[1].blocks[0],
-        text="some random text",
+        immediate="some random text",
     )
     input_value.validate([], info_api, validation_if, context, input_type)
     
@@ -509,7 +510,7 @@ def test_SRBlockAndTextInputValue_validate(validation_if, context):
         obj=input_value,
         attr_tests=[
             ("block", 5, MANIP_TypeValidationError),
-            ("text", {}, MANIP_TypeValidationError),
+            ("immediate", {}, MANIP_TypeValidationError),
         ],
         validate_func=SRBlockAndTextInputValue.validate,
         func_args=[[], info_api, validation_if, context, input_type],
@@ -530,6 +531,24 @@ def test_SRBlockAndDropdownInputValue_validate(validation_if, context):
             ("dropdown", {}, MANIP_TypeValidationError),
         ],
         validate_func=SRBlockAndDropdownInputValue.validate,
+        func_args=[[], info_api, validation_if, context, input_type],
+    )
+
+def test_SRBlockAndBoolInputValue_validate(validation_if, context):
+    input_type = BuiltinInputType.BOOLEAN
+    input_value = SRBlockAndBoolInputValue(
+        block=ALL_SR_SCRIPTS[1].blocks[0],
+        immediate=True,
+    )
+    input_value.validate([], info_api, validation_if, context, input_type)
+    
+    execute_attr_validation_tests(
+        obj=input_value,
+        attr_tests=[
+            ("block", 5.7, MANIP_TypeValidationError),
+            ("immediate", "hi", MANIP_TypeValidationError),
+        ],
+        validate_func=SRBlockAndBoolInputValue.validate,
         func_args=[[], info_api, validation_if, context, input_type],
     )
 

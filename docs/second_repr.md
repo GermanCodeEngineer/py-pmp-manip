@@ -336,10 +336,10 @@ Represents a single input field of a block. Can be any kind of field (e.g. text,
 - **type**: [`SRBlock`](#srblock) or `None`
 - **description**: Stores the optional block inserted into the argument text field, round dropdown menu etc.
 - **note**: Only exists for instances of [`SRBlockAndTextInputValue`](#srblockandtextinputvalue), [`SRBlockAndDropdownInputValue`](#srblockanddropdowninputvalue) and [`SRBlockOnlyInputValue`](#srblockonlyinputvalue).
-#### `SRInputValue.text`
-- **type**: `str`
-- **description**: Stores the text/number/color field or similar of the input value.
-- **note**: Only exists for instances of [`SRBlockAndTextInputValue`](#srblockandtextinputvalue).
+#### `SRInputValue.immediate`
+- **type**: `str` or `bool` (depends on subclass)
+- **description**: the "immediate" value of the input value i.e. if the default value if no block is dragged into the input.
+- **note**: Only exists for instances of [`SRBlockAndTextInputValue`](#srblockandtextinputvalue) and [`SRBlockAndBoolInputValue`](#srblockandboolinputvalue).
 #### `SRInputValue.dropdown`
 - **type**: [`SRDropdownValue`](#srdropdownvalue)
 - **description**: Stores the round dropdown menu of the input value.
@@ -347,10 +347,20 @@ Represents a single input field of a block. Can be any kind of field (e.g. text,
 
 ### `SRBlockAndTextInputValue`
 Inherits from [`SRInputValue`](#srinputvalue).
-* **uses properties**: [`SRInputValue.block`](#srinputvalueblock), [`SRInputValue.text`](#srinputvaluetext)
+* **uses properties**: [`SRInputValue.block`](#srinputvalueblock), [`SRInputValue.immediate`](#srinputvalueimmediate)
+#### `SRBlockAndTextInputValue.immediate`
+- **type**: `str` (does not apply to other subclasses)
+- **description**: the "immediate" text value of the input value i.e. if the **text default value** if no block is dragged into the input.
+- **note**: `str` type does not apply to other subclasses.
 ### `SRBlockAndDropdownInputValue`
 Inherits from [`SRInputValue`](#srinputvalue).
 * **uses properties**: [`SRInputValue.block`](#srinputvalueblock), [`SRInputValue.dropdown`](#srinputvaluedropdown)
+### `SRBlockAndBoolInputValue`
+Inherits from [`SRInputValue`](#srinputvalue).
+* **uses properties**: [`SRInputValue.block`](#srinputvalueblock), [`SRInputValue.immediate`](#srinputvalueimmediate)
+#### `SRBlockAndBoolInputValue.immediate`
+- **type**: `bool` (does not apply to other subclasses)
+- **description**: the "immediate" on/off switch value of the input value i.e. if the **on/off switch default value** if no block is dragged into the input.
 ### `SRBlockOnlyInputValue`
 Inherits from [`SRInputValue`](#srinputvalue).
 * **uses properties**: [`SRInputValue.block`](#srinputvalueblock)

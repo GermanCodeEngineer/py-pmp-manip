@@ -28,6 +28,7 @@ NEW_OPCODE_CB_CALL             = "call custom block"
 # Opcodes: Other Special Blocks
 OPCODE_STOP_SCRIPT             = "control_stop"
 OPCODE_CHECKBOX                = "checkbox"
+NEW_OPCODE_CHECKBOX            = "##CHECKBOX##"
 
 # Magic Numbers
 OPCODE_NUM_VAR_VALUE           = 12

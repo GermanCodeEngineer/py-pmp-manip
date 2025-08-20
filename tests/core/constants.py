@@ -19,8 +19,8 @@ from pmp_manip.core.block_mutation import (
 from pmp_manip.core.block          import (
     FRBlock, IRBlock, IRInputValue,
     SRBlock, SRScript,
-    SRBlockAndTextInputValue, SRBlockAndDropdownInputValue, SRBlockOnlyInputValue, SRScriptInputValue,
-    SRDropdownValue,
+    SRBlockAndTextInputValue, SRBlockAndDropdownInputValue, SRBlockAndBoolInputValue, 
+    SRScriptInputValue, SRDropdownValue,
 )
 from pmp_manip.core.comment        import FRComment, SRComment
 from pmp_manip.core.custom_block   import (
@@ -845,7 +845,7 @@ ALL_IR_BLOCKS = {
                 text="",
             ),
             "a bool arg": IRInputValue(
-                mode=InputMode.BLOCK_ONLY,
+                mode=InputMode.BLOCK_AND_BOOL,
                 references=["l"],
                 immediate_block=None,
                 text=None,
@@ -1070,7 +1070,7 @@ ALL_SR_SCRIPTS = [
             SRBlock(
                 opcode="glide (SECONDS) secs to ([TARGET])",
                 inputs={
-                    "SECONDS": SRBlockAndTextInputValue(block=None, text="1"),
+                    "SECONDS": SRBlockAndTextInputValue(block=None, immediate="1"),
                     "TARGET": SRBlockAndDropdownInputValue(
                         block=None,
                         dropdown=SRDropdownValue(kind=DropdownValueKind.OBJECT, value="random position"),
@@ -1088,7 +1088,7 @@ ALL_SR_SCRIPTS = [
             SRBlock(
                 opcode="glide (SECONDS) secs to ([TARGET])",
                 inputs={
-                    "SECONDS": SRBlockAndTextInputValue(block=None, text="1"),
+                    "SECONDS": SRBlockAndTextInputValue(block=None, immediate="1"),
                     "TARGET": SRBlockAndDropdownInputValue(
                         block=SRBlock(
                             opcode="false",
@@ -1122,20 +1122,20 @@ ALL_SR_SCRIPTS = [
                             comment=None,
                             mutation=None,
                         ),
-                        text="1",
+                        immediate="1",
                     ),
                     "OPERAND2": SRBlockAndTextInputValue(
                         block=SRBlock(
                             opcode="join (STRING1) (STRING2)",
                             inputs={
-                                "STRING1": SRBlockAndTextInputValue(block=None, text="apple "),
-                                "STRING2": SRBlockAndTextInputValue(block=None, text="banana"),
+                                "STRING1": SRBlockAndTextInputValue(block=None, immediate="apple "),
+                                "STRING2": SRBlockAndTextInputValue(block=None, immediate="banana"),
                             },
                             dropdowns={},
                             comment=None,
                             mutation=None,
                         ),
-                        text="10",
+                        immediate="10",
                     ),
                 },
                 dropdowns={},
@@ -1194,15 +1194,15 @@ ALL_SR_SCRIPTS = [
                         block=SRBlock(
                             opcode="length of (TEXT)",
                             inputs={
-                                "TEXT": SRBlockAndTextInputValue(block=None, text="apple"),
+                                "TEXT": SRBlockAndTextInputValue(block=None, immediate="apple"),
                             },
                             dropdowns={},
                             comment=None,
                             mutation=None,
                         ),
-                        text="",
+                        immediate="",
                      ),
-                    "a bool arg": SRBlockOnlyInputValue(
+                    "a bool arg": SRBlockAndBoolInputValue(
                         block=SRBlock(
                             opcode="false",
                             inputs={},
@@ -1210,6 +1210,7 @@ ALL_SR_SCRIPTS = [
                             comment=None,
                             mutation=None,
                         ),
+                        immediate=False,
                     ),
                 },
                 dropdowns={},
@@ -1247,13 +1248,13 @@ ALL_SR_SCRIPTS = [
             SRBlock(
                 opcode="if <CONDITION> then {THEN}",
                 inputs={
-                    "CONDITION": SRBlockOnlyInputValue(block=None),
+                    "CONDITION": SRBlockAndBoolInputValue(block=None, immediate=False),
                     "THEN": SRScriptInputValue(
                         blocks=[
                             SRBlock(
                                 opcode="change [VARIABLE] by (VALUE)",
                                 inputs={
-                                    "VALUE": SRBlockAndTextInputValue(block=None, text="1"),
+                                    "VALUE": SRBlockAndTextInputValue(block=None, immediate="1"),
                                 },
                                 dropdowns={
                                     "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="my variable"),
@@ -1285,7 +1286,7 @@ ALL_SR_SCRIPTS = [
             SRBlock(
                 opcode="when [OPTION] > (VALUE)",
                 inputs={
-                    "VALUE": SRBlockAndTextInputValue(block=None, text="50"),
+                    "VALUE": SRBlockAndTextInputValue(block=None, immediate="50"),
                 },
                 dropdowns={
                     "OPTION": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="loudness"),
