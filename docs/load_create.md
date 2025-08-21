@@ -4,7 +4,7 @@
 
 ### `FRProject.from_file(cls, file_path: str) -> FRProject`
 
-You can load a project from a .sb3 or .pmp file using FRProject.from_file:
+You can load a project from a .sb3 or .pmp file using `FRProject.from_file`:
 
 ```python
 from pmp_manip import get_default_config, init_config, FRProject

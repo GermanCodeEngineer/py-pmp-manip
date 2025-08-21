@@ -6,10 +6,10 @@
 
 ## 🚀 Features
 
-- [Creating ...](docs/creating.md)
-- [Editing ...]
-- [Inspecting ...]
-... Project files
+- Loading and Creating Projects
+- Editing Projects
+- Inspecting Projects
+For a **documentation overview** and a **broader usage tutorial**, see [docs/index.md](docs/index.md) 
 
 ---
 
