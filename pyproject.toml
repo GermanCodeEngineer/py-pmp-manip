@@ -2,7 +2,7 @@
 name = "py-pmp-manip"
 version = "1.0.0" # auto generated, don't edit by hand
 description = "Python tool for creating, editing and inspecting Penguinmod(.pmp) and Scratch(.sb3) files."
-readme = "README.md"
+readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.12"
 license = { text = "GPL-3.0-or-later" }
 authors = [{name = "GermanCodeEngineer", email = "germancodeengineer@proton.me"}]
@@ -31,7 +31,6 @@ classifiers = [
 Homepage = "https://github.com/GermanCodeEngineer/py-pmp-manip/"
 Repository = "https://github.com/GermanCodeEngineer/py-pmp-manip/"
 Issues = "https://github.com/GermanCodeEngineer/py-pmp-manip/issues/"
-long_description_content_type = "text/markdown"
 
 # auto generated, don't edit by hand:
 [project.optional-dependencies]
