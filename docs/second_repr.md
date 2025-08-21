@@ -9,7 +9,7 @@ Let us compare an `SRProject` with it's view in the [PenguinMod Editor](https://
 ## Editor View vs. Project Object
 
 ### Editor View
-![Project Editor View](images/editor_project_view.jpg)
+![Project Editor View](images/project_view/main.png)
 
 ### Project Object
 
@@ -28,10 +28,420 @@ print(srproject)
 ```
 Note: `add_all_extensions_to_info_api` is discussed later in the tutorial
 
-Output(shortend):
+Output:
 ```
-
-```
+The contents of the project are:
+SRProject(
+    stage=SRStage(
+        scripts=[],
+        comments=[],
+        costumes=[
+            SRVectorCostume(
+                content=<Element {http://www.w3.org/2000/svg}svg at 0x7820d9c840>,
+                name="backdrop1",
+                file_extension="svg",
+                rotation_center=(240, 180),
+            ),
+        ],
+        sounds=[],
+        costume_index=0,
+        volume=100,
+    ),
+    sprites=[
+        SRSprite(
+            name="Abby",
+            local_variables=[
+                SRVariable(name="my slider var", current_value=30.9),
+                SRVariable(name="another local var", current_value="General Kenobi!"),
+            ],
+            local_lists=[
+                SRList(name="a local list", current_value=[]),
+            ],
+            local_monitors=[
+                SRMonitor(
+                    opcode="draggable?",
+                    dropdowns={},
+                    position=(-240, 16),
+                    is_visible=True,
+                ),
+                SRVariableMonitor(
+                    readout_mode=SRVariableMonitorReadoutMode.SLIDER,
+                    slider_min=30.9,
+                    slider_max=100,
+                    allow_only_integers=False,
+                    opcode="value of [VARIABLE]",
+                    dropdowns={
+                        "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="my slider var"),
+                    },
+                    position=(-240, -54),
+                    is_visible=True,
+                ),
+                SRMonitor(
+                    opcode="[EFFECT] sprite effect",
+                    dropdowns={
+                        "EFFECT": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="color"),
+                    },
+                    position=(-240, -14),
+                    is_visible=True,
+                ),
+                SRVariableMonitor(
+                    readout_mode=SRVariableMonitorReadoutMode.LARGE,
+                    slider_min=0,
+                    slider_max=100,
+                    allow_only_integers=True,
+                    opcode="value of [VARIABLE]",
+                    dropdowns={
+                        "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="another local var"),
+                    },
+                    position=(-240, -80),
+                    is_visible=True,
+                ),
+                SRListMonitor(
+                    size=(100, 102),
+                    opcode="value of [LIST]",
+                    dropdowns={
+                        "LIST": SRDropdownValue(kind=DropdownValueKind.LIST, value="a local list"),
+                    },
+                    position=(-240, 78),
+                    is_visible=True,
+                ),
+            ],
+            is_visible=True,
+            position=(39, 3),
+            size=150,
+            direction=90,
+            is_draggable=True,
+            uuid=UUID('a1e32a92-36fa-4a45-bc2e-9c1eca536a30'),
+            scripts=[
+                SRScript(
+                    position=(235, 79),
+                    blocks=[
+                        SRBlock(
+                            opcode="define custom block",
+                            inputs={},
+                            dropdowns={},
+                            comment=None,
+                            mutation=SRCustomBlockMutation(
+                                custom_opcode=SRCustomBlockOpcode(
+                                    segments=(
+                                        "run frame with speed",
+                                        SRCustomBlockArgument(name="speed", type=SRCustomBlockArgumentType.STRING_NUMBER),
+                                        "handle keys?",
+                                        SRCustomBlockArgument(name="handle keys", type=SRCustomBlockArgumentType.BOOLEAN),
+                                    ),
+                                ),
+                                no_screen_refresh=True,
+                                optype=SRCustomBlockOptype.STATEMENT,
+                                main_color="#FF6680",
+                                prototype_color="#e65c73",
+                                outline_color="#cc5266",
+                            ),
+                        ),
+                        SRBlock(
+                            opcode="if <CONDITION> then {THEN}",
+                            inputs={
+                                "CONDITION": SRBlockAndBoolInputValue(
+                                    block=SRBlock(
+                                        opcode="<OPERAND1> and <OPERAND2>",
+                                        inputs={
+                                            "OPERAND1": SRBlockAndBoolInputValue(
+                                                block=SRBlock(
+                                                    opcode="key ([KEY]) pressed?",
+                                                    inputs={
+                                                        "KEY": SRBlockAndDropdownInputValue(
+                                                            block=None,
+                                                            dropdown=SRDropdownValue(kind=DropdownValueKind.STANDARD, value="space"),
+                                                        ),
+                                                    },
+                                                    dropdowns={},
+                                                    comment=None,
+                                                    mutation=None,
+                                                ),
+                                                immediate=False,
+                                            ),
+                                            "OPERAND2": SRBlockAndBoolInputValue(
+                                                block=SRBlock(
+                                                    opcode="custom block boolean arg [ARGUMENT]",
+                                                    inputs={},
+                                                    dropdowns={},
+                                                    comment=None,
+                                                    mutation=SRCustomBlockArgumentMutation(
+                                                        argument_name="handle keys",
+                                                        main_color="#FF6680",
+                                                        prototype_color="#e65c73",
+                                                        outline_color="#cc5266",
+                                                    ),
+                                                ),
+                                                immediate=True,
+                                            ),
+                                        },
+                                        dropdowns={},
+                                        comment=None,
+                                        mutation=None,
+                                    ),
+                                    immediate=False,
+                                ),
+                                "THEN": SRScriptInputValue(
+                                    blocks=[
+                                        SRBlock(
+                                            opcode="say (MESSAGE) for (SECONDS) seconds",
+                                            inputs={
+                                                "MESSAGE": SRBlockAndTextInputValue(block=None, immediate="Hello!"),
+                                                "SECONDS": SRBlockAndTextInputValue(block=None, immediate="2"),
+                                            },
+                                            dropdowns={},
+                                            comment=SRComment(
+                                                position=(544.2964344861196, 207.30042684993646),
+                                                size=(200, 200),
+                                                is_minimized=True,
+                                                text="not fully
+shown",
+                                            ),
+                                            mutation=None,
+                                        ),
+                                        SRBlock(
+                                            opcode="change [EFFECT] sprite effect by (AMOUNT)",
+                                            inputs={
+                                                "AMOUNT": SRBlockAndTextInputValue(block=None, immediate="25"),
+                                            },
+                                            dropdowns={
+                                                "EFFECT": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="color"),
+                                            },
+                                            comment=None,
+                                            mutation=None,
+                                        ),
+                                    ],
+                                ),
+                            },
+                            dropdowns={},
+                            comment=None,
+                            mutation=None,
+                        ),
+                    ],
+                ),
+                SRScript(
+                    position=(257, 714),
+                    blocks=[
+                        SRBlock(
+                            opcode="set [VARIABLE] to (VALUE)",
+                            inputs={
+                                "VALUE": SRBlockAndTextInputValue(block=None, immediate="hello there!"),
+                            },
+                            dropdowns={
+                                "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="another glob var"),
+                            },
+                            comment=None,
+                            mutation=None,
+                        ),
+                    ],
+                ),
+                SRScript(
+                    position=(240, 549),
+                    blocks=[
+                        SRBlock(
+                            opcode="call custom block",
+                            inputs={
+                                "speed": SRBlockAndTextInputValue(block=None, immediate="2"),
+                                "handle keys": SRBlockAndBoolInputValue(
+                                    block=SRBlock(
+                                        opcode="true",
+                                        inputs={},
+                                        dropdowns={},
+                                        comment=None,
+                                        mutation=None,
+                                    ),
+                                    immediate=False,
+                                ),
+                            },
+                            dropdowns={},
+                            comment=None,
+                            mutation=SRCustomBlockCallMutation(
+                                custom_opcode=SRCustomBlockOpcode(
+                                    segments=(
+                                        "run frame with speed",
+                                        SRCustomBlockArgument(name="speed", type=SRCustomBlockArgumentType.STRING_NUMBER),
+                                        "handle keys?",
+                                        SRCustomBlockArgument(name="handle keys", type=SRCustomBlockArgumentType.BOOLEAN),
+                                    ),
+                                ),
+                            ),
+                        ),
+                    ],
+                ),
+            ],
+            comments=[
+                SRComment(
+                    position=(870, 244),
+                    size=(200, 200),
+                    is_minimized=False,
+                    text="an independent
+ comment
+which
+is
+fully
+shown",
+                ),
+            ],
+            costumes=[
+                SRVectorCostume(
+                    content=<Element {http://www.w3.org/2000/svg}svg at 0x781e6b60c0>,
+                    name="costume1",
+                    file_extension="svg",
+                    rotation_center=(26, 46),
+                ),
+                SRVectorCostume(
+                    content=<Element {http://www.w3.org/2000/svg}svg at 0x781e6c4200>,
+                    name="Abby-a",
+                    file_extension="svg",
+                    rotation_center=(31, 100),
+                ),
+            ],
+            sounds=[
+                SRSound(name="Squawk", file_extension="wav", content=<pydub.audio_segment.AudioSegment object at 0x781e6bce90>),
+            ],
+            costume_index=1,
+            volume=100,
+        ),
+        SRSprite(
+            name="Cake",
+            local_variables=[],
+            local_lists=[],
+            local_monitors=[],
+            is_visible=True,
+            position=(47.88235294117649, -104.70588235294117),
+            size=80,
+            direction=90,
+            is_draggable=False,
+            uuid=UUID('9ea54f86-9f2a-4f8b-ab0d-3f5870004020'),
+            scripts=[],
+            comments=[],
+            costumes=[
+                SRVectorCostume(
+                    content=<Element {http://www.w3.org/2000/svg}svg at 0x781ed7be80>,
+                    name="cake-a",
+                    file_extension="svg",
+                    rotation_center=(64, 50),
+                ),
+            ],
+            sounds=[
+                SRSound(name="Birthday", file_extension="wav", content=<pydub.audio_segment.AudioSegment object at 0x781e68b8c0>),
+            ],
+            costume_index=0,
+            volume=100,
+        ),
+        SRSprite(
+            name="Apple",
+            local_variables=[],
+            local_lists=[],
+            local_monitors=[],
+            is_visible=True,
+            position=(60.58823529411765, -73.47058823529413),
+            size=150,
+            direction=90,
+            is_draggable=False,
+            uuid=UUID('1026712f-651e-43a1-9456-cf22e4555990'),
+            scripts=[],
+            comments=[],
+            costumes=[
+                SRVectorCostume(
+                    content=<Element {http://www.w3.org/2000/svg}svg at 0x781e6b6d80>,
+                    name="Apple",
+                    file_extension="svg",
+                    rotation_center=(31, 31),
+                ),
+            ],
+            sounds=[],
+            costume_index=0,
+            volume=100,
+        ),
+    ],
+    sprite_layer_stack=[
+        UUID('a1e32a92-36fa-4a45-bc2e-9c1eca536a30'),
+        UUID('1026712f-651e-43a1-9456-cf22e4555990'),
+        UUID('9ea54f86-9f2a-4f8b-ab0d-3f5870004020'),
+    ],
+    global_variables=[
+        SRVariable(name="another glob var", current_value="hello there!"),
+        SRCloudVariable(name="☁ my cloud var", current_value="6772827383843273833275737871"),
+    ],
+    global_lists=[
+        SRList(name="a global list", current_value=[345634, "some text"]),
+        SRList(name="another g. list", current_value=[389.41, 0]),
+    ],
+    global_monitors=[
+        SRVariableMonitor(
+            readout_mode=SRVariableMonitorReadoutMode.NORMAL,
+            slider_min=0,
+            slider_max=100,
+            allow_only_integers=True,
+            opcode="value of [VARIABLE]",
+            dropdowns={
+                "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="another glob var"),
+            },
+            position=(-240, -153),
+            is_visible=True,
+        ),
+        SRVariableMonitor(
+            readout_mode=SRVariableMonitorReadoutMode.NORMAL,
+            slider_min=0,
+            slider_max=100,
+            allow_only_integers=True,
+            opcode="value of [VARIABLE]",
+            dropdowns={
+                "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="☁ my cloud var"),
+            },
+            position=(-240, -180),
+            is_visible=True,
+        ),
+        SRListMonitor(
+            size=(132, 219),
+            opcode="value of [LIST]",
+            dropdowns={
+                "LIST": SRDropdownValue(kind=DropdownValueKind.LIST, value="a global list"),
+            },
+            position=(108, -180),
+            is_visible=True,
+        ),
+        SRListMonitor(
+            size=(100, 116),
+            opcode="value of [LIST]",
+            dropdowns={
+                "LIST": SRDropdownValue(kind=DropdownValueKind.LIST, value="another g. list"),
+            },
+            position=(140, 64),
+            is_visible=True,
+        ),
+        SRMonitor(
+            opcode="answer",
+            dropdowns={},
+            position=(-235, -25),
+            is_visible=False,
+        ),
+        SRMonitor(
+            opcode="current [PROPERTY]",
+            dropdowns={
+                "PROPERTY": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="year"),
+            },
+            position=(-240, -128),
+            is_visible=True,
+        ),
+        SRMonitor(
+            opcode="timer",
+            dropdowns={},
+            position=(-240, -104),
+            is_visible=False,
+        ),
+    ],
+    extensions=[
+        SRBuiltinExtension(id="text2speech"),
+        SRCustomExtension(url="https://extensions.penguinmod.com/extensions/MubiLop/numutils.js", id="numberUtilities"),
+    ],
+    tempo=60,
+    video_transparency=50,
+    video_state=SRVideoState.ON,
+    text_to_speech_language=SRTTSLanguage.ENGLISH,
+)
+``` \#TODO: shorten
 
 Notes:
 * I highly recommend to use a good code editor (especially VSCode), because you might want to look at the definition of e.g. a function/method or class(`Alt` + `Left Mouse Click`)
@@ -49,6 +459,67 @@ Notes:
 The "root node" of a project in second representation.
 ### Editor View
 ![](images/project_view/srproject.png)
+### Project Object
+```
+SRProject(
+    stage=SRStage(
+        # shortend here
+    ),
+    sprites=[
+        SRSprite(
+            name="Abby",
+            uuid=UUID('a1e32a92-36fa-4a45-bc2e-9c1eca536a30'),
+            # shortend here
+        ),
+        SRSprite(
+            name="Cake",
+            uuid=UUID('9ea54f86-9f2a-4f8b-ab0d-3f5870004020'),
+            # shortend here
+        ),
+        SRSprite(
+            name="Apple",
+            uuid=UUID('1026712f-651e-43a1-9456-cf22e4555990'),
+            # shortend here
+        ),
+    ],
+    sprite_layer_stack=[
+        UUID('a1e32a92-36fa-4a45-bc2e-9c1eca536a30'),
+        UUID('1026712f-651e-43a1-9456-cf22e4555990'),
+        UUID('9ea54f86-9f2a-4f8b-ab0d-3f5870004020'),
+    ],
+    global_variables=[
+        SRVariable(name="another glob var", current_value="hello there!"),
+        SRCloudVariable(name="☁ my cloud var", current_value="6772827383843273833275737871"),
+    ],
+    global_lists=[
+        SRList(name="a global list", current_value=[345634, "some text"]),
+        SRList(name="another g. list", current_value=[389.41, 0]),
+    ],
+    global_monitors=[
+        SRVariableMonitor(
+            readout_mode=SRVariableMonitorReadoutMode.NORMAL,
+            slider_min=0,
+            slider_max=100,
+            allow_only_integers=True,
+            opcode="value of [VARIABLE]",
+            dropdowns={
+                "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="another glob var"),
+            },
+            position=(-240, -153),
+            is_visible=True,
+        ),
+        # shortend here
+    ],
+    extensions=[
+        SRBuiltinExtension(id="text2speech"),
+        SRCustomExtension(url="https://extensions.penguinmod.com/extensions/MubiLop/numutils.js", id="numberUtilities"),
+    ],
+    tempo=60,
+    video_transparency=50,
+    video_state=SRVideoState.ON,
+    text_to_speech_language=SRTTSLanguage.ENGLISH,
+)
+```
 #### `SRProject.stage`
 - **type**: [`SRStage`](#srstage)(subclass of [`SRTarget`](#srtarget))
 - **description**: The stage of the project.
@@ -58,6 +529,7 @@ The "root node" of a project in second representation.
 #### `SRProject.sprite_layer_stack`
 - **type**: `list` of `UUID`(from package `uuid`)
 - **description**: The order of sprites on the stage. Must contain all sprite UUIDs([`SRSprite.uuid`](#srspriteuuid)) in any order. Last UUID means sprite is on the highest layer and is rendered on top of all other sprites. First UUID means lowest layer.
+- **project view**: In the shortend output we can see that all sprite UUIDs are contained in `sprite_layer_stack`. The order is different though. E.G. The "Cake" Sprite is on top of "Apple" in `sprite_layer_stack` but not in `sprites`.
 #### `SRProject.global_variables`
 - **type**: `list` of [`SRVariable`](#srvariable) or [`SRCloudVariable`](#srcloudvariable)(subclass)
 - **description**: The names and values of the "for all sprites" variables of the project. Local Variables are stored in specific sprites, see [`SRSprite.local_variables`](#srspritelocal_variables).
@@ -92,7 +564,6 @@ The "root node" of a project in second representation.
 - **description**: The "text to speech language" of Scratch's TTS extension (insignificant for most projects).
 - **note**: Equal to dropdown menu of "set language to" block.
 - **default value in editor**: `None`
-## Example
 
 
 ## `SRTarget`
