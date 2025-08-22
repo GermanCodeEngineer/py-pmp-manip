@@ -21,6 +21,7 @@ Medium:
     - S: add "previous costume" and "next costume" to costume menu
         => explore for similar updates
     - S: add new rotation style(s)
+    - S: fix grepr multiline string issue
 
 Low:
     - XL: test and document utility

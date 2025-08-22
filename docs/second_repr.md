@@ -6,12 +6,12 @@ This is the UML structure of a `SRProject`:
 
 Let us compare an `SRProject` with it's view in the [PenguinMod Editor](https://studio.penguinmod.com/editor.html)
 
-## Editor View vs. Project Object
+## Editor View vs. Python Object
 
 ### Editor View
 ![Project Editor View](images/project_view/main.png)
 
-### Project Object
+### Python Object
 
 ```python
 from pmp_manip import get_default_config, init_config, FRProject, info_api
@@ -29,7 +29,7 @@ print(srproject)
 Note: `add_all_extensions_to_info_api` is discussed later in the tutorial
 
 Output:
-```
+```lua
 The contents of the project are:
 SRProject(
     stage=SRStage(
@@ -194,8 +194,7 @@ SRProject(
                                                 position=(544.2964344861196, 207.30042684993646),
                                                 size=(200, 200),
                                                 is_minimized=True,
-                                                text="not fully
-shown",
+                                                text="not fully\nshown",
                                             ),
                                             mutation=None,
                                         ),
@@ -274,20 +273,16 @@ shown",
                     position=(870, 244),
                     size=(200, 200),
                     is_minimized=False,
-                    text="an independent
- comment
-which
-is
-fully
-shown",
+                    text="an independent\n comment\nwhich\nis\nfully\nshown",
                 ),
             ],
             costumes=[
-                SRVectorCostume(
-                    content=<Element {http://www.w3.org/2000/svg}svg at 0x781e6b60c0>,
+                SRBitmapCostume(
+                    content=<PIL.PngImagePlugin.PngImageFile image mode=P size=176x144 at 0x781e6b60c0>,
+                    has_double_resolution=True,
                     name="costume1",
-                    file_extension="svg",
-                    rotation_center=(26, 46),
+                    file_extension="png",
+                    rotation_center=(88, 72),
                 ),
                 SRVectorCostume(
                     content=<Element {http://www.w3.org/2000/svg}svg at 0x781e6c4200>,
@@ -441,7 +436,8 @@ shown",
     video_state=SRVideoState.ON,
     text_to_speech_language=SRTTSLanguage.ENGLISH,
 )
-``` \#TODO: shorten
+```
+\# TODO: shorten
 
 Notes:
 * I highly recommend to use a good code editor (especially VSCode), because you might want to look at the definition of e.g. a function/method or class(`Alt` + `Left Mouse Click`)
@@ -452,15 +448,59 @@ Notes:
     - Mutability (most, a few specified ones are immutable and hashable)
     - Validation (`validate` method, it is recommended to just validate the `SRProject` as a whole => easiest, you will not need to pass in anything but `info_api`)
     - Conversion (most, with `to_first` methods, it is recommended to just convert the project as a whole)
+    - Nice Representation (defines a readable `__repr__`)
     - Sorting (e.g. a `list[SomeSRThing]`)
 
 
 ## `SRProject`
 The "root node" of a project in second representation.
-### Editor View
+#### `SRProject.stage`
+- **type**: [`SRStage`](#srstage)(subclass of [`SRTarget`](#srtarget))
+- **description**: The stage of the project.
+#### `SRProject.sprites`
+- **type**: `list` of [`SRSprite`](#srsprite)(subclass of [`SRTarget`](#srtarget))
+- **description**: The sprites of the project, excluding the stage.
+#### `SRProject.sprite_layer_stack`
+- **type**: `list` of `UUID`(from package `uuid`)
+- **description**: The order of sprites on the stage. Must contain all sprite UUIDs([`SRSprite.uuid`](#srspriteuuid)) in any order. Last UUID means sprite is on the highest layer and is rendered on top of all other sprites. First UUID means lowest layer.
+#### `SRProject.global_variables`
+- **type**: `list` of [`SRVariable`](#srvariable) or [`SRCloudVariable`](#srcloudvariable)(subclass)
+- **description**: The names and values of the "for all sprites" variables of the project. Local Variables are stored in specific sprites, see [`SRSprite.local_variables`](#srspritelocal_variables).
+#### `SRProject.global_lists`
+- **type**: `list` of [`SRList`](#srlist)
+- **description**: The names and values of the "for all sprites" lists of the project. Local Lists are stored in specific sprites, see [`SRSprite.local_lists`](#srspritelocal_lists)
+#### `SRProject.global_monitors`
+- **type**: `list` of [`SRMonitor`](#srmonitor), [`SRVariableMonitor`](#srvariablemonitor)(subclass) and [`SRListMonitor`](#srlistmonitor)(subclass)
+- **description**: The non-sprite-specific monitors of blocks shown or once shown on the stage. Local Monitors are stored in specific sprites, see [`SRSprite.local_monitors`](#srspritelocal_monitors).
+#### `SRProject.extensions`
+- **type**: `list` of [`SRBuiltinExtension`](#srbuiltinextension) or [`SRCustomExtension`](#srcustomextension), see [`SRExtension`](#srextension)(parent class)
+- **description**: Stores the ids and possibly urls/sources of all added extensions.
+#### *`SRProject.tempo`*
+- **type**: `int` (minimum: `20`, maximum: `500`)
+- **description**: The music "tempo" of Scratch's Music extension in BPM (insignificant for most projects).
+- **note**: Equal to value of "tempo" block.
+- **default value in editor**: `60`
+#### *`SRProject.video_transparency`*
+- **type**: `int` or `float` (normally between `0` and `100`) (seems not to have limits by Scratch)
+- **description**: The "video transparency" of Scratch's Video Sensing extension (insignificant for most projects).
+- **note**: Equal to input of "set video transparency to" block.
+- **default value in editor**: `50`
+#### *`SRProject.video_state`*
+- **type**: `SRVideoState` (enum class)
+- **possible values**: `SRVideoState.ON`, `SRVideoState.ON_FLIPPED`, `SRVideoState.OFF`
+- **description**: The "state" of Scratch's Video Sensing extension (insignificant for most projects).
+- **note**: Equal to dropdown menu of "turn video ..." block.
+- **default value in editor**: `SRVideoState.ON`
+#### *`SRProject.text_to_speech_language`*
+- **type**: [`SRTTSLanguage`](#srttslanguage) (enum class) or `None`
+- **possible values**: `SRTTSLanguage.ENGLISH`, `SRTTSLanguage.FRENCH`, `SRTTSLanguage.GERMAN` ...
+- **description**: The "text to speech language" of Scratch's TTS extension (insignificant for most projects).
+- **note**: Equal to dropdown menu of "set language to" block.
+- **default value in editor**: `None`
+### Editor View Example
 ![](images/project_view/srproject.png)
-### Project Object
-```
+### Python Object Example
+```lua
 SRProject(
     stage=SRStage(
         # shortend here
@@ -520,50 +560,8 @@ SRProject(
     text_to_speech_language=SRTTSLanguage.ENGLISH,
 )
 ```
-#### `SRProject.stage`
-- **type**: [`SRStage`](#srstage)(subclass of [`SRTarget`](#srtarget))
-- **description**: The stage of the project.
-#### `SRProject.sprites`
-- **type**: `list` of [`SRSprite`](#srsprite)(subclass of [`SRTarget`](#srtarget))
-- **description**: The sprites of the project, excluding the stage.
-#### `SRProject.sprite_layer_stack`
-- **type**: `list` of `UUID`(from package `uuid`)
-- **description**: The order of sprites on the stage. Must contain all sprite UUIDs([`SRSprite.uuid`](#srspriteuuid)) in any order. Last UUID means sprite is on the highest layer and is rendered on top of all other sprites. First UUID means lowest layer.
-- **project view**: In the shortend output we can see that all sprite UUIDs are contained in `sprite_layer_stack`. The order is different though. E.G. The "Cake" Sprite is on top of "Apple" in `sprite_layer_stack` but not in `sprites`.
-#### `SRProject.global_variables`
-- **type**: `list` of [`SRVariable`](#srvariable) or [`SRCloudVariable`](#srcloudvariable)(subclass)
-- **description**: The names and values of the "for all sprites" variables of the project. Local Variables are stored in specific sprites, see [`SRSprite.local_variables`](#srspritelocal_variables).
-#### `SRProject.global_lists`
-- **type**: `list` of [`SRList`](#srlist)
-- **description**: The names and values of the "for all sprites" lists of the project. Local Lists are stored in specific sprites, see [`SRSprite.local_lists`](#srspritelocal_lists)
-#### `SRProject.global_monitors`
-- **type**: `list` of [`SRMonitor`](#srmonitor), [`SRVariableMonitor`](#srvariablemonitor)(subclass) and [`SRListMonitor`](#srlistmonitor)(subclass)
-- **description**: The non-sprite-specific monitors of blocks shown or once shown on the stage. Local Monitors are stored in specific sprites, see [`SRSprite.local_monitors`](#srspritelocal_monitors).
-#### `SRProject.extensions`
-- **type**: `list` of [`SRBuiltinExtension`](#srbuiltinextension) or [`SRCustomExtension`](#srcustomextension), see [`SRExtension`](#srextension)(parent class)
-- **description**: Stores the ids and possibly urls/sources of all added extensions.
-### *`SRProject.tempo`*
-- **type**: `int` (minimum: `20`, maximum: `500`)
-- **description**: The music "tempo" of Scratch's Music extension in BPM (insignificant for most projects).
-- **note**: Equal to value of "tempo" block.
-- **default value in editor**: `60`
-### *`SRProject.video_transparency`*
-- **type**: `int` or `float` (normally between `0` and `100`) (seems not to have limits by Scratch)
-- **description**: The "video transparency" of Scratch's Video Sensing extension (insignificant for most projects).
-- **note**: Equal to input of "set video transparency to" block.
-- **default value in editor**: `50`
-### *`SRProject.video_state`*
-- **type**: `SRVideoState` (enum class)
-- **possible values**: `SRVideoState.ON`, `SRVideoState.ON_FLIPPED`, `SRVideoState.OFF`
-- **description**: The "state" of Scratch's Video Sensing extension (insignificant for most projects).
-- **note**: Equal to dropdown menu of "turn video ..." block.
-- **default value in editor**: `SRVideoState.ON`
-### *`SRProject.text_to_speech_language`*
-- **type**: [`SRTTSLanguage`](#srttslanguage) (enum class) or `None`
-- **possible values**: `SRTTSLanguage.ENGLISH`, `SRTTSLanguage.FRENCH`, `SRTTSLanguage.GERMAN` ...
-- **description**: The "text to speech language" of Scratch's TTS extension (insignificant for most projects).
-- **note**: Equal to dropdown menu of "set language to" block.
-- **default value in editor**: `None`
+### Notes
+* As we can see, all sprite UUIDs are contained in `sprite_layer_stack`. The order is different though. E.G. The "Cake" Sprite is on top of "Apple" in `sprite_layer_stack` but not in `sprites`.
 
 
 ## `SRTarget`
@@ -594,6 +592,32 @@ Common base for [`SRStage`](#srstage) and [`SRSprite`](#srsprite).
 ## `SRStage`
 Represents the project stage. Inherits from [`SRTarget`](#srtarget).
 Has no additional properties compared to `SRTarget`, as all global information is stored on the project directly.
+### Editor View Example
+![](images/project_view/srstage_main.png)
+![](images/project_view/srstage_backdrops.png)
+![](images/project_view/srstage_sounds.png)
+### Python Object Example
+```lua
+SRStage(
+    scripts=[],
+    comments=[],
+    costumes=[
+        SRVectorCostume(
+            content=<Element {http://www.w3.org/2000/svg}svg at 0x7820d9c840>,
+            name="backdrop1",
+            file_extension="svg",
+            rotation_center=(240, 180),
+        ),
+    ],
+    sounds=[],
+    costume_index=0,
+    volume=100,
+)
+```
+### Notes
+* As we can see, the stage has no scripts, comments and sounds, just one costume/backdrop which is empty.
+* This costume is also referenced by costume index as it is item `0`.
+* For a better example, see [`SRSprite`'s Example](#editor-view-example-2).
 
 
 ## `SRSprite`
@@ -639,6 +663,124 @@ Represents a sprite of the project. Inherits from [`SRTarget`](#srtarget).
 - **type**: `UUID`(from package `uuid`)
 - **description**: A unique id for the sprite. Only used for [`SRProject.sprite_layer_stack`](#srprojectsprite_layer_stack).
 - **note**: **Read-only.** Can not be modified and can not be passed to `SRSprite` at Creation/Initialization, but is automatically set.
+### Editor View Example
+![](images/project_view/srsprite_main.png)
+![](images/project_view/srsprite_rotation_style.png)
+![](images/project_view/srsprite_costumes.png)
+![](images/project_view/srsprite_sounds.png)
+### Python Object Example
+```lua
+SRSprite(
+    name="Abby",
+    local_variables=[
+        SRVariable(name="my slider var", current_value=30.9),
+        SRVariable(name="another local var", current_value="General Kenobi!"),
+    ],
+    local_lists=[
+        SRList(name="a local list", current_value=[]),
+    ],
+    local_monitors=[
+        # shortend here
+        SRMonitor(
+            opcode="[EFFECT] sprite effect",
+            dropdowns={
+                "EFFECT": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="color"),
+            },
+            position=(-240, -14),
+            is_visible=True,
+        ),
+        SRVariableMonitor(
+            readout_mode=SRVariableMonitorReadoutMode.LARGE,
+            slider_min=0,
+            slider_max=100,
+            allow_only_integers=True,
+            opcode="value of [VARIABLE]",
+            dropdowns={
+                "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="another local var"),
+            },
+            position=(-240, -80),
+            is_visible=True,
+        ),
+        SRListMonitor(
+            size=(100, 102),
+            opcode="value of [LIST]",
+            dropdowns={
+                "LIST": SRDropdownValue(kind=DropdownValueKind.LIST, value="a local list"),
+            },
+            position=(-240, 78),
+            is_visible=True,
+        ),
+    ],
+    is_visible=True,
+    position=(39, 3),
+    size=150,
+    direction=90,
+    is_draggable=True,
+    uuid=UUID('a1e32a92-36fa-4a45-bc2e-9c1eca536a30'),
+    scripts=[
+        SRScript(
+            position=(235, 79),
+            blocks=[
+                SRBlock(
+                    opcode="define custom block",
+                    inputs={},
+                    dropdowns={},
+                    comment=None,
+                    mutation=SRCustomBlockMutation(
+                        custom_opcode=SRCustomBlockOpcode(
+                            segments=(
+                                "run frame with speed",
+                                SRCustomBlockArgument(name="speed", type=SRCustomBlockArgumentType.STRING_NUMBER),
+                                "handle keys?",
+                                SRCustomBlockArgument(name="handle keys", type=SRCustomBlockArgumentType.BOOLEAN),
+                            ),
+                        ),
+                        no_screen_refresh=True,
+                        optype=SRCustomBlockOptype.STATEMENT,
+                        main_color="#FF6680",
+                        prototype_color="#e65c73",
+                        outline_color="#cc5266",
+                    ),
+                ),
+                # shortend here
+            ],
+        ),
+        # shortend here
+    ],
+    comments=[
+        SRComment(
+            position=(870, 244),
+            size=(200, 200),
+            is_minimized=False,
+            text="an independent\n comment\nwhich\nis\nfully\nshown",
+        ),
+    ],
+    costumes=[
+        SRBitmapCostume(
+            content=<PIL.PngImagePlugin.PngImageFile image mode=P size=176x144 at 0x781e6b60c0>,
+            has_double_resolution=True,
+            name="costume1",
+            file_extension="png",
+            rotation_center=(88, 72),
+        ),
+        SRVectorCostume(
+            content=<Element {http://www.w3.org/2000/svg}svg at 0x781e6c4200>,
+            name="Abby-a",
+            file_extension="svg",
+            rotation_center=(31, 100),
+        ),
+    ],
+    sounds=[
+        SRSound(name="Squawk", file_extension="wav", content=<pydub.audio_segment.AudioSegment object at 0x781e6bce90>),
+    ],
+    costume_index=1,
+    volume=100,
+)
+```
+### Notes
+* As we can see, the sprite has scripts, comments, two costumes(a vector and a bitmap costume) and a sound.
+* The second and active costume is also referenced by costume index as it is item `1`.
+* The local monitors are not normally seperated by position. They are arranged like this for simplicity in this tutorial.
 
 
 ## `SRVariable`
