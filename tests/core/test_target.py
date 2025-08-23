@@ -7,7 +7,7 @@ from pmp_manip.important_consts import SHA256_SEC_TARGET_NAME
 from pmp_manip.opcode_info.api  import DropdownValueKind
 from pmp_manip.opcode_info.data import info_api
 from pmp_manip.utility          import (
-    string_to_sha256, assert_lists_equal_ignore_order, lists_equal_ignore_order, xml_equal,
+    string_to_sha256, assert_lists_equal_ignore_order, xml_equal,
     MANIP_ThanksError, MANIP_ConversionError, MANIP_TypeValidationError, MANIP_RangeValidationError, 
     MANIP_SameValueTwiceError, MANIP_InvalidValueError
 )

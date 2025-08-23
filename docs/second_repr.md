@@ -1159,8 +1159,8 @@ Represents a sound in the "Sounds" tab of a sprite or the stage.
 - **type**: `str`
 - **description**: The extension of the sound if saved as a file. Usually `"wav"` or `"mp3"`.
 #### `SRSound.content`
-- **type**: `AudioSegment`(from package `pydub`)
-- **description**: The actual audio segment basis of the sound as created by pydub's `AudioSegment.from_file`.
+- **type**: `AudioSegment`(from package `pydub_ng`)
+- **description**: The actual audio segment basis of the sound as created by pydub_ng's `AudioSegment.from_file`.
 
 
 

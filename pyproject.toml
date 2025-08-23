@@ -1,6 +1,6 @@
 [project]
 name = "py-pmp-manip"
-version = "1.0.0" # auto generated, don't edit by hand
+version = "1.0.1" # auto generated, don't edit by hand
 description = "Python tool for creating, editing and inspecting Penguinmod(.pmp) and Scratch(.sb3) files."
 readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.12"
@@ -14,7 +14,7 @@ dependencies = [
     "aenum==3.1.16",
     "colorama==0.4.6",
     "lxml==6.0.0",
-    "pydub==0.25.1",
+    "pydub_ng==0.2.0",
     "tree_sitter==0.25.0",
     "tree_sitter_javascript==0.23.1",
     "validators==0.35.0",
@@ -39,6 +39,9 @@ dev = [
     "pytest==8.3.4",
     "tomlkit==0.13.3",
 ]
+
+
+
 
 [build-system]
 requires = ["setuptools>=68", "wheel"]

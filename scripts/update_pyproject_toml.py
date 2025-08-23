@@ -55,7 +55,7 @@ def main():
         description="Generate or update pyproject.toml with detected imports."
     )
     parser.add_argument("--project-name", help="Override project name (default: current folder name)")
-    parser.add_argument("--version", default="0.1.0", help="Project version")
+    parser.add_argument("--version", default=None, help="Project version (default: current version)")
     parser.add_argument("--project-root", default=".", help="Path to the Python project directory")
     parser.add_argument("--output", default="pyproject.toml", help="Output file (default: pyproject.toml)")
     parser.add_argument("--dry-run", action="store_true", help="Print result instead of writing")

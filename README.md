@@ -39,7 +39,7 @@ init_config(cfg)
 ```
 ### References
 * For more **config details**, see [docs/config.md](docs/config.md)
-* For a **documentation overview** and a **broader usage tutorial**, see [docs/index.md](docs/index.md) 
+* For a **documentation overview** and a **broader usage tutorial**, see [docs/index.md](docs/index.md)
 
 ---
 
