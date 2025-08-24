@@ -28,7 +28,7 @@ def test_SRVariable_validate():
         name="a variable",
         current_value=35,
     )
-    srvariable.validate(path=[])
+    srvariable.validate(path=AbstractTreePath())
 
     execute_attr_validation_tests(
         obj=srvariable,
@@ -37,7 +37,7 @@ def test_SRVariable_validate():
             ("current_value", [], MANIP_TypeValidationError),
         ],
         validate_func=SRVariable.validate,
-        func_args=[[]],
+        func_args=[AbstractTreePath()],
     )
 
 
@@ -64,7 +64,7 @@ def test_SRList_validate():
         name="a list",
         current_value=[5, -6.9, "hi", False],
     )
-    srlist.validate(path=[])
+    srlist.validate(path=AbstractTreePath())
 
     execute_attr_validation_tests(
         obj=srlist,
@@ -73,7 +73,7 @@ def test_SRList_validate():
             ("current_value", {}, MANIP_TypeValidationError),
         ],
         validate_func=SRList.validate,
-        func_args=[[]],
+        func_args=[AbstractTreePath()],
     )
 
 

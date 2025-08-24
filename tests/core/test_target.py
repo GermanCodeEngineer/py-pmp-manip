@@ -245,7 +245,7 @@ def test_FRSprite_to_second():
 
 def test_SRTarget_validate():
     srtarget = SR_STAGE
-    srtarget.validate([], info_api)
+    srtarget.validate(AbstractTreePath(), info_api)
 
     execute_attr_validation_tests(
         obj=srtarget,
@@ -266,7 +266,7 @@ def test_SRTarget_validate():
             ("volume", 105, MANIP_RangeValidationError),
         ],
         validate_func=SRTarget.validate,
-        func_args=[[], info_api],
+        func_args=[AbstractTreePath(), info_api],
     )
 
 def test_SRTarget_validate_same_comment():
@@ -277,7 +277,7 @@ def test_SRTarget_validate_same_comment():
         is_minimized=False,
         text="Comment text",
     )]
-    srtarget.validate([], info_api)
+    srtarget.validate(AbstractTreePath(), info_api)
 
 def test_SRTarget_validate_same_costume_name():
     srtarget = SRStage.create_empty()
@@ -286,7 +286,7 @@ def test_SRTarget_validate_same_costume_name():
         SRVectorCostume.create_empty(name="costume1"),
     ]
     with raises(MANIP_SameValueTwiceError):
-        srtarget.validate([], info_api)
+        srtarget.validate(AbstractTreePath(), info_api)
 
 def test_SRTarget_validate_same_sound_name():
     srtarget = SRStage.create_empty()
@@ -295,13 +295,13 @@ def test_SRTarget_validate_same_sound_name():
         SRSound(name="Hello there!", file_extension="wav", content=AudioSegment.silent(duration=0)),
     ]
     with raises(MANIP_SameValueTwiceError):
-        srtarget.validate([], info_api)
+        srtarget.validate(AbstractTreePath(), info_api)
 
 
 
 def test_SRTarget_validate_scripts(context):
     srtarget = SR_SPRITE
-    srtarget.validate_scripts([], info_api, context)
+    srtarget.validate_scripts(AbstractTreePath(), info_api, context)
 
 def test_SRTarget_validate_scripts_same_custom_opcode(context):
     srtarget = SRStage.create_empty()
@@ -331,7 +331,7 @@ def test_SRTarget_validate_scripts_same_custom_opcode(context):
         copy(cb_def_script),
     ]
     with raises(MANIP_SameValueTwiceError):
-        srtarget.validate_scripts([], info_api, context)
+        srtarget.validate_scripts(AbstractTreePath(), info_api, context)
 
 
 def test_SRTarget_get_complete_context(context):
@@ -483,7 +483,7 @@ def test_SRSprite_setattr():
 
 def test_SRSprite_validate():
     srsprite = SR_SPRITE
-    srsprite.validate([], info_api)
+    srsprite.validate(AbstractTreePath(), info_api)
 
     execute_attr_validation_tests(
         obj=srsprite,
@@ -507,7 +507,7 @@ def test_SRSprite_validate():
             ("rotation_style", "don't rotate", MANIP_TypeValidationError),
         ],
         validate_func=SRSprite.validate,
-        func_args=[[], info_api],
+        func_args=[AbstractTreePath(), info_api],
     )
 
 def test_SRSprite_validate_vars_lists():
@@ -518,18 +518,18 @@ def test_SRSprite_validate_vars_lists():
     srsprite.local_lists = [
         SRList(name="my var", current_value=["Günther Jauch", "Dieter Bohlen"])
     ]
-    srsprite.validate([], info_api)
+    srsprite.validate(AbstractTreePath(), info_api)
 
 def test_SRSprite_validate_uuid():
     srsprite = SRSprite.create_empty(name="my sprite")
     srsprite.__dict__["uuid"] = "abc-def-ghi"
     with raises(MANIP_TypeValidationError):
-        srsprite.validate([], info_api)
+        srsprite.validate(AbstractTreePath(), info_api)
 
 
 def test_SRSprite_validate_monitors(context):
     srsprite = SR_SPRITE
-    srsprite.validate_monitor_dropdown_values([], info_api, context)
+    srsprite.validate_monitor_dropdown_values(AbstractTreePath(), info_api, context)
 
 
 

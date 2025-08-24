@@ -240,7 +240,7 @@ def test_SRProject_validate_sprites_same_sprite_uuid():
     srproject.sprites = [sprite1, sprite2]
     srproject.sprite_layer_stack = [uuid, uuid]
     with raises(MANIP_SameValueTwiceError):
-        srproject._validate_sprites([], info_api)
+        srproject._validate_sprites(AbstractTreePath(), info_api)
 
 def test_SRProject_validate_sprites_invalid_layer_stack():
     srproject = SRProject.create_empty()
@@ -248,15 +248,15 @@ def test_SRProject_validate_sprites_invalid_layer_stack():
     sprite2 = SRSprite.create_empty(name="sprite2")
     srproject.sprites = [sprite1, sprite2]
     srproject.sprite_layer_stack = [sprite2.uuid, sprite1.uuid]
-    srproject._validate_sprites([], info_api)
+    srproject._validate_sprites(AbstractTreePath(), info_api)
 
     srproject.sprite_layer_stack = [sprite1.uuid, uuid4()]
     with raises(MANIP_SpriteLayerStackError):
-        srproject._validate_sprites([], info_api)
+        srproject._validate_sprites(AbstractTreePath(), info_api)
 
     srproject.sprite_layer_stack = [sprite1.uuid, sprite1.uuid]
     with raises(MANIP_SameValueTwiceError):
-        srproject._validate_sprites([], info_api)
+        srproject._validate_sprites(AbstractTreePath(), info_api)
     
 
 def test_SRProject_validate_var_names():
@@ -268,7 +268,7 @@ def test_SRProject_validate_var_names():
     ]
     srproject.sprites = [sprite]
     srproject.sprite_layer_stack = [sprite.uuid]
-    srproject._validate_var_names([])
+    srproject._validate_var_names(AbstractTreePath())
 
 def test_SRProject_validate_var_names_same_global():
     srproject = SRProject.create_empty()
@@ -277,7 +277,7 @@ def test_SRProject_validate_var_names_same_global():
         SRVariable(name="same var", current_value=";)"),
     ]
     with raises(MANIP_SameValueTwiceError):
-        srproject._validate_var_names([])
+        srproject._validate_var_names(AbstractTreePath())
 
 def test_SRProject_validate_var_names_same_inter():
     srproject = SRProject.create_empty()
@@ -286,7 +286,7 @@ def test_SRProject_validate_var_names_same_inter():
     sprite.local_variables = [SRVariable(name="same var", current_value=")=")]
     srproject.sprites = [sprite]
     with raises(MANIP_SameValueTwiceError):
-        srproject._validate_var_names([])
+        srproject._validate_var_names(AbstractTreePath())
 
 
 def test_SRProject_validate_list_names():
@@ -298,7 +298,7 @@ def test_SRProject_validate_list_names():
     ]
     srproject.sprites = [sprite]
     srproject.sprite_layer_stack = [sprite.uuid]
-    srproject._validate_list_names([])
+    srproject._validate_list_names(AbstractTreePath())
 
 def test_SRProject_validate_list_names_same_global():
     srproject = SRProject.create_empty()
@@ -307,7 +307,7 @@ def test_SRProject_validate_list_names_same_global():
         SRList(name="same list", current_value=[";)"]),
     ]
     with raises(MANIP_SameValueTwiceError):
-        srproject._validate_list_names([])
+        srproject._validate_list_names(AbstractTreePath())
 
 def test_SRProject_validate_list_names_same_inter():
     srproject = SRProject.create_empty()
@@ -316,7 +316,7 @@ def test_SRProject_validate_list_names_same_inter():
     sprite.local_lists = [SRList(name="same var", current_value=[")=", "(="])]
     srproject.sprites = [sprite]
     with raises(MANIP_SameValueTwiceError):
-        srproject._validate_list_names([])
+        srproject._validate_list_names(AbstractTreePath())
 
 
 def test_SRProject_find_broadcast_messages():

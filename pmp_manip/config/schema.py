@@ -9,7 +9,11 @@ from datetime    import timedelta
 from dataclasses import field, FrozenInstanceError
 from typing      import Any, Callable
 
-from pmp_manip.utility import grepr_dataclass, is_valid_directory_path, AA_TYPE, AA_NONE_OR_CALLABLE, MANIP_InvalidDirPathError
+from pmp_manip.utility import (
+    grepr_dataclass, is_valid_directory_path, 
+    AA_TYPE, AA_NONE_OR_CALLABLE, AbstractTreePath, 
+    MANIP_InvalidDirPathError,
+)
 
 
 @grepr_dataclass(grepr_fields=[])
@@ -37,7 +41,7 @@ class ConfigBase(ABC):
         super().__setattr__(attr, value)        
     
     @abstractmethod
-    def validate(self, path: list) -> None:
+    def validate(self, path: AbstractTreePath) -> None:
         """
         Ensure a Config is valid, raise MANIP_ValidationError if not
         
@@ -59,7 +63,7 @@ class ExtInfoGenConfig(ConfigBase):
     node_js_exec_timeout: float
     is_trusted_extension_origin_handler: Callable[[str], bool] | None
     
-    def validate(self, path: list) -> None:
+    def validate(self, path: AbstractTreePath) -> None:
         """
         Ensure a ExtInfoGenConfig is valid, raise MANIP_ValidationError if not
         
@@ -86,7 +90,7 @@ class ValidationConfig(ConfigBase):
     raise_if_monitor_position_outside_stage: bool
     raise_if_monitor_bigger_then_stage: bool
 
-    def validate(self, path: list) -> None:
+    def validate(self, path: AbstractTreePath) -> None:
         """
         Ensure a ValidationConfig is valid, raise MANIP_ValidationError if not
         
@@ -110,7 +114,7 @@ class PlatformMetaConfig(ConfigBase):
     scratch_vm: str
     penguinmod_vm: str
 
-    def validate(self, path: list) -> None:
+    def validate(self, path: AbstractTreePath) -> None:
         """
         Ensure a PlatformMetaConfig is valid, raise MANIP_ValidationError if not
         
@@ -134,7 +138,7 @@ class MasterConfig(ConfigBase):
     validation: ValidationConfig
     platform_meta: PlatformMetaConfig
 
-    def validate(self, path: list = []) -> None:
+    def validate(self, path: AbstractTreePath = AbstractTreePath()) -> None:
         """
         Ensure a MasterConfig is valid, raise MANIP_ValidationError if not
         
@@ -148,9 +152,9 @@ class MasterConfig(ConfigBase):
         AA_TYPE(self, path, "validation"   , ValidationConfig  )
         AA_TYPE(self, path, "platform_meta", PlatformMetaConfig)
         
-        self.ext_info_gen .validate(path+["ext_info_gen" ])
-        self.validation   .validate(path+["validation"   ])
-        self.platform_meta.validate(path+["platform_meta"])
+        self.ext_info_gen .validate(path.add_attribute("ext_info_gen" ))
+        self.validation   .validate(path.add_attribute("validation"   ))
+        self.platform_meta.validate(path.add_attribute("platform_meta"))
 
 
 __all__ = ["ExtInfoGenConfig", "ValidationConfig", "PlatformMetaConfig", "MasterConfig"]

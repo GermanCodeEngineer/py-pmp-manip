@@ -2,7 +2,7 @@ from dataclasses import FrozenInstanceError
 from datetime    import timedelta
 from pytest      import raises
 
-from pmp_manip.utility import grepr_dataclass, MANIP_TypeValidationError
+from pmp_manip.utility import grepr_dataclass, AbstractTreePath, MANIP_TypeValidationError
 
 from pmp_manip.config.manager import get_default_config
 from pmp_manip.config.schema  import ConfigBase, MasterConfig, ExtInfoGenConfig, ValidationConfig, PlatformMetaConfig
@@ -14,7 +14,7 @@ from tests.utility import execute_attr_validation_tests
 class TEST_Config(ConfigBase):
     a: int
 
-    def validate(self, path: list) -> None: # to fulfill abstractmethod
+    def validate(self, path: AbstractTreePath) -> None: # to fulfill abstractmethod
         pass
 
 
@@ -41,7 +41,7 @@ def test_ExtInfoGenConfig_validate():
         node_js_exec_timeout=1.0,
         is_trusted_extension_origin_handler=handler,
     )
-    config.validate(path=[])
+    config.validate(path=AbstractTreePath())
     
     execute_attr_validation_tests(
         obj=config,
@@ -63,7 +63,7 @@ def test_ValidationConfig_validate():
         raise_if_monitor_position_outside_stage=False, 
         raise_if_monitor_bigger_then_stage=False,
     )
-    config.validate(path=[])
+    config.validate(path=AbstractTreePath())
     
     execute_attr_validation_tests(
         obj=config,
@@ -83,7 +83,7 @@ def test_PlatformMetaConfig_validate():
         scratch_vm="11.1.0",
         penguinmod_vm="0.2.0",
     )
-    config.validate(path=[])
+    config.validate(path=AbstractTreePath())
     
     execute_attr_validation_tests(
         obj=config,
@@ -93,14 +93,14 @@ def test_PlatformMetaConfig_validate():
             ("penguinmod_vm", 2.0, MANIP_TypeValidationError),
         ],
         validate_func=PlatformMetaConfig.validate,
-        func_args=[[]],
+        func_args=[AbstractTreePath()],
     )
 
 
 
 def test_MasterConfig_validate():
     config = get_default_config()
-    config.validate(path=[])
+    config.validate(path=AbstractTreePath())
     
     execute_attr_validation_tests(
         obj=config,
@@ -116,7 +116,7 @@ def test_MasterConfig_validate():
             ("platform_meta", [], MANIP_TypeValidationError),
         ],
         validate_func=MasterConfig.validate,
-        func_args=[[]],
+        func_args=[AbstractTreePath()],
     )
 
 

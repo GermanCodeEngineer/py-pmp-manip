@@ -38,6 +38,7 @@ Low:
     - S: explore "customFonts" (example of "2D MAINCRAFT")
     - S: create CONTRIBUTING.md
     - S: stop using aenum and find better solution for ext_info_gen instead of extend_enum
+    - S: enable slots by default
 
 Formatting:
     - L: add all errors to docstrings

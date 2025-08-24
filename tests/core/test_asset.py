@@ -315,7 +315,7 @@ def test_SRVectorCostume_validate():
         rotation_center=(-20, 15.6),
         content=etree.fromstring(EMPTY_SVG_COSTUME_XML),
     )
-    srcostume.validate([])
+    srcostume.validate(AbstractTreePath())
     
     execute_attr_validation_tests(
         obj=srcostume,
@@ -327,7 +327,7 @@ def test_SRVectorCostume_validate():
             ("content", "<svg></svg>", MANIP_TypeValidationError),
         ],
         validate_func=SRVectorCostume.validate,
-        func_args=[[]],
+        func_args=[AbstractTreePath()],
     )
 
 
@@ -430,7 +430,7 @@ def test_SRBitmapCostume_validate(bitmap_example):
         content=bitmap_example,
         has_double_resolution=False,
     )
-    srcostume.validate([])
+    srcostume.validate(AbstractTreePath())
     
     execute_attr_validation_tests(
         obj=srcostume,
@@ -442,7 +442,7 @@ def test_SRBitmapCostume_validate(bitmap_example):
             ("has_double_resolution", "hi", MANIP_TypeValidationError),
         ],
         validate_func=SRBitmapCostume.validate,
-        func_args=[[]],
+        func_args=[AbstractTreePath()],
     )
 
 
@@ -477,7 +477,7 @@ def test_SRSound_validate(sound_example):
         file_extension="wav",
         content=sound_example,
     )
-    srsound.validate(path=[])
+    srsound.validate(path=AbstractTreePath())
     
     execute_attr_validation_tests(
         obj=srsound,
@@ -487,7 +487,7 @@ def test_SRSound_validate(sound_example):
             ("content", b"123456", MANIP_TypeValidationError),
         ],
         validate_func=SRSound.validate,
-        func_args=[[]],
+        func_args=[AbstractTreePath()],
     )
 
 

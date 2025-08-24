@@ -7,7 +7,7 @@ from typing      import Any, ClassVar, NoReturn, TYPE_CHECKING
 from pmp_manip.important_consts import SHA256_SEC_MAIN_ARGUMENT_NAME
 from pmp_manip.utility          import (
     grepr_dataclass, string_to_sha256, gdumps,
-    AA_TYPE, AA_HEX_COLOR,
+    AA_TYPE, AA_HEX_COLOR, AbstractTreePath,
     MANIP_ThanksError, MANIP_ConversionError, MANIP_DeserializationError, 
 )
 
@@ -447,7 +447,7 @@ class SRMutation(ABC):
     """
 
     @abstractmethod
-    def validate(self, path: list) -> None:
+    def validate(self, path: AbstractTreePath) -> None:
         """
         Ensure the SRMutation is valid, raise MANIP_ValidationError if not
         
@@ -486,7 +486,7 @@ class SRCustomBlockArgumentMutation(SRMutation):
     prototype_color: str
     outline_color: str
 
-    def validate(self, path: list) -> None:
+    def validate(self, path: AbstractTreePath) -> None:
         """
         Ensure the SRCustomBlockArgumentMutation is valid, raise MANIP_ValidationError if not
         
@@ -536,7 +536,7 @@ class SRCustomBlockMutation(SRMutation):
     prototype_color: str
     outline_color: str
     
-    def validate(self, path: list) -> None:
+    def validate(self, path: AbstractTreePath) -> None:
         """
         Ensure the SRCustomBlockMutation is valid, raise MANIP_ValidationError if not
         
@@ -556,7 +556,7 @@ class SRCustomBlockMutation(SRMutation):
         AA_HEX_COLOR(self, path, "prototype_color")
         AA_HEX_COLOR(self, path, "outline_color")
 
-        self.custom_opcode.validate(path+["custom_opcode"])
+        self.custom_opcode.validate(path.add_attribute("custom_opcode"))
 
     
     def to_first(self, itf_if: "InterToFirstIF") -> FRCustomBlockMutation:
@@ -601,7 +601,7 @@ class SRCustomBlockCallMutation(SRMutation):
     
     custom_opcode: "SRCustomBlockOpcode"
     
-    def validate(self, path: list) -> None:
+    def validate(self, path: AbstractTreePath) -> None:
         """
         Ensure the SRCustomBlockCallMutation is valid, raise MANIP_ValidationError if not
         
@@ -616,7 +616,7 @@ class SRCustomBlockCallMutation(SRMutation):
         """
         AA_TYPE(self, path, "custom_opcode", SRCustomBlockOpcode)
 
-        self.custom_opcode.validate(path+["custom_opcode"])
+        self.custom_opcode.validate(path.add_attribute("custom_opcode"))
     
     def to_first(self, itf_if: "InterToFirstIF") -> FRCustomBlockCallMutation:
         """

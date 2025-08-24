@@ -7,7 +7,7 @@ from typing import Any
 
 from pmp_manip.utility import (
     grepr_dataclass, xml_equal, image_equal, generate_md5,
-    AA_TYPE, AA_COORD_PAIR, AA_EQUAL,
+    AA_TYPE, AA_COORD_PAIR, AA_EQUAL, AbstractTreePath,
     MANIP_ThanksError,
 )
 
@@ -191,7 +191,7 @@ class SRCostume(ABC):
     file_extension: str
     rotation_center: tuple[int | float, int | float]
 
-    def validate(self, path: list) -> None:
+    def validate(self, path: AbstractTreePath) -> None:
         """
         Ensure a SRCostume is valid, raise MANIP_ValidationError if not
         
@@ -250,7 +250,7 @@ class SRVectorCostume(SRCostume):
         other: SRVectorCostume = other
         return xml_equal(self.content, other.content)
         
-    def validate(self, path: list) -> None:
+    def validate(self, path: AbstractTreePath) -> None:
         """
         Ensure a SRVectorCostume is valid, raise MANIP_ValidationError if not
         
@@ -320,7 +320,7 @@ class SRBitmapCostume(SRCostume):
             and image_equal(self.content, other.content)
         )
     
-    def validate(self, path: list) -> None:
+    def validate(self, path: AbstractTreePath) -> None:
         """
         Ensure a SRBitmapCostume is valid, raise MANIP_ValidationError if not
         
@@ -374,7 +374,7 @@ class SRSound:
     file_extension: str # i've only seen "wav", "mp3", "ogg"; others might work
     content: AudioSegment
     
-    def validate(self, path: list) -> None:
+    def validate(self, path: AbstractTreePath) -> None:
         """
         Ensure a SRSound is valid, raise MANIP_ValidationError if not
         

@@ -1,3 +1,8 @@
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from pmp_manip.utility.data import AbstractTreePath
+
+
 class MANIP_Error(Exception):
     pass
 
@@ -40,7 +45,7 @@ class MANIP_ConversionError(MANIP_Error): pass
 #                    ERRORS FOR VALIDATION                    #
 ###############################################################
 
-def _generate_path_string(path: list) -> str:
+def _generate_path_string(path: "AbstractTreePath") -> str:
     path_string = ""
     for item in path:
         if   isinstance(item, str):
@@ -55,7 +60,7 @@ def _generate_path_string(path: list) -> str:
 class MANIP_ValidationError(MANIP_Error): pass
 
 class MANIP_PathValidationError(MANIP_ValidationError):
-    def __init__(self, path: list, msg: str, condition: str|None = None) -> None:
+    def __init__(self, path: "AbstractTreePath", msg: str, condition: str|None = None) -> None:
         self.path      = path
         self.msg       = msg
         self.condition = condition

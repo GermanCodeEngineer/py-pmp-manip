@@ -1,5 +1,5 @@
 from pmp_manip.opcode_info.api import DropdownType, DropdownValueKind, DROPDOWN_VALUE_T
-from pmp_manip.utility         import grepr_dataclass, AA_TYPE, AA_JSON_COMPATIBLE, MANIP_InvalidDropdownValueError
+from pmp_manip.utility         import grepr_dataclass, AA_TYPE, AA_JSON_COMPATIBLE, AbstractTreePath, MANIP_InvalidDropdownValueError
 
 from pmp_manip.core.context import PartialContext, CompleteContext
 
@@ -38,7 +38,7 @@ class SRDropdownValue:
         """
         return (self.kind, self.value)
 
-    def validate(self, path: list) -> None:
+    def validate(self, path: AbstractTreePath) -> None:
         """
         Ensure a SRDropdownValue is structurally valid, raise MANIP_ValidationError if not
         For exact validation, you should additionally call the validate_value method
@@ -56,7 +56,7 @@ class SRDropdownValue:
         AA_JSON_COMPATIBLE(self, path, "value")
 
     def validate_value(self, 
-        path: list, 
+        path: AbstractTreePath, 
         dropdown_type: "DropdownType", 
         context: PartialContext | CompleteContext,
     ) -> None:

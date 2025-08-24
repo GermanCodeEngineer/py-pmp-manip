@@ -1,6 +1,6 @@
 from typing import Any
 
-from pmp_manip.utility import grepr_dataclass, AA_COORD_PAIR, AA_TYPE, MANIP_InvalidValueError
+from pmp_manip.utility import grepr_dataclass, AA_COORD_PAIR, AA_TYPE, AbstractTreePath, MANIP_InvalidValueError
 
 
 @grepr_dataclass(grepr_fields=["block_id", "x", "y", "width", "height", "minimized", "text"])
@@ -81,7 +81,7 @@ class SRComment:
     is_minimized: bool
     text: str
     
-    def validate(self, path: list) -> None:
+    def validate(self, path: AbstractTreePath) -> None:
         """
         Ensure a SRComment is valid, raise MANIP_ValidationError if not
         

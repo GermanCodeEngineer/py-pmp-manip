@@ -5,7 +5,8 @@ from pmp_manip.config           import get_config
 from pmp_manip.opcode_info.api  import OpcodeInfoAPI, MonitorIdBehaviour, DROPDOWN_VALUE_T
 from pmp_manip.utility          import (
     grepr_dataclass, string_to_sha256,
-    AA_TYPE, AA_TYPES, AA_DICT_OF_TYPE, AA_COORD_PAIR, AA_BOXED_COORD_PAIR, AA_EQUAL, AA_BIGGER_OR_EQUAL, 
+    AA_TYPE, AA_TYPES, AA_DICT_OF_TYPE, AA_COORD_PAIR, AA_BOXED_COORD_PAIR, AA_EQUAL, AA_BIGGER_OR_EQUAL,
+    AbstractTreePath,
     MANIP_InvalidOpcodeError, MANIP_MissingDropdownError, MANIP_UnnecessaryDropdownError, MANIP_ThanksError,
 )
 from pmp_manip.important_consts import (
@@ -224,7 +225,7 @@ class SRMonitor:
                 f"is neither {NEW_OPCODE_VAR_VALUE!r} nor {NEW_OPCODE_LIST_VALUE!r}")
             
     
-    def validate(self, path: list, info_api: OpcodeInfoAPI) -> None:
+    def validate(self, path: AbstractTreePath, info_api: OpcodeInfoAPI) -> None:
         """
         Ensure a SRMonitor is valid, raise MANIP_ValidationError if not
         To validate the exact dropdown values you should additionally call the validate_dropdown_values method
@@ -262,7 +263,7 @@ class SRMonitor:
         
         new_dropdown_ids = opcode_info.get_all_new_dropdown_ids()
         for new_dropdown_id, dropdown_value in self.dropdowns.items():
-            dropdown_value.validate(path+["dropdowns", (new_dropdown_id,)])
+            dropdown_value.validate(path.add_attribute("dropdowns").add_index_or_key(new_dropdown_id))
             if new_dropdown_id not in new_dropdown_ids:
                 raise MANIP_UnnecessaryDropdownError(path, 
                     f"dropdowns of {cls_name} with opcode {self.opcode!r} includes unnecessary dropdown {new_dropdown_id!r}",
@@ -274,7 +275,7 @@ class SRMonitor:
                 )
     
     def validate_dropdown_values(self, 
-        path: list, 
+        path: AbstractTreePath, 
         info_api: OpcodeInfoAPI, 
         context: PartialContext | CompleteContext,
      ) -> None:
@@ -297,7 +298,7 @@ class SRMonitor:
         for new_dropdown_id, dropdown in self.dropdowns.items():
             dropdown_type = opcode_info.get_dropdown_info_by_new(new_dropdown_id).type
             dropdown.validate_value(
-                path          = path+["dropdowns", (new_dropdown_id,)],
+                path          = path.add_attribute("dropdowns").add_index_or_key(new_dropdown_id),
                 dropdown_type = dropdown_type, 
                 context       = context,
             )
@@ -423,7 +424,7 @@ class SRVariableMonitor(SRMonitor):
     slider_max: int | float
     allow_only_integers: bool
     
-    def validate(self, path: list, info_api: OpcodeInfoAPI):
+    def validate(self, path: AbstractTreePath, info_api: OpcodeInfoAPI):
         """
         Ensure a SRVariableMonitor is valid, raise MANIP_ValidationError if not
         To validate the exact dropdown values you should additionally call the validate_dropdown_values method
@@ -462,7 +463,7 @@ class SRListMonitor(SRMonitor):
 
     size: tuple[int | float, int | float]
     
-    def validate(self, path: list, info_api: OpcodeInfoAPI):
+    def validate(self, path: AbstractTreePath, info_api: OpcodeInfoAPI):
         """
         Ensure a SRListMonitor is valid, raise MANIP_ValidationError if not
         To validate the exact dropdown values you should additionally call the validate_dropdown_values method

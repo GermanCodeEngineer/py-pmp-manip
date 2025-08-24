@@ -1,4 +1,8 @@
-from pmp_manip.utility import grepr_dataclass, AA_TYPE, AA_ALNUM, is_valid_js_data_uri, is_valid_url, MANIP_InvalidValueError
+from pmp_manip.utility import (
+    grepr_dataclass, 
+    AA_TYPE, AA_ALNUM, is_valid_js_data_uri, is_valid_url, 
+    AbstractTreePath, MANIP_InvalidValueError,
+)
 
 
 @grepr_dataclass(
@@ -13,7 +17,7 @@ class SRExtension:
     
     id: str
 
-    def validate(self, path: list) -> None:
+    def validate(self, path: AbstractTreePath) -> None:
         """
         Ensure a SRExtension is valid, raise MANIP_ValidationError if not
         
@@ -48,7 +52,7 @@ class SRCustomExtension(SRExtension):
     url: str # either "https://..." or "data:application/javascript,..."
     # TODO: find a way to not show whole huge JS data URI's
     
-    def validate(self, path: list):
+    def validate(self, path: AbstractTreePath):
         """
         Ensure a SRCustomExtension is valid, raise MANIP_ValidationError if not
         

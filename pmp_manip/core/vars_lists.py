@@ -1,7 +1,7 @@
 from copy import copy
 
 from pmp_manip.important_consts import SHA256_SEC_VARIABLE, SHA256_SEC_LIST
-from pmp_manip.utility          import string_to_sha256, grepr_dataclass, AA_TYPE, AA_TYPES, AA_LIST_OF_TYPES
+from pmp_manip.utility          import string_to_sha256, grepr_dataclass, AA_TYPE, AA_TYPES, AA_LIST_OF_TYPES, AbstractTreePath
 
 
 
@@ -41,7 +41,7 @@ class SRVariable:
     name: str
     current_value: int | float | str | bool
 
-    def validate(self, path: list) -> None:
+    def validate(self, path: AbstractTreePath) -> None:
         """
         Ensure a SRVariable is valid, raise MANIP_ValidationError if not
         
@@ -83,7 +83,7 @@ class SRList:
     name: str
     current_value: list[int | float | str | bool]
 
-    def validate(self, path: list):
+    def validate(self, path: AbstractTreePath):
         """
         Ensure a SRList is valid, raise MANIP_ValidationError if not
         

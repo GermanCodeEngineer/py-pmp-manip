@@ -10,7 +10,7 @@ from pmp_manip.important_consts import (
     SHA256_SEC_LOCAL_ARGUMENT_NAME,
 )
 from pmp_manip.utility          import (
-    string_to_sha256, 
+    string_to_sha256, AbstractTreePath, 
     DualKeyDict, 
     MANIP_InvalidValueError,
 )
@@ -426,7 +426,7 @@ info_api.add_opcode_case(OPCODE_STOP_SCRIPT, SpecialCase(
 ))
 
 
-def _26f9_8217(path: list, block: "SRBlock") -> None:
+def _26f9_8217(path: AbstractTreePath, block: "SRBlock") -> None:
     from pmp_manip.core.block_mutation import SRCustomBlockMutation
     mutation: SRCustomBlockMutation = block.mutation
     if block.opcode == NEW_OPCODE_CB_DEF:

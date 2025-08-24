@@ -80,7 +80,7 @@ def test_SRComment_validate():
         is_minimized=False,
         text="Comment text",
     )
-    srcomment.validate(path=[])
+    srcomment.validate(path=AbstractTreePath())
 
     execute_attr_validation_tests(
         obj=srcomment,
@@ -92,7 +92,7 @@ def test_SRComment_validate():
             ("text", {}, MANIP_TypeValidationError),
         ],
         validate_func=SRComment.validate,
-        func_args=[[]],
+        func_args=[AbstractTreePath()],
     )
 
 

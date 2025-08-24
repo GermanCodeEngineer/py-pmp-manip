@@ -72,7 +72,7 @@ class TEST_SecondToInterIF(SecondToInterIF):
 
 def test_SRScript_validate(validation_if, context):        
     srscript = ALL_SR_SCRIPTS[0]
-    srscript.validate([], info_api, validation_if, context)
+    srscript.validate(AbstractTreePath(), info_api, validation_if, context)
 
     execute_attr_validation_tests(
         obj=srscript,
@@ -83,7 +83,7 @@ def test_SRScript_validate(validation_if, context):
             ("blocks", [], MANIP_RangeValidationError),
         ],
         validate_func=SRScript.validate,
-        func_args=[[], info_api, validation_if, context],
+        func_args=[AbstractTreePath(), info_api, validation_if, context],
     )
 
 
@@ -104,7 +104,7 @@ def test_SRScript_to_inter():
 
 def test_SRBlock_validate(validation_if, context):
     srblock = ALL_SR_SCRIPTS[0].blocks[0]
-    srblock.validate([], info_api, validation_if, context, expects_reporter=False)
+    srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False)
 
     execute_attr_validation_tests(
         obj=srblock,
@@ -117,61 +117,61 @@ def test_SRBlock_validate(validation_if, context):
             ("mutation", "hi", MANIP_TypeValidationError),
         ],
         validate_func=SRBlock.validate,
-        func_args=[[], info_api, validation_if, context, False],
+        func_args=[AbstractTreePath(), info_api, validation_if, context, False],
     )
 
 def test_SRBlock_validate_reporter(validation_if, context):
     srblock = ALL_SR_SCRIPTS[1].blocks[0]
-    srblock.validate([], info_api, validation_if, context, expects_reporter=True)
+    srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=True)
 
 def test_SRBlock_validate_cb_def(validation_if, context):
     srblock = ALL_SR_SCRIPTS[4].blocks[0]
-    srblock.validate([], info_api, validation_if, context, expects_reporter=False)    
+    srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False)    
 
 def test_SRBlock_validate_unexpected_mutation(validation_if, context):
     srblock = copy(ALL_SR_SCRIPTS[0].blocks[1])
     srblock.mutation = {...}
     with raises(MANIP_TypeValidationError):
-        srblock.validate([], info_api, validation_if, context, expects_reporter=False)
+        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False)
 
 def test_SRBlock_validate_missing_mutation(validation_if, context):
     srblock = copy(ALL_SR_SCRIPTS[4].blocks[0])
     srblock.mutation = None
     with raises(MANIP_TypeValidationError):
-        srblock.validate([], info_api, validation_if, context, expects_reporter=False)
+        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False)
 
 def test_SRBlock_validate_invalid_reporter_shape(validation_if, context):
     srblock = ALL_SR_SCRIPTS[0].blocks[0]
     with raises(MANIP_InvalidBlockShapeError):
-        srblock.validate([], info_api, validation_if, context, expects_reporter=True)
+        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=True)
 
 def test_SRBlock_validate_unexpected_input(validation_if, context):
     srblock = deepcopy(ALL_SR_SCRIPTS[6].blocks[0])
     srblock.inputs["SOME_ID"] = SRBlockOnlyInputValue(block=None)
     with raises(MANIP_UnnecessaryInputError):
-        srblock.validate([], info_api, validation_if, context, expects_reporter=False)
+        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False)
 
 def test_SRBlock_validate_missing_input(validation_if, context):
     srblock = deepcopy(ALL_SR_SCRIPTS[6].blocks[0])
     del srblock.inputs["CONDITION"]
     with raises(MANIP_MissingInputError):
-        srblock.validate([], info_api, validation_if, context, expects_reporter=False) # 1
+        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False) # 1
 
 def test_SRBlock_validate_unexpected_dropdown(validation_if, context):
     srblock = deepcopy(ALL_SR_SCRIPTS[2].blocks[0])
     srblock.dropdowns["SOME_ID"] = SRDropdownValue(kind=DropdownValueKind.STANDARD, value="something")
     with raises(MANIP_UnnecessaryDropdownError):
-        srblock.validate([], info_api, validation_if, context, expects_reporter=True)
+        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=True)
 
 def test_SRBlock_validate_missing_dropdown(validation_if, context):
     srblock = deepcopy(ALL_SR_SCRIPTS[2].blocks[0])
     del srblock.dropdowns["VARIABLE"]
     with raises(MANIP_MissingDropdownError):
-        srblock.validate([], info_api, validation_if, context, expects_reporter=True)
+        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=True)
 
 def test_SRBlock_validate_post_handler(validation_if, context):
     srblock = ALL_SR_SCRIPTS[3].blocks[0]
-    srblock.validate([], info_api, validation_if, context, expects_reporter=False)
+    srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False)
 
 
 def test_SRBlock_validate_opcode_type():
@@ -204,7 +204,7 @@ def test_SRBlock_validate_opcode_type():
             if should_raise:
                 with raises(MANIP_InvalidBlockShapeError):
                     SRBlock.validate_opcode_type(
-                        path         = [],
+                        path         = AbstractTreePath(),
                         opcode_type  = opcode_type,
                         is_top_level = is_top_level,
                         is_first     = is_first,
@@ -212,7 +212,7 @@ def test_SRBlock_validate_opcode_type():
                     )
             else:
                 SRBlock.validate_opcode_type(
-                    path         = [],
+                    path         = AbstractTreePath(),
                     opcode_type  = opcode_type,
                     is_top_level = is_top_level,
                     is_first     = is_first,
@@ -472,7 +472,7 @@ def test_SRInputValue_validate_block(validation_if, context):
         block=ALL_SR_SCRIPTS[5].blocks[0],
         dropdown=SRDropdownValue(kind=DropdownValueKind.BROADCAST_MSG, value="my message"),
     )
-    input_value._validate_block([], info_api, validation_if, context)
+    input_value._validate_block(AbstractTreePath(), info_api, validation_if, context)
 
 
 def test_SRBlockAndTextInputValue_validate(validation_if, context):
@@ -481,7 +481,7 @@ def test_SRBlockAndTextInputValue_validate(validation_if, context):
         block=ALL_SR_SCRIPTS[1].blocks[0],
         immediate="some random text",
     )
-    input_value.validate([], info_api, validation_if, context, input_type)
+    input_value.validate(AbstractTreePath(), info_api, validation_if, context, input_type)
     
     execute_attr_validation_tests(
         obj=input_value,
@@ -490,7 +490,7 @@ def test_SRBlockAndTextInputValue_validate(validation_if, context):
             ("immediate", {}, MANIP_TypeValidationError),
         ],
         validate_func=SRBlockAndTextInputValue.validate,
-        func_args=[[], info_api, validation_if, context, input_type],
+        func_args=[AbstractTreePath(), info_api, validation_if, context, input_type],
     )
 
 def test_SRBlockAndDropdownInputValue_validate(validation_if, context):
@@ -499,7 +499,7 @@ def test_SRBlockAndDropdownInputValue_validate(validation_if, context):
         block=ALL_SR_SCRIPTS[5].blocks[0],
         dropdown=SRDropdownValue(kind=DropdownValueKind.OBJECT, value="mouse-pointer"),
     )
-    input_value.validate([], info_api, validation_if, context, input_type)
+    input_value.validate(AbstractTreePath(), info_api, validation_if, context, input_type)
     
     execute_attr_validation_tests(
         obj=input_value,
@@ -508,7 +508,7 @@ def test_SRBlockAndDropdownInputValue_validate(validation_if, context):
             ("dropdown", {}, MANIP_TypeValidationError),
         ],
         validate_func=SRBlockAndDropdownInputValue.validate,
-        func_args=[[], info_api, validation_if, context, input_type],
+        func_args=[AbstractTreePath(), info_api, validation_if, context, input_type],
     )
 
 def test_SRBlockAndBoolInputValue_validate(validation_if, context):
@@ -517,7 +517,7 @@ def test_SRBlockAndBoolInputValue_validate(validation_if, context):
         block=ALL_SR_SCRIPTS[1].blocks[0],
         immediate=True,
     )
-    input_value.validate([], info_api, validation_if, context, input_type)
+    input_value.validate(AbstractTreePath(), info_api, validation_if, context, input_type)
     
     execute_attr_validation_tests(
         obj=input_value,
@@ -526,7 +526,7 @@ def test_SRBlockAndBoolInputValue_validate(validation_if, context):
             ("immediate", "hi", MANIP_TypeValidationError),
         ],
         validate_func=SRBlockAndBoolInputValue.validate,
-        func_args=[[], info_api, validation_if, context, input_type],
+        func_args=[AbstractTreePath(), info_api, validation_if, context, input_type],
     )
 
 def test_SRBlockOnlyInputValue_validate(validation_if, context):
@@ -534,7 +534,7 @@ def test_SRBlockOnlyInputValue_validate(validation_if, context):
     input_value = SRBlockOnlyInputValue(
         block=None,
     )
-    input_value.validate([], info_api, validation_if, context, input_type)
+    input_value.validate(AbstractTreePath(), info_api, validation_if, context, input_type)
     
     execute_attr_validation_tests(
         obj=input_value,
@@ -542,7 +542,7 @@ def test_SRBlockOnlyInputValue_validate(validation_if, context):
             ("block", 5, MANIP_TypeValidationError),
         ],
         validate_func=SRBlockOnlyInputValue.validate,
-        func_args=[[], info_api, validation_if, context, input_type],
+        func_args=[AbstractTreePath(), info_api, validation_if, context, input_type],
     )
 
 def test_SRScriptInputValue_validate(validation_if, context):
@@ -550,7 +550,7 @@ def test_SRScriptInputValue_validate(validation_if, context):
     input_value = SRScriptInputValue(
         blocks=ALL_SR_SCRIPTS[0].blocks,
     )
-    input_value.validate([], info_api, validation_if, context, input_type)
+    input_value.validate(AbstractTreePath(), info_api, validation_if, context, input_type)
     
     execute_attr_validation_tests(
         obj=input_value,
@@ -559,6 +559,6 @@ def test_SRScriptInputValue_validate(validation_if, context):
             ("blocks", [{}], MANIP_TypeValidationError),
         ],
         validate_func=SRScriptInputValue.validate,
-        func_args=[[], info_api, validation_if, context, input_type],
+        func_args=[AbstractTreePath(), info_api, validation_if, context, input_type],
     )
 

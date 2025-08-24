@@ -2,9 +2,10 @@ from re import split
 
 from pmp_manip.opcode_info.api import InputType, BuiltinInputType, InputInfo, OpcodeType
 from pmp_manip.utility         import (
-    grepr_dataclass, GEnum,
+    grepr_dataclass,
     AA_TYPE, AA_TUPLE_OF_TYPES, AA_MIN_LEN, AA_NOT_EQUAL,
-    MANIP_SameValueTwiceError, MANIP_ConversionError,
+    GEnum, AbstractTreePath,
+    MANIP_SameValueTwiceError, MANIP_ConversionError, MANIP_TypeValidationError,
 )
 
 @grepr_dataclass(grepr_fields=["segments"], frozen=True, unsafe_hash=True)
@@ -88,7 +89,7 @@ class SRCustomBlockOpcode:
             for segment in self.segments if isinstance(segment, SRCustomBlockArgument)
         }
     
-    def validate(self, path: list) -> None:
+    def validate(self, path: AbstractTreePath) -> None:
         """
         Ensures the custom block opcode is valid, raise MANIP_ValidationError if not
         
@@ -108,7 +109,7 @@ class SRCustomBlockOpcode:
         names = {}
         last_was_label = False
         for i, segment in enumerate(self.segments):
-            current_path = ["segments", i]
+            current_path = path.add_attribute("segments").add_index_or_key(i)
             if isinstance(segment, SRCustomBlockArgument):
                 segment.validate(current_path)
                 if segment.name in names:
@@ -133,7 +134,7 @@ class SRCustomBlockArgument:
     name: str
     type: "SRCustomBlockArgumentType"
 
-    def validate(self, path: list) -> None:
+    def validate(self, path: AbstractTreePath) -> None:
         """
         Ensures the custom block argument is valid, raise MANIP_ValidationError if not
         

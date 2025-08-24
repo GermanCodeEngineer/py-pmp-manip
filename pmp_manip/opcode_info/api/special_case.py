@@ -85,7 +85,7 @@ class SpecialCaseType(GEnum):
     # execute after SRBlock.validate
     # should raise subclass of MANIP_ValidationError if invalid
     """
-    def example(path: list, block: "SRBlock") -> None:
+    def example(path: AbstractTreePath, block: "SRBlock") -> None:
         ...
     """    
 

@@ -1,4 +1,4 @@
-from typing      import Any
+from typing      import Any, Callable
 from copy        import copy, deepcopy
 from dataclasses import field
 from abc         import abstractmethod, ABC
@@ -7,9 +7,10 @@ from uuid        import uuid4, UUID
 from pmp_manip.important_consts import SHA256_SEC_TARGET_NAME, SHA256_SEC_BROADCAST_MSG
 from pmp_manip.opcode_info.api  import OpcodeInfoAPI, DropdownValueKind
 from pmp_manip.utility          import (
-    string_to_sha256, grepr_dataclass, MANIP_ThanksError,
+    string_to_sha256, grepr_dataclass,
     AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_LIST_OF_TYPES, AA_MIN_LEN, AA_MIN, AA_RANGE, AA_COORD_PAIR, AA_NOT_ONE_OF, 
-    MANIP_SameValueTwiceError, MANIP_ConversionError,
+    AbstractTreePath, 
+    MANIP_ThanksError, MANIP_SameValueTwiceError, MANIP_ConversionError,
 )
 
 from pmp_manip.core.asset           import FRCostume, FRSound, SRVectorCostume, SRBitmapCostume, SRSound
@@ -481,7 +482,7 @@ class SRTarget:
     costume_index: int
     volume: int | float
 
-    def validate(self, path: list, info_api: OpcodeInfoAPI) -> None:
+    def validate(self, path: AbstractTreePath, info_api: OpcodeInfoAPI) -> None:
         """
         Ensure a SRTarget is valid, raise MANIP_ValidationError if not
         
@@ -509,11 +510,11 @@ class SRTarget:
         AA_RANGE(self, path, "volume", min=0, max=100)
         
         for i, comment in enumerate(self.comments):
-            comment.validate(path+["comments", i])
+            comment.validate(path.add_attribute("comments").add_index_or_key(i))
 
         defined_costumes = {}
         for i, costume in enumerate(self.costumes):
-            current_path = path+["costumes", i]
+            current_path = path.add_attribute("costumes").add_index_or_key(i)
             costume.validate(path)
             if costume.name in defined_costumes:
                 other_path = defined_costumes[costume.name]
@@ -522,7 +523,7 @@ class SRTarget:
         
         defined_sounds = {}
         for i, sound in enumerate(self.sounds):
-            current_path = path+["sounds", i]
+            current_path = path.add_attribute("sounds").add_index_or_key(i)
             sound.validate(path)
             if sound.name in defined_sounds:
                 other_path = defined_sounds[sound.name]
@@ -530,7 +531,7 @@ class SRTarget:
             defined_sounds[sound.name] = current_path
     
     def validate_scripts(self, 
-        path: list, 
+        path: AbstractTreePath, 
         info_api: OpcodeInfoAPI,
         context: PartialContext,
     ) -> None:
@@ -554,13 +555,13 @@ class SRTarget:
         cb_custom_opcodes = {}
         for i, script in enumerate(self.scripts):
             script.validate(
-                path           = path+["scripts", i],
+                path           = path.add_attribute("scripts").add_index_or_key(i),
                 info_api       = info_api,
                 validation_if = validation_if,
                 context        = context,
             )
             for j, block in enumerate(script.blocks):
-                current_path = path+["scripts", i, "blocks", j]
+                current_path = path.add_attribute("scripts").add_index_or_key(i).add_attribute("blocks").add_index_or_key(j),
                 if isinstance(block.mutation, SRCustomBlockMutation):
                     custom_opcode = block.mutation.custom_opcode
                     if custom_opcode in cb_custom_opcodes:
@@ -587,6 +588,24 @@ class SRTarget:
             is_stage = isinstance(self, SRStage),
         )
     
+    def walk(target, handler): # HERE
+        """Walk an SRTarget and its children, calling handler on each node."""
+        handler(target)
+
+        # Walk scripts
+        for script in target.scripts:
+            ...#walk_script(script, handler) 
+
+        # Walk unattached comments
+        for comment in target.comments:
+            handler(comment)
+
+        # Costumes and sounds are leaf-like, just handle directly
+        for costume in target.costumes:
+            handler(costume)
+        for sound in target.sounds:
+            handler(sound)
+
     def _to_first_common(self,
         info_api: OpcodeInfoAPI,
         global_vars: list[SRVariable],
@@ -831,7 +850,7 @@ class SRSprite(SRTarget):
             raise AttributeError('Cannot modify "uuid" after creation')
         super().__setattr__(name, value)
     
-    def validate(self, path: list, info_api: OpcodeInfoAPI) -> None:
+    def validate(self, path: AbstractTreePath, info_api: OpcodeInfoAPI) -> None:
         """
         Ensure a SRSprite is valid, raise MANIP_ValidationError if not
         
@@ -864,15 +883,15 @@ class SRSprite(SRTarget):
         
         
         for i, variable in enumerate(self.local_variables):
-            variable.validate(path+["local_variables", i])
+            variable.validate(path.add_attribute("local_variables").add_index_or_key(i))
         for i, list_ in enumerate(self.local_lists):
-            list_.validate(path+["local_lists", i])
+            list_.validate(path.add_attribute("local_lists").add_index_or_key(i))
         
         for i, monitor in enumerate(self.local_monitors):
-            monitor.validate(path+["local_monitors", i], info_api)
+            monitor.validate(path.add_attribute("local_monitors").add_index_or_key(i))
     
     def validate_monitor_dropdown_values(self, 
-        path: list, 
+        path: AbstractTreePath, 
         info_api: OpcodeInfoAPI,
         context: PartialContext | CompleteContext,
     ) -> None:
@@ -893,7 +912,7 @@ class SRSprite(SRTarget):
         context = self._get_complete_context(partial_context=context)
         for i, monitor in enumerate(self.local_monitors):
             monitor.validate_dropdown_values(
-                path     = path+["local_monitors", i], 
+                path     = path.add_attribute("local_monitors").add_index_or_key(i), 
                 info_api = info_api, 
                 context  = context,
             )

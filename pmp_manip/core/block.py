@@ -19,6 +19,7 @@ from pmp_manip.opcode_info.api  import (
 from pmp_manip.utility          import (
     grepr_dataclass, get_closest_matches, tuplify, listify, string_to_sha256,
     AA_TYPE, AA_NONE, AA_NONE_OR_TYPE, AA_COORD_PAIR, AA_LIST_OF_TYPE, AA_DICT_OF_TYPE, AA_MIN_LEN,
+    AbstractTreePath,
     MANIP_ConversionError,
     MANIP_UnnecessaryInputError, MANIP_MissingInputError, MANIP_UnnecessaryDropdownError, MANIP_MissingDropdownError, 
     MANIP_InvalidOpcodeError, MANIP_InvalidBlockShapeError,
@@ -631,7 +632,7 @@ class SRScript:
     blocks: list["SRBlock"]
 
     def validate(self, 
-        path: list, 
+        path: AbstractTreePath, 
         info_api: OpcodeInfoAPI,
         validation_if: "ValidationIF",
         context: CompleteContext,
@@ -656,7 +657,7 @@ class SRScript:
         AA_MIN_LEN(self, path, "blocks", min_len=1)
         
         for i, block in enumerate(self.blocks):
-            current_path = path+["blocks", i]
+            current_path = path.add_attribute("blocks").add_index_or_key(i)
             block.validate(
                 path             = current_path,
                 info_api         = info_api,
@@ -717,7 +718,7 @@ class SRBlock:
     mutation: SRMutation | None = None
     
     def validate(self, 
-        path: list, 
+        path: AbstractTreePath, 
         info_api: OpcodeInfoAPI,
         validation_if: "ValidationIF", 
         context: CompleteContext,
@@ -762,13 +763,13 @@ class SRBlock:
             raise MANIP_InvalidOpcodeError(path, msg)
         
         if self.comment is not None:
-            self.comment.validate(path+["comment"])
+            self.comment.validate(path.add_attribute("comment"))
         
         if opcode_info.new_mutation_cls is None:
             AA_NONE(self, path, "mutation", condition="For this opcode")
         else:
             AA_TYPE(self, path, "mutation", opcode_info.new_mutation_cls, condition="For this opcode")
-            self.mutation.validate(path+["mutation"])
+            self.mutation.validate(path.add_attribute("mutation"))
 
         input_infos = opcode_info.get_new_input_ids_infos(block=self, fti_if=None) 
         # maps input ids to their types # fti_if is not necessary for a IRBlock
@@ -779,7 +780,7 @@ class SRBlock:
                     f"inputs of {cls_name!r} with opcode {self.opcode!r} includes unnecessary input {new_input_id!r}",
                 )
             input.validate(
-                path          = path+["inputs", (new_input_id,)],
+                path          = path.add_attribute("inputs").add_index_or_key(new_input_id),
                 info_api      = info_api,
                 validation_if = validation_if,
                 context       = context,
@@ -797,7 +798,7 @@ class SRBlock:
                 raise MANIP_UnnecessaryDropdownError(path, 
                     f"dropdowns of {cls_name!r} with opcode {self.opcode!r} includes unnecessary dropdown {new_dropdown_id!r}",
                 )
-            current_path = path+["dropdowns", (new_dropdown_id,)]
+            current_path = path.add_attribute("dropdowns").add_index_or_key(new_dropdown_id)
             dropdown.validate(current_path)
             dropdown.validate_value(
                 path          = current_path,
@@ -820,7 +821,7 @@ class SRBlock:
 
     @staticmethod
     def validate_opcode_type(
-        path: list,
+        path: AbstractTreePath,
         opcode_type: OpcodeType,
         is_top_level: bool,
         is_first: bool,
@@ -1066,7 +1067,7 @@ class SRInputValue(ABC):
 
     @abstractmethod
     def validate(self, 
-        path: list, 
+        path: AbstractTreePath, 
         info_api: OpcodeInfoAPI,
         validation_if: "ValidationIF", 
         context: CompleteContext, 
@@ -1090,7 +1091,7 @@ class SRInputValue(ABC):
         """
 
     def _validate_block(self, 
-        path: list, 
+        path: AbstractTreePath, 
         info_api: OpcodeInfoAPI,
         validation_if: "ValidationIF", 
         context: CompleteContext, 
@@ -1114,7 +1115,7 @@ class SRInputValue(ABC):
         AA_NONE_OR_TYPE(self, path, "block", SRBlock)
         if block is not None:
             block.validate(
-                path             = path+["block"],
+                path             = path.add_attribute("block"),
                 info_api         = info_api,
                 validation_if    = validation_if,
                 context          = context,
@@ -1131,7 +1132,7 @@ class SRBlockAndTextInputValue(SRInputValue):
     immediate: str
 
     def validate(self, 
-        path: list, 
+        path: AbstractTreePath, 
         info_api: OpcodeInfoAPI,
         validation_if: "ValidationIF", 
         context: CompleteContext, 
@@ -1171,7 +1172,7 @@ class SRBlockAndDropdownInputValue(SRInputValue):
     dropdown: SRDropdownValue
 
     def validate(self, 
-        path: list, 
+        path: AbstractTreePath, 
         info_api: OpcodeInfoAPI,
         validation_if: "ValidationIF", 
         context: CompleteContext, 
@@ -1201,7 +1202,7 @@ class SRBlockAndDropdownInputValue(SRInputValue):
         )
         AA_TYPE(self, path, "dropdown", SRDropdownValue)
         
-        current_path = path+["dropdown"]
+        current_path = path.add_attribute("dropdown")
         self.dropdown.validate(current_path)
         self.dropdown.validate_value(
             path          = current_path,
@@ -1219,7 +1220,7 @@ class SRBlockAndBoolInputValue(SRInputValue):
     immediate: bool # Can not be None, default is False (see IRBlock.to_second, case InputMode.BLOCK_AND_BOOL)
 
     def validate(self, 
-        path: list, 
+        path: AbstractTreePath, 
         info_api: OpcodeInfoAPI,
         validation_if: "ValidationIF", 
         context: CompleteContext, 
@@ -1258,7 +1259,7 @@ class SRBlockOnlyInputValue(SRInputValue):
     block: SRBlock | None
 
     def validate(self, 
-        path: list, 
+        path: AbstractTreePath, 
         info_api: OpcodeInfoAPI,
         validation_if: "ValidationIF", 
         context: CompleteContext, 
@@ -1296,7 +1297,7 @@ class SRScriptInputValue(SRInputValue):
     blocks: list[SRBlock]
 
     def validate(self, 
-        path: list, 
+        path: AbstractTreePath, 
         info_api: OpcodeInfoAPI,
         validation_if: "ValidationIF", 
         context: CompleteContext, 
@@ -1320,7 +1321,7 @@ class SRScriptInputValue(SRInputValue):
         """
         AA_LIST_OF_TYPE(self, path, "blocks", SRBlock)
         for i, block in enumerate(self.blocks):
-            current_path = path+["blocks", i]
+            current_path = path.add_attribute("blocks").add_index_or_key(i)
             block.validate(
                 path             = current_path,
                 info_api         = info_api,

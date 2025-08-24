@@ -381,7 +381,7 @@ def test_SRCustomBlockArgumentMutation_validate():
         prototype_color="#c38d12",
         outline_color="#e9d563",
     )
-    srmutation.validate(path=[])
+    srmutation.validate(path=AbstractTreePath())
     
     execute_attr_validation_tests(
         obj=srmutation,
@@ -395,7 +395,7 @@ def test_SRCustomBlockArgumentMutation_validate():
             ("outline_color", "255", MANIP_InvalidValueError),
         ],
         validate_func=SRCustomBlockArgumentMutation.validate,
-        func_args=[[]],
+        func_args=[AbstractTreePath()],
     )
 
 
@@ -424,7 +424,7 @@ def test_SRCustomBlockMutation_validate():
         outline_color="#e9d563",
     )
 
-    srmutation.validate(path=[])
+    srmutation.validate(path=AbstractTreePath())
     
     execute_attr_validation_tests(
         obj=srmutation,
@@ -439,7 +439,7 @@ def test_SRCustomBlockMutation_validate():
             ("outline_color", "255", MANIP_InvalidValueError),
         ],
         validate_func=SRCustomBlockMutation.validate,
-        func_args=[[]],
+        func_args=[AbstractTreePath()],
     )
 
 
@@ -475,7 +475,7 @@ def test_SRCustomBlockCallMutation_validate():
         custom_opcode=SRCustomBlockOpcode(segments=("hi",)),
     )
 
-    srmutation.validate(path=[])
+    srmutation.validate(path=AbstractTreePath())
     
     execute_attr_validation_tests(
         obj=srmutation,
@@ -483,7 +483,7 @@ def test_SRCustomBlockCallMutation_validate():
             ("custom_opcode", "some custom opcode", MANIP_TypeValidationError),
         ],
         validate_func=SRCustomBlockCallMutation.validate,
-        func_args=[[]],
+        func_args=[AbstractTreePath()],
     )
 
 

@@ -1,9 +1,11 @@
-from difflib import SequenceMatcher
-from hashlib import sha256, md5
-from json    import dumps
-from typing  import Any
+from dataclasses import field
+from difflib     import SequenceMatcher
+from hashlib     import sha256, md5
+from json        import dumps
+from typing      import Any
 
 from pmp_manip.utility.decorators import grepr_dataclass
+from pmp_manip.utility.errors     import MANIP_ValueError
 
 
 _TOKEN_CHARSET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!#%()*+,-./:;=?@[]^_`{|}~"
@@ -160,6 +162,52 @@ class ContentFingerprint:
             "hash"  : self.hash  ,
         }
 
+@grepr_dataclass(grepr_fields=["value"], frozen=True, unsafe_hash=True)
+class ATPathAttribute:
+    """
+    Represents an attribute of a visit path. Immutable/Frozen and Hashable.
+    """
+    value: str
+
+@grepr_dataclass(grepr_fields=["value"], frozen=True, unsafe_hash=True)
+class ATPathIndexOrKey:
+    """
+    Represents an index or key of a visit path. Immutable/Frozen and Hashable.
+    """
+    value: str
+
+@grepr_dataclass(grepr_fields=[], frozen=True, unsafe_hash=True)
+class AbstractTreePath:
+    """
+    Represents a visit path inside an Abstract Object Tree. Immutable/Frozen and Hashable.
+    """
+    path: list[ATPathAttribute | ATPathIndexOrKey] = field(default_factory=list)
+
+    def add_attribute(self, value: str) -> "AbstractTreePath":
+        """
+        Adds an attribute to the path. Returns a new instance.
+        """
+        new_path = self.path + [ATPathAttribute(value)]
+        return AbstractTreePath(new_path)
+
+    def add_index_or_key(self, value: int | str | Any) -> "AbstractTreePath":
+        """
+        Adds an index or key to the path. Returns a new instance.
+        """
+        new_path = self.path + [ATPathIndexOrKey(value)]
+        return AbstractTreePath(new_path)
+
+    def __repr__(self) -> str:
+        path_string = ""
+        for item in self.path:
+            if   isinstance(item, ATPathAttribute):
+                path_string += f".{item}"
+            elif isinstance(item, ATPathIndexOrKey):
+                path_string += f"[{item}]"
+            else:
+                raise MANIP_ValueError(f"Invalid {type(self).__name__}: {self.path}")
+        return f"{type(self).__name__}({path_string})"
+
 class NotSetType:
     """
     An empty placeholder
@@ -173,6 +221,6 @@ NotSet = NotSetType()
 __all__ = [
     "remove_duplicates", "get_closest_matches", "tuplify", "listify", "gdumps",
     "string_to_sha256", "number_to_token", "generate_md5", "ContentFingerprint",
-    "NotSetType", "NotSet",
+    "ATPathAttribute", "ATPathIndexOrKey", "AbstractTreePath", "NotSetType", "NotSet",
 ]
 

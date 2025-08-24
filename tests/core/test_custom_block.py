@@ -52,11 +52,11 @@ def test_SRCustomBlockOpcode_corresponding_input_info(segments):
 
 def test_SRCustomBlockOpcode_validate(segments):
     custom_opcode = SRCustomBlockOpcode(segments=segments)
-    custom_opcode.validate([])
+    custom_opcode.validate(AbstractTreePath())
     # can not use execute_attr_validation_tests because frozen=True
-    with raises(MANIP_TypeValidationError): SRCustomBlockOpcode(segments=5).validate([])
-    with raises(MANIP_RangeValidationError): SRCustomBlockOpcode(segments=()).validate([])
-    with raises(MANIP_TypeValidationError): SRCustomBlockOpcode(segments=(-94,)).validate([])
+    with raises(MANIP_TypeValidationError): SRCustomBlockOpcode(segments=5).validate(AbstractTreePath())
+    with raises(MANIP_RangeValidationError): SRCustomBlockOpcode(segments=()).validate(AbstractTreePath())
+    with raises(MANIP_TypeValidationError): SRCustomBlockOpcode(segments=(-94,)).validate(AbstractTreePath())
 
 def test_SRCustomBlockOpcode_validate_same_arg_name_twice():
     custom_opcode = SRCustomBlockOpcode(segments=(
@@ -67,17 +67,17 @@ def test_SRCustomBlockOpcode_validate_same_arg_name_twice():
         ";;;",
     ))
     with raises(MANIP_SameValueTwiceError):
-        custom_opcode.validate(path=[])
+        custom_opcode.validate(path=AbstractTreePath())
 
 
 
 def test_SRCustomBlockArgument_validate():
     argument = SRCustomBlockArgument(name="some arg name", type=SRCustomBlockArgumentType.STRING_NUMBER)
-    argument.validate(path=[])
+    argument.validate(path=AbstractTreePath())
     # can not use execute_attr_validation_tests because frozen=True
-    with raises(MANIP_TypeValidationError): SRCustomBlockArgument(name=[], type=argument.type).validate([])
-    with raises(MANIP_InvalidValueError): SRCustomBlockArgument(name="", type=argument.type).validate([])
-    with raises(MANIP_TypeValidationError): SRCustomBlockArgument(name=argument.name, type=True).validate([])
+    with raises(MANIP_TypeValidationError): SRCustomBlockArgument(name=[], type=argument.type).validate(AbstractTreePath())
+    with raises(MANIP_InvalidValueError): SRCustomBlockArgument(name="", type=argument.type).validate(AbstractTreePath())
+    with raises(MANIP_TypeValidationError): SRCustomBlockArgument(name=argument.name, type=True).validate(AbstractTreePath())
 
 
 

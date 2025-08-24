@@ -8,7 +8,7 @@ from pmp_manip.important_consts import SHA256_SEC_TARGET_NAME
 from pmp_manip.opcode_info.api  import OpcodeInfoAPI, DropdownValueKind
 from pmp_manip.utility          import (
     grepr_dataclass, enforce_argument_types, 
-    read_all_files_of_zip, create_zip_file, string_to_sha256, gdumps, KeyReprDict,
+    read_all_files_of_zip, create_zip_file, string_to_sha256, gdumps, KeyReprDict, AbstractTreePath,
     AA_TYPE, AA_NONE_OR_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_LIST_OF_TYPES, AA_RANGE, AA_EXACT_LEN,
     MANIP_ThanksError, MANIP_SameValueTwiceError, MANIP_SpriteLayerStackError,
 )
@@ -346,7 +346,7 @@ class SRProject:
             MANIP_ValidationError: if the SRProject is invalid
             MANIP_SameValueTwiceError(MANIP_ValidationError): if two sprites or extensions have the same name
         """
-        path = []
+        path = AbstractTreePath()
         AA_TYPE(self, path, "stage", SRStage)
         AA_LIST_OF_TYPE(self, path, "sprites", SRSprite)
         AA_LIST_OF_TYPE(self, path, "sprite_layer_stack", UUID)
@@ -363,29 +363,29 @@ class SRProject:
         AA_TYPE(self, path, "video_state", SRVideoState)
         AA_NONE_OR_TYPE(self, path, "text_to_speech_language", SRTTSLanguage)
         
-        self.stage.validate(path+["stage"], info_api)
+        self.stage.validate(path.add_attribute("stage"), info_api)
 
         self._validate_sprites(path, info_api)
         
         for i, variable in enumerate(self.global_variables):
-            variable.validate(path+["global_variables", i])
+            variable.validate(path.add_attribute("global_variables").add_index_or_key(i))
         for i, list_ in enumerate(self.global_lists):
-            list_.validate(path+["global_lists", i])
+            list_.validate(path.add_attribute("global_lists").add_index_or_key(i))
         
         self._validate_var_names(path)
         self._validate_list_names(path)
         
         for i, monitor in enumerate(self.global_monitors):
-            monitor.validate(path+["global_monitors", i], info_api)
+            monitor.validate(path.add_attribute("global_monitors").add_index_or_key(i))
         
         for i, extension in enumerate(self.extensions):
-            extension.validate(path+["extensions", i])
+            extension.validate(path.add_attribute("extensions").add_index_or_key(i))
         
         defined_extensions = {}
         for i, extension in enumerate(self.extensions):
-            current_path = path+["extensions", i]
+            current_path = path.add_attribute("extensions").add_index_or_key(i)
             if extension.id in defined_extensions:
-                other_path = defined_extensions[extension.name]
+                other_path = defined_extensions[extension.id]
                 raise MANIP_SameValueTwiceError(other_path, current_path, "Two extensions must not have the same id")
             defined_extensions[extension.id] = current_path
         
@@ -395,7 +395,7 @@ class SRProject:
         local_variables = {None: []}
         local_lists     = {None: []}
         for i, sprite in enumerate(self.sprites):
-            current_path = path+["sprites", i]
+            current_path = path.add_attribute("sprites").add_index_or_key(i)
             if sprite.name in defined_sprites:
                 other_path = defined_sprites[sprite.name]
                 raise MANIP_SameValueTwiceError(other_path, current_path, "Two sprites must not have the same name")
@@ -411,10 +411,10 @@ class SRProject:
         for i, target in enumerate([self.stage]+self.sprites):
             if i == 0:
                 target_key = None
-                current_path = path+["stage"]
+                current_path = path.add_attribute("stage")
             else:
                 target_key = target.name
-                current_path = path+["sprites", i-1]
+                current_path = path.add_attribute("sprites").add_index_or_key(i-1)
             partial_context = PartialContext(
                 scope_variables  = global_variables + local_variables[target_key],
                 scope_lists      = global_lists     + local_lists    [target_key],
@@ -442,12 +442,12 @@ class SRProject:
         
         for i, monitor in enumerate(self.global_monitors):
             monitor.validate_dropdown_values(
-                path     = path+["global_monitors", i], 
+                path     = path.add_attribute("global_monitors").add_index_or_key(i), 
                 info_api = info_api, 
                 context  = global_context,
             )
 
-    def _validate_sprites(self, path: list, info_api: OpcodeInfoAPI) -> None:
+    def _validate_sprites(self, path: AbstractTreePath, info_api: OpcodeInfoAPI) -> None:
         """
         Ensure the sprites of a SRProject are valid, raise MANIP_ValidationError if not
         
@@ -464,7 +464,7 @@ class SRProject:
         """
         sprite_uuid_paths: dict[UUID, list] = {}
         for i, sprite in enumerate(self.sprites):
-            current_path = path+["sprites", i]
+            current_path = path.add_index_or_key("sprites").add_index_or_key(i)
             sprite.validate(current_path, info_api)
             if sprite.uuid in sprite_uuid_paths:
                 other_path = sprite_uuid_paths[sprite.uuid]
@@ -474,7 +474,7 @@ class SRProject:
 
         stack_uuid_paths: dict[UUID, list] = {}
         for i, uuid in enumerate(self.sprite_layer_stack):
-            current_path = path+["sprite_layer_stack", i]
+            current_path = path.add_attribute("sprite_layer_stack").add_index_or_key(i)
             if uuid in stack_uuid_paths:
                 other_path = stack_uuid_paths[uuid]
                 raise MANIP_SameValueTwiceError(other_path, current_path, "The same UUID must npt be included twice")
@@ -484,7 +484,7 @@ class SRProject:
         # same length and uniqueness is assured and every UUID must have a partner sprite
         # => no sprite can possibly be missing a partner UUID
         
-    def _validate_var_names(self, path: list) -> None:
+    def _validate_var_names(self, path: AbstractTreePath) -> None:
         """
         Ensures no variables with the same name exist
 
@@ -499,7 +499,7 @@ class SRProject:
         """
         defined_variables = {}
         for i, variable in enumerate(self.global_variables):
-            current_path = path+["global_variables", i]
+            current_path = path.add_attribute("global_variables").add_index_or_key(i)
             if variable.name in defined_variables:
                 other_path = defined_variables[variable.name]
                 raise MANIP_SameValueTwiceError(other_path, current_path, "Two variables must not have the same name")
@@ -507,13 +507,13 @@ class SRProject:
         
         for i, sprite in enumerate(self.sprites):
             for j, variable in enumerate(sprite.local_variables):
-                current_path = path+["sprites", i, "local_variables", j]
+                current_path = path.add_attribute("sprites").add_index_or_key(i).add_attribute("local_variables").add_index_or_key(j)
                 if variable.name in defined_variables:
                     other_path = defined_variables[variable.name]
                     raise MANIP_SameValueTwiceError(other_path, current_path, "Two variables must not have the same name")
                 defined_variables[variable.name] = current_path
         
-    def _validate_list_names(self, path: list) -> None:
+    def _validate_list_names(self, path: AbstractTreePath) -> None:
         """
         Ensures no lists with the same name exist
 
@@ -528,7 +528,7 @@ class SRProject:
         """
         defined_lists = {}
         for i, list_ in enumerate(self.global_lists):
-            current_path = path+["global_lists", i]
+            current_path = path.add_attribute("global_lists").add_index_or_key(i)
             if list_.name in defined_lists:
                 other_path = defined_lists[list_.name]
                 raise MANIP_SameValueTwiceError(other_path, current_path, "Two lists must not have the same name")
@@ -536,7 +536,7 @@ class SRProject:
         
         for i, sprite in enumerate(self.sprites):
             for j, list_ in enumerate(sprite.local_lists):
-                current_path = path+["sprites", i, "local_lists", j]
+                current_path = path.add_attribute("sprites").add_index_or_key(i).add_attribute("local_lists").add_index_or_key(j)
                 if list_.name in defined_lists:
                     other_path = defined_lists[list_.name]
                     raise MANIP_SameValueTwiceError(other_path, current_path, "Two lists must not have the same name")
