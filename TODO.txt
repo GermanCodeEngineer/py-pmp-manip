@@ -14,6 +14,7 @@ Medium:
     - L: spit into internal and public functions/methods etc (easier in VSCode)
         => add enforce_argument_types decorator to public ones
         => remove "Returns" section of docstrings to avoid doubling (easy to do simultaneously)
+    - M/L: make a script which show info for the requested block opcode
     - M: implement difficult polygon block
     - [M.OPT]: add FRProject.from_file alternative, fetch from project link 
     - S/M: implement variable_type and variable_id (example: "small_example")
@@ -22,6 +23,8 @@ Medium:
         => explore for similar updates
     - S: add new rotation style(s)
     - S: fix grepr multiline string issue
+        => also fix parent and subclass field order issue
+    - S: investigate custom type object variables(example: vector extension)
 
 Low:
     - XL: test and document utility

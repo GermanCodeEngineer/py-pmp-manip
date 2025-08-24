@@ -29,7 +29,7 @@ print(srproject)
 Note: `add_all_extensions_to_info_api` is discussed later in the tutorial
 
 Output:
-```lua
+```python
 The contents of the project are:
 SRProject(
     stage=SRStage(
@@ -500,7 +500,7 @@ The "root node" of a project in second representation.
 ### Editor View Example
 ![](images/project_view/srproject.png)
 ### Python Object Example
-```lua
+```python
 SRProject(
     stage=SRStage(
         # shortend here
@@ -597,7 +597,7 @@ Has no additional properties compared to `SRTarget`, as all global information i
 ![](images/project_view/srstage_backdrops.png)
 ![](images/project_view/srstage_sounds.png)
 ### Python Object Example
-```lua
+```python
 SRStage(
     scripts=[],
     comments=[],
@@ -669,7 +669,7 @@ Represents a sprite of the project. Inherits from [`SRTarget`](#srtarget).
 ![](images/project_view/srsprite_costumes.png)
 ![](images/project_view/srsprite_sounds.png)
 ### Python Object Example
-```lua
+```python
 SRSprite(
     name="Abby",
     local_variables=[
@@ -791,7 +791,18 @@ Represents a "for all sprites"(global) or "for this sprite only"(local) variable
 #### `SRVariable.current_value`
 - **type**: usually `int`, `float` or `str`, but technically `bool` too (e.g. Infinity is saved as 0).
 - **description**: The current value of the variable.
-
+### Editor View Example
+![](images/project_view/srvariable.png)
+### Python Object Example
+```python
+SRCloudVariable(name="☁ my cloud var", current_value="6772827383843273833275737871")
+```
+```python
+SRVariable(name="another local var", current_value="General Kenobi!")
+```
+```python
+SRVariable(name="my slider var", current_value=30.9)
+```
 
 ## `SRCloudVariable`
 Inherits from [`SRVariable`](#srvariable). Represents a cloud variable. Has no additional properties compared to `SRVariable`.
@@ -805,6 +816,15 @@ Represents a "for all sprites"(global) or "for this sprite only"(local) list.
 #### `SRList.current_value`
 - **type**: `list` of usually `int`, `float` and `str`, but technically `bool` too (e.g. Infinity is saved as 0).
 - **description**: The current value of the list.
+### Editor View Example
+![](images/project_view/srlist.png)
+### Python Object Example
+```python
+SRList(name="a global list", current_value=[345634, "some text"])
+```
+```python
+SRList(name="another g. list", current_value=[389.41, 0])
+```
 
 
 ## `SRMonitor`
@@ -822,6 +842,50 @@ Represents a non-sprite-specific(global) or sprite-specific(local) monitor. Also
 #### `SRMonitor.is_visible`
 - **type**: `bool`
 - **description**: Stores wether the monitor is currently shown on the stage.
+### Editor View Example
+![](images/project_view/srmonitor.png)
+### Python Object Example
+####  Global
+```python
+SRMonitor(
+    opcode="answer",
+    dropdowns={},
+    position=(-235, -25),
+    is_visible=False,
+)
+```
+```python
+SRMonitor(
+    opcode="current [PROPERTY]",
+    dropdowns={
+        "PROPERTY": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="year"),
+    },
+    position=(-240, -128),
+    is_visible=True,
+)
+```
+```python
+SRMonitor(
+    opcode="timer",
+    dropdowns={},
+    position=(-240, -104),
+    is_visible=False,
+)
+```
+#### Local
+```python
+SRMonitor(
+    opcode="[EFFECT] sprite effect",
+    dropdowns={
+        "EFFECT": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="color"),
+    },
+    position=(-240, -14),
+    is_visible=True,
+)
+```
+### Notes
+* The "answer" and "timer" monitor is not shown and therefore not shown in the image.
+* The keys of `dropdowns` always match with the sqaure brackets (e.g. `[DROPDOWN]`) in the opcode.
 
 
 ## `SRVariableMonitor`
@@ -844,6 +908,40 @@ Represents the monitor of a **variable value block** of a global or local variab
 - **description**: If [`readout_mode`](#srvariablemonitorreadout_mode) is `SLIDER`, wether you can drag the slider to a non-integer value.
 - **note**: is set in Scratch based on wether you enter a floating point value into either the slider minimum or maximum.
 - **default value in editor**: `True`
+### Editor View Example
+![](images/project_view/srvariablemonitor.png)
+### Python Object Example
+```python
+SRVariableMonitor(
+    readout_mode=SRVariableMonitorReadoutMode.NORMAL,
+    slider_min=0,
+    slider_max=100,
+    allow_only_integers=True,
+    opcode="value of [VARIABLE]",
+    dropdowns={
+        "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="☁ my cloud var"),
+    },
+    position=(-240, -180),
+    is_visible=True,
+)
+```
+```python
+SRVariableMonitor(
+    readout_mode=SRVariableMonitorReadoutMode.SLIDER,
+    slider_min=30.9,
+    slider_max=100,
+    allow_only_integers=False,
+    opcode="value of [VARIABLE]",
+    dropdowns={
+        "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="my slider var"),
+    },
+    position=(-240, -54),
+    is_visible=True,
+)
+```
+### Notes
+* The red/first monitor has `allow_only_integers=True` as neither `slider_min` nor `slider_max` are both integers.
+* The blue/second monitor has `allow_only_integers=False` as `slider_min` is a floating point number.
 
 
 ## `SRListMonitor`
@@ -853,6 +951,20 @@ Represents the monitor of a **list value block** of a global or local list. Inhe
 - **description**: Stores the size of a list monitor as it can be resized.
 - **note**: You should change validation configuration to tolerant if you work with other stage sizes (See [config.md, section ValidationConfig](config.md#validationconfig)).
 - **default value in editor**: `(100, 120)`
+### Editor View Example
+![](images/project_view/srlistmonitor.png)
+### Python Object Example
+```python
+SRListMonitor(
+    size=(100, 102),
+    opcode="value of [LIST]",
+    dropdowns={
+        "LIST": SRDropdownValue(kind=DropdownValueKind.LIST, value="a local list"),
+    },
+    position=(-240, 78),
+    is_visible=True,
+)
+```
 
 
 ## `SRExtension`
@@ -860,6 +972,18 @@ Common base for [`SRBuiltinExtension`](#srbuiltinextension) and [`SRCustomExtens
 #### `SRExtension.id`
 - **type**: `str`
 - **description**: The unique id of the extension(e.g. `"music"` or `"jgJSON"`).
+### Editor View Example
+![](images/project_view/srextension.png)
+### Python Object Example
+```python
+SRBuiltinExtension(id="text2speech")
+```
+```python
+SRCustomExtension(
+    id="numberUtilities",
+    url="https://extensions.penguinmod.com/extensions/MubiLop/numutils.js",
+)
+```
 
 
 ## `SRBuiltinExtension`
@@ -868,7 +992,7 @@ Has no additional properties compared to `SRExtension`.
 
 
 ## `SRCustomExtension`
-Represents a custom extension that PenguinMod does not recognize. Therefore needs a url source. Inherits from [`SRExtension`](#srextension).
+Represents a custom extension that PenguinMod does not recognize i.e. is added by URL, JS code or file. Therefore needs a url source. Inherits from [`SRExtension`](#srextension).
 #### `SRCustomExtension.url`
 - **type**: `str`z
 - **description**: The url source for getting the extension javascript source code. Must follow one of these patterns: `"http://..."`, `"https://..."` or `"data:application/javascript,..."`
@@ -905,13 +1029,98 @@ All supported languages are: `SRTTSLanguage.`...
 
 
 ## `SRScript`
-Represents a script i.e. a connected sequence of blocks in the "Code" tab of a sprite or the stage.
+Represents a script i.e. a connected sequence of blocks in the "Code" tab of a sprite or the stage. Similar to [`SRScriptInputValue`](#srscriptinputvalue).
 #### `SRScript.position`
 - **type**: `tuple` of `int|float`(x position) and `int|float`(y position) Same system as with [`SRComment.position`](#srcommentposition).
 - **description**: Stores the position of the script in the "Code" tab. Unlimited, but usually in the range of hundreds and thousands.
 #### `SRScript.blocks`
 - **type**: `list` of [`SRBlock`](#srblock)
 - **description**: Stores the script's sequence of blocks from top to bottom.
+### Editor View Example
+![](images/project_view/srscript1.png)
+![](images/project_view/srscript2.png)
+### Python Object Example
+```python
+SRScript(
+    position=(235, 79),
+    blocks=[
+        SRBlock(
+            opcode="define custom block",
+            inputs={},
+            dropdowns={},
+            comment=None,
+            mutation=SRCustomBlockMutation(
+                custom_opcode=SRCustomBlockOpcode(
+                    segments=(
+                        "run frame with speed",
+                        SRCustomBlockArgument(
+                            name="speed", 
+                            type=SRCustomBlockArgumentType.STRING_NUMBER,
+                        ),
+                        "handle keys?",
+                        SRCustomBlockArgument(
+                            name="handle keys", 
+                            type=SRCustomBlockArgumentType.BOOLEAN,
+                        ),
+                    ),
+                ),
+                no_screen_refresh=True,
+                optype=SRCustomBlockOptype.STATEMENT,
+                main_color="#FF6680",
+                prototype_color="#e65c73",
+                outline_color="#cc5266",
+            ),
+        ),
+        SRBlock(
+            opcode="if <CONDITION> then {THEN}",
+            inputs={
+                "CONDITION": SRBlockAndBoolInputValue(
+                    # shortend here
+                ),
+                "THEN": SRScriptInputValue(
+                    # shortend here
+                ),
+            },
+            dropdowns={},
+            comment=None,
+            mutation=None,
+        ),
+    ],
+)
+```
+```python
+SRScript(
+    position=(420, 1022),
+    blocks=[
+        SRBlock(
+            opcode="distance to ([OBJECT])",
+            inputs={
+                "OBJECT": SRBlockAndDropdownInputValue(
+                    block=SRBlock(
+                        opcode="length of ([SOUND])?",
+                        inputs={
+                            "SOUND": SRBlockAndDropdownInputValue(
+                                block=None,
+                                dropdown=SRDropdownValue(kind=DropdownValueKind.SOUND, value="Squawk"),
+                            ),
+                        },
+                        dropdowns={},
+                        comment=None,
+                        mutation=None,
+                    ),
+                    dropdown=SRDropdownValue(kind=DropdownValueKind.SPRITE, value="Sprite2"),
+                ),
+            },
+            dropdowns={},
+            comment=None,
+            mutation=None,
+        ),
+    ],
+)
+```
+### Notes
+* The second example is from another project.
+* As the second example shows, even single reporter/boolean etc. blocks are seperate scripts.
 
 ## `SRBlock`
 Represents a single block in a script. Can be any shape of block(e.g. square, round, hat).
@@ -932,6 +1141,125 @@ Represents a single block in a script. Can be any shape of block(e.g. square, ro
 - **type**: [`SRMutation`](#srmutation) or `None`
 - **description**: The optional mutation of the block for some opcodes(kinds of blocks). Most blocks do not need one.
 - **default value in editor**`: `None`
+### Editor View Example
+![](images/project_view/srblock.png)
+### Python Object Example
+```python
+SRBlock(
+    opcode="if <CONDITION> then {THEN}",
+    inputs={
+        "CONDITION": SRBlockAndBoolInputValue(
+            block=SRBlock(
+                opcode="<OPERAND1> and <OPERAND2>",
+                inputs={
+                    "OPERAND1": SRBlockAndBoolInputValue(
+                        # shortend, see below
+                    ),
+                    "OPERAND2": SRBlockAndBoolInputValue(
+                        # shortend, see below
+                    ),
+                },
+                dropdowns={},
+                comment=None,
+                mutation=None,
+            ),
+            immediate=False,
+        ),
+        "THEN": SRScriptInputValue(
+            blocks=[
+                # shortend, see below
+            ],
+        ),
+    },
+    dropdowns={},
+    comment=None,
+    mutation=None,
+)
+```
+![](images/project_view/srblock.png)
+#### Full `"CONDITION"` input
+```python
+SRBlockAndBoolInputValue(
+    block=SRBlock(
+        opcode="<OPERAND1> and <OPERAND2>",
+        inputs={
+            "OPERAND1": SRBlockAndBoolInputValue(
+                block=SRBlock(
+                    opcode="key ([KEY]) pressed?",
+                    inputs={
+                        "KEY": SRBlockAndDropdownInputValue(
+                            block=None,
+                            dropdown=SRDropdownValue(kind=DropdownValueKind.STANDARD, value="space"),
+                        ),
+                    },
+                    dropdowns={},
+                    comment=None,
+                    mutation=None,
+                ),
+                immediate=False,
+            ),
+            "OPERAND2": SRBlockAndBoolInputValue(
+                block=SRBlock(
+                    opcode="custom block boolean arg [ARGUMENT]",
+                    inputs={},
+                    dropdowns={},
+                    comment=None,
+                    mutation=SRCustomBlockArgumentMutation(
+                        argument_name="handle keys",
+                        main_color="#FF6680",
+                        prototype_color="#e65c73",
+                        outline_color="#cc5266",
+                    ),
+                ),
+                immediate=True,
+            ),
+        },
+        dropdowns={},
+        comment=None,
+        mutation=None,
+    ),
+    immediate=False,
+)
+```
+![](images/project_view/srblock.png)
+#### Full `"THEN"` input
+```python
+SRScriptInputValue(
+    blocks=[
+        SRBlock(
+            opcode="say (MESSAGE) for (SECONDS) seconds",
+            inputs={
+                "MESSAGE": SRBlockAndTextInputValue(block=None, immediate="Hello!"),
+                "SECONDS": SRBlockAndTextInputValue(block=None, immediate="2"),
+            },
+            dropdowns={},
+            comment=SRComment(
+                position=(544.2964344861196, 207.30042684993646),
+                size=(200, 200),
+                is_minimized=True,
+                text="not fully\nshown",
+            ),
+            mutation=None,
+        ),
+        SRBlock(
+            opcode="change [EFFECT] sprite effect by (AMOUNT)",
+            inputs={
+                "AMOUNT": SRBlockAndTextInputValue(block=None, immediate="25"),
+            },
+            dropdowns={
+                "EFFECT": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="color"),
+            },
+            comment=None,
+            mutation=None,
+        ),
+    ],
+)
+```
+### Notes
+* The python object is split for readability.
+* As we can see, blocks and (sub-)scripts have a nested structure.
+
+
 
 
 ## `SRInputValue`
@@ -958,6 +1286,8 @@ Represents a single input field of a block. Can be any kind of field (e.g. text,
 - **type**: [`SRDropdownValue`](#srdropdownvalue)
 - **description**: Stores the round dropdown menu of the input value.
 - **note**: Only exists for instances of [`SRBlockAndDropdownInputValue`](#srblockanddropdowninputvalue).
+### Editor View and Python Object Example
+See the [example of `SRBlock`](#editor-view-example-9)
 
 ### `SRBlockAndTextInputValue`
 Inherits from [`SRInputValue`](#srinputvalue).
@@ -979,7 +1309,7 @@ Inherits from [`SRInputValue`](#srinputvalue).
 Inherits from [`SRInputValue`](#srinputvalue).
 * **uses properties**: [`SRInputValue.block`](#srinputvalueblock)
 ### `SRScriptInputValue`
-Inherits from [`SRInputValue`](#srinputvalue).
+Inherits from [`SRInputValue`](#srinputvalue). Similar to [`SRScript`](#srscript).
 * **uses properties**: [`SRInputValue.blocks`](#srinputvalueblocks)
 
 
@@ -991,6 +1321,40 @@ Represents a single dropdown field of a block. Can only be a square dropdown, wh
 #### `SRDropdownValue.value`
 - **type**: almost always `str` but rarely `int` too (for costume, backdrop and sound selection by index)
 - **description**: Stores the actual value of the dropdown value.
+### Editor View Example
+![](images/project_view/srdropdownvalue1.png)
+![](images/project_view/srdropdownvalue2.png)
+### Python Object Example
+```python
+SRBlock(
+    opcode="change [EFFECT] sprite effect by (AMOUNT)",
+    inputs={
+        "AMOUNT": SRBlockAndTextInputValue(block=None, immediate="25"),
+    },
+    dropdowns={
+        "EFFECT": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="color"),
+    },
+    comment=None,
+    mutation=None,
+)
+```
+```python
+SRBlock(
+    opcode="distance to ([OBJECT])",
+    inputs={
+        "OBJECT": SRBlockAndDropdownInputValue(
+            block=None,
+            dropdown=SRDropdownValue(kind=DropdownValueKind.OBJECT, value="mouse-pointer"),
+        ),
+    },
+    dropdowns={},
+    comment=None,
+    mutation=None,
+)
+```
+### Notes
+* The second example is from another project.
+
 
 ## `DropdownValueKind`
 Enum Class. Represents a kind of dropdown value i.e. what it references if anything.
@@ -1035,6 +1399,18 @@ Inherits from [`SRMutation`](#srmutation). Used and required only by opcodes `"c
 - **type**: `str` (hex color code)
 - **description**: the outline color of the inner block of the "define" block the argument reporter block is for.
 - **default value in editor**: `"#FF3355"`
+### Editor View Example
+The mutation itself can not be seen in the editor, only the block:
+![](images/project_view/srcustomblockargumentmutation.png)
+### Python Object Example
+```python
+SRCustomBlockArgumentMutation(
+    argument_name="handle keys",
+    main_color="#FF6680",
+    prototype_color="#e65c73",
+    outline_color="#cc5266",
+)
+```
 
 
 ## `SRCustomBlockMutation`
@@ -1062,6 +1438,27 @@ Inherits from [`SRMutation`](#srmutation). Used and required only by opcodes `"d
 - **type**: `str` (hex color code)
 - **description**: the outline color of the inner block of the "define" block the argument reporter block is for.
 - **default value in editor**: `"#FF3355"`
+### Editor View Example
+The mutation itself can not be seen in the editor, only the block:
+![](images/project_view/srcustomblockmutation.png)
+### Python Object Example
+```python
+SRCustomBlockMutation(
+    custom_opcode=SRCustomBlockOpcode(
+        segments=(
+            "run frame with speed",
+            SRCustomBlockArgument(name="speed", type=SRCustomBlockArgumentType.STRING_NUMBER),
+            "handle keys?",
+            SRCustomBlockArgument(name="handle keys", type=SRCustomBlockArgumentType.BOOLEAN),
+        ),
+    ),
+    no_screen_refresh=True,
+    optype=SRCustomBlockOptype.STATEMENT,
+    main_color="#FF6680",
+    prototype_color="#e65c73",
+    outline_color="#cc5266",
+)
+```
 
 
 ## `SRCustomBlockCallMutation`
@@ -1069,6 +1466,22 @@ Inherits from [`SRMutation`](#srmutation). Used and required only by opcode `"ca
 #### `SRCustomBlockCallMutation.custom_opcode`
 - **type**: [`SRCustomBlockOpcode`](#srcustomblockopcode)(`SRCustomBlockOpcode` is immutable and hashable)
 - **description**: Stores the labels and argument field names and kinds of the custom block, this block will call, to reference it.
+### Editor View Example
+The mutation itself can not be seen in the editor, only the block:
+![](images/project_view/srcustomblockcallmutation.png)
+### Python Object Example
+```python
+SRCustomBlockCallMutation(
+    custom_opcode=SRCustomBlockOpcode(
+        segments=(
+            "run frame with speed",
+            SRCustomBlockArgument(name="speed", type=SRCustomBlockArgumentType.STRING_NUMBER),
+            "handle keys?",
+            SRCustomBlockArgument(name="handle keys", type=SRCustomBlockArgumentType.BOOLEAN),
+        ),
+    ),
+)
+```
 
 
 ## `SRCustomBlockOpcode`
@@ -1092,13 +1505,15 @@ Represents an argument of a [`SRCustomBlockOpcode`](#srcustomblockopcode). Immut
 ## `SRCustomBlockOptype`
 Enum Class. Represents the shape of a custom block (e.g. square statement, boolean, reporter)
 All possibly values are: `SRCustomBlockOptype.`...
-| enum name          | example                         |
-|--------------------|---------------------------------|
-| `STATEMENT`        |                                 |
-| `ENDING_STATEMENT` |                                 |
-| `STRING_REPORTER`  |                                 |
-| `NUMBER_REPORTER`  |                                 |
-| `BOOLEAN_REPORTER` |                                 |
+| enum name          |
+|--------------------|
+| `STATEMENT`        |
+| `ENDING_STATEMENT` |
+| `STRING_REPORTER`  |
+| `NUMBER_REPORTER`  |
+| `BOOLEAN_REPORTER` |
+### Editor View Example
+![](images/project_view/srcustomblockoptype.png)
 
 
 ## `SRComment`
@@ -1117,6 +1532,35 @@ Represents a comment, which can be either atttached to a block or "freely floati
 #### `SRComment.text`
 - **type**: `str`
 - **description**: The actual text content of the comment.
+### Editor View Example
+![](images/project_view/srcomment1.png)
+![](images/project_view/srcomment2.png)
+### Python Object Example
+```python
+SRComment(
+    position=(870, 244),
+    size=(200, 200),
+    is_minimized=False,
+    text="an independent\n comment\nwhich\nis\nfully\nshown",
+)
+```
+```python
+SRBlock(
+    opcode="say (MESSAGE) for (SECONDS) seconds",
+    inputs={
+        "MESSAGE": SRBlockAndTextInputValue(block=None, immediate="Hello!"),
+        "SECONDS": SRBlockAndTextInputValue(block=None, immediate="2"),
+    },
+    dropdowns={},
+    comment=SRComment(
+        position=(544.2964344861196, 207.30042684993646),
+        size=(200, 200),
+        is_minimized=True,
+        text="not fully\nshown",
+    ),
+    mutation=None,
+)
+```
 
 
 ## `SRCostume`
@@ -1139,6 +1583,19 @@ Represents a costume in "Vector" mode in the "Costumes" tab of a sprite or a bac
 #### `SRVectorCostume.content`
 - **type**: `_Element`(from package `lxml.etree`)
 - **description**: The actual SVG image basis of the costume as an XML element tree.
+### Editor View Example
+![](images/project_view/srvectorcostume.png)
+### Python Object Example
+```python
+SRVectorCostume(
+    name="Abby-a",
+    file_extension="svg",
+    rotation_center=(31, 100),
+    content=<Element {http://www.w3.org/2000/svg}svg at 0x781e6c4200>,
+)
+```
+### Notes
+* Yes I know. lxml Elements have a terrible `__repr__` `:(`.
 
 
 ## `SRBitmapCostume`
@@ -1149,6 +1606,18 @@ Represents a costume in "Bitmap" mode in the "Costumes" tab of a sprite or a bac
 #### `SRBitmapCostume.has_double_resolution`
 - **type**: `bool`
 - **description**: Pretty useless. Seems to always be `True`. PenguinMod seems to limit and reduce image size to `(480, 360)` when importing from a file.
+### Editor View Example
+![](images/project_view/srbitmapcostume.png)
+### Python Object Example
+```python
+SRBitmapCostume(
+    name="costume1",
+    file_extension="png",
+    rotation_center=(88, 72),
+    has_double_resolution=True,
+    content=<PIL.PngImagePlugin.PngImageFile image mode=P size=176x144 at 0x781e6b60c0>,
+)
+```
 
 ## `SRSound`
 Represents a sound in the "Sounds" tab of a sprite or the stage.
@@ -1161,46 +1630,13 @@ Represents a sound in the "Sounds" tab of a sprite or the stage.
 #### `SRSound.content`
 - **type**: `AudioSegment`(from package `pydub_ng`)
 - **description**: The actual audio segment basis of the sound as created by pydub_ng's `AudioSegment.from_file`.
-
-
-
-```
-TODOs:
-* note needs and create example project
-* => add images
-* => add content snippets from project example
-* make a for each block opcode docs gen script
-
-stage and sprite with:
-    comment not minimized
-    script:
-        multiple blocks
-        one with inputs: BlockAndText, BlockAndDropdown, SubScript
-        one with dropdowns: one with/out reference
-        one with minimized comment
-        one with mutation
-        one with argumentMut
-        one with defMut: str and bool arg
-        one with callMut
-sprite with:
-    not empty vector and bitmap costume 
-    sound
-    second costume selected
-    draggable
-3 overlapping sprites in different order in editor vs. layer
-2 globvars:
-    int, str
-    one cloud
-    monitors:
-        one with slider and not allow ints
-2 globlists: 
-    int, float, str, Infinity
-    monitor with diff size
-2 globmons with dropdown
-1 globmon invisible
-2 locvars: float, str
-2 loclists: int, float, str
-2 locmons
-a custom and a builtin extension
-a text to speech language
+### Editor View Example
+![](images/project_view/srsound.png)
+### Python Object Example
+```python
+SRSound(
+    name="Squawk", 
+    file_extension="wav", 
+    content=<pydub.audio_segment.AudioSegment object at 0x781e6bce90>,
+)
 ```
