@@ -211,7 +211,7 @@ def _check_type(value: Any, expected_type: Any, name: str, _path: str = "") -> N
     if not isinstance(value, expected_type):
         raise TypeError(f"{label} must be {expected_type}, got {type(value)}")
 
-def grepr_dataclass(*, grepr_fields: list[str],
+def grepr_dataclass(*, grepr_fields: list[str], repr: bool = True,
         init: bool = True, eq: bool = True, order: bool = True, 
         unsafe_hash: bool = False, frozen: bool = False, 
         match_args: bool = True, kw_only: bool = False, 
@@ -239,19 +239,20 @@ def grepr_dataclass(*, grepr_fields: list[str],
                     msg += "."
                     raise NotImplementedError(msg)
             cls.__init__ = __init__
-
-        def __repr__(self, *args, **kwargs) -> str:
-            return grepr(self, *args, **kwargs)
-        cls.__repr__ = __repr__
-        cls._grepr = True
-        nonlocal grepr_fields
-        fields = copy(grepr_fields)
-        for base in cls.__bases__:
-            if not getattr(base, "_grepr", False): continue
-            for field in base._grepr_fields:
-                if field in fields: continue
-                fields.append(field)
-        cls._grepr_fields = fields
+        
+        if repr:
+            def __repr__(self, *args, **kwargs) -> str:
+                return grepr(self, *args, **kwargs)
+            cls.__repr__ = __repr__
+            cls._grepr = True
+            nonlocal grepr_fields
+            fields = copy(grepr_fields)
+            for base in cls.__bases__:
+                if not getattr(base, "_grepr", False): continue
+                for field in base._grepr_fields:
+                    if field in fields: continue
+                    fields.append(field)
+            cls._grepr_fields = fields
 
         cls = dataclass(cls, 
             init=init, repr=False, eq=eq,

@@ -299,17 +299,6 @@ info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
     function=_4548_6eb6,
 ))
 
-#def _f545_6a61(block: "FRBlock", block_id: str, fti_if: "FirstToInterIF") -> "FRBlock":
-#    # => Schedule to delete the block, as it is useless, **OR IS IT?**
-#    # HERE
-#    fti_if.schedule_block_deletion(block_id)
-#    return block
-#info_api.add_opcode_case(OPCODE_CHECKBOX, SpecialCase(
-#    type=SpecialCaseType.PRE_FIRST_TO_INTER, 
-#    function=_f545_6a61,
-#))
-
-
 def _d0e6_50e9(block: "FRBlock", block_id: str, fti_if: "FirstToInterIF") -> "IRBlock":
     # Return an empty, temporary block
     from pmp_manip.core.block import IRBlock
@@ -327,7 +316,6 @@ info_api.add_opcode_case(OPCODE_CB_PROTOTYPE, SpecialCase(
     type=SpecialCaseType.INSTEAD_FIRST_TO_INTER,
     function=_d0e6_50e9,
 ))
-
 
 def _f5d7_e3e2(block: "FRBlock", block_id: str, itf_if: "InterToFirstIF") -> "FRBlock":
     # Transfer mutation from definition block to prototype block

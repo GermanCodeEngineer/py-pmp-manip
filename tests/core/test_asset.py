@@ -6,7 +6,7 @@ from pydub  import AudioSegment
 from pytest import fixture, raises
 
 from pmp_manip.utility import (
-    xml_equal, image_equal, generate_md5, KeyReprDict,
+    xml_equal, image_equal, generate_md5, KeyReprDict, AbstractTreePath,
     MANIP_TypeValidationError, MANIP_InvalidValueError, MANIP_ThanksError,
 )
 

@@ -1,4 +1,4 @@
-from pmp_manip.utility import MANIP_TypeValidationError, MANIP_InvalidValueError
+from pmp_manip.utility import AbstractTreePath, MANIP_TypeValidationError, MANIP_InvalidValueError
 
 from pmp_manip.core.comment import FRComment, SRComment
 

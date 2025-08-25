@@ -45,18 +45,6 @@ class MANIP_ConversionError(MANIP_Error): pass
 #                    ERRORS FOR VALIDATION                    #
 ###############################################################
 
-def _generate_path_string(path: "AbstractTreePath") -> str:
-    path_string = ""
-    for item in path:
-        if   isinstance(item, str):
-            path_string += "." + item
-        elif isinstance(item, int):
-            path_string += "[" + str(item) + "]"
-        elif isinstance(item, tuple) and (len(item) == 1) and isinstance(item[0], str):
-            path_string += "[" + repr(item[0]) + "]"
-        else: raise ValueError()
-    return path_string
-
 class MANIP_ValidationError(MANIP_Error): pass
 
 class MANIP_PathValidationError(MANIP_ValidationError):
@@ -65,10 +53,9 @@ class MANIP_PathValidationError(MANIP_ValidationError):
         self.msg       = msg
         self.condition = condition
         
-        path_string = _generate_path_string(path)
         full_message = ""
-        if path_string != "":
-            full_message += f"At {path_string}: "
+        if len(path) == 0:
+            full_message += f"At {path!r}: "
         if condition is not None:
             full_message += f"{condition}: "
         full_message += msg
@@ -92,15 +79,13 @@ class MANIP_InvalidDirPathError(MANIP_PathValidationError): pass
 class MANIP_SpriteLayerStackError(MANIP_PathValidationError): pass
 
 class MANIP_SameValueTwiceError(MANIP_ValidationError):
-    def __init__(self, path1: list, path2: list, msg: str, condition: str|None = None) -> None:
+    def __init__(self, path1: "AbstractTreePath", path2: "AbstractTreePath", msg: str, condition: str|None = None) -> None:
         self.path1     = path1
         self.path2     = path2
         self.msg       = msg
         self.condition = condition
         
-        path1_string = _generate_path_string(path1)
-        path2_string = _generate_path_string(path2)
-        full_message = f"At {path1_string} and {path2_string}: "
+        full_message = f"At {path1} and {path2}: "
         if condition is not None:
             full_message += f"{condition}: "
         full_message += msg

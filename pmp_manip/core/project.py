@@ -376,7 +376,7 @@ class SRProject:
         self._validate_list_names(path)
         
         for i, monitor in enumerate(self.global_monitors):
-            monitor.validate(path.add_attribute("global_monitors").add_index_or_key(i))
+            monitor.validate(path.add_attribute("global_monitors").add_index_or_key(i), info_api)
         
         for i, extension in enumerate(self.extensions):
             extension.validate(path.add_attribute("extensions").add_index_or_key(i))

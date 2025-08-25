@@ -28,7 +28,7 @@ print(srproject)
 ```
 Note: `add_all_extensions_to_info_api` is discussed later in the tutorial
 
-Output:
+Output (very long, you can skim it for now. Is analyzed in detail later):
 ```python
 The contents of the project are:
 SRProject(
@@ -1266,6 +1266,7 @@ SRScriptInputValue(
 Represents a single input field of a block. Can be any kind of field (e.g. text, number, round dropdown) except for a square dropdown. Common base for 
 * [`SRBlockAndTextInputValue`](#srblockandtextinputvalue)
 * [`SRBlockAndDropdownInputValue`](#srblockanddropdowninputvalue)
+* [`SRBlockAndBoolInputValue`](#srblockandboolinputvalue)
 * [`SRBlockOnlyInputValue`](#srblockonlyinputvalue)
 * [`SRScriptInputValue`](#srscriptinputvalue)
 

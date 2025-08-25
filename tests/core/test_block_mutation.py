@@ -3,7 +3,7 @@ from pytest import fixture, raises, MonkeyPatch
 
 from pmp_manip.important_consts import SHA256_SEC_MAIN_ARGUMENT_NAME
 from pmp_manip.utility          import (
-    string_to_sha256, gdumps, grepr_dataclass,
+    string_to_sha256, gdumps, grepr_dataclass, AbstractTreePath,
     MANIP_DeserializationError, MANIP_ConversionError, MANIP_ThanksError, 
     MANIP_TypeValidationError, MANIP_InvalidValueError
 )

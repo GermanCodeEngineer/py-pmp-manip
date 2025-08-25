@@ -1,4 +1,4 @@
-from pmp_manip.utility import MANIP_InvalidValueError
+from pmp_manip.utility import AbstractTreePath, MANIP_InvalidValueError
 
 from pmp_manip.core.extension import SRExtension, SRBuiltinExtension, SRCustomExtension
 

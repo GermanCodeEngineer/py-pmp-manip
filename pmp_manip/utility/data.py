@@ -1,10 +1,11 @@
+from copy        import copy
 from dataclasses import field
 from difflib     import SequenceMatcher
 from hashlib     import sha256, md5
 from json        import dumps
-from typing      import Any
+from typing      import overload, Iterable, Iterator, SupportsIndex, Any
 
-from pmp_manip.utility.decorators import grepr_dataclass
+from pmp_manip.utility.decorators import grepr_dataclass, enforce_argument_types
 from pmp_manip.utility.errors     import MANIP_ValueError
 
 
@@ -176,36 +177,94 @@ class ATPathIndexOrKey:
     """
     value: str
 
-@grepr_dataclass(grepr_fields=[], frozen=True, unsafe_hash=True)
+@grepr_dataclass(grepr_fields=[], frozen=True, unsafe_hash=True, init=False, repr=False)
 class AbstractTreePath:
     """
     Represents a visit path inside an Abstract Object Tree. Immutable/Frozen and Hashable.
     """
-    path: list[ATPathAttribute | ATPathIndexOrKey] = field(default_factory=list)
-
+    path: tuple[ATPathAttribute | ATPathIndexOrKey, ...] = field(default_factory=tuple)
+    
+    @enforce_argument_types
+    def __init__(self, path: Iterable[ATPathAttribute | ATPathIndexOrKey] = tuple()) -> None:
+        self.__dict__["path"] = tuple(path)
+    
+    def copy(self) -> "AbstractTreePath":
+        return self.__copy__()
+    
+    def __copy__(self) -> "AbstractTreePath":
+        return AbstractTreePath(copy(self.path))
+    
+    @enforce_argument_types
     def add_attribute(self, value: str) -> "AbstractTreePath":
         """
         Adds an attribute to the path. Returns a new instance.
         """
-        new_path = self.path + [ATPathAttribute(value)]
-        return AbstractTreePath(new_path)
+        return AbstractTreePath(self.path + (ATPathAttribute(value),))
 
+    @enforce_argument_types
     def add_index_or_key(self, value: int | str | Any) -> "AbstractTreePath":
         """
         Adds an index or key to the path. Returns a new instance.
         """
-        new_path = self.path + [ATPathIndexOrKey(value)]
-        return AbstractTreePath(new_path)
-
+        return AbstractTreePath(self.path + (ATPathIndexOrKey(value),))
+    
+    @enforce_argument_types
+    def extend(self, other: "AbstractTreePath") -> "AbstractTreePath":
+        """
+        Extend the path by another path. Returns a new instance.
+        """
+        return AbstractTreePath(self.path + other.path)
+    
+    @enforce_argument_types
+    def go_up(self, n: int = 1) -> "AbstractTreePath":
+        """
+        Removes the last `n` elements. Returns a new instance.
+        """
+        return self[:-n]
+    
+    @enforce_argument_types
+    def index(self, value: ATPathAttribute | ATPathIndexOrKey) -> int:
+        """
+        Find the index of an attribute, index or key.
+        """
+        return self.path.index(value)
+    
+    def __len__(self) -> int:
+        return len(self.path)
+    
+    def __iter__(self) -> Iterator[ATPathAttribute | ATPathIndexOrKey]:
+        return iter(self.path)
+    
+    @overload
+    def __getitem__(self, i: SupportsIndex, /) -> ATPathAttribute | ATPathIndexOrKey: ...
+    @overload
+    def __getitem__(self, i: slice, /) -> "AbstractTreePath": ...
+    @enforce_argument_types
+    def __getitem__(self, i: SupportsIndex | slice, /) -> "ATPathAttribute | ATPathIndexOrKey | AbstractTreePath":
+        if isinstance(i, slice):
+            new_path = self.path.__getitem__(i)
+            return AbstractTreePath(new_path)
+        else:
+            return self.path.__getitem__(i)
+    
+    @enforce_argument_types
+    def __add__(self, other: "AbstractTreePath") -> "AbstractTreePath":
+        return self.extend(other)
+    
+    @enforce_argument_types
+    def __contains__(self, value: ATPathAttribute | ATPathIndexOrKey) -> bool:
+        return value in self.path
+    
+    def __reversed__(self) -> Iterator[ATPathAttribute | ATPathIndexOrKey]:
+        return reversed(self.path)
+        
     def __repr__(self) -> str:
         path_string = ""
         for item in self.path:
             if   isinstance(item, ATPathAttribute):
-                path_string += f".{item}"
+                path_string += f".{item.value}"
             elif isinstance(item, ATPathIndexOrKey):
-                path_string += f"[{item}]"
-            else:
-                raise MANIP_ValueError(f"Invalid {type(self).__name__}: {self.path}")
+                path_string += f"[{item.value!r}]"
         return f"{type(self).__name__}({path_string})"
 
 class NotSetType:

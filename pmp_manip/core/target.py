@@ -21,8 +21,7 @@ from pmp_manip.core.comment         import FRComment, SRComment
 from pmp_manip.core.context         import PartialContext, CompleteContext
 from pmp_manip.core.enums           import SRSpriteRotationStyle
 from pmp_manip.core.monitor         import FRMonitor, SRMonitor
-from pmp_manip.core.vars_lists      import SRVariable, SRVariable, SRVariable, SRCloudVariable
-from pmp_manip.core.vars_lists      import SRList, SRList, SRList
+from pmp_manip.core.vars_lists      import SRVariable, SRCloudVariable, SRList
 
 
 @grepr_dataclass(grepr_fields=["is_stage", "name", "variables", "lists", "broadcasts", "custom_vars", "blocks", "comments", "current_costume", "costumes", "sounds", "id", "volume", "layer_order"])
@@ -588,24 +587,6 @@ class SRTarget:
             is_stage = isinstance(self, SRStage),
         )
     
-    def walk(target, handler): # HERE
-        """Walk an SRTarget and its children, calling handler on each node."""
-        handler(target)
-
-        # Walk scripts
-        for script in target.scripts:
-            ...#walk_script(script, handler) 
-
-        # Walk unattached comments
-        for comment in target.comments:
-            handler(comment)
-
-        # Costumes and sounds are leaf-like, just handle directly
-        for costume in target.costumes:
-            handler(costume)
-        for sound in target.sounds:
-            handler(sound)
-
     def _to_first_common(self,
         info_api: OpcodeInfoAPI,
         global_vars: list[SRVariable],
@@ -888,7 +869,7 @@ class SRSprite(SRTarget):
             list_.validate(path.add_attribute("local_lists").add_index_or_key(i))
         
         for i, monitor in enumerate(self.local_monitors):
-            monitor.validate(path.add_attribute("local_monitors").add_index_or_key(i))
+            monitor.validate(path.add_attribute("local_monitors").add_index_or_key(i), info_api)
     
     def validate_monitor_dropdown_values(self, 
         path: AbstractTreePath, 

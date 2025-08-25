@@ -1,12 +1,12 @@
 from dataclasses import field
-from typing      import TypeVar, Callable
+from typing      import TypeVar, TypeAlias, Callable
 
 from pmp_manip.utility import grepr_dataclass, remove_duplicates, GEnum, MANIP_BlameDevsError
 
 from pmp_manip.core.context import PartialContext, CompleteContext
 
 
-DROPDOWN_VALUE_T = str | int
+DROPDOWN_VALUE_T: TypeAlias = str | int
 
 class DropdownValueKind(GEnum):
     """

@@ -3,8 +3,7 @@ from pytest import fixture, raises, MonkeyPatch
 from uuid   import uuid4
 
 from pmp_manip.utility            import (
-    gdumps,
-    KeyReprDict,
+    gdumps, KeyReprDict, AbstractTreePath,
     MANIP_ThanksError, MANIP_TypeValidationError, MANIP_RangeValidationError, 
     MANIP_SameValueTwiceError, MANIP_SpriteLayerStackError,
 )

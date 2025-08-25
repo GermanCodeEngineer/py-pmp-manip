@@ -10,7 +10,7 @@ from pmp_manip.opcode_info.api  import DropdownValueKind
 from pmp_manip.opcode_info.data import info_api
 from pmp_manip.important_consts import SHA256_SEC_TARGET_NAME
 from pmp_manip.utility          import (
-    string_to_sha256, 
+    string_to_sha256, AbstractTreePath,
     MANIP_ThanksError, MANIP_TypeValidationError, MANIP_InvalidOpcodeError, MANIP_UnnecessaryDropdownError, 
     MANIP_MissingDropdownError, MANIP_RangeValidationError, MANIP_InvalidValueError,
 )

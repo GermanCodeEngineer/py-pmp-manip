@@ -1,4 +1,5 @@
-from re import split 
+from re     import split 
+from typing import Iterator
 
 from pmp_manip.opcode_info.api import InputType, BuiltinInputType, InputInfo, OpcodeType
 from pmp_manip.utility         import (
@@ -123,7 +124,21 @@ class SRCustomBlockOpcode:
                 if last_was_label:
                     raise MANIP_TypeValidationError(path, f"A custom block opcode must not contain two labels in a row")
                 last_was_label = True
-                
+    
+    def _iterate_node_unfiltered_(self, path: AbstractTreePath) -> Iterator["SRCustomBlockArgument"]:
+        """
+        Implement Special Case for the TreeIterator unfiltered on an SRCustomBlockOpcode.
+        Prevents primitive str elements from being yielded.
+        
+        Args:
+            path: the path from the tree root to self
+        """
+        for i, segment in enumerate(self.segments):
+            if   isinstance(segment, SRCustomBlockArgument):
+                yield value, path.add_attribute("segments").add_index_or_key(i)
+            elif isinstance(segment, str):
+                pass                
+
 
 @grepr_dataclass(grepr_fields=["name", "type"], frozen=True, unsafe_hash=True)
 class SRCustomBlockArgument:

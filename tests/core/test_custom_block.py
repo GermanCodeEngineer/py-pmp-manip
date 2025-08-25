@@ -2,7 +2,9 @@ from pytest import fixture, raises
 
 from pmp_manip.opcode_info.api import BuiltinInputType, InputInfo, OpcodeType
 from pmp_manip.utility         import (
-    MANIP_TypeValidationError, MANIP_RangeValidationError, MANIP_SameValueTwiceError, MANIP_InvalidValueError, MANIP_ConversionError,
+    AbstractTreePath,
+    MANIP_TypeValidationError, MANIP_RangeValidationError, MANIP_SameValueTwiceError, 
+    MANIP_InvalidValueError, MANIP_ConversionError,
 )
 
 from pmp_manip.core.custom_block import (

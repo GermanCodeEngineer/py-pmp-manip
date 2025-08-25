@@ -5,7 +5,8 @@ from pytest      import fixture, raises
 from pmp_manip.opcode_info.api  import DropdownValueKind, OpcodeType, BuiltinInputType, InputMode
 from pmp_manip.opcode_info.data import info_api
 from pmp_manip.utility          import (
-    grepr_dataclass, MANIP_ConversionError,
+    grepr_dataclass, AbstractTreePath, 
+    MANIP_ConversionError,
     MANIP_TypeValidationError, MANIP_RangeValidationError, MANIP_InvalidOpcodeError, MANIP_InvalidBlockShapeError,
     MANIP_UnnecessaryInputError, MANIP_MissingInputError, MANIP_UnnecessaryDropdownError, MANIP_MissingDropdownError,
 )

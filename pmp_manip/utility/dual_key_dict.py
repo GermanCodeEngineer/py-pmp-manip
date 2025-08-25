@@ -1,5 +1,5 @@
 from copy   import copy, deepcopy
-from typing import TypeVar, Generic, Iterable, NoReturn
+from typing import TypeVar, Generic, Iterable, Iterator, NoReturn
 
 from pmp_manip.utility.decorators import enforce_argument_types
 from pmp_manip.utility.errors     import MANIP_KeyError, MANIP_ValueError
@@ -279,15 +279,15 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
     def items_key1(self) -> Iterable[tuple[_K1, _V]]:
         return self._values.items()
 
-    def items_key2(self) -> Iterable[tuple[_K2, _V]]:
+    def items_key2(self) -> Iterator[tuple[_K2, _V]]:
         for key2 in self._k2_to_k1.keys():
             yield (key2, self.get_by_key2(key2))
 
-    def items_key1_key2(self) -> Iterable[tuple[_K1, _K2, _V]]:
+    def items_key1_key2(self) -> Iterator[tuple[_K1, _K2, _V]]:
         for key1, key2 in self._k1_to_k2.items():
             yield (key1, key2, self.get_by_key1(key1))
 
-    def items_key2_key1(self) -> Iterable[tuple[_K2, _K1, _V]]:
+    def items_key2_key1(self) -> Iterator[tuple[_K2, _K1, _V]]:
         for key2, key1 in self._k2_to_k1.items():
             yield (key2, key1, self.get_by_key1(key1))
     
