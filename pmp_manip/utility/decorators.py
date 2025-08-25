@@ -1,4 +1,4 @@
-from collections.abc import Callable as CallableABC
+from collections.abc import Callable as CallableABC, Iterable
 from copy            import copy
 from dataclasses     import dataclass
 from functools       import wraps
@@ -6,7 +6,7 @@ from inspect         import signature
 from sys             import modules as sys_modules
 from types           import NoneType, UnionType
 from typing          import (
-    Any, Callable, ParamSpec, TypeVar, NoReturn,
+    Any, Callable, Union, ParamSpec, TypeVar, NoReturn,
     get_origin, get_args, get_type_hints,
 )
 
@@ -81,9 +81,19 @@ def enforce_argument_types(func: Callable[PARAM_SPEC, RETURN_T]) -> Callable[PAR
     return wrapper
 
 
-def _check_type(value: Any, expected_type: Any, name: str, _path: str = "") -> None:
+def _is_union(tp: object) -> bool:
+    return (
+        get_origin(tp) is Union  # typing.Union[int, str]
+        or isinstance(tp, UnionType)  # new style: int | str
+    )
+    
+def _check_type(value: Any, expected: Any, name: str, path: str = "") -> None:
     """
     Recursively checks that a given value matches the expected type.
+    Runtime type enforcement that supports TypeVar, Union, Optional,
+    type[T], list[T], tuple[T,...], dict[K,V], Iterable[T].
+    Raises TypeError on mismatch.
+
 
     Args:
         value: the actual value passed to the function
@@ -94,122 +104,107 @@ def _check_type(value: Any, expected_type: Any, name: str, _path: str = "") -> N
     Raises:
         TypeError: If the value does not match the expected type
     """
-    from collections.abc import Iterable as IterableABC
-    from pmp_manip.utility.dual_key_dict import DualKeyDict
-    origin = get_origin(expected_type)
-    args = get_args(expected_type)
-    label = f"argument '{name}'{_path}"
 
-    # Any
-    if expected_type is Any:
+    # --- Handle Any ---
+    if expected is Any:
         return
 
-    # NoneType
-    if expected_type is NoneType:
-        if value is not None:
-            raise TypeError(f"{label} must be None, got {type(value)}")
+    # --- Handle TypeVar ---
+    if isinstance(expected, TypeVar):
+        if expected.__bound__ is not None:
+            return _check_type(value, expected.__bound__, name, path)
+        # Unbound TypeVar -> accept anything
         return
 
-    # Ignore TypeVar
-    if isinstance(expected_type, TypeVar) or type(expected_type).__name__ == "TypeVar":
-        return
+    origin = get_origin(expected)
+    args = get_args(expected)
 
-    # Non-generic types
-    if origin is None:
-        # Ignore typing generics (e.g., list[int])
-        if hasattr(expected_type, "__origin__") and expected_type.__origin__ is not None:
-            return
-        # Ignore TypeVar (redundant, but safe)
-        if isinstance(expected_type, TypeVar) or type(expected_type).__name__ == "TypeVar":
-            return
-        if not isinstance(value, expected_type):
-            raise TypeError(f"{label} must be {expected_type}, got {type(value)}")
-        return
-
-    # Callable
-    if origin in (Callable, CallableABC):
-        if not callable(value):
-            raise TypeError(f"{label} must be callable, got {type(value)}")
-        return
-
-    # Union (including Optional)
-    if origin is UnionType:  # Python 3.10+ syntax `|`
-        for subtype in args:
+    # --- Handle Union / Optional ---
+    if _is_union(expected):
+        # handle both typing.Union[...] and PEP 604 int | str
+        arms = get_args(expected) if get_args(expected) else expected.__args__
+        for arm in arms:
             try:
-                _check_type(value, subtype, name, _path)
+                _check_type(value, arm, name, path)
                 return
             except TypeError:
                 continue
-        raise TypeError(f"{label} must be one of {args}, got {type(value)}")
+        raise TypeError(f"{name}{path}: value {value!r} does not match {expected!r}")
 
-    # list[T]
-    if origin is list:
-        if not isinstance(value, list):
-            raise TypeError(f"{label} must be a list, got {type(value)}")
-        if args:
-            for i, item in enumerate(value):
-                _check_type(item, args[0], name, _path + f"[{i}]")
+
+    # --- Handle type[T] ---
+    if origin is type:
+        if not isinstance(value, type):
+            raise TypeError(f"{name}{path}: expected a class (type[T]), got {type(value).__name__}")
+        target = args[0] if args else object
+        # if the inner arg is a TypeVar, reduce to its bound
+        if isinstance(target, TypeVar):
+            target = target.__bound__ or object
+        if _is_union(target):
+            targets = tuple(get_args(target))
+        else:
+            targets = (target,)
+        if target is not object and not issubclass(value, targets):
+            raise TypeError(f"{name}{path}: {value} is not a subclass of {targets}")
         return
 
-    # tuple[T1, T2, ...] or tuple[T, ...]
-    if origin is tuple:
-        if not isinstance(value, tuple):
-            raise TypeError(f"{label} must be a tuple, got {type(value)}")
-        if args:
-            if len(args) == 2 and args[1] is Ellipsis:
-                for i, item in enumerate(value):
-                    _check_type(item, args[0], name, _path + f"[{i}]")
-            else:
-                if len(value) != len(args):
-                    raise TypeError(f"{label} expects {len(args)} elements, got {len(value)}")
-                for i, (item, subtype) in enumerate(zip(value, args)):
-                    _check_type(item, subtype, name, _path + f"[{i}]")
-        return
-
-    # set[T]
-    if origin is set:
-        if not isinstance(value, set):
-            raise TypeError(f"{label} must be a set, got {type(value)}")
-        if args:
-            for i, item in enumerate(value):
-                _check_type(item, args[0], name, _path + f"[{i}]")
-        return
-
-    # dict[K, V]
+    # --- Handle dict[K,V] ---
     if origin is dict:
         if not isinstance(value, dict):
-            raise TypeError(f"{label} must be a dict, got {type(value)}")
-        if args:
-            k_type, v_type = args
-            for k, v in value.items():
-                _check_type(k, k_type, name, _path + f"[key={k!r}]")
-                _check_type(v, v_type, name, _path + f"[key={k!r}]")
+            raise TypeError(f"{name}{path}: expected dict, got {type(value).__name__}")
+        key_t, val_t = args if len(args) == 2 else (Any, Any)
+        for k, v in value.items():
+            _check_type(k, key_t, name, path + "[key]")
+            _check_type(v, val_t, name, path + "[value]")
         return
 
-    # DualKeyDict[K1, K2, V]
-    if origin is DualKeyDict:
-        if not isinstance(value, DualKeyDict):
-            raise TypeError(f"{label} must be a DualKeyDict, got {type(value)}")
-        if args:
-            k1_type, k2_type, v_type = args
-            for k1, k2, v in value.items_key1_key2():
-                _check_type(k1, k1_type, name, _path + f"[key1={k1!r}]")
-                _check_type(k2, k2_type, name, _path + f"[key2={k2!r}]")
-                _check_type(v, v_type, name, _path + f"[key1={k1!r}, key2={k2!r}]")
-        return
-
-    # Iterable[T]
-    if origin in (IterableABC,):
-        if not isinstance(value, IterableABC):
-            raise TypeError(f"{label} must be an Iterable, got {type(value)}")
-        if args:
+    # --- Handle tuple[T,...] or fixed tuple ---
+    if origin is tuple:
+        if not isinstance(value, tuple):
+            raise TypeError(f"{name}{path}: expected tuple, got {type(value).__name__}")
+        if len(args) == 2 and args[1] is Ellipsis:  # tuple[T, ...]
+            elem_t = args[0]
             for i, item in enumerate(value):
-                _check_type(item, args[0], name, _path + f"[{i}]")
+                _check_type(item, elem_t, name, path + f"[{i}]")
+        elif args:  # tuple[T1, T2, ...]
+            if len(value) != len(args):
+                raise TypeError(f"{name}{path}: expected tuple of length {len(args)}, got {len(value)}")
+            for i, (item, elem_t) in enumerate(zip(value, args)):
+                _check_type(item, elem_t, name, path + f"[{i}]")
         return
 
-    # Fallback
-    if not isinstance(value, expected_type):
-        raise TypeError(f"{label} must be {expected_type}, got {type(value)}")
+    # --- Handle list[T], set[T], frozenset[T] ---
+    if origin in (list, set, frozenset):
+        if not isinstance(value, origin):
+            raise TypeError(f"{name}{path}: expected {origin.__name__}, got {type(value).__name__}")
+        elem_t = args[0] if args else Any
+        for i, item in enumerate(value):
+            _check_type(item, elem_t, name, path + f"[{i}]")
+        return
+
+    # --- Handle Iterable[T] ---
+    if origin is Iterable:
+        if not isinstance(value, Iterable):
+            raise TypeError(f"{name}{path}: expected Iterable, got {type(value).__name__}")
+        elem_t = args[0] if args else Any
+        for i, item in enumerate(value):
+            _check_type(item, elem_t, name, path + f"[{i}]")
+        return
+
+    # --- Fallback: plain class or special typing objects ---
+    if origin is None:
+        try:
+            if not isinstance(value, expected):
+                raise TypeError(f"{name}{path}: expected {expected}, got {type(value)}")
+        except TypeError:
+            # Some typing constructs (like NewType) may break isinstance
+            pass
+        return
+
+    # --- Last fallback: ignore parameterization, just check origin ---
+    if not isinstance(value, origin):
+        raise TypeError(f"{name}{path}: expected {origin}, got {type(value)}")
+
 
 def grepr_dataclass(*, grepr_fields: list[str], repr: bool = True,
         init: bool = True, eq: bool = True, order: bool = True, 
