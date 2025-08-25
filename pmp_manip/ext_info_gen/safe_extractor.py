@@ -11,7 +11,7 @@ from pmp_manip.utility            import (
     repr_tree, gdumps,
     MANIP_JsNodeTreeToJsonConversionError, MANIP_InvalidExtensionCodeSyntaxError, MANIP_BadExtensionCodeFormatError, MANIP_InvalidTranslationMessageError,
     MANIP_UnexpectedPropertyAccessWarning, MANIP_UnexpectedNotPossibleFeatureWarning,
-    NotSetType, NotSet,
+    NotSet, NotSetType,
 )
 
 

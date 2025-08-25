@@ -1,10 +1,11 @@
 from types  import MethodType
-from typing import Generic, TypeAlias, TypeVar, Iterator, Iterable, Any
+from typing import Generic, TypeVar, Iterable, Literal, Any, cast, overload
 
 #from pmp_manip.important_consts import SHA256_SEC_TARGET_NAME, SHA256_SEC_BROADCAST_MSG
 #from pmp_manip.opcode_info.api  import OpcodeInfoAPI, DropdownValueKind
 from pmp_manip.utility          import (
-    grepr_dataclass, enforce_argument_types, AbstractTreePath,
+    grepr_dataclass, enforce_argument_types,
+    AbstractTreePath, ATPathAttribute, ATPathIndexOrKey, NotSet, NotSetType,
 )
 
 from pmp_manip.core.asset          import SRCostume, SRVectorCostume, SRBitmapCostume, SRSound
@@ -28,45 +29,46 @@ from pmp_manip.core.vars_lists     import SRVariable, SRCloudVariable, SRList
 
 ALL_SECOND_REPR_TYPES = (
     SRProject,
-    SRStage, SRSprite,
+    SRTarget, SRStage, SRSprite,
     
     SRVariable, SRCloudVariable, SRList,
     SRMonitor, SRVariableMonitor, SRListMonitor,
-    SRBuiltinExtension, SRCustomExtension,
+    SRExtension, SRBuiltinExtension, SRCustomExtension,
     
-    SRScript, SRBlock,
+    SRScript, SRBlock, SRInputValue,
     SRBlockAndTextInputValue, SRBlockAndDropdownInputValue, SRBlockAndBoolInputValue,
     SRBlockOnlyInputValue, SRScriptInputValue,
     SRDropdownValue,
     
-    SRCustomBlockArgumentMutation, SRCustomBlockMutation, SRCustomBlockCallMutation,
+    SRMutation, SRCustomBlockArgumentMutation, SRCustomBlockMutation, SRCustomBlockCallMutation,
     SRCustomBlockOpcode, SRCustomBlockArgument,
     
     SRComment,
-    SRVectorCostume, SRBitmapCostume,
+    SRCostume, SRVectorCostume, SRBitmapCostume,
     SRSound,
 )
-SECOND_REPR_T: TypeAlias = (
+SECOND_REPR_T = (
     SRProject |
-    SRStage | SRSprite |
+    SRTarget | SRStage | SRSprite |
     
     SRVariable | SRCloudVariable | SRList |
     SRMonitor | SRVariableMonitor | SRListMonitor |
-    SRBuiltinExtension | SRCustomExtension |
+    SRExtension | SRBuiltinExtension | SRCustomExtension |
     
-    SRScript | SRBlock |
+    SRScript | SRBlock | SRInputValue |
     SRBlockAndTextInputValue | SRBlockAndDropdownInputValue | SRBlockAndBoolInputValue |
     SRBlockOnlyInputValue | SRScriptInputValue |
     SRDropdownValue |
     
-    SRCustomBlockArgumentMutation | SRCustomBlockMutation | SRCustomBlockCallMutation |
+    SRMutation | SRCustomBlockArgumentMutation | SRCustomBlockMutation | SRCustomBlockCallMutation |
     SRCustomBlockOpcode | SRCustomBlockArgument |
     
     SRComment |
-    SRVectorCostume | SRBitmapCostume |
+    SRCostume | SRVectorCostume | SRBitmapCostume |
     SRSound
 )
 INCLUDED_T = TypeVar("INCLUDED_T", bound=SECOND_REPR_T)
+ARG_T = TypeVar("ARG_T")
 
 YIELD_FIELDS: dict[type[SECOND_REPR_T], list[str]] = {
     SRProject: ["stage", "sprites", "global_variables", "global_lists", "global_monitors", "extensions"],
@@ -120,16 +122,53 @@ def _get_yield_fields(cls: type[SECOND_REPR_T]):
     fields.extend(YIELD_FIELDS[cls])
     return fields
 
+def _visit_node_unfiltered(
+    obj: SECOND_REPR_T | list[Any] | tuple[Any] | dict[Any, Any], 
+    path: AbstractTreePath,
+) -> Iterable[tuple[AbstractTreePath, SECOND_REPR_T]]:
+    """
+    Run the TreeIteratorGenerator unfiltered on an Abstract Second Representation Tree.
+    Returns pairs of node path (from tree root to value) and node value.
+    
+    Args:
+        obj: the object tree to iterate recursively
+        path: the path from the tree root to obj
+    """
+    pairs = []
+    if   isinstance(obj, (list, tuple)):
+        for i, item in enumerate(obj):
+            current_path = path.add_index_or_key(i)
+            pairs.append((current_path, item))
+            pairs.extend(_visit_node_unfiltered(item, current_path))
+    elif isinstance(obj, dict):
+        for key, value in obj.items():
+            current_path = path.add_index_or_key(key)
+            pairs.append((current_path, value))
+            pairs.extend(_visit_node_unfiltered(value, current_path))
+    elif isinstance(getattr(obj, "_visit_node_unfiltered_", None), MethodType):
+        # special case only for SRCustomBlockOpcode.segments
+        # it has both str(primitive) and SRCustomBlockArgument(complex)
+        pairs.extend(obj._visit_node_unfiltered_(path))
+    else:
+        fields = _get_yield_fields(type(obj))
+        for field in fields:
+            value = getattr(obj, field)
+            if value is not None:
+                current_path = path.add_attribute(field)
+                pairs.append((current_path, value))
+                pairs.extend(_visit_node_unfiltered(value, current_path))
+    return pairs
+
 @grepr_dataclass(grepr_fields=["included_types"])
-class TreeIteratorGenerator(Generic[INCLUDED_T]):
+class TreeVisitor(Generic[INCLUDED_T]):
     """
     Implements the recursive iteration of an Abstract Object Tree in Second Representation.
     """
-    included_types: tuple[type[INCLUDED_T]]
+    included_types: tuple[type[INCLUDED_T], ...]
     
     @enforce_argument_types
     @classmethod
-    def new_include_only(cls, included: Iterable[type[INCLUDED_T]]) -> "TreeIteratorGenerator[INCLUDED_T]":
+    def new_include_only(cls, included: Iterable[type[INCLUDED_T]]) -> "TreeVisitor[INCLUDED_T]":
         """
         Create a new TreeIteratorGenerator, which only yields values of the specified types.
         """
@@ -138,65 +177,69 @@ class TreeIteratorGenerator(Generic[INCLUDED_T]):
     # sadly the most specific signature we can make:
     @enforce_argument_types
     @classmethod
-    def new_include_all_except(cls, excluded: Iterable[type[SECOND_REPR_T]]) -> "TreeIteratorGenerator[SECOND_REPR_T]":
+    def new_include_all_except(cls, excluded: Iterable[type[SECOND_REPR_T]]) -> "TreeVisitor[SECOND_REPR_T]":
         """
         Create a new TreeIteratorGenerator, which yields values of all second representation types except for the specified types.
         """
         included = [t for t in ALL_SECOND_REPR_TYPES if t not in excluded]
         return cls(tuple(included))
 
+    # INCLUDED_T will be inferred as Any by type checkers, no solution possible currently
     @enforce_argument_types
-    def iterate_tree(self, obj: SECOND_REPR_T) -> Iterable[tuple[INCLUDED_T, AbstractTreePath]]:
+    def visit_tree(self, obj: SECOND_REPR_T) -> dict[AbstractTreePath, INCLUDED_T]:
         """
         Run the TreeIteratorGenerator recursively on an Abstract Second Representation Tree.
-        Yields pairs of node value and node path (from tree root to value).
+        Returns a map from node path (from tree root to value) to node value.
         """
-        unfiltered_pairs = self._iterate_node_unfiltered(obj, path=AbstractTreePath())
-        filtered_pairs = []
-        for value, path in unfiltered_pairs:
+        unfiltered_pairs = _visit_node_unfiltered(obj, path=AbstractTreePath())
+        filtered_map: dict[AbstractTreePath, INCLUDED_T] = {}
+        for path, value in unfiltered_pairs:
             if isinstance(value, self.included_types):
-                filtered_pairs.append((value, path))
-        return filtered_pairs
-    
-    @staticmethod
-    def _iterate_node_unfiltered(
-        obj: SECOND_REPR_T | list[Any] | tuple[Any] | dict[Any, Any], 
-        path: AbstractTreePath,
-    ) -> Iterable[tuple[SECOND_REPR_T, AbstractTreePath]]:
-        """
-        Run the TreeIteratorGenerator unfiltered on an Abstract Second Representation Tree.
-        Yields pairs of node value and node path (from tree root to value).
-        
-        Args:
-            obj: the object tree to iterate recursively
-            path: the path from the tree root to obj
-        """
-        pairs = []
-        if   isinstance(obj, (list, tuple)):
-            for i, item in enumerate(obj):
-                current_path = path.add_index_or_key(i)
-                pairs.append((item, current_path))
-                pairs.extend(TreeIteratorGenerator._iterate_node_unfiltered(item, current_path))
-        elif isinstance(obj, dict):
-            for key, value in obj.items():
-                current_path = path.add_index_or_key(key)
-                pairs.append((value, current_path))
-                pairs.extend(TreeIteratorGenerator._iterate_node_unfiltered(value, current_path))
-        elif isinstance(getattr(obj, "_iterate_node_unfiltered_", None), MethodType):
-            # special case only for SRCustomBlockOpcode.segments
-            # it has both str(primitive) and SRCustomBlockArgument(complex)
-            pairs.extend(obj._iterate_node_unfiltered_(path))
-        else:
-            fields = _get_yield_fields(type(obj))
-            for field in fields:
-                value = getattr(obj, field)
-                if value is not None:
-                    current_path = path.add_attribute(field)
-                    pairs.append((value, current_path))
-                    pairs.extend(TreeIteratorGenerator._iterate_node_unfiltered(value, current_path))
-        
-        return pairs
+                filtered_map[path] = cast(INCLUDED_T, value)
+        return filtered_map
 
+@overload
+def get_path_in_tree(obj: SECOND_REPR_T, path: AbstractTreePath, default: NotSetType = NotSet) -> SECOND_REPR_T: ...
+@overload
+def get_path_in_tree(obj: SECOND_REPR_T, path: AbstractTreePath, default: ARG_T) -> SECOND_REPR_T | ARG_T: ...
+@enforce_argument_types
+def get_path_in_tree(obj: SECOND_REPR_T, path: AbstractTreePath, default: NotSetType | ARG_T = NotSet) -> SECOND_REPR_T | ARG_T:
+    """
+    Dynamically get a node in an Abstract Second Representation Tree by its path.
 
-__all__ = ["TreeIteratorGenerator"]
+    Raises:
+        ValueError: if the path could not be accessed.
+    """
+    current_object = obj
+    for i, item in enumerate(path):
+        if   isinstance(item, ATPathAttribute):
+            try:
+                current_object = getattr(current_object, item.value)
+            except (AttributeError, Exception) as error:
+                if default is NotSet:
+                    raise ValueError(f"Failed to get attribute {item.value!r} of object at path {path[:i]}: {error}") from error
+                else:
+                    return default
+        elif isinstance(item, ATPathIndexOrKey):
+            try:
+                current_object = current_object[item.value]
+            except (AttributeError, Exception) as error:
+                if default is NotSet:
+                    raise ValueError(f"Failed to get index or key {item.value!r} of object at path {path[:i]}: {error}") from error
+                else:
+                    return default
+    return current_object
+
+@enforce_argument_types
+def path_exists_in_tree(obj: SECOND_REPR_T, path: AbstractTreePath) -> bool:
+    """
+    Checks if a path is exists/is accessiable in an Abstract Second Representation Tree.
+    """
+    try:
+        get_path_in_tree(obj, path)
+        return True
+    except ValueError:
+        return False
+
+__all__ = ["TreeVisitor", "get_path_in_tree", "path_exists_in_tree"]
 

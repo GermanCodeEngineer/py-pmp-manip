@@ -195,18 +195,18 @@ class AbstractTreePath:
         return AbstractTreePath(copy(self.path))
     
     @enforce_argument_types
-    def add_attribute(self, value: str) -> "AbstractTreePath":
+    def add_attribute(self, attr: str) -> "AbstractTreePath":
         """
         Adds an attribute to the path. Returns a new instance.
         """
-        return AbstractTreePath(self.path + (ATPathAttribute(value),))
+        return AbstractTreePath(self.path + (ATPathAttribute(attr),))
 
     @enforce_argument_types
-    def add_index_or_key(self, value: int | str | Any) -> "AbstractTreePath":
+    def add_index_or_key(self, index_or_key: int | str | Any) -> "AbstractTreePath":
         """
         Adds an index or key to the path. Returns a new instance.
         """
-        return AbstractTreePath(self.path + (ATPathIndexOrKey(value),))
+        return AbstractTreePath(self.path + (ATPathIndexOrKey(index_or_key),))
     
     @enforce_argument_types
     def extend(self, other: "AbstractTreePath") -> "AbstractTreePath":
