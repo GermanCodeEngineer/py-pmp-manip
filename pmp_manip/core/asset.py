@@ -180,7 +180,10 @@ class FRSound:
             # Other attributes can be derived from the sound files
         )
 
-@grepr_dataclass(grepr_fields=["name", "file_extension", "rotation_center"], init=False, forbid_init_only_subcls=True)
+@grepr_dataclass(
+    grepr_fields=["name", "file_extension", "rotation_center"], init=False, forbid_init_only_subcls=True,
+    suggested_subcls_names=["SRVectorCostume", "SRBitmapCostume"],
+)
 class SRCostume(ABC):
     """
     The second representation for a costume. It is more user friendly then the first representation.

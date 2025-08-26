@@ -1288,7 +1288,7 @@ Represents a single input field of a block. Can be any kind of field (e.g. text,
 - **description**: Stores the round dropdown menu of the input value.
 - **note**: Only exists for instances of [`SRBlockAndDropdownInputValue`](#srblockanddropdowninputvalue).
 ### Editor View and Python Object Example
-See the [example of `SRBlock`](#editor-view-example-9)
+See the [example of `SRBlock`](#editor-view-example-9).
 
 ### `SRBlockAndTextInputValue`
 Inherits from [`SRInputValue`](#srinputvalue).

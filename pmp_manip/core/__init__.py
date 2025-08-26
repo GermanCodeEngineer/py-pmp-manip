@@ -10,6 +10,8 @@ from pmp_manip.core.dropdown        import *
 from pmp_manip.core.monitor         import *
 from pmp_manip.core.extension       import *
 from pmp_manip.core.target          import *
+from pmp_manip.core.tools           import *
+from pmp_manip.core.patterns        import *
 from pmp_manip.core.project         import *
 from pmp_manip.core.vars_lists      import *
 from pmp_manip.core.vars_lists      import *

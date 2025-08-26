@@ -1017,7 +1017,11 @@ class SRBlock:
             is_top_level = is_top_level,
         )
 
-@grepr_dataclass(grepr_fields=[], eq=False, order=False, init=False, forbid_init_only_subcls=True) # eq must be True for order to work, is overwritten
+@grepr_dataclass(
+    grepr_fields=[], eq=False, order=False, init=False, forbid_init_only_subcls=True,
+    suggested_subcls_names=["SRBlockAndTextInputValue", "SRBlockAndDropdownInputValue", "SRBlockAndBoolInputValue", "SRBlockOnlyInputValue", "SRScriptInputValue"],
+    # eq must be True for order to work, is overwritten
+)
 class SRInputValue(ABC):
     """
     The second representation for a block input. 
