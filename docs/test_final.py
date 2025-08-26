@@ -1,6 +1,7 @@
 from pmp_manip import (
-    get_default_config, init_config, info_api, FRProject, AbstractTreePath,
+    get_default_config, init_config, info_api, FRProject,
     SRScript, SRBlock,
+    ScriptPattern, BlockPattern, InputPattern, Const, match_handler,
 )
 from pmp_manip.core.tools import TreeVisitor, get_path_in_tree, path_exists_in_tree
 
@@ -15,12 +16,6 @@ srproject = frproject.to_second(info_api)
 #.sprites[7].scripts[0].blocks[3].inputs
 #print(get_path_in_tree(srproject, path))
 
-visitor = TreeVisitor.new_include_only(included=[SRBlock])
-path_to_node_map = visitor.visit_tree(srproject)
-for path, node in path_to_node_map.items():
-    
-
-from pmp_manip.core.patterns import *
 pattern = ScriptPattern(
     blocks=[
         BlockPattern(opcode=Const("when green flag clicked")),
@@ -32,19 +27,29 @@ pattern = ScriptPattern(
                         BlockPattern(
                             opcode=Const("if <CONDITION> then {THEN}"),
                             inputs={
-                                "CONDITION": InputPattern(
-                                    block=BlockPattern(opcode=Const("key ([KEY]) pressed?")),
-                                ),
+                                "CONDITION": lambda x: True
                             },
+                            access_point_id="if_block"
                         ),
                     ],
                 ),
             },
+            access_point_id="forever_block",
         ),
     ],
+    access_point_id="root",
 )
-value = srproject.sprites[0].scripts[1]
 print(pattern)
-print(value)
-matches = match_handler(pattern, value)
-print(matches)
+
+
+visitor = TreeVisitor.new_include_only(included=[SRScript])
+path_to_node_map = visitor.visit_tree(srproject)
+for path, node in path_to_node_map.items():
+    match_result = match_handler(handler=pattern, value=node)
+    if match_result is not None:
+        print(100*"=")
+        print(path)
+        print(node)
+        print(match_result)
+        break
+        

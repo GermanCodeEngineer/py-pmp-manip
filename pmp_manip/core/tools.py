@@ -125,7 +125,7 @@ def _visit_node_unfiltered(
     path: AbstractTreePath,
 ) -> Iterable[tuple[AbstractTreePath, SECOND_REPR_T]]:
     """
-    Run the TreeIteratorGenerator unfiltered on an Abstract Second Representation Tree.
+    Run the TreeVisitor unfiltered on an Abstract Second Representation Tree.
     Returns pairs of node path (from tree root to value) and node value.
     
     Args:
@@ -168,7 +168,7 @@ class TreeVisitor(Generic[INCLUDED_T]):
     @classmethod
     def new_include_only(cls, included: Iterable[type[INCLUDED_T]]) -> "TreeVisitor[INCLUDED_T]":
         """
-        Create a new TreeIteratorGenerator, which only yields values of the specified types.
+        Create a new TreeVisitor, which only includes values of the specified types.
         """
         return cls(tuple(included))
 
@@ -177,7 +177,7 @@ class TreeVisitor(Generic[INCLUDED_T]):
     @classmethod
     def new_include_all_except(cls, excluded: Iterable[type[SECOND_REPR_T]]) -> "TreeVisitor[SECOND_REPR_T]":
         """
-        Create a new TreeIteratorGenerator, which yields values of all second representation types except for the specified types.
+        Create a new TreeVisitor, which includes values of all second representation types except for the specified types.
         """
         included = [t for t in ALL_SECOND_REPR_TYPES if t not in excluded]
         return cls(tuple(included))
@@ -186,7 +186,7 @@ class TreeVisitor(Generic[INCLUDED_T]):
     @enforce_argument_types
     def visit_tree(self, obj: SECOND_REPR_T) -> dict[AbstractTreePath, INCLUDED_T]:
         """
-        Run the TreeIteratorGenerator recursively on an Abstract Second Representation Tree.
+        Run the TreeVisitor recursively on an Abstract Second Representation Tree.
         Returns a map from node path (from tree root to value) to node value.
         """
         unfiltered_pairs = _visit_node_unfiltered(obj, path=AbstractTreePath())
