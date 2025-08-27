@@ -1641,3 +1641,9 @@ SRSound(
     content=<pydub.audio_segment.AudioSegment object at 0x781e6bce90>,
 )
 ```
+
+---
+
+### References
+* For a **documentation overview** and **all pages** of the tutorial, see [docs/index.md](index.md)
+* Next Page: **Analyzing and Editing Projects**, see [docs/analyze_edit.md](analyze_edit.md)

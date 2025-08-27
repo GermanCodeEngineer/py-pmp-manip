@@ -16,17 +16,15 @@ from pmp_manip.core.custom_block   import (
     SRCustomBlockOpcode, SRCustomBlockArgument, SRCustomBlockArgumentType, SRCustomBlockOptype,
 )
 from pmp_manip.core.dropdown       import SRDropdownValue
-#from pmp_manip.core.extension      import SRExtension, SRBuiltinExtension, SRCustomExtension
-#from pmp_manip.core.monitor        import SRMonitor, SRVariableMonitor, SRListMonitor
-#from pmp_manip.core.target         import SRTarget, SRStage, SRSprite
-#from pmp_manip.core.project        import SRProject
-#from pmp_manip.core.vars_lists     import SRVariable, SRCloudVariable, SRList
 
 
 CONST_T = TypeVar("CONST_T")
 
 @grepr_dataclass(grepr_fields=["value"])
 class Const(Generic[CONST_T]): # TODO: find better name
+    """
+    Requires an exact constant value at it's location in a pattern or similar. 
+    """
     value: CONST_T
 
 # parametric alias
@@ -70,7 +68,7 @@ class Pattern:
 
     access_point_id: str | None = None
     
-    def match(self, value: Any, result: MatchResult) -> bool:
+    def match(self, value: Any, result: SuccessfulMatchResult) -> bool:
         """
         Check if a Pattern matches with a Second Representation Tree.
         """
@@ -207,9 +205,9 @@ class CBArgumentPattern(Pattern):
 
 
 @grepr_dataclass(grepr_fields=["access_points"])
-class MatchResult:
+class SuccessfulMatchResult:
     """
-    Represents the result of a Sucessful Match from a Pattern with a Second Representation Tree.
+    Represents the result of a sucessful match from a Pattern with a Second Representation Tree.
     Allows the access of auto-filled access points by their id.
     """
     access_points: dict[str, Any] = field(init=False, default_factory=dict)
@@ -243,7 +241,7 @@ class MatchResult:
 def _match_list_tuple_handler(
     handler: list[ConstOrFunc[Any] | Pattern] | tuple[ConstOrFunc[Any] | Pattern],
     value: list[Any],
-    result: MatchResult,
+    result: SuccessfulMatchResult,
 ) -> bool:
     """
     Check if a list or tuple of Constant, Pattern or Callable matches with a Second Representation Tree.
@@ -261,7 +259,7 @@ def _match_list_tuple_handler(
 def _match_dict_handler(
     handler: dict[Any, ConstOrFunc[Any] | Pattern],
     value: dict[Any, Any],
-    result: MatchResult,
+    result: SuccessfulMatchResult,
 ) -> bool:
     """
     Check if a dict of Any and Constant, Pattern or Callable matches with a Second Representation Tree.
@@ -279,11 +277,11 @@ def _match_dict_handler(
 def _match_handler(
     handler: ConstOrFunc[Any] | Pattern, 
     value: Any, 
-    result: MatchResult,
+    result: SuccessfulMatchResult,
 ) -> bool:
     """
     Check if a Constant, Pattern or Callable matches with a Second Representation Tree.
-    On Success a MatchResult is returned. On Fail None is returned.
+    On Success True is returned. On Fail None is False.
     
     Raises:
         TypeError: if the or any nested handler func returns a non-bool value.
@@ -300,15 +298,15 @@ def _match_handler(
 
 # TODO: possibly use SECOND_REPR_T instead of Any
 @enforce_argument_types
-def match_handler(handler: ConstOrFunc[Any] | Pattern, value: Any) -> MatchResult | None:
+def match_handler(handler: ConstOrFunc[Any] | Pattern, value: Any) -> SuccessfulMatchResult | None:
     """
     Check if a Constant, Pattern or Callable matches with a Second Representation Tree.
-    On Success a MatchResult is returned. On Fail None is returned.
+    On Success a SuccessfulMatchResult is returned. On Fail None is returned.
     
     Raises:
         TypeError: if the or any nested handler func returns a non-bool value.
     """
-    result = MatchResult()
+    result = SuccessfulMatchResult()
     matches = _match_handler(handler, value, result)
     return result if matches else None
 
