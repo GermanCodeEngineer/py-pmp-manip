@@ -28,7 +28,7 @@ class Const(Generic[CONST_T]): # TODO: find better name
     value: CONST_T
 
 # parametric alias
-ConstOrFunc     : TypeAlias = Const[CONST_T] | Callable[[CONST_T], bool]
+ConstOrFunc     : TypeAlias = Const[CONST_T] | Callable[[CONST_T], "SuccessfulMatchResult"]
 CBOpcodeSegmentT: TypeAlias = str | SRCustomBlockArgument
 MutationPatternT: TypeAlias = "CBArgumentMutationPattern | CBMutationPattern | CBCallMutationPattern"
 
@@ -167,7 +167,7 @@ class CBMutationPattern(Pattern):
 
     custom_opcode    : CBOpcodeHandler   | None = None
     no_screen_refresh: ConstOrFunc[bool] | None = None
-    optype           : ConstOrFunc[SRCustomBlockOpcode] | None = None
+    optype           : ConstOrFunc[SRCustomBlockOptype] | None = None
     main_color       : ConstOrFunc[str]  | None = None
     prototype_color  : ConstOrFunc[str]  | None = None
     outline_color    : ConstOrFunc[str]  | None = None
@@ -274,6 +274,7 @@ def _match_dict_handler(
             return False
     return True
 
+@enforce_argument_types
 def _match_handler(
     handler: ConstOrFunc[Any] | Pattern, 
     value: Any, 
@@ -316,6 +317,6 @@ __all__ = [
     "ScriptPattern", "BlockPattern", "InputPattern", "DropdownPattern",
     "CBArgumentMutationPattern", "CBMutationPattern", "CBCallMutationPattern",
     "CBOpcodePattern", "CBArgumentPattern",
-    "match_handler"
+    "match_handler",
 ]
 

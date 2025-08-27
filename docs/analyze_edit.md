@@ -160,20 +160,188 @@ Or what if you are looking for certain multi-block structures?
 `pmp_manip` provides `Pattern` search system for blocks, scripts and related objects.
 
 ### Patterns
-Subclasses Table
+There is a **corresponding pattern class for every script or block related class.** 
+Pattern classes have the **same attributes as their second representation equivalents.**
+### `Pattern`
+Basis for a Pattern selecting Second Representation Scripts, Blocks etc.
+Every subclass corresponds to a specific SR class and matches against its attributes.
+#### `Pattern.access_point_id`
+* **type**: `str` or `None`
+* **description in SR**: An optional identifier for the match location in the Second Representation tree. If provided, the matched object is stored and accessible on success under this access point ID.
+* **default value**: `None`
+---
 
-### Const
+### `ScriptPattern`
+Pattern for selecting [`SRScript`](second_repr.md#srscript) instances with certain data.
+#### `ScriptPattern.position`
+* **type**: `Const[tuple[int | float, int | float]]` or `Callable[[tuple[int | float, int | float]], SuccessfulMatchResult|None]` or `tuple[int | float, int | float]` or `None`
+* **description in SR**: Stores the position of the script in the "Code" tab. Unlimited, but usually in the range of hundreds and thousands.
+* **default value**: `None`
+#### `ScriptPattern.blocks`
+* **type**: `Const[list[SRBlock]]` or `Callable[[list[SRBlock]], SuccessfulMatchResult|None]` or `list[BlockHandler]`,<br> where `BlockHandler` means `Const[SRBlock]` or `Callable[[SRBlock], SuccessfulMatchResult|None]` or `BlockPattern`
+* **description in SR**: Stores the script's sequence of blocks from top to bottom.
+* **default value**: `[]`
+---
 
-### Custom Functionlike Handler
-What to take what to call
+### `BlockPattern`
+Pattern for selecting [`SRBlock`](second_repr.md#srblock) instances with certain data.
+#### `BlockPattern.opcode`
+* **type**: `Const[str]` or `Callable[[str], SuccessfulMatchResult|None]` or `None`
+* **description in SR**: The unique identifier for it's kind of block.
+* **default value**: `None`
+#### `BlockPattern.inputs`
+* **type**: `Const[dict[str, SRInputValue]]` or `Callable[[dict[str, SRInputValue]], SuccessfulMatchResult|None]` or `dict[str, InputHandler]`,<br>where `InputHandler` means `Const[SRInputValue]` or `Callable[[SRInputValue], SuccessfulMatchResult|None]` or `InputPattern`
+* **description in SR**: The arguments fields of the block and their values. Includes text, number fields, round dropdowns one can insert blocks into and all others except for square dropdowns.
+* **default value**: `{}`
+#### `BlockPattern.dropdowns`
+* **type**: `Const[dict[str, SRDropdownValue]]` or `Callable[[dict[str, SRDropdownValue]], SuccessfulMatchResult|None]` or `dict[str, DropdownHandler]`,<br>where `DropdownHandler` means `Const[SRDropdownValue]` or `Callable[[SRDropdownValue], SuccessfulMatchResult|None]` or `DropdownPattern`
+* **description in SR**: The argument fields of the block and their values. Only includes square dropdowns, not round dropdowns one can insert blocks into.
+* **default value**: `{}`
+#### `BlockPattern.comment`
+* **type**: `Const[SRComment | None]` or `Callable[[SRComment | None], SuccessfulMatchResult|None]` or `None`
+* **description in SR**: The optional attached comment of the block.
+* **default value**: `None`
+#### `BlockPattern.mutation`
+* **type**: `Const[SRMutation]` or `CBArgumentMutationPattern` or `CBMutationPattern` or `CBCallMutationPattern` or `None`
+* **description in SR**: The optional mutation of the block for some opcodes(kinds of blocks). Most blocks do not need one.
+* **default value**: `None`
+---
+
+### `InputPattern`
+Pattern for selecting [`SRInputValue`](second_repr.md#srinputvalue) instances (or subclasses) with certain data.
+#### `InputPattern.blocks`
+* **type**: `Const[list[SRBlock]]` or `Callable[[list[SRBlock]], SuccessfulMatchResult|None]` or `list[BlockHandler]`,<br> where `BlockHandler` means `Const[SRBlock]` or `Callable[[SRBlock], SuccessfulMatchResult|None]` or `BlockPattern`
+* **description in SR**: Stores the subscript's sequence of blocks from top to bottom (e.g. the "then" section of the "if" block).
+* **default value**: `[]`
+#### `InputPattern.block`
+* **type**: `Const[SRBlock | None]` or `Callable[[SRBlock | None], SuccessfulMatchResult|None]` or `BlockPattern` or `None`
+* **description in SR**: Stores the optional block inserted into the argument text field, round dropdown menu etc.
+* **default value**: `None`
+#### `InputPattern.immediate`
+* **type**: `Const[str | bool | None]` or `Callable[[str | bool | None], SuccessfulMatchResult|None]` or `None`
+* **description in SR**: the "immediate" value of the input value i.e. if the default value if no block is dragged into the input.
+* **default value**: `None`
+#### `InputPattern.dropdown`
+* **type**: `Const[SRDropdownValue | None]` or `Callable[[SRDropdownValue | None], SuccessfulMatchResult|None]` or `DropdownPattern` or `None`
+* **description in SR**: Stores the round dropdown menu of the input value.
+* **default value**: `None`
+---
+
+### `DropdownPattern`
+Pattern for selecting [`SRDropdownValue`](second_repr.md#srdropdownvalue) instances with certain data.
+#### `DropdownPattern.kind`
+* **type**: `Const[DropdownValueKind]` or `Callable[[DropdownValueKind], SuccessfulMatchResult|None]` or `None`
+* **description in SR**: Stores the kind of thing the dropdown value refers to (e.g. `VARIABLE`, `SPRITE`, `OBJECT` or `STANDARD`).
+* **default value**: `None`
+#### `DropdownPattern.value`
+* **type**: `Const[str | (int)]` or `Callable[[str | (int)], SuccessfulMatchResult|None]` or `None`
+* **description in SR**: Stores the actual value of the dropdown value.
+* **default value**: `None`
+---
+
+### `CBArgumentMutationPattern`
+Pattern for selecting [`SRCustomBlockArgumentMutation`](second_repr.md#srcustomblockargumentmutation) instances with certain data.
+#### `CBArgumentMutationPattern.argument_name`
+* **type**: `Const[str]` or `Callable[[str], SuccessfulMatchResult|None]` or `None`
+* **description in SR**: the name of the custom block argument which the argument reporter block is for.
+* **default value**: `None`
+#### `CBArgumentMutationPattern.main_color`
+* **type**: `Const[str]` or `Callable[[str], SuccessfulMatchResult|None]` or `None`
+* **description in SR**: the main color of the "define" block the argument reporter block is for.
+* **default value**: `None`
+#### `CBArgumentMutationPattern.prototype_color`
+* **type**: `Const[str]` or `Callable[[str], SuccessfulMatchResult|None]` or `None`
+* **description in SR**: the main color of the inner block of the "define" block the argument reporter block is for.
+* **default value**: `None`
+#### `CBArgumentMutationPattern.outline_color`
+* **type**: `Const[str]` or `Callable[[str], SuccessfulMatchResult|None]` or `None`
+* **description in SR**: the outline color of the inner block of the "define" block the argument reporter block is for.
+* **default value**: `None`
+---
+
+### `CBMutationPattern`
+Pattern for selecting [`SRCustomBlockMutation`](second_repr.md#srcustomblockmutation) instances with certain data.
+#### `CBMutationPattern.custom_opcode`
+* **type**: `Const[SRCustomBlockOpcode]` or `Callable[[SRCustomBlockOpcode], SuccessfulMatchResult|None]` or `CBOpcodePattern` or `None`
+* **description in SR**: Stores the name and argument field names and kinds of the custom block.
+* **default value**: `None`
+#### `CBMutationPattern.no_screen_refresh`
+* **type**: `Const[bool]` or `Callable[[bool], SuccessfulMatchResult|None]` or `None`
+* **description in SR**: Wether the "Run without screen refresh" box was ticked when creating the custom block.
+* **default value**: `None`
+#### `CBMutationPattern.optype`
+* **type**: `Const[SRCustomBlockOptype]` or `Callable[[SRCustomBlockOptype], SuccessfulMatchResult|None]` or `None`
+* **description in SR**: What shape of block the custom block is (e.g. square statement, boolean, reporter).
+* **default value**: `None`
+#### `CBMutationPattern.main_color`
+* **type**: `Const[str]` or `Callable[[str], SuccessfulMatchResult|None]` or `None`
+* **description in SR**: the main color of the "define" block.
+* **default value**: `None`
+#### `CBMutationPattern.prototype_color`
+* **type**: `Const[str]` or `Callable[[str], SuccessfulMatchResult|None]` or `None`
+* **description in SR**: the main color of the inner block of the "define" block.
+* **default value**: `None`
+#### `CBMutationPattern.outline_color`
+* **type**: `Const[str]` or `Callable[[str], SuccessfulMatchResult|None]` or `None`
+* **description in SR**: the outline color of the inner block of the "define" block the argument reporter block is for.
+* **default value**: `None`
+---
+
+### `CBCallMutationPattern`
+Pattern for selecting [`SRCustomBlockCallMutation`](second_repr.md#srcustomblockcallmutation) instances with certain data.
+#### `CBCallMutationPattern.custom_opcode`
+* **type**: `Const[SRCustomBlockOpcode]` or `Callable[[SRCustomBlockOpcode], SuccessfulMatchResult|None]` or `CBOpcodePattern` or `None`
+* **description in SR**: Stores the labels and argument field names and kinds of the custom block, this block will call, to reference it.
+* **default value**: `None`
+---
+
+### `CBOpcodePattern`
+Pattern for selecting [`SRCustomBlockOpcode`](second_repr.md#srcustomblockopcode) instances with certain data.
+#### `CBOpcodePattern.segments`
+* **type**: `Const[tuple[str | SRCustomBlockArgument]]` or `Callable[[tuple[str | SRCustomBlockArgument]], SuccessfulMatchResult|None]` or `tuple[CBArgumentHandler]` or `None`<br> where `CBArgumentHandler` means `Const[str | SRCustomBlockArgument]` or `Callable[[str | SRCustomBlockArgument], SuccessfulMatchResult|None]` or `CBArgumentPattern`
+* **description in SR**: Stores the labels and argument field names and kinds of the custom block. A `str` item represents a label, a `SRCustomBlockArgument` represents an argument of the custom block.
+* **default value**: `None`
+---
+
+### `CBArgumentPattern`
+Pattern for selecting [`SRCustomBlockArgument`](second_repr.md#srcustomblockargument) instances with certain data.
+#### `CBArgumentPattern.name`
+* **type**: `Const[str]` or `Callable[[str], SuccessfulMatchResult|None]` or `None`
+* **description in SR**: the name of the argument.
+* **default value**: `None`
+#### `CBArgumentPattern.type`
+* **type**: `Const[SRCustomBlockArgumentType]` or `Callable[[SRCustomBlockArgumentType], SuccessfulMatchResult|None]` or `None`
+* **description in SR**: the kind of the argument (string or number vs. boolean).
+* **default value**: `None`
+
+Notes:
+* see SR Class link for details on attributes etc.
+---
+
+### `Const`
+Requires an exact constant value at it's location in a pattern or similar. 
+#### `Const.value`
+* **type**: `Any`
+* **description**: the exact constant value required for a successful match.
 
 ### `match_handler`
 ignore result for now
 
+### Terminology
+* "**Handler**" means either a subclass of [`Pattern`](#pattern), a [custom function](#custom-functionlike-handler).
+
+### Custom Functionlike Handler
+* A custom callable (e.g. `def` or `lambda` function).
+* Takes one argument of the specified type.
+* Should returns a `SuccessfulMatchResult` if it consideres with the given value a match otherwise `None`.
+* \# TODO: nested match calls
+
+### `SuccessfulMatchResult`
+
+## Use
 
 ## Editing a Project
 
-### `MatchResult`
 
 
 
@@ -213,5 +381,5 @@ You can now upload `"path/to/my_modified_project.pmp"` to the PenguinMod Editor 
 
 ### References
 * For a **documentation overview** and **all pages** of the tutorial, see [docs/index.md](index.md)
-* Next Page: **Handling Extensions**, see [docs/handling_extensions.md](handling_extensions.md)
+* Next Page: **Exporting Projects**, see [docs/export.pmp](export.md)
 
