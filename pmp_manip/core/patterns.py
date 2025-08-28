@@ -21,14 +21,14 @@ from pmp_manip.core.dropdown       import SRDropdownValue
 CONST_T = TypeVar("CONST_T")
 
 @grepr_dataclass(grepr_fields=["value"])
-class Const(Generic[CONST_T]): # TODO: find better name
+class PatternConst(Generic[CONST_T]): # TODO: find better name
     """
     Requires an exact constant value at it's location in a pattern or similar. 
     """
     value: CONST_T
 
 # parametric alias
-ConstOrFunc     : TypeAlias = Const[CONST_T] | Callable[[CONST_T], "SuccessfulMatchResult"]
+ConstOrFunc     : TypeAlias = PatternConst[CONST_T] | Callable[[CONST_T], "SuccessfulMatchResult"]
 CBOpcodeSegmentT: TypeAlias = str | SRCustomBlockArgument
 MutationPatternT: TypeAlias = "CBArgumentMutationPattern | CBMutationPattern | CBCallMutationPattern"
 
@@ -86,7 +86,7 @@ class Pattern:
                 field_matches = _match_list_tuple_handler(field_handler, field_value, result)
             elif isinstance(field_handler, dict):
                 field_matches = _match_dict_handler(field_handler, field_value, result)
-            else: # Const, Func or Pattern
+            else: # PatternConst, Func or Pattern
                 field_matches = _match_handler(field_handler, field_value, result)
             if not field_matches:
                 return False
@@ -207,7 +207,7 @@ class CBArgumentPattern(Pattern):
 @grepr_dataclass(grepr_fields=["access_points"])
 class SuccessfulMatchResult:
     """
-    Represents the result of a sucessful match from a Pattern with a Second Representation Tree.
+    Represents the result of a sucessful match usuallly from a Pattern with a Second Representation Tree.
     Allows the access of auto-filled access points by their id.
     """
     access_points: dict[str, Any] = field(init=False, default_factory=dict)
@@ -240,12 +240,16 @@ class SuccessfulMatchResult:
 
 def _match_list_tuple_handler(
     handler: list[ConstOrFunc[Any] | Pattern] | tuple[ConstOrFunc[Any] | Pattern],
-    value: list[Any],
+    value: list[Any] | tuple[Any],
     result: SuccessfulMatchResult,
 ) -> bool:
     """
     Check if a list or tuple of Constant, Pattern or Callable matches with a Second Representation Tree.
     """
+    if type(handler) is not type(value):
+        return False
+    if len(handler) != len(value):
+        return False
     for i, item_handler in enumerate(handler):
         try:
             item_value = value[i]
@@ -287,14 +291,14 @@ def _match_handler(
     Raises:
         TypeError: if the or any nested handler func returns a non-bool value.
     """
-    if   isinstance(handler, Const):
+    if   isinstance(handler, PatternConst):
         matches = handler.value == value
     elif isinstance(handler, Pattern):
         matches = handler.match(value, result)
     elif callable(handler):
         matches = handler(value)
-        if not isinstance(matches, bool):
-            raise TypeError(f"Custom handler func must return bool, not {type(matches)}")
+        if (matches is not None) and not(isinstance(matches, SuccessfulMatchResult)):
+            raise TypeError(f"Custom handler func must return SuccessfulMatchResult or None, not {type(matches)}")
     return matches
 
 # TODO: possibly use SECOND_REPR_T instead of Any
@@ -313,7 +317,7 @@ def match_handler(handler: ConstOrFunc[Any] | Pattern, value: Any) -> Successful
 
 
 __all__ = [
-    "Const", "Pattern", 
+    "PatternConst", "Pattern", 
     "ScriptPattern", "BlockPattern", "InputPattern", "DropdownPattern",
     "CBArgumentMutationPattern", "CBMutationPattern", "CBCallMutationPattern",
     "CBOpcodePattern", "CBArgumentPattern",

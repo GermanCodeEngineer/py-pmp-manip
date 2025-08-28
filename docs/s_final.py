@@ -1,7 +1,7 @@
 from pmp_manip import (
     get_default_config, init_config, info_api, FRProject,
     SRScript, SRBlock,
-    ScriptPattern, BlockPattern, InputPattern, Const, match_handler,
+    ScriptPattern, BlockPattern, InputPattern, PatternConst, match_handler,
 )
 from pmp_manip.core.tools import TreeVisitor, get_path_in_tree, path_exists_in_tree
 
@@ -18,14 +18,14 @@ srproject = frproject.to_second(info_api)
 
 pattern = ScriptPattern(
     blocks=[
-        BlockPattern(opcode=Const("when green flag clicked")),
+        BlockPattern(opcode=PatternConst("when green flag clicked")),
         BlockPattern(
-            opcode=Const("forever {BODY}"),
+            opcode=PatternConst("forever {BODY}"),
             inputs={
                 "BODY": InputPattern(
                     blocks=[
                         BlockPattern(
-                            opcode=Const("if <CONDITION> then {THEN}"),
+                            opcode=PatternConst("if <CONDITION> then {THEN}"),
                             inputs={
                                 "CONDITION": lambda x: True
                             },
