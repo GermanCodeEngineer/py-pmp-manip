@@ -21,7 +21,7 @@ from pmp_manip.core.dropdown       import SRDropdownValue
 CONST_T = TypeVar("CONST_T")
 
 @grepr_dataclass(grepr_fields=["value"])
-class PatternConst(Generic[CONST_T]): # TODO: find better name
+class PatternConst(Generic[CONST_T]):
     """
     Requires an exact constant value at it's location in a pattern or similar. 
     """
@@ -212,6 +212,7 @@ class SuccessfulMatchResult:
     """
     access_points: dict[str, Any] = field(init=False, default_factory=dict)
 
+    @enforce_argument_types
     def get_access_point(self, access_point_id: str) -> Any:
         """
         Get the value at a configured access point.
@@ -225,6 +226,7 @@ class SuccessfulMatchResult:
             pass
         raise ValueError(f"Unknown access point: {access_point_id}")
 
+    @enforce_argument_types
     def add_access_point(self, access_point_id: str, value: Any) -> None:
         """
         Set a new access point.
@@ -236,6 +238,21 @@ class SuccessfulMatchResult:
             raise ValueError(f"Access point is alredy defined: {access_point_id}")
         self.access_points[access_point_id] = value
     
+    @enforce_argument_types
+    def merge_from(self, other: SuccessfulMatchResult) -> None:
+        """
+        Merge the content of another SuccessfulMatchResult into this one. Does not create a new instance, but modifies this one.
+
+        Args:
+            other: the other result
+
+        Raises:
+            ValueError: if an access point exists in both results.
+        """
+        for access_point_id in other.access_points:
+            if (access_point_id in self.access_points) and (self.access_points[access_point_id] != other.access_points[access_point_id]):
+                raise ValueError(f"Merge Conflict: access point {access_point_id!r} is defined with a different value in both results")
+        self.access_points |= other.access_points      
     
 
 def _match_list_tuple_handler(
@@ -278,7 +295,6 @@ def _match_dict_handler(
             return False
     return True
 
-@enforce_argument_types
 def _match_handler(
     handler: ConstOrFunc[Any] | Pattern, 
     value: Any, 
@@ -297,7 +313,11 @@ def _match_handler(
         matches = handler.match(value, result)
     elif callable(handler):
         matches = handler(value)
-        if (matches is not None) and not(isinstance(matches, SuccessfulMatchResult)):
+        if matches is None:
+            pass
+        elif isinstance(matches, SuccessfulMatchResult):
+            result.merge_from(matches)
+        else:
             raise TypeError(f"Custom handler func must return SuccessfulMatchResult or None, not {type(matches)}")
     return matches
 
@@ -321,6 +341,6 @@ __all__ = [
     "ScriptPattern", "BlockPattern", "InputPattern", "DropdownPattern",
     "CBArgumentMutationPattern", "CBMutationPattern", "CBCallMutationPattern",
     "CBOpcodePattern", "CBArgumentPattern",
-    "match_handler",
+    "SuccessfulMatchResult", "match_handler",
 ]
 

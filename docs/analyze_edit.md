@@ -342,11 +342,11 @@ Allows the access of auto-filled access points by their id.
 * A custom callable (e.g. `def` or `lambda` function).
 * Takes one argument of the specified type.
 * Should return a [`SuccessfulMatchResult`](#SuccessfulMatchResult) if it consideres with the given value a match otherwise `None`.
-* \# TODO: nested match calls
+* For an example, see [Example: Using Custom Handlers](#example-using-custom-handlers)
 
 ### Example: Creating A Pattern
 In this example, we are looking for this kind of block/script:<br>
-![](images/block_pattern.png)
+![](images/searched_block_pattern.png)
 Since we are looking for a whole script we should create a [`ScriptPattern`](#scriptpattern) at the root. The first block must be a "when green flag clicked" block.
 ```python
 from pmp_manip import (
@@ -393,7 +393,6 @@ ScriptPattern(
 Notes:
 * All attributes are **optional**. Not setting an argument in initialization will lead to it being **ignored and always succeed** in `match_handler`.
 * `access_point_id` is used later, you can ignore it for now.
-* \# TODO: add example with a custom handler e.g. allow multiple opcodes or call some function.
 
 But we are not done with our pattern, it is still missing the requirement for the "forever" block, which contains a "if" block:
 ```python
@@ -769,14 +768,494 @@ SRBlock(
     mutation=None,
 )
 ```
+It worked.
 
-....
+### Example: Using Custom Handlers
+What if you want more control during the match process?
+For more structural information, see [Custom Functionlike Handler](#custom-functionlike-handler)
+For example, what if you want a dynamic opcode check?
+```python
+from pmp_manip import (
+    get_default_config, init_config, info_api, FRProject, SRScript,
+    ScriptPattern, BlockPattern, InputPattern, PatternConst,
+    TreeVisitor, AbstractTreePath, SuccessfulMatchResult, match_handler,
+)
 
+cfg = get_default_config()
+init_config(cfg)
+
+frproject = FRProject.from_file("assets/from_online/my 1st platformer.pmp")
+srproject = frproject.to_second(info_api)
+
+def allow_opcode(opcode: str) -> SuccessfulMatchResult | None:
+    # Do whatever you want...
+    # Here I am using the custom handler to allow multiple values at a certain location
+    allowed = opcode in [
+        "if <CONDITION> then {THEN}",
+        "if <CONDITION> then {THEN} else {ELSE}",
+        "switch (CONDITION) {CASES}",
+        "switch (CONDITION) {CASES} default {DEFAULT}",
+    ]
+    # We can return an empty result, as we do not care about access points (discussed later)
+    return SuccessfulMatchResult() if allowed else None
+
+# Use our pattern from above
+pattern = ScriptPattern(
+    blocks=[
+        BlockPattern(opcode=PatternConst(value="when green flag clicked")),
+        BlockPattern(
+            opcode=PatternConst(value="forever {BODY}"),
+            inputs={
+                "BODY": InputPattern(
+                    blocks=[
+                        BlockPattern(
+                            # Provide the function instead of a Const
+                            opcode=allow_opcode,
+                        ),
+                    ],
+                ),
+            },
+        ),
+    ],
+)
+
+visitor = TreeVisitor.new_include_only(included=[SRScript])
+# Run the TreeVisitor on the whole project
+path_to_node_map = visitor.visit_tree(srproject)
+# Find all matches
+matches: list[tuple[AbstractTreePath, SRScript]] = []
+for path, node in path_to_node_map.items():
+    match_result = match_handler(handler=pattern, value=node)
+    if match_result is not None:
+        matches.append((path, node))
+
+# Print some matches for brevity
+for index, path_and_node in enumerate(matches):
+    match_path, match_node = path_and_node
+    forever_block = match_node.blocks[1]
+    # "BODY" must be a SRScriptInputValue => must have .blocks
+    if_block_or_similar = forever_block.inputs["BODY"].blocks[0]
+    # Print the first and different ones:
+    if (index == 0) or (if_block_or_similar.opcode != "if <CONDITION> then {THEN}"):
+        print("An interesting match found at", match_path)
+        print("Matching Script:")
+        print(match_node)
+```
+Output:
+```python
+An interesting match found at AbstractTreePath(.stage.scripts[0])
+Matching Script:
+SRScript(
+    position=(-616, -568),
+    blocks=[
+        SRBlock(
+            opcode="when green flag clicked",
+            inputs={},
+            dropdowns={},
+            comment=None,
+            mutation=None,
+        ),
+        SRBlock(
+            opcode="forever {BODY}",
+            inputs={
+                "BODY": SRScriptInputValue(
+                    blocks=[
+                        SRBlock(
+                            opcode="if <CONDITION> then {THEN}",
+                            inputs={
+                                "CONDITION": SRBlockAndBoolInputValue(block=None, immediate=False),
+                                "THEN": SRScriptInputValue(blocks=[]),
+                            },
+                            dropdowns={},
+                            comment=None,
+                            mutation=None,
+                        ),
+                    ],
+                ),
+            },
+            dropdowns={},
+            comment=None,
+            mutation=None,
+        ),
+    ],
+)
+An interesting match found at AbstractTreePath(.sprites[0].scripts[20])
+Matching Script:
+SRScript(
+    position=(823, 492),
+    blocks=[
+        SRBlock(
+            opcode="when green flag clicked",
+            inputs={},
+            dropdowns={},
+            comment=SRComment(
+                position=(1190.1650663579926, 499.70370370370347),
+                size=(200, 200),
+                is_minimized=False,
+                text="this script was added by the documentator for illustration purposes",
+            ),
+            mutation=None,
+        ),
+        SRBlock(
+            opcode="forever {BODY}",
+            inputs={
+                "BODY": SRScriptInputValue(
+                    blocks=[
+                        SRBlock(
+                            opcode="switch (CONDITION) {CASES}",
+                            inputs={
+                                "CONDITION": SRBlockOnlyInputValue(
+                                    block=SRBlock(
+                                        opcode="value of [VARIABLE]",
+                                        inputs={},
+                                        dropdowns={
+                                            "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="my variable"),
+                                        },
+                                        comment=None,
+                                        mutation=None,
+                                    ),
+                                ),
+                                "CASES": SRScriptInputValue(
+                                    blocks=[
+                                        # Abbreviated here
+                                    ],
+                                ),
+                            },
+                            dropdowns={},
+                            comment=None,
+                            mutation=None,
+                        ),
+                    ],
+                ),
+            },
+            dropdowns={},
+            comment=None,
+            mutation=None,
+        ),
+    ],
+)
+An interesting match found at AbstractTreePath(.sprites[6].scripts[5])
+Matching Script:
+SRScript(
+    position=(-192, -85),
+    blocks=[
+        SRBlock(
+            opcode="when green flag clicked",
+            inputs={},
+            dropdowns={},
+            comment=None,
+            mutation=None,
+        ),
+        SRBlock(
+            opcode="forever {BODY}",
+            inputs={
+                "BODY": SRScriptInputValue(
+                    blocks=[
+                        SRBlock(
+                            opcode="if <CONDITION> then {THEN} else {ELSE}",
+                            # Abbreviated here
+                        ),
+                    ],
+                ),
+            },
+            dropdowns={},
+            comment=None,
+            mutation=None,
+        ),
+    ],
+)
+```
+Or what if you want to allow a `list` of any size and just check e.g. a specific item?
+Let us first create the pattern:
+```python
+pattern = ScriptPattern(
+    blocks=[
+        BlockPattern(
+            opcode=PatternConst(value="when I receive [MESSAGE]"),
+            dropdowns={
+                "MESSAGE": DropdownPattern(
+                    # kind is always the same, we do not care
+                    # Only allow lower case messages:
+                    value=lambda v: str.islower(v)
+                )
+            },
+        ),
+        # ...
+    ],
+)
+```
+At `...` we want to allow anything and any count of blocks, but that is not possible with the current system.
+So we need to use a custom handler:
+```python
+from pmp_manip import (
+    get_default_config, init_config, info_api, FRProject, SRScript, SRBlock,
+    ScriptPattern, BlockPattern, DropdownPattern, PatternConst,
+    TreeVisitor, AbstractTreePath, SuccessfulMatchResult, match_handler,
+)
+
+cfg = get_default_config()
+init_config(cfg)
+
+frproject = FRProject.from_file("assets/from_online/my 1st platformer.pmp")
+srproject = frproject.to_second(info_api)
+
+def allow_broadcast_message(msg: str) -> SuccessfulMatchResult | None:
+    # Only allow lower case messages:
+    if msg.islower():
+        return SuccessfulMatchResult()
+    else:
+        return None
+
+def are_blocks_acceptible(blocks: list[SRBlock]) -> SuccessfulMatchResult | None:
+    # We are expecting at least one block:
+    if len(blocks) <= 1:
+        return None
+    # Create the pattern we only want to apply to the first block:
+    first_block_pattern = BlockPattern(
+        opcode=PatternConst(value="when I receive [MESSAGE]"),
+        dropdowns={
+            "MESSAGE": DropdownPattern(
+                # kind is always the same, we do not care
+                value=allow_broadcast_message,
+            )
+        },
+    )
+    # Use the match system, just not for the whole blocks list, but only for the first block:
+    first_block = blocks[0]
+    match_result = match_handler(
+        handler=first_block_pattern,
+        value=first_block,
+    )
+    # Just add some arbitrary condition for a better example:
+    if (match_result is not None) and True:
+        return match_result
+        # OR for an empty feedback:
+        # return SuccessfulMatchResult()
+    else:
+        return None
+
+# Use our pattern from above
+pattern = ScriptPattern(
+    blocks=are_blocks_acceptible
+)
+
+visitor = TreeVisitor.new_include_only(included=[SRScript])
+# Run the TreeVisitor on the whole project
+path_to_node_map = visitor.visit_tree(srproject)
+# Find all matches
+matches: list[tuple[AbstractTreePath, SRScript]] = []
+for path, node in path_to_node_map.items():
+    match_result = match_handler(handler=pattern, value=node)
+    if match_result is not None:
+        matches.append((path, node))
+
+for index, path_and_node in enumerate(matches):
+    match_path, match_node = path_and_node
+    print("An interesting match found at", match_path)
+    print("Matching Script:")
+    print(match_node)
+```
+Output:
+```python
+An interesting match found at AbstractTreePath(.sprites[0].scripts[10])
+Matching Script:
+SRScript(
+    position=(-976, -1638),
+    blocks=[
+        SRBlock(
+            opcode="when I receive [MESSAGE]",
+            inputs={},
+            dropdowns={
+                "MESSAGE": SRDropdownValue(kind=DropdownValueKind.BROADCAST_MSG, value="reset"),
+            },
+            comment=None,
+            mutation=None,
+        ),
+        SRBlock(
+            opcode="set [EFFECT] sprite effect to (VALUE)",
+            inputs={
+                "VALUE": SRBlockAndTextInputValue(block=None, immediate="0"),
+            },
+            dropdowns={
+                "EFFECT": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="ghost"),
+            },
+            comment=None,
+            mutation=None,
+        ),
+        SRBlock(
+            opcode="point in direction (DIRECTION)",
+            # Abbreviated here
+        ),
+        SRBlock(
+            opcode="switch costume to ([COSTUME])",
+            # Abbreviated here
+        ),
+        SRBlock(
+            opcode="set [VARIABLE] to (VALUE)",
+            # Abbreviated here
+        ),
+        SRBlock(
+            opcode="set [VARIABLE] to (VALUE)",
+            # Abbreviated here
+        ),
+    ],
+)
+An interesting match found at AbstractTreePath(.sprites[0].scripts[12])
+Matching Script:
+SRScript(
+    position=(-1398, -1857),
+    blocks=[
+        SRBlock(
+            opcode="when I receive [MESSAGE]",
+            inputs={},
+            dropdowns={
+                "MESSAGE": SRDropdownValue(kind=DropdownValueKind.BROADCAST_MSG, value="oq"),
+            },
+            comment=None,
+            mutation=None,
+        ),
+        SRBlock(
+            opcode="set [EFFECT] sprite effect to (VALUE)",
+            inputs={
+                "VALUE": SRBlockAndTextInputValue(block=None, immediate="0"),
+            },
+            dropdowns={
+                "EFFECT": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="ghost"),
+            },
+            comment=None,
+            mutation=None,
+        ),
+        SRBlock(
+            opcode="point in direction (DIRECTION)",
+            # Abbreviated here
+        ),
+        SRBlock(
+            opcode="switch costume to ([COSTUME])",
+            # Abbreviated here
+        ),
+        SRBlock(
+            opcode="set [VARIABLE] to (VALUE)",
+            # Abbreviated here
+        ),
+        SRBlock(
+            opcode="set [VARIABLE] to (VALUE)",
+            # Abbreviated here
+        ),
+    ],
+)
+An interesting match found at AbstractTreePath(.sprites[0].scripts[13])
+Matching Script:
+SRScript(
+    position=(-1029, -1792),
+    blocks=[
+        SRBlock(
+            opcode="when I receive [MESSAGE]",
+            inputs={},
+            dropdowns={
+                "MESSAGE": SRDropdownValue(kind=DropdownValueKind.BROADCAST_MSG, value="reset"),
+            },
+            comment=None,
+            mutation=None,
+        ),
+        SRBlock(
+            opcode="play sound ([SOUND]) until done",
+            inputs={
+                "SOUND": SRBlockAndDropdownInputValue(
+                    block=None,
+                    dropdown=SRDropdownValue(kind=DropdownValueKind.SOUND, value="male-death-sound-128357"),
+                ),
+            },
+            dropdowns={},
+            comment=None,
+            mutation=None,
+        ),
+    ],
+)
+An interesting match found at AbstractTreePath(.sprites[4].scripts[0])
+Matching Script:
+SRScript(
+    position=(-670, -650),
+    blocks=[
+        SRBlock(
+            opcode="when I receive [MESSAGE]",
+            inputs={},
+            dropdowns={
+                "MESSAGE": SRDropdownValue(kind=DropdownValueKind.BROADCAST_MSG, value="oq"),
+            },
+            comment=None,
+            mutation=None,
+        ),
+        SRBlock(
+            opcode="change [VARIABLE] by (VALUE)",
+            inputs={
+                "VALUE": SRBlockAndTextInputValue(block=None, immediate="1"),
+            },
+            dropdowns={
+                "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="level"),
+            },
+            comment=None,
+            mutation=None,
+        ),
+    ],
+)
+An interesting match found at AbstractTreePath(.sprites[6].scripts[1])
+Matching Script:
+SRScript(
+    position=(525, -64),
+    blocks=[
+        SRBlock(
+            opcode="when I receive [MESSAGE]",
+            inputs={},
+            dropdowns={
+                "MESSAGE": SRDropdownValue(kind=DropdownValueKind.BROADCAST_MSG, value="wae"),
+            },
+            comment=None,
+            mutation=None,
+        ),
+        SRBlock(
+            opcode="show",
+            inputs={},
+            dropdowns={},
+            comment=None,
+            mutation=None,
+        ),
+        SRBlock(
+            opcode="if <CONDITION> then {THEN}",
+            # Abbreviated here
+        ),
+    ],
+)
+```
+Note: If you have multiple sub-results, you can use `SuccessfulMatchResult.merge_from`:
+```python
+def my_hander(some_arg) -> SuccessfulMatchResult | None:
+    ...
+    result_a = match_handler(..., ...)
+    result_b = match_handler(..., ...)
+    result_c = match_handler(..., ...)
+    if (result_a is not None) and (result_b is not None) and (result_c is not None):
+        result = SuccessfulMatchResult()
+        result.merge_from(result_a)
+        result.merge_from(result_b)
+        result.merge_from(result_c)
+        return result
+    else:
+        return None
+```
 
 ## Editing a Project
 
-\# TODO: add AttrMatchConfig and .attr_config
-\# TODOs
+### Example: Editing a Project
+Let us continue the above example. We want to convert these scripts<br><br><br>
+![](images/block_pattern_before.png)<br><br><br>
+**into**<br><br><br>
+![](images/block_pattern_after.png)<br><br><br>
+```python
+```
+
+Things:
+    Introduce access points
+
 ---
 
 ### References

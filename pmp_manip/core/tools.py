@@ -197,23 +197,23 @@ class TreeVisitor(Generic[INCLUDED_T]):
         return filtered_map
 
 @overload
-def get_path_in_tree(obj: SECOND_REPR_T, path: AbstractTreePath, default: NotSetType = NotSet) -> SECOND_REPR_T: ...
+def get_path_in_tree(tree: SECOND_REPR_T, path: AbstractTreePath, default: NotSetType = NotSet) -> SECOND_REPR_T: ...
 @overload
-def get_path_in_tree(obj: SECOND_REPR_T, path: AbstractTreePath, default: ARG_T) -> SECOND_REPR_T | ARG_T: ...
+def get_path_in_tree(tree: SECOND_REPR_T, path: AbstractTreePath, default: ARG_T) -> SECOND_REPR_T | ARG_T: ...
 @enforce_argument_types
-def get_path_in_tree(obj: SECOND_REPR_T, path: AbstractTreePath, default: NotSetType | ARG_T = NotSet) -> SECOND_REPR_T | ARG_T:
+def get_path_in_tree(tree: SECOND_REPR_T, path: AbstractTreePath, default: NotSetType | ARG_T = NotSet) -> SECOND_REPR_T | ARG_T:
     """
     Dynamically get a node in an Abstract Second Representation Tree by its path.
 
     Raises:
         ValueError: if the path could not be accessed.
     """
-    current_object = obj
+    current_object = tree
     for i, item in enumerate(path):
         if   isinstance(item, ATPathAttribute):
             try:
                 current_object = getattr(current_object, item.value)
-            except (AttributeError, Exception) as error:
+            except (AttributeError, TypeError, Exception) as error:
                 if default is NotSet:
                     raise ValueError(f"Failed to get attribute {item.value!r} of object at path {path[:i]}: {error}") from error
                 else:
@@ -221,7 +221,7 @@ def get_path_in_tree(obj: SECOND_REPR_T, path: AbstractTreePath, default: NotSet
         elif isinstance(item, ATPathIndexOrKey):
             try:
                 current_object = current_object[item.value]
-            except (AttributeError, Exception) as error:
+            except (IndexError, KeyError, TypeError, Exception) as error:
                 if default is NotSet:
                     raise ValueError(f"Failed to get index or key {item.value!r} of object at path {path[:i]}: {error}") from error
                 else:
@@ -229,15 +229,40 @@ def get_path_in_tree(obj: SECOND_REPR_T, path: AbstractTreePath, default: NotSet
     return current_object
 
 @enforce_argument_types
-def path_exists_in_tree(obj: SECOND_REPR_T, path: AbstractTreePath) -> bool:
+def path_exists_in_tree(tree: SECOND_REPR_T, path: AbstractTreePath) -> bool:
     """
     Checks if a path is exists/is accessiable in an Abstract Second Representation Tree.
     """
     try:
-        get_path_in_tree(obj, path)
+        get_path_in_tree(tree, path)
         return True
     except ValueError:
         return False
 
-__all__ = ["TreeVisitor", "get_path_in_tree", "path_exists_in_tree"]
+@enforce_argument_types
+def set_path_in_tree(tree: SECOND_REPR_T, path: AbstractTreePath, value: SECOND_REPR_T) -> None:
+    """
+    Dynamically set a node in an Abstract Second Representation Tree by its path to a value.
+
+    Raises:
+        TypeError: if the path is invalid.
+        AttributeError: if the last attribute could not be set for some reason.
+        IndexError: if the last index is out of range.
+    """
+    # Get the object of which an attribute, index or key is supposed to be set.
+    obj = get_path_in_tree(tree, path[:-1])
+    path_item = path[-1]
+    if   isinstance(path_item, ATPathAttribute):
+        try:
+            setattr(obj, path_item.value, value)
+        except (AttributeError, TypeError) as error:
+            raise type(error)(f"Failed to set attribute {path_item.value!r} of object at path {path}: {error}") from error
+    elif isinstance(path_item, ATPathIndexOrKey):
+        try:
+            obj[path_item.value] = value
+        except (IndexError, TypeError) as error:
+            raise type(error)(f"Failed to set index or key {path_item.value!r} of object at path {path}: {error}") from error
+
+
+__all__ = ["TreeVisitor", "get_path_in_tree", "path_exists_in_tree", "set_path_in_tree"]
 
