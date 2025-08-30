@@ -50,7 +50,7 @@ class SRCustomExtension(SRExtension):
     """
     
     url: str # either "https://..." or "data:application/javascript,..."
-    # TODO: find a way to not show whole huge JS data URI's
+    # TODO:(OPT) find a way to not show whole huge JS data URI's
     
     def validate(self, path: AbstractTreePath):
         """

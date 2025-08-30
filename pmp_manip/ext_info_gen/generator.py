@@ -183,7 +183,7 @@ def generate_block_opcode_info(
                                 ),
                             )
                         else:
-                            dropdown_info = DropdownInfo(type=getattr(dropdown_type_cls, argument_menu)) # TODO: test
+                            dropdown_info = DropdownInfo(type=getattr(dropdown_type_cls, argument_menu))
                 case "variable"|"list":
                     builtin_dropdown_type = ARGUMENT_TYPE_TO_DROPDOWN_TYPE[argument_type]
                     dropdown_info = DropdownInfo(type=builtin_dropdown_type)
@@ -397,7 +397,7 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
             raise MANIP_UnknownExtensionAttributeError(f"Unknown or not (yet) implemented extension attribute: {repr(attr)}")
 
     
-    extension_id = extension_info["id"] # TODO: get correct name
+    extension_id = extension_info["id"]
     menus: dict[str, dict[str, Any]|list] = extension_info.get("menus", {})
     info_group = OpcodeInfoGroup(
         name=extension_id,

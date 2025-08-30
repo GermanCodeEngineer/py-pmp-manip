@@ -103,7 +103,7 @@ class InterToFirstIF:
     local_vars: list[str]
     local_lists: list[str]
     sprite_name: str | None
-    _next_block_id_num: int = 1 # TODO: remove default
+    _next_block_id_num: int = 1
     added_blocks: dict[str, FRBlock | tuple] = field(init=False, default_factory=dict)
     added_comments: dict[str, FRComment] = field(init=False, default_factory=dict)
     _cb_mutations: dict[str, "FRCustomBlockMutation"] = field(init=False, default_factory=dict)

@@ -73,7 +73,7 @@ def get_default_config() -> "MasterConfig":
     """
     return MasterConfig(
         ext_info_gen=ExtInfoGenConfig(
-            gen_opcode_info_dir="gen_ext_opcode_info", # TODO: find perm solution
+            gen_opcode_info_dir="gen_ext_opcode_info",
             js_fetch_interval=timedelta(days=3),
             node_js_exec_timeout=1.0,
             is_trusted_extension_origin_handler=None,

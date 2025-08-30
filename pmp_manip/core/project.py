@@ -1,4 +1,3 @@
-from __future__ import annotations # TODO: remove?
 from copy   import copy, deepcopy
 from json   import loads
 from typing import Any
@@ -10,7 +9,7 @@ from pmp_manip.utility          import (
     grepr_dataclass, enforce_argument_types, 
     read_all_files_of_zip, create_zip_file, string_to_sha256, gdumps, KeyReprDict, AbstractTreePath,
     AA_TYPE, AA_NONE_OR_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_LIST_OF_TYPES, AA_RANGE, AA_EXACT_LEN,
-    MANIP_ThanksError, MANIP_SameValueTwiceError, MANIP_SpriteLayerStackError,
+    MANIP_SameValueTwiceError, MANIP_SpriteLayerStackError,
 )
 
 from pmp_manip.core.context       import PartialContext
@@ -113,7 +112,6 @@ class FRProject:
         Returns:
             the FRProject
         """
-        assert file_path.endswith(".sb3") or file_path.endswith(".pmp") # TODO: remove
         contents = read_all_files_of_zip(file_path)
         project_data = loads(contents["project.json"].decode())
         del contents["project.json"]
@@ -168,7 +166,6 @@ class FRProject:
         Returns:
             the FRProject
         """
-        assert file_path.endswith(".sb3") or file_path.endswith(".pmp") # TODO: remove
         project_data, asset_files = self.to_data()
         contents = asset_files
         contents["project.json"] = gdumps(project_data).encode()
@@ -616,7 +613,7 @@ class SRProject:
             tempo                   = self.tempo,
             video_transparency      = self.video_transparency,
             video_state             = self.video_state.to_code(),
-            text_to_speech_language = tts_language, # TODO: rename text_to_speech to tts
+            text_to_speech_language = tts_language,
         )
         old_targets.append(old_stage)
         old_monitors.extend(old_global_monitors)

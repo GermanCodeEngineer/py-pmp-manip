@@ -14,8 +14,8 @@ def test_CompleteContext_from_partial():
 
         global_variables=[my_variable],
 
-        local_variables=[my_sprite_variable],
-        local_lists=[my_sprite_list],
+        local_variables={"my sprite": [my_sprite_variable]},
+        local_lists={"my sprite": [my_sprite_list]},
 
         other_sprites=[(DropdownValueKind.SPRITE, "Sprite2"), (DropdownValueKind.SPRITE, "Player")],
         backdrops=[(DropdownValueKind.BACKDROP, "intro"), (DropdownValueKind.BACKDROP, "scene1")],

@@ -47,8 +47,6 @@ def test_FRProject_from_file():
     FRProject.from_file("tests/_assets_/testing_blocks.pmp")
     FRProject.from_file("tests/_assets_/scratch_project.sb3") 
     # TODO: use smaller examples and check equality
-    with raises(AssertionError):
-        FRProject.from_file("abc/def/ghi/christ_loves_u.bible")
 
 
 def test_FRProject_post_init():
@@ -70,13 +68,8 @@ def test_FRProject_to_file(monkeypatch: MonkeyPatch):
                 {"name": "My Project"},  # some dumb example data
                 {"image.png": b"image-bytes"}  # asset_files
             )
-    
-    calls = 0
 
     def fake_create_zip_file(path, contents):
-        nonlocal calls
-        if calls >= 1: raise Exception()
-        calls += 1
         assert path == "project.sb3"
         assert contents == {
             "project.json": gdumps({"name": "My Project"}).encode(),
@@ -88,9 +81,6 @@ def test_FRProject_to_file(monkeypatch: MonkeyPatch):
 
     dummy_project = DummyProject()
     FRProject.to_file(dummy_project, "project.sb3")
-
-    with raises(AssertionError):
-        FRProject.to_file(dummy_project, file_path="invalid.ext")
 
 
 def test_FRProject_to_second():

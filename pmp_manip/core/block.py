@@ -76,7 +76,7 @@ class FRBlock:
             parent    = data["parent"  ],
             inputs    = deepcopy(tuplify(data["inputs"])),
             fields    = deepcopy(tuplify(data["fields"])),
-            shadow    = data["shadow"  ],
+            shadow    = data.get("shadow", None),
             top_level = data["topLevel"],
             x         = data.get("x", None),
             y         = data.get("y", None),

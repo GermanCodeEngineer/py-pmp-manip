@@ -554,10 +554,10 @@ class SRTarget:
         cb_custom_opcodes = {}
         for i, script in enumerate(self.scripts):
             script.validate(
-                path           = path.add_attribute("scripts").add_index_or_key(i),
-                info_api       = info_api,
+                path          = path.add_attribute("scripts").add_index_or_key(i),
+                info_api      = info_api,
                 validation_if = validation_if,
-                context        = context,
+                context       = context,
             )
             for j, block in enumerate(script.blocks):
                 current_path = path.add_attribute("scripts").add_index_or_key(i).add_attribute("blocks").add_index_or_key(j),
@@ -789,7 +789,7 @@ class SRSprite(SRTarget):
     name: str
     local_variables: list[SRVariable]
     local_lists: list[SRList]
-    local_monitors: list[SRMonitor] # TODO: disambig local vs. local
+    local_monitors: list[SRMonitor]
     is_visible: bool
     position: tuple[int | float, int | float]
     size: int | float

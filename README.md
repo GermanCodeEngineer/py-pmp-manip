@@ -78,6 +78,6 @@ GPLv3
 ## 🤝 Contributing
 
 Pull requests, issues, and feedback are welcome!
-Please read the CONTRIBUTING.md guide before submitting code. 
+Please read the [CONTRIBUTING.md](CONTRIBUTING.md) guide before submitting code. 
 
 ---

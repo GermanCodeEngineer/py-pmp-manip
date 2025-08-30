@@ -46,7 +46,7 @@ def fetch_js_code(source: str, tolerate_file_path: bool) -> str:
         if not validators_url(source):
             raise MANIP_InvalidExtensionCodeSourceError(f"Invalid URL: {source}")
         try:
-            response = requests_get(source, timeout=10) # TODO: possibly make configurable?
+            response = requests_get(source, timeout=10) # TODO:(OPT) make configurable?
             response.raise_for_status()
             return response.text
         except RequestException as error:

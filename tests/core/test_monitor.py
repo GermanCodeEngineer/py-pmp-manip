@@ -712,8 +712,8 @@ def context():
 
         global_variables=[my_variable],
 
-        local_variables=[my_sprite_variable],
-        local_lists=[my_sprite_list],
+        local_variables={"my sprite": [my_sprite_variable]},
+        local_lists={"my sprite": [my_sprite_list]},
 
         other_sprites=[(DropdownValueKind.SPRITE, "Sprite1")],
         backdrops=[(DropdownValueKind.BACKDROP, "intro"), (DropdownValueKind.BACKDROP, "scene1")],

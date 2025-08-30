@@ -270,8 +270,6 @@ class DropdownType(GEnum):
                     ])
                     for local_variables in context.local_variables.values():
                         values.extend(local_variables)
-
-                    raise Exception("TODO: ensure this works")
                 
                 case DropdownValueRule.READABLE_SPRITE_PROPERTY:
                     # trying to validate here is so much additional work and makes everything a lot more complicated

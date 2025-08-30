@@ -74,7 +74,7 @@ class ExtInfoGenConfig(ConfigBase):
             MANIP_ValidationError: if the ExtInfoGenConfig is invalid
             MANIP_InvalidDirPathError: if the extension opcode info dir is invalid
         """
-        AA_TYPE(self, path, "gen_opcode_info_dir", str) # TODO: possibly add check if path is valid
+        AA_TYPE(self, path, "gen_opcode_info_dir", str)
         if not is_valid_directory_path(self.gen_opcode_info_dir):
             raise MANIP_InvalidDirPathError("Invalid extension opcode info directory: {self.gen_opcode_info_dir}")
         AA_TYPE(self, path, "js_fetch_interval", timedelta)
@@ -124,7 +124,7 @@ class PlatformMetaConfig(ConfigBase):
         Raises:
             MANIP_ValidationError: if the PlatformMetaConfig is invalid
         """
-        AA_TYPE(self, path, "scratch_semver", str) # TODO: possibly implement stricter validation
+        AA_TYPE(self, path, "scratch_semver", str) # TODO:(OPT) possibly implement stricter validation
         AA_TYPE(self, path, "scratch_vm"    , str)
         AA_TYPE(self, path, "penguinmod_vm" , str)
 

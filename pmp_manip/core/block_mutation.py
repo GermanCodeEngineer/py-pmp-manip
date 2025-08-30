@@ -223,10 +223,10 @@ class FRCustomBlockArgumentMutation(FRMutation, required_properties={"color"}, o
             outline_color   = self.color[2],
         )
 
-@grepr_dataclass(grepr_fields=["proccode", "argument_ids", "argument_names", "argument_defaults", "warp", "returns", "edited", "optype", "color"])
+@grepr_dataclass(grepr_fields=["proccode", "argument_ids", "argument_names", "argument_defaults", "warp", "returns", "edited", "optype", "color", "has_next"])
 class FRCustomBlockMutation(FRMutation, 
         required_properties={"proccode", "argumentids", "argumentnames", "argumentdefaults", "warp"},
-        optional_properties={"returns", "edited", "optype", "color"},
+        optional_properties={"returns", "edited", "optype", "color", "hasnext"},
     ):
     """
     The first representation for the mutation of a custom block definition
@@ -241,6 +241,7 @@ class FRCustomBlockMutation(FRMutation,
     edited: bool # seems to always be true
     optype: str
     color: tuple[str, str, str]
+    has_next: bool = False # should not exist and if present seems to be False
 
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRCustomBlockMutation":
@@ -270,6 +271,7 @@ class FRCustomBlockMutation(FRMutation,
             edited            = loads(data["edited" ]) if "edited" in data else True,
             optype            = loads(data["optype" ]) if "optype" in data else "statement",
             color             = tuple(loads(data["color"])) if "color" in data else ("#FF6680", "#FF4D6A", "#FF3355"),
+            has_next          = data.get("hasnext", False),
         )
     
     def to_data(self) -> dict[str, Any]:

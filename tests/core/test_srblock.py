@@ -48,8 +48,8 @@ def context():
 
         global_variables=[(DropdownValueKind.VARIABLE, "my variable")],
 
-        local_variables=[],
-        local_lists=[],
+        local_variables={},
+        local_lists={},
 
         other_sprites=[],
         backdrops=[],

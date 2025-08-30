@@ -54,17 +54,17 @@ class CompleteContext:
             is_stage: wether the target is the stage
         """
         return CompleteContext(
-            scope_variables       = pc.scope_variables,
-            scope_lists           = pc.scope_lists,
-            global_variables  = pc.global_variables,
-            local_variables = pc.local_variables,
-            local_lists     = pc.local_lists,
-            other_sprites         = pc.other_sprites,
-            backdrops             = pc.backdrops,
+            scope_variables  = pc.scope_variables,
+            scope_lists      = pc.scope_lists,
+            global_variables = pc.global_variables,
+            local_variables  = pc.local_variables,
+            local_lists      = pc.local_lists,
+            other_sprites    = pc.other_sprites,
+            backdrops        = pc.backdrops,
 
-            costumes              = costumes,
-            sounds                = sounds,
-            is_stage              = is_stage,
+            costumes         = costumes,
+            sounds           = sounds,
+            is_stage         = is_stage,
         )
 
 

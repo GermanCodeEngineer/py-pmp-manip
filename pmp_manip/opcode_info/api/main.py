@@ -291,8 +291,15 @@ class OpcodeInfo:
     #               Methods based on Special Cases               #
     ##############################################################
     
-    # Get the opcode type. Avoid OpcodeType.DYNAMIC
-    def get_opcode_type(self, block: "IRBlock|SRBlock", validation_if: "ValidationIF") -> OpcodeType: # TODO: docs
+    # Get the opcode type. Avoid 
+    def get_opcode_type(self, block: "IRBlock|SRBlock", validation_if: "ValidationIF") -> OpcodeType:
+        """
+        Get the real opcode type. Returns the actual live opcode type in case of OpcodeType.DYNAMIC.
+
+        Args:
+            block: needed as context to determine the ids and information e.g. for Custom Blocks
+            fti_if: only necessary if block is a FRBlock
+        """
         instead_case = self.get_special_case(SpecialCaseType.GET_OPCODE_TYPE)
         if self.opcode_type == OpcodeType.DYNAMIC:
             assert instead_case is not None, "If opcode_type is DYNAMIC, a special case with type GET_OPCODE_TYPE must be defined"

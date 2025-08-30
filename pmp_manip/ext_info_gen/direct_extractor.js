@@ -100,10 +100,10 @@ globalThis.Scratch = { // Must be kept in sync with safe_extractor.py
     vm: {
         runtime: {
             registerCompiledExtensionBlocks: (extensionId, compileInfo) => {
-                // do nothing since we don't care about compilation stuff
+                // do nothing since we do not care about compilation stuff
             },
-            on: (eventName, func) => { // TODO: research
-                // do nothing since we don't care about what happens after loading the extension
+            on: (eventName, func) => {
+                // do nothing since we do not care about what happens after loading the extension
             },
         }
     }
