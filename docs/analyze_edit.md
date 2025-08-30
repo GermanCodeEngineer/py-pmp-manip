@@ -180,7 +180,7 @@ Pattern for selecting [`SRScript`](second_repr.md#srscript) instances with certa
 #### `ScriptPattern.blocks`
 * **type**: `ConstOrFunc[list[SRBlock]]` or `list[BlockHandler]`,<br> where `BlockHandler` means `ConstOrFunc[SRBlock]` or `BlockPattern`
 * **description in SR**: Stores the script's sequence of blocks from top to bottom.
-* **default value**: `[]`
+* **default value**: a function which always succedes.
 ---
 
 ### `BlockPattern`
@@ -212,7 +212,7 @@ Pattern for selecting [`SRInputValue`](second_repr.md#srinputvalue) instances (o
 #### `InputPattern.blocks`
 * **type**: `ConstOrFunc[list[SRBlock]]` or `list[BlockHandler]`,<br> where `BlockHandler` means `ConstOrFunc[SRBlock]` or `BlockPattern`
 * **description in SR**: Stores the subscript's sequence of blocks from top to bottom (e.g. the "then" section of the "if" block).
-* **default value**: `[]`
+* **default value**: a function which always succedes.
 #### `InputPattern.block`
 * **type**: `ConstOrFunc[SRBlock | None]` or `BlockPattern` or `None`
 * **description in SR**: Stores the optional block inserted into the argument text field, round dropdown menu etc.

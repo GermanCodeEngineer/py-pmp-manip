@@ -437,7 +437,6 @@ SRProject(
     text_to_speech_language=SRTTSLanguage.ENGLISH,
 )
 ```
-\# TODO: shorten
 
 Notes:
 * I highly recommend to use a good code editor (especially VSCode), because you might want to look at the definition of e.g. a function/method or class(`Alt` + `Left Mouse Click`)

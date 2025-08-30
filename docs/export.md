@@ -32,4 +32,3 @@ You can now upload `"path/to/my_modified_project.pmp"` to the PenguinMod Editor 
 
 ### References
 * For a **documentation overview** and **all pages** of the tutorial, see [docs/index.md](index.md)
-* Next Page: **Handling Extensions**, see [docs/handling_extensions.md](handling_extensions.md)

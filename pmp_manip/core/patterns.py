@@ -327,7 +327,6 @@ def _match_handler(
             raise TypeError(f"Custom handler func must return SuccessfulMatchResult or None, not {type(matches)}")
     return matches
 
-# TODO: possibly use SECOND_REPR_T instead of Any
 @enforce_argument_types
 def match_handler(handler: ConstOrFunc[Any] | Pattern, value: Any) -> SuccessfulMatchResult | None:
     """
