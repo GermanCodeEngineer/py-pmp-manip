@@ -27,6 +27,12 @@ class PatternConst(Generic[CONST_T]):
     """
     value: CONST_T
 
+def _allow_anything_fn(value: Any, /) -> "SuccessfulMatchResult":
+    """
+    A function which always returns a SuccessfulMatchResult. Used to allow any value in a field by default. 
+    """
+    return SuccessfulMatchResult()
+
 # parametric alias
 ConstOrFunc     : TypeAlias = PatternConst[CONST_T] | Callable[[CONST_T], "SuccessfulMatchResult"]
 CBOpcodeSegmentT: TypeAlias = str | SRCustomBlockArgument
@@ -104,7 +110,7 @@ class ScriptPattern(Pattern):
     _match_fields_: ClassVar = ["position", "blocks"]
     
     position: ConstOrFunc[tuple[int|float, int|float]] | None = None
-    blocks  : BlockListHandler = field(default_factory=list)
+    blocks  : BlockListHandler = _allow_anything_fn
 
 @grepr_dataclass(grepr_fields=["opcode", "inputs", "dropdowns", "comment", "mutation"])
 class BlockPattern(Pattern):
@@ -128,7 +134,7 @@ class InputPattern(Pattern):
     _match_type_: ClassVar = SRInputValue
     _match_fields_: ClassVar = ["blocks", "block", "immediate", "dropdown"]
     
-    blocks   : BlockListHandler = field(default_factory=list)
+    blocks   : BlockListHandler = _allow_anything_fn
     block    : OptBlockHandler | None = None
     immediate: ConstOrFunc[str | bool | None] = None
     dropdown : OptDropdownHandler | None = None

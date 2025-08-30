@@ -1251,10 +1251,554 @@ Let us continue the above example. We want to convert these scripts<br><br><br>
 **into**<br><br><br>
 ![](images/block_pattern_after.png)<br><br><br>
 ```python
-```
+from pmp_manip import (
+    get_default_config, init_config, info_api,
+    FRProject, SRScript, SRBlock, 
+    SRScriptInputValue, SRBlockAndBoolInputValue, SRBlockAndDropdownInputValue, SRDropdownValue, DropdownValueKind,
+    ScriptPattern, BlockPattern, InputPattern, PatternConst,
+    TreeVisitor, AbstractTreePath, set_path_in_tree, match_handler,
+)
 
-Things:
-    Introduce access points
+cfg = get_default_config()
+init_config(cfg)
+
+frproject = FRProject.from_file("assets/from_online/my 1st platformer.pmp")
+srproject = frproject.to_second(info_api)
+
+# Use our pattern from above
+pattern = ScriptPattern(
+    blocks=[
+        BlockPattern(opcode=PatternConst(value="when green flag clicked")),
+        BlockPattern(
+            opcode=PatternConst(value="forever {BODY}"),
+            inputs={
+                "BODY": InputPattern(
+                    blocks=[
+                        BlockPattern(
+                            opcode=PatternConst(value="if <CONDITION> then {THEN}"),
+                        ),
+                    ],
+                ),
+            },
+        ),
+    ],
+)
+
+visitor = TreeVisitor.new_include_only(included=[SRScript])
+path_to_node_map = visitor.visit_tree(srproject)
+
+messages_and_conditions: list[tuple[SRDropdownValue, SRBlock]] = []
+for path, node in path_to_node_map.items():
+    match_result = match_handler(handler=pattern, value=node)
+    if match_result is None:
+        continue
+
+    script: SRScript = node
+    forever_block = script.blocks[1]
+    # "BODY" must be a SRScriptInputValue => must have .blocks
+    if_block = forever_block.inputs["BODY"].blocks[0]
+    # "CONDITION" must be SRBlockAndBoolInputValue => must have .block, but could be none since not checked by pattern
+    condition_block = if_block.inputs["CONDITION"].block
+    # "THEN" must be a SRScriptInputValue => must have .blocks
+    then_blocks = if_block.inputs["THEN"].blocks
+    
+    # Create and print the new "when I receive" script
+    script_index = path[-1].value # e.g. AbstractTreePath(.sprites[0].scripts[5]) => 5 
+    message = SRDropdownValue(
+        kind=DropdownValueKind.STANDARD, # as broadcasts do not reference a sprite, variable etc.
+        value=f"loop event {script_index}"
+    )
+    new_script = SRScript(
+        position=script.position,
+        blocks=[
+            SRBlock(
+                opcode="when I receive [MESSAGE]",
+                dropdowns={
+                    "MESSAGE": message,
+                },
+            ),
+            # When the message is received, blocks in "THEN" should run:
+            *then_blocks
+        ],
+    )
+    print("New script to replace old one:")
+    print(new_script)
+    
+    # Replace the old with the new script in the same location
+    set_path_in_tree(
+        tree=srproject,
+        path=path,
+        value=new_script,
+    )
+    
+    # Store block in "CONDITION" and broadcast message for later
+    messages_and_conditions.append((message, condition_block))
+
+# Create the "main loop" script, which checks all conditions, and sends broadcasts
+# First create all the seperate "if" checks:
+event_check_blocks = []
+for message, condition_block in messages_and_conditions:
+    event_check_block = SRBlock(
+        opcode="if <CONDITION> then {THEN}",
+        inputs={
+            # Check if "CONDITION" fulfilled
+            "CONDITION": SRBlockAndBoolInputValue(
+                block=condition_block,
+                immediate=False,
+            ),
+            "THEN": SRScriptInputValue(
+                blocks=[
+                    # If yes broadcast the message which wil be received by another script, which actually does the things
+                    SRBlock(
+                        opcode="broadcast ([MESSAGE])",
+                        inputs={
+                            "MESSAGE": SRBlockAndDropdownInputValue(
+                                block=None,
+                                dropdown=message,
+                            ),
+                        },
+                    )
+                ],
+            ),
+        },
+    )
+    event_check_blocks.append(event_check_block)
+
+# Then put them into a forever loop
+main_loop_script = SRScript(
+    position=(0, 0), # just any position
+    blocks=[
+        SRBlock(opcode="when green flag clicked"),
+        SRBlock(
+            opcode="forever {BODY}",
+            inputs={
+                "BODY": SRScriptInputValue(
+                    blocks=event_check_blocks,
+                ),
+            },
+        )
+    ],
+)
+
+# At last add this script to the stage (not replace, as it is completely new)
+srproject.stage.scripts.append(main_loop_script)
+
+# Print the main script to see if it worked
+print("Main Loop Script:")
+print(main_loop_script)
+```
+Output:
+```python
+New script to replace old one:
+SRScript(
+    position=(-616, -568),
+    blocks=[
+        SRBlock(
+            opcode="when I receive [MESSAGE]",
+            inputs={},
+            dropdowns={
+                "MESSAGE": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="loop event 0"),
+            },
+            comment=None,
+            mutation=None,
+        ),
+    ],
+)
+New script to replace old one:
+SRScript(
+    position=(410, 63),
+    blocks=[
+        SRBlock(
+            opcode="when I receive [MESSAGE]",
+            inputs={},
+            dropdowns={
+                "MESSAGE": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="loop event 1"),
+            },
+            comment=None,
+            mutation=None,
+        ),
+        SRBlock(
+            opcode="switch costume to ([COSTUME])",
+            inputs={
+                "COSTUME": SRBlockAndDropdownInputValue(
+                    block=None,
+                    dropdown=SRDropdownValue(kind=DropdownValueKind.COSTUME, value="costume2"),
+                ),
+            },
+            dropdowns={},
+            comment=None,
+            mutation=None,
+        ),
+        # Abbreviated here
+    ],
+)
+New script to replace old one:
+SRScript(
+    position=(191, -225),
+    blocks=[
+        SRBlock(
+            opcode="when I receive [MESSAGE]",
+            inputs={},
+            dropdowns={
+                "MESSAGE": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="loop event 4"),
+            },
+            comment=None,
+            mutation=None,
+        ),
+        SRBlock(
+            opcode="point in direction (DIRECTION)",
+            inputs={
+                "DIRECTION": SRBlockAndTextInputValue(block=None, immediate="90"),
+            },
+            dropdowns={},
+            comment=None,
+            mutation=None,
+        ),
+        SRBlock(
+            opcode="change [VARIABLE] by (VALUE)",
+            # Abbreviated here
+        ),
+    ],
+)
+New script to replace old one:
+SRScript(
+    position=(-147, -496),
+    blocks=[
+        SRBlock(
+            opcode="when I receive [MESSAGE]",
+            inputs={},
+            dropdowns={
+                "MESSAGE": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="loop event 5"),
+            },
+            comment=None,
+            mutation=None,
+        ),
+        SRBlock(
+            opcode="point in direction (DIRECTION)",
+            # Abbreviated here
+        ),
+        SRBlock(
+            opcode="change [VARIABLE] by (VALUE)",
+            # Abbreviated here
+        ),
+    ],
+)
+# Abbreviated here
+Main Loop Script:
+SRScript(
+    position=(0, 0),
+    blocks=[
+        SRBlock(
+            opcode="when green flag clicked",
+            inputs={},
+            dropdowns={},
+            comment=None,
+            mutation=None,
+        ),
+        SRBlock(
+            opcode="forever {BODY}",
+            inputs={
+                "BODY": SRScriptInputValue(
+                    blocks=[
+                        SRBlock(
+                            opcode="if <CONDITION> then {THEN}",
+                            inputs={
+                                "CONDITION": SRBlockAndBoolInputValue(block=None, immediate=False),
+                                "THEN": SRScriptInputValue(
+                                    blocks=[
+                                        SRBlock(
+                                            opcode="broadcast ([MESSAGE])",
+                                            inputs={
+                                                "MESSAGE": SRBlockAndDropdownInputValue(
+                                                    block=None,
+                                                    dropdown=SRDropdownValue(kind=DropdownValueKind.STANDARD, value="loop event 0"),
+                                                ),
+                                            },
+                                            dropdowns={},
+                                            comment=None,
+                                            mutation=None,
+                                        ),
+                                    ],
+                                ),
+                            },
+                            dropdowns={},
+                            comment=None,
+                            mutation=None,
+                        ),
+                        SRBlock(
+                            opcode="if <CONDITION> then {THEN}",
+                            inputs={
+                                "CONDITION": SRBlockAndBoolInputValue(
+                                    block=SRBlock(
+                                        opcode="key ([KEY]) pressed?",
+                                        inputs={
+                                            "KEY": SRBlockAndDropdownInputValue(
+                                                block=None,
+                                                dropdown=SRDropdownValue(kind=DropdownValueKind.STANDARD, value="m"),
+                                            ),
+                                        },
+                                        dropdowns={},
+                                        comment=None,
+                                        mutation=None,
+                                    ),
+                                    immediate=False,
+                                ),
+                                "THEN": SRScriptInputValue(
+                                    blocks=[
+                                        SRBlock(
+                                            opcode="broadcast ([MESSAGE])",
+                                            inputs={
+                                                "MESSAGE": SRBlockAndDropdownInputValue(
+                                                    block=None,
+                                                    dropdown=SRDropdownValue(kind=DropdownValueKind.STANDARD, value="loop event 1"),
+                                                ),
+                                            },
+                                            dropdowns={},
+                                            comment=None,
+                                            mutation=None,
+                                        ),
+                                    ],
+                                ),
+                            },
+                            dropdowns={},
+                            comment=None,
+                            mutation=None,
+                        ),
+                        SRBlock(
+                            opcode="if <CONDITION> then {THEN}",
+                            inputs={
+                                "CONDITION": SRBlockAndBoolInputValue(
+                                    block=SRBlock(
+                                        opcode="key ([KEY]) pressed?",
+                                        inputs={
+                                            "KEY": SRBlockAndDropdownInputValue(
+                                                block=None,
+                                                dropdown=SRDropdownValue(kind=DropdownValueKind.STANDARD, value="right arrow"),
+                                            ),
+                                        },
+                                        dropdowns={},
+                                        comment=None,
+                                        mutation=None,
+                                    ),
+                                    immediate=False,
+                                ),
+                                "THEN": SRScriptInputValue(
+                                    blocks=[
+                                        SRBlock(
+                                            opcode="broadcast ([MESSAGE])",
+                                            inputs={
+                                                "MESSAGE": SRBlockAndDropdownInputValue(
+                                                    block=None,
+                                                    dropdown=SRDropdownValue(kind=DropdownValueKind.STANDARD, value="loop event 4"),
+                                                ),
+                                            },
+                                            dropdowns={},
+                                            comment=None,
+                                            mutation=None,
+                                        ),
+                                    ],
+                                ),
+                            },
+                            dropdowns={},
+                            comment=None,
+                            mutation=None,
+                        ),
+                        SRBlock(
+                            opcode="if <CONDITION> then {THEN}",
+                            inputs={
+                                "CONDITION": SRBlockAndBoolInputValue(
+                                    block=SRBlock(
+                                        opcode="key ([KEY]) pressed?",
+                                        inputs={
+                                            "KEY": SRBlockAndDropdownInputValue(
+                                                block=None,
+                                                dropdown=SRDropdownValue(kind=DropdownValueKind.STANDARD, value="left arrow"),
+                                            ),
+                                        },
+                                        dropdowns={},
+                                        comment=None,
+                                        mutation=None,
+                                    ),
+                                    immediate=False,
+                                ),
+                                "THEN": SRScriptInputValue(
+                                    blocks=[
+                                        SRBlock(
+                                            opcode="broadcast ([MESSAGE])",
+                                            inputs={
+                                                "MESSAGE": SRBlockAndDropdownInputValue(
+                                                    block=None,
+                                                    dropdown=SRDropdownValue(kind=DropdownValueKind.STANDARD, value="loop event 5"),
+                                                ),
+                                            },
+                                            dropdowns={},
+                                            comment=None,
+                                            mutation=None,
+                                        ),
+                                    ],
+                                ),
+                            },
+                            dropdowns={},
+                            comment=None,
+                            mutation=None,
+                        ),
+                        # Abbreviated here
+                    ],
+                ),
+            },
+            dropdowns={},
+            comment=None,
+            mutation=None,
+        ),
+    ],
+)```
+
+This works, but there is one more optimization I would recommend.
+
+### Example: Using Access Points
+In any `Pattern` subclass instance you can set `access_point_id`, which will add an access point to the `SuccessfulMatchResult`:
+```python
+from pmp_manip import (
+    get_default_config, init_config, info_api,
+    FRProject, SRScript, SRBlock, 
+    SRScriptInputValue, SRBlockAndBoolInputValue, SRBlockAndDropdownInputValue, SRDropdownValue, DropdownValueKind,
+    ScriptPattern, BlockPattern, InputPattern, PatternConst,
+    TreeVisitor, AbstractTreePath, set_path_in_tree, match_handler,
+)
+
+cfg = get_default_config()
+init_config(cfg)
+
+frproject = FRProject.from_file("assets/from_online/my 1st platformer.pmp")
+srproject = frproject.to_second(info_api)
+
+# Use our pattern from above
+pattern = ScriptPattern(
+    blocks=[
+        BlockPattern(opcode=PatternConst(value="when green flag clicked")),
+        BlockPattern(
+            opcode=PatternConst(value="forever {BODY}"),
+            inputs={
+                "BODY": InputPattern(
+                    blocks=[
+                        BlockPattern(
+                            opcode=PatternConst(value="if <CONDITION> then {THEN}"),
+                            inputs={
+                                "CONDITION": InputPattern(
+                                    block=BlockPattern(
+                                        # no other args set => allows everything just like before
+                                        access_point_id="condition_block",
+                                    ),
+                                ),
+                                "THEN": InputPattern(
+                                    # since .blocks can not be a pattern we can not set access_point_id on it.
+                                    # but we can set it on the input and later get .blocks
+                                    access_point_id="then_input"
+                                ),
+                            },
+                        ),
+                    ],
+                ),
+            },
+            access_point_id="forever_block",
+        ),
+    ],
+)
+
+visitor = TreeVisitor.new_include_only(included=[SRScript])
+path_to_node_map = visitor.visit_tree(srproject)
+
+messages_and_conditions: list[tuple[SRDropdownValue, SRBlock]] = []
+for path, node in path_to_node_map.items():
+    match_result = match_handler(handler=pattern, value=node)
+    if match_result is None:
+        continue
+
+    script: SRScript = node
+    # The access points are automatically added to the match result on success.
+    # Fetch them (Optional):
+    condition_block = match_result.get_access_point("condition_block")
+    then_input: SRScriptInputValue = match_result.get_access_point("then_input")
+    then_blocks = then_input.blocks
+    
+    script_index = path[-1].value # e.g. AbstractTreePath(.sprites[0].scripts[5]) => 5 
+    message = SRDropdownValue(
+        kind=DropdownValueKind.STANDARD, # as broadcasts do not reference a sprite, variable etc.
+        value=f"loop event {script_index}"
+    )
+    new_script = SRScript(
+        position=script.position,
+        blocks=[
+            SRBlock(
+                opcode="when I receive [MESSAGE]",
+                dropdowns={
+                    "MESSAGE": message,
+                },
+            ),
+            *then_blocks
+        ],
+    )
+    print("New script to replace old one:")
+    print(new_script)
+    
+    set_path_in_tree(
+        tree=srproject,
+        path=path,
+        value=new_script,
+    )
+    
+    messages_and_conditions.append((message, condition_block))
+
+# The rest stays as before...
+event_check_blocks = []
+for message, condition_block in messages_and_conditions:
+    event_check_block = SRBlock(
+        opcode="if <CONDITION> then {THEN}",
+        inputs={
+            "CONDITION": SRBlockAndBoolInputValue(
+                block=condition_block,
+                immediate=False,
+            ),
+            "THEN": SRScriptInputValue(
+                blocks=[
+                    SRBlock(
+                        opcode="broadcast ([MESSAGE])",
+                        inputs={
+                            "MESSAGE": SRBlockAndDropdownInputValue(
+                                block=None,
+                                dropdown=message,
+                            ),
+                        },
+                    )
+                ],
+            ),
+        },
+    )
+    event_check_blocks.append(event_check_block)
+
+main_loop_script = SRScript(
+    position=(0, 0),
+    blocks=[
+        SRBlock(opcode="when green flag clicked"),
+        SRBlock(
+            opcode="forever {BODY}",
+            inputs={
+                "BODY": SRScriptInputValue(
+                    blocks=event_check_blocks,
+                ),
+            },
+        )
+    ],
+)
+
+srproject.stage.scripts.append(main_loop_script)
+
+print("Main Loop Script:")
+print(main_loop_script)
+```
+Output: the same as before.
+Note: if you are careful not to overwrite any access points, you can even add access points to a result using `SuccessfulMatchResult.add_access_point` to add an access point in your custom handler. You can provide anything to it, even values which do not have patterns (e.g. `list`, `dict` or anything else).
+
 
 ---
 
