@@ -67,6 +67,7 @@ class FRBlock:
             the FRBlock
         """
         if "mutation" in data:
+            print("block", FRBlock.__repr__(data))
             mutation = FRMutation.from_data(data["mutation"])
         else:
             mutation = None

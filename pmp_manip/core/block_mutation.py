@@ -1,12 +1,12 @@
 from abc         import ABC, abstractmethod
 from copy        import deepcopy
 from dataclasses import field
-from json        import loads
+from json        import loads, JSONDecodeError
 from typing      import Any, ClassVar, NoReturn, TYPE_CHECKING
 
 from pmp_manip.important_consts import SHA256_SEC_MAIN_ARGUMENT_NAME
 from pmp_manip.utility          import (
-    grepr_dataclass, string_to_sha256, gdumps,
+    grepr_dataclass, enforce_argument_types, string_to_sha256, gdumps,
     AA_TYPE, AA_HEX_COLOR, AbstractTreePath,
     MANIP_ThanksError, MANIP_ConversionError, MANIP_DeserializationError, 
 )
@@ -16,24 +16,87 @@ if TYPE_CHECKING: from pmp_manip.core.block_interface import FirstToInterIF, Int
 from pmp_manip.core.custom_block import SRCustomBlockOpcode, SRCustomBlockOptype
 
 
-def _load_bool_value(data: dict[str, Any], key: str) -> bool:
+@enforce_argument_types
+def _load_bool_value(data: dict[str, Any], key: str, default: bool) -> bool:
     """
-    Load a boolean from a string or boolean.
+    Load a boolean from a key of a dictionary.
     
     Args:
-        value: the value to convert into a boolean.
+        data: the dictionary containing a string key with a value which will be converted to a boolean.
+        key: the string key in the dictionary with a value which will be converted to a boolean.
+        default: the default value if the key does not exist.
+    
+    Raises:
+        MANIP_DeserializationError: if the key's value can not be interpreted as a boolean.
     """
+    value = data.get(key, False)
     if isinstance(value, bool):
         return value
     elif isinstance(value, str):
-        return loads(value)
+        if value in {"undefined", "null"}:
+            return default
+        try:
+            return loads(value)
+        except JSONDecodeError as error:
+            raise MANIP_DeserializationError(f"Invalid value for {key!r}, expected boolean-like value: {value}") from error
     else:
-        raise MANIP_DeserializationError(f"Invalid value for 'warp': {data['warp']}")
-  
+        raise MANIP_DeserializationError(f"Invalid value for {key!r}, expected boolean-like value: {value}")
+
+@enforce_argument_types
+def _load_noquote_str_value(data: dict[str, Any], key: str, default: bool) -> bool:
+    """
+    Load a non-qouted string from a key of a dictionary.
     
+    Args:
+        data: the dictionary containing a string key with a value which will be converted to a non-qouted string.
+        key: the string key in the dictionary with a value which will be converted to a non-qouted string.
+        default: the default value if the key does not exist.
     
+    Raises:
+        MANIP_DeserializationError: if the key's value can not be interpreted as a non-qouted string.
+    """
+    value = data.get(key, False)
+    if isinstance(value, str):
+        if value in {"undefined", "null"}:
+            return default
+        if '"' not in value:
+            return value
+        try:
+            value = loads(value)
+            if '"' not in value:
+                return value
+            else:
+                raise MANIP_DeserializationError(f"Invalid value for {key!r}, expected quoted or non-quoted string value: {value}")
+        except JSONDecodeError as error:
+            raise MANIP_DeserializationError(f"Invalid value for {key!r}, expected quoted or non-quoted string value: {value}") from error
+    else:
+        raise MANIP_DeserializationError(f"Invalid value for {key!r}, expected quoted or non-quoted string value: {value}")
+
+@enforce_argument_types
+def _load_color_array(data: dict[str, Any], key: str, default: bool) -> tuple[str, str, str]:
+    """
+    Load a triple color array from a key of a dictionary.
     
+    Args:
+        data: the dictionary containing a string key with a value which will be converted to a triple color array.
+        key: the string key in the dictionary with a value which will be converted to a triple color array.
+        default: the default value if the key does not exist.
     
+    Raises:
+        MANIP_DeserializationError: if the key's value can not be interpreted as a triple color array.
+    """
+    value = data.get(key, False)
+    if isinstance(value, list):
+        return tuple(value)
+    elif isinstance(value, str):
+        if value in {"undefined", "null"}:
+            return default
+        try:
+            return loads(value)
+        except JSONDecodeError as error:
+            raise MANIP_DeserializationError(f"Invalid value for {key!r}, expected array-like value: {value}") from error
+    else:
+        raise MANIP_DeserializationError(f"Invalid value for {key!r}, expected array-like value: {value}")
 
 @grepr_dataclass(
     grepr_fields=["tag_name", "children"], init=False, forbid_init_only_subcls=True,
@@ -160,32 +223,15 @@ class FRCustomBlockArgumentMutation(FRMutation, required_properties={"color"}, o
         
         Returns:
             the FRCustomBlockArgumentMutation
-        
-        Raises:
-            MANIP_DeserializationError: if 'warp', 'edited' or 'hasnext' is neither False nor unset
         """
-        warp     = data.get("warp"   , False)
-        edited   = data.get("edited" , False)
-        has_next = data.get("hasnext", False)
-        
-        if   warp == False: pass
-        elif warp == gdumps(False): warp = False
-        else: raise MANIP_DeserializationError(f"Invalid value for 'warp', expected it to either not be set or to be False: {warp!r}")
-        if   edited == False: pass
-        elif edited == gdumps(False): edited = False
-        else: raise MANIP_DeserializationError(f"Invalid value for 'edited', expected it to either not be set or to be False: {edited!r}")
-        if   has_next == False: pass
-        elif has_next == gdumps(False): has_next = False
-        else: raise MANIP_DeserializationError(f"Invalid value for 'hasnext', expected it to either not be set or to be False: {has_next!r}")
-        
         return cls(
             tag_name = data["tagName" ],
             children = deepcopy(data["children"]),
-            color    = tuple(loads(data["color"])),
+            color    = _load_color_array(data, key="color", default=("#FF6680", "#FF4D6A", "#FF3355")),
             
-            warp     = warp,
-            edited   = edited,
-            has_next = has_next,
+            warp     = _load_bool_value(data, "warp", default=False),
+            edited   = _load_bool_value(data, "edited", default=False),
+            has_next = _load_bool_value(data, "hasnext", default=False),
         )
 
     def to_data(self) -> dict[str, Any]:
@@ -281,12 +327,12 @@ class FRCustomBlockMutation(FRMutation,
             argument_ids      = loads(data["argumentids"     ]),
             argument_names    = loads(data["argumentnames"   ]),
             argument_defaults = loads(data["argumentdefaults"]),
-            warp              = warp,
-            returns           = loads(data["returns"]) if "returns" in data else False,
-            edited            = loads(data["edited" ]) if "edited" in data else True,
-            optype            = loads(data["optype" ]) if "optype" in data else "statement",
-            color             = tuple(loads(data["color"])) if "color" in data else ("#FF6680", "#FF4D6A", "#FF3355"),
-            has_next          = data.get("hasnext", False),
+            warp              = _load_bool_value(data, key="warp", default=False),
+            returns           = _load_bool_value(data, key="returns", default=False),
+            edited            = _load_bool_value(data, key="edited", default=True),
+            optype            = _load_noquote_str_value(data, key="optype", default="statement"),
+            color             = _load_color_array(data, key="color", default=("#FF6680", "#FF4D6A", "#FF3355")),
+            has_next          = _load_bool_value(data, key="hasnext", default=False),
         )
     
     def to_data(self) -> dict[str, Any]:
@@ -335,7 +381,7 @@ class FRCustomBlockMutation(FRMutation,
 @grepr_dataclass(grepr_fields=["proccode", "argument_ids", "warp", "returns", "edited", "optype", "color"])
 class FRCustomBlockCallMutation(FRMutation, 
         required_properties={"proccode", "argumentids", "warp"},
-        optional_properties={"returns", "edited", "optype", "color"},
+        optional_properties={"returns", "edited", "optype", "color", "hasnext"},
     ):
     """
     The first representation for the mutation of a custom block call
@@ -348,6 +394,7 @@ class FRCustomBlockCallMutation(FRMutation,
     edited: bool # seems to always be true
     optype: str
     color: tuple[str, str, str]
+    has_next: bool = False # should not exist and if present seems to be False
     
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRCustomBlockCallMutation":
@@ -360,21 +407,17 @@ class FRCustomBlockCallMutation(FRMutation,
         Returns:
             the FRCustomBlockCallMutation
         """
-        if isinstance(data["warp"], bool):
-            warp = data["warp"]
-        elif isinstance(data["warp"], str):
-            warp = loads(data["warp"])
-        else: raise MANIP_DeserializationError(f"Invalid value for 'warp': {data['warp']}")
         return cls(
-            tag_name     = data["tagName" ],
-            children     = deepcopy(data["children"]),
-            proccode     = data["proccode"],
-            argument_ids = loads(data["argumentids"]),
-            warp         = warp,
-            returns      = loads(data["returns"]),
-            edited       = loads(data["edited" ]),
-            optype       = loads(data["optype" ]) if "optype" in data else "statement",
-            color        = tuple(loads(data["color"])),
+            tag_name          = data["tagName" ],
+            children          = deepcopy(data["children"]),
+            proccode          = data["proccode"],
+            argument_ids      = loads(data["argumentids"]),
+            warp              = _load_bool_value(data, key="warp", default=False),
+            returns           = _load_bool_value(data, key="returns", default=False),
+            edited            = _load_bool_value(data, key="edited", default=True),
+            optype            = _load_noquote_str_value(data, key="optype", default="statement"),
+            color             = _load_color_array(data, key="color", default=("#FF6680", "#FF4D6A", "#FF3355")),
+            has_next          = _load_bool_value(data, key="hasnext", default=False),
         )
     
     def to_data(self) -> dict[str, Any]:
@@ -415,12 +458,14 @@ class FRCustomBlockCallMutation(FRMutation,
         )
 
 @grepr_dataclass(grepr_fields=["has_next"])
-class FRStopScriptMutation(FRMutation, required_properties={"hasnext"}):
+class FRStopScriptMutation(FRMutation, required_properties={"hasnext"}, optional_properties=["warp", "edited"]):
     """
     The first representation for the mutation of a stop script mutation
     """
     
     has_next: bool
+    warp: bool = False # should not exist and if present seems to be False
+    edited: bool = False # should not exist and if present seems to be False
     
     @classmethod
     def from_data(cls, data: dict[str, bool]) -> "FRStopScriptMutation":
@@ -436,7 +481,7 @@ class FRStopScriptMutation(FRMutation, required_properties={"hasnext"}):
         return cls(
             tag_name = data["tagName" ],
             children = deepcopy(data["children"]),
-            has_next = loads(data["hasnext"]),
+            has_next = _load_bool_value(data, key="hasnext", default=False)
         )
 
     def to_data(self) -> dict[str, Any]:
