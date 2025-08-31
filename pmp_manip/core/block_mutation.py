@@ -15,6 +15,26 @@ from pmp_manip.utility          import (
 if TYPE_CHECKING: from pmp_manip.core.block_interface import FirstToInterIF, InterToFirstIF
 from pmp_manip.core.custom_block import SRCustomBlockOpcode, SRCustomBlockOptype
 
+
+def _load_bool_value(data: dict[str, Any], key: str) -> bool:
+    """
+    Load a boolean from a string or boolean.
+    
+    Args:
+        value: the value to convert into a boolean.
+    """
+    if isinstance(value, bool):
+        return value
+    elif isinstance(value, str):
+        return loads(value)
+    else:
+        raise MANIP_DeserializationError(f"Invalid value for 'warp': {data['warp']}")
+  
+    
+    
+    
+    
+
 @grepr_dataclass(
     grepr_fields=["tag_name", "children"], init=False, forbid_init_only_subcls=True,
     suggested_subcls_names=["FRCustomBlockArgumentMutation", "FRCustomBlockMutation", "FRCustomBlockCallMutation", "FRStopScriptMutation"]
@@ -254,11 +274,6 @@ class FRCustomBlockMutation(FRMutation,
         Returns:
             the FRCustomBlockMutation
         """
-        if isinstance(data["warp"], bool):
-            warp = data["warp"]
-        elif isinstance(data["warp"], str):
-            warp = loads(data["warp"])
-        else: raise MANIP_DeserializationError(f"Invalid value for 'warp': {data['warp']}")
         return cls(
             tag_name          = data["tagName" ],
             children          = deepcopy(data["children"]),
