@@ -4,3 +4,4 @@ gen_ext_opcode_info/
 htmlcov/
 dist/
 *.egg-info/
+node_modules

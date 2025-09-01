@@ -134,26 +134,4 @@ globalThis.Scratch = {
     Color: class Color {},
 }
 
-// ---- Main loader ----
-function runScript(code) {
-    try {
-        const module = { exports: {} };
-        const requireFunc = require;
-        eval(code); // evaluated in current global context
-        if (!globalThis._scratchExtension) {
-            console.error("Extension was not registered.");
-            process.exit(1); // Errno. 1
-        }
-        const extensionInfo = globalThis._scratchExtension.getInfo();
-        console.log(JSON.stringify(extensionInfo)); // must be the last call to console.log() or similar
-    } catch (e) {
-        console.error("Error executing script:", e);
-        process.exit(2); // Errno. 2
-    }
-}
-
-const filePath = process.argv[2];
-const fullPath = path.resolve(filePath);
-const code = fs.readFileSync(fullPath, "utf-8");
-runScript(code);
-process.exit(0);
+module.exports = globalThis.Scratch;

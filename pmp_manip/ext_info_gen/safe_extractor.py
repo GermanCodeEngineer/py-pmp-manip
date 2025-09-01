@@ -15,13 +15,9 @@ from pmp_manip.utility            import (
 )
 
 
-SCRATCH_STUB = { # Must be kept in sync with direct_extractor.js
-    "ArgumentAlignment": {
-        "DEFAULT": None,
-        "LEFT": "LEFT",
-        "CENTER": "CENTRE",
-        "RIGHT": "RIGHT"
-    },
+SCRATCH_STUB = {
+    # Must be kept in sync with direct_extractor.js
+    # Derived from https://github.com/PenguinMod/PenguinMod-Vm/blob/develop/src/extension-support/tw-extension-api-common.js
     "ArgumentType": {
         "ANGLE": "angle",
         "BOOLEAN": "Boolean",
@@ -39,12 +35,11 @@ SCRATCH_STUB = { # Must be kept in sync with direct_extractor.js
         "BROADCAST": "broadcast",
         "SEPERATOR": "seperator"
     },
-    "BlockShape": {
-        "HEXAGONAL": 1,
-        "ROUND": 2,
-        "SQUARE": 3,
-        "LEAF": 4,
-        "PLUS": 5
+    "ArgumentAlignment": {
+        "DEFAULT": None,
+        "LEFT": "LEFT",
+        "CENTER": "CENTRE",
+        "RIGHT": "RIGHT"
     },
     "BlockType": {
         "BOOLEAN": "Boolean",
@@ -58,6 +53,30 @@ SCRATCH_STUB = { # Must be kept in sync with direct_extractor.js
         "REPORTER": "reporter",
         "XML": "xml"
     },
+    "BlockShape": {
+        "HEXAGONAL": 1,
+        "ROUND": 2,
+        "SQUARE": 3,
+        "LEAF": 4,
+        "PLUS": 5
+    },
+    "NotchShape": {
+        "SWITCH": "switchCase",
+        "HEXAGON": "hexagon",
+        "ROUND": "round",
+        "SQUARE": "square",
+        "LEAF": "leaf",
+        "PLUS": "plus",
+        "OCTAGONAL": "octagonal",
+        "BUMPED": "bumped",
+        "INDENTED": "indented",
+        "SCRAPPED": "scrapped",
+        "ARROW": "arrow",
+        "TICKET": "ticket",
+        "JIGSAW": "jigsaw",
+        "INVERTED": "inverted",
+        "PINCER": "pincer",
+    },
     "TargetType": {
         "SPRITE": "sprite",
         "STAGE": "stage"
@@ -67,6 +86,8 @@ SCRATCH_STUB = { # Must be kept in sync with direct_extractor.js
         #"isPenguinMod": True, # has not ever been needed, uncomment when needed
         # .register is handled somewhere else
     },
+    # .translate is handled somewhere else
+    # I only included the properties which a resonable getInfo should use in safe analysis
 }
 
 _js_parser: Parser | None = None
