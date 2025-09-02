@@ -29,7 +29,7 @@ function createTranslate() {
 }
 
 register = (ext) => {
-    const dangerousMethods = ["init"];
+    const dangerousMethods = ["init", "initialize"];
 
     // Patch the prototype directly
     const proto = Object.getPrototypeOf(ext);

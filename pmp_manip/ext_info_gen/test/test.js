@@ -62,5 +62,5 @@ const exported = sandbox.module.exports;
 console.log(exported);
 
 const info = exported.prototype.getInfo();
-console.log(info);
+console.log(JSON.stringify(info, null, 2));
 
