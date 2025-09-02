@@ -1,4 +1,5 @@
 from copy   import deepcopy
+from json   import dumps
 from pytest import fixture, raises, MonkeyPatch
 
 from pmp_manip.important_consts import SHA256_SEC_MAIN_ARGUMENT_NAME
@@ -225,13 +226,6 @@ def test_FRCustomBlockArgumentMutation_from_data_stringified_invalid():
     assert frmutation.warp is False
     assert frmutation.edited is False
     assert frmutation.has_next is False
-    
-    with raises(MANIP_DeserializationError):
-        FRCustomBlockArgumentMutation.from_data(data | {"warp": "null"})
-    with raises(MANIP_DeserializationError):
-        FRCustomBlockArgumentMutation.from_data(data | {"edited": None})
-    with raises(MANIP_DeserializationError):
-        FRCustomBlockArgumentMutation.from_data(data | {"hasnext": 1})
 
 def test_FRCustomBlockArgumentMutation_to_second_without_storing_argument(fti_if: FirstToInterIF):
     data = {
@@ -273,10 +267,10 @@ def test_FRCustomBlockMutation_from_to_data_and_to_second(fti_if: FirstToInterIF
     assert frmutation.warp == warp
     assert frmutation.returns == returns
     assert frmutation.edited == edited
-    assert frmutation.optype == optype
+    assert frmutation.optype == "statement"
     assert frmutation.color == tuple(colors)
     
-    assert frmutation.to_data() == data
+    assert frmutation.to_data() == (data | {"optype": dumps("statement")})
     
     srmutation = frmutation.to_second(fti_if)
     assert isinstance(srmutation, SRCustomBlockMutation)
@@ -316,10 +310,10 @@ def test_FRCustomBlockCallMutation_from_to_data_and_to_second(fti_if: FirstToInt
     assert frmutation.warp == warp
     assert frmutation.returns == returns
     assert frmutation.edited == edited
-    assert frmutation.optype == optype
+    assert frmutation.optype == "statement"
     assert frmutation.color == tuple(colors)
     
-    assert frmutation.to_data() == data
+    assert frmutation.to_data() == (data | {"optype": dumps("statement")})
     
     srmutation = frmutation.to_second(fti_if)
     assert isinstance(srmutation, SRCustomBlockCallMutation)

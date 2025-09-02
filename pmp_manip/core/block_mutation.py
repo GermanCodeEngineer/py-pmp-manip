@@ -9,6 +9,7 @@ from pmp_manip.utility          import (
     grepr_dataclass, enforce_argument_types, string_to_sha256, gdumps,
     AA_TYPE, AA_HEX_COLOR, AbstractTreePath,
     MANIP_ThanksError, MANIP_ConversionError, MANIP_DeserializationError, 
+    NotSet,
 )
 
 
@@ -16,8 +17,7 @@ if TYPE_CHECKING: from pmp_manip.core.block_interface import FirstToInterIF, Int
 from pmp_manip.core.custom_block import SRCustomBlockOpcode, SRCustomBlockOptype
 
 
-@enforce_argument_types
-def _load_bool_value(data: dict[str, Any], key: str, default: bool) -> bool:
+def _load_bool_value(data: dict[str, Any], key: str, default: bool, allow_null: bool = False) -> bool | None:
     """
     Load a boolean from a key of a dictionary.
     
@@ -25,16 +25,20 @@ def _load_bool_value(data: dict[str, Any], key: str, default: bool) -> bool:
         data: the dictionary containing a string key with a value which will be converted to a boolean.
         key: the string key in the dictionary with a value which will be converted to a boolean.
         default: the default value if the key does not exist.
+        allow_null: wether null should be allowed(returned as None). Otherwise "null" is interpreted as "not set".
     
     Raises:
         MANIP_DeserializationError: if the key's value can not be interpreted as a boolean.
+    # TODO: add tests
     """
-    value = data.get(key, False)
+    value = data.get(key, default)
     if isinstance(value, bool):
         return value
     elif isinstance(value, str):
-        if value in {"undefined", "null"}:
+        if value == "undefined":
             return default
+        if value == "null":
+            return None if allow_null else default
         try:
             return loads(value)
         except JSONDecodeError as error:
@@ -42,8 +46,7 @@ def _load_bool_value(data: dict[str, Any], key: str, default: bool) -> bool:
     else:
         raise MANIP_DeserializationError(f"Invalid value for {key!r}, expected boolean-like value: {value}")
 
-@enforce_argument_types
-def _load_noquote_str_value(data: dict[str, Any], key: str, default: bool) -> bool:
+def _load_noquote_str_value(data: dict[str, Any], key: str, default: str) -> bool:
     """
     Load a non-qouted string from a key of a dictionary.
     
@@ -54,8 +57,9 @@ def _load_noquote_str_value(data: dict[str, Any], key: str, default: bool) -> bo
     
     Raises:
         MANIP_DeserializationError: if the key's value can not be interpreted as a non-qouted string.
+    # TODO: add tests
     """
-    value = data.get(key, False)
+    value = data.get(key, default)
     if isinstance(value, str):
         if value in {"undefined", "null"}:
             return default
@@ -72,8 +76,7 @@ def _load_noquote_str_value(data: dict[str, Any], key: str, default: bool) -> bo
     else:
         raise MANIP_DeserializationError(f"Invalid value for {key!r}, expected quoted or non-quoted string value: {value}")
 
-@enforce_argument_types
-def _load_color_array(data: dict[str, Any], key: str, default: bool) -> tuple[str, str, str]:
+def _load_color_array(data: dict[str, Any], key: str, default: tuple[str, str, str]) -> tuple[str, str, str]:
     """
     Load a triple color array from a key of a dictionary.
     
@@ -84,15 +87,17 @@ def _load_color_array(data: dict[str, Any], key: str, default: bool) -> tuple[st
     
     Raises:
         MANIP_DeserializationError: if the key's value can not be interpreted as a triple color array.
+    
+    # TODO: add tests
     """
-    value = data.get(key, False)
+    value = data.get(key, list(default))
     if isinstance(value, list):
         return tuple(value)
     elif isinstance(value, str):
         if value in {"undefined", "null"}:
             return default
         try:
-            return loads(value)
+            return tuple(loads(value))
         except JSONDecodeError as error:
             raise MANIP_DeserializationError(f"Invalid value for {key!r}, expected array-like value: {value}") from error
     else:
@@ -328,7 +333,7 @@ class FRCustomBlockMutation(FRMutation,
             argument_names    = loads(data["argumentnames"   ]),
             argument_defaults = loads(data["argumentdefaults"]),
             warp              = _load_bool_value(data, key="warp", default=False),
-            returns           = _load_bool_value(data, key="returns", default=False),
+            returns           = _load_bool_value(data, key="returns", default=False, allow_null=True),
             edited            = _load_bool_value(data, key="edited", default=True),
             optype            = _load_noquote_str_value(data, key="optype", default="statement"),
             color             = _load_color_array(data, key="color", default=("#FF6680", "#FF4D6A", "#FF3355")),
@@ -413,7 +418,7 @@ class FRCustomBlockCallMutation(FRMutation,
             proccode          = data["proccode"],
             argument_ids      = loads(data["argumentids"]),
             warp              = _load_bool_value(data, key="warp", default=False),
-            returns           = _load_bool_value(data, key="returns", default=False),
+            returns           = _load_bool_value(data, key="returns", default=False, allow_null=True),
             edited            = _load_bool_value(data, key="edited", default=True),
             optype            = _load_noquote_str_value(data, key="optype", default="statement"),
             color             = _load_color_array(data, key="color", default=("#FF6680", "#FF4D6A", "#FF3355")),
