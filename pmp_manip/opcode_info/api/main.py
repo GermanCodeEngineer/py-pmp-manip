@@ -28,21 +28,6 @@ class ExtensionRef:
     id: str
     module_dir: str
 
-BUILTIN_MODULE_DIR = "pmp_manip/opcode_info/data/"
-class BuiltinExtensionRef:
-    makeymakey   = ExtensionRef("scratch_makey_makey"   , BUILTIN_MODULE_DIR)
-    music        = ExtensionRef("scratch_music"         , BUILTIN_MODULE_DIR)
-    pen          = ExtensionRef("scratch_pen"           , BUILTIN_MODULE_DIR)
-    text2speech  = ExtensionRef("scratch_text_to_speech", BUILTIN_MODULE_DIR)
-    text         = ExtensionRef("scratch_text"          , BUILTIN_MODULE_DIR)
-    translate    = ExtensionRef("scratch_translate"     , BUILTIN_MODULE_DIR)
-    videoSensing = ExtensionRef("scratch_video_sensing" , BUILTIN_MODULE_DIR)
-
-    tw_files     = ExtensionRef("tw_files"              , BUILTIN_MODULE_DIR)
-    lmsTempVars2 = ExtensionRef("tw_temporary_variables", BUILTIN_MODULE_DIR)
-
-    jgJSON       = ExtensionRef("pm_json"               , BUILTIN_MODULE_DIR)
-
 class OpcodeType(GEnum):
     """
     Represents the shape of all blocks with a certain opcode
@@ -761,7 +746,7 @@ class OpcodeInfoAPI:
 
 
 __all__ = [
-    "ExtensionRef", "BuiltinExtensionRef", 
+    "ExtensionRef", 
     "OpcodeType", "MonitorIdBehaviour", "OpcodeInfo", "OpcodeInfoGroup", "OpcodeInfoAPI",
 ]
 

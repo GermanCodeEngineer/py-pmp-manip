@@ -3,7 +3,9 @@ TODOs Sorted by Priorites
 Special:
     TODOs in Code + read through code, optimize here and there
 
-High: /
+High:
+    - M: remove bultin extension ref, update _add_all_extensions_of_project
+    - S: update handling_extensions.md doc
 
 Medium:
     - XL: test and document opcode_info

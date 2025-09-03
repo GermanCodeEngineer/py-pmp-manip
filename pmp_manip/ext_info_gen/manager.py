@@ -261,7 +261,7 @@ def generate_extension_info_py_file(
                 ) from error
             else:
                 raise type(error)(f"Error in extension {extension_id!r}: {str(error)}") from error
-    
+
     try:
         info_group, input_type_cls, dropdown_type_cls = generate_opcode_info_group(extension_info)
     except MANIP_ThanksError:
@@ -302,12 +302,12 @@ __all__ = ["generate_extension_info_py_file"]
 if __name__ == "__main__": # pragma: no cover
     init_config(get_default_config()) # pragma: no cover
     for extension_id, extension in [ # pragma: no cover
-        ("asyncexample",        "example_extensions/asyncexample.js"),
-        ("dumbExample",         "example_extensions/dumbExample.js"),
-        ("truefantombase",      "https://extensions.turbowarp.org/true-fantom/base.js"),
-        ("pmControlsExpansion", "https://raw.githubusercontent.com/PenguinMod/PenguinMod-Vm/refs/heads/develop/src/extensions/pm_controlsExpansion/index.js"),
+        #("asyncexample",        "example_extensions/asyncexample.js"),
+        #("dumbExample",         "example_extensions/dumbExample.js"),
+        #("truefantombase",      "https://extensions.turbowarp.org/true-fantom/base.js"),
+        #("pmControlsExpansion", "https://raw.githubusercontent.com/PenguinMod/PenguinMod-Vm/refs/heads/develop/src/extensions/pm_controlsExpansion/index.js"),
         ("gpusb3",              "https://extensions.penguinmod.com/extensions/derpygamer2142/gpusb3.js"),
-        ("P7BoxPhys",           "https://extensions.penguinmod.com/extensions/pooiod/Box2D.js"),
-        ("griffpatch",          "https://extensions.turbowarp.org/box2d.js"),
+        #("P7BoxPhys",           "https://extensions.penguinmod.com/extensions/pooiod/Box2D.js"),
+        #("griffpatch",          "https://extensions.turbowarp.org/box2d.js"),
     ]:
         generate_extension_info_py_file(extension, extension_id, tolerate_file_path=True) # pragma: no cover

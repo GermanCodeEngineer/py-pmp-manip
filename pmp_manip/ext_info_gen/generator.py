@@ -255,6 +255,9 @@ def generate_block_opcode_info(
                     return "{", "}" # pragma: no cover
         
         text_lines: list[str] = text if isinstance(text, list) else [text]
+        unified_text = "\n".join(text_lines)
+        if ("{{" in unified_text) or ("}}" in unified_text):
+            raise ValueError(f"'text' must not contain double curly brackets ('{{' or '}}'): {text}")
         new_opcode_segments = []
         for i, text_line in enumerate(text_lines):
             line_segments = text_line.split(" ")
@@ -437,22 +440,19 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
             except MANIP_ValueError as error:
                 old_exists = info_group_content.has_key1(old_opcode)
                 new_exists = info_group_content.has_key2(new_opcode)
-                if   old_exists and not(new_exists): # => old opcode key conflict
-                    raise MANIP_InvalidCustomBlockError(f"Invalid block info: Two block must not use the same 'opcode' {old_opcode!r}") from error
+                if   old_exists: # => old opcode key conflict
+                    raise MANIP_InvalidCustomBlockError(f"Invalid block info: Two blocks must not use the same 'opcode': {old_opcode}") from error
                 elif new_exists and not(old_exists): # => new opcode key conflict
                     # write down that the first element with this new opcode has to be renamed too, just can not be done here
                     conflicting_new_opcodes.append(new_opcode)
                     # use old_opcode as a unique disambiguer
                     new_new_opcode = disambiguate_new_opcode(new_opcode, old_opcode)
-                    if info_group_content.has_key2(new_new_opcode):
-                        raise MANIP_InvalidCustomBlockError(f"Invalid block info: 'text' must not contain syntax {{{{id=...}}}} where ... is a placeholder, 'opcode': {old_opcode}")
                     info_group_content.set(
                         key1  = old_opcode,
                         key2  = new_new_opcode,
                         value = opcode_info,
                     )
-                else: # => cross key conflict
-                    raise MANIP_InvalidCustomBlockError(f"Invalid block info: Two block conflict with 'opcode' and 'text' in a weird way, 'opcode': {old_opcode}") from error
+                # else can not be reached; one of the keys must exist
 
     # Rename the first entries of conflicts too, second and above entries are handled above
     for new_opcode in conflicting_new_opcodes:

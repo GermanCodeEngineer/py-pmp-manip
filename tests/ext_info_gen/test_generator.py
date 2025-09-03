@@ -818,6 +818,21 @@ def test_generate_block_opcode_info_missing_attribute(input_type_cls, dropdown_t
             extension_id="someExtension",
         )
 
+def test_generate_block_opcode_info_unallowed_double_curly_brackets(input_type_cls, dropdown_type_cls):
+    block_data = {
+        "opcode": "doSth",
+        "blockType": "command",
+        "text": "do {{sth [ARG]",
+    }
+    with raises(MANIP_InvalidCustomBlockError):
+        generate_block_opcode_info(
+            block_info=block_data,
+            menus=EXAMPLE_MENU_DATA,
+            input_type_cls=input_type_cls,
+            dropdown_type_cls=dropdown_type_cls,
+            extension_id="someExtension",
+        )
+
 
 
 def test_generate_opcode_info_group():
@@ -902,6 +917,118 @@ def test_generate_opcode_info_group():
         direct_values=["sound a", "sound b", "sound c"],
     )
 
+def test_generate_opcode_info_group_same_new_opcode_twice():
+    extension_info = { # edited, not preserved fully
+        "id": "gpusb3",
+        "name": "GPU.sb3",
+        "color1": "#4287f5",
+        "color2": "#166af2",
+        "color3": "#032966",
+        "docsURI": "https://extensions.derpygamer2142.com/docs/gpusb3",
+        "blocks": [
+            { # first block with that 'text'
+                "opcode": "c_runFunc",
+                "blockType": "command",
+                "text": "Run function [FUNCNAME] with args [ARGS]",
+                "arguments": {
+                    "FUNCNAME": {
+                        "type": "string",
+                        "defaultValue": "myFunc",
+                    },
+                    "ARGS": {
+                        "type": "string",
+                        "defaultValue": "",
+                    },
+                },
+            },
+            { # a block inbetween
+                "opcode": "funcReturn",
+                "blockType": "command",
+                "isTerminal": True,
+                "text": "Return [TORETURN]",
+                "arguments": {
+                    "TORETURN": {
+                        "type": "string",
+                        "defaultValue": "",
+                    },
+                },
+            },
+            { # second block with that 'text'
+                "opcode": "r_runFunc",
+                "blockType": "reporter",
+                "text": "Run function [FUNCNAME] with args [ARGS]",
+                "arguments": {
+                    "FUNCNAME": {
+                        "type": "string",
+                        "defaultValue": "myFunc",
+                    },
+                    "ARGS": {
+                        "type": "string",
+                        "defaultValue": "",
+                    },
+                },
+            },
+        ],
+        "menus": {},
+    }
+    info_group, input_type_cls, dropdown_type_cls = generate_opcode_info_group(extension_info)
+
+    goal = OpcodeInfoGroup(
+        name="gpusb3",
+        opcode_info=DualKeyDict({
+            ("gpusb3_c_runFunc", "gpusb3::Run function (FUNCNAME) with args (ARGS) {{id=gpusb3_c_runFunc}}"): OpcodeInfo(
+                opcode_type=OpcodeType.STATEMENT,
+                inputs=DualKeyDict({
+                    ("FUNCNAME", "FUNCNAME"): InputInfo(type=BuiltinInputType.TEXT, menu=None),
+                    ("ARGS", "ARGS"): InputInfo(type=BuiltinInputType.TEXT, menu=None),
+                }),
+                dropdowns=DualKeyDict(),
+                can_have_monitor=False,
+                monitor_id_behaviour=None,
+                has_shadow=False,
+                has_variable_id=False,
+                special_cases={},
+                old_mutation_cls=None,
+                new_mutation_cls=None,
+            ),
+            ("gpusb3_funcReturn", "gpusb3::Return (TORETURN)"): OpcodeInfo(
+                opcode_type=OpcodeType.ENDING_STATEMENT,
+                inputs=DualKeyDict({
+                    ("TORETURN", "TORETURN"): InputInfo(type=BuiltinInputType.TEXT, menu=None),
+                }),
+                dropdowns=DualKeyDict(),
+                can_have_monitor=False,
+                monitor_id_behaviour=None,
+                has_shadow=False,
+                has_variable_id=False,
+                special_cases={},
+                old_mutation_cls=None,
+                new_mutation_cls=None,
+            ),
+            ("gpusb3_r_runFunc", "gpusb3::Run function (FUNCNAME) with args (ARGS) {{id=gpusb3_r_runFunc}}"): OpcodeInfo(
+                opcode_type=OpcodeType.STRING_REPORTER,
+                inputs=DualKeyDict({
+                    ("FUNCNAME", "FUNCNAME"): InputInfo(type=BuiltinInputType.TEXT, menu=None),
+                    ("ARGS", "ARGS"): InputInfo(type=BuiltinInputType.TEXT, menu=None),
+                }),
+                dropdowns=DualKeyDict(),
+                can_have_monitor=False,
+                monitor_id_behaviour=None,
+                has_shadow=False,
+                has_variable_id=False,
+                special_cases={},
+                old_mutation_cls=None,
+                new_mutation_cls=None,
+            ),
+        }),
+    )
+    assert info_group == goal
+    
+    input_type_members    = {member.name: member.value for member in input_type_cls   }
+    dropdown_type_members = {member.name: member.value for member in dropdown_type_cls}
+    assert set(input_type_members   .keys()) == set()
+    assert set(dropdown_type_members.keys()) == set()
+
 def test_generate_opcode_info_group_unkown_attribute():
     extension_info = {
         "someUnkownAttribute": "someValue",
@@ -914,6 +1041,25 @@ def test_generate_opcode_info_group_invalid_block_type():
         "id": "someExt",
         "blocks": [
             ["doSth", "do sth"]
+        ]
+    }
+    with raises(MANIP_InvalidCustomBlockError):
+        generate_opcode_info_group(extension_info)
+
+def test_generate_opcode_info_group_same_old_opcode_twice():
+    extension_info = {
+        "id": "someExt",
+        "blocks": [
+            {
+                "opcode": "doSth",
+                "blockType": "command",
+                "text": "do sth 1",
+            },
+            {
+                "opcode": "doSth",
+                "blockType": "command",
+                "text": "do sth 2",
+            },
         ]
     }
     with raises(MANIP_InvalidCustomBlockError):
