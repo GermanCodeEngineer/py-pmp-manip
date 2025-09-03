@@ -57,7 +57,6 @@ def process_all_menus(menus: dict[str, dict[str, Any]|list]) -> tuple[type[Input
         try:
             assert isinstance(menu_info, (dict, list))
             if   isinstance(menu_info, dict):
-                print(repr(menu_block_id)menu_info)
                 if "items" not in menu_info:
                     raise MANIP_InvalidCustomMenuError(f"Invalid custom menu {menu_block_id!r} is missing attribute 'items'")
                 possible_values = menu_info["items"]

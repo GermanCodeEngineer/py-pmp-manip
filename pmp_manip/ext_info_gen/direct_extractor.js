@@ -13,13 +13,21 @@ return Function(...params, 'return {};');
 
 const BLACKLIST = new Set(["init", "initialize"]);
 
+function makeStubWithArity(arity) {
+    const params = Array.from({ length: arity }, (_, i) => `a${i}`);
+    // eslint-disable-next-line no-new-func
+    return Function(...params, "return {};");
+}
+
 function register(ext) {
     // Patch the prototype directly
     const proto = Object.getPrototypeOf(ext);
     for (const method of BLACKLIST) {
         if (typeof proto[method] === "function") {
             console.warn(`Patching prototype method '${method}'`);
-            proto[method] = () => {};
+            const arity = proto[method].length;
+            const stubFn = makeStubWithArity(arity);
+            proto[method] = stubFn;
         }
     }
 
