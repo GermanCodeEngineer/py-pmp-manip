@@ -24,6 +24,8 @@ Medium:
         => also fix parent and subclass field order issue
     - S: investigate custom type object variables(example: vector extension)
     - S: add references at the end of call doc files
+    - S: move Dockerfile and docker_test.py into tests somehow
+    - S: find all remaining block and extension attributes
 
 Low:
     - XL: test and document utility

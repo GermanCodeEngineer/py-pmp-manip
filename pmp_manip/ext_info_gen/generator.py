@@ -9,7 +9,7 @@ from pmp_manip.opcode_info.api import (
 )
 from pmp_manip.utility         import (
     grepr, DualKeyDict, GEnum,
-    MANIP_ThanksError, MANIP_TempNotImplementedError, MANIP_NotImplementedError,
+    MANIP_ThanksError, MANIP_ValueError, MANIP_TempNotImplementedError, MANIP_NotImplementedError,
     MANIP_InvalidCustomMenuError, MANIP_InvalidCustomBlockError,
     MANIP_UnknownExtensionAttributeError, 
 )
@@ -57,6 +57,7 @@ def process_all_menus(menus: dict[str, dict[str, Any]|list]) -> tuple[type[Input
         try:
             assert isinstance(menu_info, (dict, list))
             if   isinstance(menu_info, dict):
+                print(repr(menu_block_id)menu_info)
                 if "items" not in menu_info:
                     raise MANIP_InvalidCustomMenuError(f"Invalid custom menu {menu_block_id!r} is missing attribute 'items'")
                 possible_values = menu_info["items"]
@@ -343,7 +344,7 @@ def generate_block_opcode_info(
                 "opcode", "blockType", "text", "arguments", "branchCount", "isTerminal", "disableMonitor", 
                 # irrelevant for my purpose:
                 "alignments", "hideFromPalette", "filter", "shouldRestartExistingThreads", 
-                "isEdgeActivated", "func", # TODO: find all remaining attriubtes
+                "isEdgeActivated", "func", "allowDropAnywhere",
             }:
                 block_opcode = repr(block_info.get('opcode', 'Unknown'))
                 raise MANIP_UnknownExtensionAttributeError(f"Unknown or not (yet) implemented block attribute (block {block_opcode}): {repr(attr)}")
@@ -388,23 +389,30 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
         MANIP_NotImplementedError: if an XML block is included in the extension info
         MANIP_ThanksError: if a block argument uses the mysterious Scratch.ArgumentType.SEPERATOR
     """
+    def disambiguate_new_opcode(new_opcode: str, old_opcode: str) -> str:
+        """
+        Disambiguate a new opcode using it's old opcode.
+
+        Args:
+            new_opcode: the new opcode of a block.
+            old_opcode: the old opcode of the same block.
+        """
+        return f"{new_opcode} {{{{id={old_opcode}}}}}" # e.g. "gpusb3::Run function (FUNCNAME) with args (ARGS) {{id=c_runFunc}}"
     # Relevant of the returned attributes: ["id", "blocks", "menus"]
     for attr in extension_info.keys():
         if attr not in {
             "name", "color1", "color2", "color3", "menuIconURI", "blockIconURI", "docsURI", "isDynamic", "orderBlocks",
-            "id", "blocks", "menus", # TODO: find all remaining attriubtes
+            "id", "blocks", "menus",
         }:
             raise MANIP_UnknownExtensionAttributeError(f"Unknown or not (yet) implemented extension attribute: {repr(attr)}")
 
     
     extension_id = extension_info["id"]
     menus: dict[str, dict[str, Any]|list] = extension_info.get("menus", {})
-    info_group = OpcodeInfoGroup(
-        name=extension_id,
-        opcode_info=DualKeyDict(),
-    )
     input_type_cls, dropdown_type_cls = process_all_menus(menus)
-    
+    info_group_content: DualKeyDict[str, str, OpcodeInfo] = DualKeyDict()
+    conflicting_new_opcodes: list[str] = []
+
     for i, block_info in enumerate(extension_info.get("blocks", [])):
         if isinstance(block_info, str):
             continue # ignore eg. "---"
@@ -421,11 +429,42 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
         
         if opcode_info is not None:
             old_opcode: str = f"{extension_id}_{block_info['opcode']}" # 'opcode' is guaranteed to exist
-            info_group.add_opcode(
-                old_opcode  = old_opcode,
-                new_opcode  = new_opcode,
-                opcode_info = opcode_info,
-            )
+            try:
+                info_group_content.set(
+                    key1  = old_opcode,
+                    key2  = new_opcode,
+                    value = opcode_info,
+                )
+            except MANIP_ValueError as error:
+                old_exists = info_group_content.has_key1(old_opcode)
+                new_exists = info_group_content.has_key2(new_opcode)
+                if   old_exists and not(new_exists): # => old opcode key conflict
+                    raise MANIP_InvalidCustomBlockError(f"Invalid block info: Two block must not use the same 'opcode' {old_opcode!r}") from error
+                elif new_exists and not(old_exists): # => new opcode key conflict
+                    # write down that the first element with this new opcode has to be renamed too, just can not be done here
+                    conflicting_new_opcodes.append(new_opcode)
+                    # use old_opcode as a unique disambiguer
+                    new_new_opcode = disambiguate_new_opcode(new_opcode, old_opcode)
+                    if info_group_content.has_key2(new_new_opcode):
+                        raise MANIP_InvalidCustomBlockError(f"Invalid block info: 'text' must not contain syntax {{{{id=...}}}} where ... is a placeholder, 'opcode': {old_opcode}")
+                    info_group_content.set(
+                        key1  = old_opcode,
+                        key2  = new_new_opcode,
+                        value = opcode_info,
+                    )
+                else: # => cross key conflict
+                    raise MANIP_InvalidCustomBlockError(f"Invalid block info: Two block conflict with 'opcode' and 'text' in a weird way, 'opcode': {old_opcode}") from error
+
+    # Rename the first entries of conflicts too, second and above entries are handled above
+    for new_opcode in conflicting_new_opcodes:
+        old_opcode = info_group_content.get_key1_for_key2(new_opcode)
+        new_new_opcode = disambiguate_new_opcode(new_opcode, old_opcode)
+        info_group_content.change_key2_by_key1(key1=old_opcode, new_key2=new_new_opcode)
+
+    info_group = OpcodeInfoGroup(
+        name=extension_id,
+        opcode_info=info_group_content,
+    )
     
     for menu_opcode in menus.keys():
         menu_opcode = f"{extension_id}_menu_{menu_opcode}"

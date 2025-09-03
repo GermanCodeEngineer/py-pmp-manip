@@ -53,3 +53,6 @@ include = ["pmp_manip*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.poetry.extras]
+nodejs = ["Node.js >= 18"]  # informational only

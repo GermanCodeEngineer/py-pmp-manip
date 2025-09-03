@@ -387,7 +387,6 @@ class OpcodeInfo:
             dict mapping new input id to old input id
         """
         return dict(self.get_input_ids_infos(block, fti_if).keys_key2_key1())
-    
 
 @grepr_dataclass(grepr_fields=["name", "opcode_info"])
 class OpcodeInfoGroup:
@@ -398,6 +397,15 @@ class OpcodeInfoGroup:
 
     name: str
     opcode_info: DualKeyDict[str, str, OpcodeInfo]
+
+    def has_new_opcode(self, new_opcode: str) -> bool:
+        """
+        Return wether a new opcode exists in this group.
+
+        Args:
+            new_opcode: the **new** to search.
+        """
+        return self.opcode_info.has_key2(new_opcode)
 
     def add_opcode(self, old_opcode: str, new_opcode: str, opcode_info: OpcodeInfo) -> None:
         """

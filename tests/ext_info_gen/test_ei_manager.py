@@ -36,7 +36,7 @@ def test_is_trusted_extension_origin_without_handler():
         ("https://pen-group.github.io/extensions/extensions/PenP/v7.js", True),
         ("https://raw.githubusercontent.com/Logise1123/FirebaseDB-/refs/heads/main/db.js", False),
     ]:
-        assert manager_mod.is_trusted_extension_origin(source) == should_be_trusted
+        assert manager_mod._is_trusted_extension_origin(source) == should_be_trusted
 
 def test_is_trusted_extension_origin_with_handler(monkeypatch: MonkeyPatch):    
     def is_trusted_handler(source: str) -> bool:
@@ -48,8 +48,8 @@ def test_is_trusted_extension_origin_with_handler(monkeypatch: MonkeyPatch):
     monkeypatch.setattr(cfg_manager_mod, "_config_instance", modified_cfg)
     
     source = "https://raw.githubusercontent.com/Logise1123/FirebaseDB-/refs/heads/main/db.js"
-    assert manager_mod.is_trusted_extension_origin(source) == True
-    assert manager_mod.is_trusted_extension_origin(source.replace("Logise1123", "SomeUser")) == False
+    assert manager_mod._is_trusted_extension_origin(source) == True
+    assert manager_mod._is_trusted_extension_origin(source.replace("Logise1123", "SomeUser")) == False
 
     
 

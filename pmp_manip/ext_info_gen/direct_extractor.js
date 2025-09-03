@@ -1,39 +1,22 @@
 const fs = require("fs");
 const path = require("path");
+const vm = require("vm");
 
-// ---- Scratch stub ----
 
-function createTranslate() {
-    const translateFn = function (message, args) {
-        if (message && typeof message === "object") {
-            // already in expected format
-        } else if (typeof message === "string") {
-            message = { default: message };
-        } else {
-            throw new Error("unsupported data type in translate()");
-        }
-        return message.default || "";
-    };
+// ---------- Step 1: whitelist-only register (only keep getInfo) ----------
 
-    translateFn.setup = (newTranslations => {});
-
-    Object.defineProperty(translateFn, "language", {
-        configurable: true,
-        enumerable: true,
-        get: (() => "en")
-    });
-
-    translateFn.setup({});
-
-    return translateFn;
+function makeStubWithArity(arity) {
+const params = Array.from({ length: arity }, (_, i) => `a${i}`);
+// eslint-disable-next-line no-new-func
+return Function(...params, 'return {};');
 }
 
-register = (ext) => {
-    const dangerousMethods = ["init", "initialize"];
+const BLACKLIST = new Set(["init", "initialize"]);
 
+function register(ext) {
     // Patch the prototype directly
     const proto = Object.getPrototypeOf(ext);
-    for (const method of dangerousMethods) {
+    for (const method of BLACKLIST) {
         if (typeof proto[method] === "function") {
             console.warn(`Patching prototype method '${method}'`);
             proto[method] = () => {};
@@ -43,7 +26,9 @@ register = (ext) => {
     globalThis._scratchExtension = ext;
 };
 
-globalThis.Scratch = {
+// ---------- Step 2: setup Scratch stubs (from stub.js, minimal version) ----------
+
+const Scratch = {
     // Must be kept in sync with safe_extractor.py
     // Derived from https://github.com/PenguinMod/PenguinMod-Vm/blob/develop/src/extension-support/tw-extension-api-common.js
     ArgumentType: {
@@ -114,7 +99,11 @@ globalThis.Scratch = {
         "register": register,
         "isPenguinMod": true
     },
-    translate: createTranslate(),
+    translate: (() => {
+        const translateFn = (m) => (typeof m === "string" ? m : m.default || "");
+        translateFn.setup = (newTranslations) => {};
+        return translateFn;
+    })(),
 
     vm: {
         runtime: {
@@ -134,26 +123,91 @@ globalThis.Scratch = {
     Color: class Color {},
 }
 
-// ---- Main loader ----
-function runScript(code) {
+// ---------- Step 3: Custom require replacement ----------
+const stubModules = [
+    path.resolve(__dirname, '../../extension-support/argument-type'),
+    path.resolve(__dirname, '../../extension-support/argument-alignment'),
+    path.resolve(__dirname, '../../extension-support/block-type'),
+    path.resolve(__dirname, '../../extension-support/block-shape'),
+    path.resolve(__dirname, '../../extension-support/notch-shape'),
+    path.resolve(__dirname, '../../extension-support/target-type'),
+
+    path.resolve(__dirname, '../../util/cast'),
+    path.resolve(__dirname, '../../util/clone'),
+    path.resolve(__dirname, '../../util/color'),
+];
+const stubProperty = [
+    "ArgumentType",
+    "ArgumentAlignment",
+    "BlockType",
+    "BlockShape",
+    "NotchShape",
+    "TargetType",
+    "Cast",
+    "Clone",
+    "Color",
+];
+
+function myRequire(moduleName) {
+    const fullPath = path.resolve(__dirname, moduleName);
+
+    // Modules you want to return null/undefined
+    if (stubModules.includes(fullPath)) {
+        return Scratch[stubProperty[stubModules.indexOf(fullPath)]];
+    }
+
+    // Only stub relative imports under ../../
+    if (moduleName.startsWith('./') || moduleName.startsWith('../')) {
+        return {};
+    }
+
+    return require(moduleName); // fallback to real require
+}
+
+// ---------- Step 4: VM execution wrapper ----------
+
+function runScript(code, filename) {
     try {
-        const module = { exports: {} };
-        const requireFunc = require;
-        eval(code); // evaluated in current global context
-        if (!globalThis._scratchExtension) {
-            console.error("Extension was not registered.");
-            process.exit(1); // Errno. 1
+        const sandbox = {
+            ...global,
+            // Important:
+            module: { exports: {} },
+            require: myRequire,
+            Scratch: Scratch,
+        };
+        vm.createContext(sandbox);
+        vm.runInContext(code, sandbox, { filename });
+
+        let getInfoProvider = globalThis._scratchExtension
+        if (!getInfoProvider) {
+            const exported = sandbox.module.exports;
+            // if a class is exported use it's getInfo
+            if (typeof exported === "function" && /^class\s/.test(Function.prototype.toString.call(exported))) {
+                getInfoProvider = exported.prototype
+            } else {
+                process.exit(1); // Errno. 1 (nothing or invalid value registered)
+            }
         }
-        const extensionInfo = globalThis._scratchExtension.getInfo();
+
+        if (!(typeof getInfoProvider.getInfo === "function")) {
+            process.exit(1); // Errno. 1 (nothing or invalid value registered)
+        }
+
+        const extensionInfo = getInfoProvider.getInfo();
         console.log(JSON.stringify(extensionInfo)); // must be the last call to console.log() or similar
-    } catch (e) {
-        console.error("Error executing script:", e);
-        process.exit(2); // Errno. 2
+    } catch (error) {
+        console.error("Error executing script:", error);
+        process.exit(2); // Errno. 2 (execution error)
     }
 }
 
-const filePath = process.argv[2];
-const fullPath = path.resolve(filePath);
-const code = fs.readFileSync(fullPath, "utf-8");
-runScript(code);
-process.exit(0);
+// ---------- Entry point ----------
+
+if (require.main === module) { // like if __name__ == "__main__"
+    const filePath = process.argv[2];
+    const fullPath = path.resolve(filePath);
+    const code = fs.readFileSync(fullPath, "utf-8");
+
+    runScript(code, fullPath);
+    process.exit(0);
+}

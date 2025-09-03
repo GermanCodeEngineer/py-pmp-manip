@@ -25,7 +25,7 @@ STATUS_REGEN    = "REGEN"
 
 
 
-def is_trusted_extension_origin(source: str) -> bool:
+def _is_trusted_extension_origin(source: str) -> bool:
     """
     Evaluates if an extension from the `source` can be trusted and therefore executed directly
 
@@ -42,7 +42,10 @@ def is_trusted_extension_origin(source: str) -> bool:
 
         # Trust other people's galleries. These can be removed in the future, they will just show a pop-up on load if they are.
         source.startswith("https://sharkpools-extensions.vercel.app/") or # SharkPool
-        source.startswith("https://pen-group.github.io/") # Pen-Group / ObviousAlexC
+        source.startswith("https://pen-group.github.io/") or # Pen-Group / ObviousAlexC
+
+        # Allow extensions from PenguinMod-VM/src/extensions/ (location of builtin extensions)
+        source.startswith("https://raw.githubusercontent.com/PenguinMod/PenguinMod-Vm/refs/heads/develop/src/extensions/")
     ):
         return True
 
@@ -232,7 +235,7 @@ def generate_extension_info_py_file(
                 logger.info(f"Extension {extension_id!r}: Python extension info file is still up to date as the extension code has not changed")
                 return dest_file_path
     
-    if is_trusted_extension_origin(source):
+    if _is_trusted_extension_origin(source):
         logger.info(f"Extension {extension_id!r}: Extracting extension info through direct execution")
         try:
             extension_info = extract_extension_info_directly(js_code)
@@ -302,7 +305,7 @@ if __name__ == "__main__": # pragma: no cover
         ("asyncexample",        "example_extensions/asyncexample.js"),
         ("dumbExample",         "example_extensions/dumbExample.js"),
         ("truefantombase",      "https://extensions.turbowarp.org/true-fantom/base.js"),
-        ("pmControlsExpansion", "example_extensions/pmControlsExpansion.js"),
+        ("pmControlsExpansion", "https://raw.githubusercontent.com/PenguinMod/PenguinMod-Vm/refs/heads/develop/src/extensions/pm_controlsExpansion/index.js"),
         ("gpusb3",              "https://extensions.penguinmod.com/extensions/derpygamer2142/gpusb3.js"),
         ("P7BoxPhys",           "https://extensions.penguinmod.com/extensions/pooiod/Box2D.js"),
         ("griffpatch",          "https://extensions.turbowarp.org/box2d.js"),

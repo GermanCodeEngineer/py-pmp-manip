@@ -5,13 +5,13 @@ RUN apt-get update && apt-get install -y ffmpeg && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copy wheel and test script
-COPY dist/py_pmp_manip-1.0.1-py3-none-any.whl .
+# Copy wheel(s) and test script
+COPY dist/*.whl .
 COPY docker_test.py .
 
-# Install wheel
+# Install latest pip and the wheel (whatever version is in dist/)
 RUN pip install --upgrade pip
-RUN pip install py_pmp_manip-1.0.1-py3-none-any.whl
+RUN pip install ./*.whl
 
 # Run the test script
 CMD ["python", "docker_test.py"]
