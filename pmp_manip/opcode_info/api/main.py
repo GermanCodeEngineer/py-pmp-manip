@@ -19,6 +19,213 @@ if TYPE_CHECKING:
     from pmp_manip.core.block_mutation  import FRMutation, SRMutation
     from pmp_manip.core.block           import FRBlock, IRBlock, SRBlock
 
+# Derived from https://github.com/PenguinMod/PenguinMod-Vm/blob/develop/src/extension-support/extension-manager.js
+BUILTIN_EXT_TO_PATH = {
+    # These are the non-core built-in extensions.
+    "pen": "scratch3_pen",
+    "wedo2": "scratch3_wedo2",
+    "music": "scratch3_music",
+    "microbit": "scratch3_microbit",
+    "text2speech": "scratch3_text2speech",
+    "translate": "scratch3_translate",
+    "videoSensing": "scratch3_video_sensing",
+    "ev3": "scratch3_ev3",
+    "makeymakey": "scratch3_makeymakey",
+    "boost": "scratch3_boost",
+    "gdxfor": "scratch3_gdx_for",
+    "text": "scratchLab_animatedText",
+
+    # garbomuffin: *silence*
+    # tw: core extension
+    "tw": "tw",
+    # twFiles: replaces jgFiles as it works better on other devices
+    "twFiles": "tw_files",
+
+    # pm: category expansions & seperations go here
+    # pmMotionExpansion: extra motion blocks that were in the category & new ones that werent
+    "pmMotionExpansion": "pm_motionExpansion",
+    # pmOperatorsExpansion: extra operators that were in the category & new ones that werent
+    "pmOperatorsExpansion": "pm_operatorsExpansion",
+    # pmSensingExpansion: extra sensing blocks that were in the category & new ones that werent
+    "pmSensingExpansion": "pm_sensingExpansion",
+    # pmControlsExpansion: extra control blocks that were in the category & new ones that werent
+    "pmControlsExpansion": "pm_controlsExpansion",
+    # pmEventsExpansion: extra event blocks that were in the category & new ones that werent
+    "pmEventsExpansion": "pm_eventsExpansion",
+
+    # pmInlineBlocks: seperates the inline function block to prevent confusled
+    "pmInlineBlocks": "pm_inlineblocks",
+
+    # jg: jeremyes esxsitenisonsnsn
+    # jgFiles: support for reading user files
+    "jgFiles": "jg_files",
+    # jgWebsiteRequests: fetch GET and POST requests to apis & websites
+    "jgWebsiteRequests": "jg_websiteRequests",
+    # jgJSON: handle JSON objects
+    "jgJSON": "jg_json",
+    # jgJSONParsed: handle JSON objects BETTER
+    # jgJSONParsed": "jg_jsonParsed",
+    # jgRuntime: edit stage and other stuff
+    "jgRuntime": "jg_runtime",
+    # jgPrism: blocks for specific use cases or major convenience
+    "jgPrism": "jg_prism",
+    # jgIframe: my last call for help (for legal reasons this is a joke)
+    "jgIframe": "jg_iframe",
+    # jgExtendedAudio: ok this is my real last call for help (for legal reasons this is a joj)
+    "jgExtendedAudio": "jg_audio",
+    # jgScratchAuthenticate: easy to add its one block lol!
+    "jgScratchAuthenticate": "jg_scratchAuth",
+    # JgPermissionBlocks: someones gonna get mad at me for this one i bet
+    "jgPermissionBlocks": "jg_permissions",
+    # jgClones: funny clone manager
+    "jgClones": "jg_clones",
+    # jgTween: epic animation
+    "jgTween": "jg_tween",
+    # jgDebugging: epic animation
+    "jgDebugging": "jg_debugging",
+    # jgEasySave: easy save stuff
+    "jgEasySave": "jg_easySave",
+    # jgPackagerApplications: uuhhhhhhh packager
+    "jgPackagerApplications": "jg_packagerApplications",
+    # jgTailgating: follow sprites like in an RPG
+    "jgTailgating": "jg_tailgating",
+    # jgScripts: what you know about rollin down in the
+    "jgScripts": "jg_scripts",
+    # jg3d: damn daniel
+    "jg3d": "jg_3d",
+    # jg3dVr: epic
+    "jg3dVr": "jg_3dVr",
+    # jgVr: excuse to use vr headset lol!
+    "jgVr": "jg_vr",
+    # jgInterfaces: easier UI
+    "jgInterfaces": "jg_interfaces",
+    # jgCostumeDrawing: draw on costumes
+    # hiding so fir doesnt touch
+    # jgCostumeDrawing": "jg_costumeDrawing",
+    # jgJavascript: this is like the 3rd time we have implemented JS blocks man
+    "jgJavascript": "jg_javascript",
+    # jgPathfinding: EZ pathfinding for beginners :D hopefully
+    "jgPathfinding": "jg_pathfinding",
+    # jgAnimation: animate idk
+    "jgAnimation": "jg_animation",
+
+    # jgStorage: event extension requested by Fir & silvxrcat
+    "jgStorage": "jg_storage",
+    # jgTimers: event extension requested by Arrow
+    "jgTimers": "jg_timers",
+    # jgAdvancedText: event extension requested by silvxrcat
+    # hiding so fir doesnt touch
+    # jgAdvancedText": "jg_advancedText",
+
+    # jgDev: test extension used for making core blocks
+    "jgDev": "jg_dev",
+    # jgDooDoo: test extension used for making test extensions
+    "jgDooDoo": "jg_doodoo",
+    # jgBestExtension: great extension used for making great extensions
+    "jgBestExtension": "jg_bestextensioin",
+    # jgChristmas: Christmas extension used for making Christmas extensions
+    "jgChristmas": "jg_christmas",
+
+    # jw: hello it is i jwklong
+    # jwUnite: literal features that should of been added in the first place
+    "jwUnite": "jw_unite",
+    # jwProto: placeholders, labels, defenitons, we got em
+    "jwProto": "jw_proto",
+    # jwPostLit: postlit real????
+    "jwPostLit": "jw_postlit",
+    # jwReflex: vector positioning (UNRELEASED, DO NOT ADD TO GUI)
+    "jwReflex": "jw_reflex",
+    # Blockly 2: a faithful recreation of the original blockly blocks
+    "blockly2math": "blockly-2/math.js",
+    # jwXml: hi im back haha have funny xml
+    "jwXml": "jw_xml",
+    # vector type blah blah blah
+    "jwVector": "jwVector",
+    # my own array system yipee
+    "jwArray": "jwArray",
+    # mid extension but i need it
+    "jwTargets": "jwTargets",
+    # cool new physics extension
+    "jwPsychic": "jwPsychic",
+    # test ext for lambda functions or something
+    "jwLambda": "jwLambda",
+    # omega num port for penguinmod
+    "jwNum": "jwNum",
+    # good color utilties
+    "jwColor": "jwColor",
+    # access to extraFiles
+    "jwStorage": "jwStorage",
+    # date type
+    "jwDate": "jwDate",
+
+    # jw: They'll think its made by jwklong >:)
+    # (but it's not (yet (maybe (probably not (but its made by ianyourgod)))))
+    # this is the real jwklong speaking, one word shall be said about this: A N G E R Y
+    # Structs: hehe structs for oop (look at c)
+    "jwStructs": "jw_structs",
+    # mikedev: ghytfhygfvbl
+    # cl": "cl",
+    "Gamepad": "GamepadExtension",
+
+    # theshovel: ...
+    # theshovelcanvaseffects: ...
+    "theshovelcanvaseffects": "theshovel_canvasEffects",
+    # shovellzcompresss: ...
+    "shovellzcompresss": "theshovel_lzString",
+    # shovelColorPicker: ...
+    "shovelColorPicker": "theshovel_colorPicker",
+    # shovelcss: ...
+    "shovelcss": "theshovel_customStyles",
+    # profanityAPI: ...
+    "profanityAPI": "theshovel_profanity",
+
+    # gsa: fill out your introduction stupet!!!
+    # no >:(
+    # canvas: kinda obvius if you know anything about html canvases
+    "canvas": "gsa_canvas_old",
+    # the replacment for the above extension
+    "newCanvas": "gsa_canvas",
+    # tempVars: fill out your introduction stupet!!!
+    "tempVars": "gsa_tempVars",
+    # colors: fill out your introduction stupet!!!
+    "colors": "gsa_colorUtilBlocks",
+    # Camera: camera
+    "pmCamera": "pm_camera",
+
+    # sharkpool: insert sharkpools epic introduction here
+    # sharkpoolPrinting: ...
+    "sharkpoolPrinting": "sharkpool_printing",
+    "SPjavascriptV2": "sp_javascriptV2",
+
+    # silvxrcat: ...
+    # oddMessage: ...
+    "oddMessage": "silvxrcat_oddmessages",
+
+    # TW extensions
+
+    # lms: ...
+    # lmsutilsblocks: ...
+    "lmsutilsblocks": "lmsutilsblocks",
+    "lmsTempVars2": "lily_tempVars2",
+
+    # xeltalliv: ...
+    # xeltallivclipblend: ...
+    "xeltallivclipblend": "xeltalliv_clippingblending",
+
+    # DT: ...
+    # DTcameracontrols: ...
+    "DTcameracontrols": "dt_cameracontrols",
+
+    # griffpatch: ...
+    # griffpatch": "griffpatch_box2d')
+
+    # iyg: erm a crep, erm a werdohhhh
+    # iygPerlin:
+    "iygPerlin": "iyg_perlin_noise",
+    # fr: waw 3d physics!!
+    # fr3d:
+    "fr3d": "fr_3d",
+}
 
 @grepr_dataclass(grepr_fields=["id", "module_dir"])
 class ExtensionRef:
@@ -505,8 +712,31 @@ class OpcodeInfoAPI:
                 value = opcode_info,
             )
     
-    @enforce_argument_types
-    def add_extension(self, extension_ref: ExtensionRef) -> None:
+
+    # ==================== Extension Management ====================
+    
+    '''@enforce_argument_types
+    def get_builtin_extension_ref(self, builtin_ext_id: str) -> ExtensionRef:
+        """
+        Get the reference to a builtin extension.
+
+        Args:
+            builtin_ext_id: the identifier of the builtin extension.
+
+        Raises:
+            MANIP_UnknownBuiltinExtensionError: if one tries to add an unknown or not yet implemented builtin extension
+        """
+        if builtin_ext_id not in BUILTIN_EXT_TO_PATH:
+            raise MANIP_UnknownBuiltinExtensionError(f"Not a builtin extension: {builtin_ext_id}")
+        ext_path = BUILTIN_EXT_TO_PATH[builtin_ext_id]
+        if not ext_path.endswith(".js"):
+            ext_path = f"{ext_path}/index.js"
+        return ExtensionRef(
+            id=builtin_ext_id,
+            source=f"https://raw.githubusercontent.com/PenguinMod/PenguinMod-Vm/refs/heads/develop/src/extensions/{ext_path}",
+        )'''
+
+    def _add_extension_by_ref(self, extension_ref: ExtensionRef) -> None:
         """
         Add an extension to the API
         
@@ -551,15 +781,16 @@ class OpcodeInfoAPI:
             ) from error
         
         self.add_group(group)    
-   
-    def _add_all_extensions_of_project(self, custom_ext_id_to_source: dict[str, str], builtin_ext_ids: list[str]) -> None:
+    
+    @enforce_argument_types
+    def generate_and_add_extension(self, extension_id: str, extension_source: str | None) -> None:
         """
-        For every extension of a project generate and import the required opcode info py file.
+        Generate and import the required opcode info py file for a custom or builtin extension.
         If cached versions exist and they are up to date, they will be kept and not replaced
         
         Args:
-            custom_ext_id_to_source: maps custom extension id to extension source(probably a URL) of the project
-            builtin_ext_ids: the builtin extensions of the project
+            extension_id: unique identifier of custom or builtin extension.
+            extension_source: None for builtin extensions, extension source(probably a URL) for custom extensions.
         
         Raises:
             MANIP_UnknownBuiltinExtensionError: if one tries to add an unknown or not yet implemented builtin extension
@@ -578,23 +809,25 @@ class OpcodeInfoAPI:
             MANIP_UnexpectedNotPossibleFeatureWarning: if an impossible to implement feature is used (eg. ternary expr) in the getInfo method of the extension code in safe analysis
         """
         from pmp_manip.ext_info_gen import generate_extension_info_py_file
-                
-        for builtin_ext_id in builtin_ext_ids:
-            if not hasattr(BuiltinExtensionRef, builtin_ext_id):
-                raise MANIP_UnknownBuiltinExtensionError(f"Unknown or not (yet) implemented builtin extension: {builtin_ext_id}")
-            extension_ref = getattr(BuiltinExtensionRef, builtin_ext_id)
-            self.add_extension(extension_ref)
         
-        for custom_ext_id, extension_source in custom_ext_id_to_source.items():
-            module_path = generate_extension_info_py_file(
-                source=extension_source,  extension_id=custom_ext_id,
-                tolerate_file_path=False, bundle_errors=True,
-            )
-            extension_ref = ExtensionRef(
-                id         = custom_ext_id,
-                module_dir = path.dirname(module_path),
-            )
-            self.add_extension(extension_ref)        
+        if extension_source is None:
+            if extension_id not in BUILTIN_EXT_TO_PATH:
+                raise MANIP_UnknownBuiltinExtensionError(f"Unknown builtin extension: {extension_id}. Either provide a source for a custom extension or create a GitHub issue for a builtin extension.")
+            ext_path = BUILTIN_EXT_TO_PATH[extension_id]
+            if not ext_path.endswith(".js"):
+                ext_path = f"{ext_path}/index.js"
+            extension_source = f"https://raw.githubusercontent.com/PenguinMod/PenguinMod-Vm/refs/heads/develop/src/extensions/{ext_path}"
+        
+        module_path = generate_extension_info_py_file(
+            source=extension_source,  extension_id=extension_id,
+            tolerate_file_path=False, bundle_errors=True,
+        )
+        extension_ref = ExtensionRef(
+            id         = extension_id,
+            module_dir = path.dirname(module_path),
+        )
+        self._add_extension_by_ref(extension_ref)
+    
     
     # Get all opcodes
     @property
@@ -742,6 +975,7 @@ class OpcodeInfoAPI:
         info = self.get_info_by_new_safe(new)
         if info is not None:
             return info
+        print(list(self.opcode_info.keys_key1_key2()))
         raise MANIP_UnknownOpcodeError(f"Could not find OpcodeInfo by new opcode {new!r}")
 
 

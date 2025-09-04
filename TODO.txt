@@ -3,9 +3,7 @@ TODOs Sorted by Priorites
 Special:
     TODOs in Code + read through code, optimize here and there
 
-High:
-    - M: remove bultin extension ref, update _add_all_extensions_of_project
-    - S: update handling_extensions.md doc
+High: /
 
 Medium:
     - XL: test and document opcode_info
@@ -44,7 +42,7 @@ Low:
     - S: add enforce_argument_types to __init__ in grepr_dataclass
 
 Formatting:
-    - L: add all errors to docstrings
+    - XL: add all errors to docstrings
     - M: add specific reasons for ThanksError
     - M: remove "Returns" section of docstrings to avoid doubling
     - S: rename block_interface to sth like transformation_interface

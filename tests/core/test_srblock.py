@@ -32,8 +32,8 @@ def info_api_extended():
     info_api_extended = copy(info_api)
     info_api_extended.opcode_info = copy(info_api.opcode_info) 
     # make sure the internals of the DualKeyDict are shallow copied as well
-    from pmp_manip.opcode_info.data.scratch_music import ext_scratch_music
-    info_api_extended.add_group(ext_scratch_music)
+    from tests._gen_ext_opcode_info_.music import ext_music
+    info_api_extended.add_group(ext_music)
     return info_api_extended
 
 @fixture
@@ -359,7 +359,7 @@ def test_SRBlock_to_inter_block_and_menu_text(info_api_extended):
         position=(311, 505), 
         blocks=[
             SRBlock(
-                opcode="play note ([NOTE]) for (BEATS) beats",
+                opcode="music::play note ([NOTE]) for (BEATS) beats",
                 inputs={
                     "NOTE": SRBlockAndDropdownInputValue(
                         block=None,

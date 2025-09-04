@@ -58,14 +58,7 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
         return new
     
     def deepcopy(self) -> "DualKeyDict[_K1, _K2, _V]":
-        return self.__deepcopy__()
-    
-    def __deepcopy__(self) -> "DualKeyDict[_K1, _K2, _V]":
-        new = DualKeyDict()
-        new._values   = deepcopy(self._values)
-        new._k2_to_k1 = deepcopy(self._k2_to_k1)
-        new._k1_to_k2 = deepcopy(self._k1_to_k2)
-        return new
+        return deepcopy(self)
 
 
     # Value Update methods

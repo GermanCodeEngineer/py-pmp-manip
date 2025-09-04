@@ -116,13 +116,19 @@ ext_scratch_pen = OpcodeInfoGroup(name="scratch_pen", opcode_info=DualKeyDict({
         }),
     ),
 
-#    ("pen_drawComplexShape", "draw triangle (TRIANGLE) with fill (COLOR)"): OpcodeInfo(
-#        opcode_type=OpcodeType.STATEMENT,
-#        inputs=DualKeyDict({
-#            ("SHAPE", "TRIANGLE"): InputInfo(BuiltinInputType.EMBEDDED_MENU),
-#            ("COLOR", "COLOR"): InputInfo(BuiltinInputType.COLOR),
-#        }),
-#    ),
+    ("pen_drawComplexShape", "draw triangle (TRIANGLE) with fill (COLOR)"): OpcodeInfo(
+        opcode_type=OpcodeType.STATEMENT,
+        inputs=DualKeyDict({
+            ("x1", "X1"): InputInfo(BuiltinInputType.NUMBER),
+            ("y1", "Y1"): InputInfo(BuiltinInputType.NUMBER),
+            ("x2", "X2"): InputInfo(BuiltinInputType.NUMBER),
+            ("y2", "Y2"): InputInfo(BuiltinInputType.NUMBER),
+            ("x3", "X3"): InputInfo(BuiltinInputType.NUMBER),
+            ("y3", "Y3"): InputInfo(BuiltinInputType.NUMBER),
+            # ("SHAPE", "TRIANGLE"): InputInfo(BuiltinInputType.EMBEDDED_MENU),
+            ("COLOR", "COLOR"): InputInfo(BuiltinInputType.COLOR),
+        }),
+    ),
 
 #    ("pen_draw4SidedComplexShape", "draw quadrilateral (QUADRILATERAL) with fill (COLOR)"): OpcodeInfo(
 #        opcode_type=OpcodeType.STATEMENT,

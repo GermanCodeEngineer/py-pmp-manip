@@ -145,7 +145,7 @@ class BuiltinInputType(InputType):
     COSTUME_PROPERTY                  = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.COSTUME_PROPERTY                 , 11)
     MYSELF_OR_OTHER_SPRITE            = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.MYSELF_OR_OTHER_SPRITE           , 12)
     SOUND                             = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.SOUND                            , 13)
-    DRUM                              = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.DRUM                             , 14)
+    
     INSTRUMENT                        = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.INSTRUMENT                       , 15)
     FONT                              = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.FONT                             , 16)
     PEN_PROPERTY                      = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.PEN_PROPERTY                     , 17)

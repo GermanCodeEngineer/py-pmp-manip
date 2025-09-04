@@ -170,8 +170,6 @@ class MANIP_FileNotFoundError(MANIP_OSError): pass
 #                         SPECIAL ERRORS                      #
 ###############################################################
 
-class MANIP_UnsupportedOSError(MANIP_Error): pass
-class MANIP_SetupRequiredError(MANIP_Error): pass # TODO: comment unused errors
 class MANIP_TempNotImplementedError(MANIP_Error):
     """Occurs on features that are not YET implemented"""
 

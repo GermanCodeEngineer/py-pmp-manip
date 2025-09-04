@@ -161,9 +161,10 @@ def generate_block_opcode_info(
                 case "string"|"number"|"Boolean"|"color"|"angle"|"matrix"|"note"|"costume"|"sound"|"broadcast":
                     builitin_input_type = ARGUMENT_TYPE_TO_INPUT_TYPE[argument_type]
                     if argument_menu is None:
+                        menu = MenuInfo(opcode="note", inner="NOTE") if builitin_input_type is BuiltinInputType.NOTE else None
                         input_info = InputInfo(
                             type=builitin_input_type,
-                            menu=None,
+                            menu=menu,
                         )
                     else:
                         if argument_menu not in menus:
@@ -348,8 +349,7 @@ def generate_block_opcode_info(
                 "alignments", "hideFromPalette", "filter", "shouldRestartExistingThreads", 
                 "isEdgeActivated", "func", "allowDropAnywhere",
             }:
-                block_opcode = repr(block_info.get('opcode', 'Unknown'))
-                raise MANIP_UnknownExtensionAttributeError(f"Unknown or not (yet) implemented block attribute (block {block_opcode}): {repr(attr)}")
+                raise MANIP_UnknownExtensionAttributeError(f"Unknown or not (yet) implemented block attribute (block {opcode!r}): {repr(attr)}")
     
         new_opcode = generate_new_opcode(
             text=block_info["text"],
@@ -447,6 +447,7 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
                     conflicting_new_opcodes.append(new_opcode)
                     # use old_opcode as a unique disambiguer
                     new_new_opcode = disambiguate_new_opcode(new_opcode, old_opcode)
+                    print(("changing while", new_opcode, old_opcode, new_new_opcode))
                     info_group_content.set(
                         key1  = old_opcode,
                         key2  = new_new_opcode,
@@ -458,6 +459,7 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
     for new_opcode in conflicting_new_opcodes:
         old_opcode = info_group_content.get_key1_for_key2(new_opcode)
         new_new_opcode = disambiguate_new_opcode(new_opcode, old_opcode)
+        print(("changing after", new_opcode, old_opcode, new_new_opcode))
         info_group_content.change_key2_by_key1(key1=old_opcode, new_key2=new_new_opcode)
 
     info_group = OpcodeInfoGroup(

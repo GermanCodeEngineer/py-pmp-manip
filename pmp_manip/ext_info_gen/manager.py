@@ -44,7 +44,15 @@ def _is_trusted_extension_origin(source: str) -> bool:
         source.startswith("https://sharkpools-extensions.vercel.app/") or # SharkPool
         source.startswith("https://pen-group.github.io/") or # Pen-Group / ObviousAlexC
 
-        # Allow extensions from PenguinMod-VM/src/extensions/ (location of builtin extensions)
+        # For development
+        source.startswith('http://localhost:8000') or
+        source.startswith('http://localhost:6000') or # Launcher Home
+        source.startswith('http://localhost:6001') or # Launcher Extensions
+        source.startswith('http://localhost:5173') or # Local Home or Extensions
+        source.startswith('http://localhost:5174') or # Local Home or Extensions
+        
+
+        # (not taken from PM GitHub) Allow extensions from PenguinMod-VM/src/extensions/ (location of builtin extensions) 
         source.startswith("https://raw.githubusercontent.com/PenguinMod/PenguinMod-Vm/refs/heads/develop/src/extensions/")
     ):
         return True

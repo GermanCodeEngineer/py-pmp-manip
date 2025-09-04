@@ -5,9 +5,9 @@ However, **Custom** and **Builtin** extensions can create blocks that `pmp_manip
 
 ---
 
-## Using Builtin Extensions
+## Adding Extensions manually
 
-If your project uses a builtin extension, such as Scratch’s **music extension**, you must explicitly add it to the `info_api`.
+If you want to convert a project, which uses an extension, such as Scratch’s **music extension**, you must explicitly add it to the `info_api`.
 
 **Example without adding the extension (will fail):**
 
@@ -32,30 +32,34 @@ This error occurs because that project uses Scratch's **music extension** and `i
 
 ---
 
-### Adding a Builtin Extension manually
+### Addind Extensions manually
 
 ```python
 from pmp_manip import (
     get_default_config, init_config, FRProject,
-    BuiltinExtensionRef, info_api,
+    info_api,
 )
 
 cfg = get_default_config()
 init_config(cfg)
 
 # Add the music extension
-info_api.add_extension(BuiltinExtensionRef.music)
+info_api.generate_and_add_extension(extension_id="music", extension_source=None) # Builtin extensions do not require a source
 
 frproject = FRProject.from_file(file_path="path/to/my_music_project.pmp")
 srproject = frproject.to_second(info_api)
 print("Project was converted successfully :)")
+```
+For a custom extension however you would need a source:
+```python
+info_api.generate_and_add_extension(extension_id="numberUtilities", extension_source="https://extensions.penguinmod.com/extensions/MubiLop/numutils.js")
 ```
 
 ---
 
 ## Automatically Adding All Extensions
 
-If you do not want to manually add extensions or need custom extensions,
+If you do not want to manually add extensions,
 you can **automatically detect and add all required extensions** for a project.
 
 ```python

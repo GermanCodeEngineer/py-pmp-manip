@@ -3,7 +3,7 @@ from copy   import copy, deepcopy
 
 from pmp_manip.important_consts import (
     OPCODE_VAR_VALUE, NEW_OPCODE_VAR_VALUE, OPCODE_LIST_VALUE, NEW_OPCODE_LIST_VALUE, 
-    OPCODE_STOP_SCRIPT, OPCODE_CHECKBOX, NEW_OPCODE_CHECKBOX,
+    OPCODE_STOP_SCRIPT, OPCODE_CHECKBOX, NEW_OPCODE_CHECKBOX, OPCODE_POLYGON, NEW_OPCODE_POLYGON,
     OPCODE_CB_PROTOTYPE, ANY_OPCODE_CB_DEF, ANY_OPCODE_CB_ARG, 
     OPCODE_CB_CALL, NEW_OPCODE_CB_CALL, OPCODE_CB_ARG_TEXT, OPCODE_CB_ARG_BOOL, 
     OPCODE_CB_DEF, NEW_OPCODE_CB_DEF, OPCODE_CB_DEF_RET, NEW_OPCODE_CB_DEF_REP,
@@ -38,7 +38,7 @@ if TYPE_CHECKING:
     from pmp_manip.core.block           import FRBlock, IRBlock, SRBlock
 
 from pmp_manip.core.block_mutation import (
-    FRCustomBlockMutation, FRCustomBlockArgumentMutation, FRCustomBlockCallMutation, FRStopScriptMutation, 
+    FRCustomBlockMutation, FRCustomBlockArgumentMutation, FRCustomBlockCallMutation, FRStopScriptMutation, FRPolygonMutation,
     SRCustomBlockMutation, SRCustomBlockArgumentMutation, SRCustomBlockCallMutation,
 )
 
@@ -169,7 +169,13 @@ g_special = OpcodeInfoGroup(
             dropdowns=DualKeyDict({
                 ("CHECKBOX", "CHECKBOX"): DropdownInfo(BuiltinDropdownType.CHECKBOX)
             }),
-        ) 
+        ),
+        (OPCODE_POLYGON, NEW_OPCODE_POLYGON): OpcodeInfo(
+            opcode_type=OpcodeType.MENU,
+        ),
+        ("note", "#NOTE MENU"): OpcodeInfo(
+            opcode_type=OpcodeType.MENU,
+        ),
     })
 )
 
@@ -192,6 +198,7 @@ info_api.set_opcodes_mutation_class(ANY_OPCODE_CB_DEF, old_cls=None, new_cls=SRC
 info_api.set_opcode_mutation_class(OPCODE_CB_PROTOTYPE, old_cls=FRCustomBlockMutation, new_cls=None)
 info_api.set_opcode_mutation_class(OPCODE_CB_CALL, old_cls=FRCustomBlockCallMutation, new_cls=SRCustomBlockCallMutation)
 info_api.set_opcode_mutation_class(OPCODE_STOP_SCRIPT, old_cls=FRStopScriptMutation, new_cls=None)
+info_api.set_opcode_mutation_class(OPCODE_POLYGON, old_cls=FRPolygonMutation, new_cls=None)
 
 # Special Cases
 def _149c_e47b(block: "SRBlock|IRBlock", validation_if: "ValidationIF") -> OpcodeType:
@@ -298,6 +305,22 @@ info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
     type=SpecialCaseType.PRE_FIRST_TO_INTER, 
     function=_4548_6eb6,
 ))
+
+def _1101_80e9(block: "FRBlock", block_id: str, fti_if: "FirstToInterIF") -> "FRBlock":
+    # Move all coordinate inputs from the "inner polygon block" to the outer block
+    # Remove the mutation, so that no mutation will be given to the IRBlock and SRBlock
+    # => Yes i know that there will be a data loss, however only wether the "inner polygon block" is expanded/collapsed.
+    # => But even when I am devloping this the blocks using polygon are alredy considered legacy.
+    block = copy(block)
+    # LEFT OFF HERE
+    block.mutation = None
+    return block
+info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
+    type=SpecialCaseType.PRE_FIRST_TO_INTER, 
+    function=_1101_80e9,
+))
+
+OPCODE_POLYGON
 
 def _d0e6_50e9(block: "FRBlock", block_id: str, fti_if: "FirstToInterIF") -> "IRBlock":
     # Return an empty, temporary block

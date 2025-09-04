@@ -6,9 +6,9 @@ const vm = require("vm");
 // ---------- Step 1: whitelist-only register (only keep getInfo) ----------
 
 function makeStubWithArity(arity) {
-const params = Array.from({ length: arity }, (_, i) => `a${i}`);
-// eslint-disable-next-line no-new-func
-return Function(...params, 'return {};');
+    const params = Array.from({ length: arity }, (_, i) => `a${i}`);
+    // eslint-disable-next-line no-new-func
+    return Function(...params, 'return {};');
 }
 
 const BLACKLIST = new Set(["init", "initialize"]);

@@ -1,16 +1,21 @@
 import requests
 from datetime import datetime, timezone
 
-# Example input: list of tuples (last_checked_date, github_file_url)
 files_to_check = [
     (
         "2025-09-03", 
         "https://github.com/PenguinMod/PenguinMod-Vm/blob/develop/src/extension-support/tw-extension-api-common.js",
-        "Please update the Scratch Object stub in pmp_manip/ext_info_gen/direct_extractor.js and safe_extractor.py",
+        "Update the Scratch Object stub in pmp_manip/ext_info_gen/direct_extractor.js and safe_extractor.py",
     ),
     (
-        "2025-08-07",
+        "2025-09-04",
         "https://github.com/PenguinMod/penguinmod.github.io/blob/develop/src/containers/tw-security-manager.jsx",
+        "Update pmp_manip/ext_info_gen/manager.py",
+    ),
+    (
+        "2025-09-04",
+        "https://github.com/PenguinMod/PenguinMod-Vm/blob/develop/src/extension-support/extension-manager.js",
+        "Update BUILTIN_EXT_TO_DIR in pmp_manip/opcode_info/api/main.py",
     ),
 ]
 
@@ -35,11 +40,11 @@ def get_last_commit_date(owner, repo, branch, filepath):
     return commits[0]["commit"]["committer"]["date"]
 
 def check_files(files) -> bool:
-    for last_checked, url, message in files:
+    for last_checked, url, todo_message in files:
         owner, repo, branch, filepath = parse_github_url(url)
         commit_date_str = get_last_commit_date(owner, repo, branch, filepath)
         if not commit_date_str:
-            print(f"⚠️ No commits found for {url}")
+            print(f"⚠️  No commits found for {url}")
             continue
 
         commit_date = datetime.fromisoformat(commit_date_str.replace("Z", "+00:00"))
@@ -48,7 +53,7 @@ def check_files(files) -> bool:
 
         if commit_date > last_checked_dt:
             print(f"🚨 {url} has changed since {last_checked} (last commit: {commit_date.date()})")
-            print(f"🚨 Resulting TODO: {message}")
+            print(f"🚨 Resulting TODO: {todo_message}")
             return False
     return True
 

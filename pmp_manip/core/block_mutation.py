@@ -2,7 +2,7 @@ from abc         import ABC, abstractmethod
 from copy        import deepcopy
 from dataclasses import field
 from json        import loads, JSONDecodeError
-from typing      import Any, ClassVar, NoReturn, TYPE_CHECKING
+from typing      import Any, ClassVar, NoReturn, Literal, TYPE_CHECKING
 
 from pmp_manip.important_consts import SHA256_SEC_MAIN_ARGUMENT_NAME
 from pmp_manip.utility          import (
@@ -105,7 +105,7 @@ def _load_color_array(data: dict[str, Any], key: str, default: tuple[str, str, s
 
 @grepr_dataclass(
     grepr_fields=["tag_name", "children"], init=False, forbid_init_only_subcls=True,
-    suggested_subcls_names=["FRCustomBlockArgumentMutation", "FRCustomBlockMutation", "FRCustomBlockCallMutation", "FRStopScriptMutation"]
+    suggested_subcls_names=["FRCustomBlockArgumentMutation", "FRCustomBlockMutation", "FRCustomBlockCallMutation", "FRStopScriptMutation", "FRPolygonMutation"]
 )
 class FRMutation(ABC):
     """
@@ -212,9 +212,9 @@ class FRCustomBlockArgumentMutation(FRMutation, required_properties={"color"}, o
     """
     
     color: tuple[str, str, str]
-    warp: bool = False # should not exist and if present seems to be False
-    edited: bool = False # should not exist and if present seems to be False
-    has_next: bool = False # should not exist and if present seems to be False
+    warp: Literal[False] = False # should not exist and if present seems to be False
+    edited: Literal[False] = False # should not exist and if present seems to be False
+    has_next: Literal[False] = False # should not exist and if present seems to be False
 
     _argument_name: str | None = field(init=False)
     
@@ -312,7 +312,7 @@ class FRCustomBlockMutation(FRMutation,
     edited: bool # seems to always be true
     optype: str
     color: tuple[str, str, str]
-    has_next: bool = False # should not exist and if present seems to be False
+    has_next: Literal[False] = False # should not exist and if present seems to be False
 
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRCustomBlockMutation":
@@ -399,7 +399,7 @@ class FRCustomBlockCallMutation(FRMutation,
     edited: bool # seems to always be true
     optype: str
     color: tuple[str, str, str]
-    has_next: bool = False # should not exist and if present seems to be False
+    has_next: Literal[False] = False # should not exist and if present seems to be False
     
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRCustomBlockCallMutation":
@@ -463,14 +463,14 @@ class FRCustomBlockCallMutation(FRMutation,
         )
 
 @grepr_dataclass(grepr_fields=["has_next"])
-class FRStopScriptMutation(FRMutation, required_properties={"hasnext"}, optional_properties=["warp", "edited"]):
+class FRStopScriptMutation(FRMutation, required_properties={"hasnext"}, optional_properties={"warp", "edited"}):
     """
     The first representation for the mutation of a stop script mutation
     """
     
     has_next: bool
-    warp: bool = False # should not exist and if present seems to be False
-    edited: bool = False # should not exist and if present seems to be False
+    warp: Literal[False] = False # should not exist and if present seems to be False
+    edited: Literal[False] = False # should not exist and if present seems to be False
     
     @classmethod
     def from_data(cls, data: dict[str, bool]) -> "FRStopScriptMutation":
@@ -508,6 +508,60 @@ class FRStopScriptMutation(FRMutation, required_properties={"hasnext"}, optional
         It would just store alredy known information in a second place.
         """
         raise NotImplementedError("A second representation of a stop script mutation does not exist. It is not needed for an IRBlock or SRBlock")
+
+@grepr_dataclass(grepr_fields=["points", "color", "midle", "scale", "expanded", "needs_init"])
+class FRPolygonMutation(FRMutation, required_properties={"points", "color", "midle", "scale", "expanded", "needsinit"}, optional_properties=set()):
+    """
+    The first representation for the mutation of a stop script mutation
+    """
+    
+    points: int # usually 3 or 4
+    color: Literal["#0FBD8C"] | str
+    midle: tuple[Literal[0], Literal[0]]
+    scale: Literal[50]
+    expanded: Literal[True]
+    needs_init: Literal[True]
+    
+    @classmethod
+    def from_data(cls, data: dict[str, bool]) -> "FRPolygonMutation":
+        """
+        Create a FRPolygonMutation(for the inner "block" of the old "draw triangle" block) from json data
+        
+        Args:
+            data: the json data
+        """
+        return cls(
+            tag_name   = data["tagName" ],
+            children   = deepcopy(data["children"]),
+            points     = loads(data["points"]),
+            color      = data["color"],
+            midle      = loads(data["midle"]),
+            scale      = loads(data["scale"]),
+            expanded   = _load_bool_value(data, key="expanded", default=True),
+            needs_init = _load_bool_value(data, key="needsinit", default=True),
+        )
+
+    def to_data(self) -> dict[str, Any]:
+        """
+        Serializes a FRPolygonMutation into json data
+        """
+        return {
+            "tagName"  : self.tag_name,
+            "children" : deepcopy(self.children),
+            "points"   : gdumps(self.points),
+            "color"    : self.color,
+            "midle"    : gdumps(self.midle),
+            "scale"    : gdumps(self.scale),
+            "expanded" : gdumps(self.expanded),
+            "needsinit": gdumps(self.needs_init),
+        }
+   
+    def to_second(self, fti_if: "FirstToInterIF") -> NoReturn:
+        """
+        A second representation of a polygon mutation does not exist. 
+        It would just store alredy known information in a second place.
+        """
+        raise NotImplementedError("A second representation of a polygon mutation does not exist. It is not needed for an IRBlock or SRBlock")
 
 
 @grepr_dataclass(
@@ -730,7 +784,7 @@ class SRCustomBlockCallMutation(SRMutation):
 
 __all__ = [
     "FRMutation", 
-    "FRCustomBlockArgumentMutation", "FRCustomBlockMutation", "FRCustomBlockCallMutation", "FRStopScriptMutation",
+    "FRCustomBlockArgumentMutation", "FRCustomBlockMutation", "FRCustomBlockCallMutation", "FRStopScriptMutation", "FRPolygonMutation",
     "SRMutation", 
     "SRCustomBlockArgumentMutation", "SRCustomBlockMutation", "SRCustomBlockCallMutation",
 ]

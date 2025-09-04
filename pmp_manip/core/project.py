@@ -154,8 +154,11 @@ class FRProject:
             MANIP_UnexpectedPropertyAccessWarning: if a property of 'this' is accessed in the getInfo method of the extension code in safe analysis
             MANIP_UnexpectedNotPossibleFeatureWarning: if an impossible to implement feature is used (eg. ternary expr) in the getInfo method of the extension code in safe analysis
         """
-        builtin_ext_ids = [ext_id for ext_id in self.extensions if ext_id not in self.extension_urls]
-        info_api._add_all_extensions_of_project(self.extension_urls, builtin_ext_ids)        
+        for extension_id in self.extensions:
+            info_api.generate_and_add_extension(
+                extension_id=extension_id,
+                extension_source=self.extension_urls.get(extension_id, None),
+            )
 
     @enforce_argument_types
     def to_file(self, file_path: str) -> None:
@@ -542,7 +545,7 @@ class SRProject:
                 defined_lists[list_.name] = current_path
     
     @enforce_argument_types
-    def add_all_extensions_to_info_api(self, info_api: OpcodeInfoAPI) -> OpcodeInfoAPI:
+    def add_all_extensions_to_info_api(self, info_api: OpcodeInfoAPI) -> None:
         """
         For every extension of the project generate and import the required opcode info py file and add it to the OpcodeInfoAPI.
         If cached versions exist and they are up to date, they will be kept and not replaced.
@@ -564,16 +567,17 @@ class SRProject:
             MANIP_UnexpectedPropertyAccessWarning: if a property of 'this' is accessed in the getInfo method of the extension code in safe analysis
             MANIP_UnexpectedNotPossibleFeatureWarning: if an impossible to implement feature is used (eg. ternary expr) in the getInfo method of the extension code in safe analysis
         """
-        custom_ext_id_to_source = {}
-        builtin_ext_ids = []
         for extension in self.extensions:
             if   isinstance(extension, SRBuiltinExtension):
-                builtin_ext_ids.append(extension.id)                
+                info_api.generate_and_add_extension(
+                    extension_id=extension.id,
+                    extension_source=None,
+                )
             elif isinstance(extension, SRCustomExtension):
-                custom_ext_id_to_source[extension.id] = extension.url
-        
-        info_api._add_all_extensions_of_project(custom_ext_id_to_source, builtin_ext_ids)
-        return info_api
+                info_api.generate_and_add_extension(
+                    extension_id=extension.id,
+                    extension_source=extension.url,
+                )
     
     def _find_broadcast_messages(self) -> list[str]:
         """
