@@ -190,8 +190,8 @@ def generate_block_opcode_info(
                     dropdown_info = DropdownInfo(type=builtin_dropdown_type)
                 case "image":
                     continue # not really an input or dropdown, should be skipped
-                case "polygon": # pragma: no cover
-                    raise MANIP_TempNotImplementedError() # TODO, only necessary for the few polygon blocks(pen ext) # pragma: no cover
+                case "polygon":
+                    input_info = InputInfo(type=BuiltinInputType.POLYGON, menu=None)
                 case "seperator":
                     raise MANIP_ThanksError() # I could not find out what thats used for
             
@@ -449,7 +449,6 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
                     conflicting_new_opcodes.append(new_opcode)
                     # use old_opcode as a unique disambiguer
                     new_new_opcode = disambiguate_new_opcode(new_opcode, old_opcode)
-                    print(("changing while", new_opcode, old_opcode, new_new_opcode))
                     info_group_content.set(
                         key1  = old_opcode,
                         key2  = new_new_opcode,
@@ -461,7 +460,6 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
     for new_opcode in conflicting_new_opcodes:
         old_opcode = info_group_content.get_key1_for_key2(new_opcode)
         new_new_opcode = disambiguate_new_opcode(new_opcode, old_opcode)
-        print(("changing after", new_opcode, old_opcode, new_new_opcode))
         info_group_content.change_key2_by_key1(key1=old_opcode, new_key2=new_new_opcode)
 
     info_group = OpcodeInfoGroup(

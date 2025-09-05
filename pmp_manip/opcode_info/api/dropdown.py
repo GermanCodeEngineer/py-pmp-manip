@@ -6,7 +6,7 @@ from pmp_manip.utility import grepr_dataclass, remove_duplicates, GEnum, MANIP_B
 from pmp_manip.core.context import PartialContext, CompleteContext
 
 
-DROPDOWN_VALUE_T = str | int
+DROPDOWN_VALUE_T = str | int | bool
 
 class DropdownValueKind(GEnum):
     """
@@ -627,6 +627,7 @@ class BuiltinDropdownType(DropdownType):
     BROADCAST = DropdownTypeInfo(rules=[DropdownValueRule.BROADCAST_MSG])
     
     # TEMPORARY ONES (do not exist in actual SR only during transformation)
+    POLYGON_MENU_UNTOUCHED = DropdownTypeInfo(direct_values=[False, True])
     CHECKBOX = DropdownTypeInfo(direct_values=["FALSE", "TRUE"])
 
 

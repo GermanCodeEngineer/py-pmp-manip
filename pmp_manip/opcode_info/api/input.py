@@ -1,7 +1,7 @@
 from __future__ import annotations
 from pmp_manip.utility import grepr_dataclass, GEnum
 
-from pmp_manip.important_consts         import OPCODE_POLYGON, NEW_OPCODE_POLYGON
+from pmp_manip.important_consts         import OPCODE_POLYGON
 from pmp_manip.opcode_info.api.dropdown import DropdownType, BuiltinDropdownType
 
 
@@ -82,7 +82,7 @@ class InputType(GEnum):
         Get the old block opcode which must exist in the input.
         """
         assert self.mode == InputMode.FORCED_EMBEDDED_BLOCK 
-        return self.value[2]
+        return self.value[1]
 
     @property
     def magic_number(self) -> int | None:

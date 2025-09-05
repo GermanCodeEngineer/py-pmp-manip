@@ -832,7 +832,7 @@ Represents a non-sprite-specific(global) or sprite-specific(local) monitor. Also
 - **type**: `str`
 - **description**: The "opcode"(unique identifier) of the block, the monitor is for (see [`SRBlock.opcode`](#srblockopcode)).
 #### `SRMonitor.dropdowns`
-- **type**: `dict` of `str` keys and `SRDropdownValue` values
+- **type**: `dict` of `str` keys and [`SRDropdownValue`](#srdropdownvalue) values
 - **description**: the exact dropdown settings of the monitor (e.g. "costume number/name" block). Based on the dropdowns of the block (see [`SRBlock.dropdowns`](#srblockdropdowns)).
 #### `SRMonitor.position`
 - **type**: `tuple` of `int|float`(x position) and `int|float`(y position)
@@ -1268,6 +1268,7 @@ Represents a single input field of a block. Can be any kind of field (e.g. text,
 * [`SRBlockAndBoolInputValue`](#srblockandboolinputvalue)
 * [`SRBlockOnlyInputValue`](#srblockonlyinputvalue)
 * [`SRScriptInputValue`](#srscriptinputvalue)
+* [`SREmbeddedBlockInputValue`](#srembeddedblockinputvalue)
 
 **these properties might but MUST NOT exist**, the subclasses specify below which properties they support:
 #### `SRInputValue.blocks`
@@ -1277,7 +1278,7 @@ Represents a single input field of a block. Can be any kind of field (e.g. text,
 #### `SRInputValue.block`
 - **type**: [`SRBlock`](#srblock) or `None`
 - **description**: Stores the optional block inserted into the argument text field, round dropdown menu etc.
-- **note**: Only exists for instances of [`SRBlockAndTextInputValue`](#srblockandtextinputvalue), [`SRBlockAndDropdownInputValue`](#srblockanddropdowninputvalue) and [`SRBlockOnlyInputValue`](#srblockonlyinputvalue).
+- **note**: Only exists for instances of [`SRBlockAndTextInputValue`](#srblockandtextinputvalue), [`SRBlockAndDropdownInputValue`](#srblockanddropdowninputvalue), [`SRBlockOnlyInputValue`](#srblockonlyinputvalue) and [`SREmbeddedBlockInputValue`](#SREmbeddedBlockInputValue).
 #### `SRInputValue.immediate`
 - **type**: `str` or `bool` (depends on subclass)
 - **description**: the "immediate" value of the input value i.e. if the default value if no block is dragged into the input.
@@ -1311,6 +1312,12 @@ Inherits from [`SRInputValue`](#srinputvalue).
 ### `SRScriptInputValue`
 Inherits from [`SRInputValue`](#srinputvalue). Similar to [`SRScript`](#srscript).
 * **uses properties**: [`SRInputValue.blocks`](#srinputvalueblocks)
+### `SREmbeddedBlockInputValue`
+Inherits from [`SRInputValue`](#srinputvalue). Must have a block. The opcode of that block is also constrained.
+* **uses properties**: [`SRInputValue.block`](#srinputvalueblock)
+### `SREmbeddedBlockInputValue.block`
+- **type**: [`SRBlock`](#srblock), **NOT `None`**
+- **description**: Stores the block inserted into the input. Must have one specific `opcode`.
 
 
 ## `SRDropdownValue`
@@ -1319,7 +1326,7 @@ Represents a single dropdown field of a block. Can only be a square dropdown, wh
 - **type**: [`DropdownValueKind`](#dropdownvaluekind)
 - **description**: Stores the kind of thing the dropdown value refers to (e.g. `VARIABLE`, `SPRITE`, `OBJECT` or `STANDARD`).
 #### `SRDropdownValue.value`
-- **type**: almost always `str` but rarely `int` too (for costume, backdrop and sound selection by index)
+- **type**: almost always `str` but rarely `int` (for costume, backdrop and sound selection by index) and `bool` too.
 - **description**: Stores the actual value of the dropdown value.
 ### Editor View Example
 ![](images/project_view/srdropdownvalue1.png)

@@ -54,7 +54,7 @@ class MANIP_PathValidationError(MANIP_ValidationError):
         self.condition = condition
         
         full_message = ""
-        if len(path) == 0:
+        if len(path) > 0:
             full_message += f"At {path!r}: "
         if condition is not None:
             full_message += f"{condition}: "

@@ -1,5 +1,5 @@
 from pmp_manip import (
-    get_default_config, init_config, FRProject,
+    get_default_config, init_config, FRProject, SRBlockAndTextInputValue,
     info_api,
 )
 from pmp_manip.opcode_info.api import ExtensionRef
@@ -18,4 +18,11 @@ print(info_api)
 frproject = FRProject.from_file(file_path="assets/pen_polygon_example.pmp")
 write_file_text("fr.lua", repr(frproject))
 srproject = frproject.to_second(info_api)
+write_file_text("sr.lua", repr(srproject))
+
+srproject.sprites[0].scripts[0].blocks[0].inputs["TRIANGLE"].block.inputs["Y3"] = SRBlockAndTextInputValue(block=None, immediate="93.39")
+srproject.validate(info_api)
+
+new_frproject = srproject.to_first(info_api)
+write_file_text("nfr.lua", repr(new_frproject))
 #print("Project was converted successfully :)")

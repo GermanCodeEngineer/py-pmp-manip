@@ -257,13 +257,13 @@ class OpcodeType(GEnum):
     STRING_REPORTER   = (True , 3)
     NUMBER_REPORTER   = (True , 4)
     BOOLEAN_REPORTER  = (True , 5)
+
+    EMBEDDED          = (False, 6)
     
     # Pseudo Blocktypes
-    MENU              = (False, 6)
-    POLYGON_MENU      = (False, 7) # Exclusively for the "polygon" block 
+    MENU              = (False, 7)
     NOT_RELEVANT      = (False, 8)
     DYNAMIC           = (False, 9)
-# TODO: find solution for draw polygon block
 
 class MonitorIdBehaviour(GEnum):
     """
@@ -975,7 +975,6 @@ class OpcodeInfoAPI:
         info = self.get_info_by_new_safe(new)
         if info is not None:
             return info
-        print(list(self.opcode_info.keys_key1_key2()))
         raise MANIP_UnknownOpcodeError(f"Could not find OpcodeInfo by new opcode {new!r}")
 
 

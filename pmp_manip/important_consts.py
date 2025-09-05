@@ -30,7 +30,7 @@ OPCODE_STOP_SCRIPT             = "control_stop"
 OPCODE_CHECKBOX                = "checkbox"
 NEW_OPCODE_CHECKBOX            = "##CHECKBOX##"
 OPCODE_POLYGON                 = "polygon"
-NEW_OPCODE_POLYGON             = "##POLYGON MENU##"
+NEW_OPCODE_POLYGON             = "{{POLYGON MENU}}"
 
 # Magic Numbers
 OPCODE_NUM_VAR_VALUE           = 12

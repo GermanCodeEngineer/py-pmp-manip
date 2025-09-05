@@ -19,7 +19,7 @@ class SpecialCaseType(GEnum):
         path: the path to the block from the project root
     
     Tipps:
-        if the given block is modified it should first be copied using copy.copy/copy.deepcopy
+        if the given block will be modified it should first be copied using copy.copy/copy.deepcopy
     """
     
 

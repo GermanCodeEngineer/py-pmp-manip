@@ -55,7 +55,7 @@ SECOND_REPR_T = (
     
     SRScript | SRBlock | SRInputValue | SREmbeddedBlockInputValue |
     SRBlockAndTextInputValue | SRBlockAndDropdownInputValue | SRBlockAndBoolInputValue |
-    SRBlockOnlyInputValue | SRScriptInputValue |
+    SRBlockOnlyInputValue | SRScriptInputValue | SREmbeddedBlockInputValue |
     SRDropdownValue |
     
     SRMutation | SRCustomBlockArgumentMutation | SRCustomBlockMutation | SRCustomBlockCallMutation |

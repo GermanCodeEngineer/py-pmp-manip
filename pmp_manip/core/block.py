@@ -18,7 +18,7 @@ from pmp_manip.opcode_info.api  import (
 )
 from pmp_manip.utility          import (
     grepr_dataclass, get_closest_matches, tuplify, listify, string_to_sha256,
-    AA_TYPE, AA_NONE, AA_NONE_OR_TYPE, AA_COORD_PAIR, AA_LIST_OF_TYPE, AA_DICT_OF_TYPE, AA_MIN_LEN,
+    AA_TYPE, AA_NONE, AA_NONE_OR_TYPE, AA_COORD_PAIR, AA_LIST_OF_TYPE, AA_DICT_OF_TYPE, AA_MIN_LEN, AA_EQUAL,
     AbstractTreePath,
     MANIP_ConversionError,
     MANIP_UnnecessaryInputError, MANIP_MissingInputError, MANIP_UnnecessaryDropdownError, MANIP_MissingDropdownError, 
@@ -726,20 +726,20 @@ class SRBlock:
         validation_if: "ValidationIF", 
         context: CompleteContext,
         expects_reporter: bool,
-        expects_embedded: bool, # HERE
+        expects_embedded: bool = False,
+        expected_opcode: str | None = None,
     ) -> None:
         """
         Ensure a SRBlock is valid, raise MANIP_ValidationError if not
         
         Args:
-            path: the path from the project to itself. Used for better error messages
-            info_api: the opcode info api used to fetch information about opcodes
+            path: The path from the project to itself. Used for better error messages
+            info_api: The opcode info api used to fetch information about opcodes
             validation_if: interface which allows the management of other blocks 
             context: Context about parts of the project. Used to validate dropdowns
             expects_reporter: Wether this block should be a reporter
-        
-        Returns:
-            None
+            expects_embedded: Wether this block should be an embedded block, which may only exist in SREmbeddedBlockInputValue
+            expected_opcode: The expected new opcode for embedded kinds of blocks
         
         Raises:
             MANIP_ValidationError: if the SRBlock is invalid
@@ -748,9 +748,11 @@ class SRBlock:
             MANIP_MissingInputError(MANIP_ValidationError): if an expected key of inputs for the specific opcode is missing
             MANIP_UnnecessaryDropdownError(MANIP_ValidationError): if a key of dropdowns is not expected for the specific opcode
             MANIP_MissingDropdownError(MANIP_ValidationError): if an expected key of dropdowns for the specific opcode is missing
-            MANIP_InvalidBlockShapeError(MANIP_ValidationError): if a reporter block was expected but a non-reporter block was found
+            MANIP_InvalidBlockShapeError(MANIP_ValidationError): if e.g. a reporter block was expected but a non-reporter block was found
         """
         AA_TYPE(self, path, "opcode", str)
+        if expected_opcode is not None:
+            AA_EQUAL(self, path, "opcode", expected_opcode, condition="For this opcode of the parent block")
         AA_DICT_OF_TYPE(self, path, "inputs"   , key_t=str, value_t=SRInputValue   )
         AA_DICT_OF_TYPE(self, path, "dropdowns", key_t=str, value_t=SRDropdownValue)
         AA_NONE_OR_TYPE(self, path, "comment", SRComment)
@@ -818,6 +820,10 @@ class SRBlock:
         opcode_type = opcode_info.get_opcode_type(block=self, validation_if=validation_if)
         if expects_reporter and not(opcode_type.is_reporter):
             raise MANIP_InvalidBlockShapeError(path, "Expected a reporter block here")
+        if expects_embedded and (opcode_type is not OpcodeType.EMBEDDED):
+            raise MANIP_InvalidBlockShapeError(path, "Expected an embedded block here")
+        if not(expects_embedded) and (opcode_type is OpcodeType.EMBEDDED):
+            raise MANIP_InvalidBlockShapeError(path, "Expected no embedded block here")
 
         post_case = opcode_info.get_special_case(SpecialCaseType.POST_VALIDATION)
         if post_case is not None:
@@ -847,20 +853,21 @@ class SRBlock:
         Raises:
             MANIP_InvalidBlockShapeError(MANIP_ValidationError): if the opcode_type of the block's opcode is invalid in a specific situation
         """
-        if   opcode_type == OpcodeType.STATEMENT: pass
-        elif opcode_type == OpcodeType.ENDING_STATEMENT:
+        if   opcode_type is OpcodeType.STATEMENT: pass
+        elif opcode_type is OpcodeType.ENDING_STATEMENT:
             if not is_last: # when there is a next block
                 raise MANIP_InvalidBlockShapeError(path, "A block of type ENDING_STATEMENT must be the last block in it's script or substack")
-        elif opcode_type == OpcodeType.HAT:
-            if not is_top_level:
+        elif opcode_type is OpcodeType.HAT:
+            if   not is_top_level:
                 raise MANIP_InvalidBlockShapeError(path, "A block of type HAT is not allowed within a substack")
             elif not is_first:
                 raise MANIP_InvalidBlockShapeError(path, "A block of type HAT must to be the first block in it's script or substack")
         elif opcode_type.is_reporter:
-            if not is_top_level:
+            if   not is_top_level:
                 raise MANIP_InvalidBlockShapeError(path, "A block of any ...REPORTER type is not allowed within a substack")
             elif not(is_first and is_last):
                 raise MANIP_InvalidBlockShapeError(path, "If contained in a substack, a block of any ...REPORTER type must be the only block in that substack")
+        elif opcode_type is OpcodeType.EMBEDDED: pass
     
     def find_broadcast_messages(self) -> list[str]:
         """
@@ -871,14 +878,14 @@ class SRBlock:
         """
         broadcast_messages = []
         for input_value in self.inputs.values():
-            if isinstance(input_value, SRBlockAndDropdownInputValue) :
+            if isinstance(input_value, SRBlockAndDropdownInputValue):
                 if input_value.dropdown is not None:
                     if input_value.dropdown.kind is DropdownValueKind.BROADCAST_MSG:
                         broadcast_messages.append(input_value.dropdown.value)
             
             if   isinstance(input_value, 
                 (SRBlockAndTextInputValue, SRBlockAndDropdownInputValue, 
-                 SRBlockAndBoolInputValue, SRBlockOnlyInputValue)
+                 SRBlockAndBoolInputValue, SRBlockOnlyInputValue, SREmbeddedBlockInputValue)
             ):
                 sub_blocks = [] if input_value.block is None else [input_value.block]
             elif isinstance(input_value, SRScriptInputValue):
@@ -1023,7 +1030,7 @@ class SRBlock:
 
 @grepr_dataclass(
     grepr_fields=[], eq=False, order=False, init=False, forbid_init_only_subcls=True,
-    suggested_subcls_names=["SRBlockAndTextInputValue", "SRBlockAndDropdownInputValue", "SRBlockAndBoolInputValue", "SRBlockOnlyInputValue", "SRScriptInputValue"],
+    suggested_subcls_names=["SRBlockAndTextInputValue", "SRBlockAndDropdownInputValue", "SRBlockAndBoolInputValue", "SRBlockOnlyInputValue", "SRScriptInputValue", "SREmbeddedBlockInputValue"],
     # eq must be True for order to work, is overwritten
 )
 class SRInputValue(ABC):
@@ -1378,8 +1385,9 @@ class SREmbeddedBlockInputValue(SRInputValue):
             None
         
         Raises:
-            MANIP_ValidationError: if the SRBlockOnlyInputValue is invalid
+            MANIP_ValidationError: if the SREmbeddedBlockInputValue is invalid
         """
+        print(input_type)
         AA_TYPE(self, path, "block", SRBlock)
         self.block.validate(
             path             = path.add_attribute("block"),
@@ -1387,6 +1395,8 @@ class SREmbeddedBlockInputValue(SRInputValue):
             validation_if    = validation_if,
             context          = context,
             expects_reporter = False,
+            expects_embedded = True,
+            expected_opcode  = info_api.get_new_by_old(input_type.embedded_block_opcode),
         )
         
 
@@ -1395,6 +1405,6 @@ __all__ = [
     "FRBlock", "IRBlock", "IRInputValue", 
     "SRScript", "SRBlock", "SRInputValue", 
     "SRBlockAndTextInputValue", "SRBlockAndDropdownInputValue", "SRBlockAndBoolInputValue",
-    "SRBlockOnlyInputValue", "SRScriptInputValue",
+    "SRBlockOnlyInputValue", "SRScriptInputValue", "SREmbeddedBlockInputValue",
 ]
 

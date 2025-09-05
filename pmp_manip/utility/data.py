@@ -48,9 +48,9 @@ def listify(obj):
 def gdumps(obj) -> str:
     return dumps(obj, separators=(",", ":"))  # no spaces after commas or colons
 
-def string_to_sha256(primary: str, secondary: str|None=None, tertiary: str|None=None) -> str:
-    def _string_to_sha256(input_string: str, digits: int) -> str:
-        hex_hash = sha256(input_string.encode()).hexdigest()
+def string_to_sha256(primary: str | int | bool, secondary: str|None=None, tertiary: str|None=None) -> str:
+    def _string_to_sha256(input_string: str | int | bool, digits: int) -> str:
+        hex_hash = sha256(str(input_string).encode()).hexdigest()
 
         result = []
         for i in range(digits):

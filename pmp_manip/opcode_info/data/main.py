@@ -171,7 +171,12 @@ g_special = OpcodeInfoGroup(
             }),
         ),
         (OPCODE_POLYGON, NEW_OPCODE_POLYGON): OpcodeInfo(
-            opcode_type=OpcodeType.MENU,
+            opcode_type=OpcodeType.EMBEDDED,
+            inputs=DualKeyDict(), # Overwritten by special case
+            dropdowns=DualKeyDict({
+                ("button", "UNTOUCHED"): DropdownInfo(BuiltinDropdownType.POLYGON_MENU_UNTOUCHED),
+            }),
+            has_shadow=True,
         ),
         ("note", "#NOTE MENU"): OpcodeInfo(
             opcode_type=OpcodeType.MENU,
@@ -244,6 +249,36 @@ info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
     function=_f9c8_6ab0,
 ))
 
+def _2dc4_f736(block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None") -> DualKeyDict[str, str, InputType]:
+    # Generate X1, Y1 ...  Xn, Yn depending on demand
+    max_point_index = 0
+    for input_id in block.inputs.keys():
+        if   input_id.startswith("x") or input_id.startswith("X"):
+            point_index = int(input_id[1:], base=10)
+        elif input_id.startswith("y") or input_id.startswith("Y"):
+            point_index = int(input_id[1:], base=10)
+        else:
+            continue
+        max_point_index = max(max_point_index, point_index)
+    
+    input_infos = DualKeyDict()
+    for point_index in range(1, max_point_index+1):
+        input_infos.set(
+            key1  = f"x{point_index}",
+            key2  = f"X{point_index}",
+            value = InputInfo(BuiltinInputType.NUMBER),
+        )
+        input_infos.set(
+            key1  = f"y{point_index}",
+            key2  = f"Y{point_index}",
+            value = InputInfo(BuiltinInputType.NUMBER),
+        )
+    return input_infos
+info_api.add_opcode_case(OPCODE_POLYGON, SpecialCase(
+    type=SpecialCaseType.GET_ALL_INPUT_IDS_INFO,
+    function=_2dc4_f736,
+))
+
 
 def _2841_608f(block: "FRBlock", block_id: str, fti_if: "FirstToInterIF") -> "FRBlock":
     # Transfer mutation from prototype block to definition block
@@ -308,8 +343,6 @@ info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
 
 def _1101_80e9(block: "FRBlock", block_id: str, fti_if: "FirstToInterIF") -> "FRBlock":
     # Remove the mutation, so that no mutation will be given to the IRBlock and SRBlock
-    # => Yes i know that there will be a data loss, however only wether the "inner polygon block" is expanded/collapsed.
-    # => But even when I am devloping this the blocks using polygon are alredy considered legacy.
     block = copy(block)
     block.mutation = None
     return block
@@ -318,7 +351,6 @@ info_api.add_opcode_case(OPCODE_POLYGON, SpecialCase(
     function=_1101_80e9,
 ))
 
-OPCODE_POLYGON
 
 def _d0e6_50e9(block: "FRBlock", block_id: str, fti_if: "FirstToInterIF") -> "IRBlock":
     # Return an empty, temporary block
@@ -432,6 +464,36 @@ def _5b5e_f1d7(block: "FRBlock", block_id: str, itf_if: "InterToFirstIF") -> "FR
 info_api.add_opcode_case(OPCODE_STOP_SCRIPT, SpecialCase(
     type=SpecialCaseType.POST_INTER_TO_FIRST, 
     function=_5b5e_f1d7,
+))
+
+def _f77b_dd4b(block: "FRBlock", block_id: str, itf_if: "InterToFirstIF") -> "FRBlock":
+    # Add the mutation, so that a mutation will be given to the FRBlock
+    max_point_index = 0
+    for input_id in block.inputs.keys():
+        if   input_id.startswith("x") or input_id.startswith("X"):
+            point_index = int(input_id[1:])
+        elif input_id.startswith("y") or input_id.startswith("Y"):
+            point_index = int(input_id[1:])
+        else:
+            continue
+        max_point_index = max(max_point_index, point_index)
+    
+    block = copy(block)
+    block.mutation = FRPolygonMutation(
+        tag_name="mutation",
+        children=[],
+
+        points=max_point_index,
+        color="#0FBD8C",
+        midle=[0, 0],
+        scale=50,
+        expanded=True,
+        needs_init=True,
+    )
+    return block
+info_api.add_opcode_case(OPCODE_POLYGON, SpecialCase(
+    type=SpecialCaseType.POST_INTER_TO_FIRST, 
+    function=_f77b_dd4b,
 ))
 
 

@@ -2,6 +2,7 @@ from copy        import copy, deepcopy
 from dataclasses import field
 from pytest      import fixture, raises
 
+from pmp_manip.important_consts import NEW_OPCODE_POLYGON
 from pmp_manip.opcode_info.api  import DropdownValueKind, OpcodeType, BuiltinInputType, InputMode
 from pmp_manip.opcode_info.data import info_api
 from pmp_manip.utility          import (
@@ -105,7 +106,7 @@ def test_SRScript_to_inter():
 
 def test_SRBlock_validate(validation_if, context):
     srblock = ALL_SR_SCRIPTS[0].blocks[0]
-    srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False)
+    srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False, expects_embedded=False)
 
     execute_attr_validation_tests(
         obj=srblock,
@@ -123,56 +124,56 @@ def test_SRBlock_validate(validation_if, context):
 
 def test_SRBlock_validate_reporter(validation_if, context):
     srblock = ALL_SR_SCRIPTS[1].blocks[0]
-    srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=True)
+    srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=True, expects_embedded=False)
 
 def test_SRBlock_validate_cb_def(validation_if, context):
     srblock = ALL_SR_SCRIPTS[4].blocks[0]
-    srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False)    
+    srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False, expects_embedded=False)   
 
 def test_SRBlock_validate_unexpected_mutation(validation_if, context):
     srblock = copy(ALL_SR_SCRIPTS[0].blocks[1])
     srblock.mutation = {...}
     with raises(MANIP_TypeValidationError):
-        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False)
+        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False, expects_embedded=False)
 
 def test_SRBlock_validate_missing_mutation(validation_if, context):
     srblock = copy(ALL_SR_SCRIPTS[4].blocks[0])
     srblock.mutation = None
     with raises(MANIP_TypeValidationError):
-        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False)
+        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False, expects_embedded=False)
 
 def test_SRBlock_validate_invalid_reporter_shape(validation_if, context):
     srblock = ALL_SR_SCRIPTS[0].blocks[0]
     with raises(MANIP_InvalidBlockShapeError):
-        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=True)
+        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=True, expects_embedded=False)
 
 def test_SRBlock_validate_unexpected_input(validation_if, context):
     srblock = deepcopy(ALL_SR_SCRIPTS[6].blocks[0])
     srblock.inputs["SOME_ID"] = SRBlockOnlyInputValue(block=None)
     with raises(MANIP_UnnecessaryInputError):
-        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False)
+        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False, expects_embedded=False)
 
 def test_SRBlock_validate_missing_input(validation_if, context):
     srblock = deepcopy(ALL_SR_SCRIPTS[6].blocks[0])
     del srblock.inputs["CONDITION"]
     with raises(MANIP_MissingInputError):
-        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False) # 1
+        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False, expects_embedded=False)
 
 def test_SRBlock_validate_unexpected_dropdown(validation_if, context):
     srblock = deepcopy(ALL_SR_SCRIPTS[2].blocks[0])
     srblock.dropdowns["SOME_ID"] = SRDropdownValue(kind=DropdownValueKind.STANDARD, value="something")
     with raises(MANIP_UnnecessaryDropdownError):
-        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=True)
+        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=True, expects_embedded=False)
 
 def test_SRBlock_validate_missing_dropdown(validation_if, context):
     srblock = deepcopy(ALL_SR_SCRIPTS[2].blocks[0])
     del srblock.dropdowns["VARIABLE"]
     with raises(MANIP_MissingDropdownError):
-        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=True)
+        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=True, expects_embedded=False)
 
 def test_SRBlock_validate_post_handler(validation_if, context):
     srblock = ALL_SR_SCRIPTS[3].blocks[0]
-    srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False)
+    srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False, expects_embedded=False)
 
 
 def test_SRBlock_validate_opcode_type():
@@ -196,6 +197,10 @@ def test_SRBlock_validate_opcode_type():
         (OpcodeType.STRING_REPORTER , reporter_tests),
         (OpcodeType.NUMBER_REPORTER , reporter_tests),
         (OpcodeType.BOOLEAN_REPORTER, reporter_tests),
+        (OpcodeType.EMBEDDED        , [
+            (False, 0b000), (False, 0b001), (False, 0b010), (False, 0b011),
+            (False, 0b100), (False, 0b101), (False, 0b110), (False, 0b111),
+        ]),
     ]
     for opcode_type, items in sub_tests:
         for should_raise, flags in items:
@@ -566,7 +571,22 @@ def test_SRScriptInputValue_validate(validation_if, context):
 def test_SREmbeddedBlockInputValue_validate(validation_if, context):
     input_type = BuiltinInputType.BOOLEAN
     input_value = SREmbeddedBlockInputValue(
-        block=None,
+        block=SRBlock(
+            opcode=NEW_OPCODE_POLYGON,
+            inputs={
+                "X1": SRBlockAndTextInputValue(block=None, immediate="-43.30127018922194"),
+                "Y1": SRBlockAndTextInputValue(block=None, immediate="-24.999999999999996"),
+                "X2": SRBlockAndTextInputValue(block=None, immediate="43.30127018922194"),
+                "Y2": SRBlockAndTextInputValue(block=None, immediate="-24.999999999999996"),
+                "X3": SRBlockAndTextInputValue(block=None, immediate="3.061616997868383e-15"),
+                "Y3": SRBlockAndTextInputValue(block=None, immediate="50"),
+            },
+            dropdowns={
+                "UNTOUCHED": SRDropdownValue(kind=DropdownValueKind.STANDARD, value=False),
+            },
+            comment=None,
+            mutation=None,
+        ),
     )
     input_value.validate(AbstractTreePath(), info_api, validation_if, context, input_type)
     
