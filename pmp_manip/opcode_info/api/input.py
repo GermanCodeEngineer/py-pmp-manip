@@ -1,6 +1,7 @@
 from __future__ import annotations
 from pmp_manip.utility import grepr_dataclass, GEnum
 
+from pmp_manip.important_consts         import OPCODE_POLYGON, NEW_OPCODE_POLYGON
 from pmp_manip.opcode_info.api.dropdown import DropdownType, BuiltinDropdownType
 
 
@@ -32,11 +33,12 @@ class InputMode(GEnum):
     # (can be missing?, index)
     BLOCK_AND_TEXT               = (False, 0)
     BLOCK_AND_MENU_TEXT          = (False, 1)
-    BLOCK_AND_BOOL               = (True , 2) # unsure, but lets respect older projects
+    BLOCK_AND_BOOL               = (True , 2) # can not miss anymore, but lets respect older projects
     BLOCK_ONLY                   = (True , 3)
     SCRIPT                       = (True , 4)
     BLOCK_AND_BROADCAST_DROPDOWN = (False, 5)
     BLOCK_AND_DROPDOWN           = (False, 6)
+    FORCED_EMBEDDED_BLOCK        = (False, 7)
 
 class InputType(GEnum):
     """
@@ -46,8 +48,8 @@ class InputType(GEnum):
     """
 
     name: str
-    value: tuple[InputMode, int|None, DropdownType|None, int] 
-    # (InputMode, magic number, corresponding dropdown type, index)
+    value: tuple[InputMode, int|str|None, DropdownType|None, int] 
+    # (InputMode, magic number or forced opcode, corresponding dropdown type, index)
 
     @property
     def mode(self) -> InputMode:
@@ -72,6 +74,14 @@ class InputType(GEnum):
             InputMode.BLOCK_AND_BROADCAST_DROPDOWN,
             InputMode.BLOCK_AND_DROPDOWN,
         }
+        return self.value[2]
+
+    @property
+    def embedded_block_opcode(self) -> str:
+        """
+        Get the old block opcode which must exist in the input.
+        """
+        assert self.mode == InputMode.FORCED_EMBEDDED_BLOCK 
         return self.value[2]
 
     @property
@@ -105,7 +115,7 @@ class BuiltinInputType(InputType):
     Its superior input mode mostly determines its behaviour
     """
 
-    # (InputMode, magic number, corresponding dropdown type, index)
+    # (InputMode, magic number or forced opcode, corresponding dropdown type, index)
     # BLOCK_AND_TEXT
     TEXT                = (InputMode.BLOCK_AND_TEXT, 10, None, 0)
     COLOR               = (InputMode.BLOCK_AND_TEXT,  9, None, 1)
@@ -160,6 +170,9 @@ class BuiltinInputType(InputType):
     READ_FILE_MODE                    = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.READ_FILE_MODE                   , 26)
     FILE_SELECTOR_MODE                = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.FILE_SELECTOR_MODE               , 27)
     MATRIX                            = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.MATRIX                           , 28)
+    
+    # FORCED_EMBEDDED_BLOCK
+    POLYGON                           = (InputMode.FORCED_EMBEDDED_BLOCK, OPCODE_POLYGON, None, 0)
 
 @grepr_dataclass(grepr_fields=["opcode", "inner"])
 class MenuInfo:

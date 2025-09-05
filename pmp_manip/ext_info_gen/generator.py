@@ -97,7 +97,7 @@ def process_all_menus(menus: dict[str, dict[str, Any]|list]) -> tuple[type[Input
             if accept_reporters:
                 input_type_info = (
                     InputMode.BLOCK_AND_DROPDOWN, # InputMode
-                    None, # magic number
+                    None, # magic number or old forced block opcode
                     custom_dropdown_type, # corresponding dropdown type,
                     menu_index, # uniqueness index
                 )
@@ -254,6 +254,8 @@ def generate_block_opcode_info(
                             return "(", ")" # pragma: no cover
                 case InputMode.SCRIPT: # pragma: no cover
                     return "{", "}" # pragma: no cover
+                case InputMode.FORCED_EMBEDDED_BLOCK: # pragma: no cover
+                    return "{:", ":}" # pragma: no cover
         
         text_lines: list[str] = text if isinstance(text, list) else [text]
         unified_text = "\n".join(text_lines)

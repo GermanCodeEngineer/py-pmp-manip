@@ -378,7 +378,7 @@ class IRBlock:
                     itf_if      = itf_if,
                     info_api    = info_api,
                     parent_id   = own_id,
-                    own_id      = None, # an immediate block can not have any references => no own id needed?
+                    own_id      = None, # an immediate block can not have any references => no own id needed
                 )
                 elements.insert(0, frblock)
             match input_type.mode:
@@ -557,6 +557,9 @@ class IRBlock:
                     elif script_count == 2:
                         input_block    = sub_block_a
                         input_dropdown = sub_block_b
+                case InputMode.FORCED_EMBEDDED_BLOCK:
+                    assert script_count == 1
+                    input_block = sub_block_a
 
             new_input_id = old_new_input_ids[input_id]
             if input_dropdown is not None:
@@ -723,6 +726,7 @@ class SRBlock:
         validation_if: "ValidationIF", 
         context: CompleteContext,
         expects_reporter: bool,
+        expects_embedded: bool, # HERE
     ) -> None:
         """
         Ensure a SRBlock is valid, raise MANIP_ValidationError if not
@@ -941,7 +945,7 @@ class SRBlock:
                         },
                     )
                     input_sub_scripts.append([checkbox_block]) # important: must come after "block"
-                case InputMode.BLOCK_ONLY:
+                case InputMode.BLOCK_ONLY | InputMode.FORCED_EMBEDDED_BLOCK:
                     pass
                 case InputMode.SCRIPT:
                     if input_value.blocks:
@@ -1067,7 +1071,9 @@ class SRInputValue(ABC):
             case InputMode.BLOCK_ONLY:
                 return SRBlockOnlyInputValue(block=block)
             case InputMode.SCRIPT:
-                return SRScriptInputValue(blocks=[] if blocks is None else blocks)            
+                return SRScriptInputValue(blocks=[] if blocks is None else blocks)
+            case InputMode.FORCED_EMBEDDED_BLOCK:
+                return SREmbeddedBlockInputValue(block=block)
 
     @abstractmethod
     def validate(self, 
@@ -1342,6 +1348,47 @@ class SRScriptInputValue(SRInputValue):
                 is_first     = (i == 0),
                 is_last      = ((i+1) == len(self.blocks)),
             )
+
+@grepr_dataclass(grepr_fields=["block"])
+class SREmbeddedBlockInputValue(SRInputValue):
+    """
+    The second representation for a block input, which must contain a block with one specific opcode.
+    """
+    
+    block: SRBlock
+
+    def validate(self, 
+        path: AbstractTreePath, 
+        info_api: OpcodeInfoAPI,
+        validation_if: "ValidationIF", 
+        context: CompleteContext, 
+        input_type: InputType, 
+    ) -> None:
+        """
+        Ensures this input is valid, raise MANIP_ValidationError if not
+        
+        Args:
+            path: the path from the project to itself. Used for better error messages
+            info_api: the opcode info api used to fetch information about opcodes
+            validation_if: interface which allows the management of other blocks 
+            context: Context about parts of the project. Used to validate dropdowns
+            input_type: the type of this input. Used to valdiate dropdowns
+        
+        Returns:
+            None
+        
+        Raises:
+            MANIP_ValidationError: if the SRBlockOnlyInputValue is invalid
+        """
+        AA_TYPE(self, path, "block", SRBlock)
+        self.block.validate(
+            path             = path.add_attribute("block"),
+            info_api         = info_api,
+            validation_if    = validation_if,
+            context          = context,
+            expects_reporter = False,
+        )
+        
 
 
 __all__ = [

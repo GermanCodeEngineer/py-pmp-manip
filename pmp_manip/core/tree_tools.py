@@ -13,7 +13,7 @@ from pmp_manip.core.block_mutation import (
 from pmp_manip.core.block          import (
     SRScript, SRBlock, SRInputValue,
     SRBlockAndTextInputValue, SRBlockAndDropdownInputValue, SRBlockAndBoolInputValue,
-    SRBlockOnlyInputValue, SRScriptInputValue,
+    SRBlockOnlyInputValue, SRScriptInputValue, SREmbeddedBlockInputValue,
 )
 from pmp_manip.core.comment        import SRComment
 from pmp_manip.core.custom_block   import SRCustomBlockOpcode, SRCustomBlockArgument
@@ -35,7 +35,7 @@ ALL_SECOND_REPR_TYPES = (
     
     SRScript, SRBlock, SRInputValue,
     SRBlockAndTextInputValue, SRBlockAndDropdownInputValue, SRBlockAndBoolInputValue,
-    SRBlockOnlyInputValue, SRScriptInputValue,
+    SRBlockOnlyInputValue, SRScriptInputValue, SREmbeddedBlockInputValue,
     SRDropdownValue,
     
     SRMutation, SRCustomBlockArgumentMutation, SRCustomBlockMutation, SRCustomBlockCallMutation,
@@ -53,7 +53,7 @@ SECOND_REPR_T = (
     SRMonitor | SRVariableMonitor | SRListMonitor |
     SRExtension | SRBuiltinExtension | SRCustomExtension |
     
-    SRScript | SRBlock | SRInputValue |
+    SRScript | SRBlock | SRInputValue | SREmbeddedBlockInputValue |
     SRBlockAndTextInputValue | SRBlockAndDropdownInputValue | SRBlockAndBoolInputValue |
     SRBlockOnlyInputValue | SRScriptInputValue |
     SRDropdownValue |
@@ -93,6 +93,7 @@ YIELD_FIELDS: dict[type[SECOND_REPR_T], list[str]] = {
     SRBlockOnlyInputValue: ["block"],
     SRScriptInputValue: ["blocks"],
     SRDropdownValue: [], # kinda primitive, borderline, just included to complete second repr fully
+    SREmbeddedBlockInputValue: ["block"],
     
     SRMutation: [],
     SRCustomBlockArgumentMutation: [],

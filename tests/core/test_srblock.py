@@ -16,7 +16,7 @@ from pmp_manip.core.block           import (
     IRBlock, IRInputValue,
     SRScript, SRBlock, SRInputValue, 
     SRBlockAndTextInputValue, SRBlockAndDropdownInputValue, SRBlockAndBoolInputValue,
-    SRBlockOnlyInputValue, SRScriptInputValue,
+    SRBlockOnlyInputValue, SRScriptInputValue, SREmbeddedBlockInputValue,
 )
 from pmp_manip.core.context         import CompleteContext
 from pmp_manip.core.dropdown        import SRDropdownValue
@@ -563,3 +563,19 @@ def test_SRScriptInputValue_validate(validation_if, context):
         func_args=[AbstractTreePath(), info_api, validation_if, context, input_type],
     )
 
+def test_SREmbeddedBlockInputValue_validate(validation_if, context):
+    input_type = BuiltinInputType.BOOLEAN
+    input_value = SREmbeddedBlockInputValue(
+        block=None,
+    )
+    input_value.validate(AbstractTreePath(), info_api, validation_if, context, input_type)
+    
+    execute_attr_validation_tests(
+        obj=input_value,
+        attr_tests=[
+            ("block", 7, MANIP_TypeValidationError),
+            ("block", None, MANIP_TypeValidationError),
+        ],
+        validate_func=SREmbeddedBlockInputValue.validate,
+        func_args=[AbstractTreePath(), info_api, validation_if, context, input_type],
+    )

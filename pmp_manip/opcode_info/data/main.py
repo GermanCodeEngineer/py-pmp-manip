@@ -234,7 +234,7 @@ def _f9c8_6ab0(block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None") 
     if isinstance(block, FRBlock):
         old_mutation: FRCustomBlockCallMutation = block.mutation
         assert fti_if is not None, "When a FRBlock is given, fti_if must not be None"
-        mutation: SRCustomBlockCallMutation = old_mutation.to_second(fti_if=fti_if)
+        mutation: SRCustomBlockCallMutation = old_mutation.to_second(fti_if)
     else:
         mutation: SRCustomBlockCallMutation = block.mutation
     
@@ -307,15 +307,13 @@ info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
 ))
 
 def _1101_80e9(block: "FRBlock", block_id: str, fti_if: "FirstToInterIF") -> "FRBlock":
-    # Move all coordinate inputs from the "inner polygon block" to the outer block
     # Remove the mutation, so that no mutation will be given to the IRBlock and SRBlock
     # => Yes i know that there will be a data loss, however only wether the "inner polygon block" is expanded/collapsed.
     # => But even when I am devloping this the blocks using polygon are alredy considered legacy.
     block = copy(block)
-    # LEFT OFF HERE
     block.mutation = None
     return block
-info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
+info_api.add_opcode_case(OPCODE_POLYGON, SpecialCase(
     type=SpecialCaseType.PRE_FIRST_TO_INTER, 
     function=_1101_80e9,
 ))
