@@ -47,15 +47,20 @@ init_config(cfg)
 ## 📁 Project Structure
 ```
 py-pmp-manip/
-├── pmp_manip/         # Source Code
-│   ├── config/                  # Configuration schema and lifecycle
-│   ├── core/                    # Core functionality
-│   ├── ext_info_gen/            # information generator for custom extensions
-│   ├── opcode_info/             # Contains an API for and the information about all the blocks
-│   ├── utility/                 # Utilities for other modules
-│   └── important_consts.py      # Common important constants
+├── pmp_manip/              # Source Code
+│   ├── config/             # Configuration schema and lifecycle
+│   ├── core/               # Core functionality
+│   ├── ext_info_gen/       # Information generator for custom extensions
+│   ├── opcode_info/        # Contains an API for and the information about all the blocks
+│   │   ├── api/                 # Theoretical structure of the API
+│   │   ├── data/                # Actual data for the API
+│   │   └── doc_api/             # A seperate API, which gives information about blocks and monitors in a human-readable way 
+│   ├── utility/            # Utilities for other modules
+│   └── important_consts.py # Common important constants
 ├── docs/              # Documentation
-├── scripts/           # Independent project-related scripts
+├── scripts/           # Independent project-related scripts for developers
+│   ├── check_for_updates.py     # Checks for updates in foreign code files, from which e.g. constants are derived
+│   ├── make_uml.py              # Generates a UML-Diagram for Second Representation
 │   └── update_pyproject_toml.py # Updates pyproject.toml with version and dependencies
 └── tests/             # Unit tests
 ```

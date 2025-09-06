@@ -114,3 +114,4 @@ You now have a blank project to work with.
 ### References
 * For a **documentation overview** and **all pages** of the tutorial, see [docs/index.md](index.md)
 * Next Page: **Working with Second Representation**, see [docs/second_repr.md](second_repr.md)
+* For **Analyzing and Editing Projects** see [docs/analyze_edit.md](analyze_edit.md)

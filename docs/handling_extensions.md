@@ -199,4 +199,3 @@ print("Project was modified and converted into PenguinMod format successfully :)
 * For a **documentation overview** and **all pages** of the tutorial, see [docs/index.md](index.md)
 * For an **explaination of the config**, see [docs/config.md](config.md)
 * For **all config options**, see [config.md#ExtInfoGenConfig](config.md#extinfogenconfig)
-

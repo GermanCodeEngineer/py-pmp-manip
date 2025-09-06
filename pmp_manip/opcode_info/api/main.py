@@ -790,7 +790,7 @@ class OpcodeInfoAPI:
         
         Args:
             extension_id: unique identifier of custom or builtin extension.
-            extension_source: None for builtin extensions, extension source(probably a URL) for custom extensions.
+            extension_source: **None for builtin extensions**, extension source(probably a URL) for custom extensions.
         
         Raises:
             MANIP_UnknownBuiltinExtensionError: if one tries to add an unknown or not yet implemented builtin extension
