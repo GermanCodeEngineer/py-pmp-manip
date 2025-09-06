@@ -70,7 +70,7 @@ def extract_extension_info_directly(js_code: str, code_encoding: str = "utf-8") 
     if result.returncode != 0:
         if   result.returncode == 1:
             # Registration error
-            raise MANIP_ExtensionExecutionErrorInJavascript(f"Extension was not registered. This is the fault of the extension developer")
+            raise MANIP_ExtensionExecutionErrorInJavascript(f"Extension was not registered or invalid value registerd. This is the fault of the extension developer")
         else:  # result.returncode == 2 or others
             # Script execution error
             raise MANIP_ExtensionExecutionErrorInJavascript(f"Error in extension javascript execution: {result.stderr}")

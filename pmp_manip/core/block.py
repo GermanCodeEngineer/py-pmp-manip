@@ -1387,7 +1387,6 @@ class SREmbeddedBlockInputValue(SRInputValue):
         Raises:
             MANIP_ValidationError: if the SREmbeddedBlockInputValue is invalid
         """
-        print(input_type)
         AA_TYPE(self, path, "block", SRBlock)
         self.block.validate(
             path             = path.add_attribute("block"),

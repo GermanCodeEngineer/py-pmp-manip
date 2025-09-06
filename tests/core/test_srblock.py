@@ -569,7 +569,7 @@ def test_SRScriptInputValue_validate(validation_if, context):
     )
 
 def test_SREmbeddedBlockInputValue_validate(validation_if, context):
-    input_type = BuiltinInputType.BOOLEAN
+    input_type = BuiltinInputType.POLYGON
     input_value = SREmbeddedBlockInputValue(
         block=SRBlock(
             opcode=NEW_OPCODE_POLYGON,

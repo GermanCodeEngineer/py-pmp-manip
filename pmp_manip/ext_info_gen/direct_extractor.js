@@ -19,6 +19,8 @@ function makeStubWithArity(arity) {
     return Function(...params, "return {};");
 }
 
+let scratch_ext = null;
+
 function register(ext) {
     // Patch the prototype directly
     const proto = Object.getPrototypeOf(ext);
@@ -30,8 +32,7 @@ function register(ext) {
             proto[method] = stubFn;
         }
     }
-
-    globalThis._scratchExtension = ext;
+    scratch_ext = ext;
 };
 
 // ---------- Step 2: setup Scratch stubs (from stub.js, minimal version) ----------
@@ -115,12 +116,13 @@ const Scratch = {
 
     vm: {
         runtime: {
-            registerCompiledExtensionBlocks: (extensionId, compileInfo) => {
-                // do nothing since we do not care about compilation stuff
-            },
             on: (eventName, func) => {
                 // do nothing since we do not care about what happens after loading the extension
             },
+            registerCompiledExtensionBlocks: (extensionId, compileInfo) => {
+                // do nothing since we do not care about compilation stuff
+            },
+            getTargetForStage: () => undefined
         }
     },
     // I only included the properties which a resonable getInfo should use
@@ -170,6 +172,11 @@ function myRequire(moduleName) {
     }
 
     return require(moduleName); // fallback to real require
+    /*
+    Currently known packages which are required even for getInfo:
+        - format-message // TODO: possibly replace with translate func
+        - scratch-translate-extension-languages
+    */
 }
 
 // ---------- Step 4: VM execution wrapper ----------
@@ -186,22 +193,21 @@ function runScript(code, filename) {
         vm.createContext(sandbox);
         vm.runInContext(code, sandbox, { filename });
 
-        let getInfoProvider = globalThis._scratchExtension
-        if (!getInfoProvider) {
+        if (!scratch_ext) {
             const exported = sandbox.module.exports;
             // if a class is exported use it's getInfo
             if (typeof exported === "function" && /^class\s/.test(Function.prototype.toString.call(exported))) {
-                getInfoProvider = exported.prototype
+                register(new exported(Scratch.vm.runtime));
             } else {
                 process.exit(1); // Errno. 1 (nothing or invalid value registered)
             }
         }
 
-        if (!(typeof getInfoProvider.getInfo === "function")) {
+        if (!(typeof scratch_ext.getInfo === "function")) {
             process.exit(1); // Errno. 1 (nothing or invalid value registered)
         }
 
-        const extensionInfo = getInfoProvider.getInfo();
+        const extensionInfo = scratch_ext.getInfo();
         console.log(JSON.stringify(extensionInfo)); // must be the last call to console.log() or similar
     } catch (error) {
         console.error("Error executing script:", error);
