@@ -193,12 +193,18 @@ def _check_type(value: Any, expected: Any, name: str, path: str = "") -> None:
 
     # --- Fallback: plain class or special typing objects ---
     if origin is None:
-        try:
+        # For a class, check isinstance
+        if isinstance(expected, type):
             if not isinstance(value, expected):
                 raise TypeError(f"{name}{path}: expected {expected}, got {type(value)}")
-        except TypeError:
-            # Some typing constructs (like NewType) may break isinstance
-            pass
+        else:
+            # For other typing constructs, like NewType, etc.
+            try:
+                if not isinstance(value, expected):
+                    raise TypeError(f"{name}{path}: expected {expected}, got {type(value)}")
+            except TypeError:
+                # If isinstance fails (e.g., for NewType), raise error
+                raise TypeError(f"{name}{path}: value {value!r} does not match expected type {expected}")
         return
 
     # --- Last fallback: ignore parameterization, just check origin ---
