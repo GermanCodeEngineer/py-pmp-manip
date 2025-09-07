@@ -302,7 +302,7 @@ def generate_block_opcode_info(
         return f"{extension_id}::{" ".join(new_opcode_segments)}" 
     
     try:
-        block_type: str = block_info["blockType"]
+        block_type: str = block_info.get("blockType", "command")
         branch_count: int = block_info.get("branchCount", 0)
         is_terminal: bool = block_info.get("isTerminal", False)
         arguments: dict[str, dict[str, Any]] = block_info.get("arguments", {})
