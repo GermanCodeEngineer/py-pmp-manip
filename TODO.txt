@@ -25,7 +25,6 @@ Medium:
     - S: fix grepr multiline string issue
         => also fix parent and subclass field order issue
     - S: investigate custom type object variables(example: vector extension)
-    - S: move Dockerfile and docker_test.py into tests somehow
     - S: find all remaining block and extension attributes
 
 Low:

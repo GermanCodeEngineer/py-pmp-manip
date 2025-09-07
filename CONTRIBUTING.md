@@ -75,13 +75,6 @@ Add tests for any new functionality in the `tests/` folder.
 
 * Follow [PEP 8](https://peps.python.org/pep-0008/).
 
-* Use [black](https://github.com/psf/black) for auto-formatting:
-
-  ```bash
-  pip install black
-  black pmp_manip tests
-  ```
-
 * Use [pytest naming conventions](https://docs.pytest.org/en/stable/goodpractices.html#test-discovery) (`test_*.py`).
 
 ---

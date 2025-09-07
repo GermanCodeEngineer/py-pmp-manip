@@ -5,11 +5,15 @@ RUN apt-get update && apt-get install -y ffmpeg && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
+# Build the package
+RUN pip install --upgrade build
+RUN python -m build
+
 # Copy wheel(s) and test script
 COPY dist/*.whl .
-COPY docker_test.py .
+COPY install_test/docker_test.py .
 
-# Install latest pip and the wheel (whatever version is in dist/)
+# Install latest pip and the wheel
 RUN pip install --upgrade pip
 RUN pip install ./*.whl
 
