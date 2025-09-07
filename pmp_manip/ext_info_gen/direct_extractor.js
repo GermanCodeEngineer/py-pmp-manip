@@ -116,13 +116,11 @@ const Scratch = {
 
     vm: {
         runtime: {
-            on: (eventName, func) => {
-                // do nothing since we do not care about what happens after loading the extension
-            },
-            registerCompiledExtensionBlocks: (extensionId, compileInfo) => {
-                // do nothing since we do not care about compilation stuff
-            },
-            getTargetForStage: () => undefined
+            // do nothing since we do not care about what happens after loading the extension or similar stuff:
+            on: (eventName, func) => {},
+            registerCompiledExtensionBlocks: (extensionId, compileInfo) => {},
+            getTargetForStage: () => undefined,
+            registerPeripheralExtension: (extensionId, extension) => {},
         }
     },
     // I only included the properties which a resonable getInfo should use
@@ -145,17 +143,21 @@ const stubModules = [
     path.resolve(__dirname, '../../util/cast'),
     path.resolve(__dirname, '../../util/clone'),
     path.resolve(__dirname, '../../util/color'),
+
+    path.resolve(__dirname, '../../extension-support/tw-l10n'),
 ];
-const stubProperty = [
-    "ArgumentType",
-    "ArgumentAlignment",
-    "BlockType",
-    "BlockShape",
-    "NotchShape",
-    "TargetType",
-    "Cast",
-    "Clone",
-    "Color",
+const stubValue = [
+    Scratch.ArgumentType,
+    Scratch.ArgumentAlignment,
+    Scratch.BlockType,
+    Scratch.BlockShape,
+    Scratch.NotchShape,
+    Scratch.TargetType,
+    Scratch.Cast,
+    Scratch.Clone,
+    Scratch.Color,
+
+    () => Scratch.translate,
 ];
 const ultimateStubValue = function () {}
 // Chosen because all these three will work with a normal function as X
@@ -169,11 +171,11 @@ function myRequire(moduleName) {
 
     // Modules you want to return a specific stub value
     if (stubModules.includes(fullPath)) {
-        return Scratch[stubProperty[stubModules.indexOf(fullPath)]];
+        return stubValue[stubModules.indexOf(fullPath)];
     }
     
-    // Only stub relative imports under ../../
-    if (moduleName.startsWith('./') || moduleName.startsWith('../')) {
+    // Only stub relative imports under ../../ or from external organizations
+    if (moduleName.startsWith('./') || moduleName.startsWith('../')    || moduleName.startsWith("@")) {
         return ultimateStubValue;
     }
 

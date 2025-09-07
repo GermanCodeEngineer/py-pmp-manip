@@ -37,12 +37,16 @@ def extract_extension_info_directly(js_code: str, code_encoding: str = "utf-8") 
         MANIP_ExtensionJSONDecodeError(unlikely): if the json output of the subprocess is invalid
     """
     try:
-        with NamedTemporaryFile(
-            mode="w", suffix=".js", 
-            encoding=code_encoding, delete=False,
-        ) as temp_file:
-            temp_file.write(js_code)
-            temp_js_path = temp_file.name
+        # CLEANUP
+        #with NamedTemporaryFile(
+        #    mode="w", suffix=".js", 
+        #    encoding=code_encoding, delete=False,
+        #) as temp_file:
+        #    temp_file.write(js_code)
+        #    temp_js_path = temp_file.name
+        from pmp_manip.utility import write_file_text
+        write_file_text("code.js", js_code)
+        temp_js_path = "code.js"
 
     except (FileNotFoundError, OSError, PermissionError, UnicodeEncodeError) as error:
         raise MANIP_FailedFileWriteError(f"Failed to create or write javascript code to temporary file: {error}") from error
@@ -63,7 +67,7 @@ def extract_extension_info_directly(js_code: str, code_encoding: str = "utf-8") 
         raise MANIP_UnexpectedExtensionExecutionError(f"Failed to run Node.js subprocess (to execute extension code): {error}") from error
     finally:
         try:
-            delete_file(temp_js_path)
+            pass # CLEANUP: #delete_file(temp_js_path)
         except MANIP_FailedFileDeleteError as error:
             raise MANIP_FailedFileDeleteError(f"Failed to remove temporary javascript file at {temp_js_path!r}: {error}") from error
 

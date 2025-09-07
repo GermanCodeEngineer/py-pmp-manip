@@ -4,8 +4,8 @@ Special:
     TODOs in Code + read through code, optimize here and there
 
 Currently Working On:
-    - Stripping opcode_info/data of custom extensions
-    - M/L: make a script which show info for the requested block opcode
+    - M: Compatability with all builtin extensions
+    - S: find all remaining block and extension attributes
 
 High: /
 
@@ -16,6 +16,7 @@ Medium:
         => remove "Returns" section of docstrings to avoid doubling (easy to do simultaneously)
         => rethink error strategy (e.g. ValueError, TypeError) => should i wrap external errors instead of mine?
         => error formatting
+    - M/L: make a script which show info for the requested block opcode
     - [M.OPT]: add FRProject.from_file alternative, fetch from project link 
     - S/M: implement variable_type and variable_id (example: "small_example")
     - S: explore extensionData (example of "2D MAINCRAFT")
@@ -25,7 +26,6 @@ Medium:
     - S: fix grepr multiline string issue
         => also fix parent and subclass field order issue
     - S: investigate custom type object variables(example: vector extension)
-    - S: find all remaining block and extension attributes
 
 Low:
     - XL: test and document utility

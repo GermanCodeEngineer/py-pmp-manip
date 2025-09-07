@@ -33,6 +33,17 @@ ARGUMENT_TYPE_TO_DROPDOWN_TYPE: dict[str, DropdownType] = {
 }
 INDENT = 4*" "
 DATA_IMPORTS_IMPORT_PATH = "pmp_manip.opcode_info.data_imports"
+KNOWN_EXTENSION_INFO_ATTRS = {
+    "id", "blocks", "menus",
+    # irrelevant for my purpose:
+    "name", "color1", "color2", "color3", "menuIconURI", "blockIconURI", "docsURI", "isDynamic", "orderBlocks", "showStatusButton",
+}
+KNOWN_BLOCK_INFO_ATTRS = {
+    "opcode", "blockType", "text", "arguments", "branchCount", "isTerminal", "disableMonitor", 
+    # irrelevant for my purpose:
+    "alignments", "hideFromPalette", "filter", "shouldRestartExistingThreads", 
+    "isEdgeActivated", "func", "allowDropAnywhere", "switches", "switchText",
+}
 
     
 def process_all_menus(menus: dict[str, dict[str, Any]|list]) -> tuple[type[InputType], type[DropdownType]]:
@@ -345,12 +356,7 @@ def generate_block_opcode_info(
             monitor_id_hehaviour = None
         
         for attr in block_info.keys():
-            if attr not in {
-                "opcode", "blockType", "text", "arguments", "branchCount", "isTerminal", "disableMonitor", 
-                # irrelevant for my purpose:
-                "alignments", "hideFromPalette", "filter", "shouldRestartExistingThreads", 
-                "isEdgeActivated", "func", "allowDropAnywhere",
-            }:
+            if attr not in KNOWN_BLOCK_INFO_ATTRS:
                 raise MANIP_UnknownExtensionAttributeError(f"Unknown or not (yet) implemented block attribute (block {opcode!r}): {repr(attr)}")
     
         new_opcode = generate_new_opcode(
@@ -404,10 +410,7 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
         return f"{new_opcode} {{{{id={old_opcode}}}}}" # e.g. "gpusb3::Run function (FUNCNAME) with args (ARGS) {{id=c_runFunc}}"
     # Relevant of the returned attributes: ["id", "blocks", "menus"]
     for attr in extension_info.keys():
-        if attr not in {
-            "name", "color1", "color2", "color3", "menuIconURI", "blockIconURI", "docsURI", "isDynamic", "orderBlocks",
-            "id", "blocks", "menus",
-        }:
+        if attr not in KNOWN_EXTENSION_INFO_ATTRS:
             raise MANIP_UnknownExtensionAttributeError(f"Unknown or not (yet) implemented extension attribute: {repr(attr)}")
 
     
