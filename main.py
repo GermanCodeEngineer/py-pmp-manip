@@ -8,7 +8,8 @@ from pmp_manip.utility import write_file_text
 cfg = get_default_config()
 init_config(cfg)
 
-info_api.generate_and_add_extension("lmsTempVars2", extension_source=None)
+info_api.generate_and_add_extension("videoSensing", extension_source=None)
+#info_api.generate_and_add_extension("twFiles", extension_source=None)
 #print(info_api)
 
 """

@@ -11,7 +11,7 @@ function makeStubWithArity(arity) {
     return Function(...params, 'return {};');
 }
 
-const BLACKLIST = new Set(["init", "initialize"]);
+const BLACKLIST = new Set(["init", "initialize", "updateVideoDisplay"]);
 
 function makeStubWithArity(arity) {
     const params = Array.from({ length: arity }, (_, i) => `a${i}`);
@@ -157,18 +157,24 @@ const stubProperty = [
     "Clone",
     "Color",
 ];
+const ultimateStubValue = function () {}
+// Chosen because all these three will work with a normal function as X
+// const y = new X()
+// X()
+// const {a, b} = X
+
 
 function myRequire(moduleName) {
     const fullPath = path.resolve(__dirname, moduleName);
 
-    // Modules you want to return null/undefined
+    // Modules you want to return a specific stub value
     if (stubModules.includes(fullPath)) {
         return Scratch[stubProperty[stubModules.indexOf(fullPath)]];
     }
-
+    
     // Only stub relative imports under ../../
     if (moduleName.startsWith('./') || moduleName.startsWith('../')) {
-        return {};
+        return ultimateStubValue;
     }
 
     return require(moduleName); // fallback to real require

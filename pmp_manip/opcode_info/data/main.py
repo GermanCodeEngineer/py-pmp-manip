@@ -253,9 +253,7 @@ def _2dc4_f736(block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None") 
     # Generate X1, Y1 ...  Xn, Yn depending on demand
     max_point_index = 0
     for input_id in block.inputs.keys():
-        if   input_id.startswith("x") or input_id.startswith("X"):
-            point_index = int(input_id[1:], base=10)
-        elif input_id.startswith("y") or input_id.startswith("Y"):
+        if   input_id.lower().startswith("x") or input_id.startswith("y"):
             point_index = int(input_id[1:], base=10)
         else:
             continue
@@ -470,10 +468,8 @@ def _f77b_dd4b(block: "FRBlock", block_id: str, itf_if: "InterToFirstIF") -> "FR
     # Add the mutation, so that a mutation will be given to the FRBlock
     max_point_index = 0
     for input_id in block.inputs.keys():
-        if   input_id.startswith("x") or input_id.startswith("X"):
-            point_index = int(input_id[1:])
-        elif input_id.startswith("y") or input_id.startswith("Y"):
-            point_index = int(input_id[1:])
+        if   input_id.lower().startswith("x") or input_id.startswith("y"):
+            point_index = int(input_id[1:], base=10)
         else:
             continue
         max_point_index = max(max_point_index, point_index)

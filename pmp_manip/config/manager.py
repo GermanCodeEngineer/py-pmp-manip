@@ -1,9 +1,3 @@
-############################################################################################
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! #
-#                            DOCUMENTATION HERE: docs/config.md                            #
-############################################################################################
-
-
 from colorama import init as colorama_init
 from datetime import timedelta
 
@@ -33,12 +27,10 @@ def init_config(config: MasterConfig) -> None:
     
     if _config_instance is not None:
         raise MANIP_ConfigurationError("Configuration has already been initialized")
-    if not isinstance(config, MasterConfig):
-        raise TypeError("Expected a MasterConfig instance")
     try:
         config.validate()
     except MANIP_ValidationError as error:
-        raise MANIP_ConfigurationError("Invalid Configuration") from error
+        raise MANIP_ConfigurationError(f"Invalid Configuration: {error}") from error
     
     config.ext_info_gen ._frozen_ = True
     config.validation   ._frozen_ = True
@@ -75,7 +67,7 @@ def get_default_config() -> "MasterConfig":
         ext_info_gen=ExtInfoGenConfig(
             gen_opcode_info_dir="gen_ext_opcode_info",
             js_fetch_interval=timedelta(days=3),
-            node_js_exec_timeout=1.0,
+            node_js_exec_timeout=2.0,
             is_trusted_extension_origin_handler=None,
         ),
         validation=ValidationConfig(

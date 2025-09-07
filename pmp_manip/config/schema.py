@@ -1,9 +1,3 @@
-############################################################################################
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! #
-#                            DOCUMENTATION HERE: docs/config.md                            #
-############################################################################################
-
-
 from abc         import ABC, abstractmethod
 from datetime    import timedelta
 from dataclasses import field, FrozenInstanceError
