@@ -1,4 +1,4 @@
-from json         import loads
+from json         import loads, dumps
 from os           import path
 from subprocess   import run as run_subprocess, TimeoutExpired, SubprocessError
 from tempfile     import NamedTemporaryFile
@@ -16,7 +16,7 @@ from pmp_manip.utility import (
 EXTRACTOR_PATH = path.join(path.dirname(__file__), "direct_extractor.js")
    
 
-def extract_extension_info_directly(js_code: str, code_encoding: str = "utf-8") -> dict[str, Any]:
+def extract_extension_info_directly(js_code: str, code_encoding: str = "utf-8", is_strict: bool = False) -> dict[str, Any]:
     """
     Extract the return value of the getInfo method of the extension class based on the extension's javascript code,
     A node subprocess is run, which lets the outer code run and then calls and logs the return value of the getInfo method of the extension class.
@@ -26,6 +26,7 @@ def extract_extension_info_directly(js_code: str, code_encoding: str = "utf-8") 
     Args:
         js_code: the full JS code of the extension.
         code_encoding: the text encoding of `js_code`
+        is_strict: (for developers) wether to be strict e.g. about property accesses in the node subprocess
 
     Raises:
         MANIP_FailedFileWriteError(unlikely): if the JS code could not be written to a temporary file (eg. OS Error or Unicode Error)
@@ -53,7 +54,7 @@ def extract_extension_info_directly(js_code: str, code_encoding: str = "utf-8") 
     
     try:
         result = run_subprocess(
-            ["node", EXTRACTOR_PATH, temp_js_path],
+            ["node", EXTRACTOR_PATH, temp_js_path, dumps(is_strict)],
             capture_output=True,
             text=True,
             encoding="utf-8",
@@ -72,10 +73,10 @@ def extract_extension_info_directly(js_code: str, code_encoding: str = "utf-8") 
             raise MANIP_FailedFileDeleteError(f"Failed to remove temporary javascript file at {temp_js_path!r}: {error}") from error
 
     if result.returncode != 0:
-        if   result.returncode == 1:
+        if   result.returncode == 2:
             # Registration error
-            raise MANIP_ExtensionExecutionErrorInJavascript(f"Extension was not registered or invalid value registerd. This is the fault of the extension developer")
-        else:  # result.returncode == 2 or others
+            raise MANIP_ExtensionExecutionErrorInJavascript(f"Extension was not registered or invalid value registered. This is the fault of the extension developer: {result.stderr}")
+        else:  # result.returncode == 1 or others
             # Script execution error
             raise MANIP_ExtensionExecutionErrorInJavascript(f"Error in extension javascript execution: {result.stderr}")
 

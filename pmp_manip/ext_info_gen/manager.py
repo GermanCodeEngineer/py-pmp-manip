@@ -150,6 +150,7 @@ def _update_cache(
 def generate_extension_info_py_file(
     source: str, extension_id: str, 
     tolerate_file_path: bool, bundle_errors: bool = True,
+    is_strict: bool = False,
 ) -> str:
     """
     Generate a python file, which stores information about the blocks of the given extension and is required for the core module. If a cached version exist and is up to date, it will be kept. Returns the file path of the python file. Uses logging
@@ -159,6 +160,7 @@ def generate_extension_info_py_file(
         extension_id: the unique identifier of the extension 
         tolerate_file_path: wether to allow file paths as extension sources
         bundle_errors: wether to bundle similar errors for more compact handling (see Raises)
+        is_strict: (for developers) wether to be strict e.g. about property accesses in a node subprocess
     
     Raises (if bundled):
         MANIP_NoNodeJSInstalledError(not bundled): if Node.js is not installed or not found in PATH
@@ -246,7 +248,7 @@ def generate_extension_info_py_file(
     if _is_trusted_extension_origin(source):
         logger.info(f"Extension {extension_id!r}: Extracting extension info through direct execution")
         try:
-            extension_info = extract_extension_info_directly(js_code)
+            extension_info = extract_extension_info_directly(js_code, is_strict=is_strict)
         except MANIP_NoNodeJSInstalledError:
             raise
         except MANIP_Error as error:
@@ -318,4 +320,4 @@ if __name__ == "__main__": # pragma: no cover
         #("P7BoxPhys",           "https://extensions.penguinmod.com/extensions/pooiod/Box2D.js"),
         #("griffpatch",          "https://extensions.turbowarp.org/box2d.js"),
     ]:
-        generate_extension_info_py_file(extension, extension_id, tolerate_file_path=True) # pragma: no cover
+        generate_extension_info_py_file(extension, extension_id, tolerate_file_path=True, is_strict=True) # pragma: no cover

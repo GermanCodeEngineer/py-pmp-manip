@@ -755,7 +755,7 @@ class OpcodeInfoAPI:
         self.add_group(group)    
     
     @enforce_argument_types
-    def generate_and_add_extension(self, extension_id: str, extension_source: str | None) -> None:
+    def generate_and_add_extension(self, extension_id: str, extension_source: str | None, is_strict: bool = False) -> None:
         """
         Generate and import the required opcode info py file for a custom or builtin extension.
         If cached versions exist and they are up to date, they will be kept and not replaced
@@ -763,6 +763,7 @@ class OpcodeInfoAPI:
         Args:
             extension_id: unique identifier of custom or builtin extension.
             extension_source: **None for builtin extensions**, extension source(probably a URL) for custom extensions.
+            is_strict: (for developers) wether to be strict e.g. about property accesses in a node subprocess
         
         Raises:
             MANIP_UnknownBuiltinExtensionError: if one tries to add an unknown or not yet implemented builtin extension
@@ -793,6 +794,7 @@ class OpcodeInfoAPI:
         module_path = generate_extension_info_py_file(
             source=extension_source,  extension_id=extension_id,
             tolerate_file_path=False, bundle_errors=True,
+            is_strict=is_strict,
         )
         self._add_extension(extension_id, module_dir=path.dirname(module_path))
     

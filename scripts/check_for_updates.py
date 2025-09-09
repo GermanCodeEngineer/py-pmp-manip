@@ -32,6 +32,11 @@ files_to_check = [
         "https://github.com/PenguinMod/PenguinMod-Vm/blob/develop/src/serialization/",
         "Ensure project deserialization still works reliably",
     ),
+    (
+        "2025-09-09",
+        "https://github.com/PenguinMod/PenguinMod-Vm/blob/develop/src/engine/runtime.js",
+        "Update vm stub in pmp_manip/ext_info_gen/direct_extractor.js"
+    )
 ]
 
 API_BASE = "https://api.github.com/repos"
