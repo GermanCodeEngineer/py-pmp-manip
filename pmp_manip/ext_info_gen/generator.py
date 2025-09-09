@@ -43,6 +43,9 @@ KNOWN_BLOCK_INFO_ATTRS = {
     # irrelevant for my purpose:
     "alignments", "hideFromPalette", "filter", "shouldRestartExistingThreads", 
     "isEdgeActivated", "func", "allowDropAnywhere", "switches", "switchText",
+    "blockIconURI",
+    # temporary, because misspelled in 'pmEventsExpansion", see https://github.com/PenguinMod/PenguinMod-Vm/issues/156
+    "hideFromPallete",
 }
 
     
@@ -66,19 +69,19 @@ def process_all_menus(menus: dict[str, dict[str, Any]|list]) -> tuple[type[Input
         rules: list[DropdownValueRule] = []
         accept_reporters: bool
         try:
-            assert isinstance(menu_info, (dict, list))
+            assert isinstance(menu_info, (dict, list, str)) # str refers to a function
             if   isinstance(menu_info, dict):
                 if "items" not in menu_info:
                     raise MANIP_InvalidCustomMenuError(f"Invalid custom menu {menu_block_id!r} is missing attribute 'items'")
                 possible_values = menu_info["items"]
                 accept_reporters = menu_info.get("acceptReporters", False)
-            elif isinstance(menu_info, list):
+            elif isinstance(menu_info, (list, str)):
                 possible_values = menu_info
                 accept_reporters = False
         
             assert isinstance(possible_values, (list, str))
             if   isinstance(possible_values, list): pass
-            elif isinstance(possible_values, str):
+            elif isinstance(possible_values, str): # str refers to a function and is therefore unpredictable
                 possible_values = []
                 rules.append(DropdownValueRule.EXTENSION_UNPREDICTABLE)
             
@@ -205,6 +208,8 @@ def generate_block_opcode_info(
                     input_info = InputInfo(type=BuiltinInputType.POLYGON, menu=None)
                 case "seperator":
                     raise MANIP_ThanksError() # I could not find out what thats used for
+                case None: # # like in the "switch" block, no text just an optional block
+                    input_info = InputInfo(type=BuiltinInputType.ROUND, menu=None)
             
             if (input_info is not None) and (dropdown_info is None):
                 inputs.set(key1=argument_id, key2=argument_id, value=input_info)
@@ -418,7 +423,7 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
     menus: dict[str, dict[str, Any]|list] = extension_info.get("menus", {})
     input_type_cls, dropdown_type_cls = process_all_menus(menus)
     info_group_content: DualKeyDict[str, str, OpcodeInfo] = DualKeyDict()
-    conflicting_new_opcodes: list[str] = []
+    conflicting_new_opcodes: set[str] = set()
 
     for i, block_info in enumerate(extension_info.get("blocks", [])):
         if isinstance(block_info, str):
@@ -449,7 +454,7 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
                     raise MANIP_InvalidCustomBlockError(f"Invalid block info: Two blocks must not use the same 'opcode': {old_opcode}") from error
                 elif new_exists and not(old_exists): # => new opcode key conflict
                     # write down that the first element with this new opcode has to be renamed too, just can not be done here
-                    conflicting_new_opcodes.append(new_opcode)
+                    conflicting_new_opcodes.add(new_opcode)
                     # use old_opcode as a unique disambiguer
                     new_new_opcode = disambiguate_new_opcode(new_opcode, old_opcode)
                     info_group_content.set(
@@ -508,7 +513,7 @@ def generate_file_code(
         f"from {DATA_IMPORTS_IMPORT_PATH} import *",
         generate_enum_code(dropdown_type_cls),
         generate_enum_code(input_type_cls),
-        f"ext_{info_group.name} = {grepr(info_group, safe_dkd=True)}",
+        f"extension = {grepr(info_group, safe_dkd=True)}",
     ))
     return file_code
 

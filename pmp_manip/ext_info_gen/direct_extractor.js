@@ -11,31 +11,47 @@ function makeStubWithArity(arity) {
     return Function(...params, 'return {};');
 }
 
-const BLACKLIST = new Set(["init", "initialize", "updateVideoDisplay"]);
-
-function makeStubWithArity(arity) {
-    const params = Array.from({ length: arity }, (_, i) => `a${i}`);
-    // eslint-disable-next-line no-new-func
-    return Function(...params, "return {};");
-}
+const BLACKLIST = new Set(["init", "initialize", "updateVideoDisplay", "_loop"]);
 
 let scratch_ext = null;
 
 function register(ext) {
     // Patch the prototype directly
     const proto = Object.getPrototypeOf(ext);
+    throw new Error(`HEY '${typeof(ext)}' '${proto}' '${proto._loop}'`)
     for (const method of BLACKLIST) {
         if (typeof proto[method] === "function") {
             console.warn(`Patching prototype method '${method}'`);
-            const arity = proto[method].length;
-            const stubFn = makeStubWithArity(arity);
-            proto[method] = stubFn;
+            proto[method] = function () {};
+            throw new Error(`Patching prototype method '${method}'`)
         }
     }
     scratch_ext = ext;
 };
 
-// ---------- Step 2: setup Scratch stubs (from stub.js, minimal version) ----------
+// ---------- Step 2: Setup Stubs and Proxy ----------
+
+const ultimateStubValue = (() => {
+    function target(...args) {
+        return ultimateStubValue;
+    }
+    return new Proxy(target, {
+        get(target, prop, receiver) {
+        // Special cases to keep function identity intact
+        if (prop === Symbol.toStringTag) return "Function";
+        if (prop === "prototype") return target.prototype;
+        if (prop === "constructor") return target.constructor;
+        
+        // For any normal property, return self again
+        return receiver;
+      }
+    });
+})();
+// Chosen because all these three will work with the above value as X
+// const y = new X()
+// X()
+// const {a, b} = X
+// X.a.b ...
 
 const Scratch = {
     // Must be kept in sync with safe_extractor.py
@@ -114,15 +130,7 @@ const Scratch = {
         return translateFn;
     })(),
 
-    vm: {
-        runtime: {
-            // do nothing since we do not care about what happens after loading the extension or similar stuff:
-            on: (eventName, func) => {},
-            registerCompiledExtensionBlocks: (extensionId, compileInfo) => {},
-            getTargetForStage: () => undefined,
-            registerPeripheralExtension: (extensionId, extension) => {},
-        }
-    },
+    vm: ultimateStubValue,
     // I only included the properties which a resonable getInfo should use
 
     // To allow builtin PM extension to import them (they are not used in getInfo)
@@ -159,11 +167,6 @@ const stubValue = [
 
     () => Scratch.translate,
 ];
-const ultimateStubValue = function () {}
-// Chosen because all these three will work with a normal function as X
-// const y = new X()
-// X()
-// const {a, b} = X
 
 
 function myRequire(moduleName) {
@@ -197,6 +200,12 @@ function runScript(code, filename) {
             module: { exports: {} },
             require: myRequire,
             Scratch: Scratch,
+            vm: Scratch.vm,
+            
+            // Required by some extensions, just not available in node
+            Audio: ultimateStubValue,
+            addEventListener: ultimateStubValue,
+            
         };
         vm.createContext(sandbox);
         vm.runInContext(code, sandbox, { filename });
@@ -205,11 +214,13 @@ function runScript(code, filename) {
             const exported = sandbox.module.exports;
             // if a class is exported use it's getInfo
             if (typeof exported === "function" && /^class\s/.test(Function.prototype.toString.call(exported))) {
-                register(new exported(Scratch.vm.runtime));
+                register(exported);
+                scratch_ext = new scratch_ext(Scratch.vm.runtime)
             } else {
                 process.exit(1); // Errno. 1 (nothing or invalid value registered)
             }
-        }
+            is_class = true;
+        }        
 
         if (!(typeof scratch_ext.getInfo === "function")) {
             process.exit(1); // Errno. 1 (nothing or invalid value registered)

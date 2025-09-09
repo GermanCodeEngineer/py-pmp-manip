@@ -1,1200 +1,588 @@
-const BlockType = require('../../extension-support/block-type');
+const Runtime = require('../../engine/runtime');
+
 const ArgumentType = require('../../extension-support/argument-type');
-const createTranslate = require('../../extension-support/tw-l10n');
+const BlockType = require('../../extension-support/block-type');
+const Clone = require('../../util/clone');
 const Cast = require('../../util/cast');
-const MathJS = require('./mathjs.js');
+const formatMessage = require('format-message');
+const Video = require('../../io/video');
 
-const blockSeparator = '<sep gap="36"/>'; // At default scale, about 28px
+const VideoMotion = require('./library');
 
-const blocks = `
-%b26> ` +/* left shift */`
-%b27> ` +/* right shift */`
-%b28> ` +/* binnary and */`
-%b29> ` +/* binnary or */`
-%b30> ` +/* binnary xor */`
-%b31> ` +/* binnary not */`
-${blockSeparator}
-%b34> ` +/* or if falsey */`
-%b35> ` +/* if is true */`
-${blockSeparator}
-<block type="operator_nand">
-    <value name="OPERAND1">
-        <shadow type="checkbox" />
-    </value>
-    <value name="OPERAND2">
-        <shadow type="checkbox" />
-    </value>
-</block>
-<block type="operator_nor">
-    <value name="OPERAND1">
-        <shadow type="checkbox" />
-    </value>
-    <value name="OPERAND2">
-        <shadow type="checkbox" />
-    </value>
-</block>
-<block type="operator_xor">
-    <value name="OPERAND1">
-        <shadow type="checkbox" />
-    </value>
-    <value name="OPERAND2">
-        <shadow type="checkbox" />
-    </value>
-</block>
-<block type="operator_xnor">
-    <value name="OPERAND1">
-        <shadow type="checkbox" />
-    </value>
-    <value name="OPERAND2">
-        <shadow type="checkbox" />
-    </value>
-</block>
-<block type="operator_randomBoolean" />
-${blockSeparator}
-%b20> ` +/* evaluate math expression */`
-<block type="operator_countAppearTimes">
-    <value name="TEXT1">
-        <shadow type="text">
-            <field name="TEXT">a</field>
-        </shadow>
-    </value>
-    <value name="TEXT2">
-        <shadow type="text">
-            <field name="TEXT">abc abc abc</field>
-        </shadow>
-    </value>
-</block>
-<block type="operator_readLineInMultilineText">
-    <value name="LINE">
-        <shadow type="math_number">
-            <field name="NUM">1</field>
-        </shadow>
-    </value>
-    <value name="TEXT">
-        <shadow type="text">
-            <field name="TEXT">Text with multiple lines here</field>
-        </shadow>
-    </value>
-</block>
-<block type="operator_textIncludesLetterFrom">
-    <value name="TEXT1">
-        <shadow type="text">
-            <field name="TEXT">abcdef</field>
-        </shadow>
-    </value>
-    <value name="TEXT2">
-        <shadow type="text">
-            <field name="TEXT">fgh</field>
-        </shadow>
-    </value>
-</block>
-${blockSeparator}
-%b21> ` +/* set replacer */`
-%b22> ` +/* reset replacers */`
-%b23> ` +/* use replacers */`
-${blockSeparator}
-%b24> ` +/* text after () in () */`
-%b25> ` +/* text before () in () */`
-<block type="operator_character_to_code">
-    <value name="ONE">
-        <shadow type="text">
-            <field name="TEXT">a</field>
-        </shadow>
-    </value>
-</block>
-<block type="operator_code_to_character">
-    <value name="ONE">
-        <shadow type="text">
-            <field name="TEXT">97</field>
-        </shadow>
-    </value>
-</block>
-${blockSeparator}
-` +/* new blocks */`
-%b18> ` +/* exactly equals */`
-${blockSeparator}
-%b6> ` +/* part of ratio */`
-%b7> ` +/* simplify of ratio */`
-${blockSeparator}
-%b12> ` +/* is number multiple of number */`
-%b15> ` +/* is number even */`
-%b13> ` +/* is number int */`
-%b14> ` +/* is number prime */`
-%b19> ` +/* is number between numbers */`
-%b11> ` +/* trunc number */`
-%b36> ` +/* atan2 */`
-${blockSeparator}
-%b16> ` +/* reverse text */`
-%b17> ` +/* shuffle text */`
-${blockSeparator}
-%b32> ` +/* speed to pitch */`
-%b33> ` +/* pitch to speed */`
-${blockSeparator}
-` +/* constants */`
-${blockSeparator}
-%b8> ` +/* pi */`
-%b9> ` +/* euler */`
-%b10> ` +/* inf */`
-${blockSeparator}
-`;
+/**
+ * Icon svg to be displayed in the blocks category menu, encoded as a data URI.
+ * @type {string}
+ */
+// eslint-disable-next-line max-len
+const menuIconURI = 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB3aWR0aD0iMjBweCIgaGVpZ2h0PSIyMHB4IiB2aWV3Qm94PSIwIDAgMjAgMjAiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayI+CiAgICA8IS0tIEdlbmVyYXRvcjogU2tldGNoIDUyLjIgKDY3MTQ1KSAtIGh0dHA6Ly93d3cuYm9oZW1pYW5jb2RpbmcuY29tL3NrZXRjaCAtLT4KICAgIDx0aXRsZT5FeHRlbnNpb25zL1NvZnR3YXJlL1ZpZGVvLVNlbnNpbmctTWVudTwvdGl0bGU+CiAgICA8ZGVzYz5DcmVhdGVkIHdpdGggU2tldGNoLjwvZGVzYz4KICAgIDxnIGlkPSJFeHRlbnNpb25zL1NvZnR3YXJlL1ZpZGVvLVNlbnNpbmctTWVudSIgc3Ryb2tlPSJub25lIiBzdHJva2Utd2lkdGg9IjEiIGZpbGw9Im5vbmUiIGZpbGwtcnVsZT0iZXZlbm9kZCI+CiAgICAgICAgPGcgaWQ9InZpZGVvLW1vdGlvbiIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMC4wMDAwMDAsIDUuMDAwMDAwKSIgZmlsbC1ydWxlPSJub256ZXJvIj4KICAgICAgICAgICAgPGNpcmNsZSBpZD0iT3ZhbC1Db3B5IiBmaWxsPSIjMEVCRDhDIiBvcGFjaXR5PSIwLjI1IiBjeD0iMTYiIGN5PSI4IiByPSIyIj48L2NpcmNsZT4KICAgICAgICAgICAgPGNpcmNsZSBpZD0iT3ZhbC1Db3B5IiBmaWxsPSIjMEVCRDhDIiBvcGFjaXR5PSIwLjUiIGN4PSIxNiIgY3k9IjYiIHI9IjIiPjwvY2lyY2xlPgogICAgICAgICAgICA8Y2lyY2xlIGlkPSJPdmFsLUNvcHkiIGZpbGw9IiMwRUJEOEMiIG9wYWNpdHk9IjAuNzUiIGN4PSIxNiIgY3k9IjQiIHI9IjIiPjwvY2lyY2xlPgogICAgICAgICAgICA8Y2lyY2xlIGlkPSJPdmFsIiBmaWxsPSIjMEVCRDhDIiBjeD0iMTYiIGN5PSIyIiByPSIyIj48L2NpcmNsZT4KICAgICAgICAgICAgPHBhdGggZD0iTTExLjMzNTk3MzksMi4yMDk3ODgyNSBMOC4yNSw0LjIwOTk1NjQ5IEw4LjI1LDMuMDUgQzguMjUsMi4wNDQ4ODIyNyA3LjQ2ODU5MDMxLDEuMjUgNi41LDEuMjUgTDIuMDUsMS4yNSBDMS4wMzgwNzExOSwxLjI1IDAuMjUsMi4wMzgwNzExOSAwLjI1LDMuMDUgTDAuMjUsNyBDMC4yNSw3Ljk2MzY5OTM3IDEuMDQyMjQ5MTksOC43NTU5NDg1NiAyLjA1LDguOCBMNi41LDguOCBDNy40NTA4MzAwOSw4LjggOC4yNSw3Ljk3MzI3MjUgOC4yNSw3IEw4LjI1LDUuODU4NDUyNDEgTDguNjI4NjIzOTQsNi4wODU2MjY3NyBMMTEuNDI2Nzc2Nyw3Ljc3MzIyMzMgQzExLjQzNjg5NDMsNy43ODMzNDA5MSAxMS40NzU3NjU1LDcuOCAxMS41LDcuOCBDMTEuNjMzNDkzMiw3LjggMTEuNzUsNy42OTEyNjAzNCAxMS43NSw3LjU1IEwxMS43NSwyLjQgQzExLjc1LDIuNDE4MzgyNjkgMTEuNzIxOTAyOSwyLjM1MjgyMjgyIDExLjY4NTYyNjgsMi4yNzg2MjM5NCBDMTEuNjEyOTUyOCwyLjE1NzUwMDY5IDExLjQ3MDc5NjgsMi4xMjkwNjk1IDExLjMzNTk3MzksMi4yMDk3ODgyNSBaIiBpZD0idmlkZW9fMzdfIiBzdHJva2Utb3BhY2l0eT0iMC4xNSIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjAuNSIgZmlsbD0iIzRENEQ0RCI+PC9wYXRoPgogICAgICAgIDwvZz4KICAgIDwvZz4KPC9zdmc+';
 
-const translate = createTranslate(vm);
-function generateJoin(amount) {
-    const joinWords = [
-        'apple',
-        'banana',
-        'pear',
-        'orange',
-        'mango',
-        'strawberry',
-        'pineapple',
-        'grape',
-        'kiwi'
-    ];
+/**
+ * Icon svg to be displayed at the left edge of each extension block, encoded as a data URI.
+ * @type {string}
+ */
+// eslint-disable-next-line max-len
+const blockIconURI = 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB3aWR0aD0iNDBweCIgaGVpZ2h0PSI0MHB4IiB2aWV3Qm94PSIwIDAgNDAgNDAiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayI+CiAgICA8IS0tIEdlbmVyYXRvcjogU2tldGNoIDUyLjIgKDY3MTQ1KSAtIGh0dHA6Ly93d3cuYm9oZW1pYW5jb2RpbmcuY29tL3NrZXRjaCAtLT4KICAgIDx0aXRsZT5FeHRlbnNpb25zL1NvZnR3YXJlL1ZpZGVvLVNlbnNpbmctQmxvY2s8L3RpdGxlPgogICAgPGRlc2M+Q3JlYXRlZCB3aXRoIFNrZXRjaC48L2Rlc2M+CiAgICA8ZyBpZD0iRXh0ZW5zaW9ucy9Tb2Z0d2FyZS9WaWRlby1TZW5zaW5nLUJsb2NrIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMSIgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIiBzdHJva2Utb3BhY2l0eT0iMC4xNSI+CiAgICAgICAgPGcgaWQ9InZpZGVvLW1vdGlvbiIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMC4wMDAwMDAsIDEwLjAwMDAwMCkiIGZpbGwtcnVsZT0ibm9uemVybyIgc3Ryb2tlPSIjMDAwMDAwIj4KICAgICAgICAgICAgPGNpcmNsZSBpZD0iT3ZhbC1Db3B5IiBmaWxsPSIjRkZGRkZGIiBvcGFjaXR5PSIwLjI1IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGN4PSIzMiIgY3k9IjE2IiByPSI0LjUiPjwvY2lyY2xlPgogICAgICAgICAgICA8Y2lyY2xlIGlkPSJPdmFsLUNvcHkiIGZpbGw9IiNGRkZGRkYiIG9wYWNpdHk9IjAuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBjeD0iMzIiIGN5PSIxMiIgcj0iNC41Ij48L2NpcmNsZT4KICAgICAgICAgICAgPGNpcmNsZSBpZD0iT3ZhbC1Db3B5IiBmaWxsPSIjRkZGRkZGIiBvcGFjaXR5PSIwLjc1IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGN4PSIzMiIgY3k9IjgiIHI9IjQuNSI+PC9jaXJjbGU+CiAgICAgICAgICAgIDxjaXJjbGUgaWQ9Ik92YWwiIGZpbGw9IiNGRkZGRkYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgY3g9IjMyIiBjeT0iNCIgcj0iNC41Ij48L2NpcmNsZT4KICAgICAgICAgICAgPHBhdGggZD0iTTIyLjY3MTk0NzcsNC40MTk1NzY0OSBMMTYuNSw4LjQxOTkxMjk4IEwxNi41LDYuMSBDMTYuNSw0LjA4OTc2NDU0IDE0LjkzNzE4MDYsMi41IDEzLDIuNSBMNC4xLDIuNSBDMi4wNzYxNDIzNywyLjUgMC41LDQuMDc2MTQyMzcgMC41LDYuMSBMMC41LDE0IEMwLjUsMTUuOTI3Mzk4NyAyLjA4NDQ5ODM5LDE3LjUxMTg5NzEgNC4xLDE3LjYgTDEzLDE3LjYgQzE0LjkwMTY2MDIsMTcuNiAxNi41LDE1Ljk0NjU0NSAxNi41LDE0IEwxNi41LDExLjcxNjkwNDggTDIyLjc1NzI0NzksMTUuNDcxMjUzNSBMMjIuODUzNTUzNCwxNS41NDY0NDY2IEMyMi44NzM3ODg2LDE1LjU2NjY4MTggMjIuOTUxNTMxLDE1LjYgMjMsMTUuNiBDMjMuMjY2OTg2NSwxNS42IDIzLjUsMTUuMzgyNTIwNyAyMy41LDE1LjEgTDIzLjUsNC44IEMyMy41LDQuODM2NzY1MzggMjMuNDQzODA1OCw0LjcwNTY0NTYzIDIzLjM3MTI1MzUsNC41NTcyNDc4OCBDMjMuMjI1OTA1Niw0LjMxNTAwMTM5IDIyLjk0MTU5MzcsNC4yNTgxMzg5OSAyMi42NzE5NDc3LDQuNDE5NTc2NDkgWiIgaWQ9InZpZGVvXzM3XyIgZmlsbD0iIzRENEQ0RCI+PC9wYXRoPgogICAgICAgIDwvZz4KICAgIDwvZz4KPC9zdmc+';
 
-    const argumentTextArray = [];
-    const argumentss = {};
+/**
+ * Sensor attribute video sensor block should report.
+ * @readonly
+ * @enum {string}
+ */
+const SensingAttribute = {
+    /** The amount of motion. */
+    MOTION: 'motion',
 
-    for (let i = 0; i < amount; i++) {
-        argumentTextArray.push(`[STRING${i + 1}]`);
-        argumentss[`STRING${i + 1}`] = {
-            type: ArgumentType.STRING,
-            defaultValue: joinWords[i] + ((i === (amount - 1)) ? '' : ' ')
+    /** The direction of the motion. */
+    DIRECTION: 'direction'
+};
+
+/**
+ * Subject video sensor block should report for.
+ * @readonly
+ * @enum {string}
+ */
+const SensingSubject = {
+    /** The sensor traits of the whole stage. */
+    STAGE: 'Stage',
+
+    /** The senosr traits of the area overlapped by this sprite. */
+    SPRITE: 'this sprite'
+};
+
+/**
+ * States the video sensing activity can be set to.
+ * @readonly
+ * @enum {string}
+ */
+const VideoState = {
+    /** Video turned off. */
+    OFF: 'off',
+
+    /** Video turned on with default y axis mirroring. */
+    ON: 'on',
+
+    /** Video turned on without default y axis mirroring. */
+    ON_FLIPPED: 'on-flipped'
+};
+
+/**
+ * Class for the motion-related blocks in Scratch 3.0
+ * @param {Runtime} runtime - the runtime instantiating this block package.
+ * @constructor
+ */
+class Scratch3VideoSensingBlocks {
+    constructor (runtime) {
+        /**
+         * The runtime instantiating this block package.
+         * @type {Runtime}
+         */
+        this.runtime = runtime;
+
+        /**
+         * The motion detection algoritm used to power the motion amount and
+         * direction values.
+         * @type {VideoMotion}
+         */
+        this.detect = new VideoMotion();
+
+        /**
+         * The last millisecond epoch timestamp that the video stream was
+         * analyzed.
+         * @type {number}
+         */
+        this._lastUpdate = null;
+
+        /**
+         * A flag to determine if this extension has been installed in a project.
+         * It is set to false the first time getInfo is run.
+         * @type {boolean}
+         */
+        this.firstInstall = true;
+
+        if (this.runtime.ioDevices) {
+            // Configure the video device with values from globally stored locations.
+            this.runtime.on(Runtime.PROJECT_LOADED, this.updateVideoDisplay.bind(this));
+
+            // Clear target motion state values when the project starts.
+            this.runtime.on(Runtime.PROJECT_RUN_START, this.reset.bind(this));
+
+            // Kick off looping the analysis logic.
+            this._loop();
+        }
+    }
+
+    /**
+     * After analyzing a frame the amount of milliseconds until another frame
+     * is analyzed.
+     * @type {number}
+     */
+    static get INTERVAL () {
+        return 33;
+    }
+
+    /**
+     * Dimensions the video stream is analyzed at after its rendered to the
+     * sample canvas.
+     * @type {Array.<number>}
+     */
+    static get DIMENSIONS () {
+        return [480, 360];
+    }
+
+    /**
+     * The key to load & store a target's motion-related state.
+     * @type {string}
+     */
+    static get STATE_KEY () {
+        return 'Scratch.videoSensing';
+    }
+
+    /**
+     * The default motion-related state, to be used when a target has no existing motion state.
+     * @type {MotionState}
+     */
+    static get DEFAULT_MOTION_STATE () {
+        return {
+            motionFrameNumber: 0,
+            motionAmount: 0,
+            motionDirection: 0
         };
     }
 
-    const opcode = `join${amount}`;
-    const defaultText = `join ${argumentTextArray.join(' ')}`;
-
-    return {
-        opcode: opcode,
-        text: translate({ id: opcode, default: defaultText }),
-        blockType: BlockType.REPORTER,
-        disableMonitor: true,
-        arguments: argumentss
-    };
-}
-
-function generateSeveralJoins(amount) {
-    const joins = [];
-    for (let i = 3; i < amount; i++) {
-        joins.push(generateJoin(i+1));
-    }
-    return joins.map((e, index) => {
-        const switches = [];
-        for (let i = 3; i < amount; i++) {
-            if (i == index+3) {
-                switches.push({ isNoop: true });
-                continue;
-            }
-            switches.push(`join${i+1}`);
+    /**
+     * The transparency setting of the video preview stored in a value
+     * accessible by any object connected to the virtual machine.
+     * @type {number}
+     */
+    get globalVideoTransparency () {
+        const stage = this.runtime.getTargetForStage();
+        if (stage) {
+            return stage.videoTransparency;
         }
-        e["switchText"] = `join x${index+4}`;
-        e["switches"]   = switches;
-        return e;
-    });
-}
-
-function generateJoinTranslations(amount, word, type) {
-    switch (type) {
-    case 1:
-        const obj = {};
-        for (let i = 0; i < amount; i++) {
-            let text = `${word} `;
-            for (let j = 0; j < amount; j++) {
-                text += `[STRING${j + 1}]`;
-            }
-            obj[`join${i + 1}`] = text;
-        }
-        return obj;
+        return 50;
     }
-}
 
-/**
- * Class of 2023
- * @constructor
- */
-class pmOperatorsExpansion {
-    constructor(runtime) {
-        /**
-         * The runtime instantiating this block package.
-         * @type {runtime}
-         */
-        this.runtime = runtime;
-        translate.setup({
-            "zh-cn": {
-                ...generateJoinTranslations(9, "连接字符串", 1)
-            },
-            "zh-tw": {
-                ...generateJoinTranslations(9, "字串組合", 1)
-            }
+    set globalVideoTransparency (transparency) {
+        const stage = this.runtime.getTargetForStage();
+        if (stage) {
+            stage.videoTransparency = transparency;
+        }
+        return transparency;
+    }
+
+    /**
+     * The video state of the video preview stored in a value accessible by any
+     * object connected to the virtual machine.
+     * @type {number}
+     */
+    get globalVideoState () {
+        const stage = this.runtime.getTargetForStage();
+        if (stage) {
+            return stage.videoState;
+        }
+        // Though the default value for the stage is normally 'on', we need to default
+        // to 'off' here to prevent the video device from briefly activating
+        // while waiting for stage targets to be installed that say it should be off
+        return VideoState.OFF;
+    }
+
+    set globalVideoState (state) {
+        const stage = this.runtime.getTargetForStage();
+        if (stage) {
+            stage.videoState = state;
+        }
+        return state;
+    }
+
+    /**
+     * Get the latest values for video transparency and state,
+     * and set the video device to use them.
+     */
+    updateVideoDisplay () {
+        this.setVideoTransparency({
+            TRANSPARENCY: this.globalVideoTransparency
         });
-        this.replacers = Object.create(null);
-        this.runtime.registerCompiledExtensionBlocks('pmOperatorsExpansion', this.getCompileInfo());
+        this.videoToggle({
+            VIDEO_STATE: this.globalVideoState
+        });
     }
 
-    orderCategoryBlocks(extensionBlocks) {
-        let categoryBlocks = blocks;
+    /**
+     * Reset the extension's data motion detection data. This will clear out
+     * for example old frames, so the first analyzed frame will not be compared
+     * against a frame from before reset was called.
+     */
+    reset () {
+        this.detect.reset();
 
-        let idx = 0;
-        for (const block of extensionBlocks) {
-            categoryBlocks = categoryBlocks.replace(`%b${idx}>`, block);
-            idx++;
+        const targets = this.runtime.targets;
+        for (let i = 0; i < targets.length; i++) {
+            const state = targets[i].getCustomState(Scratch3VideoSensingBlocks.STATE_KEY);
+            if (state) {
+                state.motionAmount = 0;
+                state.motionDirection = 0;
+            }
         }
+    }
 
-        return [categoryBlocks];
+    /**
+     * Occasionally step a loop to sample the video, stamp it to the preview
+     * skin, and add a TypedArray copy of the canvas's pixel data.
+     * @private
+     */
+    _loop () {
+        setTimeout(this._loop.bind(this), Math.max(this.runtime.currentStepTime, Scratch3VideoSensingBlocks.INTERVAL));
+
+        // Add frame to detector
+        const time = Date.now();
+        if (this._lastUpdate === null) {
+            this._lastUpdate = time;
+        }
+        const offset = time - this._lastUpdate;
+        if (offset > Scratch3VideoSensingBlocks.INTERVAL) {
+            const frame = this.runtime.ioDevices.video.getFrame({
+                format: Video.FORMAT_IMAGE_DATA,
+                dimensions: Scratch3VideoSensingBlocks.DIMENSIONS
+            });
+            if (frame) {
+                this._lastUpdate = time;
+                this.detect.addFrame(frame.data);
+            }
+        }
+    }
+
+    /**
+     * Create data for a menu in scratch-blocks format, consisting of an array
+     * of objects with text and value properties. The text is a translated
+     * string, and the value is one-indexed.
+     * @param {object[]} info - An array of info objects each having a name
+     *   property.
+     * @return {array} - An array of objects with text and value properties.
+     * @private
+     */
+    _buildMenu (info) {
+        return info.map((entry, index) => {
+            const obj = {};
+            obj.text = entry.name;
+            obj.value = entry.value || String(index + 1);
+            return obj;
+        });
+    }
+
+    /**
+     * @param {Target} target - collect motion state for this target.
+     * @returns {MotionState} the mutable motion state associated with that
+     *   target. This will be created if necessary.
+     * @private
+     */
+    _getMotionState (target) {
+        let motionState = target.getCustomState(Scratch3VideoSensingBlocks.STATE_KEY);
+        if (!motionState) {
+            motionState = Clone.simple(Scratch3VideoSensingBlocks.DEFAULT_MOTION_STATE);
+            target.setCustomState(Scratch3VideoSensingBlocks.STATE_KEY, motionState);
+        }
+        return motionState;
+    }
+
+    static get SensingAttribute () {
+        return SensingAttribute;
+    }
+
+    /**
+     * An array of choices of whether a reporter should return the frame's
+     * motion amount or direction.
+     * @type {object[]}
+     * @param {string} name - the translatable name to display in sensor
+     *   attribute menu
+     * @param {string} value - the serializable value of the attribute
+     */
+    get ATTRIBUTE_INFO () {
+        return [
+            {
+                name: formatMessage({
+                    id: 'videoSensing.motion',
+                    default: 'motion',
+                    description: 'Attribute for the "video [ATTRIBUTE] on [SUBJECT]" block'
+                }),
+                value: SensingAttribute.MOTION
+            },
+            {
+                name: formatMessage({
+                    id: 'videoSensing.direction',
+                    default: 'direction',
+                    description: 'Attribute for the "video [ATTRIBUTE] on [SUBJECT]" block'
+                }),
+                value: SensingAttribute.DIRECTION
+            }
+        ];
+    }
+
+    static get SensingSubject () {
+        return SensingSubject;
+    }
+
+    /**
+     * An array of info about the subject choices.
+     * @type {object[]}
+     * @param {string} name - the translatable name to display in the subject menu
+     * @param {string} value - the serializable value of the subject
+     */
+    get SUBJECT_INFO () {
+        return [
+            {
+                name: formatMessage({
+                    id: 'videoSensing.sprite',
+                    default: 'sprite',
+                    description: 'Subject for the "video [ATTRIBUTE] on [SUBJECT]" block'
+                }),
+                value: SensingSubject.SPRITE
+            },
+            {
+                name: formatMessage({
+                    id: 'videoSensing.stage',
+                    default: 'stage',
+                    description: 'Subject for the "video [ATTRIBUTE] on [SUBJECT]" block'
+                }),
+                value: SensingSubject.STAGE
+            }
+        ];
+    }
+
+    /**
+     * States the video sensing activity can be set to.
+     * @readonly
+     * @enum {string}
+     */
+    static get VideoState () {
+        return VideoState;
+    }
+
+    /**
+     * An array of info on video state options for the "turn video [STATE]" block.
+     * @type {object[]}
+     * @param {string} name - the translatable name to display in the video state menu
+     * @param {string} value - the serializable value stored in the block
+     */
+    get VIDEO_STATE_INFO () {
+        return [
+            {
+                name: formatMessage({
+                    id: 'videoSensing.off',
+                    default: 'off',
+                    description: 'Option for the "turn video [STATE]" block'
+                }),
+                value: VideoState.OFF
+            },
+            {
+                name: formatMessage({
+                    id: 'videoSensing.on',
+                    default: 'on',
+                    description: 'Option for the "turn video [STATE]" block'
+                }),
+                value: VideoState.ON
+            },
+            {
+                name: formatMessage({
+                    id: 'videoSensing.onFlipped',
+                    default: 'on flipped',
+                    description: 'Option for the "turn video [STATE]" block that causes the video to be flipped' +
+                        ' horizontally (reversed as in a mirror)'
+                }),
+                value: VideoState.ON_FLIPPED
+            }
+        ];
     }
 
     /**
      * @returns {object} metadata for this extension and its blocks.
      */
-    getInfo() {
-        return {
-            id: 'pmOperatorsExpansion',
-            name: 'Operators Expansion',
-            color1: '#59C059',
-            color2: '#46B946',
-            color3: '#389438',
-            isDynamic: true,
-            orderBlocks: this.orderCategoryBlocks,
-            blocks: [
-                ...generateSeveralJoins(9),
-                {
-                    opcode: 'partOfRatio',
-                    text: '[PART] part of ratio [RATIO]',
-                    blockType: BlockType.REPORTER,
-                    disableMonitor: true,
-                    arguments: {
-                        PART: {
-                            type: ArgumentType.STRING,
-                            menu: "part"
-                        },
-                        RATIO: {
-                            type: ArgumentType.STRING,
-                            defaultValue: "1:2"
-                        }
-                    },
-                    switches: [
-                        { isNoop: true },
-                        'simplifyRatio'
-                    ],
-                    switchText: 'part of ratio'
-                },
-                {
-                    opcode: 'simplifyRatio',
-                    text: 'simplify ratio [RATIO]',
-                    blockType: BlockType.REPORTER,
-                    disableMonitor: true,
-                    arguments: {
-                        RATIO: {
-                            type: ArgumentType.STRING,
-                            defaultValue: "1:2"
-                        }
-                    },
-                    switches: [
-                        'partOfRatio',
-                        { isNoop: true }
-                    ],
-                    switchText: 'simplify ratio'
-                },
-                {
-                    opcode: 'pi',
-                    text: 'π',
-                    blockType: BlockType.REPORTER,
-                    disableMonitor: true,
-                    switches: [
-                        { isNoop: true },
-                        'euler',
-                        'infinity'
-                    ]
-                },
-                {
-                    opcode: 'euler',
-                    text: 'e',
-                    blockType: BlockType.REPORTER,
-                    disableMonitor: true,
-                    switches: [
-                        'pi',
-                        { isNoop: true },
-                        'infinity'
-                    ]
-                },
-                {
-                    opcode: 'infinity',
-                    text: '∞',
-                    blockType: BlockType.REPORTER,
-                    disableMonitor: true,
-                    switches: [
-                        'pi',
-                        'euler',
-                        { isNoop: true }
-                    ]
-                },
-                {
-                    opcode: 'truncateNumber',
-                    text: 'truncate number [NUM]',
-                    blockType: BlockType.REPORTER,
-                    disableMonitor: true,
-                    arguments: {
-                        NUM: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: "2.5"
-                        }
-                    }
-                },
-                {
-                    opcode: 'isNumberMultipleOf',
-                    text: 'is [NUM] multiple of [MULTIPLE]?',
-                    blockType: BlockType.BOOLEAN,
-                    disableMonitor: true,
-                    arguments: {
-                        NUM: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: "20"
-                        },
-                        MULTIPLE: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: "10"
-                        }
-                    },
-                    switches: [
-                        { isNoop: true },
-                        'isInteger',
-                        'isPrime',
-                        'isEven'
-                    ],
-                    switchText: 'is multiple of?'
-                },
-                {
-                    opcode: 'isInteger',
-                    text: 'is [NUM] an integer?',
-                    blockType: BlockType.BOOLEAN,
-                    disableMonitor: true,
-                    arguments: {
-                        NUM: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: "0.5"
-                        }
-                    },
-                    switches: [
-                        'isNumberMultipleOf',
-                        { isNoop: true },
-                        'isPrime',
-                        'isEven'
-                    ],
-                    switchText: 'is integer?'
-                },
-                {
-                    opcode: 'isPrime',
-                    text: 'is [NUM] a prime number?',
-                    blockType: BlockType.BOOLEAN,
-                    disableMonitor: true,
-                    arguments: {
-                        NUM: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: "13"
-                        }
-                    },
-                    switches: [
-                        'isNumberMultipleOf',
-                        'isInteger',
-                        { isNoop: true },
-                        'isEven'
-                    ],
-                    switchText: 'is prime?'
-                },
-                {
-                    opcode: 'isEven',
-                    text: 'is [NUM] even?',
-                    blockType: BlockType.BOOLEAN,
-                    disableMonitor: true,
-                    arguments: {
-                        NUM: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: "4"
-                        }
-                    },
-                    switches: [
-                        'isNumberMultipleOf',
-                        'isInteger',
-                        'isPrime',
-                        { isNoop: true }
-                    ],
-                    switchText: 'is even?'
-                },
-                {
-                    opcode: 'reverseChars',
-                    text: 'reverse [TEXT]',
-                    blockType: BlockType.REPORTER,
-                    disableMonitor: true,
-                    arguments: {
-                        TEXT: {
-                            type: ArgumentType.STRING,
-                            defaultValue: "Hello!"
-                        }
-                    },
-                    switches: [
-                        { isNoop: true },
-                        'shuffleChars'
-                    ],
-                    switchText: 'reverse text'
-                },
-                {
-                    opcode: 'shuffleChars',
-                    text: 'shuffle [TEXT]',
-                    blockType: BlockType.REPORTER,
-                    disableMonitor: true,
-                    arguments: {
-                        TEXT: {
-                            type: ArgumentType.STRING,
-                            defaultValue: "Hello!"
-                        }
-                    },
-                    switches: [
-                        'reverseChars',
-                        { isNoop: true },
-                    ],
-                    switchText: 'shuffle text'
-                },
-                {
-                    opcode: 'exactlyEqual',
-                    text: '[ONE] exactly equals [TWO]?',
-                    blockType: BlockType.BOOLEAN,
-                    disableMonitor: true,
-                    arguments: {
-                        ONE: {
-                            type: ArgumentType.STRING,
-                            defaultValue: "a"
-                        },
-                        TWO: {
-                            type: ArgumentType.STRING,
-                            defaultValue: "b"
-                        }
-                    },
+    getInfo () {
+        // Set the video display properties to defaults the first time
+        // getInfo is run. This turns on the video device when it is
+        // first added to a project, and is overwritten by a PROJECT_LOADED
+        // event listener that later calls updateVideoDisplay
+        if (this.firstInstall) {
+            this.globalVideoState = VideoState.ON;
+            this.globalVideoTransparency = 50;
+            this.updateVideoDisplay();
+            this.firstInstall = false;
+        }
 
-                },
+        // Return extension definition
+        return {
+            id: 'videoSensing',
+            name: formatMessage({
+                id: 'videoSensing.categoryName',
+                default: 'Video Sensing',
+                description: 'Label for the video sensing extension category'
+            }),
+            blockIconURI: blockIconURI,
+            menuIconURI: menuIconURI,
+            blocks: [
                 {
-                    opcode: 'betweenNumbers',
-                    text: 'is [NUM] between [MIN] and [MAX]?',
-                    blockType: BlockType.BOOLEAN,
-                    disableMonitor: true,
+                    // @todo this hat needs to be set itself to restart existing
+                    // threads like Scratch 2's behaviour.
+                    opcode: 'whenMotionGreaterThan',
+                    text: formatMessage({
+                        id: 'videoSensing.whenMotionGreaterThan',
+                        default: 'when video motion > [REFERENCE]',
+                        description: 'Event that triggers when the amount of motion is greater than [REFERENCE]'
+                    }),
+                    blockType: BlockType.HAT,
                     arguments: {
-                        NUM: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 5
-                        },
-                        MIN: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 0
-                        },
-                        MAX: {
+                        REFERENCE: {
                             type: ArgumentType.NUMBER,
                             defaultValue: 10
                         }
                     }
                 },
                 {
-                    opcode: 'evaluateMath',
-                    text: 'answer to [EQUATION]',
+                    opcode: 'videoOn',
                     blockType: BlockType.REPORTER,
-                    disableMonitor: true,
+                    text: formatMessage({
+                        id: 'videoSensing.videoOn',
+                        default: 'video [ATTRIBUTE] on [SUBJECT]',
+                        description: 'Reporter that returns the amount of [ATTRIBUTE] for the selected [SUBJECT]'
+                    }),
                     arguments: {
-                        EQUATION: {
+                        ATTRIBUTE: {
                             type: ArgumentType.STRING,
-                            defaultValue: "5 * 2"
+                            menu: 'ATTRIBUTE',
+                            defaultValue: SensingAttribute.MOTION
+                        },
+                        SUBJECT: {
+                            type: ArgumentType.STRING,
+                            menu: 'SUBJECT',
+                            defaultValue: SensingSubject.SPRITE
                         }
                     }
                 },
                 {
-                    opcode: 'setReplacer',
-                    text: 'set replacer [REPLACER] to [TEXT]',
-                    blockType: BlockType.COMMAND,
+                    opcode: 'videoToggle',
+                    text: formatMessage({
+                        id: 'videoSensing.videoToggle',
+                        default: 'turn video [VIDEO_STATE]',
+                        description: 'Controls display of the video preview layer'
+                    }),
                     arguments: {
-                        REPLACER: {
+                        VIDEO_STATE: {
                             type: ArgumentType.STRING,
-                            defaultValue: "${replacer}"
-                        },
-                        TEXT: {
-                            type: ArgumentType.STRING,
-                            defaultValue: "world"
-                        }
-                    },
-                    switches: [
-                        { isNoop: true },
-                        'resetReplacers'
-                    ],
-                    switchText: 'set replacer'
-                },
-                {
-                    opcode: 'resetReplacers',
-                    text: 'reset replacers',
-                    blockType: BlockType.COMMAND,
-                    switches: [
-                        'setReplacer',
-                        { isNoop: true }
-                    ],
-                    switchText: 'reset replacers'
-                },
-                {
-                    opcode: 'applyReplacers',
-                    text: 'apply replacers to [TEXT]',
-                    blockType: BlockType.REPORTER,
-                    disableMonitor: true,
-                    arguments: {
-                        TEXT: {
-                            type: ArgumentType.STRING,
-                            defaultValue: "Hello ${replacer}!"
+                            menu: 'VIDEO_STATE',
+                            defaultValue: VideoState.ON
                         }
                     }
                 },
                 {
-                    opcode: 'textAfter',
-                    text: 'text after [TEXT] in [BASE]',
-                    blockType: BlockType.REPORTER,
-                    disableMonitor: true,
+                    opcode: 'setVideoTransparency',
+                    text: formatMessage({
+                        id: 'videoSensing.setVideoTransparency',
+                        default: 'set video transparency to [TRANSPARENCY]',
+                        description: 'Controls transparency of the video preview layer'
+                    }),
                     arguments: {
-                        TEXT: {
-                            type: ArgumentType.STRING,
-                            defaultValue: "Hello"
-                        },
-                        BASE: {
-                            type: ArgumentType.STRING,
-                            defaultValue: "Hello world!"
-                        }
-                    },
-                    switches: [
-                        { isNoop: true },
-                        'textBefore'
-                    ],
-                    switchText: 'text after'
-                },
-                {
-                    opcode: 'textBefore',
-                    text: 'text before [TEXT] in [BASE]',
-                    blockType: BlockType.REPORTER,
-                    disableMonitor: true,
-                    arguments: {
-                        TEXT: {
-                            type: ArgumentType.STRING,
-                            defaultValue: "world"
-                        },
-                        BASE: {
-                            type: ArgumentType.STRING,
-                            defaultValue: "Hello world!"
-                        }
-                    },
-                    switches: [
-                        'textAfter',
-                        { isNoop: true }
-                    ],
-                    switchText: 'text before'
-                },
-                {
-                    opcode: 'shiftLeft',
-                    text: '[num1] << [num2]',
-                    blockType: BlockType.REPORTER,
-                    disableMonitor: true,
-                    arguments: {
-                        num1: {
+                        TRANSPARENCY: {
                             type: ArgumentType.NUMBER,
-                            defaultValue: "1"
-                        },
-                        num2: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: "5"
-                        }
-                    },
-                    switches: [
-                        { isNoop: true },
-                        'shiftRight',
-                        'binnaryAnd',
-                        'binnaryOr',
-                        'binnaryXor',
-                        'binnaryNot',
-                    ],
-                    switchText: 'lshift'
-                },
-                {
-                    opcode: 'shiftRight',
-                    text: '[num1] >> [num2]',
-                    blockType: BlockType.REPORTER,
-                    disableMonitor: true,
-                    arguments: {
-                        num1: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: "32"
-                        },
-                        num2: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: "5"
-                        }
-                    },
-                    switches: [
-                        'shiftLeft',
-                        { isNoop: true },
-                        'binnaryAnd',
-                        'binnaryOr',
-                        'binnaryXor',
-                        'binnaryNot',
-                    ],
-                    switchText: 'rshift'
-                },
-                {
-                    opcode: 'binnaryAnd',
-                    text: '[num1] & [num2]',
-                    blockType: BlockType.REPORTER,
-                    disableMonitor: true,
-                    arguments: {
-                        num1: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: "32"
-                        },
-                        num2: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: "5"
-                        }
-                    },
-                    switches: [
-                        'shiftLeft',
-                        'shiftRight',
-                        { isNoop: true },
-                        'binnaryOr',
-                        'binnaryXor',
-                        'binnaryNot',
-                    ],
-                    switchText: 'and'
-                },
-                {
-                    opcode: 'binnaryOr',
-                    text: '[num1] | [num2]',
-                    blockType: BlockType.REPORTER,
-                    disableMonitor: true,
-                    arguments: {
-                        num1: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: "7"
-                        },
-                        num2: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: "8"
-                        }
-                    },
-                    switches: [
-                        'shiftLeft',
-                        'shiftRight',
-                        'binnaryAnd',
-                        { isNoop: true },
-                        'binnaryXor',
-                        'binnaryNot',
-                    ],
-                    switchText: 'or'
-                },
-                {
-                    opcode: 'binnaryXor',
-                    text: '[num1] ^ [num2]',
-                    blockType: BlockType.REPORTER,
-                    disableMonitor: true,
-                    arguments: {
-                        num1: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: "7"
-                        },
-                        num2: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: "2"
-                        }
-                    },
-                    switches: [
-                        'shiftLeft',
-                        'shiftRight',
-                        'binnaryAnd',
-                        'binnaryOr',
-                        { isNoop: true },
-                        'binnaryNot',
-                    ],
-                    switchText: 'xor'
-                },
-                {
-                    opcode: 'binnaryNot',
-                    text: '~ [num1]',
-                    blockType: BlockType.REPORTER,
-                    disableMonitor: true,
-                    arguments: {
-                        num1: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: "2"
-                        }
-                    },
-                    switches: [
-                        'shiftLeft',
-                        'shiftRight',
-                        'binnaryAnd',
-                        'binnaryOr',
-                        'binnaryXor',
-                        { isNoop: true }
-                    ],
-                    switchText: 'not'
-                },
-                {
-                    opcode: 'speedToPitch',
-                    text: 'speed [SPEED] to pitch',
-                    blockType: BlockType.REPORTER,
-                    disableMonitor: true,
-                    arguments: {
-                        SPEED: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: "2"
-                        },
-                    },
-                    switches: [
-                        { isNoop: true },
-                        {
-                            opcode: 'pitchToSpeed',
-                            remapArguments: {
-                                SPEED: 'PITCH'
-                            }
-                        }
-                    ],
-                    switchText: 'speed to pitch'
-                },
-                {
-                    opcode: 'pitchToSpeed',
-                    text: 'pitch [PITCH] to speed',
-                    blockType: BlockType.REPORTER,
-                    disableMonitor: true,
-                    arguments: {
-                        PITCH: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: "120"
-                        },
-                    },
-                    switches: [
-                        {
-                            opcode: 'speedToPitch',
-                            remapArguments: {
-                                PITCH: 'SPEED'
-                            }
-                        },
-                        { isNoop: true },
-                    ],
-                    switchText: 'pitch to speed'
-                },
-                {
-                    opcode: 'orIfFalsey',
-                    text: '[ONE] or else [TWO]',
-                    blockType: BlockType.REPORTER,
-                    allowDropAnywhere: true,
-                    disableMonitor: true,
-                    arguments: {
-                        ONE: {
-                            type: ArgumentType.STRING,
-                            defaultValue: "a"
-                        },
-                        TWO: {
-                            type: ArgumentType.STRING,
-                            defaultValue: "b"
+                            defaultValue: 50
                         }
                     }
-                },
-                {
-                    opcode: 'ifIsTruthy',
-                    text: 'if [ONE] is true then [TWO]',
-                    blockType: BlockType.REPORTER,
-                    allowDropAnywhere: true,
-                    disableMonitor: true,
-                    arguments: {
-                        ONE: {
-                            type: ArgumentType.BOOLEAN
-                        },
-                        TWO: {
-                            type: ArgumentType.STRING,
-                            defaultValue: "perfect!"
-                        }
-                    }
-                },
-                {
-                    opcode: 'atan2',
-                    text: 'atan2 of x [X] y [Y]',
-                    blockType: BlockType.REPORTER,
-                    arguments: {
-                        X: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: "45"
-                        },
-                        Y: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: "90"
-                        },
-                    }
-                },
+                }
             ],
             menus: {
-                part: {
+                ATTRIBUTE: {
                     acceptReporters: true,
-                    items: [
-                        "first",
-                        "last"
-                    ].map(item => ({ text: item, value: item }))
+                    items: this._buildMenu(this.ATTRIBUTE_INFO)
+                },
+                SUBJECT: {
+                    acceptReporters: true,
+                    items: this._buildMenu(this.SUBJECT_INFO)
+                },
+                VIDEO_STATE: {
+                    acceptReporters: true,
+                    items: this._buildMenu(this.VIDEO_STATE_INFO)
                 }
             }
         };
     }
 
     /**
-     * This function is used for any compiled blocks in the extension if they exist.
-     * Data in this function is given to the IR & JS generators.
-     * Data must be valid otherwise errors may occur.
-     * @returns {object} functions that create data for compiled blocks.
+     * Analyze a part of the frame that a target overlaps.
+     * @param {Target} target - a target to determine where to analyze
+     * @returns {MotionState} the motion state for the given target
      */
-    getCompileInfo() {
-        return {
-            ir: {
-                shiftLeft: (generator, block) => ({
-                    kind: 'input',
-                    num1: generator.descendInputOfBlock(block, 'num1'),
-                    num2: generator.descendInputOfBlock(block, 'num2')
-                }),
-                shiftRight: (generator, block) => ({
-                    kind: 'input',
-                    num1: generator.descendInputOfBlock(block, 'num1'),
-                    num2: generator.descendInputOfBlock(block, 'num2')
-                }),
-                binnaryAnd: (generator, block) => ({
-                    kind: 'input',
-                    num1: generator.descendInputOfBlock(block, 'num1'),
-                    num2: generator.descendInputOfBlock(block, 'num2')
-                }),
-                binnaryOr: (generator, block) => ({
-                    kind: 'input',
-                    num1: generator.descendInputOfBlock(block, 'num1'),
-                    num2: generator.descendInputOfBlock(block, 'num2')
-                }),
-                binnaryXor: (generator, block) => ({
-                    kind: 'input',
-                    num1: generator.descendInputOfBlock(block, 'num1'),
-                    num2: generator.descendInputOfBlock(block, 'num2')
-                }),
-                binnaryNot: (generator, block) => ({
-                    kind: 'input',
-                    num1: generator.descendInputOfBlock(block, 'num1')
-                }),
-                orIfFalsey: (generator, block) => ({
-                    kind: 'input',
-                    one: generator.descendInputOfBlock(block, 'ONE'),
-                    two: generator.descendInputOfBlock(block, 'TWO')
-                }),
-                ifIsTruthy: (generator, block) => ({
-                    kind: 'input',
-                    one: generator.descendInputOfBlock(block, 'ONE'),
-                    two: generator.descendInputOfBlock(block, 'TWO'),
-                }),
-                speedToPitch: (generator, block) => ({
-                    kind: 'input',
-                    speed: generator.descendInputOfBlock(block, 'SPEED'),
-                }),
-                pitchToSpeed: (generator, block) => ({
-                    kind: 'input',
-                    pitch: generator.descendInputOfBlock(block, 'PITCH'),
-                }),
-                atan2: (generator, block) => ({
-                    kind: 'input',
-                    x: generator.descendInputOfBlock(block, 'X'),
-                    y: generator.descendInputOfBlock(block, 'Y'),
-                })
-            },
-            js: {
-                shiftLeft: (node, compiler, {TypedInput, TYPE_NUMBER}) => {
-                    const num1 = compiler.descendInput(node.num1).asNumber();
-                    const num2 = compiler.descendInput(node.num2).asNumber();
-
-                    return new TypedInput(`(${num1} << ${num2})`, TYPE_NUMBER);
-                },
-                shiftRight: (node, compiler, {TypedInput, TYPE_NUMBER}) => {
-                    const num1 = compiler.descendInput(node.num1).asNumber();
-                    const num2 = compiler.descendInput(node.num2).asNumber();
-
-                    return new TypedInput(`(${num1} >> ${num2})`, TYPE_NUMBER);
-                },
-                binnaryAnd: (node, compiler, {TypedInput, TYPE_NUMBER}) => {
-                    const num1 = compiler.descendInput(node.num1).asNumber();
-                    const num2 = compiler.descendInput(node.num2).asNumber();
-
-                    return new TypedInput(`(${num1} & ${num2})`, TYPE_NUMBER);
-                },
-                binnaryOr: (node, compiler, {TypedInput, TYPE_NUMBER}) => {
-                    const num1 = compiler.descendInput(node.num1).asNumber();
-                    const num2 = compiler.descendInput(node.num2).asNumber();
-
-                    return new TypedInput(`(${num1} | ${num2})`, TYPE_NUMBER);
-                },
-                binnaryXor: (node, compiler, {TypedInput, TYPE_NUMBER}) => {
-                    const num1 = compiler.descendInput(node.num1).asNumber();
-                    const num2 = compiler.descendInput(node.num2).asNumber();
-
-                    return new TypedInput(`(${num1} ^ ${num2})`, TYPE_NUMBER);
-                },
-                binnaryNot: (node, compiler, {TypedInput, TYPE_NUMBER}) => {
-                    const num1 = compiler.descendInput(node.num1).asNumber();
-
-                    return new TypedInput(`(~${num1})`, TYPE_NUMBER);
-                },
-                orIfFalsey: (node, compiler, {TypedInput, TYPE_UNKNOWN}) => {
-                    const num1 = compiler.descendInput(node.one).asUnknown();
-                    const num2 = compiler.descendInput(node.two).asUnknown();
-
-                    return new TypedInput(`(${num1} || ${num2})`, TYPE_UNKNOWN);
-                },
-                ifIsTruthy: (node, compiler, {TypedInput, TYPE_UNKNOWN}) => {
-                    const num1 = compiler.descendInput(node.one).asBoolean();
-                    const num2 = compiler.descendInput(node.two).asUnknown();
-
-                    return new TypedInput(`(${num1} && ${num2})`, TYPE_UNKNOWN);
-                },
-                speedToPitch: (node, compiler, { TypedInput, TYPE_NUMBER_NAN }) => {
-                    const speed = compiler.descendInput(node.speed).asNumber();
-                    return new TypedInput(`((1200 * Math.log2(${speed})) / 10)`, TYPE_NUMBER_NAN);
-                },
-                pitchToSpeed: (node, compiler, { TypedInput, TYPE_NUMBER_NAN }) => {
-                    const pitch = compiler.descendInput(node.pitch).asNumber();
-                    return new TypedInput(`(Math.pow(2, (${pitch} * 10) / 1200))`, TYPE_NUMBER_NAN);
-                },
-                atan2: (node, compiler, { TypedInput, TYPE_NUMBER_NAN }) => {
-                    const x = compiler.descendInput(node.x).asNumber();
-                    const y = compiler.descendInput(node.y).asNumber();
-                    return new TypedInput(`(Math.atan2((${y} * 180) / Math.PI, (${x} * 180) / Math.PI))`, TYPE_NUMBER_NAN);
-                }
-            }
-        };
+    _analyzeLocalMotion (target) {
+        const drawable = this.runtime.renderer._allDrawables[target.drawableID];
+        const state = this._getMotionState(target);
+        this.detect.getLocalMotion(drawable, state);
+        return state;
     }
 
-    // util
-    reduce(numerator, denominator) {
-        let gcd = function gcd(a, b) {
-            return b ? gcd(b, a % b) : a;
-        };
-        gcd = gcd(numerator, denominator);
-        return [numerator / gcd, denominator / gcd];
-    }
-    checkPrime(number) {
-        number = Math.trunc(number);
-        if (number <= 1) return false;
-        for (let i = 2; i < number; i++) {
-            if (number % i === 0) {
-                return false;
-            }
+    /**
+     * A scratch reporter block handle that analyzes the last two frames and
+     * depending on the arguments, returns the motion or direction for the
+     * whole stage or just the target sprite.
+     * @param {object} args - the block arguments
+     * @param {BlockUtility} util - the block utility
+     * @returns {number} the motion amount or direction of the stage or sprite
+     */
+    videoOn (args, util) {
+        this.detect.analyzeFrame();
+
+        let state = this.detect;
+        if (args.SUBJECT === SensingSubject.SPRITE) {
+            state = this._analyzeLocalMotion(util.target);
         }
-        return true;
-    }
 
-    // useful
-    pi() {
-        return Math.PI;
-    }
-    euler() {
-        return Math.E;
-    }
-    infinity() {
-        return Infinity;
-    }
-
-    partOfRatio(args) {
-        const ratio = Cast.toString(args.RATIO);
-        const part = Cast.toString(args.PART).toLowerCase();
-
-        if (!ratio.includes(':')) return '';
-        const split = ratio.split(':');
-
-        const section = split[Number(part === 'last')];
-        return Cast.toNumber(section);
-    }
-    simplifyRatio(args) {
-        const ratio = Cast.toString(args.RATIO);
-        if (!ratio.includes(':')) return '';
-        const split = ratio.split(':');
-
-        const first = Cast.toNumber(split[0]);
-        const last = Cast.toNumber(split[1]);
-
-        const reduced = this.reduce(first, last);
-
-        return `${Cast.toNumber(reduced[0])}:${Cast.toNumber(reduced[1])}`;
-    }
-
-    truncateNumber(args) {
-        const num = Cast.toNumber(args.NUM);
-        return Math.trunc(num);
-    }
-
-    isNumberMultipleOf(args) {
-        const num = Cast.toNumber(args.NUM);
-        const mult = Cast.toNumber(args.MULTIPLE);
-
-        return (num % mult) === 0;
-    }
-    isInteger(args) {
-        const num = Cast.toNumber(args.NUM);
-        return Math.trunc(num) === num;
-    }
-    isPrime(args) {
-        const num = Cast.toNumber(args.NUM);
-        return this.checkPrime(num);
-    }
-    isEven(args) {
-        const num = Cast.toNumber(args.NUM);
-        return num % 2 == 0;
-    }
-
-    evaluateMath(args) {
-        const equation = Cast.toString(args.EQUATION);
-        // "" is undefined when evalutated
-        if (equation.trim().length === 0) return 0;
-        // evalueate
-        let answer = 0;
-        try {
-            answer = MathJS.evaluate(equation);
-        } catch {
-            // syntax errors cause real errors
-            answer = 0;
+        if (args.ATTRIBUTE === SensingAttribute.MOTION) {
+            return state.motionAmount;
         }
-        // multiline or semi-colon breaks create a ResultSet, we can get the last item in the set for that
-        if (typeof answer === "object") {
-            if ("entries" in answer) {
-                const answers = answer.entries;
-                if (answers.length === 0) return 0;
-                const lastIdx = answers.length - 1;
-                return Number(answers[lastIdx]);
-            }
+        return state.motionDirection;
+    }
+
+    /**
+     * A scratch hat block edge handle that analyzes the last two frames where
+     * the target sprite overlaps and if it has more motion than the given
+     * reference value.
+     * @param {object} args - the block arguments
+     * @param {BlockUtility} util - the block utility
+     * @returns {boolean} true if the sprite overlaps more motion than the
+     *   reference
+     */
+    whenMotionGreaterThan (args, util) {
+        this.detect.analyzeFrame();
+        const state = this._analyzeLocalMotion(util.target);
+        return state.motionAmount > Number(args.REFERENCE);
+    }
+
+    /**
+     * A scratch command block handle that configures the video state from
+     * passed arguments.
+     * @param {object} args - the block arguments
+     * @param {VideoState} args.VIDEO_STATE - the video state to set the device to
+     */
+    videoToggle (args) {
+        const state = args.VIDEO_STATE;
+        this.globalVideoState = state;
+        if (state === VideoState.OFF) {
+            this.runtime.ioDevices.video.disableVideo();
+        } else {
+            this.runtime.ioDevices.video.enableVideo();
+            // Mirror if state is ON. Do not mirror if state is ON_FLIPPED.
+            this.runtime.ioDevices.video.mirror = state === VideoState.ON;
         }
-        // Cast.toNumber converts NaN to 0
-        return Number(answer);
     }
 
-    exactlyEqual(args) {
-        // everyone requested this but watch literally no one use it :trollface:
-        return args.ONE === args.TWO;
+    /**
+     * A scratch command block handle that configures the video preview's
+     * transparency from passed arguments.
+     * @param {object} args - the block arguments
+     * @param {number} args.TRANSPARENCY - the transparency to set the video
+     *   preview to
+     */
+    setVideoTransparency (args) {
+        const transparency = Cast.toNumber(args.TRANSPARENCY);
+        this.globalVideoTransparency = transparency;
+        this.runtime.ioDevices.video.setPreviewGhost(transparency);
     }
-    betweenNumbers(args) {
-        const number = Cast.toNumber(args.NUM);
-        let min = Cast.toNumber(args.MIN);
-        let max = Cast.toNumber(args.MAX);
-        // check that max isnt less than min
-        if (max < min) {
-            const switchover = max;
-            max = min;
-            min = switchover;
-        }
-        return (number <= max) && (number >= min);
-    }
-
-    reverseChars(args) {
-        const text = Cast.toString(args.TEXT);
-        const split = text.split('');
-        return split.reverse().join('');
-    }
-    shuffleChars(args) {
-        const text = Cast.toString(args.TEXT);
-        const split = text.split('');
-        const shuffled = split.sort(() => Math.random() - 0.5);
-        return shuffled.join('');
-    }
-
-    // join
-    join4(args) {
-        return Cast.toString(args.STRING1)
-            + Cast.toString(args.STRING2)
-            + Cast.toString(args.STRING3)
-            + Cast.toString(args.STRING4);
-    }
-    join5(args) {
-        return Cast.toString(args.STRING1)
-            + Cast.toString(args.STRING2)
-            + Cast.toString(args.STRING3)
-            + Cast.toString(args.STRING4)
-            + Cast.toString(args.STRING5);
-    }
-    join6(args) {
-        return Cast.toString(args.STRING1)
-            + Cast.toString(args.STRING2)
-            + Cast.toString(args.STRING3)
-            + Cast.toString(args.STRING4)
-            + Cast.toString(args.STRING5)
-            + Cast.toString(args.STRING6);
-    }
-    join7(args) {
-        return Cast.toString(args.STRING1)
-            + Cast.toString(args.STRING2)
-            + Cast.toString(args.STRING3)
-            + Cast.toString(args.STRING4)
-            + Cast.toString(args.STRING5)
-            + Cast.toString(args.STRING6)
-            + Cast.toString(args.STRING7);
-    }
-    join8(args) {
-        return Cast.toString(args.STRING1)
-            + Cast.toString(args.STRING2)
-            + Cast.toString(args.STRING3)
-            + Cast.toString(args.STRING4)
-            + Cast.toString(args.STRING5)
-            + Cast.toString(args.STRING6)
-            + Cast.toString(args.STRING7)
-            + Cast.toString(args.STRING8);
-    }
-    join9(args) {
-        return Cast.toString(args.STRING1)
-            + Cast.toString(args.STRING2)
-            + Cast.toString(args.STRING3)
-            + Cast.toString(args.STRING4)
-            + Cast.toString(args.STRING5)
-            + Cast.toString(args.STRING6)
-            + Cast.toString(args.STRING7)
-            + Cast.toString(args.STRING8)
-            + Cast.toString(args.STRING9);
-    }
-
-    setReplacer(args) {
-        const replacer = Cast.toString(args.REPLACER);
-        const text = Cast.toString(args.TEXT);
-        this.replacers[replacer] = text;
-    }
-    resetReplacers() {
-        this.replacers = Object.create(null);
-    }
-    applyReplacers(args) {
-        let text = Cast.toString(args.TEXT);
-        for (const replacer in this.replacers) {
-            const replacementText = this.replacers[replacer];
-            text = text.replaceAll(replacer, replacementText);
-        }
-        return text;
-    }
-
-    textAfter(args) {
-        const text = Cast.toString(args.TEXT);
-        const base = Cast.toString(args.BASE);
-        const idx = base.indexOf(text);
-        if (idx < 0) return '';
-        return base.substring(idx + text.length);
-    }
-    textBefore(args) {
-        const text = Cast.toString(args.TEXT);
-        const base = Cast.toString(args.BASE);
-        const idx = base.indexOf(text);
-        if (idx < 0) return '';
-        return base.substring(0, idx);
-    }
-
-    // These blocks are compiled
-    orIfFalsey(args) { return "" }
-    ifIsTruthy(args) { return "" }
-    shiftLeft(args) { return "" }
-    shiftRight(args) { return "" }
-    binnaryAnd(args) { return false }
-    binnaryOr(args) { return false }
-    binnaryXor(args) { return false }
-    binnaryNot(args) { return false }
-    speedToPitch(args) { return 0 }
-    pitchToSpeed(args) { return 1 }
-    atan2(args) { return 0 }
 }
 
-module.exports = pmOperatorsExpansion;
+module.exports = Scratch3VideoSensingBlocks;

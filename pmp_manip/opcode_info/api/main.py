@@ -227,14 +227,6 @@ BUILTIN_EXT_TO_PATH = {
     "fr3d": "fr_3d",
 }
 
-@grepr_dataclass(grepr_fields=["id", "module_dir"])
-class ExtensionRef:
-    """
-    A reference to an extension and its opcode info file
-    """
-    id: str
-    module_dir: str
-
 class OpcodeType(GEnum):
     """
     Represents the shape of all blocks with a certain opcode
@@ -715,51 +707,31 @@ class OpcodeInfoAPI:
 
     # ==================== Extension Management ====================
     
-    '''@enforce_argument_types
-    def get_builtin_extension_ref(self, builtin_ext_id: str) -> ExtensionRef:
-        """
-        Get the reference to a builtin extension.
-
-        Args:
-            builtin_ext_id: the identifier of the builtin extension.
-
-        Raises:
-            MANIP_UnknownBuiltinExtensionError: if one tries to add an unknown or not yet implemented builtin extension
-        """
-        if builtin_ext_id not in BUILTIN_EXT_TO_PATH:
-            raise MANIP_UnknownBuiltinExtensionError(f"Not a builtin extension: {builtin_ext_id}")
-        ext_path = BUILTIN_EXT_TO_PATH[builtin_ext_id]
-        if not ext_path.endswith(".js"):
-            ext_path = f"{ext_path}/index.js"
-        return ExtensionRef(
-            id=builtin_ext_id,
-            source=f"https://raw.githubusercontent.com/PenguinMod/PenguinMod-Vm/refs/heads/develop/src/extensions/{ext_path}",
-        )'''
-
-    def _add_extension_by_ref(self, extension_ref: ExtensionRef) -> None:
+    def _add_extension(self, extension_id: str, module_dir: str) -> None:
         """
         Add an extension to the API
         
         Args:
-            extension_ref: the reference to the extension
+            extension_id: the identifier of the extension
+            module_dir: the directory, in which the python module for the extension sits
 
         Raises:
             MANIP_ExtensionModuleNotFoundError: If the extension's python module does not exist
             MANIP_UnexpectedExtensionModuleImportError: If the extension's python module can not be loaded e.g. because it is malformed
         """
-        module_path = path.join(extension_ref.module_dir, f"{extension_ref.id}.py")
+        module_path = path.join(module_dir, f"{extension_id}.py")
         # Validate file existence
         if not file_exists(module_path):
-            raise MANIP_ExtensionModuleNotFoundError(f"Python module of extension {extension_ref!r} was not found. Did you forget to generate it?")
+            raise MANIP_ExtensionModuleNotFoundError(f"Python module of extension {extension_id!r} was not found. Did you forget to generate it?")
     
         # Generate a unique module name to avoid clashes in sys.modules
-        module_name = f"_dynamic_module_{extension_ref.id}"
+        module_name = f"_dynamic_module_{extension_id}"
     
         try:
             spec = importutil.spec_from_file_location(module_name, module_path)
             if spec is None or spec.loader is None:
                 raise MANIP_UnexpectedExtensionModuleImportError(
-                    f"Can not create spec for python module of extension {extension_ref!r}"
+                    f"Can not create spec for python module of extension {extension_id!r}"
                 )
     
             module = importutil.module_from_spec(spec)
@@ -768,15 +740,15 @@ class OpcodeInfoAPI:
             spec.loader.exec_module(module)
         except (SyntaxError, ImportError, OSError, Exception) as error:
             raise MANIP_UnexpectedExtensionModuleImportError(
-                f"Unexpected error importing python module of extension {extension_ref!r}: {error}. "
+                f"Unexpected error importing python module of extension {extension_id!r}: {error}. "
                  "Please try deleting cache and regenerating it or create a GitHub issue"
             ) from error
     
         try:
-            group = getattr(module, f"ext_{extension_ref.id}")
+            group = getattr(module, f"extension")
         except AttributeError as error:
             raise MANIP_UnexpectedExtensionModuleImportError(
-                f"Python module of extension {extension_ref!r} is malformed. "
+                f"Python module of extension {extension_id!r} is malformed. "
                  "Please try deleting cache and regenerating it or create a GitHub issue"
             ) from error
         
@@ -822,11 +794,7 @@ class OpcodeInfoAPI:
             source=extension_source,  extension_id=extension_id,
             tolerate_file_path=False, bundle_errors=True,
         )
-        extension_ref = ExtensionRef(
-            id         = extension_id,
-            module_dir = path.dirname(module_path),
-        )
-        self._add_extension_by_ref(extension_ref)
+        self._add_extension(extension_id, module_dir=path.dirname(module_path))
     
     
     # Get all opcodes
@@ -979,7 +947,6 @@ class OpcodeInfoAPI:
 
 
 __all__ = [
-    "ExtensionRef", 
     "OpcodeType", "MonitorIdBehaviour", "OpcodeInfo", "OpcodeInfoGroup", "OpcodeInfoAPI",
 ]
 
