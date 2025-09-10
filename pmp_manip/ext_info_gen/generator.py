@@ -96,6 +96,7 @@ def process_all_menus(menus: dict[str, dict[str, Any]|list]) -> tuple[type[Input
                     if "text" not in possible_value:
                         raise MANIP_InvalidCustomMenuError(f"Invalid custom menu {menu_block_id!r}: item {i} is missing attribute 'text'")
                     if "value" not in possible_value:
+                        print(menu_info)
                         raise MANIP_InvalidCustomMenuError(f"Invalid custom menu {menu_block_id!r}: item {i} is missing attribute 'value'")
                     new_possible_values.append(possible_value["text"])
                     old_possible_values.append(possible_value["value"])

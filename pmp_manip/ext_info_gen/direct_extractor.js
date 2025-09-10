@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
 const { interpolate } = require("../../../Penguinmod-VM/src/engine/tw-interpolate");
+const immutable = require("immutable");
 
 
 // ---------- Step 1: whitelist-only register (only keep getInfo) ----------
@@ -12,13 +13,11 @@ let scratch_ext = null;
 
 function register(ext) {
     // Patch the prototype directly
-    const proto = Object.getPrototypeOf(ext);
-    throw new Error(`HEY '${typeof(ext)}' '${proto}' '${proto._loop}'`)
+    const proto = typeof ext === "function" ? ext.prototype : Object.getPrototypeOf(ext);
     for (const method of BLACKLIST) {
         if (typeof proto[method] === "function") {
             console.warn(`Patching prototype method '${method}'`);
             proto[method] = function () {};
-            throw new Error(`Patching prototype method '${method}'`)
         }
     }
     scratch_ext = ext;
@@ -27,77 +26,65 @@ function register(ext) {
 // ---------- Step 2: Setup Stubs and Proxy ----------
 
 let defaultStubValue;
-let isStrict;
 
 // This design was chosen because all these three will work with the above value as X
 // const y = new X()
 // X()
 // const {a, b} = X
 // X.a.b ...
+// ... (keep your other imports and code)    
+
 function makeConfiguredStub({
-    valueProps = {},            // { propName: someValue }
-    funcProps = [],             // ["someMethod", "otherMethod"]
+    basis = null,
+    valueProps = {},
+    funcProps = [],
     allowStaticGet = false,
 } = {}) {
-    const handler = {
-        get(target, prop, receiver) {
-        // Special cases to keep function identity intact
-        if (prop === Symbol.toStringTag) return "Function";
-        if (prop === "prototype") return target.prototype;
-        if (prop === "constructor") return target.constructor;
-
-        // Value properties
-        if (Object.prototype.hasOwnProperty.call(valueProps, prop)) {
-            return valueProps[prop];
-        }
-
-        // Function properties
-        if (funcProps.includes(prop)) {
-            return (...args) => defaultStubValue;
-        }
-
-        // If property is ALL_CAPS (with underscores), return its name as string
-        if (allowStaticGet && typeof prop === "string" && /^[A-Z0-9_]+$/.test(prop)) {
-            return prop;
-        }
-
-        // Unknown property
-        if (isStrict) {
-            const error = new Error(`Unknown property accessed: ${String(prop)}: =${(new Error()).stack}=`);
-            console.error(error.stack); // Print stack trace immediately
-            throw error;
-
-        } else {
-            return defaultStubValue;
-        }
-        },
-
-        apply(target, thisArg, args) {
-            return defaultStubValue;
-        },
-
-        construct(target, args, newTarget) {
-            return defaultStubValue;
-        }
-    };
-
-    function baseTarget(...args) {
-        return defaultStubValue;
+    // The stub function/object to return for everything else
+    if (basis === null) {
+        basis = Object.create(null);
     }
 
-    return new Proxy(baseTarget, handler);
+    // Assign known props
+    for (const [key, value] of Object.entries(valueProps)) {
+        basis[key] = value;
+    }
+    for (const funcName of funcProps) {
+        basis[funcName] = function () {
+            return defaultStubValue;
+        };
+    }
+
+    // Proxy only property accesses, not apply/construct
+    return new Proxy(basis, {
+        get(target, prop, receiver) {
+            if (Object.prototype.hasOwnProperty.call(target, prop)) {
+                return target[prop];
+            }
+            if (allowStaticGet && typeof prop === "string" && /^[A-Z0-9_]+$/.test(prop)) {
+                return prop;
+            }
+            if (prop === Symbol.toStringTag) return "Function";
+            if (prop === "prototype") return target.prototype;
+            if (prop === "constructor") return target.constructor;
+            return defaultStubValue;
+        },
+    });
 }
 
 // Create the ultimate stub globally
 defaultStubValue = makeConfiguredStub({
+  basis: function () {return defaultStubValue},
   valueProps: {},
   funcProps: [],
   allowStaticGet: false,
 });
 
 // Derived from https://github.com/PenguinMod/PenguinMod-Vm/blob/develop/src/engine/runtime.js
-const vmStub = makeConfiguredStub({
+const runtimeStub = makeConfiguredStub({
+    basis: Object.create(null),
     valueProps: {
+        // Instance properties
         targets: [],
         executableTargets: [],
         threads: [],
@@ -181,55 +168,75 @@ const vmStub = makeConfiguredStub({
         THREAD_STEP_INTERVAL: 1000 / 60,
         THREAD_STEP_INTERVAL_COMPATIBILITY: 1000 / 30,
         MAX_CLONES: 300,
-
         
-        "getMonitorState",
-        "getBlocksXML",
-        "getBlocksJSON",
-        "getScratchLinkSocket",
-        "getPeripheralIsConnected",
-        "getOpcodeFunction",
-        "getIsHat",
-        "getIsEdgeActivatedHat",
-        "getAddonBlock",
-        "getTargetById",
-        "getSpriteTargetByName",
-        "getTargetByDrawableId",
-        "getBranchAndTarget",
-        "getCamera",
-        "getTargetForStage",
-        "getEditingTarget",
-        "getAllVarNamesOfType",
-        "getLabelForOpcode",
+        
+        // Methods which are expected to return sth
+        getMonitorState: () => immutable.OrderedMap({}),
+        getBlocksXML: () => [],
+        getBlocksJSON: () => [],
+        getScratchLinkSocket: () => defaultStubValue,
+        getPeripheralIsConnected: () => false,
+        getOpcodeFunction: () => defaultStubValue,
+        getIsHat: () => false,
+        getIsEdgeActivatedHat: false,
+        
+        getAddonBlock: () => null,
+        getTargetById: () => null,
+        getSpriteTargetByName: () => null,
+        getTargetByDrawableId: () => null,
+        getBranchAndTarget: () => null,
+        getCamera: () => defaultStubValue,
+        getTargetForStage: () => defaultStubValue,
+        getEditingTarget: defaultStubValue,
+        getAllVarNamesOfType: () => [],
+        getLabelForOpcode: () => defaultStubValue,
+        
+        _makeExtensionMenuId: () => "myExt_menu_myMenu", 
+        _convertMenuItems: () => [],
+        _buildMenuForScratchBlocks: () => defaultStubValue,
+        _buildCustomFieldInfo: () => defaultStubValue,
+        _buildCustomFieldTypeForScratchBlocks: () => defaultStubValue,
+        _convertForScratchBlocks: () => defaultStubValue,
+        _convertBlockForScratchBlocks: () => defaultStubValue,
+        _convertSeparatorForScratchBlocks: () => defaultStubValue,
+        _convertLabelForScratchBlocks: () => defaultStubValue,
+        _convertButtonForScratchBlocks: () => defaultStubValue,
+        _convertXmlForScratchBlocks: () => defaultStubValue,
+        _constructInlineImageJson: () => defaultStubValue,
+        _constructVariableDropdown: () => defaultStubValue,
+        _convertPlaceholders: () => "%1",
+        _defaultScratchLinkSocketFactory: () => defaultStubValue,
+        _pushThread: () => defaultStubValue,
+        _restartThread: () => defaultStubValue,
+        isActiveThread: () => false,
+        isWaitingThread: () => false,
+        startHats: () => [],
+        moveExecutable: () => 0,
+        setExecutablePosition: () => 0,
+        _getMonitorThreadCount: () => 0,
+        findProjectOptionsComment: () => null,
+        _generateAllProjectOptions: () => defaultStubValue,
+        generateDifferingProjectOptions: () => defaultStubValue,
+        requestUpdateMonitor: () => false,
+        requestHideMonitor: () => false,
+        requestShowMonitor: () => false,
+        clonesAvailable: () => true,
+        createNewGlobalVariable: () => defaultStubValue,
     },
     funcProps: [
+        // Methods which are not expected to return sth
         "_initializeAddCloudVariable",
         "_initializeRemoveCloudVariable",
         "_registerBlockPackages",
         "compilerRegisterExtension",
         "registerCompiledExtensionBlocks",
         "registerExtensionAudioContext",
-        "_makeExtensionMenuId",
         "makeMessageContextForTarget",
         "_registerExtensionPrimitives",
         "_refreshExtensionPrimitives",
         "_removeExtensionPrimitive",
         "_fillExtensionCategory",
-        "_convertMenuItems",
-        "_buildMenuForScratchBlocks",
-        "_buildCustomFieldInfo",
-        "_buildCustomFieldTypeForScratchBlocks",
-        "_convertForScratchBlocks",
-        "_convertBlockForScratchBlocks",
-        "_convertSeparatorForScratchBlocks",
-        "_convertLabelForScratchBlocks",
-        "_convertButtonForScratchBlocks",
-        "_convertXmlForScratchBlocks",
-        "_constructInlineImageJson",
-        "_constructVariableDropdown",
-        "_convertPlaceholders",
         "configureScratchLinkSocketFactory",
-        "_defaultScratchLinkSocketFactory",
         "registerPeripheralExtension",
         "scanForPeripheral",
         "connectPeripheral",
@@ -243,21 +250,14 @@ const vmStub = makeConfiguredStub({
         "newVariableInstance",
         "attachV2BitmapAdapter",
         "attachStorage",
-        "_pushThread",
         "_stopThread",
-        "_restartThread",
         "emitCompileError",
-        "isActiveThread",
-        "isWaitingThread",
         "toggleScript",
         "addMonitorScript",
         "allScriptsDo",
         "allScriptsByOpcodeDo",
-        "startHats",
         "dispose",
         "addTarget",
-        "moveExecutable",
-        "setExecutablePosition",
         "removeExecutable",
         "disposeTarget",
         "stopForTarget",
@@ -268,7 +268,6 @@ const vmStub = makeConfiguredStub({
         "_renderInterpolatedPositions",
         "updateThreadMap",
         "_step",
-        "_getMonitorThreadCount",
         "_pushMonitors",
         "setEditingTarget",
         "setCompatibilityMode",
@@ -281,10 +280,7 @@ const vmStub = makeConfiguredStub({
         "convertToPackagedRuntime",
         "resetAllCaches",
         "addAddonBlock",
-        "findProjectOptionsComment",
         "parseProjectOptions",
-        "_generateAllProjectOptions",
-        "generateDifferingProjectOptions",
         "storeProjectOptions",
         "precompile",
         "enableDebug",
@@ -297,20 +293,15 @@ const vmStub = makeConfiguredStub({
         "emitBlockEndDrag",
         "visualReport",
         "requestAddMonitor",
-        "requestUpdateMonitor",
         "requestRemoveMonitor",
-        "requestHideMonitor",
-        "requestShowMonitor",
         "requestRemoveMonitorByTargetId",
         "changeCloneCounter",
-        "clonesAvailable",
         "emitProjectLoaded",
         "emitProjectChanged",
         "fireTargetWasCreated",
         "fireTargetWasRemoved",
         "updateCamera",
         "emitCameraChanged",
-        "createNewGlobalVariable",
         "requestRedraw",
         "requestTargetsUpdate",
         "requestBlocksUpdate",
@@ -328,6 +319,7 @@ const vmStub = makeConfiguredStub({
 });
 
 const ScratchVar = makeConfiguredStub({
+    basis: Object.create(null),
     valueProps: {
         // Must be kept in sync with safe_extractor.py
         // Derived from https://github.com/PenguinMod/PenguinMod-Vm/blob/develop/src/extension-support/tw-extension-api-common.js
@@ -395,10 +387,11 @@ const ScratchVar = makeConfiguredStub({
             "STAGE": "stage"
         },
         extensions: makeConfiguredStub({
-            valueProps:{
-                "unsandboxed": true,
-                "register": register,
-                "isPenguinMod": true
+            basis: Object.create(null),
+            valueProps: {
+                unsandboxed: true,
+                register: register,
+                isPenguinMod: true
             },
         }),
         translate: (() => {
@@ -407,7 +400,12 @@ const ScratchVar = makeConfiguredStub({
             return translateFn;
         })(),
 
-        vm: vmStub,
+        vm: makeConfiguredStub({
+            basis: Object.create(null),
+            valueProps: {
+                runtime: runtimeStub,
+            },
+        }),
         // I only included the properties which a resonable getInfo should use
 
         // To allow builtin PM extension to import them (they are not used in getInfo)
@@ -446,7 +444,6 @@ const stubValue = [
     () => ScratchVar.translate,
 ];
 
-
 function myRequire(moduleName) {
     const fullPath = path.resolve(__dirname, moduleName);
 
@@ -459,16 +456,20 @@ function myRequire(moduleName) {
     if (moduleName.startsWith('./') || moduleName.startsWith('../')    || moduleName.startsWith("@")) {
         return defaultStubValue;
     }
+    
+    if (moduleName === "format-message") {
+        return ScratchVar.translate;
+    }
 
     return require(moduleName); // fallback to real require
     /*
     Currently known packages which are required even for getInfo:
-        - format-message // TODO: possibly replace with translate func
         - scratch-translate-extension-languages
     */
 }
 
 const vmEnvironment = makeConfiguredStub({
+    basis: Object.create(null),
     valueProps: {
         ...global,
         // Important:
@@ -499,7 +500,6 @@ function runScript(code, filename) {
             } else {
                 process.exit(2); // Errno. 2 (nothing or invalid value registered)
             }
-            is_class = true;
         }        
 
         if (!(typeof scratch_ext.getInfo === "function")) {
@@ -522,7 +522,6 @@ function runScript(code, filename) {
 
 if (require.main === module) { // like if __name__ == "__main__"
     const filePath = process.argv[2];
-    isStrict = JSON.parse(process.argv[3]);
     const fullPath = path.resolve(filePath);
     const code = fs.readFileSync(fullPath, "utf-8");
 
