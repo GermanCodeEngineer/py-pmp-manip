@@ -46,7 +46,7 @@ def extract_extension_info_directly(js_code: str, code_encoding: str = "utf-8", 
         #    temp_file.write(js_code)
         #    temp_js_path = temp_file.name
         from pmp_manip.utility import write_file_text
-        #write_file_text("code.js", js_code)
+        write_file_text("code.js", js_code)
         temp_js_path = "code.js"
 
     except (FileNotFoundError, OSError, PermissionError, UnicodeEncodeError) as error:

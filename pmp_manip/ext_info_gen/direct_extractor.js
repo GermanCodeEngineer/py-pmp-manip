@@ -222,6 +222,23 @@ const runtimeStub = makeConfiguredStub({
         requestShowMonitor: () => false,
         clonesAvailable: () => true,
         createNewGlobalVariable: () => defaultStubValue,
+
+        // Inherited from EventEmitter
+        addListener: () => this,
+        on: () => this,
+        once: () => this,
+        removeListener: () => this,
+        off: () => this,
+        removeAllListeners: () => this,
+        setMaxListeners: () => this,
+        getMaxListeners: () => 10,
+        listeners: () => [],
+        rawListeners: () => [],
+        emit: () => false,
+        listenerCount: () => 0,
+        prependListener: () => this,
+        prependOnceListener: () => this,
+        eventNames: () => [],
     },
     funcProps: [
         // Methods which are not expected to return sth
@@ -394,11 +411,12 @@ const ScratchVar = makeConfiguredStub({
                 isPenguinMod: true
             },
         }),
-        translate: (() => {
-            const translateFn = (m) => (typeof m === "string" ? m : m.default || "");
-            translateFn.setup = (newTranslations) => {};
-            return translateFn;
-        })(),
+        translate: makeConfiguredStub({
+            basis: (m) => (typeof m === "string" ? m : m.default || ""),
+            valueProps: {
+                setup: (newTranslations) => defaultStubValue,
+            },
+        }),
 
         vm: makeConfiguredStub({
             basis: Object.create(null),
@@ -461,28 +479,32 @@ function myRequire(moduleName) {
         return ScratchVar.translate;
     }
 
+    if (moduleName.startsWith("three/")) {
+        // known to cause problems as the CJS modules of three do not work with require
+        return defaultStubValue;
+    }
+
     return require(moduleName); // fallback to real require
     /*
     Currently known packages which are required even for getInfo:
         - scratch-translate-extension-languages
+        - three
     */
 }
 
-const vmEnvironment = makeConfiguredStub({
-    basis: Object.create(null),
-    valueProps: {
-        ...global,
-        // Important:
-        module: { exports: {} },
-        require: myRequire,
-        Scratch: ScratchVar,
-        vm: ScratchVar.vm,
-        
-        // Required by some extensions, just not available in node
-        Audio: defaultStubValue,
-        addEventListener: defaultStubValue,
-    }
-})
+const vmEnvironment = {
+    ...global,
+    // Important:
+    module: { exports: {} },
+    require: myRequire,
+    Scratch: ScratchVar,
+    vm: ScratchVar.vm,
+
+    // Required by some extensions, just not available in node
+    Audio: defaultStubValue,
+    addEventListener: defaultStubValue,
+    document: defaultStubValue,
+}
 
 // ---------- Step 4: VM execution wrapper ----------
 
@@ -508,6 +530,7 @@ function runScript(code, filename) {
 
         const extensionInfo = scratch_ext.getInfo();
         console.log(JSON.stringify(extensionInfo)); // must be the last call to console.log() or similar
+        throw new Error(typeof(extensionInfo));
     } catch (error) {
         if (error && error.stack) {
             console.error(error.stack);

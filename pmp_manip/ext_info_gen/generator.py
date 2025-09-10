@@ -43,8 +43,8 @@ KNOWN_BLOCK_INFO_ATTRS = {
     # irrelevant for my purpose:
     "alignments", "hideFromPalette", "filter", "shouldRestartExistingThreads", 
     "isEdgeActivated", "func", "allowDropAnywhere", "switches", "switchText",
-    "blockIconURI",
-    # temporary, because misspelled in 'pmEventsExpansion", see https://github.com/PenguinMod/PenguinMod-Vm/issues/156
+    "blockIconURI", "canDragDuplicate",
+    # because of misspellings in e.g. 'pmEventsExpansion":
     "hideFromPallete",
 }
 
@@ -347,7 +347,9 @@ def generate_block_opcode_info(
             case _:
                 raise ValueError(f"Unknown value for blockType: {repr(block_type)}")
         
-        opcode: str = block_info["opcode"] # might not be included so must come after eg. "label" blocks have returned alredy       
+        if "opcode" not in block_info:
+            raise MANIP_InvalidCustomBlockError(f"Invalid block info missing attribute 'opcode' (block 'Unknown'): {block_info}") from error  
+        opcode: str = block_info["opcode"] # might not be included so must come after eg. "label" blocks have returned alredy     
         
         inputs, dropdowns = process_arguments(arguments, menus, input_type_cls, dropdown_type_cls)
                 
@@ -366,7 +368,7 @@ def generate_block_opcode_info(
                 raise MANIP_UnknownExtensionAttributeError(f"Unknown or not (yet) implemented block attribute (block {opcode!r}): {repr(attr)}")
     
         new_opcode = generate_new_opcode(
-            text=block_info["text"],
+            text=block_info.get("text", opcode),
             arguments=arguments,
             inputs=inputs,
             dropdowns=dropdowns,
@@ -382,12 +384,9 @@ def generate_block_opcode_info(
             has_variable_id=(can_have_monitor and bool(dropdowns)), # if there are any dropdowns
         )
         
-    except (KeyError, ValueError) as error:
+    except ValueError as error:
         block_opcode = repr(block_info.get('opcode', 'Unknown'))
-        if   isinstance(error, KeyError):
-            raise MANIP_InvalidCustomBlockError(f"Invalid block info missing attribute {error} (block {block_opcode}): {block_info}") from error
-        elif isinstance(error, ValueError):
-            raise MANIP_InvalidCustomBlockError(f"Invalid block info (block {block_opcode}): {error}: {block_info}") from error
+        raise MANIP_InvalidCustomBlockError(f"Invalid block info (block {block_opcode}): {error}: {block_info}") from error
     
     return (opcode_info, new_opcode)
 
