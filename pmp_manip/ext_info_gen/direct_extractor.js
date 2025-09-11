@@ -3,13 +3,14 @@ const path = require("path");
 const vm = require("vm");
 const { interpolate } = require("../../../Penguinmod-VM/src/engine/tw-interpolate");
 const immutable = require("immutable");
-
+const Module = require("module");
 
 // ---------- Step 1: Blacklist register ----------
 
 const BLACKLIST = new Set(["init", "initialize", "updateVideoDisplay", "_loop"]);
 
 let scratch_ext = null;
+let fullExtensionPath;
 
 function register(ext) {
     // Patch the prototype directly
@@ -452,6 +453,7 @@ const stubModules = [
     path.resolve(__dirname, '../../util/cast'),
     path.resolve(__dirname, '../../util/clone'),
     path.resolve(__dirname, '../../util/color'),
+    path.resolve(__dirname, '../../util/uid'),
 
     path.resolve(__dirname, '../../extension-support/tw-l10n'),
 ];
@@ -465,11 +467,12 @@ const stubValue = [
     ScratchVar.Cast,
     ScratchVar.Clone,
     ScratchVar.Color,
+    () => "",
 
     () => ScratchVar.translate,
 ];
 
-function myRequire(moduleName) {
+function myRequire(moduleName, baseRequire) {
     const fullPath = path.resolve(__dirname, moduleName);
 
     // Forbid access to non-JS files e.g. .png
@@ -484,45 +487,65 @@ function myRequire(moduleName) {
     }
     
     // Only stub relative imports under ../../ or from external organizations
-    if (moduleName.startsWith('./') || moduleName.startsWith('../')    || moduleName.startsWith("@")) {
+    if (moduleName.startsWith('../../') || moduleName.startsWith('@')) {
         return defaultStubValue;
     }
     
+    // We do not care about translations and just want english anyway
     if (moduleName === "format-message") {
         return ScratchVar.translate;
     }
 
     if (moduleName.startsWith("three/")) {
-        // known to cause problems as the CJS modules of three do not work with require
+        // can cause problems as the CJS modules of three do not work with require
         return defaultStubValue;
     }
 
-    return require(moduleName); // fallback to real require
+    // fallback to real require
+    return baseRequire(moduleName);
     /*
-    Currently known packages which are required even for getInfo:
+    Currently known packages which are required by builtin extensions:
         - scratch-translate-extension-languages
         - three
+        - pathfinding
     */
+}
+
+// Helper: create a require function as if from another file, using myRequire
+function makeRequireForFile(filename) {
+    const mod = new Module(filename);
+    mod.filename = filename;
+    mod.paths = Module._nodeModulePaths(path.dirname(filename));
+    // Bind myRequire with the real require of the module
+    return (moduleName) => myRequire(moduleName, mod.require.bind(mod));
 }
 
 const vmEnvironment = {
     ...global,
-    // Important:
     module: { exports: {} },
-    require: myRequire,
-    Scratch: ScratchVar,
-    vm: ScratchVar.vm,
-
-    // Required by some extensions, just not available in node
-    Audio: defaultStubValue,
-    addEventListener: defaultStubValue,
-    document: defaultStubValue,
+    // require is overridden in runScript
 }
+
+global.alert = () => {};
+global.Scratch = ScratchVar;
+global.vm = ScratchVar.vm;
+global.Audio = makeConfiguredStub({basis: () => {}});
+global.addEventListener = () => {};
+global.document = makeConfiguredStub();
 
 // ---------- Step 4: VM execution wrapper ----------
 
 function runScript(code, filename) {
+    // Save original require
+    const originalRequire = Module.prototype.require;
+
+    // Patch require to use myRequire
+    Module.prototype.require = function(moduleName) {
+        return myRequire(moduleName, originalRequire.bind(this));
+    };
+
     try {
+        vmEnvironment.require = makeRequireForFile(filename);
         vm.createContext(vmEnvironment);
         vm.runInContext(code, vmEnvironment, { filename });
 
@@ -550,6 +573,10 @@ function runScript(code, filename) {
             console.error(error);
         }
         process.exit(1);
+    } finally {
+        // Restore original require
+        Module.prototype.require = originalRequire;
+        // No need to restore global variables
     }
 }
 
@@ -557,9 +584,9 @@ function runScript(code, filename) {
 
 if (require.main === module) { // like if __name__ == "__main__"
     const filePath = process.argv[2];
-    const fullPath = path.resolve(filePath);
-    const code = fs.readFileSync(fullPath, "utf-8");
+    fullExtensionPath = path.resolve(filePath);
+    const code = fs.readFileSync(fullExtensionPath, "utf-8");
 
-    runScript(code, fullPath);
+    runScript(code, fullExtensionPath);
     process.exit(0);
 }

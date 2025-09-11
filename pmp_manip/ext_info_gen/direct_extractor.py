@@ -6,7 +6,7 @@ from typing       import Any
 
 from pmp_manip.config  import get_config
 from pmp_manip.utility import (
-    write_file_text, delete_file,
+    write_file_text, delete_directory,
     MANIP_ValueError, MANIP_FailedFileWriteError, MANIP_FailedFileDeleteError, 
     MANIP_NoNodeJSInstalledError, 
     MANIP_ExtensionExecutionTimeoutError, MANIP_ExtensionExecutionErrorInJavascript, MANIP_UnexpectedExtensionExecutionError,
@@ -45,12 +45,14 @@ def extract_extension_info_directly(
     if main_file_name not in js_files:
         raise MANIP_ValueError(f"'main_file_name' {main_file_name!r} must be a file name in 'js_files'. Keys of js_files: {list(js_files.keys())}")
     try:
-        with TemporaryDirectory(delete=False) as temp_dir:
-            temp_dir_path = temp_dir.name
+        with TemporaryDirectory(delete=False) as temp_dir_path:
+        #temp_dir_path = "extension"; from os import makedirs
+        #try: makedirs(temp_dir_path)
+        #except: pass
+        #if True:
             main_file_path = path.join(temp_dir_path, main_file_name)
             for file_name, content in js_files.items():
-                write_file_text(path.join(temp_dir_path, file_name), content)
-        input("WROTE.")
+                write_file_text(path.join(temp_dir_path, file_name), content, encoding=code_encoding)
 
     except (FileNotFoundError, OSError, PermissionError, UnicodeEncodeError) as error:
         raise MANIP_FailedFileWriteError(f"Failed to create or write javascript code to temporary file: {error}") from error
@@ -71,9 +73,9 @@ def extract_extension_info_directly(
         raise MANIP_UnexpectedExtensionExecutionError(f"Failed to run Node.js subprocess (to execute extension code): {error}") from error
     finally:
         try:
-            delete_directory(temp_js_path)
+            pass # CLEANUP #delete_directory(temp_dir_path)
         except MANIP_FailedFileDeleteError as error:
-            raise MANIP_FailedFileDeleteError(f"Failed to remove temporary javascript file at {temp_js_path!r}: {error}") from error
+            raise MANIP_FailedFileDeleteError(f"Failed to remove temporary javascript file at {temp_dir_path!r}: {error}") from error
 
     if result.returncode != 0:
         if   result.returncode == 2:

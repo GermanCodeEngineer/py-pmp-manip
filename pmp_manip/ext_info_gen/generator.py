@@ -37,9 +37,10 @@ KNOWN_EXTENSION_INFO_ATTRS = {
     "id", "blocks", "menus",
     # irrelevant for my purpose:
     "name", "color1", "color2", "color3", "menuIconURI", "blockIconURI", "docsURI", "isDynamic", "orderBlocks", "showStatusButton",
+    "autoLoad",
 }
 KNOWN_BLOCK_INFO_ATTRS = {
-    "opcode", "blockType", "text", "arguments", "branchCount", "isTerminal", "disableMonitor", 
+    "opcode", "blockType", "text", "arguments", "branchCount", "isTerminal", "terminal", "disableMonitor", 
     # irrelevant for my purpose:
     "alignments", "hideFromPalette", "filter", "shouldRestartExistingThreads", 
     "isEdgeActivated", "func", "allowDropAnywhere", "switches", "switchText",
@@ -321,11 +322,11 @@ def generate_block_opcode_info(
     try:
         block_type: str = block_info.get("blockType", "command")
         branch_count: int = block_info.get("branchCount", 0)
-        is_terminal: bool = block_info.get("isTerminal", False)
+        is_terminal: bool = block_info.get("isTerminal", False) or block_info.get("terminal", False)
         arguments: dict[str, dict[str, Any]] = block_info.get("arguments", {})
         opcode_type: OpcodeType
         if is_terminal and (block_type != "command"):
-            raise ValueError("'isTerminal' can only be True when 'blockType' is Scratch.BlockType.COMMAND(='command')")
+            raise ValueError("'isTerminal'/'terminal' can only be True when 'blockType' is Scratch.BlockType.COMMAND(='command')")
 
         
         match block_type:
