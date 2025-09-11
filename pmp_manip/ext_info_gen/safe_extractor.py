@@ -309,7 +309,7 @@ def extract_extension_info_safely(js_code: str) -> dict[str, Any]:
     Does NOT actually execute any JavaScript code (for security lol)
     
     Args:
-        js_code: the extension source code
+        js_code: the only JS code file of the extension (muti-file extensions are not supported)
     
     Raises:
         MANIP_InvalidExtensionCodeSyntaxError: if the extension code is syntactically invalid 

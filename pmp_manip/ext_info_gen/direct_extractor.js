@@ -5,7 +5,7 @@ const { interpolate } = require("../../../Penguinmod-VM/src/engine/tw-interpolat
 const immutable = require("immutable");
 
 
-// ---------- Step 1: whitelist-only register (only keep getInfo) ----------
+// ---------- Step 1: Blacklist register ----------
 
 const BLACKLIST = new Set(["init", "initialize", "updateVideoDisplay", "_loop"]);
 
@@ -414,7 +414,14 @@ const ScratchVar = makeConfiguredStub({
         translate: makeConfiguredStub({
             basis: (m) => (typeof m === "string" ? m : m.default || ""),
             valueProps: {
-                setup: (newTranslations) => defaultStubValue,
+                setup: makeConfiguredStub({
+                    basis: (newTranslations) => makeConfiguredStub({
+                        basis: Object.create(null),
+                        valueProps: {
+                            locale: "en",
+                        },
+                    }),
+                }),
             },
         }),
 
@@ -464,6 +471,12 @@ const stubValue = [
 
 function myRequire(moduleName) {
     const fullPath = path.resolve(__dirname, moduleName);
+
+    // Forbid access to non-JS files e.g. .png
+    const extMatch = fullPath.match(/\.([a-zA-Z0-9]+)$/);
+    if (extMatch && extMatch[1] !== 'js') {
+        return defaultStubValue;
+    }
 
     // Modules you want to return a specific stub value
     if (stubModules.includes(fullPath)) {
@@ -530,7 +543,6 @@ function runScript(code, filename) {
 
         const extensionInfo = scratch_ext.getInfo();
         console.log(JSON.stringify(extensionInfo)); // must be the last call to console.log() or similar
-        throw new Error(typeof(extensionInfo));
     } catch (error) {
         if (error && error.stack) {
             console.error(error.stack);

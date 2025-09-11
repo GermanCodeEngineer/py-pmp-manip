@@ -1,4 +1,5 @@
 import os
+import shutil
 import zipfile, zlib
 
 from pmp_manip.utility.decorators import enforce_argument_types
@@ -13,7 +14,7 @@ def read_all_files_of_zip(zip_path: str) -> dict[str, bytes]:
     Reads all files from a ZIP archive and returns their contents
 
     Args:
-        zip_path (str): Path to the ZIP file
+        zip_path: Path to the ZIP file
 
     Returns:
         dict[str, bytes]: An object mapping each file name
@@ -124,12 +125,31 @@ def delete_file(file_path: str) -> None:
     try:
         os.remove(file_path)
 
-    except TypeError as error:
-        raise MANIP_TypeError(str(error)) from error
     except ValueError as error:
         raise MANIP_ValueError(str(error)) from error
     except (FileNotFoundError, PermissionError, IsADirectoryError, OSError) as error:
         raise MANIP_FailedFileDeleteError(f"Failed to delete file at {file_path!r}: {error}") from error
+
+@enforce_argument_types
+def delete_directory(dir_path: str) -> None:
+    """
+    Delete a directory and all its contents from the filesystem
+
+    Args:
+        dir_path: Path to the directory to delete
+
+    Raises:
+        MANIP_ValueError: If `dir_path` is invalid or not a proper directory path
+        MANIP_FailedFileDeleteError: If an OS-level error occurs (e.g., directory not found, permission denied,
+                                      is a file, or other I/O-related failure)
+    """
+    try:
+        shutil.rmtree(dir_path)
+    
+    except ValueError as error:
+        raise MANIP_ValueError(str(error)) from error
+    except (FileNotFoundError, PermissionError, NotADirectoryError, OSError) as error:
+        raise MANIP_FailedFileDeleteError(f"Failed to delete directory at {dir_path!r}: {error}") from error
 
 @enforce_argument_types
 def create_zip_file(zip_path: str, contents: dict[str, bytes]) -> None:
@@ -164,5 +184,8 @@ def file_exists(file_path: str) -> bool:
         raise MANIP_OSError(str(error)) from error
 
 
-__all__ = ["read_all_files_of_zip", "read_file_text", "write_file_text", "delete_file", "create_zip_file", "file_exists"]
+__all__ = [
+    "read_all_files_of_zip", "read_file_text", "write_file_text", 
+    "delete_file", "delete_directory", "create_zip_file", "file_exists",
+]
 

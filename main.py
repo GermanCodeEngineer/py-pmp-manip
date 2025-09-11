@@ -11,7 +11,7 @@ init_config(cfg)
 #"""
 for builtin_ext_id in BUILTIN_EXT_TO_PATH.keys():
     try:
-        info_api.generate_and_add_extension(builtin_ext_id, extension_source=None, is_strict=True)
+        info_api.generate_and_add_extension(builtin_ext_id, extension_source=None)
     except Exception as error:
         print("failed", builtin_ext_id, str(error).splitlines()[0])
         raise

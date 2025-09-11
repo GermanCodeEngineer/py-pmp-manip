@@ -7,7 +7,8 @@ from typing       import Any
 from pmp_manip.config          import get_config, init_config, get_default_config
 from pmp_manip.utility         import (
     read_file_text, write_file_text, file_exists, enforce_argument_types, ContentFingerprint,
-    MANIP_Error, MANIP_FailedFileReadError, MANIP_FailedFileWriteError, MANIP_ThanksError, MANIP_ExtensionFetchError,
+    MANIP_Error, MANIP_ValueError,
+    MANIP_FailedFileReadError, MANIP_FailedFileWriteError, MANIP_ThanksError, MANIP_ExtensionFetchError,
     MANIP_DirectExtensionInfoExtractionError, MANIP_SafeExtensionInfoExtractionError,
     MANIP_NoNodeJSInstalledError, MANIP_ExtensionInfoConvertionError,
 )
@@ -148,21 +149,20 @@ def _update_cache(
 
 @enforce_argument_types
 def generate_extension_info_py_file(
-    source: str, extension_id: str, 
+    sources: list[str], extension_id: str, 
     tolerate_file_path: bool, bundle_errors: bool = True,
-    is_strict: bool = False,
 ) -> str:
     """
     Generate a python file, which stores information about the blocks of the given extension and is required for the core module. If a cached version exist and is up to date, it will be kept. Returns the file path of the python file. Uses logging
 
     Args:
-        source: the file path or https URL or JS Data URI of the extension code(if tolerate_file_paths)
+        sources: the set of file paths or https URLs or JS Data URIs of the extension code files(usually and at least one, first is condered source of main code file)
         extension_id: the unique identifier of the extension 
         tolerate_file_path: wether to allow file paths as extension sources
         bundle_errors: wether to bundle similar errors for more compact handling (see Raises)
-        is_strict: (for developers) wether to be strict e.g. about property accesses in a node subprocess
     
     Raises (if bundled):
+        MANIP_ValueError: if no source or too many sources were provided
         MANIP_NoNodeJSInstalledError(not bundled): if Node.js is not installed or not found in PATH
         MANIP_ExtensionFetchError: if the extension code could not be fetched for some reason
         MANIP_DirectExtensionInfoExtractionError: if the extension info could not be extracted through direct execution
@@ -173,6 +173,7 @@ def generate_extension_info_py_file(
     
     Raises (if NOT bundled):
         ### created here or not bundled anyway:
+        MANIP_ValueError: if no source or too many sources were provided
         MANIP_FailedFileWriteError(unlikely): if the cache file or generated extension info file or its directory could not be written/created
         MANIP_NoNodeJSInstalledError(not bundled): if Node.js is not installed or not found in PATH
         
@@ -208,6 +209,10 @@ def generate_extension_info_py_file(
         MANIP_UnexpectedPropertyAccessWarning: if a property of 'this' is accessed in the getInfo method of the extension code in safe analysis
         MANIP_UnexpectedNotPossibleFeatureWarning: if an impossible to implement feature is used (eg. ternary expr) in the getInfo method of the extension code in safe analysis
     """
+    if len(sources) < 1:
+        raise MANIP_ValueError(f"Expected at least one source: {sources}")
+    main_source = sources[0]
+    
     cfg = get_config()
     logger = getLogger(__name__)
     dest_file_name = f"{extension_id}.py"
@@ -218,7 +223,7 @@ def generate_extension_info_py_file(
     
     status = _consider_state(
         dest_file_name, dest_file_path,
-        cache, js_fetch_expensive=(source.startswith("http://") or source.startswith("https://")),
+        cache, js_fetch_expensive=(main_source.startswith("http://") or main_source.startswith("https://")),
     )
     
     if status == STATUS_KEEP:
@@ -248,7 +253,7 @@ def generate_extension_info_py_file(
     if _is_trusted_extension_origin(source):
         logger.info(f"Extension {extension_id!r}: Extracting extension info through direct execution")
         try:
-            extension_info = extract_extension_info_directly(js_code, is_strict=is_strict)
+            extension_info = extract_extension_info_directly(js_code)
         except MANIP_NoNodeJSInstalledError:
             raise
         except MANIP_Error as error:
@@ -320,4 +325,4 @@ if __name__ == "__main__": # pragma: no cover
         #("P7BoxPhys",           "https://extensions.penguinmod.com/extensions/pooiod/Box2D.js"),
         #("griffpatch",          "https://extensions.turbowarp.org/box2d.js"),
     ]:
-        generate_extension_info_py_file(extension, extension_id, tolerate_file_path=True, is_strict=True) # pragma: no cover
+        generate_extension_info_py_file(extension, extension_id, tolerate_file_path=True) # pragma: no cover
