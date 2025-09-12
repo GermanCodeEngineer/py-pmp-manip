@@ -1,8 +1,6 @@
 const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
-const { interpolate } = require("../../../Penguinmod-VM/src/engine/tw-interpolate");
-const immutable = require("immutable");
 const Module = require("module");
 
 // ---------- Step 1: Blacklist register ----------
@@ -80,6 +78,8 @@ defaultStubValue = makeConfiguredStub({
   funcProps: [],
   allowStaticGet: false,
 });
+
+
 
 // Derived from https://github.com/PenguinMod/PenguinMod-Vm/blob/develop/src/engine/runtime.js
 const runtimeStub = makeConfiguredStub({
@@ -172,7 +172,7 @@ const runtimeStub = makeConfiguredStub({
         
         
         // Methods which are expected to return sth
-        getMonitorState: () => immutable.OrderedMap({}),
+        getMonitorState: () => new Map(), // OrderedMap in reality, but does not really matter
         getBlocksXML: () => [],
         getBlocksJSON: () => [],
         getScratchLinkSocket: () => defaultStubValue,
@@ -472,7 +472,7 @@ const stubValue = [
     () => ScratchVar.translate,
 ];
 
-function myRequire(moduleName, baseRequire) {
+function myRequire(moduleName) {
     const fullPath = path.resolve(__dirname, moduleName);
 
     // Forbid access to non-JS files e.g. .png
@@ -502,7 +502,7 @@ function myRequire(moduleName, baseRequire) {
     }
 
     // fallback to real require
-    return baseRequire(moduleName);
+    return require(moduleName);
     /*
     Currently known packages which are required by builtin extensions:
         - scratch-translate-extension-languages
@@ -511,41 +511,20 @@ function myRequire(moduleName, baseRequire) {
     */
 }
 
-// Helper: create a require function as if from another file, using myRequire
-function makeRequireForFile(filename) {
-    const mod = new Module(filename);
-    mod.filename = filename;
-    mod.paths = Module._nodeModulePaths(path.dirname(filename));
-    // Bind myRequire with the real require of the module
-    return (moduleName) => myRequire(moduleName, mod.require.bind(mod));
-}
-
 const vmEnvironment = {
     ...global,
+    // Important:
     module: { exports: {} },
-    // require is overridden in runScript
+    require: myRequire,
+    Scratch: ScratchVar,
+    vm: ScratchVar.vm,
 }
 
-global.alert = () => {};
-global.Scratch = ScratchVar;
-global.vm = ScratchVar.vm;
-global.Audio = makeConfiguredStub({basis: () => {}});
-global.addEventListener = () => {};
-global.document = makeConfiguredStub();
 
 // ---------- Step 4: VM execution wrapper ----------
 
 function runScript(code, filename) {
-    // Save original require
-    const originalRequire = Module.prototype.require;
-
-    // Patch require to use myRequire
-    Module.prototype.require = function(moduleName) {
-        return myRequire(moduleName, originalRequire.bind(this));
-    };
-
     try {
-        vmEnvironment.require = makeRequireForFile(filename);
         vm.createContext(vmEnvironment);
         vm.runInContext(code, vmEnvironment, { filename });
 
@@ -573,10 +552,6 @@ function runScript(code, filename) {
             console.error(error);
         }
         process.exit(1);
-    } finally {
-        // Restore original require
-        Module.prototype.require = originalRequire;
-        // No need to restore global variables
     }
 }
 
