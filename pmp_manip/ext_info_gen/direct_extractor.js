@@ -443,19 +443,20 @@ const ScratchVar = makeConfiguredStub({
 
 // ---------- Step 3: Custom require replacement ----------
 const stubModules = [
-    path.resolve(__dirname, '../../extension-support/argument-type'),
-    path.resolve(__dirname, '../../extension-support/argument-alignment'),
-    path.resolve(__dirname, '../../extension-support/block-type'),
-    path.resolve(__dirname, '../../extension-support/block-shape'),
-    path.resolve(__dirname, '../../extension-support/notch-shape'),
-    path.resolve(__dirname, '../../extension-support/target-type'),
+    path.resolve(__dirname, "../../extension-support/argument-type"),
+    path.resolve(__dirname, "../../extension-support/argument-alignment"),
+    path.resolve(__dirname, "../../extension-support/block-type"),
+    path.resolve(__dirname, "../../extension-support/block-shape"),
+    path.resolve(__dirname, "../../extension-support/notch-shape"),
+    path.resolve(__dirname, "../../extension-support/target-type"),
 
-    path.resolve(__dirname, '../../util/cast'),
-    path.resolve(__dirname, '../../util/clone'),
-    path.resolve(__dirname, '../../util/color'),
-    path.resolve(__dirname, '../../util/uid'),
+    path.resolve(__dirname, "../../util/cast"),
+    path.resolve(__dirname, "../../util/clone"),
+    path.resolve(__dirname, "../../util/color"),
+    path.resolve(__dirname, "../../util/uid"),
 
-    path.resolve(__dirname, '../../extension-support/tw-l10n'),
+    path.resolve(__dirname, "../../extension-support/tw-l10n"),
+    path.resolve(__dirname, "../../extension-support/extension-addon-switchers"),
 ];
 const stubValue = [
     ScratchVar.ArgumentType,
@@ -464,12 +465,20 @@ const stubValue = [
     ScratchVar.BlockShape,
     ScratchVar.NotchShape,
     ScratchVar.TargetType,
+    
     ScratchVar.Cast,
     ScratchVar.Clone,
     ScratchVar.Color,
     () => "",
 
     () => ScratchVar.translate,
+    makeConfiguredStub({
+        basis: () => ({}),
+        valueProps: {
+            get_extension_switches: () => ({}),
+            noopSwitch: {isNoop: true},
+        },
+    })
 ];
 
 function myRequire(moduleName) {
@@ -477,7 +486,7 @@ function myRequire(moduleName) {
 
     // Forbid access to non-JS files e.g. .png
     const extMatch = fullPath.match(/\.([a-zA-Z0-9]+)$/);
-    if (extMatch && extMatch[1] !== 'js') {
+    if (extMatch && extMatch[1] !== "js") {
         return defaultStubValue;
     }
 
@@ -487,7 +496,7 @@ function myRequire(moduleName) {
     }
     
     // Only stub relative imports under ../../ or from external organizations
-    if (moduleName.startsWith('../../') || moduleName.startsWith('@')) {
+    if (moduleName.startsWith("../../") || moduleName.startsWith("@")) {
         return defaultStubValue;
     }
     
