@@ -45,7 +45,7 @@ KNOWN_BLOCK_INFO_ATTRS = {
     "alignments", "hideFromPalette", "filter", "shouldRestartExistingThreads", 
     "isEdgeActivated", "func", "allowDropAnywhere", "switches", "switchText",
     "blockIconURI", "canDragDuplicate",
-    # because of misspellings in e.g. 'pmEventsExpansion":
+    # because of misspellings in e.g. "pmEventsExpansion":
     "hideFromPallete",
 }
 
@@ -350,7 +350,7 @@ def generate_block_opcode_info(
         
         if "opcode" not in block_info:
             raise MANIP_InvalidCustomBlockError(f"Invalid block info missing attribute 'opcode' (block 'Unknown'): {block_info}") from error  
-        opcode: str = block_info["opcode"] # might not be included so must come after eg. "label" blocks have returned alredy     
+        opcode: str = block_info["opcode"] # might not be included so must come after eg. "label" blocks have returned alredy
         
         inputs, dropdowns = process_arguments(arguments, menus, input_type_cls, dropdown_type_cls)
                 
@@ -441,7 +441,10 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
             raise MANIP_InvalidCustomBlockError(f"Invalid block info: Expected type str or dict (block {i}): {block_info}")
         
         if opcode_info is not None:
-            old_opcode: str = f"{extension_id}_{block_info['opcode']}" # 'opcode' is guaranteed to exist
+            old_opcode: str = block_info["opcode"] # "opcode" is guaranteed to exis
+            is_final_opcode: bool = block_info.get("ppm_final_opcode", False) # Custom property
+            if not is_final_opcode:
+                old_opcode: str = f"{extension_id}_{old_opcode}" # "opcode" is guaranteed to exist
             try:
                 info_group_content.set(
                     key1  = old_opcode,

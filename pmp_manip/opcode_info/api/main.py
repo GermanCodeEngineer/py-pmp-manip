@@ -23,26 +23,25 @@ if TYPE_CHECKING:
 # FORMAT: extension_id: (extension_dir, [extension_file1.js, extension_file2.js, ...])
 BUILTIN_EXTENSIONS: dict[str, tuple[str, list[str]]] = {
     # These are the non-core built-in extensions.
-    "pen": ("scratch3_pen", ["index.js"]),
-    "wedo2": ("scratch3_wedo2", ["index.js"]),
-    "music": ("scratch3_music", ["index.js", "manifest.js"]),
-    "microbit": ("scratch3_microbit", ["index.js"]),
-    "text2speech": ("scratch3_text2speech", ["index.js"]),
-    "translate": ("scratch3_translate", ["index.js"]),
-    "videoSensing": ("scratch3_video_sensing", ["index.js", "debug.js", "library.js", "math.js", "view.js"]),
-    "ev3": ("scratch3_ev3", ["index.js"]),
-    "makeymakey": ("scratch3_makeymakey", ["index.js"]),
-    "boost": ("scratch3_boost", ["index.js"]),
-    "gdxfor": ("scratch3_gdx_for", ["index.js", "scratch-link-device-adapter.js"]),
-    "text": ("scratchLab_animatedText", ["index.js"]),
+    "pen",
+    "music",
+    "microbit",
+    "text2speech",
+    "translate",
+    "videoSensing",
+    "ev3",
+    "makeymakey",
+    "boost",
+    "gdxfor",
+    "text",
 
     # garbomuffin: *silence*
     # tw: core extension
-    "tw": ("tw", ["index.js"]),
+    "tw",
     # twFiles: replaces jgFiles as it works better on other devices
-    "twFiles": ("tw_files", ["index.js"]),
+    "twFiles",
 
-    # pm: category expansions & seperations go here
+    # pm: category expansions & seperations go here    # HERE
     # pmMotionExpansion: extra motion blocks that were in the category & new ones that werent
     "pmMotionExpansion": ("pm_motionExpansion", ["index.js"]),
     # pmOperatorsExpansion: extra operators that were in the category & new ones that werent
@@ -227,6 +226,7 @@ BUILTIN_EXTENSIONS: dict[str, tuple[str, list[str]]] = {
     # fr3d:
     "fr3d": ("fr_3d", ["index.js", "cannon.min.js"]),
 }
+BUILTIN_EXTENSIONS_SOURCE_DIRECTORY = "builtin_extension_source/builtin_extensions"
 
 class OpcodeType(GEnum):
     """
@@ -787,11 +787,11 @@ class OpcodeInfoAPI:
             if extension_id not in BUILTIN_EXTENSIONS:
                 raise MANIP_UnknownBuiltinExtensionError(f"Unknown builtin extension: {extension_id}. Either provide a source for a custom extension or create a GitHub issue for a builtin extension.")
             extension_dir, file_names = BUILTIN_EXTENSIONS[extension_id]
-            extension_source = f"https://raw.githubusercontent.com/PenguinMod/PenguinMod-Vm/refs/heads/develop/src/extensions/{extension_dir}/{file_names[0]}"
+            extension_source = path.join(BUILTIN_EXTENSIONS_SOURCE_DIRECTORY, )
         
         module_path = generate_extension_info_py_file(
             main_source=extension_source, other_file_names=file_names[1:],  extension_id=extension_id,
-            tolerate_file_path=False, bundle_errors=True,
+            tolerate_file_path=True, bundle_errors=True,
         )
         self._add_extension(extension_id, module_dir=path.dirname(module_path))
     

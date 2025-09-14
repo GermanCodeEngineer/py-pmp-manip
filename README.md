@@ -19,9 +19,9 @@ For a **documentation overview** and a **broader usage tutorial**, see [docs/ind
 ```bash
 pip install py-pmp-manip
 ```
-Or clone directly:
+**Or clone** directly. Do not forget to **include submodules**:
 ```bash
-git clone https://github.com/GermanCodeEngineer/py-pmp-manip.git
+git clone --recurse-submodules https://github.com/GermanCodeEngineer/py-pmp-manip.git
 cd py-pmp-manip
 pip install -e .
 ```

@@ -7,8 +7,8 @@ from pmp_manip.opcode_info.api.main import BUILTIN_EXTENSIONS
 cfg = get_default_config()
 init_config(cfg)
 
-#info_api.generate_and_add_extension("jg3d", extension_source=None)
-#"""
+info_api.generate_and_add_extension("pen", extension_source=None)
+"""
 for builtin_ext_id in BUILTIN_EXTENSIONS.keys():
     try:
         info_api.generate_and_add_extension(builtin_ext_id, extension_source=None)
@@ -17,5 +17,5 @@ for builtin_ext_id in BUILTIN_EXTENSIONS.keys():
         raise
     else:
         print("succeeded", builtin_ext_id)
-#"""
+"""
 
