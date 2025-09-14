@@ -1,0 +1,3 @@
+[submodule "builtin_extension_source"]
+	path = builtin_extension_source
+	url = https://github.com/GermanCodeEngineer/pmp-manip-builtin-extensions
