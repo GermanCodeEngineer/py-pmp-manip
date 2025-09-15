@@ -43,189 +43,189 @@ BUILTIN_EXTENSIONS: dict[str, tuple[str, list[str]]] = {
 
     # pm: category expansions & seperations go here    # HERE
     # pmMotionExpansion: extra motion blocks that were in the category & new ones that werent
-    "pmMotionExpansion": ("pm_motionExpansion", ["index.js"]),
+    "pmMotionExpansion",
     # pmOperatorsExpansion: extra operators that were in the category & new ones that werent
-    "pmOperatorsExpansion": ("pm_operatorsExpansion", ["index.js", "mathjs.js"]),
+    "pmOperatorsExpansion",
     # pmSensingExpansion: extra sensing blocks that were in the category & new ones that werent
-    "pmSensingExpansion": ("pm_sensingExpansion", ["index.js"]),
+    "pmSensingExpansion",
     # pmControlsExpansion: extra control blocks that were in the category & new ones that werent
-    "pmControlsExpansion": ("pm_controlsExpansion", ["index.js"]),
+    "pmControlsExpansion",
     # pmEventsExpansion: extra event blocks that were in the category & new ones that werent
-    "pmEventsExpansion": ("pm_eventsExpansion", ["index.js"]),
+    "pmEventsExpansion",
 
     # pmInlineBlocks: seperates the inline function block to prevent confusled
-    "pmInlineBlocks": ("pm_inlineblocks", ["index.js"]),
+    "pmInlineBlocks",
 
     # jg: jeremyes esxsitenisonsnsn
     # jgFiles: support for reading user files
-    "jgFiles": ("jg_files", ["index.js", "packager-friendly.js", "test.js"]),
+    "jgFiles",
     # jgWebsiteRequests: fetch GET and POST requests to apis & websites
-    "jgWebsiteRequests": ("jg_websiteRequests", ["index.js"]),
+    "jgWebsiteRequests",
     # jgJSON: handle JSON objects
-    "jgJSON": ("jg_json", ["index.js"]),
+    "jgJSON",
     # jgJSONParsed: handle JSON objects BETTER
-    # jgJSONParsed": ("jg_jsonParsed", ["index.js"]),
+    # "jgJSONParsed",
     # jgRuntime: edit stage and other stuff
-    "jgRuntime": ("jg_runtime", ["index.js"]),
+    "jgRuntime",
     # jgPrism: blocks for specific use cases or major convenience
-    "jgPrism": ("jg_prism", ["index.js", "beatgammit-deflate.js", "beatgammit-inflate.js"]),
+    "jgPrism",
     # jgIframe: my last call for help (for legal reasons this is a joke)
-    "jgIframe": ("jg_iframe", ["index.js"]),
+    "jgIframe",
     # jgExtendedAudio: ok this is my real last call for help (for legal reasons this is a joj)
-    "jgExtendedAudio": ("jg_audio", ["index.js", "helper.js", "timer.js"]),
+    "jgExtendedAudio",
     # jgScratchAuthenticate: easy to add its one block lol!
-    "jgScratchAuthenticate": ("jg_scratchAuth", ["index.js", "legacy.js"]),
+    "jgScratchAuthenticate",
     # JgPermissionBlocks: someones gonna get mad at me for this one i bet
-    "jgPermissionBlocks": ("jg_permissions", ["index.js"]),
+    "jgPermissionBlocks",
     # jgClones: funny clone manager
-    "jgClones": ("jg_clones", ["index.js"]),
+    "jgClones", 
     # jgTween: epic animation
-    "jgTween": ("jg_tween", ["index.js", "turbowarp.js"]),
+    "jgTween",
     # jgDebugging: epic animation
-    "jgDebugging": ("jg_debugging", ["index.js"]),
+    "jgDebugging",
     # jgEasySave: easy save stuff
-    "jgEasySave": ("jg_easySave", ["index.js"]),
+    "jgEasySave",
     # jgPackagerApplications: uuhhhhhhh packager
-    "jgPackagerApplications": ("jg_packagerApplications", ["index.js"]),
+    "jgPackagerApplications",
     # jgTailgating: follow sprites like in an RPG
-    "jgTailgating": ("jg_tailgating", ["index.js"]),
+    "jgTailgating",
     # jgScripts: what you know about rollin down in the
-    "jgScripts": ("jg_scripts", ["index.js"]),
+    "jgScripts",
     # jg3d: damn daniel
-    "jg3d": ("jg_3d", ["index.js", "info.js"]),
+    "jg3d",
     # jg3dVr: epic
-    "jg3dVr": ("jg_3dVr", ["index.js"]),
+    "jg3dVr",    # jgVr: excuse to use vr headset lol!
     # jgVr: excuse to use vr headset lol!
-    "jgVr": ("jg_vr", ["index.js"]),
+    "jgVr",
     # jgInterfaces: easier UI
-    "jgInterfaces": ("jg_interfaces", ["index.js", "helper.js"]),
+    "jgInterfaces",
     # jgCostumeDrawing: draw on costumes
     # hiding so fir doesnt touch
-    # jgCostumeDrawing": ("jg_costumeDrawing", ["index.js"]),
+    # jgCostumeDrawing",
     # jgJavascript: this is like the 3rd time we have implemented JS blocks man
-    "jgJavascript": ("jg_javascript", ["index.js"]),
+    "jgJavascript",
     # jgPathfinding: EZ pathfinding for beginners :D hopefully
-    "jgPathfinding": ("jg_pathfinding", ["index.js", "map.js", "nodes.js", "seperator.js"]),
+    "jgPathfinding",
     # jgAnimation: animate idk
-    "jgAnimation": ("jg_animation", ["index.js"]),
+    "jgAnimation",
 
     # jgStorage: event extension requested by Fir & silvxrcat
-    "jgStorage": ("jg_storage", ["index.js"]),
+    "jgStorage",
     # jgTimers: event extension requested by Arrow
-    "jgTimers": ("jg_timers", ["index.js", "Timer.js"]),
+    "jgTimers",
     # jgAdvancedText: event extension requested by silvxrcat
     # hiding so fir doesnt touch
-    # jgAdvancedText": ("jg_advancedText", ["index.js"]),
+    # jgAdvancedText",
 
     # jgDev: test extension used for making core blocks
-    #"jgDev": ("jg_dev", ["index.js"]),
+    #"jgDev",
     # jgDooDoo: test extension used for making test extensions
-    "jgDooDoo": ("jg_doodoo", ["index.js"]),
+    "jgDooDoo",
     # jgBestExtension: great extension used for making great extensions
-    "jgBestExtension": ("jg_bestextensioin", ["index.js"]),
+    "jgBestExtension",
     # jgChristmas: Christmas extension used for making Christmas extensions
-    "jgChristmas": ("jg_christmas", ["index.js"]),
+    "jgChristmas",
 
     # jw: hello it is i jwklong
     # jwUnite: literal features that should of been added in the first place
-    "jwUnite": ("jw_unite", ["index.js"]),
+    "jwUnite",
     # jwProto: placeholders, labels, defenitons, we got em
-    "jwProto": ("jw_proto", ["index.js"]),
+    "jwProto",
     # jwPostLit: postlit real????
-    "jwPostLit": ("jw_postlit", ["index.js"]),
+    "jwPostLit",
     # jwReflex: vector positioning (UNRELEASED, DO NOT ADD TO GUI)
-    "jwReflex": ("jw_reflex", ["index.js"]),
+    "jwReflex",
     # Blockly 2: a faithful recreation of the original blockly blocks
-    "blockly2math": ("blockly-2", ["math.js"]),
+    "blockly2math",
     # jwXml: hi im back haha have funny xml
-    "jwXml": ("jw_xml", ["index.js"]),
+    "jwXml",
     # vector type blah blah blah
-    "jwVector": ("jwVector", ["index.js"]),
+    "jwVector",
     # my own array system yipee
-    "jwArray": ("jwArray", ["index.js"]),
+    "jwArray",
     # mid extension but i need it
-    "jwTargets": ("jwTargets", ["index.js"]),
+    "jwTargets",
     # cool new physics extension
-    "jwPsychic": ("jwPsychic", ["index.js"]),
+    "jwPsychic",
     # test ext for lambda functions or something
-    "jwLambda": ("jwLambda", ["index.js"]),
+    "jwLambda",
     # omega num port for penguinmod
-    "jwNum": ("jwNum", ["index.js", "expantanum.js"]),
+    "jwNum",
     # good color utilties
-    "jwColor": ("jwColor", ["index.js"]),
+    "jwColor",
     # access to extraFiles
-    "jwStorage": ("jwStorage", ["index.js"]),
+    "jwStorage",
     # date type
-    "jwDate": ("jwDate", ["index.js"]),
+    "jwDate",
 
     # jw: They'll think its made by jwklong >:)
     # (but it's not (yet (maybe (probably not (but its made by ianyourgod)))))
     # this is the real jwklong speaking, one word shall be said about this: A N G E R Y
     # Structs: hehe structs for oop (look at c)
-    "jwStructs": ("jw_structs", ["index.js"]),
+    "jwStructs",
     # mikedev: ghytfhygfvbl
-    # cl": ("cl", ["index.js"]),
-    "Gamepad": ("GamepadExtension", ["index.js"]),
+    # "cl",
+    "Gamepad",
 
     # theshovel: ...
     # theshovelcanvaseffects: ...
-    "theshovelcanvaseffects": ("theshovel_canvasEffects", ["index.js"]),
+    "theshovelcanvaseffects",
     # shovellzcompresss: ...
-    "shovellzcompresss": ("theshovel_lzString", ["index.js"]),
+    "shovellzcompresss",
     # shovelColorPicker: ...
-    "shovelColorPicker": ("theshovel_colorPicker", ["index.js"]),
+    "shovelColorPicker",
     # shovelcss: ...
-    "shovelcss": ("theshovel_customStyles", ["index.js"]),
+    "shovelcss",
     # profanityAPI: ...
-    "profanityAPI": ("theshovel_profanity", ["index.js"]),
+    "profanityAPI",
 
     # gsa: fill out your introduction stupet!!!
     # no >:(
     # canvas: kinda obvius if you know anything about html canvases
-    "canvas": ("gsa_canvas_old", ["index.js", "canvasStorage.js"]),
+    "canvas",
     # the replacment for the above extension
-    "newCanvas": ("gsa_canvas", ["index.js", "canvasData.js"]),
+    "newCanvas",
     # tempVars: fill out your introduction stupet!!!
-    "tempVars": ("gsa_tempVars", ["index.js"]),
+    "tempVars",
     # colors: fill out your introduction stupet!!!
-    "colors": ("gsa_colorUtilBlocks", ["index.js"]),
+    "colors",
     # Camera: camera
-    "pmCamera": ("pm_camera", ["index.js"]),
+    "pmCamera",
 
     # sharkpool: insert sharkpools epic introduction here
     # sharkpoolPrinting: ...
-    "sharkpoolPrinting": ("sharkpool_printing", ["index.js"]),
-    "SPjavascriptV2": ("sp_javascriptV2", ["index.js"]),
+    "sharkpoolPrinting",
+    "SPjavascriptV2",
 
     # silvxrcat: ...
     # oddMessage: ...
-    "oddMessage": ("silvxrcat_oddmessages", ["index.js"]),
+    "oddMessage,
 
     # TW extensions
 
     # lms: ...
     # lmsutilsblocks: ...
-    "lmsutilsblocks": ("lmsutilsblocks", ["index.js"]),
-    "lmsTempVars2": ("lily_tempVars2", ["index.js"]),
+    "lmsutilsblocks",
+    "lmsTempVars2",
 
     # xeltalliv: ...
     # xeltallivclipblend: ...
-    "xeltallivclipblend": ("xeltalliv_clippingblending", ["index.js"]),
+    "xeltallivclipblend,
 
     # DT: ...
     # DTcameracontrols: ...
-    "DTcameracontrols": ("dt_cameracontrols", ["index.js"]),
+    "DTcameracontrols",
 
     # griffpatch: ...
-    # griffpatch": ("griffpatch_box2d')
+    # griffpatch",
 
     # iyg: erm a crep, erm a werdohhhh
     # iygPerlin:
-    "iygPerlin": ("iyg_perlin_noise", ["index.js"]),
+    "iygPerlin",
     # fr: waw 3d physics!!
     # fr3d:
-    "fr3d": ("fr_3d", ["index.js", "cannon.min.js"]),
-}
+    "fr3d",
+]
 BUILTIN_EXTENSIONS_SOURCE_DIRECTORY = "builtin_extension_source/builtin_extensions"
 
 class OpcodeType(GEnum):

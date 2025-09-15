@@ -40,6 +40,7 @@ Low:
     - S: stop using aenum and find better solution for ext_info_gen instead of extend_enum
     - S: enable slots by default
     - S: add enforce_argument_types to __init__ in grepr_dataclass
+    - S: extensionid must follow pattern: /^[a-z0-9]+$/i.test(extensionInfo.id)
 
 Formatting:
     - XL: add all errors to docstrings
