@@ -77,7 +77,14 @@ def grepr(obj, /, safe_dkd=False, level_offset=0, annotate_fields=True, include_
             return "{" + f"{prefix}{sep.join(args)}{end_sep}" + "}", False
          
         elif isinstance(obj, str):
-            return f'"{obj.replace('"', '\\"')}"', True
+            obj = obj.replace("\\", "\\\\")
+            if '"' in obj:
+                if "'" in obj:
+                    return f'"{obj.replace('"', '\\"')}"', True
+                else:
+                    return f"'{obj}'", True
+            else:
+                return f'"{obj}"', True
         
         # TODO: add compatability with bytes objects
         

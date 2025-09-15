@@ -36,17 +36,25 @@ DATA_IMPORTS_IMPORT_PATH = "pmp_manip.opcode_info.data_imports"
 KNOWN_EXTENSION_INFO_ATTRS = {
     "id", "blocks", "menus",
     # irrelevant for my purpose:
-    "name", "color1", "color2", "color3", "menuIconURI", "blockIconURI", "docsURI", "isDynamic", "orderBlocks", "showStatusButton",
-    "autoLoad",
+    "name", "color1", "color2", "color3", "menuIconURI", "blockIconURI",
+    "docsURI", "isDynamic", "orderBlocks", "showStatusButton",
+    "autoLoad", "blockText",
 }
+# Based on https://github.com/PenguinMod/PenguinMod-Docs/blob/353d492f491ee7b1e7c7bf34e48f39d43fceea17/docs/development/extensions/api/blocks/basic.md
 KNOWN_BLOCK_INFO_ATTRS = {
-    "opcode", "blockType", "text", "arguments", "branchCount", "isTerminal", "terminal", "disableMonitor", 
+    "opcode", "blockType", "text", "branches", "branchCount",
+    "checkboxInFlyout", "disableMonitor",
+    "arguments", "isTerminal", "terminal", 
     # irrelevant for my purpose:
-    "alignments", "hideFromPalette", "filter", "shouldRestartExistingThreads", 
-    "isEdgeActivated", "func", "allowDropAnywhere", "switches", "switchText",
+    "extensions", "color1", "color2", "color3", "allowDropAnywhere",
+    "branchIndicator", "branchIconURI", "alignments", "blockShape",
+    "notchAccepts", "forceOutputType", "isDynamic", "isEdgeActivated",
+    "label", "labelFn", "switches", "switchText",
+    "hideFromPalette", "filter", "shouldRestartExistingThreads", 
+    "func", "switches", "switchText",
     "blockIconURI", "canDragDuplicate",
-    # because of misspellings in e.g. "pmEventsExpansion":
-    "hideFromPallete",
+    # Custom Properties only for py-pmp-manip
+    "ppm_final_opcode",
 }
 
     
@@ -69,57 +77,61 @@ def process_all_menus(menus: dict[str, dict[str, Any]|list]) -> tuple[type[Input
         possible_values: list[str|dict[str, str]]
         rules: list[DropdownValueRule] = []
         accept_reporters: bool
-        try:
-            assert isinstance(menu_info, (dict, list, str)) # str refers to a function
-            if   isinstance(menu_info, dict):
-                if "items" not in menu_info:
-                    raise MANIP_InvalidCustomMenuError(f"Invalid custom menu {menu_block_id!r} is missing attribute 'items'")
-                possible_values = menu_info["items"]
-                accept_reporters = menu_info.get("acceptReporters", False)
-            elif isinstance(menu_info, (list, str)):
-                possible_values = menu_info
-                accept_reporters = False
+
+        if not isinstance(menu_info, (dict, list, str)):
+            raise MANIP_InvalidCustomMenuError(f"Invalid custom menu {menu_block_id!r}: must be an object, array or string(method refernce)")
+        if   isinstance(menu_info, dict):
+            possible_values = menu_info.get("items", [])
+            accept_reporters = menu_info.get("acceptReporters", False)
+        elif isinstance(menu_info, (list, str)):
+            possible_values = menu_info
+            accept_reporters = False
+
         
-            assert isinstance(possible_values, (list, str))
-            if   isinstance(possible_values, list): pass
-            elif isinstance(possible_values, str): # str refers to a function and is therefore unpredictable
-                possible_values = []
-                rules.append(DropdownValueRule.EXTENSION_UNPREDICTABLE)
-            
-            new_possible_values = []
-            old_possible_values = []
-            for i, possible_value in enumerate(possible_values):
-                assert isinstance(possible_value, (str, dict))
-                if   isinstance(possible_value, str):
-                    new_possible_values.append(possible_value)
-                    old_possible_values.append(possible_value)
-                elif isinstance(possible_value, dict):
-                    if "text" not in possible_value:
-                        raise MANIP_InvalidCustomMenuError(f"Invalid custom menu {menu_block_id!r}: item {i} is missing attribute 'text'")
-                    if "value" not in possible_value:
-                        print(menu_info)
-                        raise MANIP_InvalidCustomMenuError(f"Invalid custom menu {menu_block_id!r}: item {i} is missing attribute 'value'")
-                    new_possible_values.append(possible_value["text"])
-                    old_possible_values.append(possible_value["value"])
-            
-            dropdown_type_info = DropdownTypeInfo(
-                direct_values     = new_possible_values,
-                rules             = rules, # we assume the possible menu values are static
-                old_direct_values = old_possible_values,
-                fallback          = None, # there can not be a fallback when the possible values are static
+        if not isinstance(menu_info, (dict, list, str)):
+            raise MANIP_InvalidCustomMenuError(f"Invalid custom menu {menu_block_id!r}: 'items' must be an array or string(method refernce)")
+        if   isinstance(possible_values, list): pass
+        elif isinstance(possible_values, str): # str refers to a function and is therefore unpredictable
+            possible_values = []
+            rules.append(DropdownValueRule.EXTENSION_UNPREDICTABLE)
+        
+        new_possible_values = []
+        old_possible_values = []
+        for i, possible_value in enumerate(possible_values):
+            if not isinstance(possible_value, (str, dict, list)):
+                raise MANIP_InvalidCustomMenuError(f"Invalid custom menu {menu_block_id!r}: item {i}: must be a string, object, or array(2 items)")
+            if   isinstance(possible_value, str):
+                new_possible_values.append(possible_value)
+                old_possible_values.append(possible_value)
+            elif isinstance(possible_value, dict):
+                if "text" not in possible_value:
+                    raise MANIP_InvalidCustomMenuError(f"Invalid custom menu {menu_block_id!r}: item {i} is missing attribute 'text'")
+                if "value" not in possible_value:
+                    raise MANIP_InvalidCustomMenuError(f"Invalid custom menu {menu_block_id!r}: item {i} is missing attribute 'value'")
+                new_possible_values.append(possible_value["text"])
+                old_possible_values.append(possible_value["value"])
+            elif isinstance(possible_value, list):
+                if len(possible_value) != 2:
+                    raise MANIP_InvalidCustomMenuError(f"Invalid custom menu {menu_block_id!r}: item {i}: must have 2 items for an array")
+                new_possible_values.append(possible_value[0])
+                old_possible_values.append(possible_value[1])
+        
+        dropdown_type_info = DropdownTypeInfo(
+            direct_values     = new_possible_values,
+            rules             = rules, # we assume the possible menu values are static
+            old_direct_values = old_possible_values,
+            fallback          = None, # there can not be a fallback when the possible values are static
+        )
+        custom_dropdown_type = extend_enum(ExtensionDropdownType, menu_block_id, dropdown_type_info)
+
+        if accept_reporters:
+            input_type_info = (
+                InputMode.BLOCK_AND_DROPDOWN, # InputMode
+                None, # magic number or old forced block opcode
+                custom_dropdown_type, # corresponding dropdown type,
+                menu_index, # uniqueness index
             )
-            custom_dropdown_type = extend_enum(ExtensionDropdownType, menu_block_id, dropdown_type_info)
-    
-            if accept_reporters:
-                input_type_info = (
-                    InputMode.BLOCK_AND_DROPDOWN, # InputMode
-                    None, # magic number or old forced block opcode
-                    custom_dropdown_type, # corresponding dropdown type,
-                    menu_index, # uniqueness index
-                )
-                extend_enum(ExtensionInputType, menu_block_id, input_type_info)
-        except AssertionError as error:
-            raise MANIP_InvalidCustomMenuError(f"Invalid custom menu {repr(menu_block_id)}: {menu_info}") from error
+            extend_enum(ExtensionInputType, menu_block_id, input_type_info)
     return (ExtensionInputType, ExtensionDropdownType)
 
 def generate_block_opcode_info(
@@ -278,7 +290,7 @@ def generate_block_opcode_info(
         text_lines: list[str] = text if isinstance(text, list) else [text]
         unified_text = "\n".join(text_lines)
         if ("{{" in unified_text) or ("}}" in unified_text):
-            raise ValueError(f"'text' must not contain double curly brackets ('{{' or '}}'): {text}")
+            raise ValueError(f"'text' must not contain double curly brackets ('{{' or '}}')")
         new_opcode_segments = []
         for i, text_line in enumerate(text_lines):
             line_segments = text_line.split(" ")
@@ -317,12 +329,22 @@ def generate_block_opcode_info(
             new_opcode_segments.pop()
         else:
             raise ValueError("'branchCount' must be equal to or at most 1 bigger then the line count of 'text'")
-        return f"{extension_id}::{" ".join(new_opcode_segments)}" 
+        prefix = overwrite_category if (overwrite_category is not None) else extension_id
+        return f"{prefix}::{" ".join(new_opcode_segments)}" 
     
     try:
         block_type: str = block_info.get("blockType", "command")
-        branch_count: int = block_info.get("branchCount", 0)
-        is_terminal: bool = block_info.get("isTerminal", False) or block_info.get("terminal", False)
+        branch_count: int = block_info.get("branchCount", None)
+        branches_alt: list = block_info.get("branches", None)
+        if isinstance(branch_count, int):
+            pass
+        elif isinstance(branches_alt, list):
+            branch_count = len(branches_alt)
+        else:
+            branch_count = 0
+        is_final_opcode: bool = block_info.get("ppm_final_opcode", False) # Custom property
+        
+        is_terminal: bool = bool(block_info.get("isTerminal", False) or block_info.get("terminal", False))
         arguments: dict[str, dict[str, Any]] = block_info.get("arguments", {})
         opcode_type: OpcodeType
         if is_terminal and (block_type != "command"):
@@ -346,15 +368,27 @@ def generate_block_opcode_info(
             case "xml":
                 raise MANIP_NotImplementedError("XML blocks are NOT supported. It is pretty much impossible to translate one into a database entry.") # TODO: reconsider
             case _:
-                raise ValueError(f"Unknown value for blockType: {repr(block_type)}")
+                raise ValueError("Unknown value for 'blockType'")
         
         if "opcode" not in block_info:
             raise MANIP_InvalidCustomBlockError(f"Invalid block info missing attribute 'opcode' (block 'Unknown'): {block_info}") from error  
         opcode: str = block_info["opcode"] # might not be included so must come after eg. "label" blocks have returned alredy
+        if is_final_opcode:
+            overwrite_category = opcode.split("_", maxsplit=1)[0]
+        else:
+            overwrite_category = None
         
         inputs, dropdowns = process_arguments(arguments, menus, input_type_cls, dropdown_type_cls)
-                
-        disable_monitor = block_info.get("disableMonitor", False)
+        
+        disable_monitor = block_info.get("disableMonitor", None)
+        checkbox_in_flyout = block_info.get("checkboxInFlyout", None)
+        if isinstance(disable_monitor, bool):
+            pass
+        elif isinstance(checkbox_in_flyout, bool):
+            disable_monitor = not checkbox_in_flyout
+        else:
+            disable_monitor = False
+        
         can_have_monitor = opcode_type.is_reporter and (not inputs) and (not disable_monitor)
         if can_have_monitor:
             if dropdowns:

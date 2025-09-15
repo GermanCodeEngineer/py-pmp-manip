@@ -4,8 +4,7 @@ Special:
     TODOs in Code + read through code, optimize here and there
 
 Currently Working On:
-    - M: Compatability with all builtin extensions
-    - S: find all remaining block and extension attributes
+    adding tests
 
 High: /
 

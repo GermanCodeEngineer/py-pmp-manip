@@ -7,9 +7,11 @@ from pmp_manip.opcode_info.api.main import BUILTIN_EXTENSIONS
 cfg = get_default_config()
 init_config(cfg)
 
-info_api.generate_and_add_extension("pen", extension_source=None)
-"""
-for builtin_ext_id in BUILTIN_EXTENSIONS.keys():
+#info_api.generate_and_add_extension("pmSensingExpansion", extension_source=None)#
+#"""
+for builtin_ext_id in BUILTIN_EXTENSIONS:
+    if builtin_ext_id != "pmInlineBlocks":
+        continue
     try:
         info_api.generate_and_add_extension(builtin_ext_id, extension_source=None)
     except Exception as error:
@@ -17,5 +19,9 @@ for builtin_ext_id in BUILTIN_EXTENSIONS.keys():
         raise
     else:
         print("succeeded", builtin_ext_id)
-"""
+#"""
+
+#from pmp_manip import FRProject
+#f = FRProject.from_file("assets/bbn.pmp")
+#print(f)
 

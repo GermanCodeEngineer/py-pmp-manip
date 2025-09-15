@@ -4,6 +4,7 @@ from os          import path
 from sys         import modules as sys_modules
 from typing      import TYPE_CHECKING, Type, Iterable
 
+from pmp_manip.important_consts import BUILTIN_EXTENSIONS_SOURCE_DIRECTORY
 from pmp_manip.utility import (
     grepr_dataclass, enforce_argument_types, file_exists, GEnum, DualKeyDict, 
     MANIP_UnknownOpcodeError, MANIP_SameOpcodeTwiceError,
@@ -21,7 +22,7 @@ if TYPE_CHECKING:
 
 # Derived from https://github.com/PenguinMod/PenguinMod-Vm/blob/develop/src/extension-support/extension-manager.js
 # FORMAT: extension_id: (extension_dir, [extension_file1.js, extension_file2.js, ...])
-BUILTIN_EXTENSIONS: dict[str, tuple[str, list[str]]] = {
+BUILTIN_EXTENSIONS: list[str] = [
     # These are the non-core built-in extensions.
     "pen",
     "music",
@@ -199,7 +200,7 @@ BUILTIN_EXTENSIONS: dict[str, tuple[str, list[str]]] = {
 
     # silvxrcat: ...
     # oddMessage: ...
-    "oddMessage,
+    "oddMessage",
 
     # TW extensions
 
@@ -210,7 +211,7 @@ BUILTIN_EXTENSIONS: dict[str, tuple[str, list[str]]] = {
 
     # xeltalliv: ...
     # xeltallivclipblend: ...
-    "xeltallivclipblend,
+    "xeltallivclipblend",
 
     # DT: ...
     # DTcameracontrols: ...
@@ -226,7 +227,6 @@ BUILTIN_EXTENSIONS: dict[str, tuple[str, list[str]]] = {
     # fr3d:
     "fr3d",
 ]
-BUILTIN_EXTENSIONS_SOURCE_DIRECTORY = "builtin_extension_source/builtin_extensions"
 
 class OpcodeType(GEnum):
     """
@@ -786,11 +786,10 @@ class OpcodeInfoAPI:
         if extension_source is None:
             if extension_id not in BUILTIN_EXTENSIONS:
                 raise MANIP_UnknownBuiltinExtensionError(f"Unknown builtin extension: {extension_id}. Either provide a source for a custom extension or create a GitHub issue for a builtin extension.")
-            extension_dir, file_names = BUILTIN_EXTENSIONS[extension_id]
-            extension_source = path.join(BUILTIN_EXTENSIONS_SOURCE_DIRECTORY, )
+            extension_source = path.join(BUILTIN_EXTENSIONS_SOURCE_DIRECTORY, extension_id+".js")
         
         module_path = generate_extension_info_py_file(
-            main_source=extension_source, other_file_names=file_names[1:],  extension_id=extension_id,
+            source=extension_source,  extension_id=extension_id,
             tolerate_file_path=True, bundle_errors=True,
         )
         self._add_extension(extension_id, module_dir=path.dirname(module_path))

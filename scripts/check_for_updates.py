@@ -36,7 +36,12 @@ files_to_check = [
         "2025-09-09",
         "https://github.com/PenguinMod/PenguinMod-Vm/blob/develop/src/engine/runtime.js",
         "Update vm stub in pmp_manip/ext_info_gen/direct_extractor.js"
-    )
+    ),
+    (
+        "2025-09-15",
+        "https://github.com/PenguinMod/PenguinMod-Docs/blob/353d492f491ee7b1e7c7bf34e48f39d43fceea17/docs/development/extensions/api/blocks/basic.md",
+        "Update KNOWN_BLOCK_INFO_ATTRS in pmp_manip/ext_info_gen/generator.py",
+    ),
 ]
 
 API_BASE = "https://api.github.com/repos"

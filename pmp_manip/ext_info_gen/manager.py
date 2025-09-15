@@ -2,15 +2,13 @@ from datetime     import datetime, timezone
 from json         import loads, dumps, JSONDecodeError
 from logging      import getLogger
 from os           import path, makedirs
-from posixpath    import basename, dirname, join
 from typing       import Any
-from urllib.parse import urlparse, urlunparse
 
-from pmp_manip.config          import get_config, init_config, get_default_config
-from pmp_manip.utility         import (
+from pmp_manip.config           import get_config, init_config, get_default_config
+from pmp_manip.important_consts import BUILTIN_EXTENSIONS_SOURCE_DIRECTORY
+from pmp_manip.utility          import (
     read_file_text, write_file_text, file_exists, enforce_argument_types, ContentFingerprint,
-    MANIP_Error, MANIP_ValueError,
-    MANIP_FailedFileReadError, MANIP_FailedFileWriteError, MANIP_ThanksError, MANIP_ExtensionFetchError,
+    MANIP_Error, MANIP_FailedFileReadError, MANIP_FailedFileWriteError, MANIP_ThanksError, MANIP_ExtensionFetchError,
     MANIP_DirectExtensionInfoExtractionError, MANIP_SafeExtensionInfoExtractionError,
     MANIP_NoNodeJSInstalledError, MANIP_ExtensionInfoConvertionError,
 )
@@ -56,7 +54,7 @@ def _is_trusted_extension_origin(source: str) -> bool:
         
 
         # (not taken from PM GitHub) Allow extensions from PenguinMod-VM/src/extensions/ (location of builtin extensions) 
-        source.startswith("https://raw.githubusercontent.com/PenguinMod/PenguinMod-Vm/refs/heads/develop/src/extensions/")
+        source.startswith(BUILTIN_EXTENSIONS_SOURCE_DIRECTORY)
     ):
         return True
 
@@ -119,7 +117,7 @@ def _get_cache(cache_file_path: str) -> dict[str, dict[str, Any]]:
 
 def _update_cache(
         old_cache: dict[str, dict[str, Any]], cache_file_path: str, dest_file_name: str, 
-        extension_string: str | None, py_code: str | None,
+        js_code: str | None, py_code: str | None,
 ) -> None:
     """
     Updates the cache file
@@ -128,7 +126,7 @@ def _update_cache(
         old_cache: the cache data
         cache_file_path: the full file path of the cache file
         dest_file_name: the file name of the generated ext info file
-        extension_string: a combined string of the whole extension code
+        js_code: the extension's javascript code
         py_code: the generated python code
     
     Raises:
@@ -138,7 +136,7 @@ def _update_cache(
         old_cache[dest_file_name]["lastUpdate"] = datetime.now(timezone.utc).isoformat()
     else:
         old_cache[dest_file_name] = {
-            "jsFingerprint": ContentFingerprint.from_value(extension_string).to_json(),
+            "jsFingerprint": ContentFingerprint.from_value(js_code).to_json(),
             "pyFingerprint": ContentFingerprint.from_value(py_code).to_json(),
             "lastUpdate"   : datetime.now(timezone.utc).isoformat(),
         }
@@ -151,20 +149,19 @@ def _update_cache(
 
 @enforce_argument_types
 def generate_extension_info_py_file(
-    main_source: str, other_file_names: list[str], extension_id: str, 
+    source: str, extension_id: str, 
     tolerate_file_path: bool, bundle_errors: bool = True,
 ) -> str:
     """
     Generate a python file, which stores information about the blocks of the given extension and is required for the core module. If a cached version exist and is up to date, it will be kept. Returns the file path of the python file. Uses logging
 
     Args:
-        sources: the set of file paths or https URLs or JS Data URIs of the extension code files(usually and at least one, first is condered source of main code file)
+        source: the file path or https URL or JS Data URI of the extension code(if tolerate_file_paths)
         extension_id: the unique identifier of the extension 
         tolerate_file_path: wether to allow file paths as extension sources
         bundle_errors: wether to bundle similar errors for more compact handling (see Raises)
     
     Raises (if bundled):
-        MANIP_ValueError: if other file names are provided for safe extraction or with a non-URL main source
         MANIP_NoNodeJSInstalledError(not bundled): if Node.js is not installed or not found in PATH
         MANIP_ExtensionFetchError: if the extension code could not be fetched for some reason
         MANIP_DirectExtensionInfoExtractionError: if the extension info could not be extracted through direct execution
@@ -175,7 +172,6 @@ def generate_extension_info_py_file(
     
     Raises (if NOT bundled):
         ### created here or not bundled anyway:
-        MANIP_ValueError: if other file names are provided for safe extraction or with a non-URL main source
         MANIP_FailedFileWriteError(unlikely): if the cache file or generated extension info file or its directory could not be written/created
         MANIP_NoNodeJSInstalledError(not bundled): if Node.js is not installed or not found in PATH
         
@@ -211,20 +207,6 @@ def generate_extension_info_py_file(
         MANIP_UnexpectedPropertyAccessWarning: if a property of 'this' is accessed in the getInfo method of the extension code in safe analysis
         MANIP_UnexpectedNotPossibleFeatureWarning: if an impossible to implement feature is used (eg. ternary expr) in the getInfo method of the extension code in safe analysis
     """
-    is_url = (main_source.startswith("http://") or main_source.startswith("https://"))
-    if not(is_url) and (len(other_file_names) >= 1):
-        raise MANIP_ValueError(f"Multi-file extensions can only be loaded by http(s) URL. 'main_source': {main_source}")
-    parsed_main_source = urlparse(main_source)
-    source_dir_path = dirname(parsed_main_source.path)
-    main_file_name = basename(parsed_main_source.path)
-    files_sources = {main_file_name: main_source}
-    for file_name in other_file_names:
-        # Go to a neighbour file e.g.
-        #         "https://raw.githubusercontent.com/PenguinMod/PenguinMod-Vm/refs/heads/develop/src/extensions/jg_3d/index.js"
-        # becomes "https://raw.githubusercontent.com/PenguinMod/PenguinMod-Vm/refs/heads/develop/src/extensions/jg_3d/info.js"
-        file_source = urlunparse(parsed_main_source._replace(path=join(source_dir_path, file_name)))
-        files_sources[file_name] = file_source
-    
     cfg = get_config()
     logger = getLogger(__name__)
     dest_file_name = f"{extension_id}.py"
@@ -235,41 +217,37 @@ def generate_extension_info_py_file(
     
     status = _consider_state(
         dest_file_name, dest_file_path,
-        cache, js_fetch_expensive=is_url,
+        cache, js_fetch_expensive=(source.startswith("http://") or source.startswith("https://")),
     )
     
     if status == STATUS_KEEP:
         logger.info(f"Extension {extension_id!r}: Python extension info file is still up to date")
-        _update_cache(cache, cache_file_path, dest_file_name, extension_string=None, py_code=None)
+        _update_cache(cache, cache_file_path, dest_file_name, js_code=None, py_code=None)
         return dest_file_path
     
     try:
-        files_contents = {}
-        for file_name, source in files_sources.items():
-            js_code = fetch_js_code(source, tolerate_file_path)
-            files_contents[file_name] = js_code
+        js_code = fetch_js_code(source, tolerate_file_path)
     except MANIP_Error as error:
         if bundle_errors:
             raise MANIP_ExtensionFetchError(f"Error in extension {extension_id!r}: Failed to fetch extension code: {error}") from error
         else:
             raise type(error)(f"Error in extension {extension_id!r}: {str(error)}") from error
-    extension_string = str(files_contents) # Use str as a way to combine multiple files into one string
-
+    
     if (file_cache is not None) and (status == STATUS_CHECK_JS):
         try:
             js_fingerprint = ContentFingerprint.from_json(file_cache["jsFingerprint"])
         except (TypeError, KeyError):
             pass
         else:
-            if js_fingerprint.matches(extension_string):
-                _update_cache(cache, cache_file_path, dest_file_name, extension_string=None, py_code=None)
+            if js_fingerprint.matches(js_code):
+                _update_cache(cache, cache_file_path, dest_file_name, js_code=None, py_code=None)
                 logger.info(f"Extension {extension_id!r}: Python extension info file is still up to date as the extension code has not changed")
                 return dest_file_path
     
     if _is_trusted_extension_origin(source):
         logger.info(f"Extension {extension_id!r}: Extracting extension info through direct execution")
         try:
-            extension_info = extract_extension_info_directly(js_files=files_contents, main_file_name=main_file_name)
+            extension_info = extract_extension_info_directly(js_code)
         except MANIP_NoNodeJSInstalledError:
             raise
         except MANIP_Error as error:
@@ -280,11 +258,9 @@ def generate_extension_info_py_file(
             else:
                 raise type(error)(f"Error in extension {extension_id!r}: {str(error)}") from error
     else:
-        if len(other_file_names) >= 1:
-            raise MANIP_ValueError(f"Multi-file extensions can only be extracted directly")
         logger.info(f"Extension {extension_id!r}: Extracting extension info through safe static analysis")
         try:
-            extension_info = extract_extension_info_safely(js_code=files_contents[main_file_name])
+            extension_info = extract_extension_info_safely(js_code)
         except MANIP_Error as error:
             if bundle_errors:
                 raise MANIP_SafeExtensionInfoExtractionError(
@@ -343,4 +319,4 @@ if __name__ == "__main__": # pragma: no cover
         #("P7BoxPhys",           "https://extensions.penguinmod.com/extensions/pooiod/Box2D.js"),
         #("griffpatch",          "https://extensions.turbowarp.org/box2d.js"),
     ]:
-        generate_extension_info_py_file(extension, extension_id, tolerate_file_path=True) # pragma: no cover
+        generate_extension_info_py_file(extension, extension_id, tolerate_file_path=True, is_strict=True) # pragma: no cover
