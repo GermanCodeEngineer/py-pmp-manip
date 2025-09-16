@@ -52,6 +52,9 @@ build-backend = "setuptools.build_meta"
 where = ["."]
 include = ["pmp_manip*"]
 
+[tool.setuptools]
+include-package-data = true
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 

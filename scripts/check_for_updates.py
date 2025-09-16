@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 files_to_check = [
     (
-        "2025-09-03", 
+        "2025-09-16", 
         "https://github.com/PenguinMod/PenguinMod-Vm/blob/develop/src/extension-support/tw-extension-api-common.js",
         "Update the Scratch Object stub in pmp_manip/ext_info_gen/direct_extractor.js and safe_extractor.py",
     ),
@@ -28,7 +28,7 @@ files_to_check = [
         "Update util stub in overwritten require function",
     ),   
     (
-        "2025-09-07",
+        "2025-09-16",
         "https://github.com/PenguinMod/PenguinMod-Vm/blob/develop/src/serialization/",
         "Ensure project deserialization still works reliably",
     ),
