@@ -478,3 +478,136 @@ def test_generate_extension_info_py_file_invalid_js_fingerprint(monkeypatch: Mon
     )
     assert dest_file_path == path.join("gen_ext_opcode_info", "myExt.py")
 
+
+def test_is_trusted_extension_origin_localhost_ports():
+    """Test various localhost ports for development"""
+    for port in ["8000", "6000", "6001", "5173", "5174"]:
+        url = f"http://localhost:{port}/test.js"
+        assert manager_mod._is_trusted_extension_origin(url) == True
+
+def test_is_trusted_extension_origin_builtin_extensions(monkeypatch: MonkeyPatch):
+    """Test builtin extensions directory handling"""
+    test_builtin_dir = "/test/builtin/extensions/"
+    
+    # Mock the constant directly in the manager module
+    monkeypatch.setattr(manager_mod, "BUILTIN_EXTENSIONS_SOURCE_DIRECTORY", test_builtin_dir)
+    
+    builtin_url = f"{test_builtin_dir}test_extension.js"
+    assert manager_mod._is_trusted_extension_origin(builtin_url) == True
+    
+    non_builtin_url = "/other/path/test_extension.js"
+    assert manager_mod._is_trusted_extension_origin(non_builtin_url) == False
+
+def test_consider_state_edge_cases(monkeypatch: MonkeyPatch):
+    """Test edge cases in cache state consideration"""
+    # Test with corrupted cache file (missing keys)
+    corrupted_cache = {"myExt.py": {"lastUpdate": "invalid-date"}}
+    monkeypatch.setattr(manager_mod, "file_exists", lambda p: True)
+    monkeypatch.setattr(manager_mod, "read_file_text", lambda p: "some py code")
+    
+    status = manager_mod._consider_state("myExt.py", "/fake/path", corrupted_cache, False)
+    assert status == manager_mod.STATUS_REGEN
+
+def test_update_cache_preserves_existing_entries():
+    """Test that cache updates preserve existing entries"""
+    from datetime import datetime, timezone
+    import json
+    
+    # Setup initial cache with multiple entries
+    initial_cache = {
+        "ext1.py": {
+            "jsFingerprint": ContentFingerprint.from_value("ext1 js").to_json(),
+            "pyFingerprint": ContentFingerprint.from_value("ext1 py").to_json(),
+            "lastUpdate": datetime.now(timezone.utc).isoformat(),
+        },
+        "ext2.py": {
+            "jsFingerprint": ContentFingerprint.from_value("ext2 js").to_json(),
+            "pyFingerprint": ContentFingerprint.from_value("ext2 py").to_json(),
+            "lastUpdate": datetime.now(timezone.utc).isoformat(),
+        }
+    }
+    
+    written_content = None
+    def fake_write_file_text(file_path: str, text: str):
+        nonlocal written_content
+        written_content = text
+    
+    import pmp_manip.ext_info_gen.manager as manager_mod
+    from pytest import MonkeyPatch
+    monkeypatch = MonkeyPatch()
+    monkeypatch.setattr(manager_mod, "write_file_text", fake_write_file_text)
+    
+    # Update cache for ext3
+    manager_mod._update_cache(
+        initial_cache, 
+        cache_file_path="cache.json", 
+        dest_file_name="ext3.py",
+        js_code="ext3 js", 
+        py_code="ext3 py"
+    )
+    
+    # Verify all entries are preserved
+    cache_data = json.loads(written_content)
+    assert "ext1.py" in cache_data
+    assert "ext2.py" in cache_data
+    assert "ext3.py" in cache_data
+    assert "_" in cache_data  # metadata entry
+    
+    monkeypatch.undo()
+
+def test_generate_extension_info_py_file_bundled_vs_unbundled_errors(monkeypatch: MonkeyPatch):
+    """Test error bundling behavior"""
+    monkeypatch.setattr(manager_mod, "_get_cache", lambda p: {})
+    monkeypatch.setattr(manager_mod, "_consider_state", lambda dn, dp, c, js_fetch_expensive: manager_mod.STATUS_REGEN)
+    
+    # Test with bundle_errors=True
+    def fake_fetch_error(*args, **kwargs):
+        raise MANIP_NetworkFetchError("Network error")
+    
+    monkeypatch.setattr(manager_mod, "fetch_js_code", fake_fetch_error)
+    
+    with raises(MANIP_ExtensionFetchError):
+        manager_mod.generate_extension_info_py_file(
+            source="https://example.com/ext.js", 
+            extension_id="test",
+            tolerate_file_path=False, 
+            bundle_errors=True
+        )
+    
+    # Test with bundle_errors=False
+    with raises(MANIP_NetworkFetchError):
+        manager_mod.generate_extension_info_py_file(
+            source="https://example.com/ext.js", 
+            extension_id="test",
+            tolerate_file_path=False, 
+            bundle_errors=False
+        )
+
+def test_generate_extension_info_py_file_cache_hit_optimization(monkeypatch: MonkeyPatch):
+    """Test cache hit optimization when JS hasn't changed"""
+    cache = _make_cache("myExt.py", js_code="unchanged js code")
+    update_cache_called = False
+    
+    def fake_update_cache(*args, **kwargs):
+        nonlocal update_cache_called
+        update_cache_called = True
+        # Verify it's called with None values for cache hit
+        if len(args) >= 5:
+            assert args[3] is None  # js_code
+            assert args[4] is None  # py_code
+    
+    monkeypatch.setattr(manager_mod, "_get_cache", lambda p: cache)
+    monkeypatch.setattr(manager_mod, "_consider_state", lambda dn, dp, c, js_fetch_expensive: manager_mod.STATUS_CHECK_JS)
+    monkeypatch.setattr(manager_mod, "fetch_js_code", lambda s, tolerate_file_path: "unchanged js code")
+    monkeypatch.setattr(manager_mod, "_update_cache", fake_update_cache)
+    
+    dest_file_path = manager_mod.generate_extension_info_py_file(
+        source="https://extensions.penguinmod.com/extensions/myUser/myExt.js", 
+        extension_id="myExt",
+        tolerate_file_path=False, 
+        bundle_errors=True,
+    )
+    
+    assert update_cache_called
+    assert dest_file_path == path.join("gen_ext_opcode_info", "myExt.py")
+

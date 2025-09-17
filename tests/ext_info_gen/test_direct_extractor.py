@@ -304,3 +304,50 @@ def test_extract_extension_info_directly_json_decode_error(monkeypatch: MonkeyPa
     
     with raises(MANIP_ExtensionJSONDecodeError):
         extract_extension_info_directly(EXAMPLE_EXTENSION_CODE)
+
+def test_extract_extension_info_directly_encoding_parameter():
+    """Test the code_encoding parameter is properly handled"""
+    from pmp_manip.ext_info_gen.direct_extractor import extract_extension_info_directly
+    # Test with different encoding - should still work with UTF-8 content
+    extension_info = extract_extension_info_directly(EXAMPLE_EXTENSION_CODE, code_encoding="utf-8")
+    assert extension_info["id"] == "truefantombase"
+
+def test_extract_extension_info_directly_strict_mode():
+    """Test the is_strict parameter - should not affect basic functionality"""
+    from pmp_manip.ext_info_gen.direct_extractor import extract_extension_info_directly
+    extension_info = extract_extension_info_directly(EXAMPLE_EXTENSION_CODE, is_strict=True)
+    assert extension_info["id"] == "truefantombase"
+    
+    extension_info = extract_extension_info_directly(EXAMPLE_EXTENSION_CODE, is_strict=False)
+    assert extension_info["id"] == "truefantombase"
+
+def test_extract_extension_info_directly_malformed_json_response(monkeypatch: MonkeyPatch):
+    """Test behavior when node subprocess returns malformed JSON"""
+    def fake_run_subprocess(*args, **kwargs):
+        result = run_subprocess(*args, **kwargs)
+        result.stdout = "not valid json\n{malformed"
+        result.returncode = 0
+        return result
+
+    import pmp_manip.ext_info_gen.direct_extractor as direct_extractor_mod
+    monkeypatch.setattr(direct_extractor_mod, "run_subprocess", fake_run_subprocess)
+    from pmp_manip.ext_info_gen.direct_extractor import extract_extension_info_directly
+    
+    with raises(MANIP_ExtensionJSONDecodeError):
+        extract_extension_info_directly(EXAMPLE_EXTENSION_CODE)
+
+def test_extract_extension_info_directly_return_code_2(monkeypatch: MonkeyPatch):
+    """Test specific return code 2 (registration error)"""
+    def fake_run_subprocess(*args, **kwargs):
+        result = run_subprocess(*args, **kwargs)
+        result.returncode = 2
+        result.stderr = "Extension not registered"
+        return result
+
+    import pmp_manip.ext_info_gen.direct_extractor as direct_extractor_mod
+    monkeypatch.setattr(direct_extractor_mod, "run_subprocess", fake_run_subprocess)
+    from pmp_manip.ext_info_gen.direct_extractor import extract_extension_info_directly
+    
+    with raises(MANIP_ExtensionExecutionErrorInJavascript) as exc_info:
+        extract_extension_info_directly(EXAMPLE_EXTENSION_CODE)
+    assert "not registered" in str(exc_info.value)

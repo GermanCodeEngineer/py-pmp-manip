@@ -232,4 +232,93 @@ def test_fetch_js_code_file_success(monkeypatch: MonkeyPatch):
     from pmp_manip.ext_info_gen.fetch_js import fetch_js_code
     
     assert fetch_js_code(__file__, tolerate_file_path=True) == "Günther Jauch"
+
+def test_fetch_js_code_data_uri_edge_cases():
+    """Test edge cases for data URIs"""
+    from pmp_manip.ext_info_gen.fetch_js import fetch_js_code
+    
+    # Test data URI with parameters
+    data_uri = "data:text/javascript;charset=utf-8;base64,Y29uc29sZS5sb2coIkhlbGxvIik7"
+    code = fetch_js_code(data_uri, tolerate_file_path=False)
+    assert code == 'console.log("Hello");'
+    
+    # Test data URI without base64 but with percent encoding
+    data_uri = "data:text/javascript,console.log(%22Hello%20World%22);"
+    code = fetch_js_code(data_uri, tolerate_file_path=False)
+    assert code == 'console.log("Hello World");'
+
+def test_fetch_js_code_url_timeout(monkeypatch: MonkeyPatch):
+    """Test URL fetch with timeout configuration"""
+    def fake_requests_get(*args, **kwargs):
+        # Verify timeout is passed
+        assert 'timeout' in kwargs
+        assert kwargs['timeout'] == 10
+        return FakeResponse(text="extension code", status_code=200)
+        
+    from pmp_manip.ext_info_gen import fetch_js as fetch_js_mod
+    monkeypatch.setattr(fetch_js_mod, "requests_get", fake_requests_get)
+
+    from pmp_manip.ext_info_gen.fetch_js import fetch_js_code
+    url = "https://extensions.penguinmod.com/extensions/test/test.js"
+    code = fetch_js_code(url, tolerate_file_path=False)
+    assert code == "extension code"
+
+def test_fetch_js_code_invalid_source_types():
+    """Test behavior with invalid source types"""
+    from pmp_manip.ext_info_gen.fetch_js import fetch_js_code
+    
+    # Test with None
+    with raises(MANIP_InvalidExtensionCodeSourceError):
+        fetch_js_code(None, tolerate_file_path=True)
+    
+    # Test with number
+    with raises(MANIP_InvalidExtensionCodeSourceError):
+        fetch_js_code(123, tolerate_file_path=True)
+    
+    # Test with empty string (should be treated as file path)
+    with raises(MANIP_FileNotFoundError):
+        fetch_js_code("", tolerate_file_path=True)
+
+def test_fetch_js_code_http_vs_https():
+    """Test that HTTP URLs are handled correctly"""
+    from pmp_manip.ext_info_gen.fetch_js import fetch_js_code
+    
+    def fake_requests_get(*args, **kwargs):
+        return FakeResponse(text="http extension code", status_code=200)
+        
+    from pmp_manip.ext_info_gen import fetch_js as fetch_js_mod
+    from pytest import MonkeyPatch
+    monkeypatch = MonkeyPatch()
+    
+    # Also mock validators to allow localhost HTTP URLs
+    def fake_validators_url(url):
+        return True  # Accept all URLs for testing
+    
+    monkeypatch.setattr(fetch_js_mod, "requests_get", fake_requests_get)
+    monkeypatch.setattr(fetch_js_mod, "validators_url", fake_validators_url)
+
+    # Test HTTP URL
+    url = "http://localhost:8000/test.js"
+    code = fetch_js_code(url, tolerate_file_path=False)
+    assert code == "http extension code"
+    
+    monkeypatch.undo()
+
+def test_fetch_js_code_url_response_encoding():
+    """Test URL response with different encodings"""
+    def fake_requests_get(*args, **kwargs):
+        response = FakeResponse(text="// Extension with unicode: café", status_code=200)
+        return response
+        
+    from pmp_manip.ext_info_gen import fetch_js as fetch_js_mod
+    import pytest
+    monkeypatch = pytest.MonkeyPatch()
+    monkeypatch.setattr(fetch_js_mod, "requests_get", fake_requests_get)
+
+    from pmp_manip.ext_info_gen.fetch_js import fetch_js_code
+    url = "https://extensions.penguinmod.com/extensions/test/unicode.js"
+    code = fetch_js_code(url, tolerate_file_path=False)
+    assert "café" in code
+    
+    monkeypatch.undo()
 # TODO: optimize

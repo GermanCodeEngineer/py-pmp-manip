@@ -1189,3 +1189,259 @@ extension = OpcodeInfoGroup(
         ),
     }),
 )"""
+
+def test_process_all_menus_complex_scenarios():
+    """Test complex menu scenarios"""
+    complex_menus = {
+        "complexMenu": {
+            "items": [
+                "simple_string",
+                {"text": "Display Text", "value": "actual_value"},
+                ["Array Text", "array_value"]
+            ],
+            "acceptReporters": True
+        },
+        "dynamicMenu": "getDynamicMenuItems",  # String reference to method
+        "emptyMenu": []
+    }
+    
+    input_type_cls, dropdown_type_cls = process_all_menus(complex_menus)
+    
+    # Verify the classes were created
+    assert hasattr(dropdown_type_cls, "complexMenu")
+    assert hasattr(dropdown_type_cls, "dynamicMenu")
+    assert hasattr(dropdown_type_cls, "emptyMenu")
+    
+    # Verify input type for acceptReporters=True
+    assert hasattr(input_type_cls, "complexMenu")
+
+def test_generate_block_opcode_info_all_block_types():
+    """Test all supported block types"""
+    input_type_cls, dropdown_type_cls = process_all_menus({})
+    
+    block_types = [
+        ("command", OpcodeType.STATEMENT),
+        ("reporter", OpcodeType.STRING_REPORTER),
+        ("Boolean", OpcodeType.BOOLEAN_REPORTER),
+        ("hat", OpcodeType.HAT),
+        ("event", OpcodeType.HAT),
+        ("conditional", OpcodeType.STATEMENT),
+        ("loop", OpcodeType.STATEMENT),
+    ]
+    
+    for block_type, expected_opcode_type in block_types:
+        block_info = {
+            "opcode": f"test_{block_type}",
+            "blockType": block_type,
+            "text": f"test {block_type} block"
+        }
+        
+        opcode_info, new_opcode = generate_block_opcode_info(
+            block_info, {}, input_type_cls, dropdown_type_cls, "testExt"
+        )
+        
+        assert opcode_info.opcode_type == expected_opcode_type
+        assert new_opcode.startswith("testExt::")
+
+def test_generate_block_opcode_info_terminal_blocks():
+    """Test terminal block handling"""
+    input_type_cls, dropdown_type_cls = process_all_menus({})
+    
+    # Test terminal command block
+    terminal_block = {
+        "opcode": "stopAll",
+        "blockType": "command",
+        "isTerminal": True,
+        "text": "stop all"
+    }
+    
+    opcode_info, _ = generate_block_opcode_info(
+        terminal_block, {}, input_type_cls, dropdown_type_cls, "testExt"
+    )
+    
+    assert opcode_info.opcode_type == OpcodeType.ENDING_STATEMENT
+    
+    # Test invalid terminal block (non-command)
+    invalid_terminal = {
+        "opcode": "badTerminal",
+        "blockType": "reporter",
+        "isTerminal": True
+    }
+    
+    with raises(MANIP_InvalidCustomBlockError):
+        generate_block_opcode_info(
+            invalid_terminal, {}, input_type_cls, dropdown_type_cls, "testExt"
+        )
+
+def test_generate_block_opcode_info_branch_count_handling():
+    """Test branch count and branches array handling"""
+    input_type_cls, dropdown_type_cls = process_all_menus({})
+    
+    # Test explicit branchCount
+    block_with_branches = {
+        "opcode": "repeat",
+        "blockType": "conditional",
+        "branchCount": 2,
+        "text": ["repeat", "times", ""]
+    }
+    
+    opcode_info, new_opcode = generate_block_opcode_info(
+        block_with_branches, {}, input_type_cls, dropdown_type_cls, "testExt"
+    )
+    
+    assert len([k for k in opcode_info.inputs.keys_key1() if "SUBSTACK" in k]) == 2
+    assert "{SUBSTACK}" in new_opcode
+    assert "{SUBSTACK2}" in new_opcode
+    
+    # Test branches array
+    block_with_branches_array = {
+        "opcode": "ifElse",
+        "blockType": "conditional", 
+        "branches": ["if", "else"],
+        "text": ["if", "then", "else"]
+    }
+    
+    opcode_info, _ = generate_block_opcode_info(
+        block_with_branches_array, {}, input_type_cls, dropdown_type_cls, "testExt"
+    )
+    
+    assert len([k for k in opcode_info.inputs.keys_key1() if "SUBSTACK" in k]) == 2
+
+def test_generate_block_opcode_info_special_blocks():
+    """Test special block types like label and button"""
+    input_type_cls, dropdown_type_cls = process_all_menus({})
+    
+    # Test label block
+    label_block = {
+        "opcode": "label",
+        "blockType": "label",
+        "text": "This is a label"
+    }
+    
+    result = generate_block_opcode_info(
+        label_block, {}, input_type_cls, dropdown_type_cls, "testExt"
+    )
+    
+    assert result == (None, None)  # Labels are skipped
+    
+    # Test button block
+    button_block = {
+        "opcode": "button",
+        "blockType": "button", 
+        "text": "Click me"
+    }
+    
+    result = generate_block_opcode_info(
+        button_block, {}, input_type_cls, dropdown_type_cls, "testExt"
+    )
+    
+    assert result == (None, None)  # Buttons are skipped
+
+def test_generate_block_opcode_info_monitor_behavior():
+    """Test monitor behavior for reporter blocks"""
+    input_type_cls, dropdown_type_cls = process_all_menus({})
+    
+    # Test simple reporter (can have monitor)
+    simple_reporter = {
+        "opcode": "simpleValue",
+        "blockType": "reporter",
+        "text": "simple value"
+    }
+    
+    opcode_info, _ = generate_block_opcode_info(
+        simple_reporter, {}, input_type_cls, dropdown_type_cls, "testExt"
+    )
+    
+    assert opcode_info.can_have_monitor == True
+    assert opcode_info.monitor_id_behaviour == MonitorIdBehaviour.OPCFULL
+    
+    # Test reporter with inputs (cannot have monitor)
+    reporter_with_inputs = {
+        "opcode": "getValue",
+        "blockType": "reporter",
+        "text": "get value [NAME]",
+        "arguments": {
+            "NAME": {"type": "string"}
+        }
+    }
+    
+    opcode_info, _ = generate_block_opcode_info(
+        reporter_with_inputs, {}, input_type_cls, dropdown_type_cls, "testExt"
+    )
+    
+    assert opcode_info.can_have_monitor == False
+    assert opcode_info.monitor_id_behaviour is None
+
+def test_generate_block_opcode_info_ppm_final_opcode():
+    """Test custom ppm_final_opcode property"""
+    input_type_cls, dropdown_type_cls = process_all_menus({})
+    
+    final_opcode_block = {
+        "opcode": "motion_movesteps",
+        "blockType": "command", 
+        "text": "move [STEPS] steps",
+        "ppm_final_opcode": True,
+        "arguments": {
+            "STEPS": {"type": "number"}
+        }
+    }
+    
+    opcode_info, new_opcode = generate_block_opcode_info(
+        final_opcode_block, {}, input_type_cls, dropdown_type_cls, "testExt"
+    )
+    
+    # Should use motion prefix instead of testExt
+    assert new_opcode.startswith("motion::")
+
+def test_generate_opcode_info_group_conflict_resolution():
+    """Test new opcode conflict resolution"""
+    extension_info = {
+        "id": "conflictExt",
+        "blocks": [
+            {
+                "opcode": "block1",
+                "blockType": "command",
+                "text": "do something"
+            },
+            {
+                "opcode": "block2", 
+                "blockType": "command",
+                "text": "do something"  # Same text = same new opcode
+            }
+        ]
+    }
+    
+    info_group, _, _ = generate_opcode_info_group(extension_info)
+    
+    # Should have both blocks with disambiguated new opcodes
+    assert len(info_group.opcode_info) == 2
+    
+    # Get the new opcodes - use the proper DualKeyDict iteration
+    new_opcodes = list(info_group.opcode_info.keys_key2())
+    
+    # Should contain disambiguation
+    conflicted_opcodes = [opcode for opcode in new_opcodes if "{{id=" in opcode]
+    assert len(conflicted_opcodes) == 2
+
+def test_generate_file_code_empty_enums():
+    """Test file code generation with empty enum classes"""
+    from pmp_manip.opcode_info.api import OpcodeInfoGroup, InputType, DropdownType
+    from pmp_manip.utility import DualKeyDict
+    
+    class EmptyInputType(InputType):
+        pass
+    
+    class EmptyDropdownType(DropdownType):
+        pass
+    
+    empty_info_group = OpcodeInfoGroup(
+        name="emptyExt",
+        opcode_info=DualKeyDict()
+    )
+    
+    file_code = generate_file_code(empty_info_group, EmptyInputType, EmptyDropdownType)
+    
+    assert "class EmptyDropdownType(DropdownType):" in file_code
+    assert "class EmptyInputType(InputType):" in file_code
+    assert "pass" in file_code
+    assert "extension = OpcodeInfoGroup(" in file_code

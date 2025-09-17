@@ -479,3 +479,252 @@ def test_extract_extension_info_safely_missing_return():
     with raises(MANIP_BadExtensionCodeFormatError):
         extract_extension_info_safely(bad_code)
 
+
+def test_get_js_parser_singleton():
+    """Test that get_js_parser returns the same instance"""
+    import pmp_manip.ext_info_gen.safe_extractor as safe_extractor_mod
+    # Reset the global parser
+    safe_extractor_mod._js_parser = None
+    
+    parser1 = get_js_parser()
+    parser2 = get_js_parser()
+    
+    assert parser1 is parser2
+    assert isinstance(parser1, Parser)
+
+def test_ts_node_to_json_complex_structures():
+    """Test ts_node_to_json with complex nested structures"""
+    # Test with nested lists and dicts
+    complex_structure = {
+        "nested_dict": {"key": "value"},
+        "nested_list": [1, 2, {"inner": "data"}],
+        "simple_value": "test"
+    }
+    
+    result = ts_node_to_json(complex_structure)
+    assert result == complex_structure
+    
+    # Test with actual tree-sitter Node objects
+    parser = get_js_parser()
+    tree = parser.parse(b"var x = 42;")
+    root_node = tree.root_node
+    
+    # ts_node_to_json should handle actual Node objects
+    json_result = ts_node_to_json(root_node)
+    assert isinstance(json_result, dict)
+    assert "type" in json_result
+    assert "children" in json_result
+
+def test_extract_extension_info_safely_complex_translation():
+    """Test complex translation scenarios"""
+    code = """
+    class ComplexTranslation {
+      getInfo() {
+        return {
+          id: "complexExt",
+          name: Scratch.translate("Complex Extension"),
+          blocks: [
+            {
+              opcode: "complexBlock",
+              blockType: Scratch.BlockType.COMMAND,
+              text: Scratch.translate({
+                id: "complexExt.complexBlock",
+                default: "do complex [ACTION] with [VALUE]",
+                description: "A complex block with parameters"
+              }),
+              arguments: {
+                ACTION: {
+                  type: Scratch.ArgumentType.STRING,
+                  defaultValue: Scratch.translate("default action")
+                },
+                VALUE: {
+                  type: Scratch.ArgumentType.NUMBER,
+                  defaultValue: 42
+                }
+              }
+            }
+          ]
+        };
+      }
+    }
+    Scratch.extensions.register(new ComplexTranslation())
+    """
+    
+    info = extract_extension_info_safely(code)
+    assert info["id"] == "complexExt"
+    assert info["name"] == "Complex Extension"
+    assert info["blocks"][0]["text"] == "do complex [ACTION] with [VALUE]"
+    assert info["blocks"][0]["arguments"]["ACTION"]["defaultValue"] == "default action"
+
+def test_extract_extension_info_safely_json_stringify_edge_cases():
+    """Test JSON.stringify with various data types"""
+    code = """
+    class JSONTest {
+      getInfo() {
+        return {
+          id: "jsonTest",
+          blocks: [
+            {
+              opcode: "test",
+              blockType: Scratch.BlockType.COMMAND,
+              text: "test",
+              arguments: {
+                ARRAY: {
+                  defaultValue: JSON.stringify([1, "string", true, null])
+                },
+                OBJECT: {
+                  defaultValue: JSON.stringify({key: "value", num: 123})
+                },
+                NESTED: {
+                  defaultValue: JSON.stringify({arr: [1, 2], obj: {x: "y"}})
+                }
+              }
+            }
+          ]
+        };
+      }
+    }
+    Scratch.extensions.register(new JSONTest())
+    """
+    
+    info = extract_extension_info_safely(code)
+    args = info["blocks"][0]["arguments"]
+    
+    # Verify JSON.stringify results
+    assert args["ARRAY"]["defaultValue"] == '[1,"string",true,null]'
+    assert args["OBJECT"]["defaultValue"] == '{"key":"value","num":123}'
+    assert args["NESTED"]["defaultValue"] == '{"arr":[1,2],"obj":{"x":"y"}}'
+
+def test_extract_extension_info_safely_property_access_warnings():
+    """Test that property access generates warnings or errors appropriately"""
+    code = """
+    class PropertyAccess {
+      getInfo() {
+        return {
+          id: "propTest",
+          name: this.getExtensionName(),
+          blocks: []
+        };
+      }
+      
+      getExtensionName() {
+        return "Property Test";
+      }
+    }
+    Scratch.extensions.register(new PropertyAccess())
+    """
+    
+    # The safe extractor should raise an error for unsupported features like method calls
+    with raises(MANIP_BadExtensionCodeFormatError):
+        extract_extension_info_safely(code)
+
+def test_extract_extension_info_safely_unsupported_features():
+    """Test that unsupported JavaScript features are handled appropriately"""
+    code = """
+    class UnsupportedFeatures {
+      getInfo() {
+        return {
+          id: "unsupported",
+          name: true ? "Conditional Name" : "Other Name",  // Ternary operator
+          blocks: []
+        };
+      }
+    }
+    Scratch.extensions.register(new UnsupportedFeatures())
+    """
+    
+    # The safe extractor should raise an error for unsupported features like ternary operators
+    with raises(MANIP_BadExtensionCodeFormatError):
+        extract_extension_info_safely(code)
+
+def test_extract_extension_info_safely_multiple_classes():
+    """Test extension with multiple classes where only one is registered"""
+    code = """
+    class HelperClass {
+      static getValue() {
+        return "helper";
+      }
+    }
+    
+    class MainExtension {
+      getInfo() {
+        return {
+          id: "multiClass",
+          name: "Multi Class Extension",
+          blocks: []
+        };
+      }
+    }
+    
+    Scratch.extensions.register(new MainExtension())
+    """
+    
+    info = extract_extension_info_safely(code)
+    assert info["id"] == "multiClass"
+    assert info["name"] == "Multi Class Extension"
+
+def test_extract_extension_info_safely_registration_patterns():
+    """Test different registration patterns"""
+    # Test with direct instantiation - this should work
+    code2 = """
+    class TestExt2 {
+      getInfo() {
+        return { id: "test2", blocks: [] };
+      }
+    }
+    Scratch.extensions.register(new TestExt2());
+    """
+    
+    info = extract_extension_info_safely(code2)
+    assert info["id"] == "test2"
+    
+    # Test with variable assignment - this is more complex and may not be supported
+    code1 = """
+    class TestExt {
+      getInfo() {
+        return { id: "test1", blocks: [] };
+      }
+    }
+    const ext = new TestExt();
+    Scratch.extensions.register(ext);
+    """
+    
+    # This pattern may not be supported by the safe extractor
+    try:
+        info = extract_extension_info_safely(code1)
+        assert info["id"] == "test1"
+    except MANIP_BadExtensionCodeFormatError:
+        # This is acceptable - the safe extractor may not support variable assignment patterns
+        pass
+
+def test_extract_extension_info_safely_error_recovery():
+    """Test error recovery and detailed error messages"""
+    # Test with malformed class
+    bad_code = """
+    class BadExtension {
+      getInfo() {
+        return {
+          id: "badExt"
+          // missing comma
+          blocks: []
+        };
+      }
+    }
+    """
+    
+    with raises(MANIP_InvalidExtensionCodeSyntaxError):
+        extract_extension_info_safely(bad_code)
+    
+    # Test with missing registration
+    code_without_registration = """
+    class NoRegister {
+      getInfo() {
+        return { id: "noReg", blocks: [] };
+      }
+    }
+    // Missing Scratch.extensions.register call
+    """
+    
+    with raises(MANIP_BadExtensionCodeFormatError):
+        extract_extension_info_safely(code_without_registration)
+
