@@ -88,7 +88,7 @@ def process_all_menus(menus: dict[str, dict[str, Any]|list]) -> tuple[type[Input
             accept_reporters = False
 
         
-        if not isinstance(menu_info, (dict, list, str)):
+        if not isinstance(possible_values, (list, str)):
             raise MANIP_InvalidCustomMenuError(f"Invalid custom menu {menu_block_id!r}: 'items' must be an array or string(method refernce)")
         if   isinstance(possible_values, list): pass
         elif isinstance(possible_values, str): # str refers to a function and is therefore unpredictable
@@ -371,7 +371,7 @@ def generate_block_opcode_info(
                 raise ValueError("Unknown value for 'blockType'")
         
         if "opcode" not in block_info:
-            raise MANIP_InvalidCustomBlockError(f"Invalid block info missing attribute 'opcode' (block 'Unknown'): {block_info}") from error  
+            raise MANIP_InvalidCustomBlockError(f"Invalid block info missing attribute 'opcode' (block 'Unknown'): {block_info}")  
         opcode: str = block_info["opcode"] # might not be included so must come after eg. "label" blocks have returned alredy
         if is_final_opcode:
             overwrite_category = opcode.split("_", maxsplit=1)[0]
