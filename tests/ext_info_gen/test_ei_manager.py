@@ -179,7 +179,7 @@ def test_update_cache_write_error(monkeypatch: MonkeyPatch):
     with raises(MANIP_FailedFileWriteError):
         manager_mod._update_cache(
             cache, cache_file_path="cache.json", dest_file_name="myExt.py",
-            extension_string="some jsCode", py_code="some py_code",
+            js_code="some jsCode", py_code="some py_code",
         )
 
 def test_update_cache_new_entry(monkeypatch: MonkeyPatch):
@@ -196,7 +196,7 @@ def test_update_cache_new_entry(monkeypatch: MonkeyPatch):
     cache = {}
     manager_mod._update_cache(
         cache, cache_file_path="cache.json", dest_file_name="myExt.py",
-        extension_string="some jsCode", py_code="some py_code",
+        js_code="some jsCode", py_code="some py_code",
     )
 
 def test_update_cache_update_entry(monkeypatch: MonkeyPatch):
@@ -214,7 +214,7 @@ def test_update_cache_update_entry(monkeypatch: MonkeyPatch):
     old_cache = _make_cache(file_name="myExt.py", last_update=last_update.isoformat())
     manager_mod._update_cache(
         old_cache, cache_file_path="cache.json", dest_file_name="myExt.py",
-        extension_string=None, py_code=None,
+        js_code=None, py_code=None,
     )
 
 

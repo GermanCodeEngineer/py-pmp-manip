@@ -371,7 +371,7 @@ def generate_block_opcode_info(
                 raise ValueError("Unknown value for 'blockType'")
         
         if "opcode" not in block_info:
-            raise MANIP_InvalidCustomBlockError(f"Invalid block info missing attribute 'opcode' (block 'Unknown'): {block_info}") from error  
+            raise MANIP_InvalidCustomBlockError(f"Invalid block info missing attribute 'opcode' (block 'Unknown'): {block_info}")  
         opcode: str = block_info["opcode"] # might not be included so must come after eg. "label" blocks have returned alredy
         if is_final_opcode:
             overwrite_category = opcode.split("_", maxsplit=1)[0]
