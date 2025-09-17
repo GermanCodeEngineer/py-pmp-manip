@@ -1179,3 +1179,203 @@ extension = OpcodeInfoGroup(
         ),
     }),
 )"""
+
+
+# Additional comprehensive tests for generator functionality
+
+def test_process_all_menus_complex_scenarios():
+    """Test complex menu processing scenarios"""
+    
+    # Test menu with function reference
+    complex_menus = {
+        "DYNAMIC_MENU": {
+            "acceptReporters": True,
+            "items": "getDynamicItems"  # Function reference
+        },
+        "MIXED_VALUES": {
+            "items": [
+                "simple_string",
+                ["text_value", "internal_value"],
+                {"text": "Displayed Text", "value": "internal_value"}
+            ]
+        }
+    }
+    
+    input_type_cls, dropdown_type_cls = process_all_menus(complex_menus)
+    
+    # Verify dynamic menu handling
+    dropdown_members = {member.name: member.value for member in dropdown_type_cls}
+    assert dropdown_members["DYNAMIC_MENU"].rules == [DropdownValueRule.EXTENSION_UNPREDICTABLE]
+    assert dropdown_members["DYNAMIC_MENU"].direct_values == []
+    
+    # Verify mixed value format handling
+    assert dropdown_members["MIXED_VALUES"].direct_values == ["simple_string", "text_value", "Displayed Text"]
+    assert dropdown_members["MIXED_VALUES"].old_direct_values == ["simple_string", "internal_value", "internal_value"]
+
+def test_generate_block_opcode_info_advanced_block_types():
+    """Test advanced block type processing"""
+    
+    input_type_cls, dropdown_type_cls = process_all_menus({})
+    
+    # Test different block type variations
+    advanced_blocks = [
+        {
+            "opcode": "eventBlock",
+            "blockType": "event",
+            "text": "when [CONDITION] happens",
+            "arguments": {"CONDITION": {"type": "Boolean"}}
+        },
+        {
+            "opcode": "loopBlock", 
+            "blockType": "loop",
+            "text": "repeat [TIMES]",
+            "arguments": {"TIMES": {"type": "number"}},
+            "branchCount": 1
+        },
+        {
+            "opcode": "conditionalBlock",
+            "blockType": "conditional", 
+            "text": "if [CONDITION]",
+            "arguments": {"CONDITION": {"type": "Boolean"}},
+            "branchCount": 1
+        }
+    ]
+    
+    for block_data in advanced_blocks:
+        opcode_info, new_opcode = generate_block_opcode_info(
+            block_info=block_data,
+            menus={},
+            input_type_cls=input_type_cls,
+            dropdown_type_cls=dropdown_type_cls,
+            extension_id="advanced",
+        )
+        
+        assert opcode_info is not None
+        assert new_opcode is not None
+        assert "advanced::" in new_opcode
+
+def test_generate_block_opcode_info_monitor_behavior():
+    """Test monitor behavior determination"""
+    
+    input_type_cls, dropdown_type_cls = process_all_menus({
+        "TEST_MENU": {"items": ["opt1", "opt2"]}
+    })
+    
+    # Test reporter with no inputs - should have monitor
+    simple_reporter = {
+        "opcode": "simpleReporter",
+        "blockType": "reporter", 
+        "text": "simple value"
+    }
+    
+    opcode_info, _ = generate_block_opcode_info(
+        block_info=simple_reporter,
+        menus={"TEST_MENU": {"items": ["opt1", "opt2"]}},
+        input_type_cls=input_type_cls,
+        dropdown_type_cls=dropdown_type_cls,
+        extension_id="test",
+    )
+    
+    assert opcode_info.can_have_monitor == True
+    assert opcode_info.monitor_id_behaviour == MonitorIdBehaviour.OPCFULL
+    
+    # Test reporter with dropdown - should have parameterized monitor  
+    dropdown_reporter = {
+        "opcode": "dropdownReporter",
+        "blockType": "reporter",
+        "text": "value for [OPTION]",
+        "arguments": {
+            "OPTION": {"type": "string", "menu": "TEST_MENU"}
+        }
+    }
+    
+    opcode_info, _ = generate_block_opcode_info(
+        block_info=dropdown_reporter,
+        menus={"TEST_MENU": {"items": ["opt1", "opt2"]}},
+        input_type_cls=input_type_cls,
+        dropdown_type_cls=dropdown_type_cls,
+        extension_id="test",
+    )
+    
+    assert opcode_info.can_have_monitor == True
+    assert opcode_info.monitor_id_behaviour == MonitorIdBehaviour.OPCFULL_PARAMS
+    assert opcode_info.has_variable_id == True
+
+def test_generate_block_opcode_info_argument_edge_cases():
+    """Test edge cases in argument processing"""
+    
+    input_type_cls, dropdown_type_cls = process_all_menus({})
+    
+    # Test block with no argument defined but referenced in text
+    implicit_arg_block = {
+        "opcode": "implicitArg",
+        "blockType": "command",
+        "text": "do something with [UNDEFINED_ARG]"
+    }
+    
+    opcode_info, new_opcode = generate_block_opcode_info(
+        block_info=implicit_arg_block,
+        menus={},
+        input_type_cls=input_type_cls,
+        dropdown_type_cls=dropdown_type_cls,
+        extension_id="test",
+    )
+    
+    # Should create a default text input for undefined argument
+    assert opcode_info.inputs.has_key1("UNDEFINED_ARG")
+    assert opcode_info.inputs.get_by_key1("UNDEFINED_ARG").type == BuiltinInputType.TEXT
+
+def test_generate_opcode_info_group_complex_extensions():
+    """Test complex extension processing with edge cases"""
+    
+    complex_extension = {
+        "id": "complex_test",
+        "name": "Complex Test Extension",
+        "blocks": [
+            "---",  # Separator - should be ignored
+            {
+                "opcode": "block1",
+                "blockType": "reporter", 
+                "text": "block one"
+            },
+            {
+                "opcode": "block2",
+                "blockType": "command",
+                "text": "block two"
+            }
+        ],
+        "menus": {
+            "testMenu": {"items": ["a", "b", "c"]}
+        }
+    }
+    
+    info_group, input_type_cls, dropdown_type_cls = generate_opcode_info_group(complex_extension)
+    
+    # Should have 2 blocks + 1 menu = 3 opcodes total
+    assert len(info_group.opcode_info) == 3
+    
+    # Verify menu opcode is created
+    assert info_group.opcode_info.has_key1("complex_test_menu_testMenu")
+
+def test_generate_file_code_edge_cases():
+    """Test file code generation edge cases"""
+    
+    # Test with empty enums
+    class EmptyInputType(InputType):
+        pass
+        
+    class EmptyDropdownType(DropdownType):
+        pass
+    
+    empty_info_group = OpcodeInfoGroup(
+        name="empty",
+        opcode_info=DualKeyDict()
+    )
+    
+    file_code = generate_file_code(empty_info_group, EmptyInputType, EmptyDropdownType)
+    
+    # Should generate valid Python code even with empty structures
+    assert "from pmp_manip.opcode_info.data_imports import *" in file_code
+    assert "class EmptyDropdownType(DropdownType):" in file_code
+    assert "class EmptyInputType(InputType):" in file_code
+    assert "extension = OpcodeInfoGroup(" in file_code

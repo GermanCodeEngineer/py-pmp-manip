@@ -299,3 +299,112 @@ def test_extract_extension_info_directly_json_decode_error(monkeypatch: MonkeyPa
     
     with raises(MANIP_ExtensionJSONDecodeError):
         extract_extension_info_directly(EXAMPLE_EXTENSION_CODE)
+
+def test_extract_extension_info_directly_success():
+    """Test successful extraction with valid extension code"""
+    from pmp_manip.ext_info_gen.direct_extractor import extract_extension_info_directly
+    result = extract_extension_info_directly(EXAMPLE_EXTENSION_CODE)
+    
+    assert isinstance(result, dict)
+    assert "id" in result
+    assert result["id"] == "truefantombase"
+    assert "blocks" in result
+    assert isinstance(result["blocks"], list)
+    assert len(result["blocks"]) == 2
+
+def test_extract_extension_info_directly_with_encoding():
+    """Test extraction with different encoding specified"""
+    from pmp_manip.ext_info_gen.direct_extractor import extract_extension_info_directly
+    result = extract_extension_info_directly(EXAMPLE_EXTENSION_CODE, code_encoding="utf-8")
+    
+    assert isinstance(result, dict)
+    assert result["id"] == "truefantombase"
+
+def test_extract_extension_info_directly_strict_mode():
+    """Test extraction with strict mode enabled"""
+    from pmp_manip.ext_info_gen.direct_extractor import extract_extension_info_directly
+    result = extract_extension_info_directly(EXAMPLE_EXTENSION_CODE, is_strict=True)
+    
+    assert isinstance(result, dict)
+    assert result["id"] == "truefantombase"
+
+def test_extract_extension_info_directly_malformed_json_output(monkeypatch: MonkeyPatch):
+    """Test error when Node.js returns malformed JSON"""
+    def fake_run_subprocess(*args, **kwargs):
+        result = run_subprocess(*args, **kwargs)
+        result.stdout = "malformed{json: output"
+        return result
+
+    import pmp_manip.ext_info_gen.direct_extractor as direct_extractor_mod
+    monkeypatch.setattr(direct_extractor_mod, "run_subprocess", fake_run_subprocess)
+    from pmp_manip.ext_info_gen.direct_extractor import extract_extension_info_directly
+    
+    with raises(MANIP_ExtensionJSONDecodeError):
+        extract_extension_info_directly(EXAMPLE_EXTENSION_CODE)
+
+def test_extract_extension_info_directly_custom_return_code(monkeypatch: MonkeyPatch):
+    """Test handling of custom error return codes"""
+    def fake_run_subprocess(*args, **kwargs):
+        result = run_subprocess(*args, **kwargs)
+        result.returncode = 2  # Registration error
+        result.stderr = "Extension not registered properly"
+        return result
+
+    import pmp_manip.ext_info_gen.direct_extractor as direct_extractor_mod
+    monkeypatch.setattr(direct_extractor_mod, "run_subprocess", fake_run_subprocess)
+    from pmp_manip.ext_info_gen.direct_extractor import extract_extension_info_directly
+    
+    with raises(MANIP_ExtensionExecutionErrorInJavascript) as exc_info:
+        extract_extension_info_directly(EXAMPLE_EXTENSION_CODE)
+    assert "Extension was not registered" in str(exc_info.value)
+
+def test_extract_extension_info_directly_with_multiline_output(monkeypatch: MonkeyPatch):
+    """Test extraction when Node.js output has multiple lines"""
+    def fake_run_subprocess(*args, **kwargs):
+        result = run_subprocess(*args, **kwargs)
+        result.stdout = "Some debug output\nMore output\n{\"id\": \"test\", \"blocks\": []}"
+        return result
+
+    import pmp_manip.ext_info_gen.direct_extractor as direct_extractor_mod
+    monkeypatch.setattr(direct_extractor_mod, "run_subprocess", fake_run_subprocess)
+    from pmp_manip.ext_info_gen.direct_extractor import extract_extension_info_directly
+    
+    result = extract_extension_info_directly(EXAMPLE_EXTENSION_CODE)
+    assert result == {"id": "test", "blocks": []}
+
+def test_extract_extension_info_directly_edge_case_empty_extension():
+    """Test extraction with minimal extension that should fail"""
+    minimal_bad_code = """
+    class EmptyExt {
+        getInfo() {
+            return {};
+        }
+    }
+    Scratch.extensions.register(new EmptyExt());
+    """
+    from pmp_manip.ext_info_gen.direct_extractor import extract_extension_info_directly
+    
+    # Should succeed but return an empty-ish extension info
+    result = extract_extension_info_directly(minimal_bad_code)
+    assert isinstance(result, dict)
+
+def test_extract_extension_info_directly_unicode_handling():
+    """Test extraction with Unicode characters in extension code"""
+    unicode_code = """
+    class UnicodeExt {
+        getInfo() {
+            return {
+                id: "unicode",
+                name: "测试Extension with émojis 🎭",
+                blocks: []
+            };
+        }
+    }
+    Scratch.extensions.register(new UnicodeExt());
+    """
+    from pmp_manip.ext_info_gen.direct_extractor import extract_extension_info_directly
+    
+    result = extract_extension_info_directly(unicode_code)
+    assert isinstance(result, dict)
+    assert "name" in result
+    assert "测试Extension" in result["name"]

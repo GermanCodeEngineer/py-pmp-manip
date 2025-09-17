@@ -479,3 +479,332 @@ def test_extract_extension_info_safely_missing_return():
     with raises(MANIP_BadExtensionCodeFormatError):
         extract_extension_info_safely(bad_code)
 
+
+# Additional comprehensive tests for safe extractor functionality
+
+def test_ts_node_to_json_complex_objects():
+    """Test complex object structures in JavaScript AST"""
+    parser = get_js_parser()
+    
+    # Test nested objects
+    nested_code = """{
+        outer: {
+            inner: {
+                value: 42,
+                list: [1, 2, 3]
+            }
+        }
+    }"""
+    tree = parser.parse(nested_code.encode())
+    expr_statement = tree.root_node.named_children[0]
+    result = ts_node_to_json(expr_statement.named_children[0])
+    
+    expected = {
+        "outer": {
+            "inner": {
+                "value": 42,
+                "list": [1, 2, 3]
+            }
+        }
+    }
+    assert result == expected
+
+def test_ts_node_to_json_arrays_with_different_types():
+    """Test arrays containing different JavaScript types"""
+    parser = get_js_parser()
+    
+    mixed_array = '[42, "string", true, null, {key: "value"}]'
+    tree = parser.parse(mixed_array.encode())
+    expr_statement = tree.root_node.named_children[0]
+    result = ts_node_to_json(expr_statement.named_children[0])
+    
+    expected = [42, "string", True, None, {"key": "value"}]
+    assert result == expected
+
+def test_extract_extension_info_safely_complex_extensions():
+    """Test safe extraction with complex, realistic extension structures"""
+    
+    complex_extension = '''
+    class ComplexExtension {
+        getInfo() {
+            return {
+                id: "complex",
+                name: "Complex Extension",
+                color1: "#FF0000",
+                menuIconURI: "data:image/svg+xml;base64,PHN2Zw==",
+                blocks: [
+                    {
+                        opcode: "multiArgumentBlock",
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: "do [ACTION] with [VALUE] and [OPTION]",
+                        arguments: {
+                            ACTION: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: "something"
+                            },
+                            VALUE: {
+                                type: Scratch.ArgumentType.NUMBER,
+                                defaultValue: 10
+                            },
+                            OPTION: {
+                                type: Scratch.ArgumentType.STRING,
+                                menu: "optionMenu"
+                            }
+                        }
+                    },
+                    {
+                        opcode: "reporterBlock",
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: "get [PROPERTY]",
+                        arguments: {
+                            PROPERTY: {
+                                type: Scratch.ArgumentType.STRING,
+                                menu: "propertyMenu"
+                            }
+                        }
+                    }
+                ],
+                menus: {
+                    optionMenu: {
+                        acceptReporters: true,
+                        items: ["option1", "option2", "option3"]
+                    },
+                    propertyMenu: {
+                        items: [
+                            {text: "Width", value: "width"},
+                            {text: "Height", value: "height"}
+                        ]
+                    }
+                }
+            };
+        }
+    }
+    Scratch.extensions.register(new ComplexExtension());
+    '''
+    
+    result = extract_extension_info_safely(complex_extension)
+    
+    assert result["id"] == "complex"
+    assert len(result["blocks"]) == 2
+    assert "menus" in result
+    assert "optionMenu" in result["menus"]
+    assert "propertyMenu" in result["menus"]
+
+def test_extract_extension_info_safely_with_comments():
+    """Test extraction with JavaScript comments"""
+    
+    commented_extension = '''
+    // This is a test extension
+    class TestExtension {
+        // Get extension information
+        getInfo() {
+            return {
+                id: "test", // Extension ID
+                name: "Test Extension", /* Extension name */
+                blocks: [
+                    // First block
+                    {
+                        opcode: "testBlock",
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: "test command"
+                    }
+                    // More blocks could go here
+                ]
+            };
+        }
+    }
+    
+    // Register the extension
+    Scratch.extensions.register(new TestExtension());
+    '''
+    
+    result = extract_extension_info_safely(commented_extension)
+    assert result["id"] == "test"
+    assert len(result["blocks"]) == 1
+
+def test_extract_extension_info_safely_syntax_error_reporting():
+    """Test detailed syntax error reporting"""
+    
+    syntax_error_code = '''
+    class BadExtension {
+        getInfo() {
+            return {
+                id: "bad",
+                blocks: [
+                    {
+                        opcode: "badBlock"
+                        // Missing comma here causes syntax error
+                        blockType: Scratch.BlockType.COMMAND
+                    }
+                ]
+            };
+        }
+    }
+    '''
+    
+    with raises(MANIP_InvalidExtensionCodeSyntaxError) as exc_info:
+        extract_extension_info_safely(syntax_error_code)
+    
+    error_message = str(exc_info.value)
+    assert "Syntax error(s) detected:" in error_message
+    assert "At line" in error_message
+
+def test_extract_extension_info_safely_function_style():
+    """Test extraction with function-style extension (limited support)"""
+    
+    # The safe extractor expects class-style extensions, not function-style
+    # This test verifies that function-style extensions are properly rejected
+    function_extension = '''
+    (function(Scratch) {
+        function FunctionExtension() {}
+        
+        FunctionExtension.prototype.getInfo = function() {
+            return {
+                id: "function",
+                name: "Function Extension",
+                blocks: []
+            };
+        };
+        
+        Scratch.extensions.register(new FunctionExtension());
+    })(Scratch);
+    '''
+    
+    # Function-style extensions are not supported by the safe extractor
+    with raises(MANIP_BadExtensionCodeFormatError):
+        extract_extension_info_safely(function_extension)
+
+def test_extract_extension_info_safely_translation_edge_cases():
+    """Test edge cases in Scratch.translate handling"""
+    
+    translation_extension = '''
+    class TranslationExtension {
+        getInfo() {
+            return {
+                id: "translation",
+                name: Scratch.translate({
+                    default: "Translation Test",
+                    description: "Test extension for translations"
+                }),
+                blocks: [
+                    {
+                        opcode: "translatedBlock",
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: Scratch.translate("execute command")
+                    }
+                ]
+            };
+        }
+    }
+    Scratch.extensions.register(new TranslationExtension());
+    '''
+    
+    result = extract_extension_info_safely(translation_extension)
+    assert result["name"] == "Translation Test"
+    assert result["blocks"][0]["text"] == "execute command"
+
+def test_get_main_body_edge_cases():
+    """Test edge cases in main body extraction"""
+    parser = get_js_parser()
+    
+    # Test with arrow function in parentheses
+    arrow_code = "((Scratch) => { class Test {} })(Scratch)"
+    tree = parser.parse(arrow_code.encode())
+    body_nodes = _get_main_body(tree.root_node)
+    assert body_nodes[0].type == "class_declaration"
+    
+    # Test with regular function expression
+    func_code = "(function(Scratch) { class Test {} })(Scratch)"
+    tree = parser.parse(func_code.encode())
+    body_nodes = _get_main_body(tree.root_node)
+    assert body_nodes[0].type == "class_declaration"
+
+def test_extract_extension_info_safely_json_stringify_usage():
+    """Test handling of JSON.stringify calls"""
+    
+    stringify_extension = '''
+    class StringifyExtension {
+        getInfo() {
+            const config = {setting: "value"};
+            return {
+                id: "stringify",
+                name: "Stringify Test",
+                blocks: [
+                    {
+                        opcode: "configBlock",
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: "config as string",
+                        arguments: {
+                            CONFIG: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: JSON.stringify(config)
+                            }
+                        }
+                    }
+                ]
+            };
+        }
+    }
+    Scratch.extensions.register(new StringifyExtension());
+    '''
+    
+    result = extract_extension_info_safely(stringify_extension)
+    default_value = result["blocks"][0]["arguments"]["CONFIG"]["defaultValue"]
+    # The safe extractor sees 'config' as an identifier, not the object value
+    assert default_value == '"config"'
+
+def test_extract_extension_info_safely_malformed_structures():
+    """Test handling of malformed but syntactically valid structures"""
+    
+    # Test with missing required fields but valid return statement (no comments after return)
+    minimal_extension = '''
+    class MinimalExtension {
+        getInfo() {
+            return {};
+        }
+    }
+    Scratch.extensions.register(new MinimalExtension());
+    '''
+    
+    result = extract_extension_info_safely(minimal_extension)
+    assert isinstance(result, dict)
+    assert result == {}
+    
+    # Test with truly malformed structure (missing return)
+    malformed_extension = '''
+    class MalformedExtension {
+        getInfo() {
+            const info = {};
+            // Missing return statement - this should fail
+        }
+    }
+    Scratch.extensions.register(new MalformedExtension());
+    '''
+    
+    with raises(MANIP_BadExtensionCodeFormatError):
+        extract_extension_info_safely(malformed_extension)
+
+def test_ts_node_to_json_with_complex_call_handler():
+    """Test complex call handler scenarios"""
+    
+    def complex_call_handler(node):
+        callee_node = node.child_by_field_name("function")
+        if callee_node and callee_node.type == "member_expression":
+            obj = callee_node.child_by_field_name("object")
+            prop = callee_node.child_by_field_name("property")
+            if obj and prop:
+                obj_name = obj.text.decode()
+                prop_name = prop.text.decode()
+                if obj_name == "Math" and prop_name == "max":
+                    args_node = node.child_by_field_name("arguments")
+                    args = [ts_node_to_json(arg) for arg in args_node.named_children]
+                    return max(args) if args else 0
+        return NotImplemented
+    
+    parser = get_js_parser()
+    tree = parser.parse("Math.max(10, 20, 5)".encode())
+    expr_statement = tree.root_node.named_children[0]
+    result = ts_node_to_json(expr_statement.named_children[0], call_handler=complex_call_handler)
+    
+    assert result == 20
+

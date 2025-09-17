@@ -478,3 +478,56 @@ def test_generate_extension_info_py_file_invalid_js_fingerprint(monkeypatch: Mon
     )
     assert dest_file_path == path.join("gen_ext_opcode_info", "myExt.py")
 
+
+
+
+# Additional comprehensive tests for manager functionality
+
+def test_is_trusted_extension_origin_edge_cases():
+    """Test edge cases for trusted origin detection"""
+    edge_cases = [
+        ("https://extensions.turbowarp.org/../malicious.js", True),  # Still matches the trusted domain
+        ("https://extensions.penguinmod.com/", True),  # Root path
+        ("https://pen-group.github.io/test/ext.js", True),  # Subdirectory
+        ("ftp://extensions.turbowarp.org/ext.js", False),  # Wrong protocol
+        ("", False),  # Empty string
+        ("just-a-filename.js", False),  # No protocol
+    ]
+    
+    for source, expected in edge_cases:
+        result = manager_mod._is_trusted_extension_origin(source)
+        assert result == expected, f"Failed for source: {source}"
+
+def test_consider_state_edge_cases(monkeypatch: MonkeyPatch):
+    """Test edge cases for state consideration logic"""
+    # Test with corrupted cache entry
+    monkeypatch.setattr(manager_mod, "file_exists", lambda p: True)
+    monkeypatch.setattr(manager_mod, "read_file_text", lambda p: "some py_code")
+    
+    corrupted_cache = {"someExt.py": {"invalid": "data"}}
+    result = manager_mod._consider_state(
+        "someExt.py", "some_dir/someExt.py",
+        cache=corrupted_cache, js_fetch_expensive=False,
+    )
+    assert result == manager_mod.STATUS_REGEN
+
+def test_update_cache_with_none_values(monkeypatch: MonkeyPatch):
+    """Test cache update with existing entry (where None values are used for timestamp-only updates)"""
+    def fake_write_file_text(file_path: str, text: str):
+        # Validate the cache structure is correct
+        cache_data = loads(text)
+        assert "_" in cache_data  # Should have the warning message
+        
+    monkeypatch.setattr(manager_mod, "write_file_text", fake_write_file_text)
+    
+    # Pre-populate cache with an existing entry
+    cache = _make_cache("test.py", js_code="existing js", py_code="existing py")
+    
+    # This should work fine for updates where only timestamp matters
+    manager_mod._update_cache(
+        cache, cache_file_path="cache.json", dest_file_name="test.py",
+        js_code=None, py_code=None,
+    )
+    # Cache should still have the entry with updated timestamp
+    assert "test.py" in cache
+
