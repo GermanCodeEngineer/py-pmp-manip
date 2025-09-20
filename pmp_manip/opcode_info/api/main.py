@@ -42,7 +42,7 @@ BUILTIN_EXTENSIONS: list[str] = [
     # twFiles: replaces jgFiles as it works better on other devices
     "twFiles",
 
-    # pm: category expansions & seperations go here    # HERE
+    # pm: category expansions & seperations go here
     # pmMotionExpansion: extra motion blocks that were in the category & new ones that werent
     "pmMotionExpansion",
     # pmOperatorsExpansion: extra operators that were in the category & new ones that werent
