@@ -118,8 +118,6 @@ class FRProject:
 
         if   file_path.endswith(".sb3"):
             project_data = FRProject._data_sb3_to_pmp(project_data)
-        with open("data.lua", "w") as f:
-            f.write(FRProject.__repr__(project_data))
         return FRProject.from_data(project_data, asset_files=KeyReprDict(contents))
 
     def __post_init__(self) -> None:

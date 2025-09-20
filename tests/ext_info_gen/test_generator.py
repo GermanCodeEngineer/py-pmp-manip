@@ -173,6 +173,47 @@ EXAMPLE_BLOCK_DATA = [
             }
         }
     },
+    { # [14] - polygon argument type
+        "opcode": "drawPolygon",
+        "blockType": "command",
+        "text": "draw polygon [POINTS]",
+        "arguments": {
+            "POINTS": {"type": "polygon"}
+        },
+    },
+    { # [15] - None argument
+        "opcode": "doSthWith",
+        "blockType": "command",
+        "text": "do sth [VALUE]",
+        "arguments": {
+            "VALUE": {"type": None}
+        },
+    },
+    { # [16] - checkboxInFlyout instead of disableMonitor
+        "opcode": "getValue",
+        "blockType": "reporter", 
+        "text": "get value",
+        "checkboxInFlyout": True,
+    },
+    { # [17] - branches attribute for branch count
+        "opcode": "multiIf",
+        "blockType": "conditional",
+        "text": ["if condition", "else if condition", "else"],
+        "branches": [{}, {}, {}],
+        "arguments": {},
+    },
+    { # [18] - terminal attribute instead of isTerminal
+        "opcode": "stopAll",
+        "blockType": "command", 
+        "text": "stop all",
+        "terminal": True,
+    },
+    { # [19] - ppm_final_opcode is True
+        "opcode": "otherExtension_overrideThatBlock",
+        "blockType": "command", 
+        "text": "override that block",
+        "ppm_final_opcode": True,
+    },
 ]
 EXAMPLE_MENU_DATA = {
     "BGLENTRYTYPES": {
@@ -405,7 +446,87 @@ def example_opcode_blocks(input_type_cls, dropdown_type_cls):
             special_cases={},
             old_mutation_cls=None,
             new_mutation_cls=None,
-        ), "someExtension::Variable usage [USAGE] next (NEXT)")
+        ), "someExtension::Variable usage [USAGE] next (NEXT)"), 
+        (OpcodeInfo(
+            opcode_type=OpcodeType.STATEMENT,
+            inputs=DualKeyDict({
+                ("POINTS", "POINTS"): InputInfo(type=BuiltinInputType.POLYGON, menu=None),
+            }),
+            dropdowns=DualKeyDict(),
+            can_have_monitor=False,
+            monitor_id_behaviour=None,
+            has_shadow=False,
+            has_variable_id=False,
+            special_cases={},
+            old_mutation_cls=None,
+            new_mutation_cls=None,
+        ), "someExtension::draw polygon {:POINTS:}"), 
+        (OpcodeInfo(
+            opcode_type=OpcodeType.STATEMENT,
+            inputs=DualKeyDict({
+                ("VALUE", "VALUE"): InputInfo(type=BuiltinInputType.ROUND, menu=None),
+            }),
+            dropdowns=DualKeyDict(),
+            can_have_monitor=False,
+            monitor_id_behaviour=None,
+            has_shadow=False,
+            has_variable_id=False,
+            special_cases={},
+            old_mutation_cls=None,
+            new_mutation_cls=None,
+        ), "someExtension::do sth (VALUE)"), 
+        (OpcodeInfo(
+            opcode_type=OpcodeType.STRING_REPORTER,
+            inputs=DualKeyDict(),
+            dropdowns=DualKeyDict(),
+            can_have_monitor=True,
+            monitor_id_behaviour=MonitorIdBehaviour.OPCFULL,
+            has_shadow=False,
+            has_variable_id=False,
+            special_cases={},
+            old_mutation_cls=None,
+            new_mutation_cls=None,
+        ), "someExtension::get value"), 
+        (OpcodeInfo(
+            opcode_type=OpcodeType.STATEMENT,
+            inputs=DualKeyDict({
+                ("SUBSTACK", "SUBSTACK"): InputInfo(type=BuiltinInputType.SCRIPT, menu=None),
+                ("SUBSTACK2", "SUBSTACK2"): InputInfo(type=BuiltinInputType.SCRIPT, menu=None),
+                ("SUBSTACK3", "SUBSTACK3"): InputInfo(type=BuiltinInputType.SCRIPT, menu=None),
+            }),
+            dropdowns=DualKeyDict(),
+            can_have_monitor=False,
+            monitor_id_behaviour=None,
+            has_shadow=False,
+            has_variable_id=False,
+            special_cases={},
+            old_mutation_cls=None,
+            new_mutation_cls=None,
+        ), "someExtension::if condition {SUBSTACK} else if condition {SUBSTACK2} else {SUBSTACK3}"),
+        (OpcodeInfo(
+            opcode_type=OpcodeType.ENDING_STATEMENT,
+            inputs=DualKeyDict(),
+            dropdowns=DualKeyDict(),
+            can_have_monitor=False,
+            monitor_id_behaviour=None,
+            has_shadow=False,
+            has_variable_id=False,
+            special_cases={},
+            old_mutation_cls=None,
+            new_mutation_cls=None,
+        ), "someExtension::stop all"),
+        (OpcodeInfo(
+            opcode_type=OpcodeType.STATEMENT,
+            inputs=DualKeyDict(),
+            dropdowns=DualKeyDict(),
+            can_have_monitor=False,
+            monitor_id_behaviour=None,
+            has_shadow=False,
+            has_variable_id=False,
+            special_cases={},
+            old_mutation_cls=None,
+            new_mutation_cls=None,
+        ), "otherExtension::override that block"),
     ]
 
 
@@ -424,10 +545,17 @@ def test_process_all_menus_valid():
             "normal", "generator", "async",
             {"text": "(...) => {}", "value": "arrow"},
         ],
+        "OBJECTTYPES": {
+            "acceptReporters": False,
+            "items": [
+                ["Habitable Planet", "habitable_planet"],
+                ["Inhabitable Planet", "inhabitable_planet"],
+            ],
+        },
         "ARRAYBUFFERS": {
             "acceptReporters": True,
             "items": "getArrayBuffersMenu",
-        }, 
+        },
     }
     input_type_cls, dropdown_type_cls = process_all_menus(menu_data)
     input_type_members    = {member.name: member.value for member in input_type_cls   }
@@ -435,9 +563,9 @@ def test_process_all_menus_valid():
     
     assert set(input_type_members.keys()) == {"TYPES", "ARRAYBUFFERS"}
     assert input_type_members["TYPES"] == (InputMode.BLOCK_AND_DROPDOWN, None, dropdown_type_cls.TYPES, 0)
-    assert input_type_members["ARRAYBUFFERS"] == (InputMode.BLOCK_AND_DROPDOWN, None, dropdown_type_cls.ARRAYBUFFERS, 3)
+    assert input_type_members["ARRAYBUFFERS"] == (InputMode.BLOCK_AND_DROPDOWN, None, dropdown_type_cls.ARRAYBUFFERS, 4)
 
-    assert set(dropdown_type_members.keys()) == {"TYPES", "VARTYPES", "FUNCTYPES", "ARRAYBUFFERS"}
+    assert set(dropdown_type_members.keys()) == {"TYPES", "VARTYPES", "FUNCTYPES", "OBJECTTYPES", "ARRAYBUFFERS"}
     assert dropdown_type_members["TYPES"] == DropdownTypeInfo(
         direct_values=["i32", "u32", "f32", "bool", "auto"],
         rules=[],
@@ -454,6 +582,12 @@ def test_process_all_menus_valid():
         direct_values=["normal", "generator", "async", "(...) => {}"],
         rules=[],
         old_direct_values=["normal", "generator", "async", "arrow"],
+        fallback=None,
+    )
+    assert dropdown_type_members["OBJECTTYPES"] == DropdownTypeInfo(
+        direct_values=["Habitable Planet", "Inhabitable Planet"],
+        rules=[],
+        old_direct_values=["habitable_planet", "inhabitable_planet"],
         fallback=None,
     )
     assert dropdown_type_members["ARRAYBUFFERS"] == DropdownTypeInfo(
@@ -481,12 +615,6 @@ def test_process_all_menus_invalid_menu_possible_value_type():
             "SOME_MENU": {"items": [("Hi, How are you?", "hi_1")]}
         })
 
-def test_process_all_menus_missing_items():
-    with raises(MANIP_InvalidCustomMenuError):
-        process_all_menus({
-            "SOME_MENU": {"acceptReporters": True},
-        })
-
 def test_process_all_menus_possible_value_missing_text_value():
     with raises(MANIP_InvalidCustomMenuError):
         process_all_menus({
@@ -495,6 +623,12 @@ def test_process_all_menus_possible_value_missing_text_value():
     with raises(MANIP_InvalidCustomMenuError):
         process_all_menus({
             "SOME_MENU": {"items": [{"text": "Hi :)"}]}
+        })
+
+def test_process_all_menus_possible_value_invalid_length():
+    with raises(MANIP_InvalidCustomMenuError):
+        process_all_menus({
+            "SOME_MENU": {"items": [["internal_id"]]} # missing public representation
         })
 
 
@@ -653,6 +787,72 @@ def test_generate_block_opcode_info_with_list_menu(input_type_cls, dropdown_type
     )
     assert (opcode_block, new_opcode) == example_opcode_blocks[13]
 
+def test_generate_block_opcode_info_polygon_arg(input_type_cls, dropdown_type_cls, example_opcode_blocks):
+    block_data = EXAMPLE_BLOCK_DATA[14]
+    opcode_block, new_opcode = generate_block_opcode_info(
+        block_info=block_data,
+        menus=EXAMPLE_MENU_DATA,
+        input_type_cls=input_type_cls,
+        dropdown_type_cls=dropdown_type_cls,
+        extension_id="someExtension",
+    )
+    assert (opcode_block, new_opcode) == example_opcode_blocks[14]
+
+def test_generate_block_opcode_info_none_arg(input_type_cls, dropdown_type_cls, example_opcode_blocks):
+    block_data = EXAMPLE_BLOCK_DATA[15]
+    opcode_block, new_opcode = generate_block_opcode_info(
+        block_info=block_data,
+        menus=EXAMPLE_MENU_DATA,
+        input_type_cls=input_type_cls,
+        dropdown_type_cls=dropdown_type_cls,
+        extension_id="someExtension",
+    )
+    assert (opcode_block, new_opcode) == example_opcode_blocks[15]
+
+def test_generate_block_opcode_info_checkboxInFlyout(input_type_cls, dropdown_type_cls, example_opcode_blocks):
+    block_data = EXAMPLE_BLOCK_DATA[16]
+    opcode_block, new_opcode = generate_block_opcode_info(
+        block_info=block_data,
+        menus=EXAMPLE_MENU_DATA,
+        input_type_cls=input_type_cls,
+        dropdown_type_cls=dropdown_type_cls,
+        extension_id="someExtension",
+    )
+    assert (opcode_block, new_opcode) == example_opcode_blocks[16]
+
+def test_generate_block_opcode_info_branches_len(input_type_cls, dropdown_type_cls, example_opcode_blocks):
+    block_data = EXAMPLE_BLOCK_DATA[17]
+    opcode_block, new_opcode = generate_block_opcode_info(
+        block_info=block_data,
+        menus=EXAMPLE_MENU_DATA,
+        input_type_cls=input_type_cls,
+        dropdown_type_cls=dropdown_type_cls,
+        extension_id="someExtension",
+    )
+    assert (opcode_block, new_opcode) == example_opcode_blocks[17]
+
+def test_generate_block_opcode_info_terminal_alt(input_type_cls, dropdown_type_cls, example_opcode_blocks):
+    block_data = EXAMPLE_BLOCK_DATA[18]
+    opcode_block, new_opcode = generate_block_opcode_info(
+        block_info=block_data,
+        menus=EXAMPLE_MENU_DATA,
+        input_type_cls=input_type_cls,
+        dropdown_type_cls=dropdown_type_cls,
+        extension_id="someExtension",
+    )
+    assert (opcode_block, new_opcode) == example_opcode_blocks[18]
+
+def test_generate_block_opcode_info_ppm_final_opcode(input_type_cls, dropdown_type_cls, example_opcode_blocks):
+    block_data = EXAMPLE_BLOCK_DATA[19]
+    opcode_block, new_opcode = generate_block_opcode_info(
+        block_info=block_data,
+        menus=EXAMPLE_MENU_DATA,
+        input_type_cls=input_type_cls,
+        dropdown_type_cls=dropdown_type_cls,
+        extension_id="someExtension",
+    )
+    assert (opcode_block, new_opcode) == example_opcode_blocks[19]
+
 def test_generate_block_opcode_info_invalid_is_terminal(input_type_cls, dropdown_type_cls):
     block_data = {
         "opcode": "break",
@@ -782,32 +982,6 @@ def test_generate_block_opcode_info_missing_attribute(input_type_cls, dropdown_t
     block_data = {
         "blockType": "command",
         "text": "some text",
-    }
-    with raises(MANIP_InvalidCustomBlockError):
-        generate_block_opcode_info(
-            block_info=block_data,
-            menus=EXAMPLE_MENU_DATA,
-            input_type_cls=input_type_cls,
-            dropdown_type_cls=dropdown_type_cls,
-            extension_id="someExtension",
-        )
-    
-    block_data = {
-        "opcode": "someOpcode",
-        "text": "some text",
-    }
-    with raises(MANIP_InvalidCustomBlockError):
-        generate_block_opcode_info(
-            block_info=block_data,
-            menus=EXAMPLE_MENU_DATA,
-            input_type_cls=input_type_cls,
-            dropdown_type_cls=dropdown_type_cls,
-            extension_id="someExtension",
-        )
-    
-    block_data = {
-        "opcode": "someOpcode",
-        "blockType": "command",
     }
     with raises(MANIP_InvalidCustomBlockError):
         generate_block_opcode_info(
@@ -1082,6 +1256,13 @@ def test_generate_file_code():
                     ("TIME", "TIME"): InputInfo(type=BuiltinInputType.NUMBER, menu=None),
                 }),
                 dropdowns=DualKeyDict(),
+                can_have_monitor=False,
+                monitor_id_behaviour=None,
+                has_shadow=False,
+                has_variable_id=False,
+                special_cases={},
+                old_mutation_cls=None,
+                new_mutation_cls=None,
             ),
             ("modasyncexample_fetch", "modasyncexample::fetch (URL)"): OpcodeInfo(
                 opcode_type=OpcodeType.STRING_REPORTER,
@@ -1089,6 +1270,13 @@ def test_generate_file_code():
                     ("URL", "URL"): InputInfo(type=BuiltinInputType.TEXT, menu=None),
                 }),
                 dropdowns=DualKeyDict(),
+                can_have_monitor=False,
+                monitor_id_behaviour=None,
+                has_shadow=False,
+                has_variable_id=False,
+                special_cases={},
+                old_mutation_cls=None,
+                new_mutation_cls=None,
             ),
             ("modasyncexample_playEffect", "modasyncexample::play effect [EFFECT]"): OpcodeInfo(
                 opcode_type=OpcodeType.STATEMENT,
@@ -1117,7 +1305,7 @@ class ExtensionDropdownType(DropdownType):
 class ExtensionInputType(InputType):
     pass
 
-ext_modasyncexample = OpcodeInfoGroup(
+extension = OpcodeInfoGroup(
     name="modasyncexample",
     opcode_info=DualKeyDict({
         ("modasyncexample_wait", "modasyncexample::wait (TIME) seconds"): OpcodeInfo(
