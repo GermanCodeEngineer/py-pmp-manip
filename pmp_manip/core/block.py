@@ -522,12 +522,10 @@ class IRBlock:
                     input_block     = sub_block_a
                     input_dropdown  = input_value.text
                 case InputMode.BLOCK_AND_BOOL:
-                    assert script_count in {0, 1, 2} # this:
-                    # should be compatible with older projects too, which do not have CHECKBOX block yet
+                    assert script_count in {0, 1, 2}
+                    # 0 because, should be compatible with older projects too, which do not have CHECKBOX block yet
                     checkbox_block = None
-                    if   script_count == 0:
-                        pass
-                    elif script_count == 1:
+                    if script_count == 1:
                         if sub_block_a.opcode == NEW_OPCODE_CHECKBOX:
                             checkbox_block = sub_block_a
                         else:
@@ -818,6 +816,7 @@ class SRBlock:
                 )
         
         opcode_type = opcode_info.get_opcode_type(block=self, validation_if=validation_if)
+        print("pt", repr(self.opcode), opcode_type)
         if expects_reporter and not(opcode_type.is_reporter):
             raise MANIP_InvalidBlockShapeError(path, "Expected a reporter block here")
         if expects_embedded and (opcode_type is not OpcodeType.EMBEDDED):

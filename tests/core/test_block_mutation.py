@@ -14,7 +14,7 @@ from pmp_manip.core.block_mutation  import (
 	_load_bool_value, _load_noquote_str_value, _load_color_array,
     FRMutation,
     FRCustomBlockArgumentMutation, FRCustomBlockMutation,
-    FRCustomBlockCallMutation, FRStopScriptMutation,
+    FRCustomBlockCallMutation, FRStopScriptMutation, FRPolygonMutation,
     SRCustomBlockArgumentMutation, SRCustomBlockMutation,
     SRCustomBlockCallMutation,
 )
@@ -60,27 +60,43 @@ EXAMPLE_ARG_DEFAULTS = ["", "false"]
 
 
 def test_load_bool_value():
-	assert _load_bool_value({"myKey": True}, key="myKey", default=False) is True
-	assert _load_bool_value({"myKey": "undefined"}, key="myKey", default=False) is False
-	assert _load_bool_value({"myKey": "null"}, key="myKey", default=True, allow_null=False) is True
-	assert _load_bool_value({"myKey": "null"}, key="myKey", default=True, allow_null=True) is None
-	
-	with raises(MANIP_DeserializationError):
-		_load_bool_value({"myKey": ""}, key="myKey", default=False)
-	with raises(MANIP_DeserializationError):
-		_load_bool_value({"myKey": []}, key="myKey", default=False)
+    assert _load_bool_value({"myKey": True}, key="myKey", default=False) is True
+    assert _load_bool_value({"myKey": "undefined"}, key="myKey", default=False) is False
+    assert _load_bool_value({"myKey": "null"}, key="myKey", default=True, allow_null=False) is True
+    assert _load_bool_value({"myKey": "null"}, key="myKey", default=True, allow_null=True) is None
+
+    with raises(MANIP_DeserializationError):
+        _load_bool_value({"myKey": ""}, key="myKey", default=False)
+    with raises(MANIP_DeserializationError):
+        _load_bool_value({"myKey": []}, key="myKey", default=False)
 
 
 def test_load_noquote_str_value():
-	assert _load_noquote_str_value({"myKey": True}, key="myKey", default=False) is True
-	assert _load_bool_value({"myKey": "undefined"}, key="myKey", default=False) is False
-	assert _load_bool_value({"myKey": "null"}, key="myKey", default=True) is True
-	assert _load_bool_value({"myKey": "null"}, key="myKey", default=True) is None
-	
-	with raises(MANIP_DeserializationError):
-		_load_bool_value({"myKey": ""}, key="myKey", default=False)
-	with raises(MANIP_DeserializationError):
-		_load_bool_value({"myKey": []}, key="myKey", default=False)
+    assert _load_noquote_str_value({"myKey": "undefined"}, key="myKey", default=False) is False
+    assert _load_noquote_str_value({"myKey": "null"}, key="myKey", default=False) is False
+    assert _load_noquote_str_value({"myKey": "hi"}, key="myKey", default=False) == "hi"
+    assert _load_noquote_str_value({"myKey": dumps("hi")}, key="myKey", default=False) == "hi"
+
+    with raises(MANIP_DeserializationError):
+        _load_noquote_str_value({"myKey": dumps(dumps('"'))}, key="myKey", default=False)
+    with raises(MANIP_DeserializationError):
+        _load_noquote_str_value({"myKey": '"hi'}, key="myKey", default=False)
+    with raises(MANIP_DeserializationError):
+        _load_noquote_str_value({"myKey": []}, key="myKey", default=False)
+
+
+def test_load_color_array():
+    color_array = ("#AABBCC", "#DDEEFF", "#FEDCBA")
+    default = ("#FF6680", "#FF4D6A", "#FF3355")
+    assert _load_color_array({"myKey": list(color_array)}, key="myKey", default=default) == color_array
+    assert _load_color_array({"myKey": "undefined"}, key="myKey", default=default) == default
+    assert _load_color_array({"myKey": "null"}, key="myKey", default=default) == default
+    assert _load_color_array({"myKey": dumps(color_array)}, key="myKey", default=default) == color_array
+
+    with raises(MANIP_DeserializationError):
+        _load_color_array({"myKey": "#ABC,#DEF,#123"}, key="myKey", default=default)
+    with raises(MANIP_DeserializationError):
+        _load_color_array({"myKey": None}, key="myKey", default=default)
 
 
 def test_FRMutation_init_subclass(reset_frmutation_subclass_info):
@@ -378,7 +394,7 @@ def test_FRCustomBlockMutation_from_data_warp():
     
 
 
-def test_FRStopScriptMutation_from_to_data(fti_if: FirstToInterIF):
+def test_FRStopScriptMutation_from_to_data_to_second(itf_if: InterToFirstIF):
     has_next = False
     data = {
         "tagName": "mutation",
@@ -389,6 +405,35 @@ def test_FRStopScriptMutation_from_to_data(fti_if: FirstToInterIF):
     assert frmutation.has_next == has_next
     
     assert frmutation.to_data() == data
+
+    with raises(NotImplementedError):
+        frmutation.to_second(fti_if)
+
+
+
+def test_FRPolygonMutation_from_to_data_to_second(itf_if: InterToFirstIF):
+    data = {
+        "tagName"  : "mutation",
+        "children" : [],
+        "points"   : "3",
+        "color"    : "#0FBD8C",
+        "midle"    : "[0,0]",
+        "scale"    : "50",
+        "expanded" : dumps(True),
+        "needsinit": dumps(True),
+    }
+    frmutation = FRPolygonMutation.from_data(data)
+    assert frmutation.points == 3
+    assert frmutation.color == "#0FBD8C"
+    assert frmutation.midle == (0, 0)
+    assert frmutation.scale == 50
+    assert frmutation.expanded is True
+    assert frmutation.needs_init is True
+    
+    assert frmutation.to_data() == data
+
+    with raises(NotImplementedError):
+        frmutation.to_second(fti_if)
 
 
 

@@ -114,6 +114,8 @@ class FRProject:
         """
         contents = read_all_files_of_zip(file_path)
         project_data = loads(contents["project.json"].decode())
+        from pmp_manip.utility import write_file_text
+        write_file_text("data.lua", FRProject.__repr__(project_data))
         del contents["project.json"]
 
         if   file_path.endswith(".sb3"):

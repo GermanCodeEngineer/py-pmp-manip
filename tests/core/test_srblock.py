@@ -29,12 +29,21 @@ from tests.utility import execute_attr_validation_tests
 
 
 @fixture
-def info_api_extended():
+def info_api_extended1():
     info_api_extended = copy(info_api)
     info_api_extended.opcode_info = copy(info_api.opcode_info) 
     # make sure the internals of the DualKeyDict are shallow copied as well
-    from tests._gen_ext_opcode_info_.music import ext_music
-    info_api_extended.add_group(ext_music)
+    from tests._gen_ext_opcode_info_.music import extension
+    info_api_extended.add_group(extension)
+    return info_api_extended
+
+@fixture
+def info_api_extended2():
+    info_api_extended = copy(info_api)
+    info_api_extended.opcode_info = copy(info_api.opcode_info) 
+    # make sure the internals of the DualKeyDict are shallow copied as well
+    from tests._gen_ext_opcode_info_.pen import extension
+    info_api_extended.add_group(extension)
     return info_api_extended
 
 @fixture
@@ -147,6 +156,16 @@ def test_SRBlock_validate_invalid_reporter_shape(validation_if, context):
     with raises(MANIP_InvalidBlockShapeError):
         srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=True, expects_embedded=False)
 
+def test_SRBlock_validate_missing_embedded_block(validation_if, context):
+    srblock = ALL_SR_SCRIPTS[10].blocks[0]
+    with raises(MANIP_InvalidBlockShapeError):
+        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False, expects_embedded=True)
+
+def test_SRBlock_validate_unexpected_embedded_block(validation_if, context, info_api_extended2):
+    srblock = ALL_SR_SCRIPTS[11].blocks[0].inputs["SHAPE"].block
+    with raises(MANIP_InvalidBlockShapeError):
+        srblock.validate(AbstractTreePath(), info_api_extended2, validation_if, context, expects_reporter=False, expects_embedded=False)
+
 def test_SRBlock_validate_unexpected_input(validation_if, context):
     srblock = deepcopy(ALL_SR_SCRIPTS[6].blocks[0])
     srblock.inputs["SOME_ID"] = SRBlockOnlyInputValue(block=None)
@@ -240,7 +259,7 @@ def test_SRBlock_find_broadcast_messages_script_none():
 
 
 
-def test_SRBlock_to_inter_block_and_text_block_only():
+def test_SRBlock_to_inter_block_and_text_block_and_bool():
     sti_if = TEST_SecondToInterIF(scripts=ALL_SR_SCRIPTS, _block_ids=["k", "l", "x"])
     script = ALL_SR_SCRIPTS[4]
     srblock = script.blocks[0]
@@ -357,7 +376,7 @@ def test_SRBlock_to_inter_invalid_sub_script():
             is_top_level=True,
         )
 
-def test_SRBlock_to_inter_block_and_menu_text(info_api_extended):
+def test_SRBlock_to_inter_block_and_menu_text(info_api_extended1):
     # this test uses the scratch music extension and a seperate blocks/scripts environment
     sti_if = TEST_SecondToInterIF(scripts=[], _block_ids=["a", "b"])
     script = SRScript(
@@ -381,7 +400,7 @@ def test_SRBlock_to_inter_block_and_menu_text(info_api_extended):
     srblock = script.blocks[0]
     irblock = srblock.to_inter(
         sti_if=sti_if,
-        info_api=info_api_extended,
+        info_api=info_api_extended1,
         next=None,
         position=script.position,
         is_top_level=True,
@@ -422,6 +441,23 @@ def test_SRBlock_to_inter_block_and_menu_text(info_api_extended):
             next=None,
             is_top_level=False,
         )
+    }
+
+def test_SRBlock_to_inter_block_only():
+    sti_if = TEST_SecondToInterIF(scripts=[], _block_ids=["C", "B"])
+    script = ALL_SR_SCRIPTS[10]
+    srblock = script.blocks[0]
+    irblock = srblock.to_inter(
+        sti_if=sti_if,
+        info_api=info_api,
+        next=None,
+        position=script.position,
+        is_top_level=True,
+    )
+    assert irblock == ALL_IR_BLOCKS["B"]
+    assert sti_if.produced_blocks == {
+        id: ALL_IR_BLOCKS[id]
+        for id in {"C"}
     }
 
 

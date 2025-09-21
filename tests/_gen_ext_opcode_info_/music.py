@@ -18,7 +18,7 @@ class ExtensionInputType(InputType):
     DRUM = (InputMode.BLOCK_AND_DROPDOWN, None, ExtensionDropdownType.DRUM, 0)
     INSTRUMENT = (InputMode.BLOCK_AND_DROPDOWN, None, ExtensionDropdownType.INSTRUMENT, 1)
 
-ext_music = OpcodeInfoGroup(
+extension = OpcodeInfoGroup(
     name="music",
     opcode_info=DualKeyDict({
         ("music_midiPlayDrumForBeats", "music::play drum ([DRUM]) for (BEATS) beats {{id=music_midiPlayDrumForBeats}}"): OpcodeInfo(

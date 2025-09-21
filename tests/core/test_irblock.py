@@ -1,6 +1,6 @@
-from copy        import deepcopy
+from copy        import copy, deepcopy
 from dataclasses import field
-from pytest      import raises
+from pytest      import fixture, raises
 
 from pmp_manip.opcode_info.data import info_api
 from pmp_manip.utility          import grepr_dataclass, MANIP_ConversionError
@@ -10,6 +10,16 @@ from pmp_manip.core.block           import IRBlock
 
 
 from tests.core.constants import ALL_FR_BLOCKS, ALL_FR_COMMENTS, ALL_IR_BLOCKS, ALL_SR_SCRIPTS
+
+
+@fixture
+def info_api_extended():
+    info_api_extended = copy(info_api)
+    info_api_extended.opcode_info = copy(info_api.opcode_info) 
+    # make sure the internals of the DualKeyDict are shallow copied as well
+    from tests._gen_ext_opcode_info_.pen import extension
+    info_api_extended.add_group(extension)
+    return info_api_extended
 
 
 @grepr_dataclass(grepr_fields=["_block_ids"])
@@ -266,13 +276,21 @@ def test_IRBlock_to_first_empty_menu():
 
 
 
-def test_IRBlock_to_second_block_and_text_block_only():
+def test_IRBlock_to_second_block_and_text_block_and_bool():
     irblock = ALL_IR_BLOCKS["c"]
     _, values = irblock.to_second(
         all_blocks=ALL_IR_BLOCKS,
         info_api=info_api,
     )
     assert values == ALL_SR_SCRIPTS[4].blocks
+
+def test_IRBlock_to_second_block_and_bool_no_checkbox():
+    irblock = ALL_IR_BLOCKS["z"]
+    _, values = irblock.to_second(
+        all_blocks=ALL_IR_BLOCKS,
+        info_api=info_api,
+    )
+    assert values == ALL_SR_SCRIPTS[9].blocks
 
 def test_IRBlock_to_second_script():
     irblock = ALL_IR_BLOCKS["d"]
@@ -305,6 +323,22 @@ def test_IRBlock_to_second_immediate_block():
         info_api=info_api,
     )
     assert values == ALL_SR_SCRIPTS[1].blocks
+
+def test_IRBlock_to_second_block_only():
+    irblock = ALL_IR_BLOCKS["B"]
+    _, values = irblock.to_second(
+        all_blocks=ALL_IR_BLOCKS,
+        info_api=info_api,
+    )
+    assert values == ALL_SR_SCRIPTS[10].blocks
+
+def test_IRBlock_to_second_forced_embbedded_block(info_api_extended):
+    irblock = ALL_IR_BLOCKS["D"]
+    _, values = irblock.to_second(
+        all_blocks=ALL_IR_BLOCKS,
+        info_api=info_api_extended,
+    )
+    assert values == ALL_SR_SCRIPTS[11].blocks
 
 def test_IRBlock_to_second_invalid_script_count():
     irblock = deepcopy(ALL_IR_BLOCKS["c"])

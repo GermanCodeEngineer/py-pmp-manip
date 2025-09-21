@@ -8,7 +8,7 @@ cfg = get_default_config()
 init_config(cfg)
 
 #info_api.generate_and_add_extension("pmSensingExpansion", extension_source=None)#
-#"""
+"""
 for builtin_ext_id in BUILTIN_EXTENSIONS:
     if builtin_ext_id != "pmInlineBlocks":
         continue
@@ -21,7 +21,7 @@ for builtin_ext_id in BUILTIN_EXTENSIONS:
         print("succeeded", builtin_ext_id)
 #"""
 
-#from pmp_manip import FRProject
-#f = FRProject.from_file("assets/bbn.pmp")
-#print(f)
+from pmp_manip import FRProject
+f = FRProject.from_file("assets/pen_polygon_example.pmp")
+print(f)
 

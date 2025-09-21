@@ -25,6 +25,15 @@ from tests.core.constants import (
 
 from tests.utility import execute_attr_validation_tests
 
+@fixture
+def info_api_extended():
+    info_api_extended = copy(info_api)
+    info_api_extended.opcode_info = copy(info_api.opcode_info) 
+    # make sure the internals of the DualKeyDict are shallow copied as well
+    from tests._gen_ext_opcode_info_.pen import extension
+    info_api_extended.add_group(extension)
+    return info_api_extended
+
 
 def test_FRProject_from_to_data():
     frproject = FRProject.from_data(
@@ -83,29 +92,29 @@ def test_FRProject_to_file(monkeypatch: MonkeyPatch):
     FRProject.to_file(dummy_project, "project.sb3")
 
 
-def test_FRProject_to_second():
-    assert FR_PROJECT.to_second(info_api) == SR_PROJECT
+def test_FRProject_to_second(info_api_extended):
+    assert FR_PROJECT.to_second(info_api_extended) == SR_PROJECT
 
-def test_FRProject_to_second_empty_monitor():
+def test_FRProject_to_second_empty_monitor(info_api_extended):
     frproject = deepcopy(FR_PROJECT)
     frmonitor = deepcopy(frproject.monitors[0])
     frmonitor.sprite_name = "a non existing sprite"
     frproject.monitors.append(frmonitor)
-    assert frproject.to_second(info_api) == SR_PROJECT # means its not included in second representation
+    assert frproject.to_second(info_api_extended) == SR_PROJECT # means its not included in second representation
 
-def test_FRProject_to_second_tts():
+def test_FRProject_to_second_tts(info_api_extended):
     frproject = deepcopy(FR_PROJECT)
     frstage: FRStage = frproject.targets[0]
     frstage.text_to_speech_language = "de"
     target_srproject = copy(SR_PROJECT)
     target_srproject.text_to_speech_language = SRTTSLanguage.GERMAN
-    assert frproject.to_second(info_api) == target_srproject
+    assert frproject.to_second(info_api_extended) == target_srproject
 
-def test_FRProject_to_second_extensions():
+def test_FRProject_to_second_extensions(info_api_extended):
     frproject = copy(FR_PROJECT)
     frproject.extensions = ["jgJSON", "skyhigh173object"]
     frproject.extension_urls = KeyReprDict({"skyhigh173object": "https://extensions.penguinmod.com/extensions/skyhigh173/object.js"})
-    srproject = frproject.to_second(info_api)
+    srproject = frproject.to_second(info_api_extended)
     assert srproject.extensions == [
         SRBuiltinExtension(id="jgJSON"), 
         SRCustomExtension(id="skyhigh173object", url="https://extensions.penguinmod.com/extensions/skyhigh173/object.js"),
@@ -174,9 +183,9 @@ def test_SRProject_eq_same_sprites():
 
 
 
-def test_SRProject_validate():
+def test_SRProject_validate(info_api_extended):
     srproject = SR_PROJECT
-    srproject.validate(info_api)
+    srproject.validate(info_api_extended)
 
     execute_attr_validation_tests(
         obj=srproject,
@@ -312,7 +321,7 @@ def test_SRProject_find_broadcast_messages():
     assert set(SR_PROJECT._find_broadcast_messages()) == {"my message"}
 
 
-def test_SRProject_to_first_main():
+def test_SRProject_to_first_main(info_api_extended):
     srproject = deepcopy(SR_PROJECT)
     srproject.sprites[0].scripts = [] # pretend there are no blocks, because they can not be easily compared and are tested elsewhere
     expected_frproject = deepcopy(FR_PROJECT) 
@@ -323,22 +332,22 @@ def test_SRProject_to_first_main():
     expected_frproject.targets[1].comments   = {} # see above
     expected_frproject.targets[0].broadcasts = {} # see above
     expected_frproject.monitors              = ALL_FR_MONITORS_CONVERTED
-    frproject = srproject.to_first(info_api, target_platform=TargetPlatform.PENGUINMOD)
+    frproject = srproject.to_first(info_api_extended, target_platform=TargetPlatform.PENGUINMOD)
     assert len(frproject.asset_files) == len(expected_frproject.asset_files)
     frproject.asset_files = expected_frproject.asset_files = KeyReprDict()
     assert frproject == expected_frproject
 
-def test_SRProject_to_first_extensions():
+def test_SRProject_to_first_extensions(info_api_extended):
     srproject = copy(SR_PROJECT)
     srproject.extensions = [
         SRBuiltinExtension(id="jgJSON"), 
         SRCustomExtension(id="truefantombase", url="https://extensions.turbowarp.org/true-fantom/base.js"),
     ]
-    frproject = srproject.to_first(info_api, target_platform=TargetPlatform.PENGUINMOD)
+    frproject = srproject.to_first(info_api_extended, target_platform=TargetPlatform.PENGUINMOD)
     assert frproject.extensions == ["jgJSON", "truefantombase"]
     assert frproject.extension_urls == KeyReprDict({"truefantombase": "https://extensions.turbowarp.org/true-fantom/base.js"})
 
-def test_SRProject_to_first_scratch_platform():
+def test_SRProject_to_first_scratch_platform(info_api_extended):
     srproject = SR_PROJECT
-    frproject = srproject.to_first(info_api, target_platform=TargetPlatform.SCRATCH)
+    frproject = srproject.to_first(info_api_extended, target_platform=TargetPlatform.SCRATCH)
     assert frproject.meta == FRMeta.new_scratch_meta()

@@ -3,7 +3,7 @@ from pydub    import AudioSegment
 from pytest   import fixture, raises
 from uuid     import UUID
 
-from pmp_manip.important_consts import SHA256_SEC_TARGET_NAME
+from pmp_manip.important_consts import SHA256_SEC_TARGET_NAME, SHA256_SEC_DROPDOWN_VALUE
 from pmp_manip.opcode_info.api  import DropdownValueKind
 from pmp_manip.opcode_info.data import info_api
 from pmp_manip.utility          import (
@@ -33,6 +33,17 @@ from tests.core.constants import (
 
 from tests.utility import execute_attr_validation_tests, nest_all_blocks_comments
 
+
+
+
+@fixture
+def info_api_extended():
+    info_api_extended = copy(info_api)
+    info_api_extended.opcode_info = copy(info_api.opcode_info) 
+    # make sure the internals of the DualKeyDict are shallow copied as well
+    from tests._gen_ext_opcode_info_.pen import extension
+    info_api_extended.add_group(extension)
+    return info_api_extended
 
 @fixture
 def context():
@@ -127,29 +138,29 @@ def test_FRTarget_to_data_common():
     assert data["id"] == SPRITE_DATA["id"]
 
 
-def test_FRTarget_to_second_common():
+def test_FRTarget_to_second_common(info_api_extended):
     (
         scripts,
         comments,
         costumes,
         sounds,
         _, _,
-    )  = FR_SPRITE._to_second_common(PROJECT_ASSET_FILES, info_api)
+    )  = FR_SPRITE._to_second_common(PROJECT_ASSET_FILES, info_api_extended)
     assert scripts == SR_SPRITE.scripts
     assert comments == SR_SPRITE.comments
     assert costumes == SR_SPRITE.costumes
     assert sounds == SR_SPRITE.sounds
 
-def test_FRTarget_to_second_common_false_independent_block():
+def test_FRTarget_to_second_common_false_independent_block(info_api_extended):
     frsprite = deepcopy(FR_SPRITE)
     frblock: FRBlock = frsprite.blocks["e"]
     frblock.top_level = True
     frblock.x = 77
     frblock.y = 777
-    scripts, _, _, _, _, _ = frsprite._to_second_common(PROJECT_ASSET_FILES, info_api)
+    scripts, _, _, _, _, _ = frsprite._to_second_common(PROJECT_ASSET_FILES, info_api_extended)
     assert scripts == SR_SPRITE.scripts # still same output expected
 
-def test_FRTarget_to_second_common_floating_comment():
+def test_FRTarget_to_second_common_floating_comment(info_api_extended):
     frsprite = deepcopy(FR_SPRITE)
     frsprite.comments["qqq"] = FRComment(
         block_id=None,
@@ -160,7 +171,7 @@ def test_FRTarget_to_second_common_floating_comment():
         minimized=False,
         text="a floating comment",
     )
-    _, floating_comments, _, _, _, _ = frsprite._to_second_common(PROJECT_ASSET_FILES, info_api)
+    _, floating_comments, _, _, _, _ = frsprite._to_second_common(PROJECT_ASSET_FILES, info_api_extended)
     assert floating_comments == [SRComment(
         position=(0, 0),
         size=(200, 200),
@@ -236,16 +247,16 @@ def test_FRSprite_from_data_missing_id():
     assert frsprite == target_sprite
 
 
-def test_FRSprite_to_second():
-    srsprite, _, _ = FR_SPRITE.to_second(PROJECT_ASSET_FILES, info_api)
+def test_FRSprite_to_second(info_api_extended):
+    srsprite, _, _ = FR_SPRITE.to_second(PROJECT_ASSET_FILES, info_api_extended)
     expected = copy(SR_SPRITE)
     expected.local_monitors = [] # would be added later
     assert srsprite == expected
 
 
-def test_SRTarget_validate():
+def test_SRTarget_validate(info_api_extended):
     srtarget = SR_STAGE
-    srtarget.validate(AbstractTreePath(), info_api)
+    srtarget.validate(AbstractTreePath(), info_api_extended)
 
     execute_attr_validation_tests(
         obj=srtarget,
@@ -299,9 +310,9 @@ def test_SRTarget_validate_same_sound_name():
 
 
 
-def test_SRTarget_validate_scripts(context):
+def test_SRTarget_validate_scripts(context, info_api_extended):
     srtarget = SR_SPRITE
-    srtarget.validate_scripts(AbstractTreePath(), info_api, context)
+    srtarget.validate_scripts(AbstractTreePath(), info_api_extended, context)
 
 def test_SRTarget_validate_scripts_same_custom_opcode(context):
     srtarget = SRStage.create_empty()
@@ -342,7 +353,7 @@ def test_SRTarget_get_complete_context(context):
     assert complete_context.sounds == [(DropdownValueKind.SOUND, "Hello World!")]
     assert complete_context.is_stage == False
 
-def test_SRTarget_to_first_common_sprite():
+def test_SRTarget_to_first_common_sprite(info_api_extended):
     srtarget = copy(SR_SPRITE)
     srtarget.comments = [ # add some comments
         SRComment(
@@ -360,7 +371,7 @@ def test_SRTarget_to_first_common_sprite():
         old_monitors,
         asset_files,
     ) = srtarget._to_first_common(
-        info_api,
+        info_api_extended,
         global_vars=SR_PROJECT.global_variables,
         global_lists=SR_PROJECT.global_lists,
         global_monitors=SR_PROJECT.global_monitors,
@@ -378,6 +389,21 @@ def test_SRTarget_to_first_common_sprite():
     }
     nested_generated_blocks, nested_generated_comments = nest_all_blocks_comments(old_blocks, old_comments)
     nested_expected_blocks , nested_expected_comments  = nest_all_blocks_comments(ALL_FR_BLOCKS, expected_comments)
+    nested_generated_blocks.append(FRBlock( # Compensate for one "checkbox" block which doesnt exist to simulate older projects
+        opcode="checkbox",
+        next=None,
+        parent=Ellipsis,
+        inputs={},
+        fields={
+            "CHECKBOX": ("FALSE", string_to_sha256("FALSE", secondary=SHA256_SEC_DROPDOWN_VALUE)),
+        },
+        shadow=False,
+        top_level=False,
+        x=None,
+        y=None,
+        comment=None,
+        mutation=None,
+    ))
     assert_lists_equal_ignore_order(nested_generated_blocks, nested_expected_blocks)
     assert_lists_equal_ignore_order(nested_generated_comments, nested_expected_comments)
 
@@ -481,9 +507,9 @@ def test_SRSprite_setattr():
         srsprite.uuid = "something does not matter"
 
 
-def test_SRSprite_validate():
+def test_SRSprite_validate(info_api_extended):
     srsprite = SR_SPRITE
-    srsprite.validate(AbstractTreePath(), info_api)
+    srsprite.validate(AbstractTreePath(), info_api_extended)
 
     execute_attr_validation_tests(
         obj=srsprite,
@@ -507,7 +533,7 @@ def test_SRSprite_validate():
             ("rotation_style", "don't rotate", MANIP_TypeValidationError),
         ],
         validate_func=SRSprite.validate,
-        func_args=[AbstractTreePath(), info_api],
+        func_args=[AbstractTreePath(), info_api_extended],
     )
 
 def test_SRSprite_validate_vars_lists():

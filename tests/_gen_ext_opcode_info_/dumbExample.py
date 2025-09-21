@@ -11,7 +11,7 @@ class ExtensionDropdownType(DropdownType):
 class ExtensionInputType(InputType):
     pass
 
-dumbExample = OpcodeInfoGroup(
+extension = OpcodeInfoGroup(
     name="dumbExample",
     opcode_info=DualKeyDict({
         ("dumbExample_last_used_base", "dumbExample::last used base"): OpcodeInfo(

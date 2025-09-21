@@ -56,7 +56,6 @@ def _load_noquote_str_value(data: dict[str, Any], key: str, default: str) -> boo
     
     Raises:
         MANIP_DeserializationError: if the key's value can not be interpreted as a non-qouted string.
-    # TODO: add tests
     """
     value = data.get(key, default)
     if isinstance(value, str):
@@ -86,8 +85,6 @@ def _load_color_array(data: dict[str, Any], key: str, default: tuple[str, str, s
     
     Raises:
         MANIP_DeserializationError: if the key's value can not be interpreted as a triple color array.
-    
-    # TODO: add tests
     """
     value = data.get(key, list(default))
     if isinstance(value, list):
@@ -513,7 +510,7 @@ class FRPolygonMutation(FRMutation, required_properties={"points", "color", "mid
     """
     The first representation for the mutation of a stop script mutation
     """
-    
+
     points: int # usually 3 or 4
     color: Literal["#0FBD8C"] | str
     midle: tuple[Literal[0], Literal[0]]
@@ -534,7 +531,7 @@ class FRPolygonMutation(FRMutation, required_properties={"points", "color", "mid
             children   = deepcopy(data["children"]),
             points     = loads(data["points"]),
             color      = data["color"],
-            midle      = loads(data["midle"]),
+            midle      = tuple(loads(data["midle"])),
             scale      = loads(data["scale"]),
             expanded   = _load_bool_value(data, key="expanded", default=True),
             needs_init = _load_bool_value(data, key="needsinit", default=True),
