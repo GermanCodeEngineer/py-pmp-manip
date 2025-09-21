@@ -11,6 +11,7 @@ from pmp_manip.utility          import (
 
 from pmp_manip.core.block_interface import FirstToInterIF, InterToFirstIF
 from pmp_manip.core.block_mutation  import (
+	_load_bool_value, _load_noquote_str_value, _load_color_array,
     FRMutation,
     FRCustomBlockArgumentMutation, FRCustomBlockMutation,
     FRCustomBlockCallMutation, FRStopScriptMutation,
@@ -57,6 +58,29 @@ EXAMPLE_ARG_IDS = [
 EXAMPLE_ARG_NAMES = ["a text arg", "a bool arg"]
 EXAMPLE_ARG_DEFAULTS = ["", "false"]
 
+
+def test_load_bool_value():
+	assert _load_bool_value({"myKey": True}, key="myKey", default=False) is True
+	assert _load_bool_value({"myKey": "undefined"}, key="myKey", default=False) is False
+	assert _load_bool_value({"myKey": "null"}, key="myKey", default=True, allow_null=False) is True
+	assert _load_bool_value({"myKey": "null"}, key="myKey", default=True, allow_null=True) is None
+	
+	with raises(MANIP_DeserializationError):
+		_load_bool_value({"myKey": ""}, key="myKey", default=False)
+	with raises(MANIP_DeserializationError):
+		_load_bool_value({"myKey": []}, key="myKey", default=False)
+
+
+def test_load_noquote_str_value():
+	assert _load_noquote_str_value({"myKey": True}, key="myKey", default=False) is True
+	assert _load_bool_value({"myKey": "undefined"}, key="myKey", default=False) is False
+	assert _load_bool_value({"myKey": "null"}, key="myKey", default=True) is True
+	assert _load_bool_value({"myKey": "null"}, key="myKey", default=True) is None
+	
+	with raises(MANIP_DeserializationError):
+		_load_bool_value({"myKey": ""}, key="myKey", default=False)
+	with raises(MANIP_DeserializationError):
+		_load_bool_value({"myKey": []}, key="myKey", default=False)
 
 
 def test_FRMutation_init_subclass(reset_frmutation_subclass_info):

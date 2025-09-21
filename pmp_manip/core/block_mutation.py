@@ -29,7 +29,6 @@ def _load_bool_value(data: dict[str, Any], key: str, default: bool, allow_null: 
     
     Raises:
         MANIP_DeserializationError: if the key's value can not be interpreted as a boolean.
-    # TODO: add tests
     """
     value = data.get(key, default)
     if isinstance(value, bool):
