@@ -67,6 +67,25 @@ def test_FRProject_post_init():
     #    )
 
 
+def test_FRProject_add_all_extensions_to_info_api(monkeypatch: MonkeyPatch):
+    frproject = copy(FR_PROJECT)
+    frproject.extensions = ["pen", "pointerlock", "jgJSON"]
+    frproject.extension_urls = KeyReprDict({"pointerlock": "https://extensions.turbowarp.org/pointerlock.js"})
+
+    info_api_copy = deepcopy(info_api)
+    results = set()
+    def fake_generate_and_add_extension(extension_id: str, extension_source: str | None):
+        results.add((extension_id, extension_source))
+    monkeypatch.setattr(info_api_copy, "generate_and_add_extension", fake_generate_and_add_extension)
+
+    frproject.add_all_extensions_to_info_api(info_api_copy)
+    assert results == {
+        ("jgJSON", None),
+        ("pointerlock", "https://extensions.turbowarp.org/pointerlock.js"),
+        ("pen", None),
+    }
+
+
 def test_FRProject_to_file(monkeypatch: MonkeyPatch):
     class DummyProject(FRProject):
         def __init__(self):
@@ -229,6 +248,15 @@ def test_SRProject_validate_same_sprite_name():
     with raises(MANIP_SameValueTwiceError):
         srproject.validate(info_api)
 
+def test_SRProject_validate_same_extension_id():
+    srproject = SRProject.create_empty()
+    srproject.extensions = [
+        SRBuiltinExtension(id="thatExtension"),
+        SRBuiltinExtension(id="thatExtension"),
+    ]
+    with raises(MANIP_SameValueTwiceError):
+        srproject.validate(info_api)
+
 def test_SRProject_validate_sprites_same_sprite_uuid():
     srproject = SRProject.create_empty()
     sprite1 = SRSprite.create_empty(name="sprite1")
@@ -315,6 +343,28 @@ def test_SRProject_validate_list_names_same_inter():
     srproject.sprites = [sprite]
     with raises(MANIP_SameValueTwiceError):
         srproject._validate_list_names(AbstractTreePath())
+
+
+def test_SRProject_add_all_extensions_to_info_api(monkeypatch: MonkeyPatch):
+    srproject = copy(SR_PROJECT)
+    srproject.extensions = [
+        SRBuiltinExtension(id="pen"),
+        SRCustomExtension(id="pointerlock", url="https://extensions.turbowarp.org/pointerlock.js"),
+        SRBuiltinExtension(id="jgJSON"),
+    ]
+
+    info_api_copy = deepcopy(info_api)
+    results = set()
+    def fake_generate_and_add_extension(extension_id: str, extension_source: str | None):
+        results.add((extension_id, extension_source))
+    monkeypatch.setattr(info_api_copy, "generate_and_add_extension", fake_generate_and_add_extension)
+
+    srproject.add_all_extensions_to_info_api(info_api_copy)
+    assert results == {
+        ("jgJSON", None),
+        ("pointerlock", "https://extensions.turbowarp.org/pointerlock.js"),
+        ("pen", None),
+    }
 
 
 def test_SRProject_find_broadcast_messages():

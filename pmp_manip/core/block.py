@@ -371,7 +371,7 @@ class IRBlock:
 
         old_inputs = {}
         for input_id, input_value in self.inputs.items():
-            input_type = input_infos[input_id].type
+            input_type: InputType = input_infos[input_id].type
             elements = input_value.references.copy()
             if input_value.immediate_block is not None:
                 frblock = input_value.immediate_block.to_first(
@@ -816,7 +816,6 @@ class SRBlock:
                 )
         
         opcode_type = opcode_info.get_opcode_type(block=self, validation_if=validation_if)
-        print("pt", repr(self.opcode), opcode_type)
         if expects_reporter and not(opcode_type.is_reporter):
             raise MANIP_InvalidBlockShapeError(path, "Expected a reporter block here")
         if expects_embedded and (opcode_type is not OpcodeType.EMBEDDED):

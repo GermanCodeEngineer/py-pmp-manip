@@ -177,7 +177,6 @@ def test_FRMutation_find_from_data_subclasses(reset_frmutation_subclass_info):
     
     matches = FRMutation._find_from_data_subclasses(basis|{"abcv": []})
     assert matches == []
-    #raise Exception()
 
 
 def test_FRMutation_from_data_and_post_init(monkeypatch: MonkeyPatch):

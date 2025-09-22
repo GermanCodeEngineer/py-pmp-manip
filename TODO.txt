@@ -9,13 +9,13 @@ Currently Working On:
 High: /
 
 Medium:
-    - XL: test and document opcode_info
+    - XL: add tests for and document opcode_info
     - XL: spit into internal and public functions/methods etc (easier in VSCode)
         => add enforce_argument_types decorator to public ones
         => remove "Returns" section of docstrings to avoid doubling (easy to do simultaneously)
         => rethink error strategy (e.g. ValueError, TypeError) => should i wrap external errors instead of mine?
         => error formatting
-    - M/L: make a script which show info for the requested block opcode
+####    - M/L: make a script which show info for the requested block opcode
     - [M.OPT]: add FRProject.from_file alternative, fetch from project link 
     - S/M: implement variable_type and variable_id (example: "small_example")
     - S: rename builtin second repr opcodes and add "::"
@@ -28,10 +28,11 @@ Medium:
     - S: investigate custom type object variables(example: vector extension)
 
 Low:
-    - XL: test and document utility
+    - XL: add tests for and document utility
     - L: simplify new opcode input/dropdown representation brackets
     - M: replace remaining io actions with wrappers (eg. file_exists instead of os.path.exists)
     - M: possibly reform special case system with custom classes possibly even with metaclass
+    - M: add tests for pmp_manip/core/patterns.py and tree_tools.py
     - S: add copy method to OpcodeInfoAPI and possibly others
     - S: check if dropdown validation where only default kind: allows non strings? (should not)
     - S: possibly remove mode attribute of IRInputValue

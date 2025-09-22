@@ -22,6 +22,7 @@ for builtin_ext_id in BUILTIN_EXTENSIONS:
 #"""
 
 from pmp_manip import FRProject
-f = FRProject.from_file("assets/pen_polygon_example.pmp")
+f = FRProject.from_file("assets/extension_sources.pmp")
 print(f)
+print(dict(f.extension_urls))
 

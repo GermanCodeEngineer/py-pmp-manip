@@ -11,8 +11,6 @@ from pmp_manip.core.custom_block import (
     SRCustomBlockOpcode, SRCustomBlockArgument, SRCustomBlockArgumentType, SRCustomBlockOptype,
 )
 
-from tests.utility import execute_attr_validation_tests
-
 
 @fixture
 def segments():
@@ -59,6 +57,7 @@ def test_SRCustomBlockOpcode_validate(segments):
     with raises(MANIP_TypeValidationError): SRCustomBlockOpcode(segments=5).validate(AbstractTreePath())
     with raises(MANIP_RangeValidationError): SRCustomBlockOpcode(segments=()).validate(AbstractTreePath())
     with raises(MANIP_TypeValidationError): SRCustomBlockOpcode(segments=(-94,)).validate(AbstractTreePath())
+    with raises(MANIP_TypeValidationError): SRCustomBlockOpcode(segments=("a", "b")).validate(AbstractTreePath())
 
 def test_SRCustomBlockOpcode_validate_same_arg_name_twice():
     custom_opcode = SRCustomBlockOpcode(segments=(
@@ -70,6 +69,25 @@ def test_SRCustomBlockOpcode_validate_same_arg_name_twice():
     ))
     with raises(MANIP_SameValueTwiceError):
         custom_opcode.validate(path=AbstractTreePath())
+
+
+def test_SRCustomBlockOpcode_visit_node_unfiltered(segments):
+    custom_opcode = SRCustomBlockOpcode(segments=segments)
+    items = list(custom_opcode._visit_node_unfiltered_(AbstractTreePath()))
+    assert items == [
+        (
+            AbstractTreePath().add_index_or_key(1),
+            SRCustomBlockArgument(name="thing name", type=SRCustomBlockArgumentType.STRING_NUMBER),
+        ),
+        (
+            AbstractTreePath().add_index_or_key(3),
+            SRCustomBlockArgument(name="do backwards?", type=SRCustomBlockArgumentType.BOOLEAN),
+        ),
+        (
+            AbstractTreePath().add_index_or_key(5),
+            SRCustomBlockArgument(name="repetitions", type=SRCustomBlockArgumentType.STRING_NUMBER),
+        ),
+    ]
 
 
 

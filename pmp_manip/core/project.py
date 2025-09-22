@@ -114,13 +114,27 @@ class FRProject:
         """
         contents = read_all_files_of_zip(file_path)
         project_data = loads(contents["project.json"].decode())
-        from pmp_manip.utility import write_file_text
-        write_file_text("data.lua", FRProject.__repr__(project_data))
         del contents["project.json"]
 
         if   file_path.endswith(".sb3"):
             project_data = FRProject._data_sb3_to_pmp(project_data)
         return FRProject.from_data(project_data, asset_files=KeyReprDict(contents))
+
+    @enforce_argument_types
+    def to_file(self, file_path: str) -> None:
+        """
+        Writes the project data to a project file(.sb3 or .pmp)
+
+        Args:
+            file_path: file path to the .sb3 or .pmp file
+        
+        Returns:
+            the FRProject
+        """
+        project_data, asset_files = self.to_data()
+        contents = asset_files
+        contents["project.json"] = gdumps(project_data).encode()
+        create_zip_file(file_path, contents)
 
     def __post_init__(self) -> None:
         """
@@ -159,23 +173,7 @@ class FRProject:
                 extension_id=extension_id,
                 extension_source=self.extension_urls.get(extension_id, None),
             )
-
-    @enforce_argument_types
-    def to_file(self, file_path: str) -> None:
-        """
-        Writes the project data to a project file(.sb3 or .pmp)
-
-        Args:
-            file_path: file path to the .sb3 or .pmp file
-        
-        Returns:
-            the FRProject
-        """
-        project_data, asset_files = self.to_data()
-        contents = asset_files
-        contents["project.json"] = gdumps(project_data).encode()
-        create_zip_file(file_path, contents)
-
+    
     @enforce_argument_types
     def to_second(self, info_api: OpcodeInfoAPI) -> "SRProject":
         """

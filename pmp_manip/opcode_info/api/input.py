@@ -1,4 +1,6 @@
 from __future__ import annotations
+from typing     import Literal
+
 from pmp_manip.utility import grepr_dataclass, GEnum
 
 from pmp_manip.important_consts         import OPCODE_POLYGON
@@ -96,7 +98,8 @@ class InputType(GEnum):
         """
         Get the outer magic number used in first representation of inputs if no block exists
         """
-        return 2 if self is BuiltinInputType.SPECIAL_NUMBER else 1
+        return 2 if self is BuiltinInputType.NUMBER_SPECIAL else 1
+        #return 1
 
     @classmethod
     def get_by_cb_default(cls, default: str) -> "InputType":
@@ -128,7 +131,7 @@ class BuiltinInputType(InputType):
     POSITIVE_INTEGER    = (InputMode.BLOCK_AND_TEXT,  6, None, 4)
     POSITIVE_NUMBER     = (InputMode.BLOCK_AND_TEXT,  5, None, 5)
     NUMBER              = (InputMode.BLOCK_AND_TEXT,  4, None, 6)
-    NUMBER_SPECIAL      = (InputMode.BLOCK_AND_TEXT,  4, None, 6)
+    NUMBER_SPECIAL      = (InputMode.BLOCK_AND_TEXT,  4, None, 7)
 
     # BLOCK_AND_MENU_TEXT
     NOTE                = (InputMode.BLOCK_AND_MENU_TEXT, None, BuiltinDropdownType.NOTE, 0)

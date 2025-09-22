@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from pmp_manip.opcode_info.api import DropdownValueKind, DROPDOWN_VALUE_T
+if TYPE_CHECKING: from pmp_manip.opcode_info.api import DropdownValueKind, DROPDOWN_VALUE_T
 from pmp_manip.utility import grepr_dataclass
 
 

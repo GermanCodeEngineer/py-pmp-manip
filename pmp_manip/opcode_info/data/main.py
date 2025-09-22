@@ -264,12 +264,12 @@ def _2dc4_f736(block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None") 
         input_infos.set(
             key1  = f"x{point_index}",
             key2  = f"X{point_index}",
-            value = InputInfo(BuiltinInputType.NUMBER),
+            value = InputInfo(BuiltinInputType.NUMBER_SPECIAL),
         )
         input_infos.set(
             key1  = f"y{point_index}",
             key2  = f"Y{point_index}",
-            value = InputInfo(BuiltinInputType.NUMBER),
+            value = InputInfo(BuiltinInputType.NUMBER_SPECIAL),
         )
     return input_infos
 info_api.add_opcode_case(OPCODE_POLYGON, SpecialCase(

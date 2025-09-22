@@ -570,13 +570,13 @@ def test_SRSprite_validate_monitors(context):
 
 
 
-def test_SRSprite_to_first():
+def test_SRSprite_to_first(info_api_extended):
     srsprite = SR_SPRITE
     expected_frsprite = copy(FR_SPRITE)
     expected_frsprite.costumes = [costume.to_second(PROJECT_ASSET_FILES).to_first()[0] for costume in expected_frsprite.costumes]
     expected_frsprite.sounds   = [sound  .to_second(PROJECT_ASSET_FILES).to_first()[0] for sound   in expected_frsprite.sounds  ]
     frsprite, old_local_monitors, asset_files = srsprite.to_first(
-        info_api,
+        info_api_extended,
         global_vars=SR_PROJECT.global_variables,
         global_lists=SR_PROJECT.global_lists,
         layer_order=SR_PROJECT.sprite_layer_stack.index(SR_SPRITE.uuid)+1,
