@@ -87,12 +87,16 @@ class InputType(GEnum):
     @property
     def magic_number(self) -> int | None:
         """
-        Get the magic number used in first representation of inputs
-
-        Returns:
-            the magic number
+        Get the inner magic number used in first representation of inputs
         """
         return self.value[1]
+
+    @property
+    def outer_magic_number(self) -> Literal[1] | Literal[2]:
+        """
+        Get the outer magic number used in first representation of inputs if no block exists
+        """
+        return 2 if self is BuiltinInputType.SPECIAL_NUMBER else 1
 
     @classmethod
     def get_by_cb_default(cls, default: str) -> "InputType":
@@ -124,6 +128,7 @@ class BuiltinInputType(InputType):
     POSITIVE_INTEGER    = (InputMode.BLOCK_AND_TEXT,  6, None, 4)
     POSITIVE_NUMBER     = (InputMode.BLOCK_AND_TEXT,  5, None, 5)
     NUMBER              = (InputMode.BLOCK_AND_TEXT,  4, None, 6)
+    NUMBER_SPECIAL      = (InputMode.BLOCK_AND_TEXT,  4, None, 6)
 
     # BLOCK_AND_MENU_TEXT
     NOTE                = (InputMode.BLOCK_AND_MENU_TEXT, None, BuiltinDropdownType.NOTE, 0)

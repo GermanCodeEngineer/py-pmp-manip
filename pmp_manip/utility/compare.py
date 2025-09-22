@@ -51,6 +51,9 @@ def assert_lists_equal_ignore_order(a: list, b: list, /) -> None:
     if not lists_equal_ignore_order(a, b, log=False):
         f = print # to disable searches for "print" with a bracket
         f(f"a={grepr(a)}\n\n\n\nb={grepr(b)}")
+        from pmp_manip.utility.file import write_file_text
+        write_file_text("a", grepr(a))
+        write_file_text("b", grepr(b))
         assert False, "Lists differ."
 
 

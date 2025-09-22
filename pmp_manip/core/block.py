@@ -395,7 +395,7 @@ class IRBlock:
                 magic_number = 2
             else:
                 match len(elements):
-                    case 1: magic_number = 1
+                    case 1: magic_number = input_type.outer_magic_number
                     case 2: magic_number = 3
             old_inputs[input_id] = (magic_number, *elements)
 

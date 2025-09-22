@@ -389,21 +389,32 @@ def test_SRTarget_to_first_common_sprite(info_api_extended):
     }
     nested_generated_blocks, nested_generated_comments = nest_all_blocks_comments(old_blocks, old_comments)
     nested_expected_blocks , nested_expected_comments  = nest_all_blocks_comments(ALL_FR_BLOCKS, expected_comments)
-    nested_generated_blocks.append(FRBlock( # Compensate for one "checkbox" block which doesnt exist to simulate older projects
-        opcode="checkbox",
-        next=None,
-        parent=Ellipsis,
-        inputs={},
-        fields={
-            "CHECKBOX": ("FALSE", string_to_sha256("FALSE", secondary=SHA256_SEC_DROPDOWN_VALUE)),
-        },
-        shadow=False,
-        top_level=False,
-        x=None,
-        y=None,
-        comment=None,
-        mutation=None,
-    ))
+    # Compensate for one "checkbox" block which doesnt exist to simulate older projects
+    for block in nested_expected_blocks:
+        if not isinstance(block, FRBlock): continue
+        if block.opcode != "control_if": continue
+        condition_blocks = block.inputs["CONDITION"]
+        if len(condition_blocks) != 2: continue
+        first_block = condition_blocks[1]
+        if first_block.opcode != "operator_trueBoolean": continue
+        condition_blocks = list(condition_blocks)
+        condition_blocks.append(FRBlock(
+            opcode="checkbox",
+            next=None,
+            parent=Ellipsis,
+            inputs={},
+            fields={
+                "CHECKBOX": ("FALSE", string_to_sha256("FALSE", secondary=SHA256_SEC_DROPDOWN_VALUE)),
+            },
+            shadow=False,
+            top_level=False,
+            x=None,
+            y=None,
+            comment=None,
+            mutation=None,
+        ))
+        block.inputs["CONDITION"] = tuple(condition_blocks)
+        break
     assert_lists_equal_ignore_order(nested_generated_blocks, nested_expected_blocks)
     assert_lists_equal_ignore_order(nested_generated_comments, nested_expected_comments)
 

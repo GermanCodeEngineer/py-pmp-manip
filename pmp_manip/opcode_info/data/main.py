@@ -481,7 +481,7 @@ def _f77b_dd4b(block: "FRBlock", block_id: str, itf_if: "InterToFirstIF") -> "FR
 
         points=max_point_index,
         color="#0FBD8C",
-        midle=[0, 0],
+        midle=(0, 0),
         scale=50,
         expanded=True,
         needs_init=True,

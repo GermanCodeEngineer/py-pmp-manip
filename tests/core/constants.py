@@ -1,7 +1,7 @@
-from copy import deepcopy
-from io        import BytesIO
-from pydub     import AudioSegment
-from lxml      import etree
+from copy  import deepcopy
+from io    import BytesIO
+from pydub import AudioSegment
+from lxml  import etree
 
 from pmp_manip.important_consts import (
     SHA256_SEC_MAIN_ARGUMENT_NAME, SHA256_SEC_LOCAL_ARGUMENT_NAME,
@@ -404,8 +404,8 @@ ALL_FR_BLOCK_DATAS = {
         "next": None,
         "parent": None,
         "inputs": {
-            "SHAPE": [1, "E"],
             "COLOR": [1, [9, "#d0d228"]],
+            "SHAPE": [1, "E"],
         },
         "fields": {},
         "shadow": False,
@@ -815,8 +815,8 @@ ALL_FR_BLOCKS = {
         next=None,
         parent=None,
         inputs={
-            "SHAPE": (1, "E"),
             "COLOR": (1, (9, "#d0d228")),
+            "SHAPE": (1, "E"),
         },
         fields={},
         shadow=False,
