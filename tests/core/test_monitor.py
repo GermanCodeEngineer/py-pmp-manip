@@ -600,7 +600,7 @@ ALL_LOCAL_SR_MONITORS: list[SRMonitor] = [
         allow_only_integers=True,
     ),
     SRMonitor( # [4] for [9]
-        opcode="costume [PROPERTY]",
+        opcode="looks::costume [PROPERTY]",
         dropdowns={
             "PROPERTY": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="number"),
         },
@@ -655,7 +655,7 @@ ALL_GLOBAL_SR_MONITORS: list[SRMonitor] = [
         is_visible=True,
     ),
     SRMonitor( # [5] for [10]
-        opcode="backdrop [PROPERTY]",
+        opcode="looks::backdrop [PROPERTY]",
         dropdowns={
             "PROPERTY": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="number"),
         },

@@ -1441,7 +1441,7 @@ ALL_SR_SCRIPTS = [
         position=(268, 220),
         blocks=[
             SRBlock(
-                opcode="broadcast ([MESSAGE])",
+                opcode="events::broadcast ([MESSAGE])",
                 inputs={
                     "MESSAGE": SRBlockAndDropdownInputValue(
                         block=None,
@@ -1631,7 +1631,7 @@ ALL_SR_SCRIPTS = [
         position=(528, 1175),
         blocks=[
             SRBlock(
-                opcode="if <CONDITION> then {THEN}",
+                opcode="control::if <CONDITION> then {THEN}",
                 inputs={
                     "CONDITION": SRBlockAndBoolInputValue(block=None, immediate=False),
                     "THEN": SRScriptInputValue(
@@ -1669,7 +1669,7 @@ ALL_SR_SCRIPTS = [
         position=(1784, -890),
         blocks=[
             SRBlock(
-                opcode="when [OPTION] > (VALUE)",
+                opcode="events::when [OPTION] > (VALUE)",
                 inputs={
                     "VALUE": SRBlockAndTextInputValue(block=None, immediate="50"),
                 },
@@ -1685,7 +1685,7 @@ ALL_SR_SCRIPTS = [
         position=(184, 1430),
         blocks=[
             SRBlock(
-                opcode="when I receive [MESSAGE]",
+                opcode="events::when I receive [MESSAGE]",
                 inputs={},
                 dropdowns={
                     "MESSAGE": SRDropdownValue(kind=DropdownValueKind.BROADCAST_MSG, value="my message"),
@@ -1699,7 +1699,7 @@ ALL_SR_SCRIPTS = [
         position=(1528, 2175),
         blocks=[
             SRBlock(
-                opcode="if <CONDITION> then {THEN}",
+                opcode="control::if <CONDITION> then {THEN}",
                 inputs={
                     "CONDITION": SRBlockAndBoolInputValue(
                         block=SRBlock(
@@ -1723,7 +1723,7 @@ ALL_SR_SCRIPTS = [
         position=(897, 1365),
         blocks=[
             SRBlock(
-                opcode="switch (CONDITION) {CASES}",
+                opcode="control::switch (CONDITION) {CASES}",
                 inputs={
                     "CONDITION": SRBlockOnlyInputValue(
                         block=SRBlock(

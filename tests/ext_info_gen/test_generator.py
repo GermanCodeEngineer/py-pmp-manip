@@ -61,7 +61,7 @@ EXAMPLE_BLOCK_DATA = [
         "disableMonitor": True
     },
     { # [4]
-        "opcode": "error",
+        "opcode": "control::error",
         "blockType": "reporter",
         "text": "Error"
     },

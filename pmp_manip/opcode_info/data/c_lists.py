@@ -1,7 +1,7 @@
 from pmp_manip.opcode_info.data_imports import *
 
 c_lists = OpcodeInfoGroup(name="c_lists", opcode_info=DualKeyDict({
-    ("data_addtolist", "add (ITEM) to [LIST]"): OpcodeInfo(
+    ("data_addtolist", "lists::add (ITEM) to [LIST]"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
             ("ITEM", "ITEM"): InputInfo(BuiltinInputType.TEXT),
@@ -11,7 +11,7 @@ c_lists = OpcodeInfoGroup(name="c_lists", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("data_deleteoflist", "delete (INDEX) of [LIST]"): OpcodeInfo(
+    ("data_deleteoflist", "lists::delete (INDEX) of [LIST]"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
             ("INDEX", "INDEX"): InputInfo(BuiltinInputType.INTEGER),
@@ -21,14 +21,14 @@ c_lists = OpcodeInfoGroup(name="c_lists", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("data_deletealloflist", "delete all of [LIST]"): OpcodeInfo(
+    ("data_deletealloflist", "lists::delete all of [LIST]"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         dropdowns=DualKeyDict({
             ("LIST", "LIST"): DropdownInfo(BuiltinDropdownType.LIST),
         }),
     ),
 
-    ("data_shiftlist", "shift [LIST] by (INDEX)"): OpcodeInfo(
+    ("data_shiftlist", "lists::shift [LIST] by (INDEX)"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
             ("INDEX", "INDEX"): InputInfo(BuiltinInputType.INTEGER),
@@ -38,7 +38,7 @@ c_lists = OpcodeInfoGroup(name="c_lists", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("data_insertatlist", "insert (ITEM) at (INDEX) of [LIST]"): OpcodeInfo(
+    ("data_insertatlist", "lists::insert (ITEM) at (INDEX) of [LIST]"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
             ("ITEM", "ITEM"): InputInfo(BuiltinInputType.TEXT),
@@ -49,7 +49,7 @@ c_lists = OpcodeInfoGroup(name="c_lists", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("data_replaceitemoflist", "replace item (INDEX) of [LIST] with (ITEM)"): OpcodeInfo(
+    ("data_replaceitemoflist", "lists::replace item (INDEX) of [LIST] with (ITEM)"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
             ("INDEX", "INDEX"): InputInfo(BuiltinInputType.INTEGER),
@@ -60,7 +60,7 @@ c_lists = OpcodeInfoGroup(name="c_lists", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("data_listforeachitem", "For each item [VARIABLE] in [LIST] {BODY}"): OpcodeInfo(
+    ("data_listforeachitem", "lists::For each item [VARIABLE] in [LIST] {BODY}"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
             ("SUBSTACK", "BODY"): InputInfo(BuiltinInputType.SCRIPT),
@@ -71,7 +71,7 @@ c_lists = OpcodeInfoGroup(name="c_lists", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("data_listforeachnum", "For each item # [VARIABLE] in [LIST] {BODY}"): OpcodeInfo(
+    ("data_listforeachnum", "lists::For each item # [VARIABLE] in [LIST] {BODY}}"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
             ("SUBSTACK", "BODY"): InputInfo(BuiltinInputType.SCRIPT),
@@ -82,7 +82,7 @@ c_lists = OpcodeInfoGroup(name="c_lists", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("data_itemoflist", "item (INDEX) of [LIST]"): OpcodeInfo(
+    ("data_itemoflist", "lists::item (INDEX) of [LIST]"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
             ("INDEX", "INDEX"): InputInfo(BuiltinInputType.INTEGER),
@@ -92,7 +92,7 @@ c_lists = OpcodeInfoGroup(name="c_lists", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("data_itemnumoflist", "item # of (ITEM) in [LIST]"): OpcodeInfo(
+    ("data_itemnumoflist", "lists::item # of (ITEM) in [LIST]"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
             ("ITEM", "ITEM"): InputInfo(BuiltinInputType.TEXT),
@@ -102,7 +102,7 @@ c_lists = OpcodeInfoGroup(name="c_lists", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("data_amountinlist", "amount of (VALUE) of [LIST]"): OpcodeInfo(
+    ("data_amountinlist", "lists::amount of (VALUE) of [LIST]"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
             ("VALUE", "VALUE"): InputInfo(BuiltinInputType.TEXT),
@@ -112,14 +112,14 @@ c_lists = OpcodeInfoGroup(name="c_lists", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("data_lengthoflist", "length of [LIST]"): OpcodeInfo(
+    ("data_lengthoflist", "lists::length of [LIST]"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         dropdowns=DualKeyDict({
             ("LIST", "LIST"): DropdownInfo(BuiltinDropdownType.LIST),
         }),
     ),
 
-    ("data_listcontainsitem", "[LIST] contains (ITEM) ?"): OpcodeInfo(
+    ("data_listcontainsitem", "lists::[LIST] contains (ITEM) ?"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         inputs=DualKeyDict({
             ("ITEM", "ITEM"): InputInfo(BuiltinInputType.TEXT),
@@ -129,7 +129,7 @@ c_lists = OpcodeInfoGroup(name="c_lists", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("data_itemexistslist", "item (INDEX) exists in [LIST] ?"): OpcodeInfo(
+    ("data_itemexistslist", "lists::item (INDEX) exists in [LIST] ?"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         inputs=DualKeyDict({
             ("INDEX", "INDEX"): InputInfo(BuiltinInputType.INTEGER),
@@ -139,21 +139,21 @@ c_lists = OpcodeInfoGroup(name="c_lists", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("data_listisempty", "is [LIST] empty?"): OpcodeInfo(
+    ("data_listisempty", "lists::is [LIST] empty?"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         dropdowns=DualKeyDict({
             ("LIST", "LIST"): DropdownInfo(BuiltinDropdownType.LIST),
         }),
     ),
 
-    ("data_reverselist", "reverse [LIST]"): OpcodeInfo(
+    ("data_reverselist", "lists::reverse [LIST]"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         dropdowns=DualKeyDict({
             ("LIST", "LIST"): DropdownInfo(BuiltinDropdownType.LIST),
         }),
     ),
 
-    ("data_arraylist", "set [LIST] to array (VALUE)"): OpcodeInfo(
+    ("data_arraylist", "lists::set [LIST] to array (VALUE)"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
             ("VALUE", "VALUE"): InputInfo(BuiltinInputType.TEXT),
@@ -163,21 +163,21 @@ c_lists = OpcodeInfoGroup(name="c_lists", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("data_listarray", "get list [LIST] as an array"): OpcodeInfo(
+    ("data_listarray", "lists::get list [LIST] as an array"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         dropdowns=DualKeyDict({
             ("LIST", "LIST"): DropdownInfo(BuiltinDropdownType.LIST),
         }),
     ),
 
-    ("data_showlist", "show list [LIST]"): OpcodeInfo(
+    ("data_showlist", "lists::show list [LIST]"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         dropdowns=DualKeyDict({
             ("LIST", "LIST"): DropdownInfo(BuiltinDropdownType.LIST),
         }),
     ),
 
-    ("data_hidelist", "hide list [LIST]"): OpcodeInfo(
+    ("data_hidelist", "lists::hide list [LIST]"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         dropdowns=DualKeyDict({
             ("LIST", "LIST"): DropdownInfo(BuiltinDropdownType.LIST),

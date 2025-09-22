@@ -4,7 +4,21 @@ Special:
     TODOs in Code + read through code, optimize here and there
 
 Currently Working On:
-    adding tests
+    - S: rename builtin second repr opcodes and add "::"
+        => find that one conflict
+        => look thorugh data/main
+    
+    - M/L: make a script which show info for the requested block opcode
+    - add the above to docs
+
+Changelog since last Release:
+    - Major Changes:
+        - Compatability with all Builtin Extensions
+        - Builtin Extensions are now generated locally, not maintained manually
+        - Updated documentation and tests
+    - Minor Changes:
+        - Implemented special and difficult "draw polygon" block(pen extension)
+        - Added CONTRIBUTING.md
 
 High: /
 
@@ -15,12 +29,10 @@ Medium:
         => remove "Returns" section of docstrings to avoid doubling (easy to do simultaneously)
         => rethink error strategy (e.g. ValueError, TypeError) => should i wrap external errors instead of mine?
         => error formatting
-####    - M/L: make a script which show info for the requested block opcode
     - [M.OPT]: add FRProject.from_file alternative, fetch from project link 
     - S/M: implement variable_type and variable_id (example: "small_example")
-    - S: rename builtin second repr opcodes and add "::"
     - S: explore extensionData (example of "2D MAINCRAFT")
-    - S: add "previous costume" and "next costume" to costume menu
+    - S: add "previous costume" and "looks::next costume" to costume menu
         => explore for similar updates
     - S: add new rotation style(s)
     - S: fix grepr multiline string issue

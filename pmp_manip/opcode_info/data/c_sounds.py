@@ -77,7 +77,7 @@ c_sounds = OpcodeInfoGroup(name="c_sounds", opcode_info=DualKeyDict({
         opcode_type=OpcodeType.STATEMENT,
     ),
 
-    ("sound_getEffectValue", "[EFFECT] sound effect"): OpcodeInfo(
+    ("sound_getEffectValue", "sounds::[EFFECT] effect"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         dropdowns=DualKeyDict({
             ("EFFECT", "EFFECT"): DropdownInfo(BuiltinDropdownType.SOUND_EFFECT),

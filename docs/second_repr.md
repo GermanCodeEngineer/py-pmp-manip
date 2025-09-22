@@ -77,7 +77,7 @@ SRProject(
                     is_visible=True,
                 ),
                 SRMonitor(
-                    opcode="[EFFECT] sprite effect",
+                    opcode="looks::[EFFECT] effect",
                     dropdowns={
                         "EFFECT": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="color"),
                     },
@@ -138,7 +138,7 @@ SRProject(
                             ),
                         ),
                         SRBlock(
-                            opcode="if <CONDITION> then {THEN}",
+                            opcode="control::if <CONDITION> then {THEN}",
                             inputs={
                                 "CONDITION": SRBlockAndBoolInputValue(
                                     block=SRBlock(
@@ -184,7 +184,7 @@ SRProject(
                                 "THEN": SRScriptInputValue(
                                     blocks=[
                                         SRBlock(
-                                            opcode="say (MESSAGE) for (SECONDS) seconds",
+                                            opcode="looks::say (MESSAGE) for (SECONDS) seconds",
                                             inputs={
                                                 "MESSAGE": SRBlockAndTextInputValue(block=None, immediate="Hello!"),
                                                 "SECONDS": SRBlockAndTextInputValue(block=None, immediate="2"),
@@ -199,7 +199,7 @@ SRProject(
                                             mutation=None,
                                         ),
                                         SRBlock(
-                                            opcode="change [EFFECT] sprite effect by (AMOUNT)",
+                                            opcode="looks::change [EFFECT] effect by (AMOUNT)",
                                             inputs={
                                                 "AMOUNT": SRBlockAndTextInputValue(block=None, immediate="25"),
                                             },
@@ -681,7 +681,7 @@ SRSprite(
     local_monitors=[
         # shortend here
         SRMonitor(
-            opcode="[EFFECT] sprite effect",
+            opcode="looks::[EFFECT] effect",
             dropdowns={
                 "EFFECT": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="color"),
             },
@@ -874,7 +874,7 @@ SRMonitor(
 #### Local
 ```python
 SRMonitor(
-    opcode="[EFFECT] sprite effect",
+    opcode="looks::[EFFECT] effect",
     dropdowns={
         "EFFECT": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="color"),
     },
@@ -1071,7 +1071,7 @@ SRScript(
             ),
         ),
         SRBlock(
-            opcode="if <CONDITION> then {THEN}",
+            opcode="control::if <CONDITION> then {THEN}",
             inputs={
                 "CONDITION": SRBlockAndBoolInputValue(
                     # shortend here
@@ -1145,7 +1145,7 @@ Represents a single block in a script. Can be any shape of block(e.g. square, ro
 ### Python Object Example
 ```python
 SRBlock(
-    opcode="if <CONDITION> then {THEN}",
+    opcode="control::if <CONDITION> then {THEN}",
     inputs={
         "CONDITION": SRBlockAndBoolInputValue(
             block=SRBlock(
@@ -1226,7 +1226,7 @@ SRBlockAndBoolInputValue(
 SRScriptInputValue(
     blocks=[
         SRBlock(
-            opcode="say (MESSAGE) for (SECONDS) seconds",
+            opcode="looks::say (MESSAGE) for (SECONDS) seconds",
             inputs={
                 "MESSAGE": SRBlockAndTextInputValue(block=None, immediate="Hello!"),
                 "SECONDS": SRBlockAndTextInputValue(block=None, immediate="2"),
@@ -1241,7 +1241,7 @@ SRScriptInputValue(
             mutation=None,
         ),
         SRBlock(
-            opcode="change [EFFECT] sprite effect by (AMOUNT)",
+            opcode="looks::change [EFFECT] effect by (AMOUNT)",
             inputs={
                 "AMOUNT": SRBlockAndTextInputValue(block=None, immediate="25"),
             },
@@ -1334,7 +1334,7 @@ Represents a single dropdown field of a block. Can only be a square dropdown, wh
 ### Python Object Example
 ```python
 SRBlock(
-    opcode="change [EFFECT] sprite effect by (AMOUNT)",
+    opcode="looks::change [EFFECT] effect by (AMOUNT)",
     inputs={
         "AMOUNT": SRBlockAndTextInputValue(block=None, immediate="25"),
     },
@@ -1553,7 +1553,7 @@ SRComment(
 ```
 ```python
 SRBlock(
-    opcode="say (MESSAGE) for (SECONDS) seconds",
+    opcode="looks::say (MESSAGE) for (SECONDS) seconds",
     inputs={
         "MESSAGE": SRBlockAndTextInputValue(block=None, immediate="Hello!"),
         "SECONDS": SRBlockAndTextInputValue(block=None, immediate="2"),
