@@ -118,7 +118,7 @@ srproject.extensions.append(SRCustomExtension(
 # Add a script with a single custom block
 srproject.stage.scripts.append(SRScript(
     position=(100, 100),
-    blocks=[SRBlock(opcode="griffpatch::gravity x")],
+    blocks=[SRBlock(opcode="&griffpatch::gravity x")],
 ))
 
 # Automatically add all required extensions
@@ -184,7 +184,7 @@ srproject.extensions.append(SRCustomExtension(
 ))
 srproject.stage.scripts.append(SRScript(
     position=(100, 100),
-    blocks=[SRBlock(opcode="griffpatch::gravity x")],
+    blocks=[SRBlock(opcode="&griffpatch::gravity x")],
 ))
 
 srproject.add_all_extensions_to_info_api(info_api)

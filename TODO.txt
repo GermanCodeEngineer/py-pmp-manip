@@ -4,9 +4,6 @@ Special:
     TODOs in Code + read through code, optimize here and there
 
 Currently Working On:
-    - S: rename builtin second repr opcodes and add "::"
-        => look thorugh data/main
-        => update builtin categories (see in PM-VM)
     
     - M/L: make a script which show info for the requested block opcode
     - add the above to docs
@@ -15,12 +12,14 @@ Changelog since last Release:
     - Major Changes:
         - Compatability with all Builtin Extensions
         - Builtin Extensions are now generated locally, not maintained manually
+        - Renamed built-in Second Repr/"new" opcodes -> "&category::block (INPUT) text"
         - Updated documentation and tests
     - Minor Changes:
         - Implemented special and difficult "draw polygon" block(pen extension)
         - Added CONTRIBUTING.md
 
-High: /
+High:
+    - S/M: implement new "control_expandableIf" block. @PenguinMod: why so many features, i cant keep up :(
 
 Medium:
     - XL: add tests for and document opcode_info
@@ -32,7 +31,7 @@ Medium:
     - [M.OPT]: add FRProject.from_file alternative, fetch from project link 
     - S/M: implement variable_type and variable_id (example: "small_example")
     - S: explore extensionData (example of "2D MAINCRAFT")
-    - S: add "previous costume" and "looks::next costume" to costume menu
+    - S: add "previous costume" and "next costume" to costume menu
         => explore for similar updates
     - S: add new rotation style(s)
     - S: fix grepr multiline string issue

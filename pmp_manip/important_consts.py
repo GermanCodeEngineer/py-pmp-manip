@@ -1,8 +1,8 @@
 # Opcodes: Variables & Lists
 OPCODE_VAR_VALUE               = "data_variable"
 OPCODE_LIST_VALUE              = "data_listcontents"
-NEW_OPCODE_VAR_VALUE           = "value of [VARIABLE]"
-NEW_OPCODE_LIST_VALUE          = "value of [LIST]"
+NEW_OPCODE_VAR_VALUE           = "&variables::value of [VARIABLE]"
+NEW_OPCODE_LIST_VALUE          = "&variables::value of [LIST]"
 ANY_OPCODE_IMMEDIATE_BLOCK     = {OPCODE_VAR_VALUE, OPCODE_LIST_VALUE}
 ANY_NEW_OPCODE_IMMEDIATE_BLOCK = {NEW_OPCODE_VAR_VALUE, NEW_OPCODE_LIST_VALUE}
 
@@ -17,20 +17,23 @@ OPCODE_CB_ARG_TEXT             = "argument_reporter_string_number"
 OPCODE_CB_ARG_BOOL             = "argument_reporter_boolean"
 ANY_OPCODE_CB_ARG              = {OPCODE_CB_ARG_TEXT, OPCODE_CB_ARG_BOOL}
 
-NEW_OPCODE_CB_DEF              = "define custom block"
-NEW_OPCODE_CB_DEF_REP          = "define custom block reporter"
+NEW_OPCODE_CB_DEF              = "&customblocks::define custom block"
+NEW_OPCODE_CB_DEF_REP          = "&customblocks::define custom block reporter"
 ANY_NEW_OPCODE_CB_DEF          = {NEW_OPCODE_CB_DEF, NEW_OPCODE_CB_DEF_REP}
 
 # Opcodes: Custom Block Calls
 OPCODE_CB_CALL                 = "procedures_call"
-NEW_OPCODE_CB_CALL             = "call custom block"
+NEW_OPCODE_CB_CALL             = "&customblocks::call custom block"
 
 # Opcodes: Other Special Blocks
 OPCODE_STOP_SCRIPT             = "control_stop"
 OPCODE_CHECKBOX                = "checkbox"
-NEW_OPCODE_CHECKBOX            = "##CHECKBOX##"
+NEW_OPCODE_CHECKBOX            = "&special::##CHECKBOX##"
 OPCODE_POLYGON                 = "polygon"
-NEW_OPCODE_POLYGON             = "{{POLYGON MENU}}"
+NEW_OPCODE_POLYGON             = "&special::{{POLYGON MENU}}"
+OPCODE_FILTER_LIST_INDEX       = "data_filterlistindex"
+OPCODE_FILTER_LIST_ITEM        = "data_filterlistitem"
+
 
 # Magic Numbers
 OPCODE_NUM_VAR_VALUE           = 12
@@ -62,6 +65,7 @@ __all__ = [
     "NEW_OPCODE_CB_DEF", "NEW_OPCODE_CB_DEF_REP", "ANY_NEW_OPCODE_CB_DEF",
     "OPCODE_CB_CALL", "NEW_OPCODE_CB_CALL",
     "OPCODE_STOP_SCRIPT", "OPCODE_CHECKBOX", "NEW_OPCODE_CHECKBOX", "OPCODE_POLYGON", "NEW_OPCODE_POLYGON",
+    "OPCODE_FILTER_LIST_INDEX", "OPCODE_FILTER_LIST_ITEM",
     "OPCODE_NUM_VAR_VALUE", "OPCODE_NUM_LIST_VALUE", "ANY_OPCODE_NUM_IMMEDIATE_BLOCK",
     "ANY_TEXT_INPUT_NUM",
 

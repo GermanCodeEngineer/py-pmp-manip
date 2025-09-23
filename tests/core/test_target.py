@@ -320,7 +320,7 @@ def test_SRTarget_validate_scripts_same_custom_opcode(context):
         position=(0, 0),
         blocks=[
             SRBlock(
-                opcode="define custom block",
+                opcode="&customblocks::define custom block",
                 inputs={},
                 dropdowns={},
                 comment=None,

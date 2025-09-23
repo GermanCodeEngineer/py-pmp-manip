@@ -274,7 +274,7 @@ class MonitorIdBehaviour(GEnum):
     LIST                  = 8
     
 
-@grepr_dataclass(grepr_fields=["opcode_type", "inputs", "dropdowns", "can_have_monitor", "monitor_id_behaviour", "has_shadow", "has_variable_id", "special_cases", "old_mutation_cls", "new_mutation_cls"])
+@grepr_dataclass(grepr_fields=["opcode_type", "inputs", "dropdowns", "can_have_monitor", "monitor_id_behaviour", "has_shadow", "has_variable_id", "special_cases", "old_mutation_cls", "new_mutation_cls", "allow_embedded"])
 class OpcodeInfo:
     """
     The information about all the blocks with a certain opcode
@@ -290,6 +290,7 @@ class OpcodeInfo:
     special_cases: dict[SpecialCaseType, SpecialCase] = field(default_factory=dict)
     old_mutation_cls: Type["FRMutation"] | None = None
     new_mutation_cls: Type["SRMutation"] | None = None
+    allow_embedded: bool = False
     
     def __post_init__(self) -> None:
         """
@@ -302,9 +303,10 @@ class OpcodeInfo:
             self.has_shadow = (self.opcode_type is OpcodeType.MENU)
         if self.can_have_monitor:
             assert self.monitor_id_behaviour is not None, repr(self)
-
         else:
             assert self.monitor_id_behaviour is None, repr(self)
+        if self.opcode_type is OpcodeType.EMBEDDED:
+            self.allow_embedded = True
 
     
     # Special Cases

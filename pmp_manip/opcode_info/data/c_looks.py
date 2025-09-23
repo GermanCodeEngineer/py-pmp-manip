@@ -1,7 +1,7 @@
 from pmp_manip.opcode_info.data_imports import *
 
 c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
-    ("looks_sayforsecs", "looks::say (MESSAGE) for (SECONDS) seconds"): OpcodeInfo(
+    ("looks_sayforsecs", "&looks::say (MESSAGE) for (SECONDS) seconds"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
             ("MESSAGE", "MESSAGE"): InputInfo(BuiltinInputType.TEXT),
@@ -9,14 +9,14 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("looks_say", "looks::say (MESSAGE)"): OpcodeInfo(
+    ("looks_say", "&looks::say (MESSAGE)"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
             ("MESSAGE", "MESSAGE"): InputInfo(BuiltinInputType.TEXT),
         }),
     ),
 
-    ("looks_thinkforsecs", "looks::think (MESSAGE) for (SECONDS) seconds"): OpcodeInfo(
+    ("looks_thinkforsecs", "&looks::think (MESSAGE) for (SECONDS) seconds"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
             ("MESSAGE", "MESSAGE"): InputInfo(BuiltinInputType.TEXT),
@@ -24,18 +24,18 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("looks_think", "looks::think (MESSAGE)"): OpcodeInfo(
+    ("looks_think", "&looks::think (MESSAGE)"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
             ("MESSAGE", "MESSAGE"): InputInfo(BuiltinInputType.TEXT),
         }),
     ),
 
-    ("looks_stoptalking", "looks::stop speaking"): OpcodeInfo(
+    ("looks_stoptalking", "&looks::stop speaking"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
     ),
 
-    ("looks_setFont", "looks::set font to (FONT) with font size (FONT-SIZE)"): OpcodeInfo(
+    ("looks_setFont", "&looks::set font to (FONT) with font size (FONT-SIZE)"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
             ("font", "FONT"): InputInfo(BuiltinInputType.TEXT),
@@ -43,7 +43,7 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("looks_setColor", "looks::set [PROPERTY] color to (COLOR)"): OpcodeInfo(
+    ("looks_setColor", "&looks::set [PROPERTY] color to (COLOR)"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
             ("color", "COLOR"): InputInfo(BuiltinInputType.COLOR),
@@ -53,7 +53,7 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("looks_setShape", "looks::set text bubble [PROPERTY] to (VALUE)"): OpcodeInfo(
+    ("looks_setShape", "&looks::set text bubble [PROPERTY] to (VALUE)"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
             ("color", "VALUE"): InputInfo(BuiltinInputType.NUMBER),
@@ -63,30 +63,30 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("looks_sayWidth", "looks::bubble width"): OpcodeInfo(
+    ("looks_sayWidth", "&looks::bubble width"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         can_have_monitor=True,
         monitor_id_behaviour=MonitorIdBehaviour.SPRITE_OPCMAIN,
     ),
 
-    ("looks_sayHeight", "looks::bubble height"): OpcodeInfo(
+    ("looks_sayHeight", "&looks::bubble height"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         can_have_monitor=True,
         monitor_id_behaviour=MonitorIdBehaviour.SPRITE_OPCMAIN,
     ),
 
-    ("looks_switchcostumeto", "looks::switch costume to ([COSTUME])"): OpcodeInfo(
+    ("looks_switchcostumeto", "&looks::switch costume to ([COSTUME])"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
             ("COSTUME", "COSTUME"): InputInfo(BuiltinInputType.COSTUME, menu=MenuInfo("looks_costume", inner="COSTUME")),
         }),
     ),
 
-    ("looks_nextcostume", "looks::next costume"): OpcodeInfo(
+    ("looks_nextcostume", "&looks::next costume"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
     ),
 
-    ("looks_getinputofcostume", "looks::([PROPERTY]) of ([COSTUME])"): OpcodeInfo(
+    ("looks_getinputofcostume", "&looks::([PROPERTY]) of ([COSTUME])"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
             ("INPUT", "PROPERTY"): InputInfo(BuiltinInputType.COSTUME_PROPERTY, menu=MenuInfo("looks_getinput_menu", inner="INPUT")),
@@ -94,32 +94,32 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("looks_switchbackdropto", "looks::switch backdrop to ([BACKDROP])"): OpcodeInfo(
+    ("looks_switchbackdropto", "&looks::switch backdrop to ([BACKDROP])"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
             ("BACKDROP", "BACKDROP"): InputInfo(BuiltinInputType.BACKDROP, menu=MenuInfo("looks_backdrops", inner="BACKDROP")),
         }),
     ),
 
-    ("looks_nextbackdrop", "looks::next backdrop"): OpcodeInfo(
+    ("looks_nextbackdrop", "&looks::next backdrop"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
     ),
 
-    ("looks_changesizeby", "looks::change size by (AMOUNT)"): OpcodeInfo(
+    ("looks_changesizeby", "&looks::change size by (AMOUNT)"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
             ("CHANGE", "AMOUNT"): InputInfo(BuiltinInputType.NUMBER),
         }),
     ),
 
-    ("looks_setsizeto", "looks::set size to (SIZE)"): OpcodeInfo(
+    ("looks_setsizeto", "&looks::set size to (SIZE)"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
             ("SIZE", "SIZE"): InputInfo(BuiltinInputType.NUMBER),
         }),
     ),
 
-    ("looks_setStretch", "looks::set stretch to x: (X) y: (Y)"): OpcodeInfo(
+    ("looks_setStretch", "&looks::set stretch to x: (X) y: (Y)"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
             ("X", "X"): InputInfo(BuiltinInputType.NUMBER),
@@ -127,19 +127,19 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("looks_stretchGetX", "looks::x stretch"): OpcodeInfo(
+    ("looks_stretchGetX", "&looks::x stretch"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         can_have_monitor=True,
         monitor_id_behaviour=MonitorIdBehaviour.SPRITE_OPCMAIN,
     ),
 
-    ("looks_stretchGetY", "looks::y stretch"): OpcodeInfo(
+    ("looks_stretchGetY", "&looks::y stretch"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         can_have_monitor=True,
         monitor_id_behaviour=MonitorIdBehaviour.SPRITE_OPCMAIN,
     ),
 
-    ("looks_changeeffectby", "looks::change [EFFECT] effect by (AMOUNT)"): OpcodeInfo(
+    ("looks_changeeffectby", "&looks::change [EFFECT] effect by (AMOUNT)"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
             ("CHANGE", "AMOUNT"): InputInfo(BuiltinInputType.NUMBER),
@@ -149,7 +149,7 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("looks_seteffectto", "looks::set [EFFECT] effect to (VALUE)"): OpcodeInfo(
+    ("looks_seteffectto", "&looks::set [EFFECT] effect to (VALUE)"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
             ("VALUE", "VALUE"): InputInfo(BuiltinInputType.NUMBER),
@@ -159,18 +159,18 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("looks_setTintColor", "looks::set tint color to (COLOR)"): OpcodeInfo(
+    ("looks_setTintColor", "&looks::set tint color to (COLOR)"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
             ("color", "COLOR"): InputInfo(BuiltinInputType.COLOR),
         }),
     ),
 
-    ("looks_cleargraphiceffects", "looks::clear graphic effects"): OpcodeInfo(
+    ("looks_cleargraphiceffects", "&looks::clear graphic effects"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
     ),
 
-    ("looks_getEffectValue", "looks::[EFFECT] effect"): OpcodeInfo(
+    ("looks_getEffectValue", "&looks::[EFFECT] effect"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         dropdowns=DualKeyDict({
             ("EFFECT", "EFFECT"): DropdownInfo(BuiltinDropdownType.SPRITE_EFFECT),
@@ -179,55 +179,55 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
         monitor_id_behaviour=MonitorIdBehaviour.SPRITE_OPCMAIN_PARAMS,
     ),
 
-    ("looks_tintColor", "looks::tint color"): OpcodeInfo(
+    ("looks_tintColor", "&looks::tint color"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         can_have_monitor=True,
         monitor_id_behaviour=MonitorIdBehaviour.SPRITE_OPCMAIN,
     ),
 
-    ("looks_show", "looks::show"): OpcodeInfo(
+    ("looks_show", "&looks::show"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
     ),
 
-    ("looks_hide", "looks::hide"): OpcodeInfo(
+    ("looks_hide", "&looks::hide"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
     ),
 
-    ("looks_getSpriteVisible", "looks::visible?"): OpcodeInfo(
+    ("looks_getSpriteVisible", "&looks::visible?"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         can_have_monitor=True,
         monitor_id_behaviour=MonitorIdBehaviour.SPRITE_OPCMAIN,
     ),
 
-    ("looks_changeVisibilityOfSpriteShow", "looks::show ([TARGET])"): OpcodeInfo(
+    ("looks_changeVisibilityOfSpriteShow", "&looks::show ([TARGET])"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
             ("VISIBLE_OPTION", "TARGET"): InputInfo(BuiltinInputType.MYSELF_OR_OTHER_SPRITE, menu=MenuInfo("looks_changeVisibilityOfSprite_menu", inner="VISIBLE_OPTION")),
         }),
     ),
 
-    ("looks_changeVisibilityOfSpriteHide", "looks::hide ([TARGET])"): OpcodeInfo(
+    ("looks_changeVisibilityOfSpriteHide", "&looks::hide ([TARGET])"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
             ("VISIBLE_OPTION", "TARGET"): InputInfo(BuiltinInputType.MYSELF_OR_OTHER_SPRITE, menu=MenuInfo("looks_changeVisibilityOfSprite_menu", inner="VISIBLE_OPTION")),
         }),
     ),
 
-    ("looks_getOtherSpriteVisible", "sounds::is ([TARGET]) visible?"): OpcodeInfo(
+    ("looks_getOtherSpriteVisible", "&sounds::is ([TARGET]) visible?"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         inputs=DualKeyDict({
             ("VISIBLE_OPTION", "TARGET"): InputInfo(BuiltinInputType.MYSELF_OR_OTHER_SPRITE, menu=MenuInfo("looks_getOtherSpriteVisible_menu", inner="VISIBLE_OPTION")),
         }),
     ),
 
-    ("looks_gotofrontback", "looks::go to [LAYER] layer"): OpcodeInfo(
+    ("looks_gotofrontback", "&looks::go to [LAYER] layer"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         dropdowns=DualKeyDict({
             ("FRONT_BACK", "LAYER"): DropdownInfo(BuiltinDropdownType.FRONT_BACK),
         }),
     ),
 
-    ("looks_goforwardbackwardlayers", "looks::go [DIRECTION] (LAYERS) layers"): OpcodeInfo(
+    ("looks_goforwardbackwardlayers", "&looks::go [DIRECTION] (LAYERS) layers"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
             ("NUM", "LAYERS"): InputInfo(BuiltinInputType.INTEGER),
@@ -237,14 +237,14 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("looks_layersSetLayer", "looks::go to layer (LAYER)"): OpcodeInfo(
+    ("looks_layersSetLayer", "&looks::go to layer (LAYER)"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
             ("NUM", "LAYER"): InputInfo(BuiltinInputType.INTEGER),
         }),
     ),
 
-    ("looks_goTargetLayer", "looks::go [DIRECTION] ([TARGET])"): OpcodeInfo(
+    ("looks_goTargetLayer", "&looks::go [DIRECTION] ([TARGET])"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
             ("VISIBLE_OPTION", "TARGET"): InputInfo(BuiltinInputType.MYSELF_OR_OTHER_SPRITE, menu=MenuInfo("looks_getOtherSpriteVisible_menu", inner="VISIBLE_OPTION")),
@@ -254,13 +254,13 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("looks_layersGetLayer", "looks::layer"): OpcodeInfo(
+    ("looks_layersGetLayer", "&looks::layer"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         can_have_monitor=True,
         monitor_id_behaviour=MonitorIdBehaviour.SPRITE_OPCMAIN,
     ),
 
-    ("looks_costumenumbername", "looks::costume [PROPERTY]"): OpcodeInfo(
+    ("looks_costumenumbername", "&looks::costume [PROPERTY]"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         dropdowns=DualKeyDict({
             ("NUMBER_NAME", "PROPERTY"): DropdownInfo(BuiltinDropdownType.NUMBER_NAME),
@@ -269,7 +269,7 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
         monitor_id_behaviour=MonitorIdBehaviour.SPRITE_OPCMAIN_PARAMS,
     ),
 
-    ("looks_backdropnumbername", "looks::backdrop [PROPERTY]"): OpcodeInfo(
+    ("looks_backdropnumbername", "&looks::backdrop [PROPERTY]"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         dropdowns=DualKeyDict({
             ("NUMBER_NAME", "PROPERTY"): DropdownInfo(BuiltinDropdownType.NUMBER_NAME),
@@ -278,7 +278,7 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
         monitor_id_behaviour=MonitorIdBehaviour.OPCMAIN_PARAMS,
     ),
 
-    ("looks_size", "looks::size"): OpcodeInfo(
+    ("looks_size", "&looks::size"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         can_have_monitor=True,
         monitor_id_behaviour=MonitorIdBehaviour.SPRITE_OPCMAIN,

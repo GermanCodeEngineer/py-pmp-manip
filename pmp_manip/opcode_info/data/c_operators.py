@@ -1,7 +1,7 @@
 from pmp_manip.opcode_info.data_imports import *
 
 c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
-    ("operator_add", "(OPERAND1) + (OPERAND2)"): OpcodeInfo(
+    ("operator_add", "&operators::(OPERAND1) + (OPERAND2)"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
             ("NUM1", "OPERAND1"): InputInfo(BuiltinInputType.NUMBER),
@@ -9,7 +9,7 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("operator_subtract", "(OPERAND1) - (OPERAND2)"): OpcodeInfo(
+    ("operator_subtract", "&operators::(OPERAND1) - (OPERAND2)"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
             ("NUM1", "OPERAND1"): InputInfo(BuiltinInputType.NUMBER),
@@ -17,7 +17,7 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("operator_multiply", "(OPERAND1) * (OPERAND2)"): OpcodeInfo(
+    ("operator_multiply", "&operators::(OPERAND1) * (OPERAND2)"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
             ("NUM1", "OPERAND1"): InputInfo(BuiltinInputType.NUMBER),
@@ -25,7 +25,7 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("operator_divide", "(OPERAND1) / (OPERAND2)"): OpcodeInfo(
+    ("operator_divide", "&operators::(OPERAND1) / (OPERAND2)"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
             ("NUM1", "OPERAND1"): InputInfo(BuiltinInputType.NUMBER),
@@ -33,7 +33,7 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("operator_power", "(OPERAND1) ^ (OPERAND2)"): OpcodeInfo(
+    ("operator_power", "&operators::(OPERAND1) ^ (OPERAND2)"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
             ("NUM1", "OPERAND1"): InputInfo(BuiltinInputType.NUMBER),
@@ -41,7 +41,7 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("operator_advMathExpanded", "(OPERAND1) * (OPERAND2) [OPERATION] (OPERAND3)"): OpcodeInfo(
+    ("operator_advMathExpanded", "&operators::(OPERAND1) * (OPERAND2) [OPERATION] (OPERAND3)"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
             ("ONE", "OPERAND1"): InputInfo(BuiltinInputType.NUMBER),
@@ -53,7 +53,7 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("operator_advMath", "(OPERAND1) [OPERATION] (OPERAND2)"): OpcodeInfo(
+    ("operator_advMath", "&operators::(OPERAND1) [OPERATION] (OPERAND2)"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
             ("ONE", "OPERAND1"): InputInfo(BuiltinInputType.NUMBER),
@@ -64,7 +64,7 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("operator_random", "pick random (OPERAND1) to (OPERAND2)"): OpcodeInfo(
+    ("operator_random", "&operators::pick random (OPERAND1) to (OPERAND2)"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
             ("FROM", "OPERAND1"): InputInfo(BuiltinInputType.NUMBER),
@@ -72,7 +72,7 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("operator_constrainnumber", "constrain (NUM) min (MIN) max (MAX)"): OpcodeInfo(
+    ("operator_constrainnumber", "&operators::constrain (NUM) min (MIN) max (MAX)"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
             ("inp", "NUM"): InputInfo(BuiltinInputType.NUMBER),
@@ -81,7 +81,7 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("operator_lerpFunc", "interpolate (OPERAND1) to (OPERAND2) by (WEIGHT)"): OpcodeInfo(
+    ("operator_lerpFunc", "&operators::interpolate (OPERAND1) to (OPERAND2) by (WEIGHT)"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
             ("ONE", "OPERAND1"): InputInfo(BuiltinInputType.NUMBER),
@@ -90,7 +90,7 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("operator_gt", "(OPERAND1) > (OPERAND2)"): OpcodeInfo(
+    ("operator_gt", "&operators::(OPERAND1) > (OPERAND2)"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         inputs=DualKeyDict({
             ("OPERAND1", "OPERAND1"): InputInfo(BuiltinInputType.TEXT),
@@ -98,7 +98,7 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("operator_gtorequal", "(OPERAND1) >= (OPERAND2)"): OpcodeInfo(
+    ("operator_gtorequal", "&operators::(OPERAND1) >= (OPERAND2)"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         inputs=DualKeyDict({
             ("OPERAND1", "OPERAND1"): InputInfo(BuiltinInputType.TEXT),
@@ -106,7 +106,7 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("operator_lt", "(OPERAND1) < (OPERAND2)"): OpcodeInfo(
+    ("operator_lt", "&operators::(OPERAND1) < (OPERAND2)"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         inputs=DualKeyDict({
             ("OPERAND1", "OPERAND1"): InputInfo(BuiltinInputType.TEXT),
@@ -114,7 +114,7 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("operator_ltorequal", "(OPERAND1) <= (OPERAND2)"): OpcodeInfo(
+    ("operator_ltorequal", "&operators::(OPERAND1) <= (OPERAND2)"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         inputs=DualKeyDict({
             ("OPERAND1", "OPERAND1"): InputInfo(BuiltinInputType.TEXT),
@@ -122,7 +122,7 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("operator_equals", "(OPERAND1) = (OPERAND2)"): OpcodeInfo(
+    ("operator_equals", "&operators::(OPERAND1) = (OPERAND2)"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         inputs=DualKeyDict({
             ("OPERAND1", "OPERAND1"): InputInfo(BuiltinInputType.TEXT),
@@ -130,7 +130,7 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("operator_notequal", "(OPERAND1) != (OPERAND2)"): OpcodeInfo(
+    ("operator_notequal", "&operators::(OPERAND1) != (OPERAND2)"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         inputs=DualKeyDict({
             ("OPERAND1", "OPERAND1"): InputInfo(BuiltinInputType.TEXT),
@@ -138,15 +138,15 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("operator_trueBoolean", "true"): OpcodeInfo(
+    ("operator_trueBoolean", "&operators::true"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
     ),
 
-    ("operator_falseBoolean", "false"): OpcodeInfo(
+    ("operator_falseBoolean", "&operators::false"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
     ),
 
-    ("operator_and", "<OPERAND1> and <OPERAND2>"): OpcodeInfo(
+    ("operator_and", "&operators::<OPERAND1> and <OPERAND2>"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         inputs=DualKeyDict({
             ("OPERAND1", "OPERAND1"): InputInfo(BuiltinInputType.BOOLEAN),
@@ -154,7 +154,7 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("operator_or", "<OPERAND1> or <OPERAND2>"): OpcodeInfo(
+    ("operator_or", "&operators::<OPERAND1> or <OPERAND2>"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         inputs=DualKeyDict({
             ("OPERAND1", "OPERAND1"): InputInfo(BuiltinInputType.BOOLEAN),
@@ -162,22 +162,22 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("operator_not", "not <OPERAND>"): OpcodeInfo(
+    ("operator_not", "&operators::not <OPERAND>"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         inputs=DualKeyDict({
             ("OPERAND", "OPERAND"): InputInfo(BuiltinInputType.BOOLEAN),
         }),
     ),
 
-    ("operator_newLine", "new line"): OpcodeInfo(
+    ("operator_newLine", "&operators::new line"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
     ),
 
-    ("operator_tabCharacter", "tab character"): OpcodeInfo(
+    ("operator_tabCharacter", "&operators::tab character"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
     ),
 
-    ("operator_join", "join (STRING1) (STRING2)"): OpcodeInfo(
+    ("operator_join", "&operators::join (STRING1) (STRING2)"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
             ("STRING1", "STRING1"): InputInfo(BuiltinInputType.TEXT),
@@ -185,7 +185,7 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("operator_join3", "join (STRING1) (STRING2) (STRING3)"): OpcodeInfo(
+    ("operator_join3", "&operators::join (STRING1) (STRING2) (STRING3)"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
             ("STRING1", "STRING1"): InputInfo(BuiltinInputType.TEXT),
@@ -194,7 +194,7 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("operator_indexOfTextInText", "index of (SUBSTRING) in (TEXT)"): OpcodeInfo(
+    ("operator_indexOfTextInText", "&operators::index of (SUBSTRING) in (TEXT)"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
             ("TEXT1", "SUBSTRING"): InputInfo(BuiltinInputType.TEXT),
@@ -202,7 +202,7 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("operator_lastIndexOfTextInText", "last index of (SUBSTRING) in (TEXT)"): OpcodeInfo(
+    ("operator_lastIndexOfTextInText", "&operators::last index of (SUBSTRING) in (TEXT)"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
             ("TEXT1", "SUBSTRING"): InputInfo(BuiltinInputType.TEXT),
@@ -210,7 +210,7 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("operator_letter_of", "letter (LETTER) of (STRING)"): OpcodeInfo(
+    ("operator_letter_of", "&operators::letter (LETTER) of (STRING)"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
             ("LETTER", "LETTER"): InputInfo(BuiltinInputType.POSITIVE_INTEGER),
@@ -218,7 +218,7 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("operator_getLettersFromIndexToIndexInText", "letters from (START) to (STOP) in (TEXT)"): OpcodeInfo(
+    ("operator_getLettersFromIndexToIndexInText", "&operators::letters from (START) to (STOP) in (TEXT)"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
             ("INDEX1", "START"): InputInfo(BuiltinInputType.POSITIVE_INTEGER),
@@ -227,14 +227,14 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("operator_length", "length of (TEXT)"): OpcodeInfo(
+    ("operator_length", "&operators::length of (TEXT)"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
             ("STRING", "TEXT"): InputInfo(BuiltinInputType.TEXT),
         }),
     ),
 
-    ("operator_contains", "(TEXT) contains (SUBSTRING) ?"): OpcodeInfo(
+    ("operator_contains", "&operators::(TEXT) contains (SUBSTRING) ?"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         inputs=DualKeyDict({
             ("STRING1", "TEXT"): InputInfo(BuiltinInputType.TEXT),
@@ -242,7 +242,7 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("operator_textStartsOrEndsWith", "(TEXT) [OPERATION] with (SUBSTRING) ?"): OpcodeInfo(
+    ("operator_textStartsOrEndsWith", "&operators::(TEXT) [OPERATION] with (SUBSTRING) ?"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         inputs=DualKeyDict({
             ("TEXT1", "TEXT"): InputInfo(BuiltinInputType.TEXT),
@@ -253,7 +253,7 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("operator_replaceAll", "in (TEXT) replace all (OLDVALUE) with (NEWVALUE)"): OpcodeInfo(
+    ("operator_replaceAll", "&operators::in (TEXT) replace all (OLDVALUE) with (NEWVALUE)"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
             ("text", "TEXT"): InputInfo(BuiltinInputType.TEXT),
@@ -262,7 +262,7 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("operator_replaceFirst", "in (TEXT) replace first (OLDVALUE) with (NEWVALUE)"): OpcodeInfo(
+    ("operator_replaceFirst", "&operators::in (TEXT) replace first (OLDVALUE) with (NEWVALUE)"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
             ("text", "TEXT"): InputInfo(BuiltinInputType.TEXT),
@@ -271,7 +271,7 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("operator_regexmatch", "match (TEXT) with regex (REGEX) (MODIFIER)"): OpcodeInfo(
+    ("operator_regexmatch", "&operators::match (TEXT) with regex (REGEX) (MODIFIER)"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
             ("text", "TEXT"): InputInfo(BuiltinInputType.TEXT),
@@ -280,7 +280,7 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("operator_toUpperLowerCase", "(TEXT) to [CASE]"): OpcodeInfo(
+    ("operator_toUpperLowerCase", "&operators::(TEXT) to [CASE]"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
             ("TEXT", "TEXT"): InputInfo(BuiltinInputType.TEXT),
@@ -290,7 +290,7 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("operator_mod", "(OPERAND1) mod (OPERAND2)"): OpcodeInfo(
+    ("operator_mod", "&operators::(OPERAND1) mod (OPERAND2)"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
             ("NUM1", "OPERAND1"): InputInfo(BuiltinInputType.TEXT),
@@ -298,14 +298,14 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("operator_round", "round (NUM)"): OpcodeInfo(
+    ("operator_round", "&operators::round (NUM)"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
             ("NUM", "NUM"): InputInfo(BuiltinInputType.NUMBER),
         }),
     ),
 
-    ("operator_mathop", "[OPERATION] of (NUM)"): OpcodeInfo(
+    ("operator_mathop", "&operators::[OPERATION] of (NUM)"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
             ("NUM", "NUM"): InputInfo(BuiltinInputType.NUMBER),
@@ -315,14 +315,14 @@ c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("operator_stringify", "(VALUE)"): OpcodeInfo(
+    ("operator_stringify", "&operators::(VALUE)"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({
             ("ONE", "VALUE"): InputInfo(BuiltinInputType.TEXT),
         }),
     ),
 
-    ("operator_boolify", "(VALUE) as a boolean"): OpcodeInfo(
+    ("operator_boolify", "&operators::(VALUE) as a boolean"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         inputs=DualKeyDict({
             ("ONE", "VALUE"): InputInfo(BuiltinInputType.TEXT),

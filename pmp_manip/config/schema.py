@@ -70,7 +70,7 @@ class ExtInfoGenConfig(ConfigBase):
         """
         AA_TYPE(self, path, "gen_opcode_info_dir", str)
         if not is_valid_directory_path(self.gen_opcode_info_dir):
-            raise MANIP_InvalidDirPathError("Invalid extension opcode info directory: {self.gen_opcode_info_dir}")
+            raise MANIP_InvalidDirPathError(path, f"Invalid extension opcode info directory: {self.gen_opcode_info_dir}")
         AA_TYPE(self, path, "js_fetch_interval", timedelta)
         AA_TYPE(self, path, "node_js_exec_timeout", float)
         AA_NONE_OR_CALLABLE(self, path, "is_trusted_extension_origin_handler")

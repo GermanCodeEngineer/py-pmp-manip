@@ -1441,7 +1441,7 @@ ALL_SR_SCRIPTS = [
         position=(268, 220),
         blocks=[
             SRBlock(
-                opcode="events::broadcast ([MESSAGE])",
+                opcode="&events::broadcast ([MESSAGE])",
                 inputs={
                     "MESSAGE": SRBlockAndDropdownInputValue(
                         block=None,
@@ -1453,7 +1453,7 @@ ALL_SR_SCRIPTS = [
                 mutation=None,
             ),
             SRBlock(
-                opcode="glide (SECONDS) secs to ([TARGET])",
+                opcode="&motion::glide (SECONDS) secs to ([TARGET])",
                 inputs={
                     "SECONDS": SRBlockAndTextInputValue(block=None, immediate="1"),
                     "TARGET": SRBlockAndDropdownInputValue(
@@ -1471,12 +1471,12 @@ ALL_SR_SCRIPTS = [
                 mutation=None,
             ),
             SRBlock(
-                opcode="glide (SECONDS) secs to ([TARGET])",
+                opcode="&motion::glide (SECONDS) secs to ([TARGET])",
                 inputs={
                     "SECONDS": SRBlockAndTextInputValue(block=None, immediate="1"),
                     "TARGET": SRBlockAndDropdownInputValue(
                         block=SRBlock(
-                            opcode="false",
+                            opcode="&operators::false",
                             inputs={},
                             dropdowns={},
                             comment=None,
@@ -1495,11 +1495,11 @@ ALL_SR_SCRIPTS = [
         position=(304, 424),
         blocks=[
             SRBlock(
-                opcode="pick random (OPERAND1) to (OPERAND2)",
+                opcode="&operators::pick random (OPERAND1) to (OPERAND2)",
                 inputs={
                     "OPERAND1": SRBlockAndTextInputValue(
                         block=SRBlock(
-                            opcode="value of [VARIABLE]",
+                            opcode="&variables::value of [VARIABLE]",
                             inputs={},
                             dropdowns={
                                 "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="my variable"),
@@ -1511,7 +1511,7 @@ ALL_SR_SCRIPTS = [
                     ),
                     "OPERAND2": SRBlockAndTextInputValue(
                         block=SRBlock(
-                            opcode="join (STRING1) (STRING2)",
+                            opcode="&operators::join (STRING1) (STRING2)",
                             inputs={
                                 "STRING1": SRBlockAndTextInputValue(block=None, immediate="apple "),
                                 "STRING2": SRBlockAndTextInputValue(block=None, immediate="banana"),
@@ -1533,7 +1533,7 @@ ALL_SR_SCRIPTS = [
         position=(446, 652),
         blocks=[
             SRBlock(
-                opcode="value of [VARIABLE]",
+                opcode="&variables::value of [VARIABLE]",
                 inputs={},
                 dropdowns={
                     "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="my variable"),
@@ -1547,7 +1547,7 @@ ALL_SR_SCRIPTS = [
         position=(344, 799),
         blocks=[
             SRBlock(
-                opcode="define custom block reporter",
+                opcode="&customblocks::define custom block reporter",
                 inputs={},
                 dropdowns={},
                 comment=None,
@@ -1573,11 +1573,11 @@ ALL_SR_SCRIPTS = [
         position=(499, 933),
         blocks=[
             SRBlock(
-                opcode="call custom block",
+                opcode="&customblocks::call custom block",
                 inputs={
                     "a text arg": SRBlockAndTextInputValue(
                         block=SRBlock(
-                            opcode="length of (TEXT)",
+                            opcode="&operators::length of (TEXT)",
                             inputs={
                                 "TEXT": SRBlockAndTextInputValue(block=None, immediate="apple"),
                             },
@@ -1589,7 +1589,7 @@ ALL_SR_SCRIPTS = [
                      ),
                     "a bool arg": SRBlockAndBoolInputValue(
                         block=SRBlock(
-                            opcode="false",
+                            opcode="&operators::false",
                             inputs={},
                             dropdowns={},
                             comment=None,
@@ -1617,7 +1617,7 @@ ALL_SR_SCRIPTS = [
         position=(646, 561),
         blocks=[
             SRBlock(
-                opcode="value of [LIST]",
+                opcode="&variables::value of [LIST]",
                 inputs={},
                 dropdowns={
                     "LIST": SRDropdownValue(kind=DropdownValueKind.LIST, value="my list"),
@@ -1631,13 +1631,13 @@ ALL_SR_SCRIPTS = [
         position=(528, 1175),
         blocks=[
             SRBlock(
-                opcode="control::if <CONDITION> then {THEN}",
+                opcode="&control::if <CONDITION> then {THEN}",
                 inputs={
                     "CONDITION": SRBlockAndBoolInputValue(block=None, immediate=False),
                     "THEN": SRScriptInputValue(
                         blocks=[
                             SRBlock(
-                                opcode="change [VARIABLE] by (VALUE)",
+                                opcode="&variables::change [VARIABLE] by (VALUE)",
                                 inputs={
                                     "VALUE": SRBlockAndTextInputValue(block=None, immediate="1"),
                                 },
@@ -1648,7 +1648,7 @@ ALL_SR_SCRIPTS = [
                                 mutation=None,
                             ),
                             SRBlock(
-                                opcode="show variable [VARIABLE]",
+                                opcode="&variables::show variable [VARIABLE]",
                                 inputs={},
                                 dropdowns={
                                     "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="my variable"),
@@ -1669,7 +1669,7 @@ ALL_SR_SCRIPTS = [
         position=(1784, -890),
         blocks=[
             SRBlock(
-                opcode="events::when [OPTION] > (VALUE)",
+                opcode="&events::when [OPTION] > (VALUE)",
                 inputs={
                     "VALUE": SRBlockAndTextInputValue(block=None, immediate="50"),
                 },
@@ -1685,7 +1685,7 @@ ALL_SR_SCRIPTS = [
         position=(184, 1430),
         blocks=[
             SRBlock(
-                opcode="events::when I receive [MESSAGE]",
+                opcode="&events::when I receive [MESSAGE]",
                 inputs={},
                 dropdowns={
                     "MESSAGE": SRDropdownValue(kind=DropdownValueKind.BROADCAST_MSG, value="my message"),
@@ -1699,11 +1699,11 @@ ALL_SR_SCRIPTS = [
         position=(1528, 2175),
         blocks=[
             SRBlock(
-                opcode="control::if <CONDITION> then {THEN}",
+                opcode="&control::if <CONDITION> then {THEN}",
                 inputs={
                     "CONDITION": SRBlockAndBoolInputValue(
                         block=SRBlock(
-                            opcode="true",
+                            opcode="&operators::true",
                             inputs={},
                             dropdowns={},
                             comment=None,
@@ -1723,11 +1723,11 @@ ALL_SR_SCRIPTS = [
         position=(897, 1365),
         blocks=[
             SRBlock(
-                opcode="control::switch (CONDITION) {CASES}",
+                opcode="&control::switch (CONDITION) {CASES}",
                 inputs={
                     "CONDITION": SRBlockOnlyInputValue(
                         block=SRBlock(
-                            opcode="answer",
+                            opcode="&sensing::answer",
                             inputs={},
                             dropdowns={},
                             comment=None,
@@ -1746,12 +1746,12 @@ ALL_SR_SCRIPTS = [
         position=(202, 333),
         blocks=[
             SRBlock(
-                opcode="pen::draw triangle {:SHAPE:} with fill (COLOR)",
+                opcode="&pen::draw triangle {:SHAPE:} with fill (COLOR)",
                 inputs={
                     "COLOR": SRBlockAndTextInputValue(block=None, immediate="#d0d228"),
                     "SHAPE": SREmbeddedBlockInputValue(
                         block=SRBlock(
-                            opcode="{{POLYGON MENU}}",
+                            opcode="&special::{{POLYGON MENU}}",
                             inputs={
                                 "X1": SRBlockAndTextInputValue(block=None, immediate="-43.30127018922194"),
                                 "Y1": SRBlockAndTextInputValue(block=None, immediate="-24.999999999999996"),
@@ -2152,7 +2152,7 @@ SR_SPRITE = SRSprite(
     local_lists=[],
     local_monitors=[
         SRMonitor( # [0] for [0]
-            opcode="x position",
+            opcode="&motion::x position",
             dropdowns={},
             position=(-235, -175),
             is_visible=True,
@@ -2178,7 +2178,7 @@ SR_PROJECT = SRProject(
     ],
     global_monitors=[
         SRListMonitor(
-            opcode="value of [LIST]",
+            opcode="&variables::value of [LIST]",
             dropdowns={
                 "LIST": SRDropdownValue(kind=DropdownValueKind.LIST, value="my list"),
             },

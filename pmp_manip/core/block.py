@@ -464,7 +464,7 @@ class IRBlock:
             return (None, [list(self.dropdowns.values())[0]])
             """ example:
             IRBlock(
-                opcode="#TOUCHING OBJECT MENU",
+                opcode="&sensing::#TOUCHING OBJECT MENU",
                 dropdowns={"TOUCHINGOBJECTMENU": "_mouse_"},
                 ...
             )
@@ -818,10 +818,12 @@ class SRBlock:
         opcode_type = opcode_info.get_opcode_type(block=self, validation_if=validation_if)
         if expects_reporter and not(opcode_type.is_reporter):
             raise MANIP_InvalidBlockShapeError(path, "Expected a reporter block here")
-        if expects_embedded and (opcode_type is not OpcodeType.EMBEDDED):
-            raise MANIP_InvalidBlockShapeError(path, "Expected an embedded block here")
-        if not(expects_embedded) and (opcode_type is OpcodeType.EMBEDDED):
-            raise MANIP_InvalidBlockShapeError(path, "Expected no embedded block here")
+        if expects_embedded:
+            if not opcode_info.allow_embedded:
+                raise MANIP_InvalidBlockShapeError(path, "Expected an embedded block here")
+        else:
+            if opcode_type is OpcodeType.EMBEDDED: # allow_embedded is optional, EMBEDDED is forced
+                raise MANIP_InvalidBlockShapeError(path, "Expected no embedded block here")
 
         post_case = opcode_info.get_special_case(SpecialCaseType.POST_VALIDATION)
         if post_case is not None:

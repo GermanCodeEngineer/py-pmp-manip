@@ -61,7 +61,7 @@ EXAMPLE_BLOCK_DATA = [
         "disableMonitor": True
     },
     { # [4]
-        "opcode": "control::error",
+        "opcode": "&control::error",
         "blockType": "reporter",
         "text": "Error"
     },
@@ -269,7 +269,7 @@ def example_opcode_blocks(input_type_cls, dropdown_type_cls):
             special_cases={},
             old_mutation_cls=None,
             new_mutation_cls=None,
-        ), "someExtension::Define shader (NAME) using bind group layout (BGL)"), 
+        ), "&someExtension::Define shader (NAME) using bind group layout (BGL)"), 
         (OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
@@ -284,7 +284,7 @@ def example_opcode_blocks(input_type_cls, dropdown_type_cls):
             special_cases={},
             old_mutation_cls=None,
             new_mutation_cls=None,
-        ), "someExtension::Computer shader with workgroup size (WGSIZE) {SUBSTACK}"), 
+        ), "&someExtension::Computer shader with workgroup size (WGSIZE) {SUBSTACK}"), 
         (OpcodeInfo(
             opcode_type=OpcodeType.ENDING_STATEMENT,
             inputs=DualKeyDict(),
@@ -296,7 +296,7 @@ def example_opcode_blocks(input_type_cls, dropdown_type_cls):
             special_cases={},
             old_mutation_cls=None,
             new_mutation_cls=None,
-        ), "someExtension::break"), 
+        ), "&someExtension::break"), 
         (OpcodeInfo(
             opcode_type=OpcodeType.STRING_REPORTER,
             inputs=DualKeyDict(),
@@ -308,7 +308,7 @@ def example_opcode_blocks(input_type_cls, dropdown_type_cls):
             special_cases={},
             old_mutation_cls=None,
             new_mutation_cls=None,
-        ), "someExtension::thread data"), 
+        ), "&someExtension::thread data"), 
         (OpcodeInfo(
             opcode_type=OpcodeType.STRING_REPORTER,
             inputs=DualKeyDict(),
@@ -320,7 +320,7 @@ def example_opcode_blocks(input_type_cls, dropdown_type_cls):
             special_cases={},
             old_mutation_cls=None,
             new_mutation_cls=None,
-        ), "someExtension::Error"), 
+        ), "&someExtension::Error"), 
         (OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
@@ -337,7 +337,7 @@ def example_opcode_blocks(input_type_cls, dropdown_type_cls):
             special_cases={},
             old_mutation_cls=None,
             new_mutation_cls=None,
-        ), "someExtension::if <CONDITION1> then {SUBSTACK} else if <CONDITION2> then {SUBSTACK2}"), 
+        ), "&someExtension::if <CONDITION1> then {SUBSTACK} else if <CONDITION2> then {SUBSTACK2}"), 
         (OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
@@ -355,7 +355,7 @@ def example_opcode_blocks(input_type_cls, dropdown_type_cls):
             special_cases={},
             old_mutation_cls=None,
             new_mutation_cls=None,
-        ), "someExtension::if <CONDITION1> then {SUBSTACK} else if <CONDITION2> then {SUBSTACK2} else {SUBSTACK3} some unecessary text"), 
+        ), "&someExtension::if <CONDITION1> then {SUBSTACK} else if <CONDITION2> then {SUBSTACK2} else {SUBSTACK3} some unecessary text"), 
         (OpcodeInfo(
             opcode_type=OpcodeType.BOOLEAN_REPORTER,
             inputs=DualKeyDict({
@@ -369,7 +369,7 @@ def example_opcode_blocks(input_type_cls, dropdown_type_cls):
             special_cases={},
             old_mutation_cls=None,
             new_mutation_cls=None,
-        ), "someExtension::is (a) behind camera?"), (None, None), 
+        ), "&someExtension::is (a) behind camera?"), (None, None), 
         (OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
@@ -388,7 +388,7 @@ def example_opcode_blocks(input_type_cls, dropdown_type_cls):
             special_cases={},
             old_mutation_cls=None,
             new_mutation_cls=None,
-        ), "someExtension::Add bind group layout entry with binding (BINDING) for type ([TYPE]) and descriptor (DESC)"), 
+        ), "&someExtension::Add bind group layout entry with binding (BINDING) for type ([TYPE]) and descriptor (DESC)"), 
         (OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
@@ -404,7 +404,7 @@ def example_opcode_blocks(input_type_cls, dropdown_type_cls):
             special_cases={},
             old_mutation_cls=None,
             new_mutation_cls=None,
-        ), "someExtension::set some var [VaRiAbLe] to (VaLuE)"), 
+        ), "&someExtension::set some var [VaRiAbLe] to (VaLuE)"), 
         (OpcodeInfo(
             opcode_type=OpcodeType.ENDING_STATEMENT,
             inputs=DualKeyDict(),
@@ -416,7 +416,7 @@ def example_opcode_blocks(input_type_cls, dropdown_type_cls):
             special_cases={},
             old_mutation_cls=None,
             new_mutation_cls=None,
-        ), "someExtension::restart from the top"), 
+        ), "&someExtension::restart from the top"), 
         (OpcodeInfo(
             opcode_type=OpcodeType.STRING_REPORTER,
             inputs=DualKeyDict(),
@@ -430,7 +430,7 @@ def example_opcode_blocks(input_type_cls, dropdown_type_cls):
             special_cases={},
             old_mutation_cls=None,
             new_mutation_cls=None,
-        ), "someExtension::Buffer layout entry descriptor with usage type [TYPE]"), 
+        ), "&someExtension::Buffer layout entry descriptor with usage type [TYPE]"), 
         (OpcodeInfo(
             opcode_type=OpcodeType.STRING_REPORTER,
             inputs=DualKeyDict({
@@ -446,7 +446,7 @@ def example_opcode_blocks(input_type_cls, dropdown_type_cls):
             special_cases={},
             old_mutation_cls=None,
             new_mutation_cls=None,
-        ), "someExtension::Variable usage [USAGE] next (NEXT)"), 
+        ), "&someExtension::Variable usage [USAGE] next (NEXT)"), 
         (OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
@@ -460,7 +460,7 @@ def example_opcode_blocks(input_type_cls, dropdown_type_cls):
             special_cases={},
             old_mutation_cls=None,
             new_mutation_cls=None,
-        ), "someExtension::draw polygon {:POINTS:}"), 
+        ), "&someExtension::draw polygon {:POINTS:}"), 
         (OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
@@ -474,7 +474,7 @@ def example_opcode_blocks(input_type_cls, dropdown_type_cls):
             special_cases={},
             old_mutation_cls=None,
             new_mutation_cls=None,
-        ), "someExtension::do sth (VALUE)"), 
+        ), "&someExtension::do sth (VALUE)"), 
         (OpcodeInfo(
             opcode_type=OpcodeType.STRING_REPORTER,
             inputs=DualKeyDict(),
@@ -486,7 +486,7 @@ def example_opcode_blocks(input_type_cls, dropdown_type_cls):
             special_cases={},
             old_mutation_cls=None,
             new_mutation_cls=None,
-        ), "someExtension::get value"), 
+        ), "&someExtension::get value"), 
         (OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
@@ -502,7 +502,7 @@ def example_opcode_blocks(input_type_cls, dropdown_type_cls):
             special_cases={},
             old_mutation_cls=None,
             new_mutation_cls=None,
-        ), "someExtension::if condition {SUBSTACK} else if condition {SUBSTACK2} else {SUBSTACK3}"),
+        ), "&someExtension::if condition {SUBSTACK} else if condition {SUBSTACK2} else {SUBSTACK3}"),
         (OpcodeInfo(
             opcode_type=OpcodeType.ENDING_STATEMENT,
             inputs=DualKeyDict(),
@@ -514,7 +514,7 @@ def example_opcode_blocks(input_type_cls, dropdown_type_cls):
             special_cases={},
             old_mutation_cls=None,
             new_mutation_cls=None,
-        ), "someExtension::stop all"),
+        ), "&someExtension::stop all"),
         (OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict(),
@@ -526,7 +526,7 @@ def example_opcode_blocks(input_type_cls, dropdown_type_cls):
             special_cases={},
             old_mutation_cls=None,
             new_mutation_cls=None,
-        ), "otherExtension::override that block"),
+        ), "&otherExtension::override that block"),
     ]
 
 
@@ -1055,21 +1055,21 @@ def test_generate_opcode_info_group():
     goal = OpcodeInfoGroup(
         name="modasyncexample",
         opcode_info=DualKeyDict({
-            ("modasyncexample_wait", "modasyncexample::wait (TIME) seconds"): OpcodeInfo(
+            ("modasyncexample_wait", "&modasyncexample::wait (TIME) seconds"): OpcodeInfo(
                 opcode_type=OpcodeType.STATEMENT,
                 inputs=DualKeyDict({
                     ("TIME", "TIME"): InputInfo(type=BuiltinInputType.NUMBER, menu=None),
                 }),
                 dropdowns=DualKeyDict(),
             ),
-            ("modasyncexample_fetch", "modasyncexample::fetch (URL)"): OpcodeInfo(
+            ("modasyncexample_fetch", "&modasyncexample::fetch (URL)"): OpcodeInfo(
                 opcode_type=OpcodeType.STRING_REPORTER,
                 inputs=DualKeyDict({
                     ("URL", "URL"): InputInfo(type=BuiltinInputType.TEXT, menu=None),
                 }),
                 dropdowns=DualKeyDict(),
             ),
-            ("modasyncexample_playEffect", "modasyncexample::play effect [EFFECT]"): OpcodeInfo(
+            ("modasyncexample_playEffect", "&modasyncexample::play effect [EFFECT]"): OpcodeInfo(
                 opcode_type=OpcodeType.STATEMENT,
                 inputs=DualKeyDict(),
                 dropdowns=DualKeyDict({
@@ -1150,7 +1150,7 @@ def test_generate_opcode_info_group_same_new_opcode_twice():
     goal = OpcodeInfoGroup(
         name="gpusb3",
         opcode_info=DualKeyDict({
-            ("gpusb3_c_runFunc", "gpusb3::Run function (FUNCNAME) with args (ARGS) {{id=gpusb3_c_runFunc}}"): OpcodeInfo(
+            ("gpusb3_c_runFunc", "&gpusb3::Run function (FUNCNAME) with args (ARGS) {{id=gpusb3_c_runFunc}}"): OpcodeInfo(
                 opcode_type=OpcodeType.STATEMENT,
                 inputs=DualKeyDict({
                     ("FUNCNAME", "FUNCNAME"): InputInfo(type=BuiltinInputType.TEXT, menu=None),
@@ -1165,7 +1165,7 @@ def test_generate_opcode_info_group_same_new_opcode_twice():
                 old_mutation_cls=None,
                 new_mutation_cls=None,
             ),
-            ("gpusb3_funcReturn", "gpusb3::Return (TORETURN)"): OpcodeInfo(
+            ("gpusb3_funcReturn", "&gpusb3::Return (TORETURN)"): OpcodeInfo(
                 opcode_type=OpcodeType.ENDING_STATEMENT,
                 inputs=DualKeyDict({
                     ("TORETURN", "TORETURN"): InputInfo(type=BuiltinInputType.TEXT, menu=None),
@@ -1179,7 +1179,7 @@ def test_generate_opcode_info_group_same_new_opcode_twice():
                 old_mutation_cls=None,
                 new_mutation_cls=None,
             ),
-            ("gpusb3_r_runFunc", "gpusb3::Run function (FUNCNAME) with args (ARGS) {{id=gpusb3_r_runFunc}}"): OpcodeInfo(
+            ("gpusb3_r_runFunc", "&gpusb3::Run function (FUNCNAME) with args (ARGS) {{id=gpusb3_r_runFunc}}"): OpcodeInfo(
                 opcode_type=OpcodeType.STRING_REPORTER,
                 inputs=DualKeyDict({
                     ("FUNCNAME", "FUNCNAME"): InputInfo(type=BuiltinInputType.TEXT, menu=None),
@@ -1250,7 +1250,7 @@ def test_generate_file_code():
     info_group = OpcodeInfoGroup(
         name="modasyncexample",
         opcode_info=DualKeyDict({
-            ("modasyncexample_wait", "modasyncexample::wait (TIME) seconds"): OpcodeInfo(
+            ("modasyncexample_wait", "&modasyncexample::wait (TIME) seconds"): OpcodeInfo(
                 opcode_type=OpcodeType.STATEMENT,
                 inputs=DualKeyDict({
                     ("TIME", "TIME"): InputInfo(type=BuiltinInputType.NUMBER, menu=None),
@@ -1264,7 +1264,7 @@ def test_generate_file_code():
                 old_mutation_cls=None,
                 new_mutation_cls=None,
             ),
-            ("modasyncexample_fetch", "modasyncexample::fetch (URL)"): OpcodeInfo(
+            ("modasyncexample_fetch", "&modasyncexample::fetch (URL)"): OpcodeInfo(
                 opcode_type=OpcodeType.STRING_REPORTER,
                 inputs=DualKeyDict({
                     ("URL", "URL"): InputInfo(type=BuiltinInputType.TEXT, menu=None),
@@ -1278,7 +1278,7 @@ def test_generate_file_code():
                 old_mutation_cls=None,
                 new_mutation_cls=None,
             ),
-            ("modasyncexample_playEffect", "modasyncexample::play effect [EFFECT]"): OpcodeInfo(
+            ("modasyncexample_playEffect", "&modasyncexample::play effect [EFFECT]"): OpcodeInfo(
                 opcode_type=OpcodeType.STATEMENT,
                 inputs=DualKeyDict(),
                 dropdowns=DualKeyDict({
@@ -1308,7 +1308,7 @@ class ExtensionInputType(InputType):
 extension = OpcodeInfoGroup(
     name="modasyncexample",
     opcode_info=DualKeyDict({
-        ("modasyncexample_wait", "modasyncexample::wait (TIME) seconds"): OpcodeInfo(
+        ("modasyncexample_wait", "&modasyncexample::wait (TIME) seconds"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
                 ("TIME", "TIME"): InputInfo(type=BuiltinInputType.NUMBER, menu=None),
@@ -1322,7 +1322,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("modasyncexample_fetch", "modasyncexample::fetch (URL)"): OpcodeInfo(
+        ("modasyncexample_fetch", "&modasyncexample::fetch (URL)"): OpcodeInfo(
             opcode_type=OpcodeType.STRING_REPORTER,
             inputs=DualKeyDict({
                 ("URL", "URL"): InputInfo(type=BuiltinInputType.TEXT, menu=None),
@@ -1336,7 +1336,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("modasyncexample_playEffect", "modasyncexample::play effect [EFFECT]"): OpcodeInfo(
+        ("modasyncexample_playEffect", "&modasyncexample::play effect [EFFECT]"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict(),
             dropdowns=DualKeyDict({

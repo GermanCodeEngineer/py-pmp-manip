@@ -329,7 +329,7 @@ def generate_block_opcode_info(
         else:
             raise ValueError("'branchCount' must be equal to or at most 1 bigger then the line count of 'text'")
         prefix = overwrite_category if (overwrite_category is not None) else extension_id
-        return f"{prefix}::{" ".join(new_opcode_segments)}" 
+        return f"&{prefix}::{" ".join(new_opcode_segments)}" 
     
     try:
         block_type: str = block_info.get("blockType", "command")

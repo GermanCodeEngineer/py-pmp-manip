@@ -3,7 +3,7 @@ from typing     import Literal
 
 from pmp_manip.utility import grepr_dataclass, GEnum
 
-from pmp_manip.important_consts         import OPCODE_POLYGON
+from pmp_manip.important_consts         import OPCODE_POLYGON, OPCODE_FILTER_LIST_INDEX, OPCODE_FILTER_LIST_ITEM
 from pmp_manip.opcode_info.api.dropdown import DropdownType, BuiltinDropdownType
 
 
@@ -180,7 +180,9 @@ class BuiltinInputType(InputType):
     MATRIX                            = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.MATRIX                           , 28)
     
     # FORCED_EMBEDDED_BLOCK
-    POLYGON                           = (InputMode.FORCED_EMBEDDED_BLOCK, OPCODE_POLYGON, None, 0)
+    POLYGON                           = (InputMode.FORCED_EMBEDDED_BLOCK, OPCODE_POLYGON          , None, 0)
+    FILTER_LIST_INDEX                 = (InputMode.FORCED_EMBEDDED_BLOCK, OPCODE_FILTER_LIST_INDEX, None, 1)
+    FILTER_LIST_ITEM                  = (InputMode.FORCED_EMBEDDED_BLOCK, OPCODE_FILTER_LIST_ITEM , None, 2)
 
 @grepr_dataclass(grepr_fields=["opcode", "inner"])
 class MenuInfo:

@@ -21,7 +21,7 @@ class ExtensionInputType(InputType):
 extension = OpcodeInfoGroup(
     name="music",
     opcode_info=DualKeyDict({
-        ("music_midiPlayDrumForBeats", "music::play drum ([DRUM]) for (BEATS) beats {{id=music_midiPlayDrumForBeats}}"): OpcodeInfo(
+        ("music_midiPlayDrumForBeats", "&music::play drum ([DRUM]) for (BEATS) beats {{id=music_midiPlayDrumForBeats}}"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
                 ("DRUM", "DRUM"): InputInfo(
@@ -39,7 +39,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("music_restForBeats", "music::rest for (BEATS) beats"): OpcodeInfo(
+        ("music_restForBeats", "&music::rest for (BEATS) beats"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
                 ("BEATS", "BEATS"): InputInfo(type=BuiltinInputType.NUMBER, menu=None),
@@ -53,7 +53,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("music_playNoteForBeats", "music::play note ([NOTE]) for (BEATS) beats"): OpcodeInfo(
+        ("music_playNoteForBeats", "&music::play note ([NOTE]) for (BEATS) beats"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
                 ("NOTE", "NOTE"): InputInfo(
@@ -71,7 +71,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("music_setInstrument", "music::set instrument to ([INSTRUMENT])"): OpcodeInfo(
+        ("music_setInstrument", "&music::set instrument to ([INSTRUMENT])"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
                 ("INSTRUMENT", "INSTRUMENT"): InputInfo(
@@ -88,7 +88,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("music_midiSetInstrument", "music::set instrument to (INSTRUMENT)"): OpcodeInfo(
+        ("music_midiSetInstrument", "&music::set instrument to (INSTRUMENT)"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
                 ("INSTRUMENT", "INSTRUMENT"): InputInfo(type=BuiltinInputType.NUMBER, menu=None),
@@ -102,7 +102,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("music_setTempo", "music::set tempo to (TEMPO)"): OpcodeInfo(
+        ("music_setTempo", "&music::set tempo to (TEMPO)"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
                 ("TEMPO", "TEMPO"): InputInfo(type=BuiltinInputType.NUMBER, menu=None),
@@ -116,7 +116,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("music_changeTempo", "music::change tempo by (TEMPO)"): OpcodeInfo(
+        ("music_changeTempo", "&music::change tempo by (TEMPO)"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
                 ("TEMPO", "TEMPO"): InputInfo(type=BuiltinInputType.NUMBER, menu=None),
@@ -130,7 +130,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("music_getTempo", "music::tempo"): OpcodeInfo(
+        ("music_getTempo", "&music::tempo"): OpcodeInfo(
             opcode_type=OpcodeType.STRING_REPORTER,
             inputs=DualKeyDict(),
             dropdowns=DualKeyDict(),
@@ -142,7 +142,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("music_playDrumForBeats", "music::play drum ([DRUM]) for (BEATS) beats {{id=music_playDrumForBeats}}"): OpcodeInfo(
+        ("music_playDrumForBeats", "&music::play drum ([DRUM]) for (BEATS) beats {{id=music_playDrumForBeats}}"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
                 ("DRUM", "DRUM"): InputInfo(

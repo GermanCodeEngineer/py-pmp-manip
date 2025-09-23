@@ -1,7 +1,7 @@
 from pmp_manip.opcode_info.data_imports import *
 
 c_variables = OpcodeInfoGroup(name="c_variables", opcode_info=DualKeyDict({
-    ("data_setvariableto", "set [VARIABLE] to (VALUE)"): OpcodeInfo(
+    ("data_setvariableto", "&variables::set [VARIABLE] to (VALUE)"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
             ("VALUE", "VALUE"): InputInfo(BuiltinInputType.TEXT),
@@ -11,7 +11,7 @@ c_variables = OpcodeInfoGroup(name="c_variables", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("data_changevariableby", "change [VARIABLE] by (VALUE)"): OpcodeInfo(
+    ("data_changevariableby", "&variables::change [VARIABLE] by (VALUE)"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
             ("VALUE", "VALUE"): InputInfo(BuiltinInputType.NUMBER),
@@ -21,14 +21,14 @@ c_variables = OpcodeInfoGroup(name="c_variables", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("data_showvariable", "show variable [VARIABLE]"): OpcodeInfo(
+    ("data_showvariable", "&variables::show variable [VARIABLE]"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         dropdowns=DualKeyDict({
             ("VARIABLE", "VARIABLE"): DropdownInfo(BuiltinDropdownType.VARIABLE),
         }),
     ),
 
-    ("data_hidevariable", "hide variable [VARIABLE]"): OpcodeInfo(
+    ("data_hidevariable", "&variables::hide variable [VARIABLE]"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         dropdowns=DualKeyDict({
             ("VARIABLE", "VARIABLE"): DropdownInfo(BuiltinDropdownType.VARIABLE),

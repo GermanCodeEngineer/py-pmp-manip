@@ -34,7 +34,7 @@ class ExtensionInputType(InputType):
 extension = OpcodeInfoGroup(
     name="pen",
     opcode_info=DualKeyDict({
-        ("pen_clear", "pen::erase all"): OpcodeInfo(
+        ("pen_clear", "&pen::erase all"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict(),
             dropdowns=DualKeyDict(),
@@ -46,7 +46,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("pen_stamp", "pen::stamp"): OpcodeInfo(
+        ("pen_stamp", "&pen::stamp"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict(),
             dropdowns=DualKeyDict(),
@@ -58,7 +58,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("pen_penDown", "pen::pen down"): OpcodeInfo(
+        ("pen_penDown", "&pen::pen down"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict(),
             dropdowns=DualKeyDict(),
@@ -70,7 +70,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("pen_penUp", "pen::pen up"): OpcodeInfo(
+        ("pen_penUp", "&pen::pen up"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict(),
             dropdowns=DualKeyDict(),
@@ -82,7 +82,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("pen_setPenColorToColor", "pen::set pen color to (COLOR)"): OpcodeInfo(
+        ("pen_setPenColorToColor", "&pen::set pen color to (COLOR)"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
                 ("COLOR", "COLOR"): InputInfo(type=BuiltinInputType.COLOR, menu=None),
@@ -96,7 +96,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("pen_changePenColorParamBy", "pen::change pen ([COLOR_PARAM]) by (VALUE)"): OpcodeInfo(
+        ("pen_changePenColorParamBy", "&pen::change pen ([COLOR_PARAM]) by (VALUE)"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
                 ("COLOR_PARAM", "COLOR_PARAM"): InputInfo(
@@ -114,7 +114,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("pen_setPenColorParamTo", "pen::set pen ([COLOR_PARAM]) to (VALUE)"): OpcodeInfo(
+        ("pen_setPenColorParamTo", "&pen::set pen ([COLOR_PARAM]) to (VALUE)"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
                 ("COLOR_PARAM", "COLOR_PARAM"): InputInfo(
@@ -132,7 +132,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("pen_changePenSizeBy", "pen::change pen size by (SIZE)"): OpcodeInfo(
+        ("pen_changePenSizeBy", "&pen::change pen size by (SIZE)"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
                 ("SIZE", "SIZE"): InputInfo(type=BuiltinInputType.NUMBER, menu=None),
@@ -146,7 +146,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("pen_setPenSizeTo", "pen::set pen size to (SIZE)"): OpcodeInfo(
+        ("pen_setPenSizeTo", "&pen::set pen size to (SIZE)"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
                 ("SIZE", "SIZE"): InputInfo(type=BuiltinInputType.NUMBER, menu=None),
@@ -160,7 +160,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("pen_drawRect", "pen::use (COLOR) to draw a square on x:[X] y:[Y] width:[WIDTH] height:[HEIGHT]"): OpcodeInfo(
+        ("pen_drawRect", "&pen::use (COLOR) to draw a square on x:[X] y:[Y] width:[WIDTH] height:[HEIGHT]"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
                 ("COLOR", "COLOR"): InputInfo(type=BuiltinInputType.COLOR, menu=None),
@@ -178,7 +178,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("pen_drawArrayComplexShape", "pen::draw polygon from points {:SHAPE:} with fill (COLOR)"): OpcodeInfo(
+        ("pen_drawArrayComplexShape", "&pen::draw polygon from points {:SHAPE:} with fill (COLOR)"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
                 ("SHAPE", "SHAPE"): InputInfo(type=BuiltinInputType.TEXT, menu=None),
@@ -193,7 +193,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("pen_preloadUriImage", "pen::preload image (URI) as (NAME)"): OpcodeInfo(
+        ("pen_preloadUriImage", "&pen::preload image (URI) as (NAME)"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
                 ("URI", "URI"): InputInfo(type=BuiltinInputType.TEXT, menu=None),
@@ -208,7 +208,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("pen_unloadUriImage", "pen::unload image (NAME)"): OpcodeInfo(
+        ("pen_unloadUriImage", "&pen::unload image (NAME)"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
                 ("NAME", "NAME"): InputInfo(type=BuiltinInputType.TEXT, menu=None),
@@ -222,7 +222,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("pen_drawUriImage", "pen::draw image (URI) at x:[X] y:[Y]"): OpcodeInfo(
+        ("pen_drawUriImage", "&pen::draw image (URI) at x:[X] y:[Y]"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
                 ("URI", "URI"): InputInfo(type=BuiltinInputType.TEXT, menu=None),
@@ -238,7 +238,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("pen_drawUriImageWHR", "pen::draw image (URI) at x:[X] y:[Y] width:[WIDTH] height:[HEIGHT] pointed at: (ROTATE)"): OpcodeInfo(
+        ("pen_drawUriImageWHR", "&pen::draw image (URI) at x:[X] y:[Y] width:[WIDTH] height:[HEIGHT] pointed at: (ROTATE)"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
                 ("URI", "URI"): InputInfo(type=BuiltinInputType.TEXT, menu=None),
@@ -257,7 +257,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("pen_drawUriImageWHCX1Y1X2Y2R", "pen::draw image (URI) at x:[X] y:[Y] width:[WIDTH] height:[HEIGHT] cropping from x:[CROPX] y:[CROPY] width:[CROPW] height:[CROPH] pointed at: (ROTATE)"): OpcodeInfo(
+        ("pen_drawUriImageWHCX1Y1X2Y2R", "&pen::draw image (URI) at x:[X] y:[Y] width:[WIDTH] height:[HEIGHT] cropping from x:[CROPX] y:[CROPY] width:[CROPW] height:[CROPH] pointed at: (ROTATE)"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
                 ("URI", "URI"): InputInfo(type=BuiltinInputType.TEXT, menu=None),
@@ -280,7 +280,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("pen_printText", "pen::print (TEXT) on x:[X] y:[Y]"): OpcodeInfo(
+        ("pen_printText", "&pen::print (TEXT) on x:[X] y:[Y]"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
                 ("TEXT", "TEXT"): InputInfo(type=BuiltinInputType.TEXT, menu=None),
@@ -296,7 +296,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("pen_setPrintFont", "pen::set print font to [FONT]"): OpcodeInfo(
+        ("pen_setPrintFont", "&pen::set print font to [FONT]"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict(),
             dropdowns=DualKeyDict({
@@ -310,7 +310,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("pen_setPrintFontSize", "pen::set print font size to (SIZE)"): OpcodeInfo(
+        ("pen_setPrintFontSize", "&pen::set print font size to (SIZE)"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
                 ("SIZE", "SIZE"): InputInfo(type=BuiltinInputType.NUMBER, menu=None),
@@ -324,7 +324,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("pen_setPrintFontColor", "pen::set print font color to (COLOR)"): OpcodeInfo(
+        ("pen_setPrintFontColor", "&pen::set print font color to (COLOR)"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
                 ("COLOR", "COLOR"): InputInfo(type=BuiltinInputType.COLOR, menu=None),
@@ -338,7 +338,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("pen_setPrintFontStrokeColor", "pen::set print stroke color to (COLOR)"): OpcodeInfo(
+        ("pen_setPrintFontStrokeColor", "&pen::set print stroke color to (COLOR)"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
                 ("COLOR", "COLOR"): InputInfo(type=BuiltinInputType.COLOR, menu=None),
@@ -352,7 +352,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("pen_setPrintFontStrokeWidth", "pen::set print stroke width to (WIDTH)"): OpcodeInfo(
+        ("pen_setPrintFontStrokeWidth", "&pen::set print stroke width to (WIDTH)"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
                 ("WIDTH", "WIDTH"): InputInfo(type=BuiltinInputType.NUMBER, menu=None),
@@ -366,7 +366,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("pen_setPrintFontWeight", "pen::set print font weight to (WEIGHT)"): OpcodeInfo(
+        ("pen_setPrintFontWeight", "&pen::set print font weight to (WEIGHT)"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
                 ("WEIGHT", "WEIGHT"): InputInfo(type=BuiltinInputType.NUMBER, menu=None),
@@ -380,7 +380,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("pen_setPrintFontItalics", "pen::turn print font italics [OPTION]"): OpcodeInfo(
+        ("pen_setPrintFontItalics", "&pen::turn print font italics [OPTION]"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict(),
             dropdowns=DualKeyDict({
@@ -394,7 +394,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("pen_drawComplexShape", "pen::draw triangle {:SHAPE:} with fill (COLOR)"): OpcodeInfo(
+        ("pen_drawComplexShape", "&pen::draw triangle {:SHAPE:} with fill (COLOR)"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
                 ("SHAPE", "SHAPE"): InputInfo(type=BuiltinInputType.POLYGON, menu=None),
@@ -409,7 +409,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("pen_draw4SidedComplexShape", "pen::draw quadrilateral {:SHAPE:} with fill (COLOR)"): OpcodeInfo(
+        ("pen_draw4SidedComplexShape", "&pen::draw quadrilateral {:SHAPE:} with fill (COLOR)"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
                 ("SHAPE", "SHAPE"): InputInfo(type=BuiltinInputType.POLYGON, menu=None),
@@ -424,7 +424,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("pen_setPenShadeToNumber", "pen::LEGACY - set pen shade to (SHADE)"): OpcodeInfo(
+        ("pen_setPenShadeToNumber", "&pen::LEGACY - set pen shade to (SHADE)"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
                 ("SHADE", "SHADE"): InputInfo(type=BuiltinInputType.NUMBER, menu=None),
@@ -438,7 +438,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("pen_changePenShadeBy", "pen::LEGACY - change pen shade by (SHADE)"): OpcodeInfo(
+        ("pen_changePenShadeBy", "&pen::LEGACY - change pen shade by (SHADE)"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
                 ("SHADE", "SHADE"): InputInfo(type=BuiltinInputType.NUMBER, menu=None),
@@ -452,7 +452,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("pen_setPenHueToNumber", "pen::LEGACY - set pen color to (HUE)"): OpcodeInfo(
+        ("pen_setPenHueToNumber", "&pen::LEGACY - set pen color to (HUE)"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
                 ("HUE", "HUE"): InputInfo(type=BuiltinInputType.NUMBER, menu=None),
@@ -466,7 +466,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("pen_changePenHueBy", "pen::LEGACY - change pen color by (HUE)"): OpcodeInfo(
+        ("pen_changePenHueBy", "&pen::LEGACY - change pen color by (HUE)"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
                 ("HUE", "HUE"): InputInfo(type=BuiltinInputType.NUMBER, menu=None),
@@ -480,7 +480,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("pen_goPenLayer", "pen::go to [OPTION] layer"): OpcodeInfo(
+        ("pen_goPenLayer", "&pen::go to [OPTION] layer"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict(),
             dropdowns=DualKeyDict({

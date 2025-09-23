@@ -4,6 +4,7 @@ from copy   import copy, deepcopy
 from pmp_manip.important_consts import (
     OPCODE_VAR_VALUE, NEW_OPCODE_VAR_VALUE, OPCODE_LIST_VALUE, NEW_OPCODE_LIST_VALUE, 
     OPCODE_STOP_SCRIPT, OPCODE_CHECKBOX, NEW_OPCODE_CHECKBOX, OPCODE_POLYGON, NEW_OPCODE_POLYGON,
+    OPCODE_FILTER_LIST_INDEX, OPCODE_FILTER_LIST_ITEM,
     OPCODE_CB_PROTOTYPE, ANY_OPCODE_CB_DEF, ANY_OPCODE_CB_ARG, 
     OPCODE_CB_CALL, NEW_OPCODE_CB_CALL, OPCODE_CB_ARG_TEXT, OPCODE_CB_ARG_BOOL, 
     OPCODE_CB_DEF, NEW_OPCODE_CB_DEF, OPCODE_CB_DEF_RET, NEW_OPCODE_CB_DEF_REP,
@@ -42,68 +43,68 @@ from pmp_manip.core.block_mutation import (
     SRCustomBlockMutation, SRCustomBlockArgumentMutation, SRCustomBlockCallMutation,
 )
 
-c_motion.add_opcode("motion_goto_menu", "#REACHABLE TARGET MENU (GO)", OpcodeInfo(
+c_motion.add_opcode("motion_goto_menu", "&motion::#REACHABLE TARGET MENU (GO)", OpcodeInfo(
     opcode_type=OpcodeType.MENU,
 ))
-c_motion.add_opcode("motion_glideto_menu", "#REACHABLE TARGET MENU (GLIDE)", OpcodeInfo(
+c_motion.add_opcode("motion_glideto_menu", "&motion::#REACHABLE TARGET MENU (GLIDE)", OpcodeInfo(
     opcode_type=OpcodeType.MENU,
 ))
-c_motion.add_opcode("motion_pointtowards_menu", "#OBSERVABLE TARGET MENU", OpcodeInfo(
-    opcode_type=OpcodeType.MENU,
-))
-
-c_looks.add_opcode("looks_costume", "#COSTUME MENU", OpcodeInfo(
-    opcode_type=OpcodeType.MENU,
-))
-c_looks.add_opcode("looks_backdrops", "#BACKDROP MENU", OpcodeInfo(
-    opcode_type=OpcodeType.MENU,
-))
-c_looks.add_opcode("looks_getinput_menu", "#COSTUME PROPERTY MENU", OpcodeInfo(
-    opcode_type=OpcodeType.MENU,
-))
-c_looks.add_opcode("looks_changeVisibilityOfSprite_menu", "#SHOW/HIDE SPRITE MENU", OpcodeInfo(
-    opcode_type=OpcodeType.MENU,
-))
-c_looks.add_opcode("looks_getOtherSpriteVisible_menu", "#IS SPRITE VISIBLE MENU", OpcodeInfo(
+c_motion.add_opcode("motion_pointtowards_menu", "&motion::#OBSERVABLE TARGET MENU", OpcodeInfo(
     opcode_type=OpcodeType.MENU,
 ))
 
-c_sounds.add_opcode("sound_sounds_menu", "#SOUND MENU", OpcodeInfo( # this is certainly correct
+c_looks.add_opcode("looks_costume", "&looks::#COSTUME MENU", OpcodeInfo(
+    opcode_type=OpcodeType.MENU,
+))
+c_looks.add_opcode("looks_backdrops", "&looks::#BACKDROP MENU", OpcodeInfo(
+    opcode_type=OpcodeType.MENU,
+))
+c_looks.add_opcode("looks_getinput_menu", "&looks::#COSTUME PROPERTY MENU", OpcodeInfo(
+    opcode_type=OpcodeType.MENU,
+))
+c_looks.add_opcode("looks_changeVisibilityOfSprite_menu", "&looks::#SHOW/HIDE SPRITE MENU", OpcodeInfo(
+    opcode_type=OpcodeType.MENU,
+))
+c_looks.add_opcode("looks_getOtherSpriteVisible_menu", "&looks::#IS SPRITE VISIBLE MENU", OpcodeInfo(
     opcode_type=OpcodeType.MENU,
 ))
 
-c_control.add_opcode("control_stop_sprite_menu", "#STOP SPRITE MENU", OpcodeInfo(
-    opcode_type=OpcodeType.MENU,
-))
-c_control.add_opcode("control_create_clone_of_menu", "#CLONE TARGET MENU", OpcodeInfo(
-    opcode_type=OpcodeType.MENU,
-))
-c_control.add_opcode("control_run_as_sprite_menu", "#RUN AS SPRITE MENU", OpcodeInfo(
+c_sounds.add_opcode("sound_sounds_menu", "&sound::#SOUND MENU", OpcodeInfo( # this is certainly correct
     opcode_type=OpcodeType.MENU,
 ))
 
-c_sensing.add_opcode("sensing_touchingobjectmenu", "#TOUCHING OBJECT MENU", OpcodeInfo(
+c_control.add_opcode("control_stop_sprite_menu", "&control::#STOP SPRITE MENU", OpcodeInfo(
     opcode_type=OpcodeType.MENU,
 ))
-c_sensing.add_opcode("sensing_fulltouchingobjectmenu", "#FULL TOUCHING OBJECT MENU", OpcodeInfo(
+c_control.add_opcode("control_create_clone_of_menu", "&control::#CLONE TARGET MENU", OpcodeInfo(
     opcode_type=OpcodeType.MENU,
 ))
-c_sensing.add_opcode("sensing_touchingobjectmenusprites", "#TOUCHING OBJECT MENU SPRITES", OpcodeInfo(
+c_control.add_opcode("control_run_as_sprite_menu", "&control::#RUN AS SPRITE MENU", OpcodeInfo(
     opcode_type=OpcodeType.MENU,
 ))
-c_sensing.add_opcode("sensing_distancetomenu", "#DISTANCE TO MENU", OpcodeInfo(
+
+c_sensing.add_opcode("sensing_touchingobjectmenu", "&sensing::#TOUCHING OBJECT MENU", OpcodeInfo(
     opcode_type=OpcodeType.MENU,
 ))
-c_sensing.add_opcode("sensing_keyoptions", "#KEY MENU", OpcodeInfo(
+c_sensing.add_opcode("sensing_fulltouchingobjectmenu", "&sensing::#FULL TOUCHING OBJECT MENU", OpcodeInfo(
     opcode_type=OpcodeType.MENU,
 ))
-c_sensing.add_opcode("sensing_scrolldirections", "#SCROLL DIRECTION MENU", OpcodeInfo(
+c_sensing.add_opcode("sensing_touchingobjectmenusprites", "&sensing::#TOUCHING OBJECT MENU SPRITES", OpcodeInfo(
     opcode_type=OpcodeType.MENU,
 ))
-c_sensing.add_opcode("sensing_of_object_menu", "#OJBECT PROPERTY MENU", OpcodeInfo(
+c_sensing.add_opcode("sensing_distancetomenu", "&sensing::#DISTANCE TO MENU", OpcodeInfo(
     opcode_type=OpcodeType.MENU,
 ))
-c_sensing.add_opcode("sensing_fingeroptions", "#FINGER INDEX MENU", OpcodeInfo(
+c_sensing.add_opcode("sensing_keyoptions", "&sensing::#KEY MENU", OpcodeInfo(
+    opcode_type=OpcodeType.MENU,
+))
+c_sensing.add_opcode("sensing_scrolldirections", "&sensing::#SCROLL DIRECTION MENU", OpcodeInfo(
+    opcode_type=OpcodeType.MENU,
+))
+c_sensing.add_opcode("sensing_of_object_menu", "&sensing::#OJBECT PROPERTY MENU", OpcodeInfo(
+    opcode_type=OpcodeType.MENU,
+))
+c_sensing.add_opcode("sensing_fingeroptions", "&sensing::#FINGER INDEX MENU", OpcodeInfo(
     opcode_type=OpcodeType.MENU,
 ))
 
@@ -123,6 +124,14 @@ c_lists.add_opcode(OPCODE_LIST_VALUE, NEW_OPCODE_LIST_VALUE, OpcodeInfo(
     can_have_monitor=True,
     monitor_id_behaviour=MonitorIdBehaviour.LIST,
 ))
+c_lists.add_opcode(OPCODE_FILTER_LIST_INDEX, "&lists::{{FILTER INDEX}}", OpcodeInfo(
+    opcode_type=OpcodeType.STRING_REPORTER,
+    allow_embedded=True,
+))
+c_lists.add_opcode(OPCODE_FILTER_LIST_ITEM, "&lists::{{FILTER ITEM}}", OpcodeInfo(
+    opcode_type=OpcodeType.STRING_REPORTER,
+    allow_embedded=True,
+))
 
 c_custom_blocks = OpcodeInfoGroup(
     name="Custom Opcodes",
@@ -133,29 +142,29 @@ c_custom_blocks = OpcodeInfoGroup(
         (OPCODE_CB_DEF_RET, NEW_OPCODE_CB_DEF_REP): OpcodeInfo(
             opcode_type=OpcodeType.HAT,
         ),
-        (OPCODE_CB_PROTOTYPE, "#CUSTOM BLOCK PROTOTYPE"): OpcodeInfo( # only temporary
+        (OPCODE_CB_PROTOTYPE, "&customblocks::#CUSTOM BLOCK PROTOTYPE"): OpcodeInfo( # only temporary
             opcode_type=OpcodeType.NOT_RELEVANT,
         ),
         (OPCODE_CB_CALL, NEW_OPCODE_CB_CALL): OpcodeInfo(
             opcode_type=OpcodeType.DYNAMIC,
         ),
-        ("procedures_return", "return (VALUE)"): OpcodeInfo(
+        ("procedures_return", "&customblocks::return (VALUE)"): OpcodeInfo(
             opcode_type=OpcodeType.ENDING_STATEMENT,
             inputs=DualKeyDict({
                 ("return", "VALUE"): InputInfo(BuiltinInputType.TEXT),
             }),
         ),
-        ("procedures_set", "set (PARAM) to (VALUE)"): OpcodeInfo(
+        ("procedures_set", "&customblocks::set (PARAM) to (VALUE)"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
             inputs=DualKeyDict({
                 ("PARAM", "PARAM"): InputInfo(BuiltinInputType.ROUND),
                 ("VALUE", "VALUE"): InputInfo(BuiltinInputType.TEXT),
             }),
         ),
-        (OPCODE_CB_ARG_TEXT, "custom block text arg [ARGUMENT]"): OpcodeInfo(
+        (OPCODE_CB_ARG_TEXT, "&customblocks::custom block text arg [ARGUMENT]"): OpcodeInfo(
             opcode_type=OpcodeType.STRING_REPORTER,
         ),
-        (OPCODE_CB_ARG_BOOL, "custom block boolean arg [ARGUMENT]"): OpcodeInfo(
+        (OPCODE_CB_ARG_BOOL, "&customblocks::custom block boolean arg [ARGUMENT]"): OpcodeInfo(
             opcode_type=OpcodeType.BOOLEAN_REPORTER,
         ),
     }),
@@ -178,7 +187,7 @@ g_special = OpcodeInfoGroup(
             }),
             has_shadow=True,
         ),
-        ("note", "#NOTE MENU"): OpcodeInfo(
+        ("note", "&special::#NOTE MENU"): OpcodeInfo(
             opcode_type=OpcodeType.MENU,
         ),
     })

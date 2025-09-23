@@ -14,7 +14,7 @@ class ExtensionInputType(InputType):
 extension = OpcodeInfoGroup(
     name="dumbExample",
     opcode_info=DualKeyDict({
-        ("dumbExample_last_used_base", "dumbExample::last used base"): OpcodeInfo(
+        ("dumbExample_last_used_base", "&dumbExample::last used base"): OpcodeInfo(
             opcode_type=OpcodeType.STRING_REPORTER,
             inputs=DualKeyDict(),
             dropdowns=DualKeyDict(),
@@ -26,7 +26,7 @@ extension = OpcodeInfoGroup(
             old_mutation_cls=None,
             new_mutation_cls=None,
         ),
-        ("dumbExample_last_two_inout_values", "dumbExample::last two [S1] and [S2] values"): OpcodeInfo(
+        ("dumbExample_last_two_inout_values", "&dumbExample::last two [S1] and [S2] values"): OpcodeInfo(
             opcode_type=OpcodeType.STRING_REPORTER,
             inputs=DualKeyDict(),
             dropdowns=DualKeyDict({

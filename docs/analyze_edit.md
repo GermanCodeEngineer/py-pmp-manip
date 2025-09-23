@@ -140,7 +140,7 @@ Sample node type: SRBlock
 Sample node type: SRBlock
 Example Node:
 SRBlock(
-    opcode="looks::change [EFFECT] effect by (AMOUNT)",
+    opcode="&looks::change [EFFECT] effect by (AMOUNT)",
     inputs={
         "AMOUNT": SRBlockAndTextInputValue(block=None, immediate="25"),
     },
@@ -347,7 +347,7 @@ Allows the access of auto-filled access points by their id.
 ### Example: Creating A Pattern
 In this example, we are looking for this kind of block/script:<br>
 ![](images/searched_block_pattern.png)
-Since we are looking for a whole script we should create a [`ScriptPattern`](#scriptpattern) at the root. The first block must be a "events::when green flag clicked" block.
+Since we are looking for a whole script we should create a [`ScriptPattern`](#scriptpattern) at the root. The first block must be a "&events::when green flag clicked" block.
 ```python
 from pmp_manip import (
     get_default_config, init_config,
@@ -362,7 +362,7 @@ pattern = ScriptPattern(
     blocks=[
         BlockPattern(
             # A constant, because we only want to allow this one specific value.
-            opcode=PatternConst(value="events::when green flag clicked"),
+            opcode=PatternConst(value="&events::when green flag clicked"),
             # ... Has more properties which can be filtered. See Note 1
         )
     ],
@@ -379,7 +379,7 @@ ScriptPattern(
     position=None,
     blocks=[
         BlockPattern(
-            opcode=PatternConst(value="events::when green flag clicked"),
+            opcode=PatternConst(value="&events::when green flag clicked"),
             inputs={},
             dropdowns={},
             comment=None,
@@ -406,16 +406,16 @@ init_config(cfg)
 
 pattern = ScriptPattern(
     blocks=[
-        BlockPattern(opcode=PatternConst(value="events::when green flag clicked")),
+        BlockPattern(opcode=PatternConst(value="&events::when green flag clicked")),
         BlockPattern(
-            opcode=PatternConst(value="control::forever {BODY}"),
+            opcode=PatternConst(value="&control::forever {BODY}"),
             inputs={
                 # We expect a substack containing a block
                 "BODY": InputPattern(
                     blocks=[
                         BlockPattern(
                             # That block must be an "if" block.
-                            opcode=PatternConst(value="control::if <CONDITION> then {THEN}"),
+                            opcode=PatternConst(value="&control::if <CONDITION> then {THEN}"),
                         ),
                     ],
                 ),
@@ -433,7 +433,7 @@ ScriptPattern(
     position=None,
     blocks=[
         BlockPattern(
-            opcode=PatternConst(value="events::when green flag clicked"),
+            opcode=PatternConst(value="&events::when green flag clicked"),
             inputs={},
             dropdowns={},
             comment=None,
@@ -441,12 +441,12 @@ ScriptPattern(
             access_point_id=None,
         ),
         BlockPattern(
-            opcode=PatternConst(value="control::forever {BODY}"),
+            opcode=PatternConst(value="&control::forever {BODY}"),
             inputs={
                 "BODY": InputPattern(
                     blocks=[
                         BlockPattern(
-                            opcode=PatternConst(value="control::if <CONDITION> then {THEN}"),
+                            opcode=PatternConst(value="&control::if <CONDITION> then {THEN}"),
                             inputs={},
                             dropdowns={},
                             comment=None,
@@ -487,14 +487,14 @@ srproject = frproject.to_second(info_api)
 # Use our pattern from above
 pattern = ScriptPattern(
     blocks=[
-        BlockPattern(opcode=PatternConst(value="events::when green flag clicked")),
+        BlockPattern(opcode=PatternConst(value="&events::when green flag clicked")),
         BlockPattern(
-            opcode=PatternConst(value="control::forever {BODY}"),
+            opcode=PatternConst(value="&control::forever {BODY}"),
             inputs={
                 "BODY": InputPattern(
                     blocks=[
                         BlockPattern(
-                            opcode=PatternConst(value="control::if <CONDITION> then {THEN}"),
+                            opcode=PatternConst(value="&control::if <CONDITION> then {THEN}"),
                         ),
                     ],
                 ),
@@ -541,23 +541,23 @@ SRScript(
     position=(410, 63),
     blocks=[
         SRBlock(
-            opcode="events::when green flag clicked",
+            opcode="&events::when green flag clicked",
             inputs={},
             dropdowns={},
             comment=None,
             mutation=None,
         ),
         SRBlock(
-            opcode="control::forever {BODY}",
+            opcode="&control::forever {BODY}",
             inputs={
                 "BODY": SRScriptInputValue(
                     blocks=[
                         SRBlock(
-                            opcode="control::if <CONDITION> then {THEN}",
+                            opcode="&control::if <CONDITION> then {THEN}",
                             inputs={
                                 "CONDITION": SRBlockAndBoolInputValue(
                                     block=SRBlock(
-                                        opcode="key ([KEY]) pressed?",
+                                        opcode="&sensing::key ([KEY]) pressed?",
                                         inputs={
                                             "KEY": SRBlockAndDropdownInputValue(
                                                 block=None,
@@ -573,7 +573,7 @@ SRScript(
                                 "THEN": SRScriptInputValue(
                                     blocks=[
                                         SRBlock(
-                                            opcode="looks::switch costume to ([COSTUME])",
+                                            opcode="&looks::switch costume to ([COSTUME])",
                                             inputs={
                                                 "COSTUME": SRBlockAndDropdownInputValue(
                                                     block=None,
@@ -585,7 +585,7 @@ SRScript(
                                             mutation=None,
                                         ),
                                         SRBlock(
-                                            opcode="control::wait (SECONDS) seconds",
+                                            opcode="&control::wait (SECONDS) seconds",
                                             inputs={
                                                 "SECONDS": SRBlockAndTextInputValue(block=None, immediate="0.4"),
                                             },
@@ -594,7 +594,7 @@ SRScript(
                                             mutation=None,
                                         ),
                                         SRBlock(
-                                            opcode="looks::switch costume to ([COSTUME])",
+                                            opcode="&looks::switch costume to ([COSTUME])",
                                             inputs={
                                                 "COSTUME": SRBlockAndDropdownInputValue(
                                                     block=None,
@@ -625,7 +625,7 @@ SRScript(
 A match found at AbstractTreePath(.scripts[4])
 Condition block:
 SRBlock(
-    opcode="key ([KEY]) pressed?",
+    opcode="&sensing::key ([KEY]) pressed?",
     inputs={
         "KEY": SRBlockAndDropdownInputValue(
             block=None,
@@ -640,7 +640,7 @@ SRBlock(
 A match found at AbstractTreePath(.scripts[5])
 Condition block:
 SRBlock(
-    opcode="key ([KEY]) pressed?",
+    opcode="&sensing::key ([KEY]) pressed?",
     inputs={
         "KEY": SRBlockAndDropdownInputValue(
             block=None,
@@ -655,7 +655,7 @@ SRBlock(
 A match found at AbstractTreePath(.scripts[7])
 Condition block:
 SRBlock(
-    opcode="key ([KEY]) pressed?",
+    opcode="&sensing::key ([KEY]) pressed?",
     inputs={
         "KEY": SRBlockAndDropdownInputValue(
             block=None,
@@ -670,11 +670,11 @@ SRBlock(
 A match found at AbstractTreePath(.scripts[8])
 Condition block:
 SRBlock(
-    opcode="not <OPERAND>",
+    opcode="&operators::not <OPERAND>",
     inputs={
         "OPERAND": SRBlockAndBoolInputValue(
             block=SRBlock(
-                opcode="touching color (COLOR) ?",
+                opcode="&sensing::touching color (COLOR) ?",
                 inputs={
                     "COLOR": SRBlockAndTextInputValue(block=None, immediate="#000000"),
                 },
@@ -693,7 +693,7 @@ SRBlock(
 A match found at AbstractTreePath(.scripts[9])
 Condition block:
 SRBlock(
-    opcode="touching color (COLOR) ?",
+    opcode="&sensing::touching color (COLOR) ?",
     inputs={
         "COLOR": SRBlockAndTextInputValue(block=None, immediate="#d8d8d8"),
     },
@@ -705,7 +705,7 @@ SRBlock(
 A match found at AbstractTreePath(.scripts[11])
 Condition block:
 SRBlock(
-    opcode="touching ([OBJECT]) ?",
+    opcode="&sensing::touching ([OBJECT]) ?",
     inputs={
         "OBJECT": SRBlockAndDropdownInputValue(
             block=None,
@@ -720,7 +720,7 @@ SRBlock(
 A match found at AbstractTreePath(.scripts[14])
 Condition block:
 SRBlock(
-    opcode="touching color (COLOR) ?",
+    opcode="&sensing::touching color (COLOR) ?",
     inputs={
         "COLOR": SRBlockAndTextInputValue(block=None, immediate="#84542f"),
     },
@@ -732,7 +732,7 @@ SRBlock(
 A match found at AbstractTreePath(.scripts[15])
 Condition block:
 SRBlock(
-    opcode="touching color (COLOR) ?",
+    opcode="&sensing::touching color (COLOR) ?",
     inputs={
         "COLOR": SRBlockAndTextInputValue(block=None, immediate="#c07b46"),
     },
@@ -744,7 +744,7 @@ SRBlock(
 A match found at AbstractTreePath(.scripts[16])
 Condition block:
 SRBlock(
-    opcode="touching ([OBJECT]) ?",
+    opcode="&sensing::touching ([OBJECT]) ?",
     inputs={
         "OBJECT": SRBlockAndDropdownInputValue(
             block=None,
@@ -759,7 +759,7 @@ SRBlock(
 A match found at AbstractTreePath(.scripts[17])
 Condition block:
 SRBlock(
-    opcode="touching color (COLOR) ?",
+    opcode="&sensing::touching color (COLOR) ?",
     inputs={
         "COLOR": SRBlockAndTextInputValue(block=None, immediate="#1465ee"),
     },
@@ -791,10 +791,10 @@ def allow_opcode(opcode: str) -> SuccessfulMatchResult | None:
     # Do whatever you want...
     # Here I am using the custom handler to allow multiple values at a certain location
     allowed = opcode in [
-        "control::if <CONDITION> then {THEN}",
-        "control::if <CONDITION> then {THEN} else {ELSE}",
-        "control::switch (CONDITION) {CASES}",
-        "control::switch (CONDITION) {CASES} default {DEFAULT}",
+        "&control::if <CONDITION> then {THEN}",
+        "&control::if <CONDITION> then {THEN} else {ELSE}",
+        "&control::switch (CONDITION) {CASES}",
+        "&control::switch (CONDITION) {CASES} default {DEFAULT}",
     ]
     # We can return an empty result, as we do not care about access points (discussed later)
     return SuccessfulMatchResult() if allowed else None
@@ -802,9 +802,9 @@ def allow_opcode(opcode: str) -> SuccessfulMatchResult | None:
 # Use our pattern from above
 pattern = ScriptPattern(
     blocks=[
-        BlockPattern(opcode=PatternConst(value="events::when green flag clicked")),
+        BlockPattern(opcode=PatternConst(value="&events::when green flag clicked")),
         BlockPattern(
-            opcode=PatternConst(value="control::forever {BODY}"),
+            opcode=PatternConst(value="&control::forever {BODY}"),
             inputs={
                 "BODY": InputPattern(
                     blocks=[
@@ -836,7 +836,7 @@ for index, path_and_node in enumerate(matches):
     # "BODY" must be a SRScriptInputValue => must have .blocks
     if_block_or_similar = forever_block.inputs["BODY"].blocks[0]
     # Print the first and different ones:
-    if (index == 0) or (if_block_or_similar.opcode != "control::if <CONDITION> then {THEN}"):
+    if (index == 0) or (if_block_or_similar.opcode != "&control::if <CONDITION> then {THEN}"):
         print("An interesting match found at", match_path)
         print("Matching Script:")
         print(match_node)
@@ -849,19 +849,19 @@ SRScript(
     position=(-616, -568),
     blocks=[
         SRBlock(
-            opcode="events::when green flag clicked",
+            opcode="&events::when green flag clicked",
             inputs={},
             dropdowns={},
             comment=None,
             mutation=None,
         ),
         SRBlock(
-            opcode="control::forever {BODY}",
+            opcode="&control::forever {BODY}",
             inputs={
                 "BODY": SRScriptInputValue(
                     blocks=[
                         SRBlock(
-                            opcode="control::if <CONDITION> then {THEN}",
+                            opcode="&control::if <CONDITION> then {THEN}",
                             inputs={
                                 "CONDITION": SRBlockAndBoolInputValue(block=None, immediate=False),
                                 "THEN": SRScriptInputValue(blocks=[]),
@@ -885,7 +885,7 @@ SRScript(
     position=(823, 492),
     blocks=[
         SRBlock(
-            opcode="events::when green flag clicked",
+            opcode="&events::when green flag clicked",
             inputs={},
             dropdowns={},
             comment=SRComment(
@@ -897,16 +897,16 @@ SRScript(
             mutation=None,
         ),
         SRBlock(
-            opcode="control::forever {BODY}",
+            opcode="&control::forever {BODY}",
             inputs={
                 "BODY": SRScriptInputValue(
                     blocks=[
                         SRBlock(
-                            opcode="control::switch (CONDITION) {CASES}",
+                            opcode="&control::switch (CONDITION) {CASES}",
                             inputs={
                                 "CONDITION": SRBlockOnlyInputValue(
                                     block=SRBlock(
-                                        opcode="value of [VARIABLE]",
+                                        opcode="&variables::value of [VARIABLE]",
                                         inputs={},
                                         dropdowns={
                                             "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="my variable"),
@@ -940,19 +940,19 @@ SRScript(
     position=(-192, -85),
     blocks=[
         SRBlock(
-            opcode="events::when green flag clicked",
+            opcode="&events::when green flag clicked",
             inputs={},
             dropdowns={},
             comment=None,
             mutation=None,
         ),
         SRBlock(
-            opcode="control::forever {BODY}",
+            opcode="&control::forever {BODY}",
             inputs={
                 "BODY": SRScriptInputValue(
                     blocks=[
                         SRBlock(
-                            opcode="control::if <CONDITION> then {THEN} else {ELSE}",
+                            opcode="&control::if <CONDITION> then {THEN} else {ELSE}",
                             # Abbreviated here
                         ),
                     ],
@@ -971,7 +971,7 @@ Let us first create the pattern:
 pattern = ScriptPattern(
     blocks=[
         BlockPattern(
-            opcode=PatternConst(value="events::when I receive [MESSAGE]"),
+            opcode=PatternConst(value="&events::when I receive [MESSAGE]"),
             dropdowns={
                 "MESSAGE": DropdownPattern(
                     # kind is always the same, we do not care
@@ -1012,7 +1012,7 @@ def are_blocks_acceptible(blocks: list[SRBlock]) -> SuccessfulMatchResult | None
         return None
     # Create the pattern we only want to apply to the first block:
     first_block_pattern = BlockPattern(
-        opcode=PatternConst(value="events::when I receive [MESSAGE]"),
+        opcode=PatternConst(value="&events::when I receive [MESSAGE]"),
         dropdowns={
             "MESSAGE": DropdownPattern(
                 # kind is always the same, we do not care
@@ -1063,7 +1063,7 @@ SRScript(
     position=(-976, -1638),
     blocks=[
         SRBlock(
-            opcode="events::when I receive [MESSAGE]",
+            opcode="&events::when I receive [MESSAGE]",
             inputs={},
             dropdowns={
                 "MESSAGE": SRDropdownValue(kind=DropdownValueKind.BROADCAST_MSG, value="reset"),
@@ -1072,7 +1072,7 @@ SRScript(
             mutation=None,
         ),
         SRBlock(
-            opcode="looks::set [EFFECT] effect to (VALUE)",
+            opcode="&looks::set [EFFECT] effect to (VALUE)",
             inputs={
                 "VALUE": SRBlockAndTextInputValue(block=None, immediate="0"),
             },
@@ -1083,19 +1083,19 @@ SRScript(
             mutation=None,
         ),
         SRBlock(
-            opcode="point in direction (DIRECTION)",
+            opcode="&motion::point in direction (DIRECTION)",
             # Abbreviated here
         ),
         SRBlock(
-            opcode="looks::switch costume to ([COSTUME])",
+            opcode="&looks::switch costume to ([COSTUME])",
             # Abbreviated here
         ),
         SRBlock(
-            opcode="set [VARIABLE] to (VALUE)",
+            opcode="&variables::set [VARIABLE] to (VALUE)",
             # Abbreviated here
         ),
         SRBlock(
-            opcode="set [VARIABLE] to (VALUE)",
+            opcode="&variables::set [VARIABLE] to (VALUE)",
             # Abbreviated here
         ),
     ],
@@ -1106,7 +1106,7 @@ SRScript(
     position=(-1398, -1857),
     blocks=[
         SRBlock(
-            opcode="events::when I receive [MESSAGE]",
+            opcode="&events::when I receive [MESSAGE]",
             inputs={},
             dropdowns={
                 "MESSAGE": SRDropdownValue(kind=DropdownValueKind.BROADCAST_MSG, value="oq"),
@@ -1115,7 +1115,7 @@ SRScript(
             mutation=None,
         ),
         SRBlock(
-            opcode="looks::set [EFFECT] effect to (VALUE)",
+            opcode="&looks::set [EFFECT] effect to (VALUE)",
             inputs={
                 "VALUE": SRBlockAndTextInputValue(block=None, immediate="0"),
             },
@@ -1126,19 +1126,19 @@ SRScript(
             mutation=None,
         ),
         SRBlock(
-            opcode="point in direction (DIRECTION)",
+            opcode="&motion::point in direction (DIRECTION)",
             # Abbreviated here
         ),
         SRBlock(
-            opcode="looks::switch costume to ([COSTUME])",
+            opcode="&looks::switch costume to ([COSTUME])",
             # Abbreviated here
         ),
         SRBlock(
-            opcode="set [VARIABLE] to (VALUE)",
+            opcode="&variables::set [VARIABLE] to (VALUE)",
             # Abbreviated here
         ),
         SRBlock(
-            opcode="set [VARIABLE] to (VALUE)",
+            opcode="&variables::set [VARIABLE] to (VALUE)",
             # Abbreviated here
         ),
     ],
@@ -1149,7 +1149,7 @@ SRScript(
     position=(-1029, -1792),
     blocks=[
         SRBlock(
-            opcode="events::when I receive [MESSAGE]",
+            opcode="&events::when I receive [MESSAGE]",
             inputs={},
             dropdowns={
                 "MESSAGE": SRDropdownValue(kind=DropdownValueKind.BROADCAST_MSG, value="reset"),
@@ -1158,7 +1158,7 @@ SRScript(
             mutation=None,
         ),
         SRBlock(
-            opcode="play sound ([SOUND]) until done",
+            opcode="&sound::play sound ([SOUND]) until done",
             inputs={
                 "SOUND": SRBlockAndDropdownInputValue(
                     block=None,
@@ -1177,7 +1177,7 @@ SRScript(
     position=(-670, -650),
     blocks=[
         SRBlock(
-            opcode="events::when I receive [MESSAGE]",
+            opcode="&events::when I receive [MESSAGE]",
             inputs={},
             dropdowns={
                 "MESSAGE": SRDropdownValue(kind=DropdownValueKind.BROADCAST_MSG, value="oq"),
@@ -1186,7 +1186,7 @@ SRScript(
             mutation=None,
         ),
         SRBlock(
-            opcode="change [VARIABLE] by (VALUE)",
+            opcode="&variables::change [VARIABLE] by (VALUE)",
             inputs={
                 "VALUE": SRBlockAndTextInputValue(block=None, immediate="1"),
             },
@@ -1204,7 +1204,7 @@ SRScript(
     position=(525, -64),
     blocks=[
         SRBlock(
-            opcode="events::when I receive [MESSAGE]",
+            opcode="&events::when I receive [MESSAGE]",
             inputs={},
             dropdowns={
                 "MESSAGE": SRDropdownValue(kind=DropdownValueKind.BROADCAST_MSG, value="wae"),
@@ -1213,14 +1213,14 @@ SRScript(
             mutation=None,
         ),
         SRBlock(
-            opcode="looks::show",
+            opcode="&looks::show",
             inputs={},
             dropdowns={},
             comment=None,
             mutation=None,
         ),
         SRBlock(
-            opcode="control::if <CONDITION> then {THEN}",
+            opcode="&control::if <CONDITION> then {THEN}",
             # Abbreviated here
         ),
     ],
@@ -1268,14 +1268,14 @@ srproject = frproject.to_second(info_api)
 # Use our pattern from above
 pattern = ScriptPattern(
     blocks=[
-        BlockPattern(opcode=PatternConst(value="events::when green flag clicked")),
+        BlockPattern(opcode=PatternConst(value="&events::when green flag clicked")),
         BlockPattern(
-            opcode=PatternConst(value="control::forever {BODY}"),
+            opcode=PatternConst(value="&control::forever {BODY}"),
             inputs={
                 "BODY": InputPattern(
                     blocks=[
                         BlockPattern(
-                            opcode=PatternConst(value="control::if <CONDITION> then {THEN}"),
+                            opcode=PatternConst(value="&control::if <CONDITION> then {THEN}"),
                         ),
                     ],
                 ),
@@ -1312,7 +1312,7 @@ for path, node in path_to_node_map.items():
         position=script.position,
         blocks=[
             SRBlock(
-                opcode="events::when I receive [MESSAGE]",
+                opcode="&events::when I receive [MESSAGE]",
                 dropdowns={
                     "MESSAGE": message,
                 },
@@ -1339,7 +1339,7 @@ for path, node in path_to_node_map.items():
 event_check_blocks = []
 for message, condition_block in messages_and_conditions:
     event_check_block = SRBlock(
-        opcode="control::if <CONDITION> then {THEN}",
+        opcode="&control::if <CONDITION> then {THEN}",
         inputs={
             # Check if "CONDITION" fulfilled
             "CONDITION": SRBlockAndBoolInputValue(
@@ -1350,7 +1350,7 @@ for message, condition_block in messages_and_conditions:
                 blocks=[
                     # If yes broadcast the message which wil be received by another script, which actually does the things
                     SRBlock(
-                        opcode="events::broadcast ([MESSAGE])",
+                        opcode="&events::broadcast ([MESSAGE])",
                         inputs={
                             "MESSAGE": SRBlockAndDropdownInputValue(
                                 block=None,
@@ -1368,9 +1368,9 @@ for message, condition_block in messages_and_conditions:
 main_loop_script = SRScript(
     position=(0, 0), # just any position
     blocks=[
-        SRBlock(opcode="events::when green flag clicked"),
+        SRBlock(opcode="&events::when green flag clicked"),
         SRBlock(
-            opcode="control::forever {BODY}",
+            opcode="&control::forever {BODY}",
             inputs={
                 "BODY": SRScriptInputValue(
                     blocks=event_check_blocks,
@@ -1394,7 +1394,7 @@ SRScript(
     position=(-616, -568),
     blocks=[
         SRBlock(
-            opcode="events::when I receive [MESSAGE]",
+            opcode="&events::when I receive [MESSAGE]",
             inputs={},
             dropdowns={
                 "MESSAGE": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="loop event 0"),
@@ -1409,7 +1409,7 @@ SRScript(
     position=(410, 63),
     blocks=[
         SRBlock(
-            opcode="events::when I receive [MESSAGE]",
+            opcode="&events::when I receive [MESSAGE]",
             inputs={},
             dropdowns={
                 "MESSAGE": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="loop event 1"),
@@ -1418,7 +1418,7 @@ SRScript(
             mutation=None,
         ),
         SRBlock(
-            opcode="looks::switch costume to ([COSTUME])",
+            opcode="&looks::switch costume to ([COSTUME])",
             inputs={
                 "COSTUME": SRBlockAndDropdownInputValue(
                     block=None,
@@ -1437,7 +1437,7 @@ SRScript(
     position=(191, -225),
     blocks=[
         SRBlock(
-            opcode="events::when I receive [MESSAGE]",
+            opcode="&events::when I receive [MESSAGE]",
             inputs={},
             dropdowns={
                 "MESSAGE": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="loop event 4"),
@@ -1446,7 +1446,7 @@ SRScript(
             mutation=None,
         ),
         SRBlock(
-            opcode="point in direction (DIRECTION)",
+            opcode="&motion::point in direction (DIRECTION)",
             inputs={
                 "DIRECTION": SRBlockAndTextInputValue(block=None, immediate="90"),
             },
@@ -1455,7 +1455,7 @@ SRScript(
             mutation=None,
         ),
         SRBlock(
-            opcode="change [VARIABLE] by (VALUE)",
+            opcode="&variables::change [VARIABLE] by (VALUE)",
             # Abbreviated here
         ),
     ],
@@ -1465,7 +1465,7 @@ SRScript(
     position=(-147, -496),
     blocks=[
         SRBlock(
-            opcode="events::when I receive [MESSAGE]",
+            opcode="&events::when I receive [MESSAGE]",
             inputs={},
             dropdowns={
                 "MESSAGE": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="loop event 5"),
@@ -1474,11 +1474,11 @@ SRScript(
             mutation=None,
         ),
         SRBlock(
-            opcode="point in direction (DIRECTION)",
+            opcode="&motion::point in direction (DIRECTION)",
             # Abbreviated here
         ),
         SRBlock(
-            opcode="change [VARIABLE] by (VALUE)",
+            opcode="&variables::change [VARIABLE] by (VALUE)",
             # Abbreviated here
         ),
     ],
@@ -1489,25 +1489,25 @@ SRScript(
     position=(0, 0),
     blocks=[
         SRBlock(
-            opcode="events::when green flag clicked",
+            opcode="&events::when green flag clicked",
             inputs={},
             dropdowns={},
             comment=None,
             mutation=None,
         ),
         SRBlock(
-            opcode="control::forever {BODY}",
+            opcode="&control::forever {BODY}",
             inputs={
                 "BODY": SRScriptInputValue(
                     blocks=[
                         SRBlock(
-                            opcode="control::if <CONDITION> then {THEN}",
+                            opcode="&control::if <CONDITION> then {THEN}",
                             inputs={
                                 "CONDITION": SRBlockAndBoolInputValue(block=None, immediate=False),
                                 "THEN": SRScriptInputValue(
                                     blocks=[
                                         SRBlock(
-                                            opcode="events::broadcast ([MESSAGE])",
+                                            opcode="&events::broadcast ([MESSAGE])",
                                             inputs={
                                                 "MESSAGE": SRBlockAndDropdownInputValue(
                                                     block=None,
@@ -1526,11 +1526,11 @@ SRScript(
                             mutation=None,
                         ),
                         SRBlock(
-                            opcode="control::if <CONDITION> then {THEN}",
+                            opcode="&control::if <CONDITION> then {THEN}",
                             inputs={
                                 "CONDITION": SRBlockAndBoolInputValue(
                                     block=SRBlock(
-                                        opcode="key ([KEY]) pressed?",
+                                        opcode="&sensing::key ([KEY]) pressed?",
                                         inputs={
                                             "KEY": SRBlockAndDropdownInputValue(
                                                 block=None,
@@ -1546,7 +1546,7 @@ SRScript(
                                 "THEN": SRScriptInputValue(
                                     blocks=[
                                         SRBlock(
-                                            opcode="events::broadcast ([MESSAGE])",
+                                            opcode="&events::broadcast ([MESSAGE])",
                                             inputs={
                                                 "MESSAGE": SRBlockAndDropdownInputValue(
                                                     block=None,
@@ -1565,11 +1565,11 @@ SRScript(
                             mutation=None,
                         ),
                         SRBlock(
-                            opcode="control::if <CONDITION> then {THEN}",
+                            opcode="&control::if <CONDITION> then {THEN}",
                             inputs={
                                 "CONDITION": SRBlockAndBoolInputValue(
                                     block=SRBlock(
-                                        opcode="key ([KEY]) pressed?",
+                                        opcode="&sensing::key ([KEY]) pressed?",
                                         inputs={
                                             "KEY": SRBlockAndDropdownInputValue(
                                                 block=None,
@@ -1585,7 +1585,7 @@ SRScript(
                                 "THEN": SRScriptInputValue(
                                     blocks=[
                                         SRBlock(
-                                            opcode="events::broadcast ([MESSAGE])",
+                                            opcode="&events::broadcast ([MESSAGE])",
                                             inputs={
                                                 "MESSAGE": SRBlockAndDropdownInputValue(
                                                     block=None,
@@ -1604,11 +1604,11 @@ SRScript(
                             mutation=None,
                         ),
                         SRBlock(
-                            opcode="control::if <CONDITION> then {THEN}",
+                            opcode="&control::if <CONDITION> then {THEN}",
                             inputs={
                                 "CONDITION": SRBlockAndBoolInputValue(
                                     block=SRBlock(
-                                        opcode="key ([KEY]) pressed?",
+                                        opcode="&sensing::key ([KEY]) pressed?",
                                         inputs={
                                             "KEY": SRBlockAndDropdownInputValue(
                                                 block=None,
@@ -1624,7 +1624,7 @@ SRScript(
                                 "THEN": SRScriptInputValue(
                                     blocks=[
                                         SRBlock(
-                                            opcode="events::broadcast ([MESSAGE])",
+                                            opcode="&events::broadcast ([MESSAGE])",
                                             inputs={
                                                 "MESSAGE": SRBlockAndDropdownInputValue(
                                                     block=None,
@@ -1675,14 +1675,14 @@ srproject = frproject.to_second(info_api)
 # Use our pattern from above
 pattern = ScriptPattern(
     blocks=[
-        BlockPattern(opcode=PatternConst(value="events::when green flag clicked")),
+        BlockPattern(opcode=PatternConst(value="&events::when green flag clicked")),
         BlockPattern(
-            opcode=PatternConst(value="control::forever {BODY}"),
+            opcode=PatternConst(value="&control::forever {BODY}"),
             inputs={
                 "BODY": InputPattern(
                     blocks=[
                         BlockPattern(
-                            opcode=PatternConst(value="control::if <CONDITION> then {THEN}"),
+                            opcode=PatternConst(value="&control::if <CONDITION> then {THEN}"),
                             inputs={
                                 "CONDITION": InputPattern(
                                     block=BlockPattern(
@@ -1730,7 +1730,7 @@ for path, node in path_to_node_map.items():
         position=script.position,
         blocks=[
             SRBlock(
-                opcode="events::when I receive [MESSAGE]",
+                opcode="&events::when I receive [MESSAGE]",
                 dropdowns={
                     "MESSAGE": message,
                 },
@@ -1753,7 +1753,7 @@ for path, node in path_to_node_map.items():
 event_check_blocks = []
 for message, condition_block in messages_and_conditions:
     event_check_block = SRBlock(
-        opcode="control::if <CONDITION> then {THEN}",
+        opcode="&control::if <CONDITION> then {THEN}",
         inputs={
             "CONDITION": SRBlockAndBoolInputValue(
                 block=condition_block,
@@ -1762,7 +1762,7 @@ for message, condition_block in messages_and_conditions:
             "THEN": SRScriptInputValue(
                 blocks=[
                     SRBlock(
-                        opcode="events::broadcast ([MESSAGE])",
+                        opcode="&events::broadcast ([MESSAGE])",
                         inputs={
                             "MESSAGE": SRBlockAndDropdownInputValue(
                                 block=None,
@@ -1779,9 +1779,9 @@ for message, condition_block in messages_and_conditions:
 main_loop_script = SRScript(
     position=(0, 0),
     blocks=[
-        SRBlock(opcode="events::when green flag clicked"),
+        SRBlock(opcode="&events::when green flag clicked"),
         SRBlock(
-            opcode="control::forever {BODY}",
+            opcode="&control::forever {BODY}",
             inputs={
                 "BODY": SRScriptInputValue(
                     blocks=event_check_blocks,

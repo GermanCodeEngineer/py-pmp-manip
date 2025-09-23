@@ -59,7 +59,7 @@ SRProject(
             ],
             local_monitors=[
                 SRMonitor(
-                    opcode="draggable?",
+                    opcode="&sensing::draggable?",
                     dropdowns={},
                     position=(-240, 16),
                     is_visible=True,
@@ -69,7 +69,7 @@ SRProject(
                     slider_min=30.9,
                     slider_max=100,
                     allow_only_integers=False,
-                    opcode="value of [VARIABLE]",
+                    opcode="&variables::value of [VARIABLE]",
                     dropdowns={
                         "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="my slider var"),
                     },
@@ -77,7 +77,7 @@ SRProject(
                     is_visible=True,
                 ),
                 SRMonitor(
-                    opcode="looks::[EFFECT] effect",
+                    opcode="&looks::[EFFECT] effect",
                     dropdowns={
                         "EFFECT": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="color"),
                     },
@@ -89,7 +89,7 @@ SRProject(
                     slider_min=0,
                     slider_max=100,
                     allow_only_integers=True,
-                    opcode="value of [VARIABLE]",
+                    opcode="&variables::value of [VARIABLE]",
                     dropdowns={
                         "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="another local var"),
                     },
@@ -98,7 +98,7 @@ SRProject(
                 ),
                 SRListMonitor(
                     size=(100, 102),
-                    opcode="value of [LIST]",
+                    opcode="&variables::value of [LIST]",
                     dropdowns={
                         "LIST": SRDropdownValue(kind=DropdownValueKind.LIST, value="a local list"),
                     },
@@ -117,7 +117,7 @@ SRProject(
                     position=(235, 79),
                     blocks=[
                         SRBlock(
-                            opcode="define custom block",
+                            opcode="&customblocks::define custom block",
                             inputs={},
                             dropdowns={},
                             comment=None,
@@ -138,15 +138,15 @@ SRProject(
                             ),
                         ),
                         SRBlock(
-                            opcode="control::if <CONDITION> then {THEN}",
+                            opcode="&control::if <CONDITION> then {THEN}",
                             inputs={
                                 "CONDITION": SRBlockAndBoolInputValue(
                                     block=SRBlock(
-                                        opcode="<OPERAND1> and <OPERAND2>",
+                                        opcode="&operators::<OPERAND1> and <OPERAND2>",
                                         inputs={
                                             "OPERAND1": SRBlockAndBoolInputValue(
                                                 block=SRBlock(
-                                                    opcode="key ([KEY]) pressed?",
+                                                    opcode="&sensing::key ([KEY]) pressed?",
                                                     inputs={
                                                         "KEY": SRBlockAndDropdownInputValue(
                                                             block=None,
@@ -161,7 +161,7 @@ SRProject(
                                             ),
                                             "OPERAND2": SRBlockAndBoolInputValue(
                                                 block=SRBlock(
-                                                    opcode="custom block boolean arg [ARGUMENT]",
+                                                    opcode="&customblocks::custom block boolean arg [ARGUMENT]",
                                                     inputs={},
                                                     dropdowns={},
                                                     comment=None,
@@ -184,7 +184,7 @@ SRProject(
                                 "THEN": SRScriptInputValue(
                                     blocks=[
                                         SRBlock(
-                                            opcode="looks::say (MESSAGE) for (SECONDS) seconds",
+                                            opcode="&looks::say (MESSAGE) for (SECONDS) seconds",
                                             inputs={
                                                 "MESSAGE": SRBlockAndTextInputValue(block=None, immediate="Hello!"),
                                                 "SECONDS": SRBlockAndTextInputValue(block=None, immediate="2"),
@@ -199,7 +199,7 @@ SRProject(
                                             mutation=None,
                                         ),
                                         SRBlock(
-                                            opcode="looks::change [EFFECT] effect by (AMOUNT)",
+                                            opcode="&looks::change [EFFECT] effect by (AMOUNT)",
                                             inputs={
                                                 "AMOUNT": SRBlockAndTextInputValue(block=None, immediate="25"),
                                             },
@@ -222,7 +222,7 @@ SRProject(
                     position=(257, 714),
                     blocks=[
                         SRBlock(
-                            opcode="set [VARIABLE] to (VALUE)",
+                            opcode="&variables::set [VARIABLE] to (VALUE)",
                             inputs={
                                 "VALUE": SRBlockAndTextInputValue(block=None, immediate="hello there!"),
                             },
@@ -238,12 +238,12 @@ SRProject(
                     position=(240, 549),
                     blocks=[
                         SRBlock(
-                            opcode="call custom block",
+                            opcode="&customblocks::call custom block",
                             inputs={
                                 "speed": SRBlockAndTextInputValue(block=None, immediate="2"),
                                 "handle keys": SRBlockAndBoolInputValue(
                                     block=SRBlock(
-                                        opcode="true",
+                                        opcode="&operators::true,
                                         inputs={},
                                         dropdowns={},
                                         comment=None,
@@ -369,7 +369,7 @@ SRProject(
             slider_min=0,
             slider_max=100,
             allow_only_integers=True,
-            opcode="value of [VARIABLE]",
+            opcode="&variables::value of [VARIABLE]",
             dropdowns={
                 "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="another glob var"),
             },
@@ -381,7 +381,7 @@ SRProject(
             slider_min=0,
             slider_max=100,
             allow_only_integers=True,
-            opcode="value of [VARIABLE]",
+            opcode="&variables::value of [VARIABLE]",
             dropdowns={
                 "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="☁ my cloud var"),
             },
@@ -390,7 +390,7 @@ SRProject(
         ),
         SRListMonitor(
             size=(132, 219),
-            opcode="value of [LIST]",
+            opcode="&variables::value of [LIST]",
             dropdowns={
                 "LIST": SRDropdownValue(kind=DropdownValueKind.LIST, value="a global list"),
             },
@@ -399,7 +399,7 @@ SRProject(
         ),
         SRListMonitor(
             size=(100, 116),
-            opcode="value of [LIST]",
+            opcode="&variables::value of [LIST]",
             dropdowns={
                 "LIST": SRDropdownValue(kind=DropdownValueKind.LIST, value="another g. list"),
             },
@@ -407,13 +407,13 @@ SRProject(
             is_visible=True,
         ),
         SRMonitor(
-            opcode="answer",
+            opcode="&sensing::answer",
             dropdowns={},
             position=(-235, -25),
             is_visible=False,
         ),
         SRMonitor(
-            opcode="current [PROPERTY]",
+            opcode="&sensing::current [PROPERTY]",
             dropdowns={
                 "PROPERTY": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="year"),
             },
@@ -421,7 +421,7 @@ SRProject(
             is_visible=True,
         ),
         SRMonitor(
-            opcode="timer",
+            opcode="&sensing::timer,
             dropdowns={},
             position=(-240, -104),
             is_visible=False,
@@ -540,7 +540,7 @@ SRProject(
             slider_min=0,
             slider_max=100,
             allow_only_integers=True,
-            opcode="value of [VARIABLE]",
+            opcode="&variables::value of [VARIABLE]",
             dropdowns={
                 "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="another glob var"),
             },
@@ -681,7 +681,7 @@ SRSprite(
     local_monitors=[
         # shortend here
         SRMonitor(
-            opcode="looks::[EFFECT] effect",
+            opcode="&looks::[EFFECT] effect",
             dropdowns={
                 "EFFECT": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="color"),
             },
@@ -693,7 +693,7 @@ SRSprite(
             slider_min=0,
             slider_max=100,
             allow_only_integers=True,
-            opcode="value of [VARIABLE]",
+            opcode="&variables::value of [VARIABLE]",
             dropdowns={
                 "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="another local var"),
             },
@@ -702,7 +702,7 @@ SRSprite(
         ),
         SRListMonitor(
             size=(100, 102),
-            opcode="value of [LIST]",
+            opcode="&variables::value of [LIST]",
             dropdowns={
                 "LIST": SRDropdownValue(kind=DropdownValueKind.LIST, value="a local list"),
             },
@@ -721,7 +721,7 @@ SRSprite(
             position=(235, 79),
             blocks=[
                 SRBlock(
-                    opcode="define custom block",
+                    opcode="&customblocks::define custom block",
                     inputs={},
                     dropdowns={},
                     comment=None,
@@ -847,7 +847,7 @@ Represents a non-sprite-specific(global) or sprite-specific(local) monitor. Also
 ####  Global
 ```python
 SRMonitor(
-    opcode="answer",
+    opcode="&sensing::answer",
     dropdowns={},
     position=(-235, -25),
     is_visible=False,
@@ -855,7 +855,7 @@ SRMonitor(
 ```
 ```python
 SRMonitor(
-    opcode="current [PROPERTY]",
+    opcode="&sensing::current [PROPERTY]",
     dropdowns={
         "PROPERTY": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="year"),
     },
@@ -865,7 +865,7 @@ SRMonitor(
 ```
 ```python
 SRMonitor(
-    opcode="timer",
+    opcode="&sensing::timer",
     dropdowns={},
     position=(-240, -104),
     is_visible=False,
@@ -874,7 +874,7 @@ SRMonitor(
 #### Local
 ```python
 SRMonitor(
-    opcode="looks::[EFFECT] effect",
+    opcode="&looks::[EFFECT] effect",
     dropdowns={
         "EFFECT": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="color"),
     },
@@ -883,7 +883,7 @@ SRMonitor(
 )
 ```
 ### Notes
-* The "answer" and "timer" monitor is not shown and therefore not shown in the image.
+* The "&sensing::answer" and "sensing::timer" monitor is not shown and therefore not shown in the image.
 * The keys of `dropdowns` always match with the sqaure brackets (e.g. `[DROPDOWN]`) in the opcode.
 
 
@@ -916,7 +916,7 @@ SRVariableMonitor(
     slider_min=0,
     slider_max=100,
     allow_only_integers=True,
-    opcode="value of [VARIABLE]",
+    opcode="&variables::value of [VARIABLE]",
     dropdowns={
         "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="☁ my cloud var"),
     },
@@ -930,7 +930,7 @@ SRVariableMonitor(
     slider_min=30.9,
     slider_max=100,
     allow_only_integers=False,
-    opcode="value of [VARIABLE]",
+    opcode="&variables::value of [VARIABLE]",
     dropdowns={
         "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="my slider var"),
     },
@@ -956,7 +956,7 @@ Represents the monitor of a **list value block** of a global or local list. Inhe
 ```python
 SRListMonitor(
     size=(100, 102),
-    opcode="value of [LIST]",
+    opcode="&variables::value of [LIST]",
     dropdowns={
         "LIST": SRDropdownValue(kind=DropdownValueKind.LIST, value="a local list"),
     },
@@ -1044,7 +1044,7 @@ SRScript(
     position=(235, 79),
     blocks=[
         SRBlock(
-            opcode="define custom block",
+            opcode="&customblocks::define custom block",
             inputs={},
             dropdowns={},
             comment=None,
@@ -1071,7 +1071,7 @@ SRScript(
             ),
         ),
         SRBlock(
-            opcode="control::if <CONDITION> then {THEN}",
+            opcode="&control::if <CONDITION> then {THEN}",
             inputs={
                 "CONDITION": SRBlockAndBoolInputValue(
                     # shortend here
@@ -1092,11 +1092,11 @@ SRScript(
     position=(420, 1022),
     blocks=[
         SRBlock(
-            opcode="distance to ([OBJECT])",
+            opcode="&sensing::distance to ([OBJECT])",
             inputs={
                 "OBJECT": SRBlockAndDropdownInputValue(
                     block=SRBlock(
-                        opcode="length of ([SOUND])?",
+                        opcode="&sound::length of ([SOUND])?",
                         inputs={
                             "SOUND": SRBlockAndDropdownInputValue(
                                 block=None,
@@ -1145,11 +1145,11 @@ Represents a single block in a script. Can be any shape of block(e.g. square, ro
 ### Python Object Example
 ```python
 SRBlock(
-    opcode="control::if <CONDITION> then {THEN}",
+    opcode="&control::if <CONDITION> then {THEN}",
     inputs={
         "CONDITION": SRBlockAndBoolInputValue(
             block=SRBlock(
-                opcode="<OPERAND1> and <OPERAND2>",
+                opcode="&operators::<OPERAND1> and <OPERAND2>",
                 inputs={
                     "OPERAND1": SRBlockAndBoolInputValue(
                         # shortend, see below
@@ -1180,11 +1180,11 @@ SRBlock(
 ```python
 SRBlockAndBoolInputValue(
     block=SRBlock(
-        opcode="<OPERAND1> and <OPERAND2>",
+        opcode="&operators::<OPERAND1> and <OPERAND2>",
         inputs={
             "OPERAND1": SRBlockAndBoolInputValue(
                 block=SRBlock(
-                    opcode="key ([KEY]) pressed?",
+                    opcode="&sensing::key ([KEY]) pressed?",
                     inputs={
                         "KEY": SRBlockAndDropdownInputValue(
                             block=None,
@@ -1199,7 +1199,7 @@ SRBlockAndBoolInputValue(
             ),
             "OPERAND2": SRBlockAndBoolInputValue(
                 block=SRBlock(
-                    opcode="custom block boolean arg [ARGUMENT]",
+                    opcode="&customblocks::custom block boolean arg [ARGUMENT]",
                     inputs={},
                     dropdowns={},
                     comment=None,
@@ -1226,7 +1226,7 @@ SRBlockAndBoolInputValue(
 SRScriptInputValue(
     blocks=[
         SRBlock(
-            opcode="looks::say (MESSAGE) for (SECONDS) seconds",
+            opcode="&looks::say (MESSAGE) for (SECONDS) seconds",
             inputs={
                 "MESSAGE": SRBlockAndTextInputValue(block=None, immediate="Hello!"),
                 "SECONDS": SRBlockAndTextInputValue(block=None, immediate="2"),
@@ -1241,7 +1241,7 @@ SRScriptInputValue(
             mutation=None,
         ),
         SRBlock(
-            opcode="looks::change [EFFECT] effect by (AMOUNT)",
+            opcode="&looks::change [EFFECT] effect by (AMOUNT)",
             inputs={
                 "AMOUNT": SRBlockAndTextInputValue(block=None, immediate="25"),
             },
@@ -1334,7 +1334,7 @@ Represents a single dropdown field of a block. Can only be a square dropdown, wh
 ### Python Object Example
 ```python
 SRBlock(
-    opcode="looks::change [EFFECT] effect by (AMOUNT)",
+    opcode="&looks::change [EFFECT] effect by (AMOUNT)",
     inputs={
         "AMOUNT": SRBlockAndTextInputValue(block=None, immediate="25"),
     },
@@ -1347,7 +1347,7 @@ SRBlock(
 ```
 ```python
 SRBlock(
-    opcode="distance to ([OBJECT])",
+    opcode="&sensing::distance to ([OBJECT])",
     inputs={
         "OBJECT": SRBlockAndDropdownInputValue(
             block=None,
@@ -1390,7 +1390,7 @@ Stores additional information special to some kinds of blocks. Only needed for s
 * [`SRCustomBlockCallMutation`](#srcustomblockcallmutation)
 
 ## `SRCustomBlockArgumentMutation`
-Inherits from [`SRMutation`](#srmutation). Used and required only by opcodes `"custom block text arg [ARGUMENT]"` and `"custom block boolean arg [ARGUMENT]"`.
+Inherits from [`SRMutation`](#srmutation). Used and required only by opcodes `"&customblocks::custom block text arg [ARGUMENT]"` and `"customblocks::custom block boolean arg [ARGUMENT]"`.
 #### `SRCustomBlockArgumentMutation.argument_name`
 - **type**: `str`
 - **description**: the name of the custom block argument which the argument reporter block is for.
@@ -1421,7 +1421,7 @@ SRCustomBlockArgumentMutation(
 
 
 ## `SRCustomBlockMutation`
-Inherits from [`SRMutation`](#srmutation). Used and required only by opcodes `"define custom block"` and `"define custom block reporter"`.
+Inherits from [`SRMutation`](#srmutation). Used and required only by opcodes `"&customblocks::define custom block"` and `"customblocks::customblocks::define custom block reporter"`.
 #### `SRCustomBlockMutation.custom_opcode`
 - **type**: [`SRCustomBlockOpcode`](#srcustomblockopcode)(`SRCustomBlockOpcode` is immutable and hashable)
 - **description**: Stores the name and argument field names and kinds of the custom block.
@@ -1469,7 +1469,7 @@ SRCustomBlockMutation(
 
 
 ## `SRCustomBlockCallMutation`
-Inherits from [`SRMutation`](#srmutation). Used and required only by opcode `"call custom block"`.
+Inherits from [`SRMutation`](#srmutation). Used and required only by opcode `"&customblocks::call custom block"`.
 #### `SRCustomBlockCallMutation.custom_opcode`
 - **type**: [`SRCustomBlockOpcode`](#srcustomblockopcode)(`SRCustomBlockOpcode` is immutable and hashable)
 - **description**: Stores the labels and argument field names and kinds of the custom block, this block will call, to reference it.
@@ -1553,7 +1553,7 @@ SRComment(
 ```
 ```python
 SRBlock(
-    opcode="looks::say (MESSAGE) for (SECONDS) seconds",
+    opcode="&looks::say (MESSAGE) for (SECONDS) seconds",
     inputs={
         "MESSAGE": SRBlockAndTextInputValue(block=None, immediate="Hello!"),
         "SECONDS": SRBlockAndTextInputValue(block=None, immediate="2"),

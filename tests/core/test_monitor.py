@@ -567,19 +567,19 @@ ALL_FR_MONITORS: list[FRMonitor] = [
 
 ALL_LOCAL_SR_MONITORS: list[SRMonitor] = [
     SRMonitor( # [0] for [0]
-        opcode="x position",
+        opcode="&motion::x position",
         dropdowns={},
         position=(-235, -175),
         is_visible=True,
     ),
     SRMonitor( # [1] for [1]
-        opcode="y position",
+        opcode="&motion::y position",
         dropdowns={},
         position=(-235, -149),
         is_visible=True,
     ),
     SRListMonitor( # [2] for [4]
-        opcode="value of [LIST]",
+        opcode="&variables::value of [LIST]",
         dropdowns={
             "LIST": SRDropdownValue(kind=DropdownValueKind.LIST, value="locl"),
         },
@@ -588,7 +588,7 @@ ALL_LOCAL_SR_MONITORS: list[SRMonitor] = [
         size=(100, 198),
     ),
     SRVariableMonitor( # [3] for [6]
-        opcode="value of [VARIABLE]",
+        opcode="&variables::value of [VARIABLE]",
         dropdowns={
             "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="locl"),
         },
@@ -600,7 +600,7 @@ ALL_LOCAL_SR_MONITORS: list[SRMonitor] = [
         allow_only_integers=True,
     ),
     SRMonitor( # [4] for [9]
-        opcode="looks::costume [PROPERTY]",
+        opcode="&looks::costume [PROPERTY]",
         dropdowns={
             "PROPERTY": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="number"),
         },
@@ -611,7 +611,7 @@ ALL_LOCAL_SR_MONITORS: list[SRMonitor] = [
 
 ALL_GLOBAL_SR_MONITORS: list[SRMonitor] = [
     SRVariableMonitor( # [0] for [2]
-        opcode="value of [VARIABLE]",
+        opcode="&variables::value of [VARIABLE]",
         dropdowns={
             "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="globl"),
         },
@@ -623,7 +623,7 @@ ALL_GLOBAL_SR_MONITORS: list[SRMonitor] = [
         allow_only_integers=False,
     ),
     SRVariableMonitor( # [1] for [3]
-        opcode="value of [VARIABLE]",
+        opcode="&variables::value of [VARIABLE]",
         dropdowns={
             "VARIABLE": SRDropdownValue(kind=DropdownValueKind.VARIABLE, value="globl2"),
         },
@@ -635,7 +635,7 @@ ALL_GLOBAL_SR_MONITORS: list[SRMonitor] = [
         allow_only_integers=True,
     ),
     SRListMonitor( # [2] for [5]
-        opcode="value of [LIST]",
+        opcode="&variables::value of [LIST]",
         dropdowns={
             "LIST": SRDropdownValue(kind=DropdownValueKind.LIST, value="globl"),
         },
@@ -643,19 +643,19 @@ ALL_GLOBAL_SR_MONITORS: list[SRMonitor] = [
         is_visible=True,
         size=(176, 147)),
     SRMonitor( # [3] for [7]
-        opcode="mouse down?",
+        opcode="&sensing::mouse down?",
         dropdowns={},
         position=(15, 40),
         is_visible=True,
     ),
     SRMonitor( # [4] for [8]
-        opcode="answer",
+        opcode="&sensing::answer",
         dropdowns={},
         position=(-35, -175),
         is_visible=True,
     ),
     SRMonitor( # [5] for [10]
-        opcode="looks::backdrop [PROPERTY]",
+        opcode="&looks::backdrop [PROPERTY]",
         dropdowns={
             "PROPERTY": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="number"),
         },
@@ -663,7 +663,7 @@ ALL_GLOBAL_SR_MONITORS: list[SRMonitor] = [
         is_visible=True,
     ),
     SRMonitor( # [6] for [11]
-        opcode="current [PROPERTY]",
+        opcode="&sensing::current [PROPERTY]",
         dropdowns={
             "PROPERTY": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="year"),
         },
@@ -673,13 +673,13 @@ ALL_GLOBAL_SR_MONITORS: list[SRMonitor] = [
     
     
     SRMonitor( # [7] for [12]
-        opcode="dumbExample::last used base",
+        opcode="&dumbExample::last used base",
         dropdowns={},
         position=(-235, -175),
         is_visible=True,
     ),
     SRMonitor( # [8] for [13]
-        opcode="dumbExample::last two [S1] and [S2] values",
+        opcode="&dumbExample::last two [S1] and [S2] values",
         dropdowns={
             "S1": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="IN"),
             "S2": SRDropdownValue(kind=DropdownValueKind.STANDARD, value="OUT"),
@@ -984,7 +984,7 @@ def test_SRVariableMonitor_validate_only_integers(info_api_extended):
 
 def test_SRVariableMonitor_validate_invalid_opcode(info_api_extended):
     srmonitor: SRVariableMonitor= copy(ALL_GLOBAL_SR_MONITORS[0])
-    srmonitor.opcode = "x position"
+    srmonitor.opcode = "&motion::x position"
     srmonitor.dropdowns = {}
     with raises(MANIP_InvalidValueError):
         srmonitor.validate(AbstractTreePath(), info_api_extended)
@@ -1023,7 +1023,7 @@ def test_SRListMonitor_validate_too_big_size(monkeypatch: MonkeyPatch, info_api_
 def test_SRListMonitor_validate_invalid_opcode(info_api_extended):
     srmonitor = copy(ALL_GLOBAL_SR_MONITORS[2])
     srmonitor: SRListMonitor
-    srmonitor.opcode = "x position"
+    srmonitor.opcode = "&motion::x position"
     srmonitor.dropdowns = {}
     with raises(MANIP_InvalidValueError):
         srmonitor.validate(AbstractTreePath(), info_api_extended)

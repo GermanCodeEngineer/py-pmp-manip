@@ -383,7 +383,7 @@ def test_SRBlock_to_inter_block_and_menu_text(info_api_extended1):
         position=(311, 505), 
         blocks=[
             SRBlock(
-                opcode="music::play note ([NOTE]) for (BEATS) beats",
+                opcode="&music::play note ([NOTE]) for (BEATS) beats",
                 inputs={
                     "NOTE": SRBlockAndDropdownInputValue(
                         block=None,

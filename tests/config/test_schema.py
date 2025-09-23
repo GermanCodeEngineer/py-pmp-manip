@@ -2,7 +2,7 @@ from dataclasses import FrozenInstanceError
 from datetime    import timedelta
 from pytest      import raises
 
-from pmp_manip.utility import grepr_dataclass, AbstractTreePath, MANIP_TypeValidationError
+from pmp_manip.utility import grepr_dataclass, AbstractTreePath, MANIP_TypeValidationError, MANIP_InvalidDirPathError
 
 from pmp_manip.config.manager import get_default_config
 from pmp_manip.config.schema  import ConfigBase, MasterConfig, ExtInfoGenConfig, ValidationConfig, PlatformMetaConfig
@@ -47,10 +47,10 @@ def test_ExtInfoGenConfig_validate():
         obj=config,
         attr_tests=[
             ("gen_opcode_info_dir", 5, MANIP_TypeValidationError),
+            ("gen_opcode_info_dir", __file__, MANIP_InvalidDirPathError),
             ("js_fetch_interval", {}, MANIP_TypeValidationError),
             ("node_js_exec_timeout", [], MANIP_TypeValidationError),
             ("is_trusted_extension_origin_handler", "https://raw.githubusercontent.com/Logise1123/FirebaseDB-/refs/heads/main/db.js", MANIP_TypeValidationError),
-
         ],
         validate_func=ExtInfoGenConfig.validate,
         func_args=[[]],
