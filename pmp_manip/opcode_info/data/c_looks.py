@@ -119,7 +119,7 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
         }),
     ),
 
-    ("looks_setStretch", "set stretch to x: (X) y: (Y)"): OpcodeInfo(
+    ("looks_setStretch", "looks::set stretch to x: (X) y: (Y)"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
             ("X", "X"): InputInfo(BuiltinInputType.NUMBER),

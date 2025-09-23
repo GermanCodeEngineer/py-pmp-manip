@@ -5,8 +5,8 @@ Special:
 
 Currently Working On:
     - S: rename builtin second repr opcodes and add "::"
-        => find that one conflict
         => look thorugh data/main
+        => update builtin categories (see in PM-VM)
     
     - M/L: make a script which show info for the requested block opcode
     - add the above to docs
