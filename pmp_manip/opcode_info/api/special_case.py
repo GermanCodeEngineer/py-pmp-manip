@@ -46,7 +46,19 @@ class SpecialCaseType(GEnum):
     """
     def example(
         block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None"
-    ) -> DualKeyDict[str, str, InputType]:
+    ) -> DualKeyDict[str, str, InputInfo]:
+        ...
+    """
+
+    GET_ALL_DROPDOWN_IDS_INFO = 2
+    # map new and old dropdown id to dropdown information
+    # -> DualKeyDict[old, new, DropdownInfo]
+    # fti_if will be None for a IRBlock or SRBlock or monitor and the block api for a FRBlock
+    # ATTENTION: block can be a monitor too! (realistically very unlikely)
+    """
+    def example(
+        block: "FRBlock|IRBlock|SRBlock|FRMonitor|SRMonitor", fti_if: "FirstToInterIF|None"
+    ) -> DualKeyDict[str, str, DropdownInfo]:
         ...
     """
     
@@ -55,22 +67,22 @@ class SpecialCaseType(GEnum):
     #         Representation Conversion Handlers         #
     ######################################################
     
-    PRE_FIRST_TO_INTER = 2
+    PRE_FIRST_TO_INTER = 3
     # execure before FRBlock.to_inter
     """
     def example(block: "FRBlock", block_id: str, fti_if: "FirstToInterIF") -> "FRBlock":
         ...
     """
      
-    INSTEAD_FIRST_TO_INTER = 3
+    INSTEAD_FIRST_TO_INTER = 4
     # execute instead of FRBlock.to_inter
     """
     def example(block: "FRBlock", block_id: str, fti_if: "FirstToInterIF") -> "IRBlock":
         ...
     """
 
-    POST_INTER_TO_FIRST = 4
-    # execure after IRBlock.to_first
+    POST_INTER_TO_FIRST = 5
+    # execute after IRBlock.to_first
     """
     def example(block: "FRBlock", block_id: str, itf_if: "InterToFirstIF") -> "FRBlock":
         ...

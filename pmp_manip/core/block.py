@@ -12,7 +12,7 @@ from pmp_manip.important_consts import (
 )
 from pmp_manip.opcode_info.api  import (
     OpcodeInfoAPI, OpcodeInfo, 
-    InputInfo, InputType, InputMode, BuiltinDropdownType, DropdownValueKind,
+    InputInfo, InputType, InputMode, DropdownType, BuiltinDropdownType, DropdownValueKind,
     OpcodeType, SpecialCaseType,
     DROPDOWN_VALUE_T,
 )
@@ -295,6 +295,8 @@ class FRBlock:
                         info_api  = info_api,
                         own_id    = None, # None is fine, because tuple blocks can not possibly contain more tuple blocks 
                     )
+                elif item is None:
+                    pass
                 else: raise MANIP_ConversionError(f"Invalid input value {input_value!r} for input {input_id!r}")
 
             new_inputs[input_id] = IRInputValue(
@@ -419,12 +421,15 @@ class IRBlock:
                     case 2: magic_number = 3
             old_inputs[input_id] = (magic_number, *elements)
 
+        dropdown_infos = opcode_info.get_old_dropdown_ids_infos(block=self, fti_if=None)
+        # fti_if is not necessary for a IRBlock
+
         old_fields = {}
         for dropdown_id, dropdown_value in self.dropdowns.items():
             if opcode_info.opcode_type is OpcodeType.MENU:
                 dropdown_type = None # use the default _ option
             else:
-                dropdown_type = opcode_info.get_dropdown_info_by_old(dropdown_id).type
+                dropdown_type = dropdown_infos[dropdown_id].type
             match dropdown_type:
                 case BuiltinDropdownType.VARIABLE:
                     suffix    = ""
@@ -581,7 +586,7 @@ class IRBlock:
 
             new_input_id = old_new_input_ids[input_id]
             if input_dropdown is not None:
-                input_type = input_infos[new_input_id].type
+                input_type: InputType = input_infos[new_input_id].type
                 dropdown_type = input_type.corresponding_dropdown_type
                 input_dropdown = SRDropdownValue.from_tuple(
                     dropdown_type.translate_old_to_new_value(input_dropdown)
@@ -605,10 +610,13 @@ class IRBlock:
                 else:
                     raise MANIP_ConversionError(f"For a block with opcode {self.opcode!r}, input {new_input_id!r} is missing")
         
+        old_new_dropdown_ids = opcode_info.get_old_new_dropdown_ids(block=self, fti_if=None)
+        dropdown_infos = opcode_info.get_old_dropdown_ids_infos(block=self, fti_if=None)
+        # fti_if is not necessary for a IRBlock 
         new_dropdowns = {}
         for dropdown_id, dropdown_value in self.dropdowns.items():
-            dropdown_type = opcode_info.get_dropdown_info_by_old(dropdown_id).type
-            new_dropdown_id = opcode_info.get_new_dropdown_id(dropdown_id)
+            dropdown_type: DropdownType = dropdown_infos[dropdown_id].type
+            new_dropdown_id = old_new_dropdown_ids[dropdown_id]
             new_dropdowns[new_dropdown_id] = SRDropdownValue.from_tuple(dropdown_type.translate_old_to_new_value(dropdown_value))
 
         new_block = SRBlock(
@@ -820,9 +828,11 @@ class SRBlock:
                     f"inputs of {cls_name!r} with opcode {self.opcode!r} is missing input {new_input_id!r}",
                 )
         
-        new_dropdown_ids = opcode_info.get_all_new_dropdown_ids()
+        dropdown_infos = opcode_info.get_new_dropdown_ids_infos(block=self, fti_if=None)
+        # fti_if is not necessary for a SRBlock
+        
         for new_dropdown_id, dropdown in self.dropdowns.items():
-            if new_dropdown_id not in new_dropdown_ids:
+            if new_dropdown_id not in dropdown_infos.keys():
                 raise MANIP_UnnecessaryDropdownError(path, 
                     f"dropdowns of {cls_name!r} with opcode {self.opcode!r} includes unnecessary dropdown {new_dropdown_id!r}",
                 )
@@ -830,10 +840,10 @@ class SRBlock:
             dropdown.validate(current_path)
             dropdown.validate_value(
                 path          = current_path,
-                dropdown_type = opcode_info.get_dropdown_info_by_new(new_dropdown_id).type,
+                dropdown_type = dropdown_infos[new_dropdown_id].type,
                 context       = context,
             )
-        for new_dropdown_id in new_dropdown_ids:
+        for new_dropdown_id in dropdown_infos.keys():
             if new_dropdown_id not in self.dropdowns:
                 raise MANIP_MissingDropdownError(path, 
                     f"dropdowns of {cls_name!r} with opcode {self.opcode!r} is missing dropdown {new_dropdown_id!r}",
@@ -1034,11 +1044,15 @@ class SRBlock:
             ):
                 old_inputs[old_input_id] = old_input_value
 
+        new_old_dropdown_ids = opcode_info.get_new_old_dropdown_ids  (block=self, fti_if=None) 
+        dropdown_infos       = opcode_info.get_new_dropdown_ids_infos(block=self, fti_if=None)
+        # fti_if is not needed for a SRBlock
+
         # Map new dropdown IDs to old dropdown IDs and values
         old_dropdowns = {}
         for dropdown_id, dropdown_value in self.dropdowns.items():
-            dropdown_info = opcode_info.get_dropdown_info_by_new(dropdown_id)
-            old_dropdown_id = opcode_info.get_old_dropdown_id(dropdown_id)
+            dropdown_info = dropdown_infos[dropdown_id]
+            old_dropdown_id = new_old_dropdown_ids[dropdown_id]
             old_dropdowns[old_dropdown_id] = dropdown_info.type.translate_new_to_old_value(dropdown_value.to_tuple())
 
         return IRBlock(

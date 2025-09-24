@@ -6,10 +6,9 @@ from typing      import Any, ClassVar, NoReturn, Literal, TYPE_CHECKING
 
 from pmp_manip.important_consts import SHA256_SEC_MAIN_ARGUMENT_NAME
 from pmp_manip.utility          import (
-    grepr_dataclass, enforce_argument_types, string_to_sha256, gdumps,
+    grepr_dataclass, string_to_sha256, gdumps,
     AA_TYPE, AA_HEX_COLOR, AbstractTreePath,
     MANIP_ThanksError, MANIP_ConversionError, MANIP_DeserializationError, 
-    NotSet,
 )
 
 
@@ -506,7 +505,10 @@ class FRStopScriptMutation(FRMutation, required_properties={"hasnext"}, optional
         raise NotImplementedError("A second representation of a stop script mutation does not exist. It is not needed for an IRBlock or SRBlock")
 
 @grepr_dataclass(grepr_fields=["points", "color", "midle", "scale", "expanded", "needs_init"])
-class FRPolygonMutation(FRMutation, required_properties={"points", "color", "midle", "scale", "expanded", "needsinit"}, optional_properties=set()):
+class FRPolygonMutation(FRMutation, 
+        required_properties={"points", "color", "midle", "scale", "expanded", "needsinit"},
+        optional_properties=set(),
+    ):
     """
     The first representation for the mutation of a stop script mutation
     """
@@ -590,7 +592,7 @@ class SRMutation(ABC):
         Convert a SRMutation into a FRMutation
         
         Args:
-            fti_if: interface which allows the management of other blocks
+            itf_if: interface which allows the management of other blocks
         
         Returns:
             the FRMutation
@@ -632,7 +634,7 @@ class SRCustomBlockArgumentMutation(SRMutation):
         Convert a SRCustomBlockArgumentMutation into a FRCustomBlockArgumentMutation
         
         Args:
-            fti_if: interface which allows the management of other blocks
+            itf_if: interface which allows the management of other blocks
         
         Returns:
             the FRCustomBlockArgumentMutation
@@ -687,7 +689,7 @@ class SRCustomBlockMutation(SRMutation):
         Convert a SRCustomBlockMutation into a FRCustomBlockMutation
         
         Args:
-            fti_if: interface which allows the management of other blocks
+            itf_if: interface which allows the management of other blocks
         
         Returns:
             the FRCustomBlockMutation
@@ -746,7 +748,7 @@ class SRCustomBlockCallMutation(SRMutation):
         Convert a SRCustomBlockCallMutation into a FRCustomBlockCallMutation
         
         Args:
-            fti_if: interface which allows the management of other blocks
+            itf_if: interface which allows the management of other blocks
         
         Returns:
             the FRCustomBlockCallMutation
@@ -778,10 +780,83 @@ class SRCustomBlockCallMutation(SRMutation):
         )
 
 
+@grepr_dataclass(grepr_fields=["branches", "ends_in_else"])
+class FSRExpandableIfMutation(FRMutation, SRMutation,
+        required_properties={"branches", "ends-in-else"},
+        optional_properties=set(),
+    ):
+    """
+    The first representation for the mutation of a stop script mutation
+    """
+
+    branches: int
+    ends_in_else: bool
+    
+    # from FRMutation
+    @classmethod
+    def from_data(cls, data: dict[str, bool]) -> "FRPolygonMutation":
+        """
+        Create a FRPolygonMutation(for the inner "block" of the old "draw triangle" block) from json data
+        
+        Args:
+            data: the json data
+        """
+        return cls(
+            tag_name      = data["tagName" ],
+            children      = deepcopy(data["children"]),
+            branches      = loads(data["branches"]),
+            ends_in_else = _load_bool_value(data, key="ends-in-else", default=False),
+        )
+
+    def to_data(self) -> dict[str, Any]:
+        """
+        Serializes a FRPolygonMutation into json data
+        """
+        return {
+            "tagName"     : self.tag_name,
+            "children"    : deepcopy(self.children),
+            "branches"    : gdumps(self.branches),
+            "ends-in-else": gdumps(self.ends_in_else),
+        }
+   
+    def to_second(self, fti_if: "FirstToInterIF") -> "FSRExpandableIfMutation":
+        """
+        As this mutation represents both first and second representation self will be returned
+        
+        Args:
+            fti_if: interface which allows the management of other blocks
+        """
+        return self
+
+    # from SRMutation
+    def validate(self, path: AbstractTreePath) -> None:
+        """
+        Ensure the SRCustomBlockArgumentMutation is valid, raise MANIP_ValidationError if not
+        
+        Args:
+            path: the path from the project to itself. Used for better error messages
+        
+        Raises:
+            MANIP_ValidationError: if the SRCustomBlockArgumentMutation is invalid
+        """
+        AA_TYPE(self, path, "branches", int)
+        AA_TYPE(self, path, "ends_in_else", bool)
+    
+    def to_first(self, itf_if: "InterToFirstIF") -> FRCustomBlockArgumentMutation:
+        """
+        As this mutation represents both first and second representation self will be returned
+
+        Args:
+            itf_if: interface which allows the management of other blocks
+        """
+        return self
+
+
 __all__ = [
     "FRMutation", 
     "FRCustomBlockArgumentMutation", "FRCustomBlockMutation", "FRCustomBlockCallMutation", "FRStopScriptMutation", "FRPolygonMutation",
     "SRMutation", 
     "SRCustomBlockArgumentMutation", "SRCustomBlockMutation", "SRCustomBlockCallMutation",
+    "FSRExpandableIfMutation",
 ]
 

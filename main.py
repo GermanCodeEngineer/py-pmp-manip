@@ -4,7 +4,7 @@ from pmp_manip import *
 
 #create_mkdocs_project(site_name="abx")
 init_config(get_default_config())
-f = FRProject.from_file("assets/e.pmp")
+f = FRProject.from_file("assets/if_experiment.pmp")
 print(f)
 
 #info_api.generate_and_add_extension("pen", None)

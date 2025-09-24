@@ -4,7 +4,7 @@ from copy   import copy, deepcopy
 from pmp_manip.important_consts import (
     OPCODE_VAR_VALUE, NEW_OPCODE_VAR_VALUE, OPCODE_LIST_VALUE, NEW_OPCODE_LIST_VALUE, 
     OPCODE_STOP_SCRIPT, OPCODE_CHECKBOX, NEW_OPCODE_CHECKBOX, OPCODE_POLYGON, NEW_OPCODE_POLYGON,
-    OPCODE_FILTER_LIST_INDEX, OPCODE_FILTER_LIST_ITEM,
+    OPCODE_FILTER_LIST_INDEX, OPCODE_FILTER_LIST_ITEM, OPCODE_EXPANDABLE_IF,
     OPCODE_CB_PROTOTYPE, ANY_OPCODE_CB_DEF, ANY_OPCODE_CB_ARG, 
     OPCODE_CB_CALL, NEW_OPCODE_CB_CALL, OPCODE_CB_ARG_TEXT, OPCODE_CB_ARG_BOOL, 
     OPCODE_CB_DEF, NEW_OPCODE_CB_DEF, OPCODE_CB_DEF_RET, NEW_OPCODE_CB_DEF_REP,
@@ -41,8 +41,10 @@ if TYPE_CHECKING:
 from pmp_manip.core.block_mutation import (
     FRCustomBlockMutation, FRCustomBlockArgumentMutation, FRCustomBlockCallMutation, FRStopScriptMutation, FRPolygonMutation,
     SRCustomBlockMutation, SRCustomBlockArgumentMutation, SRCustomBlockCallMutation,
+    FSRExpandableIfMutation,
 )
 
+# MENUS
 c_motion.add_opcode("motion_goto_menu", "&motion::#REACHABLE TARGET MENU (GO)", OpcodeInfo(
     opcode_type=OpcodeType.MENU,
 ))
@@ -108,6 +110,11 @@ c_sensing.add_opcode("sensing_fingeroptions", "&sensing::#FINGER INDEX MENU", Op
     opcode_type=OpcodeType.MENU,
 ))
 
+# SPECIAL BLOCKS
+c_control.add_opcode(OPCODE_EXPANDABLE_IF, "&control::{{EXPANDABLE IF-THEN-ELSE CHAIN}}", OpcodeInfo(
+    opcode_type=OpcodeType.STATEMENT,
+    inputs=DualKeyDict(), # Overwritten by special case
+))
 c_variables.add_opcode(OPCODE_VAR_VALUE, NEW_OPCODE_VAR_VALUE, OpcodeInfo(
     opcode_type=OpcodeType.STRING_REPORTER,
     dropdowns=DualKeyDict({
@@ -133,6 +140,7 @@ c_lists.add_opcode(OPCODE_FILTER_LIST_ITEM, "&lists::{{FILTER ITEM}}", OpcodeInf
     allow_embedded=True,
 ))
 
+# CUSTOM BLOCKS CATEGORY
 c_custom_blocks = OpcodeInfoGroup(
     name="Custom Opcodes",
     opcode_info=DualKeyDict({
@@ -170,6 +178,7 @@ c_custom_blocks = OpcodeInfoGroup(
     }),
 )
 
+# SPECIAL BLOCKS WIHCH FIT INTO NO CATEGORY
 g_special = OpcodeInfoGroup(
     name="Special Blocks",
     opcode_info = DualKeyDict({
@@ -213,6 +222,7 @@ info_api.set_opcode_mutation_class(OPCODE_CB_PROTOTYPE, old_cls=FRCustomBlockMut
 info_api.set_opcode_mutation_class(OPCODE_CB_CALL, old_cls=FRCustomBlockCallMutation, new_cls=SRCustomBlockCallMutation)
 info_api.set_opcode_mutation_class(OPCODE_STOP_SCRIPT, old_cls=FRStopScriptMutation, new_cls=None)
 info_api.set_opcode_mutation_class(OPCODE_POLYGON, old_cls=FRPolygonMutation, new_cls=None)
+info_api.set_opcode_mutation_class(OPCODE_EXPANDABLE_IF, old_cls=FSRExpandableIfMutation, new_cls=FSRExpandableIfMutation)
 
 # Special Cases
 def _149c_e47b(block: "SRBlock|IRBlock", validation_if: "ValidationIF") -> OpcodeType:
@@ -259,7 +269,7 @@ info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
 ))
 
 def _2dc4_f736(block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None") -> DualKeyDict[str, str, InputType]:
-    # Generate X1, Y1 ...  Xn, Yn depending on demand
+    # Generate X1, Y1 ... Xn, Yn depending on demand
     max_point_index = 0
     for input_id in block.inputs.keys():
         if   input_id.lower().startswith("x") or input_id.startswith("y"):
@@ -269,21 +279,48 @@ def _2dc4_f736(block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None") 
         max_point_index = max(max_point_index, point_index)
     
     input_infos = DualKeyDict()
-    for point_index in range(1, max_point_index+1):
+    for point_index in range(max_point_index):
         input_infos.set(
-            key1  = f"x{point_index}",
-            key2  = f"X{point_index}",
+            key1  = f"x{point_index+1}",
+            key2  = f"X{point_index+1}",
             value = InputInfo(BuiltinInputType.NUMBER_SPECIAL),
         )
         input_infos.set(
-            key1  = f"y{point_index}",
-            key2  = f"Y{point_index}",
+            key1  = f"y{point_index+1}",
+            key2  = f"Y{point_index+1}",
             value = InputInfo(BuiltinInputType.NUMBER_SPECIAL),
         )
     return input_infos
 info_api.add_opcode_case(OPCODE_POLYGON, SpecialCase(
     type=SpecialCaseType.GET_ALL_INPUT_IDS_INFO,
     function=_2dc4_f736,
+))
+
+def _eab0_2775(block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None") -> DualKeyDict[str, str, InputType]:
+    # Generate SUBSTACK1, BOOL1 ... SUBSTACKn, BOOLn depending on demand
+    from pmp_manip.core.block_mutation import FSRExpandableIfMutation
+    mutation: FSRExpandableIfMutation = block.mutation
+    input_infos = DualKeyDict()
+    for branch_index in range(mutation.branches):
+        input_infos.set(
+            key1  = f"SUBSTACK{branch_index+1}",
+            key2  = f"SUBSTACK{branch_index+1}",
+            value = InputInfo(BuiltinInputType.SCRIPT),
+        )
+    bool_count = (mutation.branches - 1) if mutation.ends_in_else else mutation.branches
+    for branch_index in range(bool_count):
+        input_infos.set(
+            key1  = f"BOOL{branch_index+1}",
+            key2  = f"BOOL{branch_index+1}",
+            value = InputInfo(BuiltinInputType.BOOLEAN),
+        )
+    print(mutation)
+    print(input_infos)
+    input()
+    return input_infos
+info_api.add_opcode_case(OPCODE_EXPANDABLE_IF, SpecialCase(
+    type=SpecialCaseType.GET_ALL_INPUT_IDS_INFO,
+    function=_eab0_2775,
 ))
 
 
