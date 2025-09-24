@@ -14,6 +14,7 @@ from pmp_manip.utility          import (
 
 from pmp_manip.core.block_interface import SecondToInterIF, ValidationIF
 from pmp_manip.core.block           import (
+    _get_input_cls_for_input_mode,
     IRBlock, IRInputValue,
     SRScript, SRBlock, SRInputValue, 
     SRBlockAndTextInputValue, SRBlockAndDropdownInputValue, SRBlockAndBoolInputValue,
@@ -78,6 +79,11 @@ class TEST_SecondToInterIF(SecondToInterIF):
         self._next_block_id_num += 1
         return block_id
 
+
+
+
+def test_get_input_cls_for_input_mode():
+    assert _get_input_cls_for_input_mode(InputMode.BLOCK_AND_BOOL) is SRBlockAndBoolInputValue
 
 
 
@@ -193,6 +199,12 @@ def test_SRBlock_validate_missing_dropdown(validation_if, context):
 def test_SRBlock_validate_post_handler(validation_if, context):
     srblock = ALL_SR_SCRIPTS[3].blocks[0]
     srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False, expects_embedded=False)
+
+def test_SRBlock_validate_invalid_input_cls(validation_if, context):
+    srblock = deepcopy(ALL_SR_SCRIPTS[0].blocks[0])
+    srblock.inputs["MESSAGE"] = SRBlockOnlyInputValue(block=None)
+    with raises(MANIP_TypeValidationError):
+        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False, expects_embedded=False)
 
 
 def test_SRBlock_validate_opcode_type():

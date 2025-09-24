@@ -24,6 +24,10 @@ def AA_TYPE(obj, path, attr, t, condition=None) -> None:
     if not isinstance(attr_value, t):
         raise MANIP_TypeValidationError(path, f"{descr} must be of type {_repr_type(t)} not {_repr_type(attr_value.__class__)}", condition)
 
+def ADESCR_TYPE(obj, path, descr, value, t, condition=None) -> None:
+    if not isinstance(value, t):
+        raise MANIP_TypeValidationError(path, f"{descr} must be of type {_repr_type(t)} not {_repr_type(value.__class__)}", condition)
+
 def AA_TYPES(obj, path, attr, ts, condition=None) -> None:
     assert len(ts) >= 1
     if len(ts) == 1:
@@ -217,7 +221,7 @@ def is_valid_url(url: str) -> bool:
 
 
 __all__ = [
-    "AA_TYPE", "AA_TYPES", "AA_NONE", "AA_NONE_OR_TYPE", 
+    "AA_TYPE", "ADESCR_TYPE", "AA_TYPES", "AA_NONE", "AA_NONE_OR_TYPE", 
     "AA_LIST_OF_TYPE", "AA_LIST_OF_TYPES", "AA_TUPLE_OF_TYPES", "AA_DICT_OF_TYPE",
     "AA_MIN", "AA_MAX", "AA_RANGE", "AA_MIN_LEN", "AA_EXACT_LEN", "AA_COORD_PAIR", "AA_BOXED_COORD_PAIR",
     "AA_JSON_COMPATIBLE", "AA_HEX_COLOR", "AA_ALNUM", "AA_NONE_OR_CALLABLE",

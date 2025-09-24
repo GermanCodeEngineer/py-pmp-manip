@@ -127,6 +127,14 @@ c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
         }),
     ),
 
+    ("looks_changeStretch", "&looks:: change stretch by x: (X) y: (Y)"): OpcodeInfo(
+        opcode_type=OpcodeType.STATEMENT,
+        inputs=DualKeyDict({
+            ("X", "X"): InputInfo(BuiltinInputType.NUMBER),
+            ("Y", "Y"): InputInfo(BuiltinInputType.NUMBER),
+        }),
+    ),
+
     ("looks_stretchGetX", "&looks::x stretch"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         can_have_monitor=True,

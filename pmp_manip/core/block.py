@@ -18,7 +18,8 @@ from pmp_manip.opcode_info.api  import (
 )
 from pmp_manip.utility          import (
     grepr_dataclass, get_closest_matches, tuplify, listify, string_to_sha256,
-    AA_TYPE, AA_NONE, AA_NONE_OR_TYPE, AA_COORD_PAIR, AA_LIST_OF_TYPE, AA_DICT_OF_TYPE, AA_MIN_LEN, AA_EQUAL,
+    AA_TYPE, ADESCR_TYPE, AA_NONE, AA_NONE_OR_TYPE, AA_COORD_PAIR, 
+    AA_LIST_OF_TYPE, AA_DICT_OF_TYPE, AA_MIN_LEN, AA_EQUAL,
     AbstractTreePath,
     MANIP_ConversionError,
     MANIP_UnnecessaryInputError, MANIP_MissingInputError, MANIP_UnnecessaryDropdownError, MANIP_MissingDropdownError, 
@@ -32,6 +33,25 @@ from pmp_manip.core.block_mutation import FRMutation, SRMutation
 from pmp_manip.core.comment        import SRComment
 from pmp_manip.core.context        import CompleteContext
 from pmp_manip.core.dropdown       import SRDropdownValue
+
+
+def _get_input_cls_for_input_mode(input_mode: InputMode) -> type["SRInputValue"]:
+    """
+    Get the corresponding class for a input of a certain mode
+    
+    Args:
+        input_mode: the mode of the input
+    """
+    return {
+        InputMode.BLOCK_AND_TEXT              : SRBlockAndTextInputValue,
+        InputMode.BLOCK_AND_DROPDOWN          : SRBlockAndDropdownInputValue,
+        InputMode.BLOCK_AND_BROADCAST_DROPDOWN: SRBlockAndDropdownInputValue,
+        InputMode.BLOCK_AND_MENU_TEXT         : SRBlockAndDropdownInputValue,
+        InputMode.BLOCK_AND_BOOL              : SRBlockAndBoolInputValue,
+        InputMode.BLOCK_ONLY                  : SRBlockOnlyInputValue,
+        InputMode.SCRIPT                      : SRScriptInputValue,
+        InputMode.FORCED_EMBEDDED_BLOCK       : SREmbeddedBlockInputValue,
+    }[input_mode]
 
 
 @grepr_dataclass(grepr_fields=["opcode", "next", "parent", "inputs", "fields", "shadow", "top_level", "x", "y", "comment", "mutation"])
@@ -783,12 +803,16 @@ class SRBlock:
                 raise MANIP_UnnecessaryInputError(path, 
                     f"inputs of {cls_name!r} with opcode {self.opcode!r} includes unnecessary input {new_input_id!r}",
                 )
+            input_type = input_infos[new_input_id].type
+            input_path = path.add_attribute("inputs").add_index_or_key(new_input_id)
+            input_cls = _get_input_cls_for_input_mode(input_type.mode)
+            ADESCR_TYPE(self, input_path, f"input {new_input_id!r}", input, input_cls, condition="For this opcode")
             input.validate(
-                path          = path.add_attribute("inputs").add_index_or_key(new_input_id),
+                path          = input_path,
                 info_api      = info_api,
                 validation_if = validation_if,
                 context       = context,
-                input_type    = input_infos[new_input_id].type,
+                input_type    = input_type,
             )
         for new_input_id in input_infos.keys():
             if new_input_id not in self.inputs:

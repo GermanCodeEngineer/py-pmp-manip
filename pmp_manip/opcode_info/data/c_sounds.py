@@ -15,14 +15,29 @@ c_sounds = OpcodeInfoGroup(name="c_sounds", opcode_info=DualKeyDict({
             ("VALUE", "SECONDS"): InputInfo(BuiltinInputType.NUMBER),
         }),
     ),
-
+    
+    ("sound_play", "&sound::start sound ([SOUND])"): OpcodeInfo(
+        opcode_type=OpcodeType.STATEMENT,
+        inputs=DualKeyDict({
+            ("SOUND_MENU", "SOUND"): InputInfo(BuiltinInputType.SOUND, menu=MenuInfo("sound_sounds_menu", inner="SOUND_MENU")),
+       }),
+    ),
+    
+    ("sound_play_at_seconds", "&sound::start sound ([SOUND]) at (SECONDS) seconds"): OpcodeInfo(
+        opcode_type=OpcodeType.STATEMENT,
+        inputs=DualKeyDict({
+            ("SOUND_MENU", "SOUND"): InputInfo(BuiltinInputType.SOUND, menu=MenuInfo("sound_sounds_menu", inner="SOUND_MENU")),
+            ("VALUE", "SECONDS"): InputInfo(BuiltinInputType.NUMBER),
+        }),
+    ),
+    
     ("sound_stop", "&sound::stop sound ([SOUND])"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
             ("SOUND_MENU", "SOUND"): InputInfo(BuiltinInputType.SOUND, menu=MenuInfo("sound_sounds_menu", inner="SOUND_MENU")),
         }),
     ),
-
+    
     ("sound_playallsounds", "&sound::play all sounds"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
     ),

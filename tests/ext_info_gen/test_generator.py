@@ -1321,6 +1321,7 @@ extension = OpcodeInfoGroup(
             special_cases={},
             old_mutation_cls=None,
             new_mutation_cls=None,
+            allow_embedded=False,
         ),
         ("modasyncexample_fetch", "&modasyncexample::fetch (URL)"): OpcodeInfo(
             opcode_type=OpcodeType.STRING_REPORTER,
@@ -1335,6 +1336,7 @@ extension = OpcodeInfoGroup(
             special_cases={},
             old_mutation_cls=None,
             new_mutation_cls=None,
+            allow_embedded=False,
         ),
         ("modasyncexample_playEffect", "&modasyncexample::play effect [EFFECT]"): OpcodeInfo(
             opcode_type=OpcodeType.STATEMENT,
@@ -1349,6 +1351,7 @@ extension = OpcodeInfoGroup(
             special_cases={},
             old_mutation_cls=None,
             new_mutation_cls=None,
+            allow_embedded=False,
         ),
         ("modasyncexample_menu_soundEffectMenu", "modasyncexample_menu_soundEffectMenu"): OpcodeInfo(
             opcode_type=OpcodeType.MENU,
@@ -1361,6 +1364,7 @@ extension = OpcodeInfoGroup(
             special_cases={},
             old_mutation_cls=None,
             new_mutation_cls=None,
+            allow_embedded=False,
         ),
     }),
 )"""

@@ -4,22 +4,23 @@ Special:
     TODOs in Code + read through code, optimize here and there
 
 Currently Working On:
-    
     - M/L: make a script which show info for the requested block opcode
     - add the above to docs
+    - add test @ "TODO: add test"
 
 Changelog since last Release:
     - Major Changes:
         - Compatability with all Builtin Extensions
         - Builtin Extensions are now generated locally, not maintained manually
         - Renamed built-in Second Repr/"new" opcodes -> "&category::block (INPUT) text"
+        - Added new category blocks(as of 24.09.2025)
         - Updated documentation and tests
     - Minor Changes:
         - Implemented special and difficult "draw polygon" block(pen extension)
         - Added CONTRIBUTING.md
 
 High:
-    - S/M: implement new "control_expandableIf" block. @PenguinMod: why so many features, i cant keep up :(
+    - S/M: implement new "control_expandableIf" and expandable +-*/^ and expandable join block. @PenguinMod: why so many features, i cant keep up :(
 
 Medium:
     - XL: add tests for and document opcode_info
@@ -37,6 +38,7 @@ Medium:
     - S: fix grepr multiline string issue
         => also fix parent and subclass field order issue
     - S: investigate custom type object variables(example: vector extension)
+    - S: remove custom input/dropdown missing/unexpected handling and use validation system
 
 Low:
     - XL: add tests for and document utility

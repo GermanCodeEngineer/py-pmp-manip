@@ -301,6 +301,7 @@ class DropdownType(GEnum):
                     values.extend(context.backdrops)
                     values.extend([(DropdownValueKind.COSTUME, i+1) for i in range(len(context.backdrops))])
                 case DropdownValueRule.SOUND:
+                    values.extend(context.sounds)
                     values.extend([(DropdownValueKind.SOUND, i+1) for i in range(len(context.sounds))])
                 case DropdownValueRule.VARIABLE:
                     values.extend(context.scope_variables)
