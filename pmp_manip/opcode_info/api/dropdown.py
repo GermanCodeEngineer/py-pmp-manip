@@ -461,6 +461,7 @@ class DropdownType(GEnum):
         if old_value in old_values:
             return new_values[old_values.index(old_value)]
         else:
+            print(self, old_value)
             assert self.guess_default_kind is not None
             return (self.guess_default_kind, old_value)
 
@@ -630,6 +631,7 @@ class BuiltinDropdownType(DropdownType):
     # TEMPORARY ONES (do not exist in actual SR only during transformation)
     POLYGON_MENU_UNTOUCHED = DropdownTypeInfo(direct_values=[False, True])
     CHECKBOX = DropdownTypeInfo(direct_values=["FALSE", "TRUE"])
+    EDITOR_BUTTON = DropdownTypeInfo()
 
 
 __all__ = [

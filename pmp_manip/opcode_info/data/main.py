@@ -114,6 +114,10 @@ c_sensing.add_opcode("sensing_fingeroptions", "&sensing::#FINGER INDEX MENU", Op
 c_control.add_opcode(OPCODE_EXPANDABLE_IF, "&control::{{EXPANDABLE IF-THEN-ELSE CHAIN}}", OpcodeInfo(
     opcode_type=OpcodeType.STATEMENT,
     inputs=DualKeyDict(), # Overwritten by special case
+    dropdowns=DualKeyDict({
+        ("REMOVE", "REMOVE"): DropdownInfo(BuiltinDropdownType.EDITOR_BUTTON),
+        ("ADD", "ADD"): DropdownInfo(BuiltinDropdownType.EDITOR_BUTTON)
+    }),
 ))
 c_variables.add_opcode(OPCODE_VAR_VALUE, NEW_OPCODE_VAR_VALUE, OpcodeInfo(
     opcode_type=OpcodeType.STRING_REPORTER,
@@ -304,19 +308,16 @@ def _eab0_2775(block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None") 
     for branch_index in range(mutation.branches):
         input_infos.set(
             key1  = f"SUBSTACK{branch_index+1}",
-            key2  = f"SUBSTACK{branch_index+1}",
+            key2  = f"THEN{branch_index+1}",
             value = InputInfo(BuiltinInputType.SCRIPT),
         )
     bool_count = (mutation.branches - 1) if mutation.ends_in_else else mutation.branches
     for branch_index in range(bool_count):
         input_infos.set(
             key1  = f"BOOL{branch_index+1}",
-            key2  = f"BOOL{branch_index+1}",
+            key2  = f"CONDITION{branch_index+1}",
             value = InputInfo(BuiltinInputType.BOOLEAN),
         )
-    print(mutation)
-    print(input_infos)
-    input()
     return input_infos
 info_api.add_opcode_case(OPCODE_EXPANDABLE_IF, SpecialCase(
     type=SpecialCaseType.GET_ALL_INPUT_IDS_INFO,

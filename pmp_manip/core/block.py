@@ -8,7 +8,7 @@ from pmp_manip.important_consts import (
     OPCODE_NUM_VAR_VALUE, OPCODE_VAR_VALUE, OPCODE_NUM_LIST_VALUE, OPCODE_LIST_VALUE,
     ANY_TEXT_INPUT_NUM, NEW_OPCODE_CHECKBOX,
     ANY_OPCODE_NUM_IMMEDIATE_BLOCK, ANY_OPCODE_IMMEDIATE_BLOCK, ANY_NEW_OPCODE_IMMEDIATE_BLOCK,
-    SHA256_SEC_BROADCAST_MSG, SHA256_SEC_DROPDOWN_VALUE,
+    SHA256_SEC_BROADCAST_MSG, SHA256_SEC_DROPDOWN_VALUE, SHA256_EDITOR_BUTTON_DV,
 )
 from pmp_manip.opcode_info.api  import (
     OpcodeInfoAPI, OpcodeInfo, 
@@ -239,8 +239,16 @@ class FRBlock:
                 own_id      = own_id,
             )
             new_dropdowns = {}
+            dropdown_infos = opcode_info.get_old_dropdown_ids_infos(block=self, fti_if=None) 
+            # fti_if is not needed for a IRBlock
+            print(self)
+            print(dropdown_infos)
             for dropdown_id, dropdown_value in self.fields.items():
-                new_dropdowns[dropdown_id] = dropdown_value[0]
+                dropdown_info = dropdown_infos.get(dropdown_id, None)
+                if dropdown_info and (dropdown_infos[dropdown_id].type is BuiltinDropdownType.EDITOR_BUTTON):
+                    continue
+                else:
+                    new_dropdowns[dropdown_id] = dropdown_value[0]
             
             new_block = IRBlock(
                 opcode       = self.opcode,
@@ -418,8 +426,11 @@ class IRBlock:
             else:
                 match len(elements):
                     case 1: magic_number = input_type.outer_magic_number
-                    case 2: magic_number = 3
+                    case 2: magic_number = 3>
             old_inputs[input_id] = (magic_number, *elements)
+        print(self)
+        print("MAGIC", old_inputs)
+        input()
 
         dropdown_infos = opcode_info.get_old_dropdown_ids_infos(block=self, fti_if=None)
         # fti_if is not necessary for a IRBlock
@@ -447,6 +458,14 @@ class IRBlock:
                 old_fields[dropdown_id] = (dropdown_value, sha256)
             else:
                 old_fields[dropdown_id] = (dropdown_value, sha256, suffix)                
+        
+        for dropdown_id, dropdown_info in dropdown_infos.items():
+            if dropdown_id not in old_fields:
+                if dropdown_info.type is BuiltinDropdownType.EDITOR_BUTTON:
+                    old_fields[dropdown_id] = ("", string_to_sha256(dropdown_id, secondary=SHA256_EDITOR_BUTTON_DV))
+                else:
+                    raise MANIP_ConversionError(f"For a block with opcode {self.opcode!r}, dropdown {new_dropdown_id!r} is missing")
+
         
         old_block = FRBlock(
             opcode    = self.opcode,
@@ -832,6 +851,9 @@ class SRBlock:
         # fti_if is not necessary for a SRBlock
         
         for new_dropdown_id, dropdown in self.dropdowns.items():
+            dropdown_info = dropdown_infos.get(new_dropdown_id)
+            if dropdown_info and (dropdown_info.type is BuiltinDropdownType.EDITOR_BUTTON):
+                continue
             if new_dropdown_id not in dropdown_infos.keys():
                 raise MANIP_UnnecessaryDropdownError(path, 
                     f"dropdowns of {cls_name!r} with opcode {self.opcode!r} includes unnecessary dropdown {new_dropdown_id!r}",
@@ -840,10 +862,12 @@ class SRBlock:
             dropdown.validate(current_path)
             dropdown.validate_value(
                 path          = current_path,
-                dropdown_type = dropdown_infos[new_dropdown_id].type,
+                dropdown_type = dropdown_info.type,
                 context       = context,
             )
-        for new_dropdown_id in dropdown_infos.keys():
+        for new_dropdown_id, dropdown_info in dropdown_infos.items():
+            if dropdown_info.type is BuiltinDropdownType.EDITOR_BUTTON:
+                continue
             if new_dropdown_id not in self.dropdowns:
                 raise MANIP_MissingDropdownError(path, 
                     f"dropdowns of {cls_name!r} with opcode {self.opcode!r} is missing dropdown {new_dropdown_id!r}",

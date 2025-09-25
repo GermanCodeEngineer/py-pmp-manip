@@ -104,12 +104,12 @@ def AA_RANGE(obj, path, attr, min, max, condition=None):
 def AA_MIN_LEN(obj, path, attr, min_len: int, condition=None):
     attr_value, descr = _value_and_descr(obj, attr)
     if len(attr_value) < min_len:
-        raise MANIP_RangeValidationError(path, f"{descr} must contain at least {min_len} element(s)")
+        raise MANIP_RangeValidationError(path, f"{descr} must contain at least {min_len} element(s)", condition)
 
 def AA_EXACT_LEN(obj, path, attr, length: int, condition=None):
     attr_value, descr = _value_and_descr(obj, attr)
     if len(attr_value) != length:
-        raise MANIP_RangeValidationError(path, f"{descr} must contain exactly {length} element(s)")
+        raise MANIP_RangeValidationError(path, f"{descr} must contain exactly {length} element(s)", condition)
 
 def AA_COORD_PAIR(obj, path, attr, condition=None):
     attr_value, descr = _value_and_descr(obj, attr)
