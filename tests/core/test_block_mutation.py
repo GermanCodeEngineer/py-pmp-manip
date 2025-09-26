@@ -13,10 +13,10 @@ from pmp_manip.core.block_interface import FirstToInterIF, InterToFirstIF
 from pmp_manip.core.block_mutation  import (
 	_load_bool_value, _load_noquote_str_value, _load_color_array,
     FRMutation,
-    FRCustomBlockArgumentMutation, FRCustomBlockMutation,
-    FRCustomBlockCallMutation, FRStopScriptMutation, FRPolygonMutation,
-    SRCustomBlockArgumentMutation, SRCustomBlockMutation,
-    SRCustomBlockCallMutation,
+    FRCustomBlockArgumentMutation, FRCustomBlockMutation, FRCustomBlockCallMutation,
+    FRExpandableIfMutation, FRExpandableMathMutation, FRStopScriptMutation, FRPolygonMutation,
+    SRCustomBlockArgumentMutation, SRCustomBlockMutation, SRCustomBlockCallMutation,
+    SRExpandableIfMutation, SRExpandableMathMutation,
 )
 from pmp_manip.core.custom_block    import SRCustomBlockOpcode, SRCustomBlockOptype
 
@@ -390,7 +390,46 @@ def test_FRCustomBlockMutation_from_data_warp():
         FRCustomBlockMutation    .from_data(data | {"warp": 123})
     with raises(MANIP_DeserializationError):
         FRCustomBlockCallMutation.from_data(data | {"warp": []})
+
+
+
+def test_FRExpandableIfMutation_from_to_data_and_to_second(fti_if: FirstToInterIF):
+    data = {
+        "tagName": "mutation",
+        "children": [],
+        "branches": "1",
+        "ends-in-else": "false",
+    }
+    frmutation = FRExpandableIfMutation.from_data(data)
+    assert frmutation.branches == 1
+    assert frmutation.ends_in_else is False
     
+    assert frmutation.to_data() == data
+    
+    srmutation = frmutation.to_second(fti_if)
+    assert isinstance(srmutation, SRExpandableIfMutation)
+    assert srmutation.branch_count == 1
+    assert srmutation.ends_in_else is False
+
+
+
+def test_FRExpandableMathMutation_from_to_data_and_to_second(fti_if: FirstToInterIF):
+    data = {
+        "tagName": "mutation",
+        "children": [],
+        "inputcount": "3",
+        "menuvalues": "*^",
+    }
+    frmutation = FRExpandableMathMutation.from_data(data)
+    assert frmutation.input_count == 3
+    assert frmutation.menu_values == ["*", "^"]
+    
+    assert frmutation.to_data() == data
+    
+    srmutation = frmutation.to_second(fti_if)
+    assert isinstance(srmutation, SRExpandableMathMutation)
+    assert srmutation.operations == ["*", "^"]
+
 
 
 def test_FRStopScriptMutation_from_to_data_to_second(itf_if: InterToFirstIF):
@@ -531,7 +570,7 @@ def test_SRCustomBlockMutation_to_first(itf_if: InterToFirstIF):
     assert srmutation.to_first(itf_if).returns is None
 
 
-  
+
 def test_SRCustomBlockCallMutation_validate():
     srmutation = SRCustomBlockCallMutation(
         custom_opcode=SRCustomBlockOpcode(segments=("hi",)),
@@ -549,7 +588,7 @@ def test_SRCustomBlockCallMutation_validate():
     )
 
 
-def test_SRCustomBlockMutationCall_to_first(itf_if: InterToFirstIF):
+def test_SRCustomBlockCallMutation_to_first(itf_if: InterToFirstIF):
     srmutation = SRCustomBlockCallMutation(
         custom_opcode=SR_BLOCK_CUSTOM_OPCODE,
     )
@@ -578,4 +617,64 @@ def test_SRCustomBlockMutationCall_to_first(itf_if: InterToFirstIF):
         sprite_name="_stage_",
     )
     assert srmutation.to_first(dummy_if).returns is None
+
+
+
+def test_SRExpandableIfMutation_validate():
+    srmutation = SRExpandableIfMutation(
+        branch_count=3,
+        ends_in_else=True,
+    )
+
+    srmutation.validate(path=AbstractTreePath())
+    
+    execute_attr_validation_tests(
+        obj=srmutation,
+        attr_tests=[
+            ("branch_count", "3", MANIP_TypeValidationError),
+            ("ends_in_else", 1, MANIP_TypeValidationError),
+        ],
+        validate_func=SRExpandableIfMutation.validate,
+        func_args=[AbstractTreePath()],
+    )
+
+
+def test_SRExpandableIfMutation_to_first(itf_if: InterToFirstIF):
+    srmutation = SRExpandableIfMutation(
+        branch_count=3,
+        ends_in_else=True,
+    )
+    assert srmutation.to_first(itf_if) == FRExpandableIfMutation(
+        tag_name="mutation",
+        children=[],
+        branches=3,
+        ends_in_else=True,
+    )
+
+
+
+def test_SRExpandableMathMutation_validate():
+    srmutation = SRExpandableMathMutation(operations=["^", "-", "*"])
+
+    srmutation.validate(path=AbstractTreePath())
+    
+    execute_attr_validation_tests(
+        obj=srmutation,
+        attr_tests=[
+            ("operations", "*+-", MANIP_TypeValidationError),
+            ("operations", ["%"], MANIP_InvalidValueError),
+        ],
+        validate_func=SRExpandableMathMutation.validate,
+        func_args=[AbstractTreePath()],
+    )
+
+
+def test_SRExpandableMathMutation_to_first(itf_if: InterToFirstIF):
+    srmutation = SRExpandableMathMutation(operations=["^", "-", "*"])
+    assert srmutation.to_first(itf_if) == FRExpandableMathMutation(
+        tag_name="mutation",
+        children=[],
+        input_count=4,
+        menu_values=["^", "-", "*"],
+    )
 

@@ -73,5 +73,5 @@ class SRCustomExtension(SRExtension):
             raise MANIP_InvalidValueError(path, f"url of {self.__class__.__name__} must be either a valid url or a valid javascript data uri.")
 
 
-__all__ = ["SRExtension", "SRCustomExtension"]
+__all__ = ["SRExtension", "SRBuiltinExtension", "SRCustomExtension"]
 

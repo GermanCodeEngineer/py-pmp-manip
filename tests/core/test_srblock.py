@@ -206,6 +206,10 @@ def test_SRBlock_validate_invalid_input_cls(validation_if, context):
     with raises(MANIP_TypeValidationError):
         srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False, expects_embedded=False)
 
+def test_SRBlock_validate_editor_button(validation_if, context):
+    srblock = ALL_SR_SCRIPTS[12].blocks[0]
+    srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False, expects_embedded=False)
+
 
 def test_SRBlock_validate_opcode_type():
     reporter_tests = [

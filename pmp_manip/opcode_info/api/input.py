@@ -98,10 +98,10 @@ class InputType(GEnum):
         """
         Get the outer magic number used in first representation of inputs if no block exists
         """
-        r = 2 if self is BuiltinInputType.NUMBER_SPECIAL else 1
-        print(self, r)
-        input()
-        return r
+        if (self.mode in {InputMode.BLOCK_ONLY, InputMode.SCRIPT}) or (self is BuiltinInputType.NUMBER_SPECIAL):
+            return 2
+        else:
+            return 1
 
     @classmethod
     def get_by_cb_default(cls, default: str) -> "InputType":

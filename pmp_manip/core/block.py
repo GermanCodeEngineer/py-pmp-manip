@@ -64,7 +64,7 @@ class FRBlock:
     next: str | None
     parent: str | None
     inputs: dict[str, (
-       tuple[int, str | tuple] 
+       tuple[int, str | tuple | None] 
      | tuple[int, str | tuple, str | tuple]
     )]
     fields: dict[str, tuple[DROPDOWN_VALUE_T, str] | tuple[DROPDOWN_VALUE_T, str, str]]
@@ -241,11 +241,9 @@ class FRBlock:
             new_dropdowns = {}
             dropdown_infos = opcode_info.get_old_dropdown_ids_infos(block=self, fti_if=None) 
             # fti_if is not needed for a IRBlock
-            print(self)
-            print(dropdown_infos)
             for dropdown_id, dropdown_value in self.fields.items():
                 dropdown_info = dropdown_infos.get(dropdown_id, None)
-                if dropdown_info and (dropdown_infos[dropdown_id].type is BuiltinDropdownType.EDITOR_BUTTON):
+                if dropdown_info and (dropdown_info.type is BuiltinDropdownType.EDITOR_BUTTON):
                     continue
                 else:
                     new_dropdowns[dropdown_id] = dropdown_value[0]
@@ -421,16 +419,13 @@ class IRBlock:
                         string_to_sha256(input_value.text, secondary=SHA256_SEC_BROADCAST_MSG)
                     ))
             
-            if input_type.mode.can_be_missing:
-                magic_number = 2
-            else:
-                match len(elements):
-                    case 1: magic_number = input_type.outer_magic_number
-                    case 2: magic_number = 3>
+            match len(elements):
+                case 0:
+                    magic_number = 1 # Rare but sometimes a SUBSTACK uses (1, None)
+                    elements.append(None)
+                case 1: magic_number = input_type.outer_magic_number
+                case 2: magic_number = 3
             old_inputs[input_id] = (magic_number, *elements)
-        print(self)
-        print("MAGIC", old_inputs)
-        input()
 
         dropdown_infos = opcode_info.get_old_dropdown_ids_infos(block=self, fti_if=None)
         # fti_if is not necessary for a IRBlock
@@ -464,7 +459,7 @@ class IRBlock:
                 if dropdown_info.type is BuiltinDropdownType.EDITOR_BUTTON:
                     old_fields[dropdown_id] = ("", string_to_sha256(dropdown_id, secondary=SHA256_EDITOR_BUTTON_DV))
                 else:
-                    raise MANIP_ConversionError(f"For a block with opcode {self.opcode!r}, dropdown {new_dropdown_id!r} is missing")
+                    raise MANIP_ConversionError(f"For a block with opcode {self.opcode!r}, dropdown {dropdown_id!r} is missing")
 
         
         old_block = FRBlock(
@@ -851,10 +846,8 @@ class SRBlock:
         # fti_if is not necessary for a SRBlock
         
         for new_dropdown_id, dropdown in self.dropdowns.items():
-            dropdown_info = dropdown_infos.get(new_dropdown_id)
-            if dropdown_info and (dropdown_info.type is BuiltinDropdownType.EDITOR_BUTTON):
-                continue
-            if new_dropdown_id not in dropdown_infos.keys():
+            dropdown_info = dropdown_infos.get(new_dropdown_id, None)
+            if (new_dropdown_id not in dropdown_infos.keys()) or (dropdown_info and (dropdown_info.type is BuiltinDropdownType.EDITOR_BUTTON)):
                 raise MANIP_UnnecessaryDropdownError(path, 
                     f"dropdowns of {cls_name!r} with opcode {self.opcode!r} includes unnecessary dropdown {new_dropdown_id!r}",
                 )

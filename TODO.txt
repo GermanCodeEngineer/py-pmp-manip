@@ -4,13 +4,8 @@ Special:
     TODOs in Code + read through code, optimize here and there
 
 Currently Working On:
-    - S/M: implement new "control_expandableIf" and expandable +-*/^ and expandable join block. @PenguinMod: why so many features, i cant keep up :(
-    - add FSRExpandableIfMutation to docs
-    
-    
     - M/L: make a script which show info for the requested block opcode
     - add the above to docs
-    - add test @ "TODO: add test"
 
 Changelog since last Release:
     - Major Changes:

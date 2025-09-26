@@ -274,6 +274,43 @@ def test_IRBlock_to_first_empty_menu():
     assert itf_if.added_blocks == {}
     assert itf_if.added_comments == {}
 
+def test_IRBlock_to_first_editor_button():
+    itf_if = TEST_InterToFirstIF(
+        blocks=ALL_IR_BLOCKS,
+        global_vars=["my variable"], global_lists=["my list"],
+        local_vars=[], local_lists=[],
+        sprite_name="Sprite1",
+        _block_ids=[],
+    )
+    irblock = ALL_IR_BLOCKS["F"]
+    frblock = irblock.to_first(
+        itf_if=itf_if,
+        info_api=info_api,
+        parent_id=None,
+        own_id="F",
+    )
+    assert frblock == ALL_FR_BLOCKS["F"]
+    assert itf_if.added_blocks == {}
+    assert itf_if.added_comments == {}
+
+def test_IRBlock_to_first_missing_dropdown():
+    itf_if = TEST_InterToFirstIF(
+        blocks=ALL_IR_BLOCKS,
+        global_vars=["my variable"], global_lists=["my list"],
+        local_vars=[], local_lists=[],
+        sprite_name="Sprite1",
+        _block_ids=[],
+    )
+    irblock = copy(ALL_IR_BLOCKS["m"])
+    del irblock.dropdowns["VARIABLE"]
+    with raises(MANIP_ConversionError):
+        irblock.to_first(
+            itf_if=itf_if,
+            info_api=info_api,
+            parent_id=None,
+            own_id="m",
+        )
+
 
 
 def test_IRBlock_to_second_block_and_text_block_and_bool():

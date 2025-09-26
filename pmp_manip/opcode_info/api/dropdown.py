@@ -461,7 +461,6 @@ class DropdownType(GEnum):
         if old_value in old_values:
             return new_values[old_values.index(old_value)]
         else:
-            print(self, old_value)
             assert self.guess_default_kind is not None
             return (self.guess_default_kind, old_value)
 

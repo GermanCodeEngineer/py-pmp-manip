@@ -6,6 +6,7 @@ from lxml  import etree
 from pmp_manip.important_consts import (
     SHA256_SEC_MAIN_ARGUMENT_NAME, SHA256_SEC_LOCAL_ARGUMENT_NAME,
     SHA256_SEC_BROADCAST_MSG, SHA256_SEC_DROPDOWN_VALUE, SHA256_SEC_TARGET_NAME,
+    SHA256_EDITOR_BUTTON_DV,
 )
 from pmp_manip.opcode_info.api  import DropdownValueKind, InputMode
 from pmp_manip.utility          import read_all_files_of_zip, string_to_sha256, gdumps, KeyReprDict
@@ -13,8 +14,8 @@ from pmp_manip.utility          import read_all_files_of_zip, string_to_sha256, 
 from pmp_manip.core.asset          import FRCostume, FRSound, SRVectorCostume, SRSound
 from pmp_manip.core.block_mutation import (
     FRCustomBlockMutation, FRCustomBlockCallMutation,
-    FRCustomBlockArgumentMutation, FRPolygonMutation,
-    SRCustomBlockMutation, SRCustomBlockCallMutation,
+    FRCustomBlockArgumentMutation, FRPolygonMutation, FRExpandableIfMutation,
+    SRCustomBlockMutation, SRCustomBlockCallMutation, SRExpandableIfMutation,
 )
 from pmp_manip.core.block          import (
     FRBlock, IRBlock, IRInputValue,
@@ -188,7 +189,7 @@ ALL_FR_BLOCK_DATAS = {
         "parent": None,
         "inputs": {
             string_to_sha256("a text arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME): [3, "k", [10, ""]],
-            string_to_sha256("a bool arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME): [2, "l", "x"],
+            string_to_sha256("a bool arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME): [3, "l", "x"],
         },
         "fields": {},
         "shadow": False,
@@ -227,7 +228,7 @@ ALL_FR_BLOCK_DATAS = {
         "fields": {
             "CHECKBOX": ["FALSE", string_to_sha256("FALSE", secondary=SHA256_SEC_DROPDOWN_VALUE)]
         },
-        "shadow": False,
+        "shadow": True,
         "topLevel": False,
     },
     "k": {
@@ -247,7 +248,7 @@ ALL_FR_BLOCK_DATAS = {
         "next": None,
         "parent": None,
         "inputs": {
-            "CONDITION": [2, "y"],
+            "CONDITION": [1, "y"],
             "SUBSTACK": [2, "o"],
         },
         "fields": {},
@@ -264,7 +265,7 @@ ALL_FR_BLOCK_DATAS = {
         "fields": {
             "CHECKBOX": ["FALSE", string_to_sha256("FALSE", secondary=SHA256_SEC_DROPDOWN_VALUE)]
         },
-        "shadow": False,
+        "shadow": True,
         "topLevel": False,
     },
     "o": {
@@ -360,7 +361,7 @@ ALL_FR_BLOCK_DATAS = {
         "next": None,
         "parent": None,
         "inputs": {
-            "CONDITION": [2, "A"],
+            "CONDITION": [1, "A"],
         },
         "fields": {},
         "shadow": False,
@@ -440,6 +441,40 @@ ALL_FR_BLOCK_DATAS = {
             "expanded": "true",
             "needsinit": "true",
         },
+    },
+    "F": {
+        "opcode": "control_expandableIf",
+        "next": None,
+        "parent": None,
+        "inputs": {
+            "BOOL1": [1, "G"],
+            "SUBSTACK1": [1, None],
+        },
+        "fields": {
+            "REMOVE": ["", string_to_sha256("REMOVE", secondary=SHA256_EDITOR_BUTTON_DV)],
+            "ADD": ["", string_to_sha256("ADD", secondary=SHA256_EDITOR_BUTTON_DV)],
+        },
+        "shadow": False,
+        "topLevel": True,
+        "x": 335,
+        "y": 753,
+        "mutation": {
+            "tagName": "mutation",
+            "children": [],
+            "branches": "1",
+            "ends-in-else": "false",
+        },
+    },
+    "G": {
+        "opcode": "checkbox",
+        "next": None,
+        "parent": "F",
+        "inputs": {},
+        "fields": {
+            "CHECKBOX": ["FALSE", string_to_sha256("FALSE", secondary=SHA256_SEC_DROPDOWN_VALUE)],
+        },
+        "shadow": True,
+        "topLevel": False,
     },
 }
 
@@ -591,7 +626,7 @@ ALL_FR_BLOCKS = {
         parent=None,
         inputs={
             string_to_sha256("a text arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME): (3, "k", (10, "")),
-            string_to_sha256("a bool arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME): (2, "l", "x"),
+            string_to_sha256("a bool arg", secondary=SHA256_SEC_MAIN_ARGUMENT_NAME): (3, "l", "x"),
         },
         fields={},
         shadow=False,
@@ -630,7 +665,7 @@ ALL_FR_BLOCKS = {
         fields={
             "CHECKBOX": ("FALSE", string_to_sha256("FALSE", secondary=SHA256_SEC_DROPDOWN_VALUE))
         },
-        shadow=False,
+        shadow=True,
         top_level=False,
     ),
     "k": FRBlock(
@@ -650,7 +685,7 @@ ALL_FR_BLOCKS = {
         next=None,
         parent=None,
         inputs={
-            "CONDITION": (2, "y"),
+            "CONDITION": (1, "y"),
             "SUBSTACK": (2, "o"),
         },
         fields={},
@@ -667,7 +702,7 @@ ALL_FR_BLOCKS = {
         fields={
             "CHECKBOX": ("FALSE", string_to_sha256("FALSE", secondary=SHA256_SEC_DROPDOWN_VALUE))
         },
-        shadow=False,
+        shadow=True,
         top_level=False,
     ),
     "o": FRBlock(
@@ -765,7 +800,7 @@ ALL_FR_BLOCKS = {
         next=None,
         parent=None,
         inputs={
-            "CONDITION": (2, "A"),
+            "CONDITION": (1, "A"),
         },
         fields={},
         shadow=False,
@@ -856,6 +891,45 @@ ALL_FR_BLOCKS = {
             tag_name="mutation",
             children=[],
         ),
+    ),
+    "F": FRBlock(
+        opcode="control_expandableIf",
+        next=None,
+        parent=None,
+        inputs={
+            "BOOL1": (1, "G"),
+            "SUBSTACK1": (1, None),
+        },
+        fields={
+            "REMOVE": ("", string_to_sha256("REMOVE", secondary=SHA256_EDITOR_BUTTON_DV)),
+            "ADD": ("", string_to_sha256("ADD", secondary=SHA256_EDITOR_BUTTON_DV)),
+        },
+        shadow=False,
+        top_level=True,
+        x=335,
+        y=753,
+        comment=None,
+        mutation=FRExpandableIfMutation(
+            branches=1,
+            ends_in_else=False,
+            tag_name="mutation",
+            children=[],
+        ),
+    ),
+    "G": FRBlock(
+        opcode="checkbox",
+        next=None,
+        parent="F",
+        inputs={},
+        fields={
+            "CHECKBOX": ("FALSE", string_to_sha256("FALSE", secondary=SHA256_SEC_DROPDOWN_VALUE)),
+        },
+        shadow=True,
+        top_level=False,
+        x=None,
+        y=None,
+        comment=None,
+        mutation=None,
     ),
 }
 
@@ -1415,6 +1489,44 @@ ALL_IR_BLOCKS = {
         next=None,
         is_top_level=False,
     ),
+    "F": IRBlock(
+        opcode="control_expandableIf",
+        inputs={
+            "BOOL1": IRInputValue(
+                mode=InputMode.BLOCK_AND_BOOL,
+                references=["G"],
+                immediate_block=None,
+                text=None,
+            ),
+            "SUBSTACK1": IRInputValue(
+                mode=InputMode.SCRIPT,
+                references=[],
+                immediate_block=None,
+                text=None,
+            ),
+        },
+        dropdowns={},
+        comment=None,
+        mutation=SRExpandableIfMutation(
+            branch_count=1,
+            ends_in_else=False,
+        ),
+        position=(335, 753),
+        next=None,
+        is_top_level=True,
+    ),
+    "G": IRBlock(
+        opcode="checkbox",
+        inputs={},
+        dropdowns={
+            "CHECKBOX": "FALSE",
+        },
+        comment=None,
+        mutation=None,
+        position=None,
+        next=None,
+        is_top_level=False,
+    ),
 }
 
 
@@ -1774,6 +1886,27 @@ ALL_SR_SCRIPTS = [
             ),
         ],
     ),
+    SRScript( # [12]
+        position=(335, 753),
+        blocks=[
+            SRBlock(
+                opcode="&control::{{EXPANDABLE IF-THEN-ELSE CHAIN}}",
+                inputs={
+                    "CONDITION1": SRBlockAndBoolInputValue(
+                        block=None,
+                        immediate=False,
+                    ),
+                    "THEN1": SRScriptInputValue(blocks=[]),
+                },
+                dropdowns={},
+                comment=None,
+                mutation=SRExpandableIfMutation(
+                    branch_count=1,
+                    ends_in_else=False,
+                ),
+            ),
+        ],
+    ),
 ]
 
 ALL_SR_BLOCKS = [
@@ -1798,6 +1931,7 @@ ALL_SR_BLOCKS = [
      ALL_SR_SCRIPTS[10].blocks[0].inputs["CONDITION"].block,
     *ALL_SR_SCRIPTS[11].blocks,
      ALL_SR_SCRIPTS[11].blocks[0].inputs["SHAPE"].block,
+    *ALL_SR_SCRIPTS[12].blocks,
 ]
 
 

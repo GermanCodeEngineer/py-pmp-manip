@@ -52,7 +52,7 @@ def _nest_block(all_blocks: dict[str, FRBlock|tuple], all_comments: dict[str, FR
         new_input_value = []
         new_input_value.append(input_value[0])
         for item in input_value[1:]:
-            if   isinstance(item, tuple): # an immediate block or text field
+            if   isinstance(item, tuple) or (item is None): # an immediate block or text field
                 new_input_value.append(item)
             elif isinstance(item, str): # a block reference
                 new_input_value.append(_nest_block(all_blocks, all_comments, current_id=item))

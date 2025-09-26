@@ -1387,7 +1387,8 @@ All value kinds are: `DropdownValueKind.`...
 Stores additional information special to some kinds of blocks. Only needed for some block opcodes(kinds of blocks). Common base for:
 * [`SRCustomBlockArgumentMutation`](#srcustomblockargumentmutation)
 * [`SRCustomBlockMutation`](#srcustomblockmutation)
-* [`SRCustomBlockCallMutation`](#srcustomblockcallmutation)
+* [`SRExpandableIfMutation`](#SRExpandableIfMutation)
+* [`SRExpandableMathMutation`](#SRExpandableMathMutation)
 
 ## `SRCustomBlockArgumentMutation`
 Inherits from [`SRMutation`](#srmutation). Used and required only by opcodes `"&customblocks::custom block text arg [ARGUMENT]"` and `"customblocks::custom block boolean arg [ARGUMENT]"`.
@@ -1488,6 +1489,40 @@ SRCustomBlockCallMutation(
         ),
     ),
 )
+```
+
+
+## `SRExpandableIfMutation`
+Inherits from [`SRMutation`](#srmutation). Used and required only by opcode `"&control::{{EXPANDABLE IF-THEN-ELSE CHAIN}}"`.
+#### `SRExpandableIfMutation.branch_count`
+- **type**: `int`
+- **description**: the amount of branches
+#### `SRExpandableIfMutation.ends_in_else`
+- **type**: `bool`
+- **description**: wether the last branch is an else
+### Editor View Example
+The mutation itself can not be seen in the editor, only the block:
+![](images/project_view/srexpandableifmutation.png)
+### Python Object Example
+```python
+SRExpandableIfMutation(
+    branch_count=3,
+    ends_in_else=True,
+)
+```
+
+
+## `SRExpandableMathMutation`
+Inherits from [`SRMutation`](#srmutation). Used and required only by opcode `"&operators::{{EXPANDABLE MATH CHAIN}}"`.
+#### `SRExpandableMathMutation.operations`
+- **type**: `list[Literal["+", "-", "*", "/", "^"]]`
+- **description**: the operations between the inputs
+### Editor View Example
+The mutation itself can not be seen in the editor, only the block:
+![](images/project_view/srexpandablemathmutation.png)
+### Python Object Example
+```python
+SRExpandableMathMutation(operations=["^", "-", "*"])
 ```
 
 

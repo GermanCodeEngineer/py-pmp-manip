@@ -3,11 +3,11 @@ from pytest import fixture, raises
 
 from pmp_manip.important_consts import (
     OPCODE_NUM_VAR_VALUE, OPCODE_VAR_VALUE, OPCODE_NUM_LIST_VALUE, OPCODE_LIST_VALUE,
-    SHA256_SEC_VARIABLE, SHA256_SEC_LIST, SHA256_SEC_BROADCAST_MSG,
+    SHA256_SEC_BROADCAST_MSG,
     SHA256_SEC_MAIN_ARGUMENT_NAME,
 )
 from pmp_manip.opcode_info.data import info_api
-from pmp_manip.utility          import string_to_sha256, MANIP_DeserializationError, MANIP_ConversionError
+from pmp_manip.utility          import string_to_sha256, MANIP_ConversionError
 
 from pmp_manip.core.block_interface import FirstToInterIF
 from pmp_manip.core.block_mutation  import (
@@ -245,6 +245,15 @@ def test_FRBlock_to_inter_cb_call(fti_if: FirstToInterIF):
         own_id="c",
     )
     assert irblock == ALL_IR_BLOCKS["c"]
+
+def test_FRBlock_to_inter_with_editor_button_none_input(fti_if: FirstToInterIF):
+    frblock: FRBlock = ALL_FR_BLOCKS["F"]
+    irblock = frblock.to_inter(
+        fti_if=fti_if,
+        info_api=info_api,
+        own_id="F",
+    )
+    assert irblock == ALL_IR_BLOCKS["F"]
 
 def test_FRBlock_to_inter_invalid_input_element(fti_if: FirstToInterIF):
     frblock: FRBlock = deepcopy(ALL_FR_BLOCKS["g"])

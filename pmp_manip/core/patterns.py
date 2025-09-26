@@ -1,6 +1,6 @@
 from __future__ import annotations
 from dataclasses import field
-from typing import TypeVar, Callable, TypeAlias, Generic, Any, ClassVar
+from typing import TypeVar, Callable, TypeAlias, Generic, Any, Literal, ClassVar
 
 from pmp_manip.opcode_info.api import DropdownValueKind, DROPDOWN_VALUE_T
 from pmp_manip.utility          import (
@@ -9,6 +9,7 @@ from pmp_manip.utility          import (
 
 from pmp_manip.core.block_mutation import (
     SRMutation, SRCustomBlockArgumentMutation, SRCustomBlockMutation, SRCustomBlockCallMutation,
+    SRExpandableIfMutation, SRExpandableMathMutation,
 )
 from pmp_manip.core.block          import (SRScript, SRBlock, SRInputValue)
 from pmp_manip.core.comment        import SRComment
@@ -187,6 +188,27 @@ class CBCallMutationPattern(Pattern):
     _match_fields_: ClassVar = ["custom_opcode"]
 
     custom_opcode: CBOpcodeHandler | None = None
+
+@grepr_dataclass(grepr_fields=["branch_count", "ends_in_else"])
+class ExpandableIfMutationPattern(Pattern):
+    """
+    Pattern for selecting SRExpandableIfMutation instances with certain data.
+    """
+    _match_type_: ClassVar = SRExpandableIfMutation
+    _match_fields_: ClassVar = ["branch_count", "ends_in_else"]
+
+    branch_count: ConstOrFunc[int ] | None = None
+    ends_in_else: ConstOrFunc[bool] | None = None
+
+@grepr_dataclass(grepr_fields=["operations"])
+class ExpandableMathMutationPattern(Pattern):
+    """
+    Pattern for selecting SRExpandableMathMutation instances with certain data.
+    """
+    _match_type_: ClassVar = SRExpandableMathMutation
+    _match_fields_: ClassVar = ["operations"]
+
+    operations: ConstOrFunc[list[Literal["+", "-", "*", "/", "^"]]] | None = None
 
 @grepr_dataclass(grepr_fields=["segments"])
 class CBOpcodePattern(Pattern):

@@ -51,7 +51,7 @@ def lists_equal_ignore_order(a: list, b: list, /, log: bool = True) -> bool:
 def assert_lists_equal_ignore_order(a: list, b: list, /) -> None:
     if not lists_equal_ignore_order(a, b, log=False):
         f = print # to disable searches for "print" with a bracket
-        f(f"a={grepr(a)}\n\n\n\nb={grepr(b)}")
+        f(f"See a.comp and b.comp for the full data")
         write_file_text("a.comp", grepr(a))
         write_file_text("b.comp", grepr(b))
         assert False, "Lists differ."

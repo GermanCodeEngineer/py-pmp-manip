@@ -295,6 +295,26 @@ Pattern for selecting [`SRCustomBlockCallMutation`](second_repr.md#srcustomblock
 * **default value**: `None`
 ---
 
+### `ExpandableIfMutationPattern`
+Pattern for selecting [`SRExpandableIfMutation`](second_repr.md#SRExpandableIfMutation) instances with certain data.
+#### `ExpandableIfMutationPattern.branch_count`
+* **type**: `ConstOrFunc[int]` or `None`
+* **description in SR**: the amount of branches
+* **default value**: `None`
+#### `ExpandableIfMutationPattern.ends_in_else`
+* **type**: `ConstOrFunc[bool]` or `None`
+* **description in SR**: wether the last branch is an else
+* **default value**: `None`
+---
+
+### `ExpandableMathMutationPattern`
+Pattern for selecting [`SRExpandableMathMutation`](second_repr.md#SRExpandableMathMutation) instances with certain data.
+#### `ExpandableMathMutationPattern.operations`
+* **type**: `ConstOrFunc[list[Literal["+", "-", "*", "/", "^"]]]` or `None`
+* **description in SR**: the operations between the inputs
+* **default value**: `None`
+---
+
 ### `CBOpcodePattern`
 Pattern for selecting [`SRCustomBlockOpcode`](second_repr.md#srcustomblockopcode) instances with certain data.
 #### `CBOpcodePattern.segments`

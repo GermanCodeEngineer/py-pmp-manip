@@ -4,7 +4,7 @@ from copy   import copy, deepcopy
 from pmp_manip.important_consts import (
     OPCODE_VAR_VALUE, NEW_OPCODE_VAR_VALUE, OPCODE_LIST_VALUE, NEW_OPCODE_LIST_VALUE, 
     OPCODE_STOP_SCRIPT, OPCODE_CHECKBOX, NEW_OPCODE_CHECKBOX, OPCODE_POLYGON, NEW_OPCODE_POLYGON,
-    OPCODE_FILTER_LIST_INDEX, OPCODE_FILTER_LIST_ITEM, OPCODE_EXPANDABLE_IF,
+    OPCODE_FILTER_LIST_INDEX, OPCODE_FILTER_LIST_ITEM, OPCODE_EXPANDABLE_IF, OPCODE_EXPANDABLE_MATH,
     OPCODE_CB_PROTOTYPE, ANY_OPCODE_CB_DEF, ANY_OPCODE_CB_ARG, 
     OPCODE_CB_CALL, NEW_OPCODE_CB_CALL, OPCODE_CB_ARG_TEXT, OPCODE_CB_ARG_BOOL, 
     OPCODE_CB_DEF, NEW_OPCODE_CB_DEF, OPCODE_CB_DEF_RET, NEW_OPCODE_CB_DEF_REP,
@@ -39,9 +39,9 @@ if TYPE_CHECKING:
     from pmp_manip.core.block           import FRBlock, IRBlock, SRBlock
 
 from pmp_manip.core.block_mutation import (
-    FRCustomBlockMutation, FRCustomBlockArgumentMutation, FRCustomBlockCallMutation, FRStopScriptMutation, FRPolygonMutation,
-    SRCustomBlockMutation, SRCustomBlockArgumentMutation, SRCustomBlockCallMutation,
-    FSRExpandableIfMutation,
+    FRCustomBlockMutation, FRCustomBlockArgumentMutation, FRCustomBlockCallMutation, FRExpandableIfMutation, FRExpandableMathMutation,
+    FRStopScriptMutation, FRPolygonMutation,
+    SRCustomBlockMutation, SRCustomBlockArgumentMutation, SRCustomBlockCallMutation, SRExpandableIfMutation, SRExpandableMathMutation,
 )
 
 # MENUS
@@ -112,6 +112,14 @@ c_sensing.add_opcode("sensing_fingeroptions", "&sensing::#FINGER INDEX MENU", Op
 
 # SPECIAL BLOCKS
 c_control.add_opcode(OPCODE_EXPANDABLE_IF, "&control::{{EXPANDABLE IF-THEN-ELSE CHAIN}}", OpcodeInfo(
+    opcode_type=OpcodeType.STATEMENT,
+    inputs=DualKeyDict(), # Overwritten by special case
+    dropdowns=DualKeyDict({
+        ("REMOVE", "REMOVE"): DropdownInfo(BuiltinDropdownType.EDITOR_BUTTON),
+        ("ADD", "ADD"): DropdownInfo(BuiltinDropdownType.EDITOR_BUTTON)
+    }),
+))
+c_operators.add_opcode(OPCODE_EXPANDABLE_MATH, "&operators::{{EXPANDABLE MATH CHAIN}}", OpcodeInfo(
     opcode_type=OpcodeType.STATEMENT,
     inputs=DualKeyDict(), # Overwritten by special case
     dropdowns=DualKeyDict({
@@ -191,6 +199,7 @@ g_special = OpcodeInfoGroup(
             dropdowns=DualKeyDict({
                 ("CHECKBOX", "CHECKBOX"): DropdownInfo(BuiltinDropdownType.CHECKBOX)
             }),
+            has_shadow=True,
         ),
         (OPCODE_POLYGON, NEW_OPCODE_POLYGON): OpcodeInfo(
             opcode_type=OpcodeType.EMBEDDED,
@@ -226,7 +235,8 @@ info_api.set_opcode_mutation_class(OPCODE_CB_PROTOTYPE, old_cls=FRCustomBlockMut
 info_api.set_opcode_mutation_class(OPCODE_CB_CALL, old_cls=FRCustomBlockCallMutation, new_cls=SRCustomBlockCallMutation)
 info_api.set_opcode_mutation_class(OPCODE_STOP_SCRIPT, old_cls=FRStopScriptMutation, new_cls=None)
 info_api.set_opcode_mutation_class(OPCODE_POLYGON, old_cls=FRPolygonMutation, new_cls=None)
-info_api.set_opcode_mutation_class(OPCODE_EXPANDABLE_IF, old_cls=FSRExpandableIfMutation, new_cls=FSRExpandableIfMutation)
+info_api.set_opcode_mutation_class(OPCODE_EXPANDABLE_IF, old_cls=FRExpandableIfMutation, new_cls=SRExpandableIfMutation)
+info_api.set_opcode_mutation_class(OPCODE_EXPANDABLE_MATH, old_cls=FRExpandableIfMutation, new_cls=SRExpandableIfMutation)
 
 # Special Cases
 def _149c_e47b(block: "SRBlock|IRBlock", validation_if: "ValidationIF") -> OpcodeType:
@@ -245,7 +255,6 @@ info_api.add_opcode_case(OPCODE_STOP_SCRIPT, SpecialCase(
 
 def _bd30_2f8b(block: "SRBlock|IRBlock", validation_if: "ValidationIF") -> OpcodeType:
     # Get the complete mutation and derive OpcodeType from optype
-    from pmp_manip.core.block_mutation import SRCustomBlockCallMutation
     partial_mutation: SRCustomBlockCallMutation = block.mutation
     complete_mutation = validation_if.get_cb_mutation(partial_mutation.custom_opcode)
     return complete_mutation.optype.corresponding_opcode_type
@@ -257,7 +266,6 @@ info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
 
 
 def _f9c8_6ab0(block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None") -> DualKeyDict[str, str, InputType]:
-    from pmp_manip.core.block_mutation import FRCustomBlockCallMutation, SRCustomBlockCallMutation
     from pmp_manip.core.block import FRBlock
     if isinstance(block, FRBlock):
         old_mutation: FRCustomBlockCallMutation = block.mutation
@@ -302,17 +310,23 @@ info_api.add_opcode_case(OPCODE_POLYGON, SpecialCase(
 
 def _eab0_2775(block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None") -> DualKeyDict[str, str, InputType]:
     # Generate SUBSTACK1, BOOL1 ... SUBSTACKn, BOOLn depending on demand
-    from pmp_manip.core.block_mutation import FSRExpandableIfMutation
-    mutation: FSRExpandableIfMutation = block.mutation
+    mutation: FRExpandableIfMutation | SRExpandableIfMutation = block.mutation
     input_infos = DualKeyDict()
-    for branch_index in range(mutation.branches):
+    branch_count = mutation.branch_count if isinstance(mutation, SRExpandableIfMutation) else mutation.branches
+    condition_then_count = (branch_count - 1) if mutation.ends_in_else else branch_count # both mutations have ends_in_else
+    for branch_index in range(condition_then_count):
         input_infos.set(
             key1  = f"SUBSTACK{branch_index+1}",
             key2  = f"THEN{branch_index+1}",
             value = InputInfo(BuiltinInputType.SCRIPT),
         )
-    bool_count = (mutation.branches - 1) if mutation.ends_in_else else mutation.branches
-    for branch_index in range(bool_count):
+    if mutation.ends_in_else:
+        input_infos.set(
+            key1  = f"SUBSTACK{branch_count}",
+            key2  = f"ELSE",
+            value = InputInfo(BuiltinInputType.SCRIPT),
+        )
+    for branch_index in range(condition_then_count):
         input_infos.set(
             key1  = f"BOOL{branch_index+1}",
             key2  = f"CONDITION{branch_index+1}",
@@ -322,6 +336,23 @@ def _eab0_2775(block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None") 
 info_api.add_opcode_case(OPCODE_EXPANDABLE_IF, SpecialCase(
     type=SpecialCaseType.GET_ALL_INPUT_IDS_INFO,
     function=_eab0_2775,
+))
+
+def _a70a_0e97(block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None") -> DualKeyDict[str, str, InputType]:
+    # Generate SUBSTACK1, BOOL1 ... SUBSTACKn, BOOLn depending on demand
+    mutation: FRExpandableMathMutation | SRExpandableMathMutation = block.mutation
+    input_infos = DualKeyDict()
+    input_count = (len(mutation.operations) + 1) if isinstance(mutation, SRExpandableMathMutation) else mutation.input_count
+    for input_index in range(input_count):
+        input_infos.set(
+            key1  = f"NUM{input_index+1}",
+            key2  = f"OPERAND{input_index+1}",
+            value = InputInfo(BuiltinInputType.NUMBER),
+        )
+    return input_infos
+info_api.add_opcode_case(OPCODE_EXPANDABLE_MATH, SpecialCase(
+    type=SpecialCaseType.GET_ALL_INPUT_IDS_INFO,
+    function=_a70a_0e97,
 ))
 
 
@@ -347,7 +378,6 @@ info_api.add_opcodes_case(ANY_OPCODE_CB_DEF, SpecialCase(
 def _1a40_d676(block: "FRBlock", block_id: str, fti_if: "FirstToInterIF") -> "FRBlock":
     # Transfer argument name from a field into the mutation
     # because only real dropdowns should be listed in "fields"
-    from pmp_manip.core.block_mutation import FRCustomBlockArgumentMutation
     block = deepcopy(block)
     mutation: FRCustomBlockArgumentMutation = block.mutation
     mutation.store_argument_name(block.fields["VALUE"][0])
@@ -370,7 +400,6 @@ info_api.add_opcode_case(OPCODE_STOP_SCRIPT, SpecialCase(
 
 def _4548_6eb6(block: "FRBlock", block_id: str, fti_if: "FirstToInterIF") -> "FRBlock":
     # => Store input values by argument names instead of argument ids
-    from pmp_manip.core.block_mutation import FRCustomBlockCallMutation
     block = copy(block)
     partial_mutation: FRCustomBlockCallMutation = block.mutation
     complete_mutation = fti_if.get_cb_mutation(partial_mutation.proccode)
@@ -419,7 +448,6 @@ def _f5d7_e3e2(block: "FRBlock", block_id: str, itf_if: "InterToFirstIF") -> "FR
     # Transfer mutation from definition block to prototype block
     # Create the prototype block and its argument blocks
     # Create the "custom_block" input, which references the prototype block
-    from pmp_manip.core.block_mutation import FRCustomBlockMutation, FRCustomBlockArgumentMutation
     from pmp_manip.core.block          import FRBlock
 
     block = deepcopy(block)
@@ -474,7 +502,6 @@ info_api.add_opcodes_case(ANY_OPCODE_CB_DEF, SpecialCase(
 
 def _61f9_4fd5(block: "FRBlock", block_id: str, itf_if: "InterToFirstIF") -> "FRBlock":
     # => Store input values by argument ids instead of argument names
-    from pmp_manip.core.block_mutation import FRCustomBlockCallMutation
     block = copy(block)
     partial_mutation: FRCustomBlockCallMutation = block.mutation
     complete_mutation = itf_if.get_fr_cb_mutation(partial_mutation.proccode)
@@ -541,7 +568,6 @@ info_api.add_opcode_case(OPCODE_POLYGON, SpecialCase(
 
 
 def _26f9_8217(path: AbstractTreePath, block: "SRBlock") -> None:
-    from pmp_manip.core.block_mutation import SRCustomBlockMutation
     mutation: SRCustomBlockMutation = block.mutation
     if block.opcode == NEW_OPCODE_CB_DEF:
         if mutation.optype.is_reporter():

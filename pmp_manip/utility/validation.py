@@ -56,6 +56,15 @@ def AA_LIST_OF_TYPE(obj, path, attr, t, condition=None) -> None:
         if not isinstance(item, t):
             raise MANIP_TypeValidationError(path, f"{msg} not of {_repr_type(item.__class__)}", condition)
 
+def AA_LIST_OF_ONE_OF(obj, path, attr, allowed_values, condition=None) -> None:
+    attr_value, descr = _value_and_descr(obj, attr)
+    msg = f"{descr} must be a list. Each item must be one of {allowed_values!r}"
+    if not isinstance(attr_value, list):
+        raise MANIP_TypeValidationError(path, f"{msg} not a {_repr_type(attr_value.__class__)}", condition)
+    for item in attr_value:
+        if item not in allowed_values: 
+            raise MANIP_InvalidValueError(path, f"{msg} not containing {item!r}", condition)
+
 def AA_LIST_OF_TYPES(obj, path, attr, ts, condition=None) -> None:
     attr_value, descr = _value_and_descr(obj, attr)
     types_str = "|".join([_repr_type(t) for t in ts])
@@ -222,7 +231,7 @@ def is_valid_url(url: str) -> bool:
 
 __all__ = [
     "AA_TYPE", "ADESCR_TYPE", "AA_TYPES", "AA_NONE", "AA_NONE_OR_TYPE", 
-    "AA_LIST_OF_TYPE", "AA_LIST_OF_TYPES", "AA_TUPLE_OF_TYPES", "AA_DICT_OF_TYPE",
+    "AA_LIST_OF_TYPE", "AA_LIST_OF_TYPES", "AA_LIST_OF_ONE_OF", "AA_TUPLE_OF_TYPES", "AA_DICT_OF_TYPE",
     "AA_MIN", "AA_MAX", "AA_RANGE", "AA_MIN_LEN", "AA_EXACT_LEN", "AA_COORD_PAIR", "AA_BOXED_COORD_PAIR",
     "AA_JSON_COMPATIBLE", "AA_HEX_COLOR", "AA_ALNUM", "AA_NONE_OR_CALLABLE",
     "AA_EQUAL", "AA_NOT_EQUAL", "AA_BIGGER_OR_EQUAL", "AA_NOT_ONE_OF", 
