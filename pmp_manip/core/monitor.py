@@ -157,9 +157,8 @@ class FRMonitor:
             return None # Delete monitors of non-existing sprites: possibly not needed anymore
         
         opcode_info = info_api.get_info_by_old(self.opcode)
-        old_new_dropdown_ids = opcode_info.get_old_new_dropdown_ids(block=self, fti_if=None)
-        dropdown_infos = opcode_info.get_new_dropdown_ids_infos(block=self, fti_if=None)
-        # fti_if is not necessary for a monitor
+        old_new_dropdown_ids = opcode_info.get_old_new_dropdown_ids()
+        dropdown_infos = opcode_info.get_new_dropdown_ids_infos()
         
         new_dropdowns = {}
         for dropdown_id, dropdown_value in self.params.items():
@@ -264,8 +263,7 @@ class SRMonitor:
                 f"opcode of {cls_name} must be a defined opcode. That block must be able to have monitors",
             )
         
-        new_dropdown_ids = opcode_info.get_new_old_dropdown_ids(block=self, fti_if=None).keys()
-        # fti_if is not necessary for a monitor
+        new_dropdown_ids = opcode_info.get_new_old_dropdown_ids().keys()
         for new_dropdown_id, dropdown_value in self.dropdowns.items():
             dropdown_value.validate(path.add_attribute("dropdowns").add_index_or_key(new_dropdown_id))
             if new_dropdown_id not in new_dropdown_ids:
@@ -299,8 +297,7 @@ class SRMonitor:
             MANIP_ValidationError: if some of the dropdown values of the SRMonitor are invalid
         """
         opcode_info = info_api.get_info_by_new(self.opcode)
-        dropdown_infos = opcode_info.get_new_dropdown_ids_infos(block=self, fti_if=None)
-        # fti_if is not necessary for a monitor
+        dropdown_infos = opcode_info.get_new_dropdown_ids_infos()
         opcode_info = info_api.get_info_by_new(self.opcode)
         for new_dropdown_id, dropdown in self.dropdowns.items():
             dropdown_type = dropdown_infos[new_dropdown_id].type
@@ -384,9 +381,8 @@ class SRMonitor:
             slider_max    = 100
             is_discrete   = True
         
-        new_old_dropdown_ids = opcode_info.get_new_old_dropdown_ids(block=self, fti_if=None)
-        dropdown_infos = opcode_info.get_old_dropdown_ids_infos(block=self, fti_if=None)
-        # fti_if is not necessary for a monitor
+        new_old_dropdown_ids = opcode_info.get_new_old_dropdown_ids()
+        dropdown_infos = opcode_info.get_old_dropdown_ids_infos()
         old_dropdowns = {}
         for dropdown_id, dropdown_value in self.dropdowns.items():
             old_dropdown_id = new_old_dropdown_ids[dropdown_id]

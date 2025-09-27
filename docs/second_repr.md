@@ -1501,7 +1501,7 @@ Inherits from [`SRMutation`](#srmutation). Used and required only by opcode `"&c
 - **type**: `bool`
 - **description**: wether the last branch is an else
 ### Editor View Example
-The mutation itself can not be seen in the editor, only the block:
+The mutation itself can not be seen in the editor, only the block:<br>
 ![](images/project_view/srexpandableifmutation.png)
 ### Python Object Example
 ```python

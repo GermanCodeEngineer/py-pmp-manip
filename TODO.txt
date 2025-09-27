@@ -4,6 +4,8 @@ Special:
     TODOs in Code + read through code, optimize here and there
 
 Currently Working On:
+    - S: remove not anymore needed builtin dropdown types
+
     - M/L: make a script which show info for the requested block opcode
     - add the above to docs
 

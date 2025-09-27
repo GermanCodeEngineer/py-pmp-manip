@@ -452,84 +452,41 @@ class OpcodeInfo:
         return dict(self.get_input_ids_infos(block, fti_if).keys_key2_key1())
 
     # Get dropdown ids, info, types
-    def get_dropdown_ids_infos(self, 
-        block: "FRBlock|IRBlock|SRBlock|FRMonitor|SRMonitor", fti_if: "FirstToInterIF|None",
-    ) -> DualKeyDict[str, str, DropdownInfo]:
+    def get_dropdown_ids_infos(self) -> DualKeyDict[str, str, DropdownInfo]:
         """
-        Get all the old and new dropdowns ids and their dropdown information
-        
-        Args:
-            block: needed as context to determine the ids and information e.g. for Custom Blocks
-            fti_if: only necessary if block is a FRBlock
-        
-        Returns:
-            DualKeyDict mapping old dropdown id and new dropdown id to dropdown information
+        Get all the old and new dropdowns ids and their dropdown information.
+        Returns DualKeyDict mapping old dropdown id and new dropdown id to dropdown information
         """
-        instead_case = self.get_special_case(SpecialCaseType.GET_ALL_DROPDOWN_IDS_INFO)
-        if instead_case is None:
-            return self.dropdowns
-        else:
-            return instead_case.call(block=block, fti_if=fti_if)
+        # When needed, SpecialCaseType.GET_ALL_DROPDOWN_IDS_INFO can be created
+        return self.dropdowns
 
-    def get_old_dropdown_ids_infos(self, 
-        block: "FRBlock|IRBlock|SRBlock|FRMonitor|SRMonitor", fti_if: "FirstToInterIF|None",
-    ) -> dict[str, DropdownInfo]:
+    def get_old_dropdown_ids_infos(self) -> dict[str, DropdownInfo]:
         """
-        Get all the old dropdowns ids and their dropdown information
-        
-        Args:
-            block: needed as context to determine the ids and information e.g. for Custom Blocks
-            fti_if: only necessary if block is a FRBlock
-        
-        Returns:
-            dict mapping old dropdown id to dropdown information
+        Get all the old dropdowns ids and their dropdown information.
+        Returns dict mapping old dropdown id to dropdown information
         """
-        return dict(self.get_dropdown_ids_infos(block, fti_if).items_key1())
+        return dict(self.get_dropdown_ids_infos().items_key1())
 
-    def get_new_dropdown_ids_infos(self, 
-        block: "FRBlock|IRBlock|SRBlock|FRMonitor|SRMonitor", fti_if: "FirstToInterIF|None",
-    ) -> dict[str, DropdownInfo]:
+    def get_new_dropdown_ids_infos(self) -> dict[str, DropdownInfo]:
         """
-        Get all the new dropdowns ids and their dropdown information
-        
-        Args:
-            block: needed as context to determine the ids and information e.g. for Custom Blocks
-            fti_if: only necessary if block is a FRBlock
-        
-        Returns:
-            dict mapping new dropdown id to dropdown information
+        Get all the new dropdowns ids and their dropdown information.
+        Returns dict mapping new dropdown id to dropdown information
         """
-        return dict(self.get_dropdown_ids_infos(block, fti_if).items_key2())
+        return dict(self.get_dropdown_ids_infos().items_key2())
     
-    def get_old_new_dropdown_ids(self, 
-        block: "FRBlock|IRBlock|SRBlock|FRMonitor|SRMonitor", fti_if: "FirstToInterIF|None",
-    ) -> dict[str, str]:
+    def get_old_new_dropdown_ids(self) -> dict[str, str]:
         """
-        Get all the old and new dropdown ids
-        
-        Args:
-            block: needed as context to determine the ids and information e.g. for Custom Blocks
-            fti_if: only necessary if block is a FRBlock
-        
-        Returns:
-            dict mapping old dropdown id to new dropdown id
+        Get all the old and new dropdown ids.
+        Returns dict mapping old dropdown id to new dropdown id
         """
-        return dict(self.get_dropdown_ids_infos(block, fti_if).keys_key1_key2())
+        return dict(self.get_dropdown_ids_infos().keys_key1_key2())
     
-    def get_new_old_dropdown_ids(self, 
-        block: "FRBlock|IRBlock|SRBlock|FRMonitor|SRMonitor", fti_if: "FirstToInterIF|None",
-    ) -> dict[str, str]:
+    def get_new_old_dropdown_ids(self) -> dict[str, str]:
         """
-        Get all the new and old dropdown ids
-        
-        Args:
-            block: needed as context to determine the ids and information e.g. for Custom Blocks
-            fti_if: only necessary if block is a FRBlock
-        
-        Returns:
-            dict mapping new dropdown id to old dropdown id
+        Get all the new and old dropdown ids.
+        Returns dict mapping new dropdown id to old dropdown id
         """
-        return dict(self.get_dropdown_ids_infos(block, fti_if).keys_key2_key1())
+        return dict(self.get_dropdown_ids_infos().keys_key2_key1())
 
 @grepr_dataclass(grepr_fields=["name", "opcode_info"])
 class OpcodeInfoGroup:
@@ -714,7 +671,7 @@ class OpcodeInfoAPI:
         self.add_group(group)    
     
     @enforce_argument_types
-    def generate_and_add_extension(self, extension_id: str, extension_source: str | None) -> None:
+    def generate_and_add_extension(self, extension_id: str, extension_source: str | None = None) -> None:
         """
         Generate and import the required opcode info py file for a custom or builtin extension.
         If cached versions exist and they are up to date, they will be kept and not replaced

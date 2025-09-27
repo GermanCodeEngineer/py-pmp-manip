@@ -35,7 +35,7 @@ from pmp_manip.core.context        import CompleteContext
 from pmp_manip.core.dropdown       import SRDropdownValue
 
 
-def _get_input_cls_for_input_mode(input_mode: InputMode) -> type["SRInputValue"]:
+def get_input_cls_for_input_mode(input_mode: InputMode) -> type["SRInputValue"]:
     """
     Get the corresponding class for a input of a certain mode
     
@@ -239,8 +239,7 @@ class FRBlock:
                 own_id      = own_id,
             )
             new_dropdowns = {}
-            dropdown_infos = opcode_info.get_old_dropdown_ids_infos(block=self, fti_if=None) 
-            # fti_if is not needed for a IRBlock
+            dropdown_infos = opcode_info.get_old_dropdown_ids_infos() 
             for dropdown_id, dropdown_value in self.fields.items():
                 dropdown_info = dropdown_infos.get(dropdown_id, None)
                 if dropdown_info and (dropdown_info.type is BuiltinDropdownType.EDITOR_BUTTON):
@@ -427,7 +426,7 @@ class IRBlock:
                 case 2: magic_number = 3
             old_inputs[input_id] = (magic_number, *elements)
 
-        dropdown_infos = opcode_info.get_old_dropdown_ids_infos(block=self, fti_if=None)
+        dropdown_infos = opcode_info.get_old_dropdown_ids_infos()
         # fti_if is not necessary for a IRBlock
 
         old_fields = {}
@@ -624,9 +623,8 @@ class IRBlock:
                 else:
                     raise MANIP_ConversionError(f"For a block with opcode {self.opcode!r}, input {new_input_id!r} is missing")
         
-        old_new_dropdown_ids = opcode_info.get_old_new_dropdown_ids(block=self, fti_if=None)
-        dropdown_infos = opcode_info.get_old_dropdown_ids_infos(block=self, fti_if=None)
-        # fti_if is not necessary for a IRBlock 
+        old_new_dropdown_ids = opcode_info.get_old_new_dropdown_ids()
+        dropdown_infos = opcode_info.get_old_dropdown_ids_infos()
         new_dropdowns = {}
         for dropdown_id, dropdown_value in self.dropdowns.items():
             dropdown_type: DropdownType = dropdown_infos[dropdown_id].type
@@ -803,7 +801,7 @@ class SRBlock:
         if opcode_info is None:
             closest_matches = get_closest_matches(self.opcode, info_api.all_new, n=10)
             msg = (
-                f"opcode of {cls_name} must be a defined opcode not {self.opcode!r}. "
+                f"opcode of {cls_name} must be a defined opcode not {self.opcode!r}. Did you forget to add an extension?"
                 f"The closest matches are: \n  - "+"\n  - ".join([repr(m) for m in closest_matches])
             )
             raise MANIP_InvalidOpcodeError(path, msg)
@@ -827,7 +825,7 @@ class SRBlock:
                 )
             input_type = input_infos[new_input_id].type
             input_path = path.add_attribute("inputs").add_index_or_key(new_input_id)
-            input_cls = _get_input_cls_for_input_mode(input_type.mode)
+            input_cls = get_input_cls_for_input_mode(input_type.mode)
             ADESCR_TYPE(self, input_path, f"input {new_input_id!r}", input, input_cls, condition="For this opcode")
             input.validate(
                 path          = input_path,
@@ -842,8 +840,7 @@ class SRBlock:
                     f"inputs of {cls_name!r} with opcode {self.opcode!r} is missing input {new_input_id!r}",
                 )
         
-        dropdown_infos = opcode_info.get_new_dropdown_ids_infos(block=self, fti_if=None)
-        # fti_if is not necessary for a SRBlock
+        dropdown_infos = opcode_info.get_new_dropdown_ids_infos()
         
         for new_dropdown_id, dropdown in self.dropdowns.items():
             dropdown_info = dropdown_infos.get(new_dropdown_id, None)
@@ -1061,9 +1058,8 @@ class SRBlock:
             ):
                 old_inputs[old_input_id] = old_input_value
 
-        new_old_dropdown_ids = opcode_info.get_new_old_dropdown_ids  (block=self, fti_if=None) 
-        dropdown_infos       = opcode_info.get_new_dropdown_ids_infos(block=self, fti_if=None)
-        # fti_if is not needed for a SRBlock
+        new_old_dropdown_ids = opcode_info.get_new_old_dropdown_ids() 
+        dropdown_infos       = opcode_info.get_new_dropdown_ids_infos()
 
         # Map new dropdown IDs to old dropdown IDs and values
         old_dropdowns = {}

@@ -49,18 +49,6 @@ class SpecialCaseType(GEnum):
     ) -> DualKeyDict[str, str, InputInfo]:
         ...
     """
-
-    GET_ALL_DROPDOWN_IDS_INFO = 2
-    # map new and old dropdown id to dropdown information
-    # -> DualKeyDict[old, new, DropdownInfo]
-    # fti_if will be None for a IRBlock or SRBlock or monitor and the block api for a FRBlock
-    # ATTENTION: block can be a monitor too! (realistically very unlikely)
-    """
-    def example(
-        block: "FRBlock|IRBlock|SRBlock|FRMonitor|SRMonitor", fti_if: "FirstToInterIF|None"
-    ) -> DualKeyDict[str, str, DropdownInfo]:
-        ...
-    """
     
     
     ######################################################
