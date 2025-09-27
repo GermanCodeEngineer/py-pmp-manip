@@ -1,7 +1,7 @@
 from pmp_manip.core.block import get_input_cls_for_input_mode
 from pmp_manip.utility    import (
     enforce_argument_types, get_closest_matches, AbstractTreePath,
-    MANIP_InvalidOpcodeError,
+    MANIP_UnknownOpcodeError,
 )
 
 
@@ -123,6 +123,9 @@ def generate_opcode_doc(info_api: OpcodeInfoAPI, new_opcode: str) -> str:
     Args:
         info_api: the opcode info api used to fetch information about opcodes
         new_opcode: the new opcode i.e. kind of block
+    
+    Raises:
+        MANIP_UnknownOpcodeError: if an undefined new opcode is passed
     """
     opcode_info = info_api.get_info_by_new_safe(new_opcode)
     if opcode_info is None:
@@ -131,7 +134,7 @@ def generate_opcode_doc(info_api: OpcodeInfoAPI, new_opcode: str) -> str:
             f"Unknown new opcode {new_opcode!r}. Did you forget to add an extension?"
             f"The closest matches are: \n  - "+"\n  - ".join([repr(m) for m in closest_matches])
         )
-        raise MANIP_InvalidOpcodeError(AbstractTreePath(), msg)
+        raise MANIP_UnknownOpcodeError(msg)
     old_opcode = info_api.get_old_by_new(new_opcode)
     opcode_namespace, opcode_text = new_opcode.removeprefix("&").split("::")
 
