@@ -19,14 +19,23 @@ from pmp_manip.opcode_info.api import (
 TAB = 4 * " "
 
 
-def _repo_link(file: str, section: str):
+def _repo_link(file: str, section: str) -> str:
+    """
+    Get a link to a section in a md file in the project's github.
+    """
     return f"https://github.com/GermanCodeEngineer/py-pmp-manip/blob/main/{file}#{section}"
 
-def _inputsrcls_link(input_type: InputType):
+def _inputsrcls_link(input_type: InputType) -> str:
+    """
+    Get a link to the class of an input in the project documentation.
+    """
     input_cls = get_input_cls_for_input_mode(input_type.mode).__name__
     return f"[`{input_cls}`]({_repo_link("docs/second_repr.md", section=input_cls)})"
 
 def _generate_possible_values_string(dropdown_type: DropdownType) -> str:
+    """
+    Generate a string of values possible for a type of dropdown.
+    """
     if DropdownValueRule.EXTENSION_UNPREDICTABLE in dropdown_type.type_info.rules:
         return "Unpredictable. Calculated by extension at runtime in PM-Editor."
     else:

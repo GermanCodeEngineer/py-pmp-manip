@@ -14,7 +14,7 @@ from pmp_manip.utility          import (
 
 from pmp_manip.core.block_interface import SecondToInterIF, ValidationIF
 from pmp_manip.core.block           import (
-    _get_input_cls_for_input_mode,
+    get_input_cls_for_input_mode,
     IRBlock, IRInputValue,
     SRScript, SRBlock, SRInputValue, 
     SRBlockAndTextInputValue, SRBlockAndDropdownInputValue, SRBlockAndBoolInputValue,
@@ -83,7 +83,7 @@ class TEST_SecondToInterIF(SecondToInterIF):
 
 
 def test_get_input_cls_for_input_mode():
-    assert _get_input_cls_for_input_mode(InputMode.BLOCK_AND_BOOL) is SRBlockAndBoolInputValue
+    assert get_input_cls_for_input_mode(InputMode.BLOCK_AND_BOOL) is SRBlockAndBoolInputValue
 
 
 
