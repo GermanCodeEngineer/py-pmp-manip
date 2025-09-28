@@ -1,8 +1,7 @@
 from copy import copy
 from pytest import fixture, raises
 
-from pmp_manip.core.block import get_input_cls_for_input_mode
-from pmp_manip.utility    import get_closest_matches, MANIP_UnknownOpcodeError
+from pmp_manip.utility import MANIP_UnknownOpcodeError
 
 
 from pmp_manip.important_consts  import (
@@ -10,8 +9,7 @@ from pmp_manip.important_consts  import (
     OPCODE_EXPANDABLE_IF, OPCODE_EXPANDABLE_MATH,
 )
 from pmp_manip.opcode_info.api  import (
-    OpcodeInfoAPI, OpcodeInfo, OpcodeType,
-    BuiltinInputType, InputType, BuiltinDropdownType, DropdownType,
+    BuiltinInputType, BuiltinDropdownType, DropdownType,
     DropdownValueRule, DropdownTypeInfo,
 )
 from pmp_manip.opcode_info.data import info_api
@@ -174,7 +172,6 @@ def test_generate_block_shape_section_main():
         "* [**STATEMENT**](https://github.com/GermanCodeEngineer/py-pmp-manip/blob/main/docs/block_shape.md#STATEMENT)\n"
     )
 
-
 def test_generate_block_shape_section_stop_script():
     opcode_info = info_api.get_info_by_old(OPCODE_STOP_SCRIPT)
     generated = _generate_block_shape_section(
@@ -186,7 +183,6 @@ def test_generate_block_shape_section_stop_script():
         "* [**DYNAMIC**](https://github.com/GermanCodeEngineer/py-pmp-manip/blob/main/docs/block_shape.md#DYNAMIC)\n"+
         "* Flexible. Can be **ENDING_STATEMENT or STATEMENT** depending on the menu dropdown.\n"
     )
-
 
 def test_generate_block_shape_section_cb_call():
     opcode_info = info_api.get_info_by_old(OPCODE_CB_CALL)
@@ -217,8 +213,8 @@ def test_generate_opcode_doc_main():
         "    * possible values for `.dropdown`:\n"+
         "        * `SRDropdownValue(DropdownValueKind.OBJECT, 'random position')`\n"+
         "        * `SRDropdownValue(DropdownValueKind.OBJECT, 'mouse-pointer')`\n"+
-        "### Dropdowns: /\n"
-        "### Mutation: /\n"
+        "### Dropdowns: /\n"+
+        "### Mutation: /\n"+
         "### Monitor: /\n"
     )
 
@@ -226,19 +222,42 @@ def test_generate_opcode_doc_unknown_upcode():
     with raises(MANIP_UnknownOpcodeError):
         generate_opcode_doc(info_api, new_opcode="&someExt::some (STUFF) with [OPTION]")
 
-def test_generate_opcode_doc_main():
+def test_generate_opcode_doc_dropdowns_monitor():
     generated = generate_opcode_doc(info_api, new_opcode="&variables::value of [VARIABLE]")
     assert generated == (
         '## Documentation for opcode `value of [VARIABLE]`(variables)\n'+
         "### Block Shape\n"+
-        "* [**STRING_REPORTER**](https://github.com/GermanCodeEngineer/py-pmp-manip/blob/main/docs/block_shape.md#STRING_REPORTER)\n"
+        "* [**STRING_REPORTER**](https://github.com/GermanCodeEngineer/py-pmp-manip/blob/main/docs/block_shape.md#STRING_REPORTER)\n"+
         "### Inputs: /\n"+
-        "### Dropdowns"
+        "### Dropdowns\n"+
         "* `VARIABLE`\n"+
         "    * type: **VARIABLE**\n"+
         "    * possible values: No guessed possible values\n"+
-        "### Mutation: /\n"
-        "### Monitor: /\n"
+        "### Mutation: /\n"+
+        "### Monitor\n"+
+        "[Monitors](https://github.com/GermanCodeEngineer/py-pmp-manip/blob/main/docs/second_repr.md#SRMonitor) with this opcode can exist.\n"
     )
 
-
+def test_generate_opcode_doc_editor_button_monitor():
+    generated = generate_opcode_doc(info_api, new_opcode="&control::{{EXPANDABLE IF-THEN-ELSE CHAIN}}")
+    assert generated == (
+        '## Documentation for opcode `{{EXPANDABLE IF-THEN-ELSE CHAIN}}`(control)\n'+
+        "### Block Shape\n"+
+        "* [**STATEMENT**](https://github.com/GermanCodeEngineer/py-pmp-manip/blob/main/docs/block_shape.md#STATEMENT)\n"+
+        "### Inputs\n"+
+        "Depends on how many branches the block has. "+
+        "format of keys: `CONDITION1`...`CONDITIONn`, `THEN1`...`THENn`, `ELSE` if it has an else branch\n"+
+        "* `CONDITION1`...`CONDITIONn`\n"+
+        "    * type: **BOOLEAN**\n"+ 
+        "    * SR-Class: [`SRBlockAndBoolInputValue`](https://github.com/GermanCodeEngineer/py-pmp-manip/blob/main/docs/second_repr.md#SRBlockAndBoolInputValue)\n"+
+        "* `THEN1`...`THENn`\n"+
+        "    * type: **SCRIPT**\n"+ 
+        "    * SR-Class: [`SRScriptInputValue`](https://github.com/GermanCodeEngineer/py-pmp-manip/blob/main/docs/second_repr.md#SRScriptInputValue)\n"+
+        "* (`ELSE`)\n"+
+        "    * type: **SCRIPT**\n"+ 
+        "    * SR-Class: [`SRScriptInputValue`](https://github.com/GermanCodeEngineer/py-pmp-manip/blob/main/docs/second_repr.md#SRScriptInputValue)\n"+
+        "### Dropdowns: /\n"+
+        "### Mutation\n"+
+        "An instance of [`SRExpandableIfMutation`](https://github.com/GermanCodeEngineer/py-pmp-manip/blob/main/docs/second_repr.md#SRExpandableIfMutation).\n"+
+        "### Monitor: /\n"
+    )

@@ -1687,4 +1687,5 @@ SRSound(
 
 ### References
 * For a **documentation overview** and **all pages** of the tutorial, see [docs/index.md](index.md)
+* For an instruction on **Getting info on opcodes**(this is further ahead in the tutorial), see [docs/doc_api.md](doc_api.md)
 * Next Page: **Analyzing and Editing Projects**, see [docs/analyze_edit.md](analyze_edit.md)

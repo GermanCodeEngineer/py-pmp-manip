@@ -8,6 +8,7 @@
 * **Part 4: Analyzing and Editing Projects**: [docs/analyze_edit.md](analyze_edit.md)
 * **Part 5: Exporting Projects:** [docs/export.pmp](export.md)
 * **Part 6: Handling Extensions:** [docs/handling_extensions.md](handling_extensions.md)
+* **Part 7: Getting info on opcodes:** [docs/doc_api.md](doc_api.md)
 
 ## Other Resources
 * **Shapes of Blocks:** [docs/block_shape.md](block_shape.md)

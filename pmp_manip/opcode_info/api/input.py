@@ -165,21 +165,7 @@ class BuiltinInputType(InputType):
     COSTUME_PROPERTY                  = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.COSTUME_PROPERTY                 , 11)
     MYSELF_OR_OTHER_SPRITE            = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.MYSELF_OR_OTHER_SPRITE           , 12)
     SOUND                             = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.SOUND                            , 13)
-    
-    INSTRUMENT                        = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.INSTRUMENT                       , 15)
-    FONT                              = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.FONT                             , 16)
-    PEN_PROPERTY                      = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.PEN_PROPERTY                     , 17)
-    VIDEO_SENSING_PROPERTY            = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.VIDEO_SENSING_PROPERTY           , 18)
-    VIDEO_SENSING_TARGET              = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.VIDEO_SENSING_TARGET             , 29)
-    VIDEO_STATE                       = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.VIDEO_STATE                      , 20)
-    TEXT_TO_SPEECH_VOICE              = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.TEXT_TO_SPEECH_VOICE             , 21)
-    TEXT_TO_SPEECH_LANGUAGE           = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.TEXT_TO_SPEECH_LANGUAGE          , 22)
-    TRANSLATE_LANGUAGE                = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.TRANSLATE_LANGUAGE               , 23)
-    MAKEY_KEY                         = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.MAKEY_KEY                        , 24)
-    MAKEY_SEQUENCE                    = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.MAKEY_SEQUENCE                   , 25)
-    READ_FILE_MODE                    = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.READ_FILE_MODE                   , 26)
-    FILE_SELECTOR_MODE                = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.FILE_SELECTOR_MODE               , 27)
-    MATRIX                            = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.MATRIX                           , 28)
+    MATRIX                            = (InputMode.BLOCK_AND_DROPDOWN, None, BuiltinDropdownType.MATRIX                           , 14)
     
     # FORCED_EMBEDDED_BLOCK
     POLYGON                           = (InputMode.FORCED_EMBEDDED_BLOCK, OPCODE_POLYGON          , None, 0)
