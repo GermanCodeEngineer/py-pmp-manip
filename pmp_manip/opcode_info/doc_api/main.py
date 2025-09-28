@@ -1,6 +1,6 @@
 from pmp_manip.core.block import get_input_cls_for_input_mode
 from pmp_manip.utility    import (
-    enforce_argument_types, get_closest_matches, AbstractTreePath,
+    enforce_argument_types, get_closest_matches,
     MANIP_UnknownOpcodeError,
 )
 
@@ -10,7 +10,7 @@ from pmp_manip.important_consts import (
     OPCODE_EXPANDABLE_IF, OPCODE_EXPANDABLE_MATH,
 )
 from pmp_manip.opcode_info.api import (
-    OpcodeInfoAPI, OpcodeInfo,
+    OpcodeInfoAPI, OpcodeInfo, OpcodeType,
     BuiltinInputType, InputType, BuiltinDropdownType, DropdownType,
     DropdownValueRule,
 )
@@ -41,7 +41,7 @@ def _generate_possible_values_string(dropdown_type: DropdownType) -> str:
     else:
         possible_values = dropdown_type.guess_possible_new_dropdown_values(include_rules=True)
         return (
-            "No possible values" if possible_values == [] else
+            "No guessed possible values" if possible_values == [] else
             "".join([f"\n{TAB}{TAB}* `SRDropdownValue{value!r}`" for value in possible_values])
         )
 
@@ -50,7 +50,7 @@ def _generate_inputs_section(old_opcode: str, opcode_namespace: str, opcode_info
     Generate inputs section of documentation about a block in Markdown(md) format.
     
     Args:
-        new_opcode: the old opcode i.e. kind of block
+        old_opcode: the old opcode i.e. kind of block
         opcode_namespace: category/extension of the opcode
         opcode_info: information about that opcode from the OpcodeInfoAPI
     """
@@ -66,10 +66,10 @@ def _generate_inputs_section(old_opcode: str, opcode_namespace: str, opcode_info
         )
         if input_info.menu is not None:
             input_descr += (
-                TAB+"* possible values for `.dropdown`: "+
-                _generate_possible_values_string(input_type.corresponding_dropdown_type)
+                TAB+"* possible values for `.dropdown`:"+
+                _generate_possible_values_string(input_type.corresponding_dropdown_type)+"\n"
             )
-        inputs_descr += f"* `{new_input_id}`\n{input_descr}\n"
+        inputs_descr += f"* `{new_input_id}`\n{input_descr}"
     if   old_opcode == OPCODE_CB_CALL:
         inputs_descr += (
             "Depends on the inputs of the custom block to call.\n"+
@@ -115,6 +115,27 @@ def _generate_inputs_section(old_opcode: str, opcode_namespace: str, opcode_info
         inputs_descr = "### Inputs: /\n"
     return inputs_descr
 
+def _generate_block_shape_section(old_opcode: str, opcode_type: OpcodeType) -> str:
+    """
+    Generate block shape section of documentation about a block in Markdown(md) format.
+    
+    Args:
+        old_opcode: the old opcode i.e. kind of block
+        opcode_type: information about the block shape
+    """
+    if   old_opcode == OPCODE_STOP_SCRIPT:
+        block_shape_descr = "* Flexible. Can be **ENDING_STATEMENT or STATEMENT** depending on the menu dropdown.\n"
+    elif old_opcode == OPCODE_CB_CALL:
+        block_shape_descr = "* Flexible. Can be **STATEMENT, ENDING_STATEMENT, STRING_REPORTER, NUMBER_REPORTER, BOOLEAN_REPORTER** matches the shape of the custom block to call.\n"
+    else:
+        block_shape_descr = ""
+    
+    return (
+        "### Block Shape\n"+
+        f"* [**{opcode_type.name}**]({_repo_link('docs/block_shape.md', section=opcode_type.name)})\n"+
+        block_shape_descr
+    )
+
 @enforce_argument_types
 def generate_opcode_doc(info_api: OpcodeInfoAPI, new_opcode: str) -> str:
     """
@@ -138,18 +159,6 @@ def generate_opcode_doc(info_api: OpcodeInfoAPI, new_opcode: str) -> str:
     old_opcode = info_api.get_old_by_new(new_opcode)
     opcode_namespace, opcode_text = new_opcode.removeprefix("&").split("::")
 
-    if   old_opcode == OPCODE_STOP_SCRIPT:
-        block_shape_descr = "* Flexible. Can be **ENDING_STATEMENT or STATEMENT** depending on the menu dropdown.\n"
-    elif old_opcode == OPCODE_CB_CALL:
-        block_shape_descr = "* Flexible. Can be **STATEMENT, ENDING_STATEMENT, STRING_REPORTER, NUMBER_REPORTER, BOOLEAN_REPORTER** matches the shape of the custom block to call.\n"
-    else:
-        block_shape_descr = ""
-    block_shape_descr = (
-        "### Block Shape\n"+
-        f"* **{opcode_info.opcode_type.name}**\n"+
-        block_shape_descr
-    )
-
     dropdowns_descr = "### Dropdowns\n"
     for new_dropdown_id, dropdown_info in opcode_info.get_new_dropdown_ids_infos().items():
         dropdown_type: DropdownType = dropdown_info.type
@@ -170,7 +179,7 @@ def generate_opcode_doc(info_api: OpcodeInfoAPI, new_opcode: str) -> str:
         mutation_cls = opcode_info.new_mutation_cls.__name__
         mutation_descr = (
             "### Mutation\n"+
-            f"An instance of [`{mutation_cls}`]({_repo_link("docs/second_repr.md", section=mutation_cls)}).\n"
+            f"An instance of [`{mutation_cls}`]({_repo_link('docs/second_repr.md', section=mutation_cls)}).\n"
         )
     else:
         mutation_descr = "### Mutation: /\n"
@@ -178,14 +187,14 @@ def generate_opcode_doc(info_api: OpcodeInfoAPI, new_opcode: str) -> str:
     if opcode_info.can_have_monitor:
         monitor_descr = (
             "### Monitor\n"+
-            f"[Monitors]({_repo_link("docs/second_repr.md", section="SRMonitor")}) with this opcode can exist.\n"
+            f"[Monitors]({_repo_link('docs/second_repr.md', section='SRMonitor')}) with this opcode can exist.\n"
         )
     else:
         monitor_descr = "### Monitor: /\n"
 
     return (
         f"## Documentation for opcode `{opcode_text}`({opcode_namespace})\n"+
-        block_shape_descr+
+        _generate_block_shape_section(old_opcode, opcode_info.opcode_type)+
         _generate_inputs_section(old_opcode, opcode_namespace, opcode_info)+
         dropdowns_descr+
         mutation_descr+

@@ -17,6 +17,6 @@ info_api.generate_and_add_extension("pen")
 #doc_string = generate_opcode_doc(info_api, "&customblocks::call custom block")
 #doc_string = generate_opcode_doc(info_api, "&special::{{POLYGON MENU}}")
 #doc_string = generate_opcode_doc(info_api, "&control::{{EXPANDABLE IF-THEN-ELSE CHAIN}}")
-#doc_string = generate_opcode_doc(info_api, "&operators::{{EXPANDABLE MATH CHAIN}}")
-#write_file_text("generated.md", doc_string)
+doc_string = generate_opcode_doc(info_api, "&motion::glide to (X) (Y)")
+write_file_text("generated.md", doc_string)
 
