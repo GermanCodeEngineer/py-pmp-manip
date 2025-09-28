@@ -883,7 +883,7 @@ SRMonitor(
 )
 ```
 ### Notes
-* The "&sensing::answer" and "sensing::timer" monitor is not shown and therefore not shown in the image.
+* The "&sensing::answer" and "&sensing::timer" monitor is not shown and therefore not shown in the image.
 * The keys of `dropdowns` always match with the sqaure brackets (e.g. `[DROPDOWN]`) in the opcode.
 
 
@@ -1408,7 +1408,7 @@ Inherits from [`SRMutation`](#srmutation). Used and required only by opcodes `"&
 - **description**: the outline color of the inner block of the "define" block the argument reporter block is for.
 - **default value in editor**: `"#FF3355"`
 ### Editor View Example
-The mutation itself can not be seen in the editor, only the block:
+The mutation itself can not be seen in the editor, only the block:<br>
 ![](images/project_view/srcustomblockargumentmutation.png)
 ### Python Object Example
 ```python
@@ -1422,7 +1422,7 @@ SRCustomBlockArgumentMutation(
 
 
 ## `SRCustomBlockMutation`
-Inherits from [`SRMutation`](#srmutation). Used and required only by opcodes `"&customblocks::define custom block"` and `"customblocks::customblocks::define custom block reporter"`.
+Inherits from [`SRMutation`](#srmutation). Used and required only by opcodes `"&customblocks::define custom block"` and `"&customblocks::define custom block reporter"`.
 #### `SRCustomBlockMutation.custom_opcode`
 - **type**: [`SRCustomBlockOpcode`](#srcustomblockopcode)(`SRCustomBlockOpcode` is immutable and hashable)
 - **description**: Stores the name and argument field names and kinds of the custom block.
@@ -1447,7 +1447,7 @@ Inherits from [`SRMutation`](#srmutation). Used and required only by opcodes `"&
 - **description**: the outline color of the inner block of the "define" block the argument reporter block is for.
 - **default value in editor**: `"#FF3355"`
 ### Editor View Example
-The mutation itself can not be seen in the editor, only the block:
+The mutation itself can not be seen in the editor, only the block:<br>
 ![](images/project_view/srcustomblockmutation.png)
 ### Python Object Example
 ```python
@@ -1475,7 +1475,7 @@ Inherits from [`SRMutation`](#srmutation). Used and required only by opcode `"&c
 - **type**: [`SRCustomBlockOpcode`](#srcustomblockopcode)(`SRCustomBlockOpcode` is immutable and hashable)
 - **description**: Stores the labels and argument field names and kinds of the custom block, this block will call, to reference it.
 ### Editor View Example
-The mutation itself can not be seen in the editor, only the block:
+The mutation itself can not be seen in the editor, only the block:<br>
 ![](images/project_view/srcustomblockcallmutation.png)
 ### Python Object Example
 ```python
@@ -1518,7 +1518,7 @@ Inherits from [`SRMutation`](#srmutation). Used and required only by opcode `"&o
 - **type**: `list[Literal["+", "-", "*", "/", "^"]]`
 - **description**: the operations between the inputs
 ### Editor View Example
-The mutation itself can not be seen in the editor, only the block:
+The mutation itself can not be seen in the editor, only the block:<br>
 ![](images/project_view/srexpandablemathmutation.png)
 ### Python Object Example
 ```python
