@@ -152,7 +152,7 @@ def generate_opcode_doc(info_api: OpcodeInfoAPI, new_opcode: str) -> str:
     if opcode_info is None:
         closest_matches = get_closest_matches(new_opcode, info_api.all_new, n=10)
         msg = (
-            f"Unknown new opcode {new_opcode!r}. Did you forget to add an extension?"
+            f"Unknown new opcode {new_opcode!r}. Did you forget to add an extension? "
             f"The closest matches are: \n  - "+"\n  - ".join([repr(m) for m in closest_matches])
         )
         raise MANIP_UnknownOpcodeError(msg)
