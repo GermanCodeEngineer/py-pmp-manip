@@ -116,7 +116,6 @@ class FRProject:
         project_data = loads(contents["project.json"].decode())
         del contents["project.json"]
         from pmp_manip.utility import write_file_text
-        write_file_text("data.lua", FRProject.__repr__(project_data))
 
         if   file_path.endswith(".sb3"):
             project_data = FRProject._data_sb3_to_pmp(project_data)

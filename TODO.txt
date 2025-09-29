@@ -3,20 +3,9 @@ TODOs Sorted by Priorites
 Special:
     TODOs in Code + read through code, optimize here and there
 
-Currently Working On:
-    - M/L: make a script which show info for the requested block opcode
-    - add the above to docs
+Currently Working On: /
 
-Changelog since last Release:
-    - Major Changes:
-        - Compatability with all Builtin Extensions
-        - Builtin Extensions are now generated locally, not maintained manually
-        - Renamed built-in Second Repr/"new" opcodes -> "&category::block (INPUT) text"
-        - Added new category blocks(as of 24.09.2025)
-        - Updated documentation and tests
-    - Minor Changes:
-        - Implemented special and difficult "draw polygon" block(pen extension)
-        - Added CONTRIBUTING.md
+Changelog since last Release: /
 
 High: /
 

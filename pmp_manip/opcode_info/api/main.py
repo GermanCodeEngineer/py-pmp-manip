@@ -159,6 +159,8 @@ BUILTIN_EXTENSIONS: list[str] = [
     "jwStorage",
     # date type
     "jwDate",
+    # scoped variables
+    "jwScope",
 
     # jw: They'll think its made by jwklong >:)
     # (but it's not (yet (maybe (probably not (but its made by ianyourgod)))))

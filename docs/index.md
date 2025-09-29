@@ -12,3 +12,4 @@
 
 ## Other Resources
 * **Shapes of Blocks:** [docs/block_shape.md](block_shape.md)
+* [FOR DEVS] **Steps to publishing a new release:** [docs/release_tutorial.md](release_tutorial.md)

@@ -5,9 +5,9 @@ This is what the **Opcode Documentation Generator** is for.
 
 ---
 
-## Using `get_opcode_doc(info_api: OpcodeInfoAPI, new_opcode: str)`
+## Using `generate_opcode_doc(info_api: OpcodeInfoAPI, new_opcode: str)`
 
-You can use `get_opcode_doc` to generated Markdown documentation for an opcode:
+You can use `generate_opcode_doc` to generate Markdown documentation for an opcode:
 ```python
 from pmp_manip import init_config, get_default_config, info_api, generate_opcode_doc
 
@@ -36,7 +36,11 @@ Output:
 ### Monitor: /
 
 ```
-You can write it to a file and use any tool(like VSCode) to display it:
+
+## Viewing the Documentation
+
+You can write it to a file and use any markdown viewer (like VSCode, GitHub, or grip) to display it nicely:
+
 ```python
 from pmp_manip import init_config, get_default_config, info_api, generate_opcode_doc
 
@@ -45,11 +49,14 @@ init_config(get_default_config())
 doc_string = generate_opcode_doc(info_api, new_opcode="&motion::glide (SECONDS) secs to ([TARGET])")
 with open("generated_doc.md", "w") as file:
     file.write(doc_string)
+
+# Optional: Preview with grip (install with: pip install grip)
+# Then run: grip generated_doc.md
 ```
-Displayed:
+
+The rendered result can look like this:
 
 ---
-
 ## Documentation for opcode `glide (SECONDS) secs to ([TARGET])`(motion)
 ### Block Shape
 * [**STATEMENT**](https://github.com/GermanCodeEngineer/py-pmp-manip/blob/main/docs/block_shape.md#STATEMENT)
@@ -74,9 +81,9 @@ Note: It can also be used for block opcodes from extensions after adding them to
 ## Searching for opcodes
 
 Opcodes of almost all blocks are based on their name in the PenguinMod Editor. Just the inputs and dropdowns(ALLCAPS) were added.
-Let us say you want to get information for this block or are trying to find out its opcode:
-![](images/doc_api_searched_opcode.jpg)
-If an opcode is not found, `generate_opcode_doc` will show the closest matches. We know it is from the `sensing` category and contains the words "touching clone of":
+Let us say you want to get information for this block or are trying to find out its opcode:<br>
+![](images/doc_api_searched_opcode.jpg)<br>
+If an opcode is not found, `generate_opcode_doc` will show the closest matches. We know it is from the `sensing` category and contains the words `"touching clone of"`:
 ```python
 from pmp_manip import init_config, get_default_config, info_api, generate_opcode_doc
 

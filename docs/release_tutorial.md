@@ -13,6 +13,7 @@
 * ✅ Code is clean, readable, and follows PEP 8 style conventions.
 * ✅ Functions and classes are well-organized; modular design.
 * ✅ Unused code, debug prints, and commented-out sections are removed.
+* ✅ Temporary files and file calls are removed.
 * ✅ Proper exception handling is in place.
 
 ---
