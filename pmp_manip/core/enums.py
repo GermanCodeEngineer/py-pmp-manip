@@ -73,7 +73,9 @@ class SRSpriteRotationStyle(SRCodeEnum):
     """
 
     ALL_AROUND  = "all around"
+    LOOK_AT     = "look at" # PM-only
     LEFT_RIGHT  = "left-right"
+    UP_DOWN     = "up-down" # PM-only
     DONT_ROTATE = "don't rotate"
 
 class SRVariableMonitorReadoutMode(SRCodeEnum):

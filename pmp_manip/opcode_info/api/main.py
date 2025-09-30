@@ -221,7 +221,7 @@ BUILTIN_EXTENSIONS: list[str] = [
     "DTcameracontrols",
 
     # griffpatch: ...
-    # griffpatch",
+    # "griffpatch",
 
     # iyg: erm a crep, erm a werdohhhh
     # iygPerlin:

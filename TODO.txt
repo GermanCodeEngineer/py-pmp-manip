@@ -21,7 +21,6 @@ Medium:
     - S: explore extensionData (example of "2D MAINCRAFT")
     - S: add "previous costume" and "next costume" to costume menu
         => explore for similar updates
-    - S: add new rotation style(s)
     - S: fix grepr multiline string issue
         => also fix parent and subclass field order issue
     - S: investigate custom type object variables(example: vector extension)

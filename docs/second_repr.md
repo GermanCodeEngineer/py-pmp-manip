@@ -1,4 +1,4 @@
-# Working with Second Representation in `pmp_manip`
+0t# Working with Second Representation in `pmp_manip`
 
 ## Project Structure:
 This is the UML structure of a `SRProject`:
@@ -655,7 +655,7 @@ Represents a sprite of the project. Inherits from [`SRTarget`](#srtarget).
 - **default value in editor**: `False`
 #### `SRSprite.rotation_style`
 - **type**: `SRSpriteRotationStyle` (enum class)
-- **possible values**: `SRSpriteRotationStyle.ALL_AROUND`, `SRSpriteRotationStyle.LEFT_RIGHT`, `SRSpriteRotationStyle.DONT_ROTATE`
+- **possible values**: `SRSpriteRotationStyle.ALL_AROUND`, `SRSpriteRotationStyle.LEFT_RIGHT`, `SRSpriteRotationStyle.DONT_ROTATE` in PenguinMod also `SRSpriteRotationStyle.LOOK_AT`, `SRSpriteRotationStyle.UP_DOWN`
 - **description**: The way the sprite behaves when rotated.
 - **default value in editor**: `SRSpriteRotationStyle.ALL_AROUND`
 #### `SRSprite.uuid`
