@@ -3,7 +3,8 @@ TODOs Sorted by Priorites
 Special:
     TODOs in Code + read through code, optimize here and there
 
-Currently Working On: /
+Currently Working On:
+    - add tests to "TODO: test"
 
 Changelog since last Release: /
 
@@ -37,7 +38,6 @@ Low:
     - S: possibly remove mode attribute of IRInputValue
     - S: check uses of ALL_FR_BLOCKS_CLEAN vs. ALL_FR_BLOCKS
     - S: explore "customFonts" (example of "2D MAINCRAFT")
-    - S: stop using aenum and find better solution for ext_info_gen instead of extend_enum
     - S: enable slots by default
     - S: add enforce_argument_types to __init__ in grepr_dataclass
     - S: extensionid must follow pattern: /^[a-z0-9]+$/i.test(extensionInfo.id)

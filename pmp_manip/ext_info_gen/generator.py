@@ -1,5 +1,4 @@
-from aenum        import extend_enum
-from typing       import Any
+from typing import Any
 
 from pmp_manip.opcode_info.api import (
     OpcodeInfoGroup, OpcodeInfo, OpcodeType, MonitorIdBehaviour,
@@ -57,7 +56,6 @@ KNOWN_BLOCK_INFO_ATTRS = {
     "ppm_final_opcode",
 }
 
-    
 def process_all_menus(menus: dict[str, dict[str, Any]|list]) -> tuple[type[InputType], type[DropdownType]]:
     """
     Process all menus of an extension. Returns two classes, which contain the dervied input and dropdown types
@@ -68,10 +66,8 @@ def process_all_menus(menus: dict[str, dict[str, Any]|list]) -> tuple[type[Input
     Raises:
         MANIP_InvalidCustomMenuError: if the information about a menu is invalid 
     """
-    class ExtensionInputType(InputType):
-        pass
-    class ExtensionDropdownType(DropdownType):
-        pass
+    input_types: dict[str, tuple] = {}
+    dropdown_types: dict[str, DropdownTypeInfo] = {}
 
     for menu_index, menu_block_id, menu_info in zip(range(len(menus)), menus.keys(), menus.values()):
         possible_values: list[str|dict[str, str]]
@@ -122,16 +118,30 @@ def process_all_menus(menus: dict[str, dict[str, Any]|list]) -> tuple[type[Input
             old_direct_values = old_possible_values,
             fallback          = None, # there can not be a fallback when the possible values are static
         )
-        custom_dropdown_type = extend_enum(ExtensionDropdownType, menu_block_id, dropdown_type_info)
+        dropdown_types[menu_block_id] = dropdown_type_info
 
         if accept_reporters:
             input_type_info = (
                 InputMode.BLOCK_AND_DROPDOWN, # InputMode
                 None, # magic number or old forced block opcode
-                custom_dropdown_type, # corresponding dropdown type,
+                menu_block_id, # NAME of corresponding dropdown type, replaced below
                 menu_index, # uniqueness index
             )
-            extend_enum(ExtensionInputType, menu_block_id, input_type_info)
+            input_types[menu_block_id] = input_type_info
+    
+    ExtensionDropdownType = DropdownType("ExtensionDropdownType", dropdown_types)
+    new_input_types = {}
+    for menu_block_id, input_type_info in input_types.items():
+        new_input_types[menu_block_id] = (
+            input_type_info[0],
+            input_type_info[1],
+            getattr(ExtensionDropdownType, input_type_info[2]),
+            input_type_info[3],
+        )
+    print(input_types)
+    print(new_input_types)
+    ExtensionInputType = InputType("ExtensionInputType", new_input_types)
+    print(ExtensionInputType, ExtensionDropdownType)
     return (ExtensionInputType, ExtensionDropdownType)
 
 def generate_block_opcode_info(

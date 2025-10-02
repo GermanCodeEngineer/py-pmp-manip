@@ -11,7 +11,6 @@ authors = [{name = "GermanCodeEngineer", email = "germancodeengineer@proton.me"}
 dependencies = [
     "Pillow==11.3.0",
     "Requests==2.32.5",
-    "aenum==3.1.16",
     "colorama==0.4.6",
     "lxml==6.0.0",
     "pydub_ng==0.2.0",
@@ -37,7 +36,7 @@ Issues = "https://github.com/GermanCodeEngineer/py-pmp-manip/issues/"
 [project.optional-dependencies]
 dev = [
     "graphviz==0.21",
-    "pytest==8.3.4",
+    "pytest==8.3.5",
     "tomlkit==0.13.3",
 ]
 

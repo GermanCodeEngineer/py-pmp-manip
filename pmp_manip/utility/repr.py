@@ -1,4 +1,4 @@
-from aenum       import Enum
+from enum        import Enum
 from tree_sitter import Node
 from typing      import Any
 
