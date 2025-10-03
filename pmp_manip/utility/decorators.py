@@ -191,6 +191,14 @@ def _check_type(value: Any, expected: Any, name: str, path: str = "") -> None:
             _check_type(item, elem_t, name, path + f"[{i}]")
         return
 
+    # --- Handle Literal[V, ...] ---
+        if origin is Literal:
+            if value not in args:
+                raise TypeError(
+                    f"{name}{path}: value {value!r} not in Literal{args}"
+                )
+            return
+
     # --- Fallback: plain class or special typing objects ---
     if origin is None:
         # For a class, check isinstance

@@ -1,7 +1,7 @@
 TODOs Sorted by Priorites
 
 Special:
-    TODOs in Code + read through code, optimize here and there
+    - TODOs in Code + read through code, optimize here and there
 
 Currently Working On:
     - add tests to "TODO: test"
@@ -38,8 +38,6 @@ Low:
     - S: possibly remove mode attribute of IRInputValue
     - S: check uses of ALL_FR_BLOCKS_CLEAN vs. ALL_FR_BLOCKS
     - S: explore "customFonts" (example of "2D MAINCRAFT")
-    - S: enable slots by default
-    - S: add enforce_argument_types to __init__ in grepr_dataclass
     - S: extensionid must follow pattern: /^[a-z0-9]+$/i.test(extensionInfo.id)
 
 Formatting:

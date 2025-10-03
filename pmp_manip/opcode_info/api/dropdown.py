@@ -126,10 +126,12 @@ class DropdownTypeInfo:
     The information about a dropdown type, which can be used for one or many opcodes
     """
 
-    direct_values:     list[str | int | bool]  = field(default_factory=list)
+    direct_values:     list[
+        DROPDOWN_VALUE_T | tuple[DropdownValueKind, DROPDOWN_VALUE_T]
+    ]  = field(default_factory=list)
     rules:             list[DropdownValueRule] = field(default_factory=list)
-    old_direct_values: list[str | int | bool] | None = None  
-    fallback:          DROPDOWN_VALUE_T      | None = None
+    old_direct_values: list[DROPDOWN_VALUE_T] | None = None  
+    fallback:          DROPDOWN_VALUE_T       | None = None
     
     def __post_init__(self) -> None:
         """

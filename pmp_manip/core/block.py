@@ -73,7 +73,7 @@ class FRBlock:
     x: int | float | None = None
     y: int | float | None = None
     comment: str | None = None # a comment id
-    mutation: "FRMutation | None" = None
+    mutation: FRMutation | None = None
 
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> "FRBlock":
@@ -324,9 +324,9 @@ class IRBlock:
     inputs: dict[str, "IRInputValue"]
     dropdowns: dict[str, DROPDOWN_VALUE_T]
     comment: SRComment | None
-    mutation: "SRMutation | None"
+    mutation: SRMutation | None
     position: tuple[int | float, int | float] | None
-    next: "str | None"
+    next: str | None
     is_top_level: bool
 
     @classmethod

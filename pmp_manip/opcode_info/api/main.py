@@ -706,7 +706,7 @@ class OpcodeInfoAPI:
             extension_source = path.join(BUILTIN_EXTENSIONS_SOURCE_DIRECTORY, extension_id+".js")
         
         module_path = generate_extension_info_py_file(
-            source=extension_source,  extension_id=extension_id,
+            source=extension_source, extension_id=extension_id,
             tolerate_file_path=True, bundle_errors=True,
         )
         self._add_extension(extension_id, module_dir=path.dirname(module_path))

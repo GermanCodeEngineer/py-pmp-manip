@@ -121,7 +121,7 @@ class FRMutation(ABC):
             required_properties: the set of properties, a subclass instance's json data dict must contain
             optional_properties: the set of properties, a subclass instance's json data dict might contain
         """
-        super().__init_subclass__(**kwargs)
+        super(cls).__init_subclass__(**kwargs)
         subclass_info = ({"tagName", "children"} | required_properties, optional_properties)
         FRMutation._subclasses_info_[cls] = subclass_info
     
