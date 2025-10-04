@@ -57,7 +57,7 @@ SHA256_EDITOR_BUTTON_DV        = "SHA256_EDITOR_BUTTON_DV"
 
 # Resource Paths
 import os
-BUILTIN_EXTENSIONS_SOURCE_DIRECTORY = os.path.join(__file__, "../builtin_extension_source/builtin_extensions")
+BUILTIN_EXTENSIONS_SOURCE_DIRECTORY = os.path.join(os.path.dirname(__file__), "builtin_extension_source/builtin_extensions")
 
 
 __all__ = [
