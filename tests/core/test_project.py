@@ -59,12 +59,93 @@ def test_FRProject_from_file():
 
 
 def test_FRProject_post_init():
-    ... # TODO
-    #with raises(MANIP_ThanksError):
-    #    FRProject.from_data(
-    #        data=PROJECT_DATA | {"extensionData": 7}, 
-    #        asset_files=PROJECT_ASSET_FILES,
-    #    )
+    from pytest import raises
+    from pmp_manip.utility import MANIP_ThanksError
+    from pmp_manip.core.meta import FRMeta
+    from pmp_manip.core.target import FRStage, FRSprite
+    
+    # Create a minimal stage and sprite data based on the original PROJECT_DATA structure
+    minimal_stage_data = {
+        "isStage": True,
+        "name": "_stage_",
+        "variables": [],
+        "lists": [],
+        "broadcasts": [],
+        "blocks": {},
+        "comments": {},
+        "currentCostume": 0,
+        "costumes": [{
+            "assetId": "cd21514d0531fdffb22204e0ec5ed84a",
+            "name": "backdrop1",
+            "bitmapResolution": 1,
+            "md5ext": "cd21514d0531fdffb22204e0ec5ed84a.svg",
+            "dataFormat": "svg",
+            "rotationCenterX": 240,
+            "rotationCenterY": 180
+        }],
+        "sounds": [],
+        "volume": 100,
+        "layerOrder": 0,
+        "tempo": 60,
+        "videoTransparency": 50,
+        "videoState": "on",
+        "textToSpeechLanguage": None
+    }
+    
+    minimal_sprite_data = {
+        "isStage": False,
+        "name": "Sprite1",
+        "variables": [],
+        "lists": [],
+        "broadcasts": [],
+        "blocks": {},
+        "comments": {},
+        "currentCostume": 0,
+        "costumes": [{
+            "assetId": "c434b674f2da18ba13cdfe51dbc05ecc",
+            "name": "costume1",
+            "bitmapResolution": 1,
+            "md5ext": "c434b674f2da18ba13cdfe51dbc05ecc.svg",
+            "dataFormat": "svg",
+            "rotationCenterX": 47,
+            "rotationCenterY": 55
+        }],
+        "sounds": [],
+        "volume": 100,
+        "layerOrder": 1,
+        "visible": True,
+        "x": 0,
+        "y": 0,
+        "size": 100,
+        "direction": 90,
+        "draggable": False,
+        "rotationStyle": "normal"
+    }
+    
+    minimal_data = {
+        "targets": [minimal_stage_data, minimal_sprite_data],
+        "monitors": [],
+        "extensionData": 7,  # This should trigger the error
+        "extensions": [],
+        "extensionURLs": {},
+        "meta": {
+            "semver": "3.0.0",
+            "vm": "0.2.0",
+            "agent": "",
+            "platform": {
+                "name": "PenguinMod",
+                "url": "https://penguinmod.com/",
+                "version": "stable",
+            },
+        }
+    }
+    
+    asset_files = {}
+    with raises(MANIP_ThanksError):
+        FRProject.from_data(
+            data=minimal_data, 
+            asset_files=asset_files,
+        )
 
 
 def test_FRProject_add_all_extensions_to_info_api(monkeypatch: MonkeyPatch):

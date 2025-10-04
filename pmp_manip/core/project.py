@@ -144,7 +144,9 @@ class FRProject:
         Returns:
             None
         """
-        # TODO #if self.extension_data != {}: raise MANIP_ThanksError() # also uncomment test
+        if self.extension_data != {}:
+            from pmp_manip.utility import MANIP_ThanksError
+            raise MANIP_ThanksError()
 
     @enforce_argument_types
     def add_all_extensions_to_info_api(self, info_api: OpcodeInfoAPI) -> None:
