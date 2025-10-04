@@ -138,10 +138,7 @@ def process_all_menus(menus: dict[str, dict[str, Any]|list]) -> tuple[type[Input
             getattr(ExtensionDropdownType, input_type_info[2]),
             input_type_info[3],
         )
-    print(input_types)
-    print(new_input_types)
     ExtensionInputType = InputType("ExtensionInputType", new_input_types)
-    print(ExtensionInputType, ExtensionDropdownType)
     return (ExtensionInputType, ExtensionDropdownType)
 
 def generate_block_opcode_info(
@@ -523,9 +520,10 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
     )
     
     for menu_opcode in menus.keys():
-        menu_opcode = f"{extension_id}_menu_{menu_opcode}"
+        old_menu_opcode = f"{extension_id}_menu_{menu_opcode}"
+        new_menu_opcode = f"&{extension_id}::#menu:{menu_opcode}"
         opcode_info = OpcodeInfo(opcode_type=OpcodeType.MENU)
-        info_group.add_opcode(menu_opcode, menu_opcode, opcode_info)
+        info_group.add_opcode(old_menu_opcode, new_menu_opcode, opcode_info)
     return (info_group, input_type_cls, dropdown_type_cls)
 
 def generate_file_code(

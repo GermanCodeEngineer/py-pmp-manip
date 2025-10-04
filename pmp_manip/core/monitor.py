@@ -131,7 +131,6 @@ class FRMonitor:
         if self.params is None:
             self.params = {}
         if not isinstance(self.params, dict):
-            print(self)
             raise MANIP_ThanksError()
         if self.opcode == OPCODE_VAR_VALUE:
             valid = self.mode in {"default", "large", "slider"}

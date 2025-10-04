@@ -51,12 +51,13 @@ py-pmp-manip/
 │   ├── config/             # Configuration schema and lifecycle
 │   ├── core/               # Core functionality
 │   ├── ext_info_gen/       # Information generator for custom extensions
+│   ├── important_consts.py # Common important constants
 │   ├── opcode_info/        # Contains an API for and the information about all the blocks
 │   │   ├── api/                 # Theoretical structure of the API
 │   │   ├── data/                # Actual data for the API
 │   │   └── doc_api/             # A seperate API, which gives information about blocks and monitors in a human-readable way 
-│   ├── utility/            # Utilities for other modules
-│   └── important_consts.py # Common important constants
+│   ├── builtin_extension_source/ # Resource Submodule: Adapted Built-in PenguinMod Extensions
+│   └── utility/            # Utilities for other modules
 ├── docs/              # Documentation
 ├── scripts/           # Independent project-related scripts for developers
 │   ├── check_for_updates.py     # Checks for updates in foreign code files, from which e.g. constants are derived

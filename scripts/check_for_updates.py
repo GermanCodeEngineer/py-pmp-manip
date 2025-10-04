@@ -13,7 +13,7 @@ files_to_check = [
         "Update handler for trusted sources in pmp_manip/ext_info_gen/manager.py",
     ),
     (
-        "2025-09-29",
+        "2025-10-04",
         "https://github.com/PenguinMod/PenguinMod-Vm/blob/develop/src/extension-support/extension-manager.js",
         "Update BUILTIN_EXTENSIONS in pmp_manip/opcode_info/api/main.py",
     ),

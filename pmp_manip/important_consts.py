@@ -56,7 +56,7 @@ SHA256_SEC_MONITOR_VARIABLE_ID = "MONITOR_VARIABLE_ID"
 SHA256_EDITOR_BUTTON_DV        = "SHA256_EDITOR_BUTTON_DV"
 
 # Resource Paths
-BUILTIN_EXTENSIONS_SOURCE_DIRECTORY = "builtin_extension_source/builtin_extensions"
+BUILTIN_EXTENSIONS_SOURCE_DIRECTORY = "pmp_manip/builtin_extension_source/builtin_extensions"
 
 
 __all__ = [

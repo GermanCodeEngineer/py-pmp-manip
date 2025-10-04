@@ -1076,7 +1076,7 @@ def test_generate_opcode_info_group():
                     ("EFFECT", "EFFECT"): DropdownInfo(type=dropdown_type_cls.soundEffectMenu),
                 }),
             ),
-            ("modasyncexample_menu_soundEffectMenu", "modasyncexample_menu_soundEffectMenu"): OpcodeInfo(
+            ("modasyncexample_menu_soundEffectMenu", "&modasyncexample::#menu:soundEffectMenu"): OpcodeInfo(
                 opcode_type=OpcodeType.MENU,
             ),
         }),
@@ -1285,7 +1285,7 @@ def test_generate_file_code():
                     ("EFFECT", "EFFECT"): DropdownInfo(type=ExtensionDropdownType.soundEffectMenu),
                 }),
             ),
-            ("modasyncexample_menu_soundEffectMenu", "modasyncexample_menu_soundEffectMenu"): OpcodeInfo(
+            ("modasyncexample_menu_soundEffectMenu", "&modasyncexample::#menu:soundEffectMenu"): OpcodeInfo(
                 opcode_type=OpcodeType.MENU,
             ),
         }),
@@ -1353,7 +1353,7 @@ extension = OpcodeInfoGroup(
             new_mutation_cls=None,
             allow_embedded=False,
         ),
-        ("modasyncexample_menu_soundEffectMenu", "modasyncexample_menu_soundEffectMenu"): OpcodeInfo(
+        ("modasyncexample_menu_soundEffectMenu", "&modasyncexample::#menu:soundEffectMenu"): OpcodeInfo(
             opcode_type=OpcodeType.MENU,
             inputs=DualKeyDict(),
             dropdowns=DualKeyDict(),

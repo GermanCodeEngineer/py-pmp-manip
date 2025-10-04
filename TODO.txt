@@ -3,8 +3,7 @@ TODOs Sorted by Priorites
 Special:
     - TODOs in Code + read through code, optimize here and there
 
-Currently Working On:
-    - add tests to "TODO: test"
+Currently Working On: /
 
 Changelog since last Release: /
 
