@@ -9,7 +9,7 @@ from pmp_manip.important_consts import (
 from pmp_manip.opcode_info.data import info_api
 from pmp_manip.utility          import string_to_sha256, MANIP_ConversionError
 
-from pmp_manip.core.block_interface import FirstToInterIF
+from pmp_manip.core.trafo_interface import FirstToInterIF
 from pmp_manip.core.block_mutation  import (
     FRCustomBlockMutation, FRCustomBlockArgumentMutation, 
     SRCustomBlockArgumentMutation

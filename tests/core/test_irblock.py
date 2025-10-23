@@ -5,7 +5,7 @@ from pytest      import fixture, raises
 from pmp_manip.opcode_info.data import info_api
 from pmp_manip.utility          import grepr_dataclass, MANIP_ConversionError
 
-from pmp_manip.core.block_interface import InterToFirstIF
+from pmp_manip.core.trafo_interface import InterToFirstIF
 from pmp_manip.core.block           import IRBlock
 
 

@@ -12,7 +12,7 @@ from pmp_manip.utility          import (
 )
 
 
-if TYPE_CHECKING: from pmp_manip.core.block_interface import FirstToInterIF, InterToFirstIF
+if TYPE_CHECKING: from pmp_manip.core.trafo_interface import FirstToInterIF, InterToFirstIF
 from pmp_manip.core.custom_block import SRCustomBlockOpcode, SRCustomBlockOptype
 
 

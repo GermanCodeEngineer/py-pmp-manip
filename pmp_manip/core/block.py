@@ -26,7 +26,7 @@ from pmp_manip.utility          import (
     MANIP_InvalidOpcodeError, MANIP_InvalidBlockShapeError,
 )
 
-if TYPE_CHECKING: from pmp_manip.core.block_interface import (
+if TYPE_CHECKING: from pmp_manip.core.trafo_interface import (
     FirstToInterIF, InterToFirstIF, SecondToInterIF, ValidationIF,
 )
 from pmp_manip.core.block_mutation import FRMutation, SRMutation

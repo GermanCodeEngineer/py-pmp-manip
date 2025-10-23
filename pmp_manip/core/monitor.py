@@ -14,7 +14,7 @@ from pmp_manip.important_consts import (
     SHA256_SEC_TARGET_NAME, SHA256_SEC_MONITOR_VARIABLE_ID,
 )
 
-from pmp_manip.core.block_interface import InterToFirstIF
+from pmp_manip.core.trafo_interface import InterToFirstIF
 from pmp_manip.core.context         import PartialContext, CompleteContext
 from pmp_manip.core.dropdown        import SRDropdownValue
 from pmp_manip.core.enums           import SRVariableMonitorReadoutMode

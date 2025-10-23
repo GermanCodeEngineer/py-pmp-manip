@@ -35,7 +35,7 @@ from pmp_manip.opcode_info.data.c_variables import c_variables
 from pmp_manip.opcode_info.data.c_lists     import c_lists
 
 if TYPE_CHECKING:
-    from pmp_manip.core.block_interface import FirstToInterIF, InterToFirstIF, ValidationIF
+    from pmp_manip.core.trafo_interface import FirstToInterIF, InterToFirstIF, ValidationIF
     from pmp_manip.core.block           import FRBlock, IRBlock, SRBlock
 
 from pmp_manip.core.block_mutation import (
