@@ -38,6 +38,7 @@ Low:
     - S: check uses of ALL_FR_BLOCKS_CLEAN vs. ALL_FR_BLOCKS
     - S: explore "customFonts" (example of "2D MAINCRAFT")
     - S: extensionid must follow pattern: /^[a-z0-9]+$/i.test(extensionInfo.id)
+    - S: investigate id generation at https://github.com/TurboWarp/scratch-storage/blob/develop/src/FetchWorkerTool.js#90
 
 Formatting:
     - XL: add all errors to docstrings
