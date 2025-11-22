@@ -764,7 +764,6 @@ class SRBlock:
         validation_if: "ValidationIF", 
         context: CompleteContext,
         expects_reporter: bool,
-        expects_embedded: bool = False,
         expected_opcode: str | None = None,
     ) -> None:
         """
@@ -776,7 +775,6 @@ class SRBlock:
             validation_if: interface which allows the management of other blocks 
             context: Context about parts of the project. Used to validate dropdowns
             expects_reporter: Wether this block should be a reporter
-            expects_embedded: Wether this block should be an embedded block, which may only exist in SREmbeddedBlockInputValue
             expected_opcode: The expected new opcode for embedded kinds of blocks
         
         Raises:
@@ -801,7 +799,7 @@ class SRBlock:
         if opcode_info is None:
             closest_matches = get_closest_matches(self.opcode, info_api.all_new, n=10)
             msg = (
-                f"opcode of {cls_name} must be a defined opcode not {self.opcode!r}. Did you forget to add an extension?"
+                f"opcode of {cls_name} must be a defined opcode not {self.opcode!r}. Did you forget to add an extension? "
                 f"The closest matches are: \n  - "+"\n  - ".join([repr(m) for m in closest_matches])
             )
             raise MANIP_InvalidOpcodeError(path, msg)
@@ -866,12 +864,6 @@ class SRBlock:
         opcode_type = opcode_info.get_opcode_type(block=self, validation_if=validation_if)
         if expects_reporter and not(opcode_type.is_reporter):
             raise MANIP_InvalidBlockShapeError(path, "Expected a reporter block here")
-        if expects_embedded:
-            if not opcode_info.allow_embedded:
-                raise MANIP_InvalidBlockShapeError(path, "Expected an embedded block here")
-        else:
-            if opcode_type is OpcodeType.EMBEDDED: # allow_embedded is optional, EMBEDDED is forced
-                raise MANIP_InvalidBlockShapeError(path, "Expected no embedded block here")
 
         post_case = opcode_info.get_special_case(SpecialCaseType.POST_VALIDATION)
         if post_case is not None:
@@ -1445,7 +1437,6 @@ class SREmbeddedBlockInputValue(SRInputValue):
             validation_if    = validation_if,
             context          = context,
             expects_reporter = False,
-            expects_embedded = True,
             expected_opcode  = info_api.get_new_by_old(input_type.embedded_block_opcode),
         )
         

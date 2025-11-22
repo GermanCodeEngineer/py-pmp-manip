@@ -1,3 +1,4 @@
+from copy   import copy
 from typing import Any
 
 from pmp_manip.opcode_info.api import (
@@ -56,18 +57,23 @@ KNOWN_BLOCK_INFO_ATTRS = {
     "ppm_final_opcode",
 }
 
-def process_all_menus(menus: dict[str, dict[str, Any]|list]) -> tuple[type[InputType], type[DropdownType]]:
+def find_input_and_dropdown_types(
+        menus: dict[str, dict[str, Any]|list], blocks: list[dict[str, Any] | str], 
+        extension_id: str
+    ) -> tuple[dict[str, InputType], dict[str, DropdownType]]:
     """
-    Process all menus of an extension. Returns two classes, which contain the dervied input and dropdown types
+    Returns two dictionaries, which contain the derived input and dropdown types based on arguments and shadows
     
     Args:
         menus: the dict mapping menu id to menu information
+        blocks: the block information
+        extension_id: the id of the extension
     
     Raises:
         MANIP_InvalidCustomMenuError: if the information about a menu is invalid 
     """
-    input_types: dict[str, tuple] = {}
-    dropdown_types: dict[str, DropdownTypeInfo] = {}
+    input_types: dict[str, InputType] = {}
+    dropdown_types: dict[str, DropdownType] = {}
 
     for menu_index, menu_block_id, menu_info in zip(range(len(menus)), menus.keys(), menus.values()):
         possible_values: list[str|dict[str, str]]
@@ -127,25 +133,37 @@ def process_all_menus(menus: dict[str, dict[str, Any]|list]) -> tuple[type[Input
                 menu_block_id, # NAME of corresponding dropdown type, replaced below
                 menu_index, # uniqueness index
             )
-            input_types[menu_block_id] = input_type_info
-    
-    ExtensionDropdownType = DropdownType("ExtensionDropdownType", dropdown_types)
-    new_input_types = {}
+            input_types[f"M_{menu_block_id}"] = input_type_info
     for menu_block_id, input_type_info in input_types.items():
-        new_input_types[menu_block_id] = (
+        input_types[menu_block_id] = (
             input_type_info[0],
             input_type_info[1],
-            getattr(ExtensionDropdownType, input_type_info[2]),
+            dropdown_types[input_type_info[2]],
             input_type_info[3],
         )
-    ExtensionInputType = InputType("ExtensionInputType", new_input_types)
-    return (ExtensionInputType, ExtensionDropdownType)
+    
+    for block_info in blocks: # TODO: add tests
+        # Other types handled later
+        if isinstance(block_info, dict):
+            for argument_id, argument_info in block_info.get("arguments", {}).items():
+                full_opcode = argument_info.get("fillInGlobal")
+                if not(full_opcode) and argument_info.get("fillIn"):
+                    full_opcode = f"{extension_id}_{argument_info["fillIn"]}"
+                if full_opcode:
+                    fill_in_id = f"S_{full_opcode}"
+                    if fill_in_id not in input_types:
+                        # opcode makes them necessarily different, so the uniqueness values do not matter
+                        input_types[fill_in_id] = (InputMode.FORCED_EMBEDDED_BLOCK, full_opcode, None, -1)
+    
+    ExtensionInputType = InputType("ExtensionInputType", input_types)
+    ExtensionDropdownType = DropdownType("ExtensionDropdownType", dropdown_types)
+    return (copy(ExtensionInputType._member_map_), copy(ExtensionDropdownType._member_map_))
 
 def generate_block_opcode_info(
         block_info: dict[str, Any], 
         menus: dict[str, dict[str, Any] | list],
-        input_type_cls: type[InputType],
-        dropdown_type_cls: type[DropdownType],
+        input_types: dict[str, InputType],
+        dropdown_types: dict[str, DropdownType],
         extension_id: str,
     ) -> tuple[OpcodeInfo, str] | tuple[None, None]:
     """
@@ -154,8 +172,8 @@ def generate_block_opcode_info(
     Args:
         block_info: the raw block information
         menus: the dict mapping menu id to menu information
-        input_type_cls: the generated class containing the custom input types
-        dropdown_type_cls: the generated class containing the custom dropdown types
+        input_types: the custom input types
+        dropdown_types: the custom dropdown types
         extension_id: the id of the extension
     
     Raises:
@@ -167,17 +185,17 @@ def generate_block_opcode_info(
     def process_arguments(
             arguments: dict[str, dict[str, Any]], 
             menus: dict[str, dict|list],
-            input_type_cls: type[InputType],
-            dropdown_type_cls: type[DropdownType],
+            input_types: dict[str, InputType],
+            dropdown_types: dict[str, DropdownType],
    ) -> tuple[DualKeyDict[str, str, InputInfo], DualKeyDict[str, str, DropdownInfo]]:
         """
-        Process the argument information into input and field information
+        Process the argument information into input and field information. Completes input_types
         
         Args:
             arguments: the argument information
             menus: the dict mapping menu id to menu information
-            input_type_cls: the generated class containing the custom input types
-            dropdown_type_cls: the generated class containing the custom dropdown types
+            input_types: the custom input types
+            dropdown_types: the custom dropdown types
         
         Raises:
             ValueError: if a non-existant menu is referenced or a menu link is combined with a not matching argument type
@@ -194,7 +212,22 @@ def generate_block_opcode_info(
             match argument_type:
                 case "string"|"number"|"Boolean"|"color"|"angle"|"matrix"|"note"|"costume"|"sound"|"broadcast":
                     builitin_input_type = ARGUMENT_TYPE_TO_INPUT_TYPE[argument_type]
-                    if argument_menu is None:
+                    fill_in_opcode = argument_info.get("fillIn")
+                    fill_in_global_opcode = argument_info.get("fillInGlobal")
+                    if fill_in_opcode or fill_in_global_opcode: # TODO: add tests
+                        full_opcode = fill_in_global_opcode if fill_in_global_opcode else f"{extension_id}_{fill_in_opcode}"
+                        fill_in_id = f"S_{full_opcode}"
+                        if fill_in_id not in input_types:
+                            # opcode makes them necessarily different, so the uniqueness values do not matter
+                            temp_cls = InputType("Temp", {
+                                fill_in_id: (InputMode.FORCED_EMBEDDED_BLOCK, full_opcode, None, -1)
+                            })
+                            input_types[fill_in_id] = temp_cls[fill_in_id]
+                        input_info = InputInfo(
+                            type=input_types[fill_in_id],
+                            menu=None,
+                        )
+                    elif argument_menu is None:
                         menu = MenuInfo(opcode="note", inner="NOTE") if builitin_input_type is BuiltinInputType.NOTE else None
                         input_info = InputInfo(
                             type=builitin_input_type,
@@ -208,17 +241,17 @@ def generate_block_opcode_info(
                             accept_reporters = menu_info.get("acceptReporters", False)
                         else:
                             accept_reporters = False
-    
+
                         if accept_reporters:
                             input_info = InputInfo(
-                                type=getattr(input_type_cls, argument_menu),
+                                type=input_types[f"M_{argument_menu}"],
                                 menu=MenuInfo(
                                     opcode=f"{extension_id}_menu_{argument_menu}",
                                     inner=argument_menu, # menu opcode seems to also be used as field name
                                 ),
                             )
                         else:
-                            dropdown_info = DropdownInfo(type=getattr(dropdown_type_cls, argument_menu))
+                            dropdown_info = DropdownInfo(type=dropdown_types[argument_menu])
                 case "variable"|"list":
                     builtin_dropdown_type = ARGUMENT_TYPE_TO_DROPDOWN_TYPE[argument_type]
                     dropdown_info = DropdownInfo(type=builtin_dropdown_type)
@@ -317,7 +350,7 @@ def generate_block_opcode_info(
                         )
                         inputs.set(key1=argument_name, key2=argument_name, value=input_info)
                     
-                    if   inputs   .has_key1(argument_name):
+                    if   inputs.has_key1(argument_name):
                         input_type = inputs.get_by_key1(argument_name).type
                         opening, closing = get_input_argument_brackets(input_type)
                     elif dropdowns.has_key1(argument_name):
@@ -384,7 +417,7 @@ def generate_block_opcode_info(
         else:
             overwrite_category = None
         
-        inputs, dropdowns = process_arguments(arguments, menus, input_type_cls, dropdown_type_cls)
+        inputs, dropdowns = process_arguments(arguments, menus, input_types, dropdown_types)
         
         disable_monitor = block_info.get("disableMonitor", None)
         checkbox_in_flyout = block_info.get("checkboxInFlyout", None)
@@ -431,9 +464,9 @@ def generate_block_opcode_info(
     
     return (opcode_info, new_opcode)
 
-def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeInfoGroup, type[InputType], type[DropdownType]]:
+def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeInfoGroup, dict[str, InputType], dict[str, DropdownType]]:
     """
-    Generate a group of information about the blocks of the given extension and the classes containing the custom insput and dropdown types
+    Generate a group of information about the blocks of the given extension and the custom input and dropdown types
 
     Args:
         extension_info: the raw extension information
@@ -444,6 +477,7 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
         MANIP_InvalidCustomBlockError: if information of a block is invalid
         MANIP_NotImplementedError: if an XML block is included in the extension info
         MANIP_ThanksError: if a block argument uses the mysterious Scratch.ArgumentType.SEPERATOR
+    # TODO: update tests
     """
     def disambiguate_new_opcode(new_opcode: str, old_opcode: str) -> str:
         """
@@ -461,20 +495,21 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
 
     
     extension_id = extension_info["id"]
+    blocks: list[dict[str, Any] | str] = extension_info.get("blocks", [])
     menus: dict[str, dict[str, Any]|list] = extension_info.get("menus", {})
-    input_type_cls, dropdown_type_cls = process_all_menus(menus)
+    input_types, dropdown_types = find_input_and_dropdown_types(menus, blocks, extension_id)
     info_group_content: DualKeyDict[str, str, OpcodeInfo] = DualKeyDict()
     conflicting_new_opcodes: set[str] = set()
 
-    for i, block_info in enumerate(extension_info.get("blocks", [])):
+    for i, block_info in enumerate(blocks):
         if isinstance(block_info, str):
             continue # ignore eg. "---"
         elif isinstance(block_info, dict):
             opcode_info, new_opcode = generate_block_opcode_info(
                 block_info, 
                 menus=menus, 
-                input_type_cls=input_type_cls,
-                dropdown_type_cls=dropdown_type_cls,
+                input_types=input_types,
+                dropdown_types=dropdown_types,
                 extension_id=extension_id,
             )
         else:
@@ -524,40 +559,41 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
         new_menu_opcode = f"&{extension_id}::#menu:{menu_opcode}"
         opcode_info = OpcodeInfo(opcode_type=OpcodeType.MENU)
         info_group.add_opcode(old_menu_opcode, new_menu_opcode, opcode_info)
-    return (info_group, input_type_cls, dropdown_type_cls)
+    return (info_group, input_types, dropdown_types)
 
 def generate_file_code(
         info_group: OpcodeInfoGroup, 
-        input_type_cls: type[InputType], 
-        dropdown_type_cls: type[DropdownType],
+        input_types: dict[str, InputType], 
+        dropdown_types: dict[str, DropdownType],
     ) -> str:
     """
     Generate the code of a python file, which stores information about the blocks of the given extension and is required for the core module
 
     Args:
         info_group: the group of information about the blocks of the given extension
-        input_type_cls: the generated class containing the custom input types
-        dropdown_type_cls: the generated class containing the custom dropdown types
+        input_types: the custom input types
+        dropdown_types: the custom dropdown types
     """
-    def generate_enum_code(enum_cls: type[GEnum]) -> str:
+    def generate_enum_code(cls_name: str, super_cls_name: str, enum_pairs: dict[str, GEnum]) -> str:
         """
-        Generate the python code which can recreate the given Enum class
+        Generate the python code which can recreate the given Enum class from pairs and name
         
         Args:
-            enum_cls: the Enum class
+            cls_name: the name of the Enum class
+            super_cls_name: the name of the superclass of the Enum class
+            enum_pairs: the pairs of an Enum class
         """
-        cls_code = f"class {enum_cls.__name__}({enum_cls.__bases__[0].__name__}):"
-        if len(enum_cls) == 0:
+        cls_code = f"class {cls_name}({super_cls_name}):"
+        if len(enum_pairs) == 0:
             return cls_code + f"\n{INDENT}pass"
-        for enum_item in enum_cls:
-            enum_item: GEnum
-            cls_code += f"\n{INDENT}{enum_item.name} = {grepr(enum_item.value, level_offset=1)}"
+        for name, member in enum_pairs.items():
+            cls_code += f"\n{INDENT}{name} = {grepr(member.value, level_offset=1)}"
         return cls_code
     
     file_code = "\n\n".join((
         f"from {DATA_IMPORTS_IMPORT_PATH} import *",
-        generate_enum_code(dropdown_type_cls),
-        generate_enum_code(input_type_cls),
+        generate_enum_code("ExtensionDropdownType", "DropdownType", dropdown_types),
+        generate_enum_code("ExtensionInputType", "InputType", input_types),
         f"extension = {grepr(info_group, safe_dkd=True)}",
     ))
     return file_code
