@@ -43,6 +43,5 @@ Low:
 Formatting:
     - XL: add all errors to docstrings
     - M: add specific reasons for ThanksError
-    - M: remove "Returns" section of docstrings to avoid doubling
-    - S: rename block_interface to sth like transformation_interface
+    - M: [LISTED ABOVE] docstring refractorings
     - S: relax __all__, include more. Users should not do "from pmp_manip import *" anyway.

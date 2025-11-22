@@ -1,6 +1,6 @@
 from pmp_manip.core.asset           import *
 from pmp_manip.core.block_mutation  import *
-from pmp_manip.core.block_interface import *
+from pmp_manip.core.trafo_interface import *
 from pmp_manip.core.comment         import *
 from pmp_manip.core.block           import *
 from pmp_manip.core.custom_block    import *

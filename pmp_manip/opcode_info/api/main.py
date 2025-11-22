@@ -16,7 +16,7 @@ from pmp_manip.opcode_info.api.dropdown     import DropdownInfo
 from pmp_manip.opcode_info.api.special_case import SpecialCase, SpecialCaseType
 
 if TYPE_CHECKING:
-    from pmp_manip.core.block_interface import FirstToInterIF, ValidationIF
+    from pmp_manip.core.trafo_interface import FirstToInterIF, ValidationIF
     from pmp_manip.core.block_mutation  import FRMutation, SRMutation
     from pmp_manip.core.block           import FRBlock, IRBlock, SRBlock
     from pmp_manip.core.monitor         import FRMonitor, SRMonitor

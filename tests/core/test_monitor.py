@@ -15,7 +15,7 @@ from pmp_manip.utility          import (
     MANIP_MissingDropdownError, MANIP_RangeValidationError, MANIP_InvalidValueError,
 )
 
-from pmp_manip.core.block_interface import InterToFirstIF
+from pmp_manip.core.trafo_interface import InterToFirstIF
 from pmp_manip.core.context         import PartialContext
 from pmp_manip.core.dropdown        import SRDropdownValue
 from pmp_manip.core.enums           import SRVariableMonitorReadoutMode

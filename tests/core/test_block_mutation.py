@@ -9,7 +9,7 @@ from pmp_manip.utility          import (
     MANIP_TypeValidationError, MANIP_InvalidValueError
 )
 
-from pmp_manip.core.block_interface import FirstToInterIF, InterToFirstIF
+from pmp_manip.core.trafo_interface import FirstToInterIF, InterToFirstIF
 from pmp_manip.core.block_mutation  import (
 	_load_bool_value, _load_noquote_str_value, _load_color_array,
     FRMutation,

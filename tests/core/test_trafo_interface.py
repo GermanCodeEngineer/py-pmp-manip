@@ -4,7 +4,7 @@ from pytest import fixture, raises
 from pmp_manip.important_consts import SHA256_SEC_MAIN_ARGUMENT_NAME
 from pmp_manip.utility          import lists_equal_ignore_order, assert_lists_equal_ignore_order, string_to_sha256, MANIP_ConversionError, MANIP_ValidationError
 
-from pmp_manip.core.block_interface import FirstToInterIF, InterToFirstIF, SecondReprIF, SecondToInterIF, ValidationIF
+from pmp_manip.core.trafo_interface import FirstToInterIF, InterToFirstIF, SecondReprIF, SecondToInterIF, ValidationIF
 from pmp_manip.core.block_mutation  import FRCustomBlockMutation, SRCustomBlockMutation
 from pmp_manip.core.block           import FRBlock, IRBlock
 from pmp_manip.core.comment         import FRComment

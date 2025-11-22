@@ -12,7 +12,7 @@ from pmp_manip.utility          import (
     MANIP_UnnecessaryInputError, MANIP_MissingInputError, MANIP_UnnecessaryDropdownError, MANIP_MissingDropdownError,
 )
 
-from pmp_manip.core.block_interface import SecondToInterIF, ValidationIF
+from pmp_manip.core.trafo_interface import SecondToInterIF, ValidationIF
 from pmp_manip.core.block           import (
     get_input_cls_for_input_mode,
     IRBlock, IRInputValue,

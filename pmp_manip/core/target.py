@@ -14,7 +14,7 @@ from pmp_manip.utility          import (
 )
 
 from pmp_manip.core.asset           import FRCostume, FRSound, SRVectorCostume, SRBitmapCostume, SRSound
-from pmp_manip.core.block_interface import SecondToInterIF, InterToFirstIF, FirstToInterIF, ValidationIF
+from pmp_manip.core.trafo_interface import SecondToInterIF, InterToFirstIF, FirstToInterIF, ValidationIF
 from pmp_manip.core.block_mutation  import SRCustomBlockMutation
 from pmp_manip.core.block           import FRBlock, IRBlock, SRScript
 from pmp_manip.core.comment         import FRComment, SRComment
