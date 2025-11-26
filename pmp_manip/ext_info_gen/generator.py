@@ -375,6 +375,7 @@ def generate_block_opcode_info(
         block_type: str = block_info.get("blockType", "command")
         branch_count: int = block_info.get("branchCount", None)
         branches_alt: list = block_info.get("branches", None)
+        allow_embedded: bool = bool(block_info.get("canDragDuplicate", False))
         if isinstance(branch_count, int):
             pass
         elif isinstance(branches_alt, list):
@@ -456,6 +457,7 @@ def generate_block_opcode_info(
             can_have_monitor=can_have_monitor,
             monitor_id_behaviour=monitor_id_hehaviour,
             has_variable_id=(can_have_monitor and bool(dropdowns)), # if there are any dropdowns
+            allow_embedded=allow_embedded,
         )
         
     except ValueError as error:
