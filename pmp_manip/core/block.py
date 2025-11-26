@@ -212,7 +212,8 @@ class FRBlock:
     def to_inter(self, 
         fti_if: "FirstToInterIF", 
         info_api: OpcodeInfoAPI, 
-        own_id: str
+        own_id: str,
+        in_shadow_input: bool = False
     ) -> "IRBlock":
         """
         Converts a FRBlock into a IRBlock
@@ -221,6 +222,7 @@ class FRBlock:
             fti_if: interface which allows the management of other blocks
             info_api: the opcode info api used to fetch information about opcodes
             own_id: the reference id of this FRBlock
+            in_shadow_input: wether this block is inside a shadow input
         
         Returns:
             the IRBlock
@@ -248,15 +250,16 @@ class FRBlock:
                     new_dropdowns[dropdown_id] = dropdown_value[0]
             
             new_block = IRBlock(
-                opcode       = self.opcode,
-                inputs       = new_inputs,
-                dropdowns    = new_dropdowns,
-                position     = (self.x, self.y) if self.top_level else None,
-                comment      = None if self.comment  is None else fti_if.get_comment(self.comment),
+                opcode          = self.opcode,
+                inputs          = new_inputs,
+                dropdowns       = new_dropdowns,
+                position        = (self.x, self.y) if self.top_level else None,
+                comment         = None if self.comment  is None else fti_if.get_comment(self.comment),
                 # the result of get_comment is a comment which is not used by any block => fine
-                mutation     = None if self.mutation is None else self.mutation.to_second(fti_if),
-                next         = self.next,
-                is_top_level = self.top_level,
+                mutation        = None if self.mutation is None else self.mutation.to_second(fti_if),
+                next            = self.next,
+                is_top_level    = self.top_level,
+                in_shadow_input = in_shadow_input
             )
         else:
             new_block = instead_handler.call(block=self, block_id=own_id, fti_if=fti_if)
@@ -328,6 +331,7 @@ class IRBlock:
     position: tuple[int | float, int | float] | None
     next: str | None
     is_top_level: bool
+    in_shadow_input: bool
 
     @classmethod
     def from_menu_dropdown_value(cls, dropdown_value: DROPDOWN_VALUE_T, input_info: InputInfo) -> "IRBlock":
@@ -402,10 +406,10 @@ class IRBlock:
             elements = input_value.references.copy()
             if input_value.immediate_block is not None:
                 frblock = input_value.immediate_block.to_first(
-                    itf_if      = itf_if,
-                    info_api    = info_api,
-                    parent_id   = own_id,
-                    own_id      = None, # an immediate block can not have any references => no own id needed
+                    itf_if       = itf_if,
+                    info_api     = info_api,
+                    parent_id    = own_id,
+                    own_id       = None, # an immediate block can not have any references => no own id needed
                 )
                 elements.insert(0, frblock)
             match input_type.mode:
@@ -1069,6 +1073,10 @@ class SRBlock:
             position     = position,
             next         = next,
             is_top_level = is_top_level,
+            # LEFT OFF HERE:
+            # SRBlock()
+            # IRBlock()
+            # FRBlock.to_inter()
         )
 
 @grepr_dataclass(
