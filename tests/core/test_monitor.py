@@ -772,6 +772,8 @@ def test_FRMonitor_from_to_data_list():
 
 
 def test_FRMonitor_post_init_params():
+    frmonitor = FRMonitor.from_data(ALL_FR_MONITOR_DATAS[1] | {"params": None})
+    assert frmonitor.params == {}
     with raises(MANIP_ThanksError):
         FRMonitor.from_data(ALL_FR_MONITOR_DATAS[1] | {"params": []})
 

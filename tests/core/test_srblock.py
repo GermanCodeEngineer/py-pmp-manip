@@ -275,6 +275,7 @@ def test_SRBlock_to_inter_block_and_text_block_and_bool():
         next=None,
         position=script.position,
         is_top_level=True,
+        in_shadow_input=False,
     )
     assert irblock == ALL_IR_BLOCKS["c"]
     assert sti_if.produced_blocks == {
@@ -292,6 +293,7 @@ def test_SRBlock_to_inter_script_block1():
         next="b",
         position=script.position,
         is_top_level=True,
+        in_shadow_input=False,
     )
     assert irblock == ALL_IR_BLOCKS["d"]
     assert sti_if.produced_blocks == {
@@ -309,6 +311,7 @@ def test_SRBlock_to_inter_script_block2_and_menu():
         next="t",
         position=None,
         is_top_level=False,
+        in_shadow_input=False,
     )
     assert irblock == ALL_IR_BLOCKS["b"]
     assert sti_if.produced_blocks == {
@@ -327,6 +330,7 @@ def test_SRBlock_to_inter_substack():
         next=None,
         position=script.position,
         is_top_level=True,
+        in_shadow_input=False,
     )
     assert irblock == ALL_IR_BLOCKS["n"]
     assert sti_if.produced_blocks == {
@@ -344,6 +348,7 @@ def test_SRBlock_to_inter_immediate_block():
         next=None,
         position=script.position,
         is_top_level=True,
+        in_shadow_input=False,
     )
     assert irblock == ALL_IR_BLOCKS["f"]
     assert sti_if.produced_blocks == {
@@ -361,6 +366,7 @@ def test_SRBlock_to_inter_dropdown():
         next=None,
         position=script.position,
         is_top_level=True,
+        in_shadow_input=False,
     )
     assert irblock == ALL_IR_BLOCKS["r"]
     assert sti_if.produced_blocks == {
@@ -380,6 +386,7 @@ def test_SRBlock_to_inter_invalid_sub_script():
             next=None,
             position=script.position,
             is_top_level=True,
+            in_shadow_input=False,
         )
 
 def test_SRBlock_to_inter_block_and_menu_text(info_api_extended1):
@@ -410,6 +417,7 @@ def test_SRBlock_to_inter_block_and_menu_text(info_api_extended1):
         next=None,
         position=script.position,
         is_top_level=True,
+        in_shadow_input=False,
     )
     assert irblock == IRBlock(
         opcode="music_playNoteForBeats",
@@ -461,6 +469,7 @@ def test_SRBlock_to_inter_block_only():
         next=None,
         position=script.position,
         is_top_level=True,
+        in_shadow_input=False,
     )
     assert irblock == ALL_IR_BLOCKS["B"]
     assert sti_if.produced_blocks == {

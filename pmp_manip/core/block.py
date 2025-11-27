@@ -299,9 +299,10 @@ class FRBlock:
                 elif isinstance(item, tuple) and item[0] in ANY_OPCODE_NUM_IMMEDIATE_BLOCK:
                     immediate_fr_block = FRBlock.from_tuple(item, parent_id=own_id)
                     immediate_block = immediate_fr_block.to_inter(
-                        fti_if = fti_if,
-                        info_api  = info_api,
-                        own_id    = None, # None is fine, because tuple blocks can not possibly contain more tuple blocks 
+                        fti_if          = fti_if,
+                        info_api        = info_api,
+                        own_id          = None, # None is fine, because tuple blocks can not possibly contain more tuple blocks 
+                        in_shadow_input = False,
                     )
                 elif item is None:
                     pass
@@ -407,10 +408,10 @@ class IRBlock:
             elements = input_value.references.copy()
             if input_value.immediate_block is not None:
                 frblock = input_value.immediate_block.to_first(
-                    itf_if       = itf_if,
-                    info_api     = info_api,
-                    parent_id    = own_id,
-                    own_id       = None, # an immediate block can not have any references => no own id needed
+                    itf_if    = itf_if,
+                    info_api  = info_api,
+                    parent_id = own_id,
+                    own_id    = None, # an immediate block can not have any references => no own id needed
                 )
                 elements.insert(0, frblock)
             match input_type.mode:
@@ -465,14 +466,13 @@ class IRBlock:
                 else:
                     raise MANIP_ConversionError(f"For a block with opcode {self.opcode!r}, dropdown {dropdown_id!r} is missing")
 
-        
         old_block = FRBlock(
             opcode    = self.opcode,
             next      = self.next,
             parent    = parent_id,
             inputs    = old_inputs,
             fields    = old_fields,
-            shadow    = opcode_info.has_shadow,
+            shadow    = opcode_info.has_shadow or self.in_shadow_input,
             top_level = self.is_top_level,
             x         = self.position[0] if self.is_top_level else None,
             y         = self.position[1] if self.is_top_level else None,
@@ -741,11 +741,12 @@ class SRScript:
         for i, block in enumerate(self.blocks):
             next_id = block_ids[i+1] if i+1 < len(self.blocks) else None
             irblock = block.to_inter(
-                sti_if       = sti_if,
-                info_api     = info_api,
-                next         = next_id,
-                position     = self.position if i==0 else None,
-                is_top_level = i == 0,
+                sti_if          = sti_if,
+                info_api        = info_api,
+                next            = next_id,
+                position        = self.position if i==0 else None,
+                is_top_level    = i == 0,
+                in_shadow_input = False,
             )
             sti_if.schedule_block_addition(block_ids[i], irblock)
         return block_ids[0]
@@ -981,6 +982,7 @@ class SRBlock:
             input_sub_scripts: list[list[SRBlock | IRBlock]] = []
             input_immediate = None
             input_dropdown  = None
+            child_in_shadow_input = False
 
             if isinstance(getattr(input_value, "block", None), SRBlock):
                 input_sub_scripts.append([input_value.block])
@@ -999,8 +1001,10 @@ class SRBlock:
                         },
                     )
                     input_sub_scripts.append([checkbox_block]) # important: must come after "block"
-                case InputMode.BLOCK_ONLY | InputMode.FORCED_EMBEDDED_BLOCK:
+                case InputMode.BLOCK_ONLY:
                     pass
+                case InputMode.FORCED_EMBEDDED_BLOCK:
+                    child_in_shadow_input = True # TODO: update tests
                 case InputMode.SCRIPT:
                     if input_value.blocks:
                         input_sub_scripts.append(input_value.blocks)
@@ -1022,12 +1026,13 @@ class SRBlock:
                     sti_if.schedule_block_addition(block_id, first_block)
                     references.append(block_id)
                 elif isinstance(first_block, SRBlock) and (len(sub_blocks) == 1) and (first_block.opcode in ANY_NEW_OPCODE_IMMEDIATE_BLOCK):
-                    immediate_block  = first_block.to_inter(
-                        sti_if       = sti_if,
-                        info_api     = info_api,
-                        next         = None,
-                        position     = None,
-                        is_top_level = False,
+                    immediate_block = first_block.to_inter(
+                        sti_if          = sti_if,
+                        info_api        = info_api,
+                        next            = None,
+                        position        = None,
+                        is_top_level    = False,
+                        in_shadow_input = child_in_shadow_input, # should probably be false here 
                     )
                 elif isinstance(first_block, SRBlock):
                     sub_blocks: list[SRBlock]
@@ -1035,11 +1040,12 @@ class SRBlock:
                     for i, sub_block in enumerate(sub_blocks):
                         next_id = block_ids[i+1] if i+1 < len(sub_blocks) else None
                         irblock = sub_block.to_inter(
-                            sti_if       = sti_if,
-                            info_api     = info_api,
-                            next         = next_id,
-                            position     = None,
-                            is_top_level = False,
+                            sti_if          = sti_if,
+                            info_api        = info_api,
+                            next            = next_id,
+                            position        = None,
+                            is_top_level    = False,
+                            in_shadow_input = child_in_shadow_input,
                         )
                         sti_if.schedule_block_addition(block_ids[i], irblock)
                     references.append(block_ids[0])
@@ -1077,10 +1083,6 @@ class SRBlock:
             next            = next,
             is_top_level    = is_top_level,
             in_shadow_input = in_shadow_input,
-            # LEFT OFF HERE:
-            # IRBlock()
-            # FRBlock.to_inter()
-            # SRBlock.to_inter()
         )
 
 @grepr_dataclass(

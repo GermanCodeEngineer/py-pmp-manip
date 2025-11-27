@@ -431,14 +431,14 @@ def _d0e6_50e9(block: "FRBlock", block_id: str, fti_if: "FirstToInterIF") -> "IR
     from pmp_manip.core.block import IRBlock
     return IRBlock(
         opcode          = block.opcode,
-        inputs          = ...,
-        dropdowns       = ...,
-        position        = ...,
-        comment         = ..., # can not possibly have a comment
-        mutation        = ...,
-        next            = ...,
-        is_top_level    = ...,
-        in_shadow_input = ...,
+        inputs          = {},
+        dropdowns       = {},
+        position        = (0, 0),
+        comment         = None, # can not possibly have a comment
+        mutation        = None,
+        next            = None,
+        is_top_level    = False,
+        in_shadow_input = False,
     )
 info_api.add_opcode_case(OPCODE_CB_PROTOTYPE, SpecialCase(
     type=SpecialCaseType.INSTEAD_FIRST_TO_INTER,

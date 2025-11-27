@@ -567,7 +567,7 @@ def generate_file_code(
         cls_code = f"class {cls_name}({super_cls_name}):"
         if len(enum_pairs) == 0:
             return cls_code + f"\n{INDENT}pass"
-        for enum_item in enum_cls:
+        for enum_item in enum_pairs.values():
             enum_item: GEnum
             cls_code += f"\n{INDENT}{enum_item.name} = {grepr(enum_item.value, level_offset=1, vanilla_strings=True)}"
         return cls_code

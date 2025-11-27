@@ -5,7 +5,7 @@ from abc         import abstractmethod, ABC
 from uuid        import uuid4, UUID
 
 from pmp_manip.important_consts import SHA256_SEC_TARGET_NAME, SHA256_SEC_BROADCAST_MSG
-from pmp_manip.opcode_info.api  import OpcodeInfoAPI, DropdownValueKind
+from pmp_manip.opcode_info.api  import OpcodeInfoAPI, DropdownValueKind, InputMode
 from pmp_manip.utility          import (
     string_to_sha256, grepr_dataclass,
     AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_LIST_OF_TYPES, AA_MIN_LEN, AA_MIN, AA_RANGE, AA_COORD_PAIR, AA_NOT_ONE_OF, 
@@ -198,11 +198,23 @@ class FRTarget(ABC):
         new_blocks: dict["str", "IRBlock"] = {}
         for block_id, block in blocks.items():
             new_block = block.to_inter(
-                fti_if   = fti_if,
-                info_api = info_api,
-                own_id   = block_id,
+                fti_if          = fti_if,
+                info_api        = info_api,
+                own_id          = block_id,
+                in_shadow_input = False, # set below if supposed to be true
             )
             new_blocks[block_id] = new_block
+        
+        for block_id, new_block in new_blocks.items():
+            block_info = info_api.get_info_by_old(new_block.opcode)
+            input_infos = block_info.get_old_input_ids_infos(new_block, fti_if=None)
+            # fti_if is not needed for a IRBlock
+            for input_id, input_value in new_block.inputs.items():
+                input_mode = input_infos[input_id].type.mode
+                if input_mode is InputMode.FORCED_EMBEDDED_BLOCK:
+                    for reference in input_value.references:
+                        child_block = new_blocks[reference]
+                        child_block.in_shadow_input = True
 
         for block_id in fti_if.scheduled_block_deletions:
             del new_blocks[block_id]

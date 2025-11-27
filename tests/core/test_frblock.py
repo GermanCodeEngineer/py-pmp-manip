@@ -186,6 +186,7 @@ def test_FRBlock_to_inter(fti_if: FirstToInterIF):
         fti_if=fti_if,
         info_api=info_api,
         own_id="f",
+        in_shadow_input=False,
     )
     assert irblock == ALL_IR_BLOCKS["f"]
 
@@ -195,6 +196,7 @@ def test_FRBlock_to_inter_cb_def_pre_and_instead_handler(fti_if: FirstToInterIF)
         fti_if=fti_if,
         info_api=info_api,
         own_id="h",
+        in_shadow_input=False,
     )
     assert irblock == ALL_IR_BLOCKS["h"]
 
@@ -204,16 +206,18 @@ def test_FRBlock_to_inter_cb_prototype(fti_if: FirstToInterIF):
         fti_if=fti_if,
         info_api=info_api,
         own_id="a",
+        in_shadow_input=False,
     )
     assert isinstance(irblock, IRBlock) # An empty block which will be deleted in the next step
-    assert irblock.opcode       == frblock.opcode
-    assert irblock.inputs       == ...
-    assert irblock.dropdowns    == ...
-    assert irblock.position     == ...
-    assert irblock.comment      == ...
-    assert irblock.mutation     == ...
-    assert irblock.next         == ...
-    assert irblock.is_top_level == ...
+    assert irblock.opcode          == frblock.opcode
+    assert irblock.inputs          == {}
+    assert irblock.dropdowns       == {}
+    assert irblock.position        == (0, 0)
+    assert irblock.comment         == None
+    assert irblock.mutation        == None
+    assert irblock.next            == None
+    assert irblock.is_top_level    == False
+    assert irblock.in_shadow_input == False
 
 def test_FRBlock_to_inter_cb_arg(fti_if: FirstToInterIF):
     frblock: FRBlock = ALL_FR_BLOCKS["i"]
@@ -221,6 +225,7 @@ def test_FRBlock_to_inter_cb_arg(fti_if: FirstToInterIF):
         fti_if=fti_if,
         info_api=info_api,
         own_id="i",
+        in_shadow_input=False,
     )
     assert isinstance(irblock, IRBlock)
     assert irblock.opcode       == frblock.opcode
@@ -243,6 +248,7 @@ def test_FRBlock_to_inter_cb_call(fti_if: FirstToInterIF):
         fti_if=fti_if,
         info_api=info_api,
         own_id="c",
+        in_shadow_input=False,
     )
     assert irblock == ALL_IR_BLOCKS["c"]
 
@@ -252,6 +258,7 @@ def test_FRBlock_to_inter_with_editor_button_none_input(fti_if: FirstToInterIF):
         fti_if=fti_if,
         info_api=info_api,
         own_id="F",
+        in_shadow_input=False,
     )
     assert irblock == ALL_IR_BLOCKS["F"]
 
@@ -263,5 +270,6 @@ def test_FRBlock_to_inter_invalid_input_element(fti_if: FirstToInterIF):
             fti_if=fti_if,
             info_api=info_api,
             own_id="g",
+            in_shadow_input=False,
         )
 

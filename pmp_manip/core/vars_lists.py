@@ -55,8 +55,10 @@ class SRVariable:
             MANIP_ValidationError: if the SRVariable is invalid
         """
         AA_TYPE(self, path, "name", str)
-        AA_TYPES(self, path, "current_value", (int, float, str, bool))
+        AA_TYPES(self, path, "current_value", (int, float, str, bool, dict))
         # Only the above types can be saved in Scratch Project's Variables (JSON limitations)
+        # dict is allowed too because some extensions save custom types in it
+        # TODO: possibly validate dict contents
     
     def to_tuple(self) -> tuple[str, str]:
         """

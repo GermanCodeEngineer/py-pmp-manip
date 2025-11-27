@@ -894,7 +894,7 @@ def test_generate_block_opcode_info_invalid_block_type(input_types, dropdown_typ
             extension_id="someExtension",
         )
 
-def test_generate_block_opcode_info_non_existant_menu_arg(input_type_cls, dropdown_type_cls):
+def test_generate_block_opcode_info_non_existant_menu_arg(input_types, dropdown_types):
     block_data = {
         "opcode": "bufferEntryDescriptor",
         "blockType": "reporter",
@@ -1274,9 +1274,9 @@ def test_generate_file_code():
 
 class ExtensionDropdownType(DropdownType):
     soundEffectMenu = DropdownTypeInfo(
-        direct_values=["sound a", "sound b", "sound c"],
+        direct_values=['sound a', 'sound b', 'sound c'],
         rules=[],
-        old_direct_values=["sound a", "sound b", "sound c"],
+        old_direct_values=['sound a', 'sound b', 'sound c'],
         fallback=None,
     )
 
