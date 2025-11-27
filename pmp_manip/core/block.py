@@ -356,6 +356,7 @@ class IRBlock:
             position     = None,
             next         = None,
             is_top_level = False,
+            in_shadow_input = False,
         )
 
     def get_references(self) -> list[str]:
@@ -949,6 +950,7 @@ class SRBlock:
         next: str | None, 
         position: tuple[int | float, int | float] | None,
         is_top_level: bool, 
+        in_shadow_input: bool = False
     ) -> IRBlock:
         """
         Converts a SRBlock into a IRBlock
@@ -959,6 +961,7 @@ class SRBlock:
             next: the id of the next block in the same script or substack
             position: the position of the block if is_top_level is True
             is_top_level: wether the block is the first block in a script
+            in_shadow_input: wether this block is inside a shadow input
         
         Returns:
             the IRBlock
@@ -1065,18 +1068,19 @@ class SRBlock:
             old_dropdowns[old_dropdown_id] = dropdown_info.type.translate_new_to_old_value(dropdown_value.to_tuple())
 
         return IRBlock(
-            opcode       = info_api.get_old_by_new(self.opcode),
-            inputs       = old_inputs,
-            dropdowns    = old_dropdowns,
-            comment      = deepcopy(self.comment),
-            mutation     = deepcopy(self.mutation),
-            position     = position,
-            next         = next,
-            is_top_level = is_top_level,
+            opcode          = info_api.get_old_by_new(self.opcode),
+            inputs          = old_inputs,
+            dropdowns       = old_dropdowns,
+            comment         = deepcopy(self.comment),
+            mutation        = deepcopy(self.mutation),
+            position        = position,
+            next            = next,
+            is_top_level    = is_top_level,
+            in_shadow_input = in_shadow_input,
             # LEFT OFF HERE:
-            # SRBlock()
             # IRBlock()
             # FRBlock.to_inter()
+            # SRBlock.to_inter()
         )
 
 @grepr_dataclass(

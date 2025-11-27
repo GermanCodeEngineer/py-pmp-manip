@@ -1004,6 +1004,7 @@ ALL_IR_BLOCKS = {
         position=(268, 220),
         next="b",
         is_top_level=True,
+        in_shadow_input=False,
     ),
     "b": IRBlock(
         opcode="motion_glideto",
@@ -1032,6 +1033,7 @@ ALL_IR_BLOCKS = {
         position=None,
         next="t",
         is_top_level=False,
+        in_shadow_input=False,
     ),
     "e": IRBlock(
         opcode="motion_glideto_menu",
@@ -1044,6 +1046,7 @@ ALL_IR_BLOCKS = {
         position=None,
         next=None,
         is_top_level=False,
+        in_shadow_input=False,
     ),
     "f": IRBlock(
         opcode="operator_random",
@@ -1062,6 +1065,7 @@ ALL_IR_BLOCKS = {
                     position=None,
                     next=None,
                     is_top_level=False,
+                    in_shadow_input=False,
                 ),
                 text="1",
             ),
@@ -1078,6 +1082,7 @@ ALL_IR_BLOCKS = {
         position=(304, 424),
         next=None,
         is_top_level=True,
+        in_shadow_input=False,
     ),
     "m": IRBlock(
         opcode="data_variable",
@@ -1090,6 +1095,7 @@ ALL_IR_BLOCKS = {
         position=(446, 652),
         next=None,
         is_top_level=True,
+        in_shadow_input=False,
     ),
     "h": IRBlock(
         opcode="procedures_definition_return",
@@ -1114,6 +1120,7 @@ ALL_IR_BLOCKS = {
         position=(344, 799),
         next=None,
         is_top_level=True,
+        in_shadow_input=False,
     ),
     "g": IRBlock(
         opcode="operator_join",
@@ -1137,6 +1144,7 @@ ALL_IR_BLOCKS = {
         position=None,
         next=None,
         is_top_level=False,
+        in_shadow_input=False,
     ),
     "c": IRBlock(
         opcode="procedures_call",
@@ -1169,6 +1177,7 @@ ALL_IR_BLOCKS = {
         position=(499, 933),
         next=None,
         is_top_level=True,
+        in_shadow_input=False,
     ),
     "l": IRBlock(
         opcode="operator_falseBoolean",
@@ -1179,6 +1188,7 @@ ALL_IR_BLOCKS = {
         position=None,
         next=None,
         is_top_level=False,
+        in_shadow_input=False,
     ),
     "x": IRBlock(
         opcode="checkbox",
@@ -1191,6 +1201,7 @@ ALL_IR_BLOCKS = {
         position=None,
         next=None,
         is_top_level=False,
+        in_shadow_input=False,
     ),
     "k": IRBlock(
         opcode="operator_length",
@@ -1208,6 +1219,7 @@ ALL_IR_BLOCKS = {
         position=None,
         next=None,
         is_top_level=False,
+        in_shadow_input=False,
     ),
     "p": IRBlock(
         opcode="data_listcontents",
@@ -1220,6 +1232,7 @@ ALL_IR_BLOCKS = {
         position=(646, 561),
         next=None,
         is_top_level=True,
+        in_shadow_input=False,
     ),
     "n": IRBlock(
         opcode="control_if",
@@ -1243,6 +1256,7 @@ ALL_IR_BLOCKS = {
         position=(528, 1175),
         next=None,
         is_top_level=True,
+        in_shadow_input=False,
     ),
     "y": IRBlock(
         opcode="checkbox",
@@ -1255,6 +1269,7 @@ ALL_IR_BLOCKS = {
         position=None,
         next=None,
         is_top_level=False,
+        in_shadow_input=False,
     ),
     "o": IRBlock(
         opcode="data_changevariableby",
@@ -1274,6 +1289,7 @@ ALL_IR_BLOCKS = {
         position=None,
         next="q",
         is_top_level=False,
+        in_shadow_input=False,
     ),
     "q": IRBlock(
         opcode="data_showvariable",
@@ -1286,6 +1302,7 @@ ALL_IR_BLOCKS = {
         position=None,
         next=None,
         is_top_level=False,
+        in_shadow_input=False,
     ),
     "r": IRBlock(
         opcode="event_whengreaterthan",
@@ -1305,6 +1322,7 @@ ALL_IR_BLOCKS = {
         position=(1784, -890),
         next=None,
         is_top_level=True,
+        in_shadow_input=False,
     ),
     "t": IRBlock(
         opcode="motion_glideto",
@@ -1328,6 +1346,7 @@ ALL_IR_BLOCKS = {
         position=None,
         next=None,
         is_top_level=False,
+        in_shadow_input=False,
     ),
     "u": IRBlock(
         opcode="operator_falseBoolean",
@@ -1338,6 +1357,7 @@ ALL_IR_BLOCKS = {
         position=None,
         next=None,
         is_top_level=False,
+        in_shadow_input=False,
     ),
     "v": IRBlock(
         opcode="motion_glideto_menu",
@@ -1350,6 +1370,7 @@ ALL_IR_BLOCKS = {
         position=None,
         next=None,
         is_top_level=False,
+        in_shadow_input=False,
     ),
     "w": IRBlock(
         opcode="event_whenbroadcastreceived",
@@ -1362,6 +1383,7 @@ ALL_IR_BLOCKS = {
         position=(184, 1430),
         next=None,
         is_top_level=True,
+        in_shadow_input=False,
     ),
     "z": IRBlock(
         opcode="control_if",
@@ -1379,6 +1401,7 @@ ALL_IR_BLOCKS = {
         position=(1528, 2175),
         next=None,
         is_top_level=True,
+        in_shadow_input=False,
     ),
     "A": IRBlock(
         opcode="operator_trueBoolean",
@@ -1389,6 +1412,7 @@ ALL_IR_BLOCKS = {
         position=None,
         next=None,
         is_top_level=False,
+        in_shadow_input=False,
     ),
     "B": IRBlock(
         opcode="control_switch",
@@ -1406,6 +1430,7 @@ ALL_IR_BLOCKS = {
         position=(897, 1365),
         next=None,
         is_top_level=True,
+        in_shadow_input=False,
     ),
     "C": IRBlock(
         opcode="sensing_answer",
@@ -1416,6 +1441,7 @@ ALL_IR_BLOCKS = {
         position=None,
         next=None,
         is_top_level=False,
+        in_shadow_input=False,
     ),
     "D": IRBlock(
         opcode="pen_drawComplexShape",
@@ -1439,6 +1465,7 @@ ALL_IR_BLOCKS = {
         position=(202, 333),
         next=None,
         is_top_level=True,
+        in_shadow_input=False,
     ),
     "E": IRBlock(
         opcode="polygon",
@@ -1488,6 +1515,7 @@ ALL_IR_BLOCKS = {
         position=None,
         next=None,
         is_top_level=False,
+        in_shadow_input=False,
     ),
     "F": IRBlock(
         opcode="control_expandableIf",
@@ -1514,6 +1542,7 @@ ALL_IR_BLOCKS = {
         position=(335, 753),
         next=None,
         is_top_level=True,
+        in_shadow_input=False,
     ),
     "G": IRBlock(
         opcode="checkbox",
@@ -1526,6 +1555,7 @@ ALL_IR_BLOCKS = {
         position=None,
         next=None,
         is_top_level=False,
+        in_shadow_input=False,
     ),
 }
 

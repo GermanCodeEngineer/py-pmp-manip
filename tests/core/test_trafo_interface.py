@@ -314,6 +314,7 @@ def test_SecondToInterIF_schedule_block_addition(sti_if: SecondToInterIF):
         position=None,
         next=None,
         is_top_level=False,
+        in_shadow_input=False,
     ),
     sti_if_copy.schedule_block_addition("a", irblock)
     assert sti_if_copy.produced_blocks == {"a": irblock}

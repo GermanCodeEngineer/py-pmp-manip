@@ -430,14 +430,15 @@ def _d0e6_50e9(block: "FRBlock", block_id: str, fti_if: "FirstToInterIF") -> "IR
     # Return an empty, temporary block
     from pmp_manip.core.block import IRBlock
     return IRBlock(
-        opcode       = block.opcode,
-        inputs       = ...,
-        dropdowns    = ...,
-        position     = ...,
-        comment      = ..., # can not possibly have a comment
-        mutation     = ...,
-        next         = ...,
-        is_top_level = ...,
+        opcode          = block.opcode,
+        inputs          = ...,
+        dropdowns       = ...,
+        position        = ...,
+        comment         = ..., # can not possibly have a comment
+        mutation        = ...,
+        next            = ...,
+        is_top_level    = ...,
+        in_shadow_input = ...,
     )
 info_api.add_opcode_case(OPCODE_CB_PROTOTYPE, SpecialCase(
     type=SpecialCaseType.INSTEAD_FIRST_TO_INTER,

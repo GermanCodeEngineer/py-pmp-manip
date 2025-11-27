@@ -433,6 +433,7 @@ def test_SRBlock_to_inter_block_and_menu_text(info_api_extended1):
         position=(311, 505),
         next=None,
         is_top_level=True,
+        in_shadow_input=False,
     )
     assert sti_if.produced_blocks == {
         "a": IRBlock(
@@ -446,6 +447,7 @@ def test_SRBlock_to_inter_block_and_menu_text(info_api_extended1):
             position=None,
             next=None,
             is_top_level=False,
+            in_shadow_input=False,
         )
     }
 
