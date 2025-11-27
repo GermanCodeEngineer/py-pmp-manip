@@ -39,22 +39,6 @@ KNOWN_EXTENSION_INFO_ATTRS = {
     "docsURI", "isDynamic", "orderBlocks", "showStatusButton",
     "autoLoad", "blockText",
 }
-# Based on https://github.com/PenguinMod/PenguinMod-Docs/blob/353d492f491ee7b1e7c7bf34e48f39d43fceea17/docs/development/extensions/api/blocks/basic.md
-KNOWN_BLOCK_INFO_ATTRS = {
-    "opcode", "blockType", "text", "branches", "branchCount",
-    "checkboxInFlyout", "disableMonitor",
-    "arguments", "isTerminal", "terminal", 
-    # irrelevant for my purpose:
-    "extensions", "color1", "color2", "color3", "allowDropAnywhere",
-    "branchIndicator", "branchIconURI", "alignments", "blockShape",
-    "notchAccepts", "forceOutputType", "isDynamic", "isEdgeActivated",
-    "label", "labelFn", "switches", "switchText",
-    "hideFromPalette", "filter", "shouldRestartExistingThreads", 
-    "func", "switches", "switchText",
-    "blockIconURI", "canDragDuplicate",
-    # Custom Properties only for py-pmp-manip
-    "ppm_final_opcode",
-}
 
 def process_all_menus(menus: dict[str, dict[str, Any]|list]) -> tuple[type[InputType], type[DropdownType]]:
     """
@@ -161,7 +145,6 @@ def generate_block_opcode_info(
     Raises:
         MANIP_InvalidCustomBlockError: if the block information is invalid
         MANIP_NotImplementedError: if an XML block is given to this function
-        MANIP_UnknownExtensionAttributeError: if the block has an unknown attribute
         MANIP_ThanksError: if an argument uses the mysterious Scratch.ArgumentType.SEPERATOR
     """
     def process_arguments(
@@ -403,11 +386,7 @@ def generate_block_opcode_info(
                 monitor_id_hehaviour = MonitorIdBehaviour.OPCFULL
         else:
             monitor_id_hehaviour = None
-        
-        for attr in block_info.keys():
-            if attr not in KNOWN_BLOCK_INFO_ATTRS:
-                raise MANIP_UnknownExtensionAttributeError(f"Unknown or not (yet) implemented block attribute (block {opcode!r}): {repr(attr)}")
-    
+            
         new_opcode = generate_new_opcode(
             text=block_info.get("text", opcode),
             arguments=arguments,
@@ -439,7 +418,7 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
         extension_info: the raw extension information
     
     Raises:
-        MANIP_UnknownExtensionAttributeError: if the extension or a block has an unknown attribute
+        MANIP_UnknownExtensionAttributeError: if the extension has an unknown attribute
         MANIP_InvalidCustomMenuError: if the information about a menu is invalid
         MANIP_InvalidCustomBlockError: if information of a block is invalid
         MANIP_NotImplementedError: if an XML block is included in the extension info
@@ -551,7 +530,7 @@ def generate_file_code(
             return cls_code + f"\n{INDENT}pass"
         for enum_item in enum_cls:
             enum_item: GEnum
-            cls_code += f"\n{INDENT}{enum_item.name} = {grepr(enum_item.value, level_offset=1)}"
+            cls_code += f"\n{INDENT}{enum_item.name} = {grepr(enum_item.value, level_offset=1, vanilla_strings=True)}"
         return cls_code
     
     file_code = "\n\n".join((

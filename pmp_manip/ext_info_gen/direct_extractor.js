@@ -44,6 +44,8 @@ function makeConfiguredStub({
         basis = Object.create(null);
     }
 
+    basis.toString = basis.valueOf = basis[Symbol.toPrimitive] = () => "[STUB; PROPERTY OF py-pmp-manip]"
+
     // Assign known props
     for (const [key, value] of Object.entries(valueProps)) {
         basis[key] = value;
@@ -240,6 +242,16 @@ const runtimeStub = makeConfiguredStub({
         prependListener: () => this,
         prependOnceListener: () => this,
         eventNames: () => [],
+        
+        // Set only in methods
+        renderer: makeConfiguredStub({
+            basis: Object.create(null),
+            valueProps: {
+                _nativeSize: [480, 360], // Idk
+            },
+            funcProps: [],
+            allowStaticGet: false,
+        }),
     },
     funcProps: [
         // Methods which are not expected to return sth
@@ -435,9 +447,9 @@ const ScratchVar = makeConfiguredStub({
         // I only included the properties which a resonable getInfo should use
 
         // To allow builtin PM extension to import them (they are not used in getInfo)
-        Cast: class Cast {},
-        Clone: class Clone {},
-        Color: class Color {},
+        Cast: defaultStubValue,
+        Clone: defaultStubValue,
+        Color: defaultStubValue,
     },
 })
 
@@ -527,6 +539,15 @@ const vmEnvironment = {
     require: myRequire,
     Scratch: ScratchVar,
     vm: ScratchVar.vm,
+    
+    window: makeConfiguredStub({
+        basis: Object.create(null),
+        valueProps: {
+            vm: ScratchVar.vm,
+        },
+    }),
+    document: defaultStubValue,
+    localStorage: defaultStubValue,
 }
 
 
@@ -574,3 +595,5 @@ if (require.main === module) { // like if __name__ == "__main__"
     runScript(code, fullExtensionPath);
     process.exit(0);
 }
+
+module.exports = {vmEnvironment, defaultStubValue};

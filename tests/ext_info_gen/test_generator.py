@@ -896,23 +896,6 @@ def test_generate_block_opcode_info_invalid_block_type(input_type_cls, dropdown_
             extension_id="someExtension",
         )
 
-def test_generate_block_opcode_info_unknown_attribute(input_type_cls, dropdown_type_cls):
-    block_data = {
-        "opcode": "break",
-        "blockType": "command",
-        "isTerminal": True,
-        "text": "break",
-        "undefinedProperty": "some value",
-    }
-    with raises(MANIP_UnknownExtensionAttributeError):
-        generate_block_opcode_info(
-            block_info=block_data,
-            menus=EXAMPLE_MENU_DATA,
-            input_type_cls=input_type_cls,
-            dropdown_type_cls=dropdown_type_cls,
-            extension_id="someExtension",
-        )
-
 def test_generate_block_opcode_info_non_existant_menu_arg(input_type_cls, dropdown_type_cls):
     block_data = {
         "opcode": "bufferEntryDescriptor",

@@ -197,7 +197,7 @@ def generate_extension_info_py_file(
         MANIP_InvalidTranslationMessageError: if Scratch.translate is called with an invalid message
         
         ### inherited from generate_opcode_info_group => MANIP_ExtensionInfoConvertionError if bundled
-        MANIP_UnknownExtensionAttributeError: if the extension or a block has an unknown attribute
+        MANIP_UnknownExtensionAttributeError: if the extension has an unknown attribute
         MANIP_InvalidCustomMenuError: if the information about a menu is invalid
         MANIP_InvalidCustomBlockError: if information of a block is invalid
         MANIP_NotImplementedError: if an XML block is included in the extension info

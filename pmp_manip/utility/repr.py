@@ -11,7 +11,7 @@ class KeyReprDict(dict):
     def __repr__(self) -> str:
         return grepr(self)
 
-def grepr(obj, /, safe_dkd=False, level_offset=0, annotate_fields=True, include_attributes=False, *, indent=4) -> str:
+def grepr(obj, /, safe_dkd=False, level_offset=0, annotate_fields=True, include_attributes=False, vanilla_strings=False, *, indent=4) -> str:
     from pmp_manip.utility.dual_key_dict import DualKeyDict
     def _grepr(obj, level=level_offset) -> tuple[str, bool]:
         is_compatible = bool(getattr(obj, "_grepr", False)) and not(isinstance(obj, type)) # the class also has _grepr
@@ -77,6 +77,9 @@ def grepr(obj, /, safe_dkd=False, level_offset=0, annotate_fields=True, include_
             return "{" + f"{prefix}{sep.join(args)}{end_sep}" + "}", False
          
         elif isinstance(obj, str):
+            if vanilla_strings:
+                return repr(obj), True
+            
             obj = obj.replace("\\", "\\\\")
             if '"' in obj:
                 if "'" in obj:
