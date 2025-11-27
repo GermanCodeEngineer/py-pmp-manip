@@ -121,7 +121,7 @@ def test_SRScript_to_inter():
 
 def test_SRBlock_validate(validation_if, context):
     srblock = ALL_SR_SCRIPTS[0].blocks[0]
-    srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False, expects_embedded=False)
+    srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False)
 
     execute_attr_validation_tests(
         obj=srblock,
@@ -139,76 +139,66 @@ def test_SRBlock_validate(validation_if, context):
 
 def test_SRBlock_validate_reporter(validation_if, context):
     srblock = ALL_SR_SCRIPTS[1].blocks[0]
-    srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=True, expects_embedded=False)
+    srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=True)
 
 def test_SRBlock_validate_cb_def(validation_if, context):
     srblock = ALL_SR_SCRIPTS[4].blocks[0]
-    srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False, expects_embedded=False)   
+    srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False)   
 
 def test_SRBlock_validate_unexpected_mutation(validation_if, context):
     srblock = copy(ALL_SR_SCRIPTS[0].blocks[1])
     srblock.mutation = {...}
     with raises(MANIP_TypeValidationError):
-        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False, expects_embedded=False)
+        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False)
 
 def test_SRBlock_validate_missing_mutation(validation_if, context):
     srblock = copy(ALL_SR_SCRIPTS[4].blocks[0])
     srblock.mutation = None
     with raises(MANIP_TypeValidationError):
-        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False, expects_embedded=False)
+        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False)
 
 def test_SRBlock_validate_invalid_reporter_shape(validation_if, context):
     srblock = ALL_SR_SCRIPTS[0].blocks[0]
     with raises(MANIP_InvalidBlockShapeError):
-        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=True, expects_embedded=False)
-
-def test_SRBlock_validate_missing_embedded_block(validation_if, context):
-    srblock = ALL_SR_SCRIPTS[10].blocks[0]
-    with raises(MANIP_InvalidBlockShapeError):
-        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False, expects_embedded=True)
-
-def test_SRBlock_validate_unexpected_embedded_block(validation_if, context, info_api_extended2):
-    srblock = ALL_SR_SCRIPTS[11].blocks[0].inputs["SHAPE"].block
-    with raises(MANIP_InvalidBlockShapeError):
-        srblock.validate(AbstractTreePath(), info_api_extended2, validation_if, context, expects_reporter=False, expects_embedded=False)
+        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=True)
 
 def test_SRBlock_validate_unexpected_input(validation_if, context):
     srblock = deepcopy(ALL_SR_SCRIPTS[6].blocks[0])
     srblock.inputs["SOME_ID"] = SRBlockOnlyInputValue(block=None)
     with raises(MANIP_UnnecessaryInputError):
-        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False, expects_embedded=False)
+        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False)
 
 def test_SRBlock_validate_missing_input(validation_if, context):
     srblock = deepcopy(ALL_SR_SCRIPTS[6].blocks[0])
     del srblock.inputs["CONDITION"]
     with raises(MANIP_MissingInputError):
-        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False, expects_embedded=False)
+        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False)
 
 def test_SRBlock_validate_unexpected_dropdown(validation_if, context):
     srblock = deepcopy(ALL_SR_SCRIPTS[2].blocks[0])
     srblock.dropdowns["SOME_ID"] = SRDropdownValue(kind=DropdownValueKind.STANDARD, value="something")
     with raises(MANIP_UnnecessaryDropdownError):
-        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=True, expects_embedded=False)
+        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=True)
 
 def test_SRBlock_validate_missing_dropdown(validation_if, context):
     srblock = deepcopy(ALL_SR_SCRIPTS[2].blocks[0])
     del srblock.dropdowns["VARIABLE"]
     with raises(MANIP_MissingDropdownError):
-        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=True, expects_embedded=False)
+        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=True)
 
 def test_SRBlock_validate_post_handler(validation_if, context):
     srblock = ALL_SR_SCRIPTS[3].blocks[0]
-    srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False, expects_embedded=False)
+    srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False)
 
 def test_SRBlock_validate_invalid_input_cls(validation_if, context):
     srblock = deepcopy(ALL_SR_SCRIPTS[0].blocks[0])
     srblock.inputs["MESSAGE"] = SRBlockOnlyInputValue(block=None)
     with raises(MANIP_TypeValidationError):
-        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False, expects_embedded=False)
+        srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False)
 
 def test_SRBlock_validate_editor_button(validation_if, context):
     srblock = ALL_SR_SCRIPTS[12].blocks[0]
-    srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False, expects_embedded=False)
+    srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False)
 
 
 def test_SRBlock_validate_opcode_type():

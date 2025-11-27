@@ -272,7 +272,7 @@ def generate_extension_info_py_file(
                 raise type(error)(f"Error in extension {extension_id!r}: {str(error)}") from error
 
     try:
-        info_group, input_type_cls, dropdown_type_cls = generate_opcode_info_group(extension_info)
+        info_group, input_types, dropdown_types = generate_opcode_info_group(extension_info)
     except MANIP_ThanksError:
         raise
     except MANIP_Error as error:
@@ -283,7 +283,7 @@ def generate_extension_info_py_file(
         else:
             raise type(error)(f"Error in extension {extension_id!r}: {str(error)}") from error
     
-    file_code = generate_file_code(info_group, input_type_cls, dropdown_type_cls)
+    file_code = generate_file_code(info_group, input_types, dropdown_types)
     try:
         makedirs(cfg.ext_info_gen.gen_opcode_info_dir, exist_ok=True)
     except OSError as error:
