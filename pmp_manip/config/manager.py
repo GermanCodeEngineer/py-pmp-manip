@@ -1,5 +1,6 @@
-from colorama import init as colorama_init
-from datetime import timedelta
+from __future__ import annotations
+from colorama   import init as colorama_init
+from datetime   import timedelta
 
 from pmp_manip.utility import enforce_argument_types, MANIP_ConfigurationError, MANIP_ValidationError
 
@@ -56,7 +57,7 @@ def get_config() -> MasterConfig:
         raise MANIP_ConfigurationError("Configuration has not been initialized")
     return _config_instance
 
-def get_default_config() -> "MasterConfig":
+def get_default_config() -> MasterConfig:
     """
     Returns the default project configuration
 

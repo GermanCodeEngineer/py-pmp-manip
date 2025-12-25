@@ -1,5 +1,6 @@
-from copy   import deepcopy
-from typing import Any
+from __future__ import annotations
+from copy       import deepcopy
+from typing     import Any
 
 from pmp_manip.config           import get_config
 from pmp_manip.opcode_info.api  import OpcodeInfoAPI, MonitorIdBehaviour, DropdownType, DROPDOWN_VALUE_T
@@ -57,7 +58,7 @@ class FRMonitor:
     variable_id: str | None
 
     @classmethod
-    def from_data(cls, data: dict[str, Any]) -> "FRMonitor":
+    def from_data(cls, data: dict[str, Any]) -> FRMonitor:
         """
         Deserializes json_data into a FRMonitor
         
@@ -144,7 +145,7 @@ class FRMonitor:
         #if self.variable_type not in {None, ""}:
         #    raise MANIP_ThanksError()
 
-    def to_second(self, info_api: OpcodeInfoAPI, sprite_names: list[str]) -> "SRMonitor | None":
+    def to_second(self, info_api: OpcodeInfoAPI, sprite_names: list[str]) -> SRMonitor | None:
         """
         Converts a FRMonitor into a SRMonitor
         

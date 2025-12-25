@@ -64,7 +64,7 @@ class InputType(GEnum):
         return self.value[0]
 
     @property
-    def corresponding_dropdown_type(self) -> "DropdownType":
+    def corresponding_dropdown_type(self) -> DropdownType:
         """
         Get the corresponding dropdown type
 

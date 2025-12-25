@@ -1,3 +1,4 @@
+from __future__   import annotations
 from json         import loads, dumps
 from os           import path
 from subprocess   import run as run_subprocess, TimeoutExpired, SubprocessError

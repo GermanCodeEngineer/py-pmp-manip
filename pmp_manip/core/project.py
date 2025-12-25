@@ -1,7 +1,8 @@
-from copy   import copy, deepcopy
-from json   import loads
-from typing import Any
-from uuid   import UUID
+from __future__ import annotations
+from copy       import copy, deepcopy
+from json       import loads
+from typing     import Any
+from uuid       import UUID
 
 from pmp_manip.important_consts import SHA256_SEC_TARGET_NAME
 from pmp_manip.opcode_info.api  import OpcodeInfoAPI, DropdownValueKind
@@ -40,7 +41,7 @@ class FRProject:
     def from_data(cls, 
         data: dict, 
         asset_files: dict[str, bytes], 
-    ) -> "FRProject":
+    ) -> FRProject:
         """
         Deserializes json_data into a FRProject
         
@@ -102,7 +103,7 @@ class FRProject:
 
     @enforce_argument_types
     @classmethod
-    def from_file(cls, file_path: str) -> "FRProject":
+    def from_file(cls, file_path: str) -> FRProject:
         """
         Reads project data from a project file(.sb3 or .pmp) and creates a FRProject from it
 
@@ -176,7 +177,7 @@ class FRProject:
             )
     
     @enforce_argument_types
-    def to_second(self, info_api: OpcodeInfoAPI) -> "SRProject":
+    def to_second(self, info_api: OpcodeInfoAPI) -> SRProject:
         """
         Converts a FRProject into a SRProject
         
@@ -270,7 +271,7 @@ class SRProject:
     text_to_speech_language: SRTTSLanguage | None
 
     @classmethod
-    def create_empty(cls) -> "SRProject":
+    def create_empty(cls) -> SRProject:
         """
         Create an empty SRProject with no sprites, variables etc. and the default settings
         

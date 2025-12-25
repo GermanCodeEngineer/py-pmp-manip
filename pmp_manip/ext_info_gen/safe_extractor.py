@@ -1,3 +1,4 @@
+from __future__             import annotations
 from ast                    import literal_eval
 from colorama               import Fore as ColorFore, Style as ColorStyle
 from collections.abc        import Iterator

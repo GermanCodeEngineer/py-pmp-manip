@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pmp_manip.core.block import get_input_cls_for_input_mode
 from pmp_manip.utility    import (
     enforce_argument_types, get_closest_matches,

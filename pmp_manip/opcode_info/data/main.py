@@ -239,7 +239,7 @@ info_api.set_opcode_mutation_class(OPCODE_EXPANDABLE_IF, old_cls=FRExpandableIfM
 info_api.set_opcode_mutation_class(OPCODE_EXPANDABLE_MATH, old_cls=FRExpandableIfMutation, new_cls=SRExpandableIfMutation)
 
 # Special Cases
-def _149c_e47b(block: "SRBlock|IRBlock", validation_if: "ValidationIF") -> OpcodeType:
+def _149c_e47b(block: "SRBlock|IRBlock", validation_if: ValidationIF) -> OpcodeType:
     dropdown_value = block.dropdowns["TARGET"]
     match dropdown_value.value:
         case "all" | "this script":
@@ -253,7 +253,7 @@ info_api.add_opcode_case(OPCODE_STOP_SCRIPT, SpecialCase(
     function=_149c_e47b,
 ))
 
-def _bd30_2f8b(block: "SRBlock|IRBlock", validation_if: "ValidationIF") -> OpcodeType:
+def _bd30_2f8b(block: "SRBlock|IRBlock", validation_if: ValidationIF) -> OpcodeType:
     # Get the complete mutation and derive OpcodeType from optype
     partial_mutation: SRCustomBlockCallMutation = block.mutation
     complete_mutation = validation_if.get_cb_mutation(partial_mutation.custom_opcode)
@@ -265,7 +265,7 @@ info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
 
 
 
-def _f9c8_6ab0(block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None") -> DualKeyDict[str, str, InputType]:
+def _f9c8_6ab0(block: FRBlock|IRBlock|SRBlock, fti_if: FirstToInterIF|None) -> DualKeyDict[str, str, InputType]:
     from pmp_manip.core.block import FRBlock
     if isinstance(block, FRBlock):
         old_mutation: FRCustomBlockCallMutation = block.mutation
@@ -280,7 +280,7 @@ info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
     function=_f9c8_6ab0,
 ))
 
-def _2dc4_f736(block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None") -> DualKeyDict[str, str, InputType]:
+def _2dc4_f736(block: FRBlock|IRBlock|SRBlock, fti_if: FirstToInterIF|None) -> DualKeyDict[str, str, InputType]:
     # Generate X1, Y1 ... Xn, Yn depending on demand
     max_point_index = 0
     for input_id in block.inputs.keys():
@@ -308,7 +308,7 @@ info_api.add_opcode_case(OPCODE_POLYGON, SpecialCase(
     function=_2dc4_f736,
 ))
 
-def _eab0_2775(block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None") -> DualKeyDict[str, str, InputType]:
+def _eab0_2775(block: FRBlock|IRBlock|SRBlock, fti_if: FirstToInterIF|None) -> DualKeyDict[str, str, InputType]:
     # Generate SUBSTACK1, BOOL1 ... SUBSTACKn, BOOLn depending on demand
     mutation: FRExpandableIfMutation | SRExpandableIfMutation = block.mutation
     input_infos = DualKeyDict()
@@ -338,7 +338,7 @@ info_api.add_opcode_case(OPCODE_EXPANDABLE_IF, SpecialCase(
     function=_eab0_2775,
 ))
 
-def _a70a_0e97(block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None") -> DualKeyDict[str, str, InputType]:
+def _a70a_0e97(block: FRBlock|IRBlock|SRBlock, fti_if: FirstToInterIF|None) -> DualKeyDict[str, str, InputType]:
     # Generate SUBSTACK1, BOOL1 ... SUBSTACKn, BOOLn depending on demand
     mutation: FRExpandableMathMutation | SRExpandableMathMutation = block.mutation
     input_infos = DualKeyDict()
@@ -356,7 +356,7 @@ info_api.add_opcode_case(OPCODE_EXPANDABLE_MATH, SpecialCase(
 ))
 
 
-def _2841_608f(block: "FRBlock", block_id: str, fti_if: "FirstToInterIF") -> "FRBlock":
+def _2841_608f(block: FRBlock, block_id: str, fti_if: FirstToInterIF) -> FRBlock:
     # Transfer mutation from prototype block to definition block
     # Order deletion of the prototype block and its argument blocks
     # Delete "custom_block" input, which references the prototype block
@@ -375,7 +375,7 @@ info_api.add_opcodes_case(ANY_OPCODE_CB_DEF, SpecialCase(
     function=_2841_608f,
 ))
 
-def _1a40_d676(block: "FRBlock", block_id: str, fti_if: "FirstToInterIF") -> "FRBlock":
+def _1a40_d676(block: FRBlock, block_id: str, fti_if: FirstToInterIF) -> FRBlock:
     # Transfer argument name from a field into the mutation
     # because only real dropdowns should be listed in "fields"
     block = deepcopy(block)
@@ -388,7 +388,7 @@ info_api.add_opcodes_case(ANY_OPCODE_CB_ARG, SpecialCase(
     function=_1a40_d676,
 ))
 
-def _7fd4_5e99(block: "FRBlock", block_id: str, fti_if: "FirstToInterIF") -> "FRBlock":
+def _7fd4_5e99(block: FRBlock, block_id: str, fti_if: FirstToInterIF) -> FRBlock:
     # Remove the mutation, so that no mutation will be given to the IRBlock and SRBlock
     block = copy(block)
     block.mutation = None
@@ -398,7 +398,7 @@ info_api.add_opcode_case(OPCODE_STOP_SCRIPT, SpecialCase(
     function=_7fd4_5e99,
 ))
 
-def _4548_6eb6(block: "FRBlock", block_id: str, fti_if: "FirstToInterIF") -> "FRBlock":
+def _4548_6eb6(block: FRBlock, block_id: str, fti_if: FirstToInterIF) -> FRBlock:
     # => Store input values by argument names instead of argument ids
     block = copy(block)
     partial_mutation: FRCustomBlockCallMutation = block.mutation
@@ -415,7 +415,7 @@ info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
     function=_4548_6eb6,
 ))
 
-def _1101_80e9(block: "FRBlock", block_id: str, fti_if: "FirstToInterIF") -> "FRBlock":
+def _1101_80e9(block: FRBlock, block_id: str, fti_if: FirstToInterIF) -> FRBlock:
     # Remove the mutation, so that no mutation will be given to the IRBlock and SRBlock
     block = copy(block)
     block.mutation = None
@@ -426,7 +426,7 @@ info_api.add_opcode_case(OPCODE_POLYGON, SpecialCase(
 ))
 
 
-def _d0e6_50e9(block: "FRBlock", block_id: str, fti_if: "FirstToInterIF") -> "IRBlock":
+def _d0e6_50e9(block: FRBlock, block_id: str, fti_if: FirstToInterIF) -> IRBlock:
     # Return an empty, temporary block
     from pmp_manip.core.block import IRBlock
     return IRBlock(
@@ -445,7 +445,7 @@ info_api.add_opcode_case(OPCODE_CB_PROTOTYPE, SpecialCase(
     function=_d0e6_50e9,
 ))
 
-def _f5d7_e3e2(block: "FRBlock", block_id: str, itf_if: "InterToFirstIF") -> "FRBlock":
+def _f5d7_e3e2(block: FRBlock, block_id: str, itf_if: InterToFirstIF) -> FRBlock:
     # Transfer mutation from definition block to prototype block
     # Create the prototype block and its argument blocks
     # Create the "custom_block" input, which references the prototype block
@@ -501,7 +501,7 @@ info_api.add_opcodes_case(ANY_OPCODE_CB_DEF, SpecialCase(
     function=_f5d7_e3e2,
 ))
 
-def _61f9_4fd5(block: "FRBlock", block_id: str, itf_if: "InterToFirstIF") -> "FRBlock":
+def _61f9_4fd5(block: FRBlock, block_id: str, itf_if: InterToFirstIF) -> FRBlock:
     # => Store input values by argument ids instead of argument names
     block = copy(block)
     partial_mutation: FRCustomBlockCallMutation = block.mutation
@@ -518,7 +518,7 @@ info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
     function=_61f9_4fd5,
 ))
 
-def _5b5e_f1d7(block: "FRBlock", block_id: str, itf_if: "InterToFirstIF") -> "FRBlock":
+def _5b5e_f1d7(block: FRBlock, block_id: str, itf_if: InterToFirstIF) -> FRBlock:
     # Add the mutation, so that a mutation will be given to the FRBlock
     dropdown_value = block.fields["STOP_OPTION"][0]
     match dropdown_value:
@@ -539,7 +539,7 @@ info_api.add_opcode_case(OPCODE_STOP_SCRIPT, SpecialCase(
     function=_5b5e_f1d7,
 ))
 
-def _f77b_dd4b(block: "FRBlock", block_id: str, itf_if: "InterToFirstIF") -> "FRBlock":
+def _f77b_dd4b(block: FRBlock, block_id: str, itf_if: InterToFirstIF) -> FRBlock:
     # Add the mutation, so that a mutation will be given to the FRBlock
     max_point_index = 0
     for input_id in block.inputs.keys():
@@ -568,7 +568,7 @@ info_api.add_opcode_case(OPCODE_POLYGON, SpecialCase(
 ))
 
 
-def _26f9_8217(path: AbstractTreePath, block: "SRBlock") -> None:
+def _26f9_8217(path: AbstractTreePath, block: SRBlock) -> None:
     mutation: SRCustomBlockMutation = block.mutation
     if block.opcode == NEW_OPCODE_CB_DEF:
         if mutation.optype.is_reporter():

@@ -1,5 +1,6 @@
-from types  import MethodType
-from typing import Generic, TypeVar, Iterable, Literal, Any, cast, overload
+from __future__ import annotations
+from types      import MethodType
+from typing     import Generic, TypeVar, Iterable, Any, cast, overload
 
 from pmp_manip.utility          import (
     grepr_dataclass, enforce_argument_types,
@@ -167,7 +168,7 @@ class TreeVisitor(Generic[INCLUDED_T]):
     
     @enforce_argument_types
     @classmethod
-    def new_include_only(cls, included: Iterable[type[INCLUDED_T]]) -> "TreeVisitor[INCLUDED_T]":
+    def new_include_only(cls, included: Iterable[type[INCLUDED_T]]) -> TreeVisitor[INCLUDED_T]:
         """
         Create a new TreeVisitor, which only includes values of the specified types.
         """
@@ -176,7 +177,7 @@ class TreeVisitor(Generic[INCLUDED_T]):
     # sadly the most specific signature we can make:
     @enforce_argument_types
     @classmethod
-    def new_include_all_except(cls, excluded: Iterable[type[SECOND_REPR_T]]) -> "TreeVisitor[SECOND_REPR_T]":
+    def new_include_all_except(cls, excluded: Iterable[type[SECOND_REPR_T]]) -> TreeVisitor[SECOND_REPR_T]:
         """
         Create a new TreeVisitor, which includes values of all second representation types except for the specified types.
         """

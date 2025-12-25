@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pmp_manip.utility import GEnum, MANIP_ConversionError
 
 
@@ -7,7 +9,7 @@ class SRCodeEnum(GEnum):
     """
 
     @classmethod
-    def from_code(cls, code: str) -> "SRCodeEnum":
+    def from_code(cls, code: str) -> SRCodeEnum:
         """
         Gets the equivalent enum by its string code
         

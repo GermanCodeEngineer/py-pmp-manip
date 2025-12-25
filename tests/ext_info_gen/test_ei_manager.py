@@ -27,6 +27,20 @@ def _make_cache(file_name:str, js_code:str="some jsCode", py_code:str="some py_c
 
    
 
+def example_usage_generate_extension_info_py_file():
+    init_config(get_default_config())
+    for extension_id, extension in [
+        ("asyncexample",        "example_extensions/asyncexample.js"),
+        ("dumbExample",         "example_extensions/dumbExample.js"),
+        ("truefantombase",      "https://extensions.turbowarp.org/true-fantom/base.js"),
+        ("pmControlsExpansion", "https://raw.githubusercontent.com/PenguinMod/PenguinMod-Vm/refs/heads/develop/src/extensions/pm_controlsExpansion/index.js"),
+        ("gpusb3",              "https://extensions.penguinmod.com/extensions/derpygamer2142/gpusb3.js"),
+        ("P7BoxPhys",           "https://extensions.penguinmod.com/extensions/pooiod/Box2D.js"),
+        ("griffpatch",          "https://extensions.turbowarp.org/box2d.js"),
+    ]:
+        manager_mod.generate_extension_info_py_file(extension, extension_id, tolerate_file_path=True, is_strict=True)
+
+
 def test_is_trusted_extension_origin_without_handler():
     for source, should_be_trusted in [
         ("https://extensions.turbowarp.org/lab/text.js", True),

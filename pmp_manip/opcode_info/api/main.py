@@ -1,3 +1,4 @@
+from __future__  import annotations
 from dataclasses import field
 from importlib   import util as importutil
 from os          import path
@@ -291,8 +292,8 @@ class OpcodeInfo:
     has_shadow: bool = None
     has_variable_id: bool = False
     special_cases: dict[SpecialCaseType, SpecialCase] = field(default_factory=dict)
-    old_mutation_cls: Type["FRMutation"] | None = None
-    new_mutation_cls: Type["SRMutation"] | None = None
+    old_mutation_cls: Type[FRMutation] | None = None
+    new_mutation_cls: Type[SRMutation] | None = None
     allow_embedded: bool = False
     
     def __post_init__(self) -> None:
@@ -338,7 +339,7 @@ class OpcodeInfo:
 
 
     # Mutation Class
-    def set_mutation_class(self, old_cls: Type["FRMutation"], new_cls: Type["SRMutation"]) -> None:
+    def set_mutation_class(self, old_cls: Type[FRMutation], new_cls: Type[SRMutation]) -> None:
         """
         Blocks with some opcodes store additional information. For that purpose a mutation class can be added
         
@@ -357,7 +358,7 @@ class OpcodeInfo:
     ##############################################################
     
     # Get the opcode type. Avoid 
-    def get_opcode_type(self, block: "IRBlock|SRBlock", validation_if: "ValidationIF") -> OpcodeType:
+    def get_opcode_type(self, block: IRBlock | SRBlock, validation_if: ValidationIF) -> OpcodeType:
         """
         Get the real opcode type. Returns the actual live opcode type in case of OpcodeType.DYNAMIC.
 
@@ -375,7 +376,7 @@ class OpcodeInfo:
     
     # Get input ids, info, types, modes
     def get_input_ids_infos(self, 
-        block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None",
+        block: FRBlock | IRBlock | SRBlock, fti_if: FirstToInterIF | None,
     ) -> DualKeyDict[str, str, InputInfo]:
         """
         Get all the old and new inputs ids and their input information
@@ -394,7 +395,7 @@ class OpcodeInfo:
             return instead_case.call(block=block, fti_if=fti_if)
 
     def get_old_input_ids_infos(self, 
-        block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None",
+        block: FRBlock|IRBlock|SRBlock, fti_if: FirstToInterIF|None,
     ) -> dict[str, InputInfo]:
         """
         Get all the old inputs ids and their input information
@@ -409,7 +410,7 @@ class OpcodeInfo:
         return dict(self.get_input_ids_infos(block, fti_if).items_key1())
 
     def get_new_input_ids_infos(self, 
-        block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None",
+        block: FRBlock|IRBlock|SRBlock, fti_if: FirstToInterIF|None,
     ) -> dict[str, InputInfo]:
         """
         Get all the new inputs ids and their input information
@@ -424,7 +425,7 @@ class OpcodeInfo:
         return dict(self.get_input_ids_infos(block, fti_if).items_key2())
     
     def get_old_new_input_ids(self, 
-        block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None",
+        block: FRBlock|IRBlock|SRBlock, fti_if: FirstToInterIF|None,
     ) -> dict[str, str]:
         """
         Get all the old and new input ids
@@ -439,7 +440,7 @@ class OpcodeInfo:
         return dict(self.get_input_ids_infos(block, fti_if).keys_key1_key2())
     
     def get_new_old_input_ids(self, 
-        block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None",
+        block: FRBlock|IRBlock|SRBlock, fti_if: FirstToInterIF|None,
     ) -> dict[str, str]:
         """
         Get all the new and old input ids
@@ -567,7 +568,7 @@ class OpcodeInfoAPI:
             self.add_opcode_case(old_opcode, special_case)
 
     # Set Mutation Classes
-    def set_opcode_mutation_class(self, old_opcode: str, old_cls: Type["FRMutation"], new_cls: Type["SRMutation"]) -> None:
+    def set_opcode_mutation_class(self, old_opcode: str, old_cls: Type[FRMutation], new_cls: Type[SRMutation]) -> None:
         """
         Blocks with some opcodes store additional information. 
         For that purpose a mutation class can be added to a given opcode
@@ -586,8 +587,8 @@ class OpcodeInfoAPI:
     
     def set_opcodes_mutation_class(self, 
         old_opcodes: Iterable[str], 
-        old_cls: Type["FRMutation"], 
-        new_cls: Type["SRMutation"],
+        old_cls: Type[FRMutation], 
+        new_cls: Type[SRMutation],
     ) -> None:
         """
         Blocks with some opcodes store additional information. 

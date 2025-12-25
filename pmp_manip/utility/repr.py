@@ -1,3 +1,4 @@
+from __future__  import annotations
 from enum        import Enum
 from tree_sitter import Node
 from typing      import Any

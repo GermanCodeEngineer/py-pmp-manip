@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pmp_manip.utility import (
     grepr_dataclass, 
     AA_TYPE, AA_ALNUM, is_valid_js_data_uri, is_valid_url, 

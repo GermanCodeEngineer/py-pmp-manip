@@ -1,12 +1,13 @@
-from collections.abc import Callable as CallableABC, Iterable
+from __future__      import annotations
+from collections.abc import Iterable
 from copy            import copy
 from dataclasses     import dataclass
 from functools       import wraps
 from inspect         import signature
 from sys             import modules as sys_modules
-from types           import NoneType, UnionType
+from types           import UnionType
 from typing          import (
-    Any, Callable, Union, ParamSpec, TypeVar, NoReturn,
+    Any, Literal, Callable, Union, ParamSpec, TypeVar, NoReturn,
     get_origin, get_args, get_type_hints,
 )
 
@@ -192,12 +193,12 @@ def _check_type(value: Any, expected: Any, name: str, path: str = "") -> None:
         return
 
     # --- Handle Literal[V, ...] ---
-        if origin is Literal:
-            if value not in args:
-                raise TypeError(
-                    f"{name}{path}: value {value!r} not in Literal{args}"
-                )
-            return
+    if origin is Literal:
+        if value not in args:
+            raise TypeError(
+                f"{name}{path}: value {value!r} not in Literal{args}"
+            )
+        return
 
     # --- Fallback: plain class or special typing objects ---
     if origin is None:

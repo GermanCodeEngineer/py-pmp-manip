@@ -1,3 +1,4 @@
+from __future__  import annotations
 from abc         import ABC, abstractmethod
 from copy        import deepcopy
 from dataclasses import field
@@ -35,7 +36,7 @@ from pmp_manip.core.context        import CompleteContext
 from pmp_manip.core.dropdown       import SRDropdownValue
 
 
-def get_input_cls_for_input_mode(input_mode: InputMode) -> type["SRInputValue"]:
+def get_input_cls_for_input_mode(input_mode: InputMode) -> type[SRInputValue]:
     """
     Get the corresponding class for a input of a certain mode
     
@@ -76,7 +77,7 @@ class FRBlock:
     mutation: FRMutation | None = None
 
     @classmethod
-    def from_data(cls, data: dict[str, Any]) -> "FRBlock":
+    def from_data(cls, data: dict[str, Any]) -> FRBlock:
         """
         Deserializes json data into a FRBlock
         
@@ -108,7 +109,7 @@ class FRBlock:
     def from_tuple(cls, 
         data: tuple[int, str, str] | tuple[int, str, str, int|float, int|float],
         parent_id: str | None,
-    ) -> "FRBlock":
+    ) -> FRBlock:
         """
         Deserializes a tuple into a FRBlock with a variable or list value opcode
         
@@ -210,11 +211,11 @@ class FRBlock:
             return (magic_number, name, sha256)
 
     def to_inter(self, 
-        fti_if: "FirstToInterIF", 
+        fti_if: FirstToInterIF, 
         info_api: OpcodeInfoAPI, 
         own_id: str,
         in_shadow_input: bool = False
-    ) -> "IRBlock":
+    ) -> IRBlock:
         """
         Converts a FRBlock into a IRBlock
         
@@ -266,11 +267,11 @@ class FRBlock:
         return new_block
 
     def _to_inter_inputs(self, 
-        fti_if: "FirstToInterIF", 
+        fti_if: FirstToInterIF, 
         info_api: OpcodeInfoAPI,
         opcode_info: OpcodeInfo,
         own_id: str
-    ) -> dict[str, "IRInputValue"]:
+    ) -> dict[str, IRInputValue]:
         """
         *[Helper Method]* Converts the inputs of a FRBlock into the IR Fromat
         
@@ -325,7 +326,7 @@ class IRBlock:
     """
     
     opcode: str
-    inputs: dict[str, "IRInputValue"]
+    inputs: dict[str, IRInputValue]
     dropdowns: dict[str, DROPDOWN_VALUE_T]
     comment: SRComment | None
     mutation: SRMutation | None
@@ -335,7 +336,7 @@ class IRBlock:
     in_shadow_input: bool
 
     @classmethod
-    def from_menu_dropdown_value(cls, dropdown_value: DROPDOWN_VALUE_T, input_info: InputInfo) -> "IRBlock":
+    def from_menu_dropdown_value(cls, dropdown_value: DROPDOWN_VALUE_T, input_info: InputInfo) -> IRBlock:
         """
         Creates a IRBlock which only contains a menu SRDropdownValue
 
@@ -375,7 +376,7 @@ class IRBlock:
         return references
 
     def to_first(self, 
-        itf_if: "InterToFirstIF", 
+        itf_if: InterToFirstIF, 
         info_api: OpcodeInfoAPI,
         parent_id: str|None,
         own_id: str|None,
@@ -489,9 +490,9 @@ class IRBlock:
             return old_block
     
     def to_second(self, 
-        all_blocks: dict[str, "IRBlock"],
+        all_blocks: dict[str, IRBlock],
         info_api: OpcodeInfoAPI,
-    ) -> tuple[tuple[int|float,int|float] | None, list["SRBlock | str"]]:
+    ) -> tuple[tuple[int|float,int|float] | None, list[SRBlock | str]]:
         """
         Converts a IRBlock into a SRBlock
         
@@ -661,7 +662,7 @@ class IRInputValue:
     """
     
     mode: InputMode
-    references: list["str"]
+    references: list[str]
     immediate_block: IRBlock | None
     text: str | None
 
@@ -675,12 +676,12 @@ class SRScript:
     """
 
     position: tuple[int | float, int | float]
-    blocks: list["SRBlock"]
+    blocks: list[SRBlock]
 
     def validate(self, 
         path: AbstractTreePath, 
         info_api: OpcodeInfoAPI,
-        validation_if: "ValidationIF",
+        validation_if: ValidationIF,
         context: CompleteContext,
     ) -> None:
         """
@@ -722,7 +723,7 @@ class SRScript:
             )
     
     def to_inter(self, 
-        sti_if: "SecondToInterIF",
+        sti_if: SecondToInterIF,
         info_api: OpcodeInfoAPI, 
     ) -> str:
         """
@@ -759,7 +760,7 @@ class SRBlock:
     """
     
     opcode: str
-    inputs: dict[str, "SRInputValue"] = field(default_factory=dict)
+    inputs: dict[str, SRInputValue] = field(default_factory=dict)
     dropdowns: dict[str, SRDropdownValue] = field(default_factory=dict)
     comment: SRComment | None = None
     mutation: SRMutation | None = None
@@ -767,7 +768,7 @@ class SRBlock:
     def validate(self, 
         path: AbstractTreePath, 
         info_api: OpcodeInfoAPI,
-        validation_if: "ValidationIF", 
+        validation_if: ValidationIF, 
         context: CompleteContext,
         expects_reporter: bool,
         expected_opcode: str | None = None,
@@ -946,7 +947,7 @@ class SRBlock:
         return broadcast_messages
 
     def to_inter(self, 
-        sti_if: "SecondToInterIF",
+        sti_if: SecondToInterIF,
         info_api: OpcodeInfoAPI, 
         next: str | None, 
         position: tuple[int | float, int | float] | None,
@@ -1111,7 +1112,7 @@ class SRInputValue(ABC):
         block: SRBlock            | None = None,
         immediate: str | bool     | None = None,
         dropdown: SRDropdownValue | None = None,
-    ) -> "SRInputValue":
+    ) -> SRInputValue:
         """
         Creates a SRInputValue, given its mode and data
         
@@ -1143,7 +1144,7 @@ class SRInputValue(ABC):
     def validate(self, 
         path: AbstractTreePath, 
         info_api: OpcodeInfoAPI,
-        validation_if: "ValidationIF", 
+        validation_if: ValidationIF, 
         context: CompleteContext, 
         input_type: InputType, 
     ) -> None:
@@ -1167,7 +1168,7 @@ class SRInputValue(ABC):
     def _validate_block(self, 
         path: AbstractTreePath, 
         info_api: OpcodeInfoAPI,
-        validation_if: "ValidationIF", 
+        validation_if: ValidationIF, 
         context: CompleteContext, 
     ) -> None:
         """
@@ -1208,7 +1209,7 @@ class SRBlockAndTextInputValue(SRInputValue):
     def validate(self, 
         path: AbstractTreePath, 
         info_api: OpcodeInfoAPI,
-        validation_if: "ValidationIF", 
+        validation_if: ValidationIF, 
         context: CompleteContext, 
         input_type: InputType, 
     ) -> None:
@@ -1248,7 +1249,7 @@ class SRBlockAndDropdownInputValue(SRInputValue):
     def validate(self, 
         path: AbstractTreePath, 
         info_api: OpcodeInfoAPI,
-        validation_if: "ValidationIF", 
+        validation_if: ValidationIF, 
         context: CompleteContext, 
         input_type: InputType, 
     ) -> None:
@@ -1296,7 +1297,7 @@ class SRBlockAndBoolInputValue(SRInputValue):
     def validate(self, 
         path: AbstractTreePath, 
         info_api: OpcodeInfoAPI,
-        validation_if: "ValidationIF", 
+        validation_if: ValidationIF, 
         context: CompleteContext, 
         input_type: InputType, 
     ) -> None:
@@ -1335,7 +1336,7 @@ class SRBlockOnlyInputValue(SRInputValue):
     def validate(self, 
         path: AbstractTreePath, 
         info_api: OpcodeInfoAPI,
-        validation_if: "ValidationIF", 
+        validation_if: ValidationIF, 
         context: CompleteContext, 
         input_type: InputType, 
     ) -> None:
@@ -1373,7 +1374,7 @@ class SRScriptInputValue(SRInputValue):
     def validate(self, 
         path: AbstractTreePath, 
         info_api: OpcodeInfoAPI,
-        validation_if: "ValidationIF", 
+        validation_if: ValidationIF, 
         context: CompleteContext, 
         input_type: InputType, 
     ) -> None:
@@ -1424,7 +1425,7 @@ class SREmbeddedBlockInputValue(SRInputValue):
     def validate(self, 
         path: AbstractTreePath, 
         info_api: OpcodeInfoAPI,
-        validation_if: "ValidationIF", 
+        validation_if: ValidationIF, 
         context: CompleteContext, 
         input_type: InputType, 
     ) -> None:

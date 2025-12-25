@@ -1,3 +1,4 @@
+from __future__  import annotations
 from copy        import copy
 from dataclasses import field
 from difflib     import SequenceMatcher
@@ -6,7 +7,6 @@ from json        import dumps
 from typing      import overload, Iterable, Iterator, SupportsIndex, Any
 
 from pmp_manip.utility.decorators import grepr_dataclass, enforce_argument_types
-from pmp_manip.utility.errors     import MANIP_ValueError
 
 
 _TOKEN_CHARSET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!#%()*+,-./:;=?@[]^_`{|}~"
@@ -25,7 +25,7 @@ def get_closest_matches(string, possible_values: list[str], n: int) -> list[str]
     sorted_matches = sorted(similarity_scores, key=lambda x: x[1], reverse=True)
     return [i[0] for i in sorted_matches[:n]]   
 
-def tuplify(obj):
+def tuplify(obj) -> tuple | dict | Any:
     if   isinstance(obj, list):
         return tuple(tuplify(item) for item in obj)
     elif isinstance(obj, dict):
@@ -35,7 +35,7 @@ def tuplify(obj):
     else:
         return obj
 
-def listify(obj):
+def listify(obj) -> list | dict | Any:
     if   isinstance(obj, tuple):
         return [listify(item) for item in obj]
     elif isinstance(obj, dict):
@@ -115,7 +115,7 @@ class ContentFingerprint:
         return sha256(value.encode()).hexdigest()
     
     @classmethod
-    def from_value(cls, value: str) -> "ContentFingerprint":
+    def from_value(cls, value: str) -> ContentFingerprint:
         """
         Create the fingerprint of the given value
         
@@ -128,7 +128,7 @@ class ContentFingerprint:
         )
     
     @classmethod
-    def from_json(cls, data: dict[str, Any]) -> "ContentFingerprint":
+    def from_json(cls, data: dict[str, Any]) -> ContentFingerprint:
         """
         Deserialize the figerprint from JSON
         
@@ -188,35 +188,35 @@ class AbstractTreePath:
     def __init__(self, path: Iterable[ATPathAttribute | ATPathIndexOrKey] = tuple()) -> None:
         self.__dict__["path"] = tuple(path)
     
-    def copy(self) -> "AbstractTreePath":
+    def copy(self) -> AbstractTreePath:
         return self.__copy__()
     
-    def __copy__(self) -> "AbstractTreePath":
+    def __copy__(self) -> AbstractTreePath:
         return AbstractTreePath(copy(self.path))
     
     @enforce_argument_types
-    def add_attribute(self, attr: str) -> "AbstractTreePath":
+    def add_attribute(self, attr: str) -> AbstractTreePath:
         """
         Adds an attribute to the path. Returns a new instance.
         """
         return AbstractTreePath(self.path + (ATPathAttribute(attr),))
 
     @enforce_argument_types
-    def add_index_or_key(self, index_or_key: int | str | Any) -> "AbstractTreePath":
+    def add_index_or_key(self, index_or_key: int | str | Any) -> AbstractTreePath:
         """
         Adds an index or key to the path. Returns a new instance.
         """
         return AbstractTreePath(self.path + (ATPathIndexOrKey(index_or_key),))
     
     @enforce_argument_types
-    def extend(self, other: "AbstractTreePath") -> "AbstractTreePath":
+    def extend(self, other: AbstractTreePath) -> AbstractTreePath:
         """
         Extend the path by another path. Returns a new instance.
         """
         return AbstractTreePath(self.path + other.path)
     
     @enforce_argument_types
-    def go_up(self, n: int = 1) -> "AbstractTreePath":
+    def go_up(self, n: int = 1) -> AbstractTreePath:
         """
         Removes the last `n` elements. Returns a new instance.
         """
@@ -238,9 +238,9 @@ class AbstractTreePath:
     @overload
     def __getitem__(self, i: SupportsIndex, /) -> ATPathAttribute | ATPathIndexOrKey: ...
     @overload
-    def __getitem__(self, i: slice, /) -> "AbstractTreePath": ...
+    def __getitem__(self, i: slice, /) -> AbstractTreePath: ...
     @enforce_argument_types
-    def __getitem__(self, i: SupportsIndex | slice, /) -> "ATPathAttribute | ATPathIndexOrKey | AbstractTreePath":
+    def __getitem__(self, i: SupportsIndex | slice, /) -> ATPathAttribute | ATPathIndexOrKey | AbstractTreePath:
         if isinstance(i, slice):
             new_path = self.path.__getitem__(i)
             return AbstractTreePath(new_path)
@@ -248,7 +248,7 @@ class AbstractTreePath:
             return self.path.__getitem__(i)
     
     @enforce_argument_types
-    def __add__(self, other: "AbstractTreePath") -> "AbstractTreePath":
+    def __add__(self, other: AbstractTreePath) -> AbstractTreePath:
         return self.extend(other)
     
     @enforce_argument_types

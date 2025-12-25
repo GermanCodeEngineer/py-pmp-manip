@@ -1,11 +1,12 @@
-from copy import copy
+from __future__ import annotations
+from copy       import copy
 
 from pmp_manip.important_consts import SHA256_SEC_VARIABLE, SHA256_SEC_LIST
 from pmp_manip.utility          import string_to_sha256, grepr_dataclass, AA_TYPE, AA_TYPES, AA_LIST_OF_TYPES, AbstractTreePath
 
 
 
-def _variable_sha256(variable_name: str, sprite_name: str):
+def _variable_sha256(variable_name: str, sprite_name: str): # is needed!
     """
     A shortcut for computing a variable's sha256 hash
 
@@ -20,7 +21,7 @@ def _variable_sha256(variable_name: str, sprite_name: str):
 
 
 
-def _list_sha256(list_name: str, sprite_name: str):
+def _list_sha256(list_name: str, sprite_name: str): # is needed!
     """
     A shortcut for computing a list's sha256 hash
 

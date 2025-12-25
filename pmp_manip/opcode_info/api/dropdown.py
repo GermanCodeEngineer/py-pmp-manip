@@ -1,3 +1,4 @@
+from __future__  import annotations
 from dataclasses import field
 from typing      import Callable
 
@@ -35,7 +36,7 @@ class DropdownInfo:
     The information about a dropdown of a certain opcode
     """
     
-    type: "DropdownType"
+    type: DropdownType
 
 class DropdownValueRule(GEnum):
     """
@@ -53,7 +54,7 @@ class DropdownValueRule(GEnum):
         return self.value[0]
     
     @property
-    def calculation_default_kind(self) -> "DropdownValueKind | None":
+    def calculation_default_kind(self) -> DropdownValueKind | None:
         """
         Gets the dropdown value kind for an exact dropdown value calculation, which is used as a default(optional)
 

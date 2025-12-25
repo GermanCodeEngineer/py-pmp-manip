@@ -1,5 +1,6 @@
-from copy   import copy
-from typing import Any
+from __future__ import annotations
+from copy       import copy
+from typing     import Any
 
 from pmp_manip.opcode_info.api import (
     OpcodeInfoGroup, OpcodeInfo, OpcodeType, MonitorIdBehaviour,

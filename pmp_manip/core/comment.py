@@ -1,4 +1,5 @@
-from typing import Any
+from __future__ import annotations
+from typing     import Any
 
 from pmp_manip.utility import grepr_dataclass, AA_COORD_PAIR, AA_TYPE, AbstractTreePath, MANIP_InvalidValueError
 
@@ -18,7 +19,7 @@ class FRComment:
     text: str
 
     @classmethod
-    def from_data(cls, data: dict[str, Any]) -> "FRComment":
+    def from_data(cls, data: dict[str, Any]) -> FRComment:
         """
         Deserializes json data into a FRComment
         
@@ -55,7 +56,7 @@ class FRComment:
             "text"     : self.text,
         }
     
-    def to_second(self) -> tuple[bool, "SRComment"]:
+    def to_second(self) -> tuple[bool, SRComment]:
         """
         Converts a FRComment into a SRComment
         

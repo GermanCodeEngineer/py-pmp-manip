@@ -1,4 +1,5 @@
-from typing import Callable
+from __future__ import annotations
+from typing     import Callable
 
 from pmp_manip.utility import grepr_dataclass, GEnum
 
@@ -34,7 +35,7 @@ class SpecialCaseType(GEnum):
     # should NEVER return MENU (or any other pseudo opcode type)
     """
     def example(
-        block: "SRBlock|IRBlock", validation_if: "ValidationIF"
+        block: "SRBlock|IRBlock", validation_if: ValidationIF
     ) -> OpcodeType:
         ...
     """
@@ -45,7 +46,7 @@ class SpecialCaseType(GEnum):
     # fti_if will be None for a IRBlock or SRBlock and the block api for a FRBlock
     """
     def example(
-        block: "FRBlock|IRBlock|SRBlock", fti_if: "FirstToInterIF|None"
+        block: FRBlock|IRBlock|SRBlock, fti_if: FirstToInterIF|None
     ) -> DualKeyDict[str, str, InputInfo]:
         ...
     """
@@ -58,21 +59,21 @@ class SpecialCaseType(GEnum):
     PRE_FIRST_TO_INTER = 3
     # execure before FRBlock.to_inter
     """
-    def example(block: "FRBlock", block_id: str, fti_if: "FirstToInterIF") -> "FRBlock":
+    def example(block: FRBlock, block_id: str, fti_if: FirstToInterIF) -> FRBlock:
         ...
     """
      
     INSTEAD_FIRST_TO_INTER = 4
     # execute instead of FRBlock.to_inter
     """
-    def example(block: "FRBlock", block_id: str, fti_if: "FirstToInterIF") -> "IRBlock":
+    def example(block: FRBlock, block_id: str, fti_if: FirstToInterIF) -> IRBlock:
         ...
     """
 
     POST_INTER_TO_FIRST = 5
     # execute after IRBlock.to_first
     """
-    def example(block: "FRBlock", block_id: str, itf_if: "InterToFirstIF") -> "FRBlock":
+    def example(block: FRBlock, block_id: str, itf_if: InterToFirstIF) -> FRBlock:
         ...
     """
     
@@ -85,7 +86,7 @@ class SpecialCaseType(GEnum):
     # execute after SRBlock.validate
     # should raise subclass of MANIP_ValidationError if invalid
     """
-    def example(path: AbstractTreePath, block: "SRBlock") -> None:
+    def example(path: AbstractTreePath, block: SRBlock) -> None:
         ...
     """    
 

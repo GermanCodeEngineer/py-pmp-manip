@@ -1,6 +1,7 @@
-from logging import getLogger
-from lxml    import etree
-from PIL     import Image
+from __future__ import annotations
+from logging    import getLogger
+from lxml       import etree
+from PIL        import Image
 
 from pmp_manip.utility.file import write_file_text
 from pmp_manip.utility.repr import grepr

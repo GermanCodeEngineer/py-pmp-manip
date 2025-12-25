@@ -1,5 +1,6 @@
-from re     import split 
-from typing import Iterable
+from __future__ import annotations
+from re         import split 
+from typing     import Iterable
 
 from pmp_manip.opcode_info.api import InputType, BuiltinInputType, InputInfo, OpcodeType
 from pmp_manip.utility         import (
@@ -16,10 +17,10 @@ class SRCustomBlockOpcode:
     It stores the segments, which can be either a string(=> a label) or a SRCustomBlockArgument with name and type
     """
 
-    segments: tuple["str | SRCustomBlockArgument"]
+    segments: tuple[str | SRCustomBlockArgument]
 
     @classmethod
-    def from_proccode_argument_names(cls, proccode: str, argument_names: list[str]) -> "SRCustomBlockOpcode":
+    def from_proccode_argument_names(cls, proccode: str, argument_names: list[str]) -> SRCustomBlockOpcode:
         """
         Creates a custom block opcode given the procedure code and the argument names
         
@@ -125,7 +126,7 @@ class SRCustomBlockOpcode:
                     raise MANIP_TypeValidationError(path, f"A custom block opcode must not contain two labels in a row")
                 last_was_label = True
     
-    def _visit_node_unfiltered_(self, path: AbstractTreePath) -> Iterable[tuple[AbstractTreePath, "SRCustomBlockArgument"]]:
+    def _visit_node_unfiltered_(self, path: AbstractTreePath) -> Iterable[tuple[AbstractTreePath, SRCustomBlockArgument]]:
         """
         Implement Special Case for the TreeIterator unfiltered on an SRCustomBlockOpcode.
         Prevents primitive str elements from being yielded.
@@ -149,7 +150,7 @@ class SRCustomBlockArgument:
     """
     
     name: str
-    type: "SRCustomBlockArgumentType"
+    type: SRCustomBlockArgumentType
 
     def validate(self, path: AbstractTreePath) -> None:
         """
@@ -192,7 +193,7 @@ class SRCustomBlockOptype(GEnum):
     """
     
     @classmethod
-    def from_code(cls, code: str | None) -> "SRCustomBlockOptype":
+    def from_code(cls, code: str | None) -> SRCustomBlockOptype:
         """
         Gets the SRCustomBlockOptype based on its equivalent code
         

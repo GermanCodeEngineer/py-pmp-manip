@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING
+from __future__ import annotations
+from typing     import TYPE_CHECKING
 if TYPE_CHECKING:
     from pmp_manip.utility.data import AbstractTreePath
 
@@ -48,7 +49,7 @@ class MANIP_ConversionError(MANIP_Error): pass
 class MANIP_ValidationError(MANIP_Error): pass
 
 class MANIP_PathValidationError(MANIP_ValidationError):
-    def __init__(self, path: "AbstractTreePath", msg: str, condition: str|None = None) -> None:
+    def __init__(self, path: AbstractTreePath, msg: str, condition: str|None = None) -> None:
         self.path      = path
         self.msg       = msg
         self.condition = condition
@@ -79,7 +80,7 @@ class MANIP_InvalidDirPathError(MANIP_PathValidationError): pass
 class MANIP_SpriteLayerStackError(MANIP_PathValidationError): pass
 
 class MANIP_SameValueTwiceError(MANIP_ValidationError):
-    def __init__(self, path1: "AbstractTreePath", path2: "AbstractTreePath", msg: str, condition: str|None = None) -> None:
+    def __init__(self, path1: AbstractTreePath, path2: AbstractTreePath, msg: str, condition: str|None = None) -> None:
         self.path1     = path1
         self.path2     = path2
         self.msg       = msg

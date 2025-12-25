@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pmp_manip.opcode_info.api import DropdownType, DropdownValueKind, DROPDOWN_VALUE_T
 from pmp_manip.utility         import grepr_dataclass, AA_TYPE, AA_JSON_COMPATIBLE, AbstractTreePath, MANIP_InvalidDropdownValueError
 
@@ -14,7 +16,7 @@ class SRDropdownValue:
     value: DROPDOWN_VALUE_T
     
     @classmethod
-    def from_tuple(cls, data: tuple[DropdownValueKind, DROPDOWN_VALUE_T]) -> "SRDropdownValue":
+    def from_tuple(cls, data: tuple[DropdownValueKind, DROPDOWN_VALUE_T]) -> SRDropdownValue:
         """
         Deserializes a tuple into a SRDropdownValue
         
@@ -57,7 +59,7 @@ class SRDropdownValue:
 
     def validate_value(self, 
         path: AbstractTreePath, 
-        dropdown_type: "DropdownType", 
+        dropdown_type: DropdownType, 
         context: PartialContext | CompleteContext,
     ) -> None:
         """

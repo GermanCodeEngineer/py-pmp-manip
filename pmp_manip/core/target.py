@@ -1,3 +1,4 @@
+from __future__  import annotations
 from typing      import Any, Callable
 from copy        import copy, deepcopy
 from dataclasses import field
@@ -47,7 +48,7 @@ class FRTarget(ABC):
     
     @classmethod
     @abstractmethod
-    def from_data(cls, data: dict[str, Any]) -> "FRTarget":
+    def from_data(cls, data: dict[str, Any]) -> FRTarget:
         """
         Deserializes json_data into a FRTarget
         
@@ -151,7 +152,7 @@ class FRTarget(ABC):
     def to_second(self, 
         asset_files: dict[str, bytes],
         info_api: OpcodeInfoAPI,
-    ) -> tuple["SRTarget", list[SRVariable] | None,  list[SRList] | None]:
+    ) -> tuple[SRTarget, list[SRVariable] | None,  list[SRList] | None]:
         """
         Converts a FRTarget into a SRTarget
         
@@ -195,7 +196,7 @@ class FRTarget(ABC):
                 blocks[block_id] = FRBlock.from_tuple(block, parent_id=None)
 
         fti_if = FirstToInterIF(blocks=blocks, block_comments=attached_comments)
-        new_blocks: dict["str", "IRBlock"] = {}
+        new_blocks: dict[str, IRBlock] = {}
         for block_id, block in blocks.items():
             new_block = block.to_inter(
                 fti_if          = fti_if,
@@ -302,7 +303,7 @@ class FRStage(FRTarget):
     text_to_speech_language: str | None
 
     @classmethod
-    def from_data(cls, data: dict[str, Any]) -> "FRStage":
+    def from_data(cls, data: dict[str, Any]) -> FRStage:
         """
         Deserializes json_data into a FRStage
         
@@ -345,7 +346,7 @@ class FRStage(FRTarget):
     def to_second(self, 
         asset_files: dict[str, bytes],
         info_api: OpcodeInfoAPI,
-    ) -> tuple["SRStage", list[SRVariable],  list[SRList]]:
+    ) -> tuple[SRStage, list[SRVariable],  list[SRList]]:
         """
         Converts a FRStage into a SRStage
         
@@ -389,7 +390,7 @@ class FRSprite(FRTarget):
     rotation_style: str
 
     @classmethod
-    def from_data(cls, data: dict[str, Any]) -> "FRSprite":
+    def from_data(cls, data: dict[str, Any]) -> FRSprite:
         """
         Deserializes json_data into a FRSprite
         
@@ -438,7 +439,7 @@ class FRSprite(FRTarget):
     def to_second(self, 
         asset_files: dict[str, bytes],
         info_api: OpcodeInfoAPI,
-    ) -> tuple["SRSprite", None, None]:
+    ) -> tuple[SRSprite, None, None]:
         """
         Converts a FRSprite into a SRSprite
         
@@ -709,7 +710,7 @@ class SRStage(SRTarget):
     """
 
     @classmethod
-    def create_empty(cls) -> "SRTarget":
+    def create_empty(cls) -> SRTarget:
         """
         Create an empty SRTarget with no scripts, costumes etc. and the default settings
         
@@ -807,11 +808,11 @@ class SRSprite(SRTarget):
     size: int | float
     direction: int | float
     is_draggable: bool
-    rotation_style: "SRSpriteRotationStyle"
+    rotation_style: SRSpriteRotationStyle
     uuid: UUID = field(default_factory=uuid4, init=False, compare=False)
     
     @classmethod
-    def create_empty(cls, name: str) -> "SRSprite":
+    def create_empty(cls, name: str) -> SRSprite:
         """
         Create an empty SRSprite with no scripts, costumes, variables, local monitors etc. and the default settings
         

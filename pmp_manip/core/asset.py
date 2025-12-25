@@ -1,9 +1,10 @@
-from abc    import ABC, abstractmethod
-from io     import BytesIO
-from lxml   import etree
-from PIL    import Image, UnidentifiedImageError
-from pydub  import AudioSegment
-from typing import Any
+from __future__ import annotations
+from abc        import ABC, abstractmethod
+from io         import BytesIO
+from lxml       import etree
+from PIL        import Image, UnidentifiedImageError
+from pydub      import AudioSegment
+from typing     import Any
 
 from pmp_manip.utility import (
     grepr_dataclass, xml_equal, image_equal, generate_md5,
@@ -31,7 +32,7 @@ class FRCostume:
     bitmap_resolution: int | None # will always be None, 1 or 2
 
     @classmethod
-    def from_data(cls, data: dict[str, Any]) -> "FRCostume":
+    def from_data(cls, data: dict[str, Any]) -> FRCostume:
         """
         Deserializes json data into a FRCostume
         
@@ -71,7 +72,7 @@ class FRCostume:
             data["bitmapResolution"] = self.bitmap_resolution
         return data
     
-    def to_second(self, asset_files: dict[str, bytes]) -> "SRVectorCostume|SRBitmapCostume": 
+    def to_second(self, asset_files: dict[str, bytes]) -> SRVectorCostume | SRBitmapCostume: 
         """
         Converts a FRCostume into a SRCostume
         
@@ -124,7 +125,7 @@ class FRSound:
     sample_count: int
     
     @classmethod
-    def from_data(cls, data: dict[str, Any]) -> "FRSound":
+    def from_data(cls, data: dict[str, Any]) -> FRSound:
         """
         Deserializes json data into a FRSound
         
@@ -160,7 +161,7 @@ class FRSound:
         }
         return data
 
-    def to_second(self, asset_files: dict[str, bytes]) -> "SRSound":
+    def to_second(self, asset_files: dict[str, bytes]) -> SRSound:
         """
         Converts a FRSound into a SRSound
         
@@ -212,7 +213,7 @@ class SRCostume(ABC):
         AA_COORD_PAIR(self, path, "rotation_center")
 
     @abstractmethod
-    def to_first(self) -> tuple["FRCostume", bytes]: 
+    def to_first(self) -> tuple[FRCostume, bytes]: 
         """
         Converts a SRCostume into a FRCostume 
         
@@ -229,7 +230,7 @@ class SRVectorCostume(SRCostume):
     content: etree._Element
         
     @classmethod
-    def create_empty(cls, name: str = "empty") -> "SRCostume":
+    def create_empty(cls, name: str = "empty") -> SRCostume:
         return cls(
             name            = name,
             file_extension  = "svg",
@@ -271,7 +272,7 @@ class SRVectorCostume(SRCostume):
         AA_EQUAL(self, path, "file_extension", "svg")
         AA_TYPE(self, path, "content", etree._Element)
     
-    def to_first(self) -> tuple["FRCostume", bytes]:
+    def to_first(self) -> tuple[FRCostume, bytes]:
         """
         Converts a SRVectorCostume into a FRCostume
         
@@ -341,7 +342,7 @@ class SRBitmapCostume(SRCostume):
         AA_TYPE(self, path, "content", Image.Image)
         AA_TYPE(self, path, "has_double_resolution", bool)
 
-    def to_first(self) -> tuple["FRCostume", bytes]:
+    def to_first(self) -> tuple[FRCostume, bytes]:
         """
         Converts a SRBitmapCostume into a FRCostume
         
@@ -394,7 +395,7 @@ class SRSound:
         AA_TYPE(self, path, "file_extension", str)
         AA_TYPE(self, path, "content", AudioSegment)
     
-    def to_first(self) -> tuple["FRSound", bytes]:
+    def to_first(self) -> tuple[FRSound, bytes]:
         """
         Converts a SRSound into a FRSound
         

@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING
+from __future__ import annotations
+from typing     import TYPE_CHECKING
 
 if TYPE_CHECKING: from pmp_manip.opcode_info.api import DropdownValueKind, DROPDOWN_VALUE_T
 from pmp_manip.utility import grepr_dataclass
@@ -10,13 +11,13 @@ class PartialContext:
     A temporary dataclass which stores the context for dropdown validation excluding sprite context
     """
 
-    scope_variables: list[tuple["DropdownValueKind", "DROPDOWN_VALUE_T"]]
-    scope_lists: list[tuple["DropdownValueKind", "DROPDOWN_VALUE_T"]]
-    global_variables: list[tuple["DropdownValueKind", "DROPDOWN_VALUE_T"]]
-    local_variables: dict[str|None, list[tuple["DropdownValueKind", "DROPDOWN_VALUE_T"]]]
-    local_lists: dict[str|None, list[tuple["DropdownValueKind", "DROPDOWN_VALUE_T"]]]
-    other_sprites: list[tuple["DropdownValueKind", "DROPDOWN_VALUE_T"]]
-    backdrops: list[tuple["DropdownValueKind", "DROPDOWN_VALUE_T"]]
+    scope_variables: list[tuple[DropdownValueKind, DROPDOWN_VALUE_T]]
+    scope_lists: list[tuple[DropdownValueKind, DROPDOWN_VALUE_T]]
+    global_variables: list[tuple[DropdownValueKind, DROPDOWN_VALUE_T]]
+    local_variables: dict[str|None, list[tuple[DropdownValueKind, DROPDOWN_VALUE_T]]]
+    local_lists: dict[str|None, list[tuple[DropdownValueKind, DROPDOWN_VALUE_T]]]
+    other_sprites: list[tuple[DropdownValueKind, DROPDOWN_VALUE_T]]
+    backdrops: list[tuple[DropdownValueKind, DROPDOWN_VALUE_T]]
 
 @grepr_dataclass(grepr_fields=["scope_variables", "scope_lists", "global_variables", "local_variables", "local_lists", "other_sprites", "backdrops", "costumes", "sounds", "is_stage"])
 class CompleteContext:
@@ -24,25 +25,25 @@ class CompleteContext:
     A temporary dataclass which stores the context for dropdown validation including sprite context
     """
 
-    scope_variables: list[tuple["DropdownValueKind", "DROPDOWN_VALUE_T"]]
-    scope_lists: list[tuple["DropdownValueKind", "DROPDOWN_VALUE_T"]]
-    global_variables: list[tuple["DropdownValueKind", "DROPDOWN_VALUE_T"]]
-    local_variables: dict[str|None, list[tuple["DropdownValueKind", "DROPDOWN_VALUE_T"]]]
-    local_lists: dict[str|None, list[tuple["DropdownValueKind", "DROPDOWN_VALUE_T"]]]
-    other_sprites: list[tuple["DropdownValueKind", "DROPDOWN_VALUE_T"]]
-    backdrops: list[tuple["DropdownValueKind", "DROPDOWN_VALUE_T"]]
+    scope_variables: list[tuple[DropdownValueKind, DROPDOWN_VALUE_T]]
+    scope_lists: list[tuple[DropdownValueKind, DROPDOWN_VALUE_T]]
+    global_variables: list[tuple[DropdownValueKind, DROPDOWN_VALUE_T]]
+    local_variables: dict[str|None, list[tuple[DropdownValueKind, DROPDOWN_VALUE_T]]]
+    local_lists: dict[str|None, list[tuple[DropdownValueKind, DROPDOWN_VALUE_T]]]
+    other_sprites: list[tuple[DropdownValueKind, DROPDOWN_VALUE_T]]
+    backdrops: list[tuple[DropdownValueKind, DROPDOWN_VALUE_T]]
 
-    costumes: list[tuple["DropdownValueKind", "DROPDOWN_VALUE_T"]]
-    sounds: list[tuple["DropdownValueKind", "DROPDOWN_VALUE_T"]]
+    costumes: list[tuple[DropdownValueKind, DROPDOWN_VALUE_T]]
+    sounds: list[tuple[DropdownValueKind, DROPDOWN_VALUE_T]]
     is_stage: bool
 
     @classmethod
     def from_partial(cls, 
         pc: PartialContext, 
-        costumes: list[tuple["DropdownValueKind", "DROPDOWN_VALUE_T"]], 
-        sounds: list[tuple["DropdownValueKind", "DROPDOWN_VALUE_T"]], 
+        costumes: list[tuple[DropdownValueKind, DROPDOWN_VALUE_T]], 
+        sounds: list[tuple[DropdownValueKind, DROPDOWN_VALUE_T]], 
         is_stage: bool
-    ) -> "CompleteContext":
+    ) -> CompleteContext:
         """
         Generates a complete context from a PartialContext and the target context
 

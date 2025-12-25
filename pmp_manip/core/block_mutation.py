@@ -1,3 +1,4 @@
+from __future__  import annotations
 from abc         import ABC, abstractmethod
 from copy        import copy, deepcopy
 from dataclasses import field
@@ -7,7 +8,7 @@ from typing      import Any, ClassVar, NoReturn, Literal, TYPE_CHECKING
 from pmp_manip.important_consts import SHA256_SEC_MAIN_ARGUMENT_NAME
 from pmp_manip.utility          import (
     grepr_dataclass, string_to_sha256, gdumps,
-    AA_TYPE, AA_HEX_COLOR, AA_LIST_OF_ONE_OF, AA_EXACT_LEN, AbstractTreePath,
+    AA_TYPE, AA_HEX_COLOR, AA_LIST_OF_ONE_OF, AbstractTreePath,
     MANIP_ThanksError, MANIP_ConversionError, MANIP_DeserializationError, 
 )
 
@@ -107,7 +108,7 @@ class FRMutation(ABC):
     The first representation for the mutation of a block. Mutations hold special information, which only special blocks have
     """
     
-    _subclasses_info_: ClassVar[dict[type["FRMutation"], tuple[set[str], set[str]]]] = {}
+    _subclasses_info_: ClassVar[dict[type[FRMutation], tuple[set[str], set[str]]]] = {}
     # stores classes required and optional properties
 
     tag_name: str # always "mutation"
@@ -127,7 +128,7 @@ class FRMutation(ABC):
     
 
     @classmethod
-    def _find_from_data_subclasses(cls, data: dict[str, Any]) -> list[type["FRMutation"]]:
+    def _find_from_data_subclasses(cls, data: dict[str, Any]) -> list[type[FRMutation]]:
         """
         Compares the keys of the provided data with the properties of all subclasses and returns the matching ones
         
@@ -148,7 +149,7 @@ class FRMutation(ABC):
 
     @classmethod
     @abstractmethod
-    def from_data(cls, data: dict[str, Any]) -> "FRMutation":
+    def from_data(cls, data: dict[str, Any]) -> FRMutation:
         """
         Create a FRMutation from json data. 
         Automatically chooses the right subclass and creates an instance using its from_data method
@@ -189,7 +190,7 @@ class FRMutation(ABC):
             raise MANIP_ThanksError()
 
     @abstractmethod
-    def to_second(self, fti_if: "FirstToInterIF") -> "SRMutation":
+    def to_second(self, fti_if: FirstToInterIF) -> SRMutation:
         """
         Convert a FRMutation into a SRMutation
         
@@ -217,7 +218,7 @@ class FRCustomBlockArgumentMutation(FRMutation,
     _argument_name: str | None = field(init=False)
     
     @classmethod
-    def from_data(cls, data: dict[str, str]) -> "FRCustomBlockArgumentMutation":
+    def from_data(cls, data: dict[str, str]) -> FRCustomBlockArgumentMutation:
         """
         Create a FRCustomBlockArgumentMutation from json data
         
@@ -273,7 +274,7 @@ class FRCustomBlockArgumentMutation(FRMutation,
         """
         self._argument_name = name
     
-    def to_second(self, fti_if: "FirstToInterIF") -> "SRCustomBlockArgumentMutation":
+    def to_second(self, fti_if: FirstToInterIF) -> SRCustomBlockArgumentMutation:
         """
         Convert a FRCustomBlockArgumentMutation into a SRCustomBlockArgumentMutation
         
@@ -313,7 +314,7 @@ class FRCustomBlockMutation(FRMutation,
     has_next: Literal[False] = False # should not exist and if present seems to be False
 
     @classmethod
-    def from_data(cls, data: dict[str, Any]) -> "FRCustomBlockMutation":
+    def from_data(cls, data: dict[str, Any]) -> FRCustomBlockMutation:
         """
         Create a FRCustomBlockMutation from json data
         
@@ -359,7 +360,7 @@ class FRCustomBlockMutation(FRMutation,
             "color"           : gdumps(self.color), # automatically converts to list
         }
         
-    def to_second(self, fti_if: "FirstToInterIF") -> "SRCustomBlockMutation":
+    def to_second(self, fti_if: FirstToInterIF) -> SRCustomBlockMutation:
         """
         Convert a FRCustomBlockMutation into a SRCustomBlockMutation
         
@@ -400,7 +401,7 @@ class FRCustomBlockCallMutation(FRMutation,
     has_next: Literal[False] = False # should not exist and if present seems to be False
     
     @classmethod
-    def from_data(cls, data: dict[str, Any]) -> "FRCustomBlockCallMutation":
+    def from_data(cls, data: dict[str, Any]) -> FRCustomBlockCallMutation:
         """
         Create a FRCustomBlockCallMutation from json data
         
@@ -442,7 +443,7 @@ class FRCustomBlockCallMutation(FRMutation,
             "color"      : gdumps(self.color), # automatically converts to list
         }
         
-    def to_second(self, fti_if: "FirstToInterIF") -> "SRCustomBlockCallMutation":
+    def to_second(self, fti_if: FirstToInterIF) -> SRCustomBlockCallMutation:
         """
         Convert a FRCustomBlockCallMutation into a SRCustomBlockCallMutation
         
@@ -473,7 +474,7 @@ class FRExpandableIfMutation(FRMutation,
     ends_in_else: bool
     
     @classmethod
-    def from_data(cls, data: dict[str, Any]) -> "FRExpandableIfMutation":
+    def from_data(cls, data: dict[str, Any]) -> FRExpandableIfMutation:
         """
         Create a FRExpandableIfMutation(for the inner "block" of the old "draw triangle" block) from json data
         
@@ -498,7 +499,7 @@ class FRExpandableIfMutation(FRMutation,
             "ends-in-else": gdumps(self.ends_in_else),
         }
    
-    def to_second(self, fti_if: "FirstToInterIF") -> "SRExpandableIfMutation":
+    def to_second(self, fti_if: FirstToInterIF) -> SRExpandableIfMutation:
         """
         Convert a FRExpandableIfMutation into a SRExpandableIfMutation
         
@@ -523,7 +524,7 @@ class FRExpandableMathMutation(FRMutation,
     menu_values: list[Literal["+", "-", "*", "/", "^"]]
     
     @classmethod
-    def from_data(cls, data: dict[str, Any]) -> "FRExpandableMathMutation":
+    def from_data(cls, data: dict[str, Any]) -> FRExpandableMathMutation:
         """
         Create a FRExpandableMathMutation from json data
         
@@ -548,7 +549,7 @@ class FRExpandableMathMutation(FRMutation,
             "menuvalues": "".join(self.menu_values),
         }
    
-    def to_second(self, fti_if: "FirstToInterIF") -> "SRExpandableMathMutation":
+    def to_second(self, fti_if: FirstToInterIF) -> SRExpandableMathMutation:
         """
         Convert a FRExpandableMathMutation into a SRExpandableMathMutation
         
@@ -571,7 +572,7 @@ class FRStopScriptMutation(FRMutation,
     edited: Literal[False] = False # should not exist and if present seems to be False
     
     @classmethod
-    def from_data(cls, data: dict[str, Any]) -> "FRStopScriptMutation":
+    def from_data(cls, data: dict[str, Any]) -> FRStopScriptMutation:
         """
         Create a FRStopScriptMutation(for the "stop [this script v]" block) from json data
         
@@ -600,7 +601,7 @@ class FRStopScriptMutation(FRMutation,
             "hasnext" : gdumps(self.has_next),
         }
    
-    def to_second(self, fti_if: "FirstToInterIF") -> NoReturn:
+    def to_second(self, fti_if: FirstToInterIF) -> NoReturn:
         """
         A second representation of a stop script mutation does not exist. 
         It would just store alredy known information in a second place.
@@ -624,7 +625,7 @@ class FRPolygonMutation(FRMutation,
     needs_init: Literal[True]
     
     @classmethod
-    def from_data(cls, data: dict[str, Any]) -> "FRPolygonMutation":
+    def from_data(cls, data: dict[str, Any]) -> FRPolygonMutation:
         """
         Create a FRPolygonMutation(for the inner "block" of the old "draw triangle" block) from json data
         
@@ -657,7 +658,7 @@ class FRPolygonMutation(FRMutation,
             "needsinit": gdumps(self.needs_init),
         }
    
-    def to_second(self, fti_if: "FirstToInterIF") -> NoReturn:
+    def to_second(self, fti_if: FirstToInterIF) -> NoReturn:
         """
         A second representation of a polygon mutation does not exist. 
         It would just store alredy known information in a second place.
@@ -690,7 +691,7 @@ class SRMutation(ABC):
         """
 
     @abstractmethod
-    def to_first(self, itf_if: "InterToFirstIF") -> "FRMutation":
+    def to_first(self, itf_if: InterToFirstIF) -> FRMutation:
         """
         Convert a SRMutation into a FRMutation
         
@@ -732,7 +733,7 @@ class SRCustomBlockArgumentMutation(SRMutation):
         AA_HEX_COLOR(self, path, "prototype_color")
         AA_HEX_COLOR(self, path, "outline_color")
     
-    def to_first(self, itf_if: "InterToFirstIF") -> FRCustomBlockArgumentMutation:
+    def to_first(self, itf_if: InterToFirstIF) -> FRCustomBlockArgumentMutation:
         """
         Convert a SRCustomBlockArgumentMutation into a FRCustomBlockArgumentMutation
         
@@ -754,7 +755,7 @@ class SRCustomBlockMutation(SRMutation):
     The second representation for the mutation of a custom block definition
     """
     
-    custom_opcode: "SRCustomBlockOpcode"
+    custom_opcode: SRCustomBlockOpcode
     no_screen_refresh: bool
     optype: SRCustomBlockOptype
     
@@ -787,7 +788,7 @@ class SRCustomBlockMutation(SRMutation):
         self.custom_opcode.validate(path.add_attribute("custom_opcode"))
 
     
-    def to_first(self, itf_if: "InterToFirstIF") -> FRCustomBlockMutation:
+    def to_first(self, itf_if: InterToFirstIF) -> FRCustomBlockMutation:
         """
         Convert a SRCustomBlockMutation into a FRCustomBlockMutation
         
@@ -827,7 +828,7 @@ class SRCustomBlockCallMutation(SRMutation):
     The second representation for the mutation of a custom block call
     """
     
-    custom_opcode: "SRCustomBlockOpcode"
+    custom_opcode: SRCustomBlockOpcode
     
     def validate(self, path: AbstractTreePath) -> None:
         """
@@ -846,7 +847,7 @@ class SRCustomBlockCallMutation(SRMutation):
 
         self.custom_opcode.validate(path.add_attribute("custom_opcode"))
     
-    def to_first(self, itf_if: "InterToFirstIF") -> FRCustomBlockCallMutation:
+    def to_first(self, itf_if: InterToFirstIF) -> FRCustomBlockCallMutation:
         """
         Convert a SRCustomBlockCallMutation into a FRCustomBlockCallMutation
         
@@ -904,7 +905,7 @@ class SRExpandableIfMutation(SRMutation):
         AA_TYPE(self, path, "branch_count", int)
         AA_TYPE(self, path, "ends_in_else", bool)
     
-    def to_first(self, itf_if: "InterToFirstIF") -> "FRExpandableIfMutation":
+    def to_first(self, itf_if: InterToFirstIF) -> FRExpandableIfMutation:
         """
         Convert a SRExpandableIfMutation into a FRExpandableIfMutation
 
@@ -938,7 +939,7 @@ class SRExpandableMathMutation(SRMutation):
         """
         AA_LIST_OF_ONE_OF(self, path, "operations", ["+", "-", "*", "/", "^"])
     
-    def to_first(self, itf_if: "InterToFirstIF") -> "FRExpandableMathMutation":
+    def to_first(self, itf_if: InterToFirstIF) -> FRExpandableMathMutation:
         """
         As this mutation represents both first and second representation self will be returned
 

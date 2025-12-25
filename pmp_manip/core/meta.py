@@ -1,4 +1,5 @@
-from typing import Any
+from __future__ import annotations
+from typing     import Any
 
 from pmp_manip.config  import get_config
 from pmp_manip.utility import grepr_dataclass, MANIP_ThanksError
@@ -19,10 +20,10 @@ class FRMeta:
     semver: str
     vm: str
     agent: str
-    platform: "FRPenguinModPlatformMeta | None"
+    platform: FRPenguinModPlatformMeta | None
 
     @classmethod
-    def from_data(cls, data: dict[str, Any]) -> "FRMeta":
+    def from_data(cls, data: dict[str, Any]) -> FRMeta:
         """
         Deserializes json_data into a FRMeta
         
@@ -59,7 +60,7 @@ class FRMeta:
         return data
 
     @classmethod
-    def new_scratch_meta(cls) -> "FRMeta":
+    def new_scratch_meta(cls) -> FRMeta:
         """
         Generates a new instance of the scratch project meta
         
@@ -75,7 +76,7 @@ class FRMeta:
         )
     
     @classmethod
-    def new_penguinmod_meta(cls) -> "FRMeta":
+    def new_penguinmod_meta(cls) -> FRMeta:
         """
         Generates a new instance of the penguinmod project meta
         
@@ -117,7 +118,7 @@ class FRPenguinModPlatformMeta:
     version: str
 
     @classmethod
-    def from_data(cls, data: dict[str, str]) -> "FRPenguinModPlatformMeta":
+    def from_data(cls, data: dict[str, str]) -> FRPenguinModPlatformMeta:
         """
         Deserializes json_data into a FRPenguinModPlatformMeta
         

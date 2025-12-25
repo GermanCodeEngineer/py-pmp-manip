@@ -1,3 +1,4 @@
+from __future__  import annotations
 from dataclasses import field
 
 from pmp_manip.utility import grepr_dataclass, number_to_token, MANIP_ConversionError, MANIP_ValidationError
@@ -56,7 +57,7 @@ class FirstToInterIF:
         """
         self.scheduled_block_deletions.append(block_id)
 
-    def get_cb_mutation(self, proccode: str) -> "FRCustomBlockMutation":
+    def get_cb_mutation(self, proccode: str) -> FRCustomBlockMutation:
         """
         Get a FRCustomBlockMutation by its procedure code
         
@@ -106,7 +107,7 @@ class InterToFirstIF:
     _next_block_id_num: int = 1
     added_blocks: dict[str, FRBlock | tuple] = field(init=False, default_factory=dict)
     added_comments: dict[str, FRComment] = field(init=False, default_factory=dict)
-    _cb_mutations: dict[str, "FRCustomBlockMutation"] = field(init=False, default_factory=dict)
+    _cb_mutations: dict[str, FRCustomBlockMutation] = field(init=False, default_factory=dict)
 
     def __post_init__(self) -> None:
         """
@@ -117,7 +118,7 @@ class InterToFirstIF:
         """
         for block in self.blocks.values():
             if isinstance(getattr(block, "mutation", None), SRCustomBlockMutation):
-                frmutation: "FRCustomBlockMutation" = block.mutation.to_first(itf_if=self)
+                frmutation: FRCustomBlockMutation = block.mutation.to_first(itf_if=self)
                 if frmutation.proccode in self._cb_mutations:
                     raise MANIP_ConversionError(f"Two custom blocks cannot be defined with the same proccode(essentially custom opcode text): {frmutation.proccode!r}")
                 self._cb_mutations[frmutation.proccode] = frmutation
@@ -162,7 +163,7 @@ class InterToFirstIF:
         self.added_comments[comment_id] = comment
         return comment_id
 
-    def get_fr_cb_mutation(self, proccode: str) -> "FRCustomBlockMutation":
+    def get_fr_cb_mutation(self, proccode: str) -> FRCustomBlockMutation:
         """
         Get a SRCustomBlockMutation of the blocks by its procedure code
         
@@ -176,7 +177,7 @@ class InterToFirstIF:
             return self._cb_mutations[proccode]
         raise MANIP_ConversionError(f"Mutation of proccode {proccode!r} not found")
 
-    def get_sr_cb_mutation(self, custom_opcode: SRCustomBlockOpcode) -> "SRCustomBlockMutation":
+    def get_sr_cb_mutation(self, custom_opcode: SRCustomBlockOpcode) -> SRCustomBlockMutation:
         """
         Get a SRCustomBlockMutation of the blocks by its SRCustomBlockOpcode
         
@@ -234,8 +235,8 @@ class SecondReprIF:
     ABC for an interface which holds scripts in second representation
     """
 
-    scripts: list["SRScript"]
-    cb_mutations: dict[SRCustomBlockOpcode, "SRCustomBlockMutation"] = field(init=False, default_factory=dict)
+    scripts: list[SRScript]
+    cb_mutations: dict[SRCustomBlockOpcode, SRCustomBlockMutation] = field(init=False, default_factory=dict)
     # Safe access is needed because blocks have not actually been validated yet (see get_all_blocks)
     
     def __post_init__(self) -> None:
@@ -254,14 +255,14 @@ class SecondReprIF:
                 continue
             self.cb_mutations[mutation.custom_opcode] = mutation
 
-    def _get_all_blocks(self) -> list["SRBlock"]:
+    def _get_all_blocks(self) -> list[SRBlock]:
         """
         Get all blocks in the same target
         
         Returns:
             all blocks in the target 
         """
-        def recursive_block_search(block: "SRBlock") -> None:
+        def recursive_block_search(block: SRBlock) -> None:
             blocks.append(block)
             if not isinstance(getattr(block, "inputs", None), dict):
                 return
@@ -315,7 +316,7 @@ class SecondToInterIF(SecondReprIF):
         """
         self.produced_blocks[block_id] = block
     
-    def get_cb_mutation(self, custom_opcode: SRCustomBlockOpcode) -> "SRCustomBlockMutation":
+    def get_cb_mutation(self, custom_opcode: SRCustomBlockOpcode) -> SRCustomBlockMutation:
         """
         Get a SRCustomBlockMutation by its SRCustomBlockOpcode
         
@@ -335,7 +336,7 @@ class ValidationIF(SecondReprIF):
     An interface which allows the management of other blocks in the same target during validation
     """
 
-    def get_cb_mutation(self, custom_opcode: SRCustomBlockOpcode) -> "SRCustomBlockMutation":
+    def get_cb_mutation(self, custom_opcode: SRCustomBlockOpcode) -> SRCustomBlockMutation:
         """
         Get a SRCustomBlockMutation by its SRCustomBlockOpcode
         

@@ -605,7 +605,7 @@ def test_SRCustomBlockCallMutation_to_first(itf_if: InterToFirstIF):
     )
     
     class DummyIF(InterToFirstIF):
-        def get_sr_cb_mutation(self, custom_opcode: SRCustomBlockOpcode) -> "SRCustomBlockMutation":
+        def get_sr_cb_mutation(self, custom_opcode: SRCustomBlockOpcode) -> SRCustomBlockMutation:
             srmutation = super().get_sr_cb_mutation(custom_opcode)
             srmutation_copy = deepcopy(srmutation)
             srmutation_copy.optype = SRCustomBlockOptype.ENDING_STATEMENT

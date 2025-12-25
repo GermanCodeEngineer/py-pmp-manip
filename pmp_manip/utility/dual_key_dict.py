@@ -1,5 +1,6 @@
-from copy   import copy, deepcopy
-from typing import TypeVar, Generic, Iterable, Iterator, NoReturn
+from __future__ import annotations
+from copy       import copy, deepcopy
+from typing     import TypeVar, Generic, Iterable, Iterator, NoReturn
 
 from pmp_manip.utility.decorators import enforce_argument_types
 from pmp_manip.utility.errors     import MANIP_KeyError, MANIP_ValueError
@@ -33,31 +34,31 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
     
     @enforce_argument_types
     @classmethod
-    def from_single_key_value(cls, iterable: Iterable[tuple[_K1, _V]], /) -> "DualKeyDict[_K1, _K1, _V]":
+    def from_single_key_value(cls, iterable: Iterable[tuple[_K1, _V]], /) -> DualKeyDict[_K1, _K1, _V]:
         return DualKeyDict({
             (key, key): value for key, value in iterable
         })
     
     @enforce_argument_types
     @classmethod
-    def from_both_keys(cls, iterable: Iterable[tuple[_K1, _K2]], value: _V, /) -> "DualKeyDict[_K1, _K2, _V]":
+    def from_both_keys(cls, iterable: Iterable[tuple[_K1, _K2]], value: _V, /) -> DualKeyDict[_K1, _K2, _V]:
         return DualKeyDict({
             (key1, key2): value for key1, key2 in iterable
         })
     
     
     # Copy methods
-    def copy(self) -> "DualKeyDict[_K1, _K2, _V]":
+    def copy(self) -> DualKeyDict[_K1, _K2, _V]:
         return self.__copy__()
     
-    def __copy__(self) -> "DualKeyDict[_K1, _K2, _V]":
+    def __copy__(self) -> DualKeyDict[_K1, _K2, _V]:
         new = DualKeyDict()
         new._values   = copy(self._values)
         new._k2_to_k1 = copy(self._k2_to_k1)
         new._k1_to_k2 = copy(self._k1_to_k2)
         return new
     
-    def deepcopy(self) -> "DualKeyDict[_K1, _K2, _V]":
+    def deepcopy(self) -> DualKeyDict[_K1, _K2, _V]:
         return deepcopy(self)
 
 
@@ -95,7 +96,7 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
         self._values[key1] = value
     
     @enforce_argument_types
-    def update(self, value: "DualKeyDict[_ARG_K1, _ARG_K2, _ARG_V]", /) -> "DualKeyDict[_K1|_ARG_K1, _K2|_ARG_K2, _V|_ARG_V]":
+    def update(self, value: DualKeyDict[_ARG_K1, _ARG_K2, _ARG_V], /) -> DualKeyDict[_K1|_ARG_K1, _K2|_ARG_K2, _V|_ARG_V]:
         return self.__ior__(value)
     
     def clear(self) -> None:
@@ -302,17 +303,17 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
         return bool(len(self))
 
     @enforce_argument_types
-    def __or__(self, value: "DualKeyDict[_ARG_K1, _ARG_K2, _ARG_V]", /) -> "DualKeyDict[_K1|_ARG_K1, _K2|_ARG_K2, _V|_ARG_V]":
+    def __or__(self, value: DualKeyDict[_ARG_K1, _ARG_K2, _ARG_V], /) -> DualKeyDict[_K1|_ARG_K1, _K2|_ARG_K2, _V|_ARG_V]:
         copy = self.copy()
         return copy.__ior__(value)
 
     @enforce_argument_types
-    def __ror__(self, value: "DualKeyDict[_ARG_K1, _ARG_K2, _ARG_V]", /) -> "DualKeyDict[_K1|_ARG_K1, _K2|_ARG_K2, _V|_ARG_V]":
+    def __ror__(self, value: DualKeyDict[_ARG_K1, _ARG_K2, _ARG_V], /) -> DualKeyDict[_K1|_ARG_K1, _K2|_ARG_K2, _V|_ARG_V]:
         copy = self.copy()
         return copy.__ior__(value)
 
     @enforce_argument_types
-    def __ior__(self, value: "DualKeyDict[_ARG_K1, _ARG_K2, _ARG_V]", /) -> "DualKeyDict[_K1|_ARG_K1, _K2|_ARG_K2, _V|_ARG_V]":
+    def __ior__(self, value: DualKeyDict[_ARG_K1, _ARG_K2, _ARG_V], /) -> DualKeyDict[_K1|_ARG_K1, _K2|_ARG_K2, _V|_ARG_V]:
         for key1, key2, evalue in value.items_key1_key2():
             has_key1 = self.has_key1(key1)
             has_key2 = self.has_key2(key2)

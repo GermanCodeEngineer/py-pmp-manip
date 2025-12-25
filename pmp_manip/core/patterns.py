@@ -1,6 +1,6 @@
-from __future__ import annotations
+from __future__  import annotations
 from dataclasses import field
-from typing import TypeVar, Callable, TypeAlias, Generic, Any, Literal, ClassVar
+from typing      import TypeVar, Callable, TypeAlias, Generic, Any, Literal, ClassVar
 
 from pmp_manip.opcode_info.api import DropdownValueKind, DROPDOWN_VALUE_T
 from pmp_manip.utility          import (
@@ -28,7 +28,7 @@ class PatternConst(Generic[CONST_T]):
     """
     value: CONST_T
 
-def _allow_anything_fn(value: Any, /) -> "SuccessfulMatchResult":
+def _allow_anything_fn(value: Any, /) -> SuccessfulMatchResult:
     """
     A function which always returns a SuccessfulMatchResult. Used to allow any value in a field by default. 
     """
@@ -39,24 +39,24 @@ ConstOrFunc     : TypeAlias = PatternConst[CONST_T] | Callable[[CONST_T], "Succe
 CBOpcodeSegmentT: TypeAlias = str | SRCustomBlockArgument
 MutationPatternT: TypeAlias = "CBArgumentMutationPattern | CBMutationPattern | CBCallMutationPattern"
 
-ScriptHandler         : TypeAlias = ConstOrFunc[SRScript]                     | "ScriptPattern"
+ScriptHandler         : TypeAlias = "ConstOrFunc[SRScript]                     | ScriptPattern"
 
-BlockHandler          : TypeAlias = ConstOrFunc[SRBlock]                      | "BlockPattern"
-OptBlockHandler       : TypeAlias = ConstOrFunc[SRBlock | None]               | "BlockPattern"
-BlockListHandler      : TypeAlias = ConstOrFunc[list[SRBlock]]                | list[BlockHandler]
+BlockHandler          : TypeAlias = "ConstOrFunc[SRBlock]                      | BlockPattern"
+OptBlockHandler       : TypeAlias = "ConstOrFunc[SRBlock | None]               | BlockPattern"
+BlockListHandler      : TypeAlias = "ConstOrFunc[list[SRBlock]]                | list[BlockHandler]"
 
-MutationHandler       : TypeAlias = ConstOrFunc[SRMutation]                   | MutationPatternT
+MutationHandler       : TypeAlias = "ConstOrFunc[SRMutation]                   | MutationPatternT"
 
-InputHandler          : TypeAlias = ConstOrFunc[SRInputValue]                 | "InputPattern"
-InputDictHandler      : TypeAlias = ConstOrFunc[dict[str, SRInputValue]]      | dict[str, InputHandler]
+InputHandler          : TypeAlias = "ConstOrFunc[SRInputValue]                 | InputPattern"
+InputDictHandler      : TypeAlias = "ConstOrFunc[dict[str, SRInputValue]]      | dict[str, InputHandler]"
 
-DropdownHandler       : TypeAlias = ConstOrFunc[SRDropdownValue]              | "DropdownPattern"
-OptDropdownHandler    : TypeAlias = ConstOrFunc[SRDropdownValue | None]       | "DropdownPattern"
-DropdownDictHandler   : TypeAlias = ConstOrFunc[dict[str, SRDropdownValue]]   | dict[str, DropdownHandler]
+DropdownHandler       : TypeAlias = "ConstOrFunc[SRDropdownValue]              | DropdownPattern"
+OptDropdownHandler    : TypeAlias = "ConstOrFunc[SRDropdownValue | None]       | DropdownPattern"
+DropdownDictHandler   : TypeAlias =  ConstOrFunc[dict[str, SRDropdownValue]]   | dict[str, DropdownHandler]
 
-CBOpcodeHandler       : TypeAlias = ConstOrFunc[SRCustomBlockOpcode]          | "CBOpcodePattern"
-CBArgumentHandler     : TypeAlias = ConstOrFunc[CBOpcodeSegmentT]             | "CBArgumentPattern"
-CBArgumentTupleHandler: TypeAlias = ConstOrFunc[tuple[CBOpcodeSegmentT]]      | tuple[CBArgumentHandler]
+CBOpcodeHandler       : TypeAlias = "ConstOrFunc[SRCustomBlockOpcode]          | CBOpcodePattern"
+CBArgumentHandler     : TypeAlias = "ConstOrFunc[CBOpcodeSegmentT]             | CBArgumentPattern"
+CBArgumentTupleHandler: TypeAlias = "ConstOrFunc[tuple[CBOpcodeSegmentT]]      | tuple[CBArgumentHandler]"
 
 @grepr_dataclass(
     grepr_fields=["access_point_id"], init=False, forbid_init_only_subcls=True,
