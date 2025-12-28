@@ -214,6 +214,43 @@ EXAMPLE_BLOCK_DATA = [
         "text": "override that block",
         "ppm_final_opcode": True,
     },
+    { # [20] - fillIn attribute
+        "opcode": "runFunction",
+        "blockType": "reporter",
+        "text": "run function [FUNC] with args [ARGS]",
+        "arguments": {
+            "FUNC": {
+                "type": "string",
+                "fillIn": "functionMenu",
+            },
+            "ARGS": {
+                "type": "string",
+            }
+        }
+    },
+    { # [21] - fillInGlobal attribute
+        "opcode": "callExternal",
+        "blockType": "reporter",
+        "text": "call external [TARGET]",
+        "arguments": {
+            "TARGET": {
+                "type": "string",
+                "fillInGlobal": "otherExt_targetBlock",
+            }
+        }
+    },
+    { # [22] - both fillIn and fillInGlobal (fillInGlobal takes precedence)
+        "opcode": "complexCall",
+        "blockType": "reporter",
+        "text": "complex call [VALUE]",
+        "arguments": {
+            "VALUE": {
+                "type": "string",
+                "fillIn": "localBlock",
+                "fillInGlobal": "global_block",
+            }
+        }
+    },
 ]
 EXAMPLE_MENU_DATA = {
     "BGLENTRYTYPES": {
@@ -244,12 +281,12 @@ EXAMPLE_MENU_DATA = {
 
 @fixture
 def input_types():
-    types, _ = find_input_and_dropdown_types(EXAMPLE_MENU_DATA, [], "someExtension")
+    types, _ = find_input_and_dropdown_types(EXAMPLE_MENU_DATA, EXAMPLE_BLOCK_DATA, "someExtension")
     return types
 
 @fixture
 def dropdown_types():
-    _, types = find_input_and_dropdown_types(EXAMPLE_MENU_DATA, [], "someExtension")
+    _, types = find_input_and_dropdown_types(EXAMPLE_MENU_DATA, EXAMPLE_BLOCK_DATA, "someExtension")
     return types
 
 @fixture
@@ -527,6 +564,49 @@ def example_opcode_blocks(input_types, dropdown_types):
             old_mutation_cls=None,
             new_mutation_cls=None,
         ), "&otherExtension::override that block"),
+        (OpcodeInfo(
+            opcode_type=OpcodeType.STRING_REPORTER,
+            inputs=DualKeyDict({
+                ("FUNC", "FUNC"): InputInfo(type=input_types["S_someExtension_functionMenu"], menu=None),
+                ("ARGS", "ARGS"): InputInfo(type=BuiltinInputType.TEXT, menu=None),
+            }),
+            dropdowns=DualKeyDict(),
+            can_have_monitor=False,
+            monitor_id_behaviour=None,
+            has_shadow=False,
+            has_variable_id=False,
+            special_cases={},
+            old_mutation_cls=None,
+            new_mutation_cls=None,
+        ), "&someExtension::run function {:FUNC:} with args (ARGS)"),
+        (OpcodeInfo(
+            opcode_type=OpcodeType.STRING_REPORTER,
+            inputs=DualKeyDict({
+                ("TARGET", "TARGET"): InputInfo(type=input_types["S_otherExt_targetBlock"], menu=None),
+            }),
+            dropdowns=DualKeyDict(),
+            can_have_monitor=False,
+            monitor_id_behaviour=None,
+            has_shadow=False,
+            has_variable_id=False,
+            special_cases={},
+            old_mutation_cls=None,
+            new_mutation_cls=None,
+        ), "&someExtension::call external {:TARGET:}"),
+        (OpcodeInfo(
+            opcode_type=OpcodeType.STRING_REPORTER,
+            inputs=DualKeyDict({
+                ("VALUE", "VALUE"): InputInfo(type=input_types["S_global_block"], menu=None),
+            }),
+            dropdowns=DualKeyDict(),
+            can_have_monitor=False,
+            monitor_id_behaviour=None,
+            has_shadow=False,
+            has_variable_id=False,
+            special_cases={},
+            old_mutation_cls=None,
+            new_mutation_cls=None,
+        ), "&someExtension::complex call {:VALUE:}"),
     ]
 
 
@@ -560,8 +640,8 @@ def test_find_input_and_dropdown_types_valid():
     input_types, dropdown_types = find_input_and_dropdown_types(menu_data, [], "someExtension")
     
     assert set(input_types.keys()) == {"M_TYPES", "M_ARRAYBUFFERS"}
-    assert input_types["M_TYPES"].value == (InputMode.BLOCK_AND_DROPDOWN, None, dropdown_types["TYPES"].value, 0)
-    assert input_types["M_ARRAYBUFFERS"].value == (InputMode.BLOCK_AND_DROPDOWN, None, dropdown_types["ARRAYBUFFERS"].value, 4)
+    assert input_types["M_TYPES"].value == (InputMode.BLOCK_AND_DROPDOWN, None, dropdown_types["TYPES"], 0)
+    assert input_types["M_ARRAYBUFFERS"].value == (InputMode.BLOCK_AND_DROPDOWN, None, dropdown_types["ARRAYBUFFERS"], 4)
 
     assert set(dropdown_types.keys()) == {"TYPES", "VARTYPES", "FUNCTYPES", "OBJECTTYPES", "ARRAYBUFFERS"}
     assert dropdown_types["TYPES"].value == DropdownTypeInfo(
@@ -850,6 +930,266 @@ def test_generate_block_opcode_info_ppm_final_opcode(input_types, dropdown_types
         extension_id="someExtension",
     )
     assert (opcode_block, new_opcode) == example_opcode_blocks[19]
+
+def test_generate_block_opcode_info_fillIn(input_types, dropdown_types, example_opcode_blocks):
+    block_data = EXAMPLE_BLOCK_DATA[20]
+    opcode_block, new_opcode = generate_block_opcode_info(
+        block_info=block_data,
+        menus=EXAMPLE_MENU_DATA,
+        input_types=input_types,
+        dropdown_types=dropdown_types,
+        extension_id="someExtension",
+    )
+    assert (opcode_block, new_opcode) == example_opcode_blocks[20]
+    # Verify that the input type was created correctly
+    assert "S_someExtension_functionMenu" in input_types
+    assert input_types["S_someExtension_functionMenu"].mode == InputMode.FORCED_EMBEDDED_BLOCK
+
+def test_generate_block_opcode_info_fillInGlobal(input_types, dropdown_types, example_opcode_blocks):
+    block_data = EXAMPLE_BLOCK_DATA[21]
+    opcode_block, new_opcode = generate_block_opcode_info(
+        block_info=block_data,
+        menus=EXAMPLE_MENU_DATA,
+        input_types=input_types,
+        dropdown_types=dropdown_types,
+        extension_id="someExtension",
+    )
+    assert (opcode_block, new_opcode) == example_opcode_blocks[21]
+    # Verify that the input type was created correctly
+    assert "S_otherExt_targetBlock" in input_types
+    assert input_types["S_otherExt_targetBlock"].mode == InputMode.FORCED_EMBEDDED_BLOCK
+
+def test_generate_block_opcode_info_fillInGlobal_precedence(input_types, dropdown_types, example_opcode_blocks):
+    """Test that fillInGlobal takes precedence over fillIn"""
+    block_data = EXAMPLE_BLOCK_DATA[22]
+    opcode_block, new_opcode = generate_block_opcode_info(
+        block_info=block_data,
+        menus=EXAMPLE_MENU_DATA,
+        input_types=input_types,
+        dropdown_types=dropdown_types,
+        extension_id="someExtension",
+    )
+    assert (opcode_block, new_opcode) == example_opcode_blocks[22]
+    # Verify that the global opcode was used, not the local one
+    assert "S_global_block" in input_types
+    assert "S_someExtension_localBlock" not in input_types
+    assert input_types["S_global_block"].mode == InputMode.FORCED_EMBEDDED_BLOCK
+
+def test_find_input_and_dropdown_types_with_fillIn():
+    """Test find_input_and_dropdown_types processes fillIn in block arguments"""
+    blocks = [
+        {
+            "opcode": "testBlock",
+            "blockType": "reporter",
+            "text": "test [ARG]",
+            "arguments": {
+                "ARG": {
+                    "type": "string",
+                    "fillIn": "menuBlock",
+                }
+            }
+        }
+    ]
+    input_types, dropdown_types = find_input_and_dropdown_types({}, blocks, "testExt")
+    
+    assert "S_testExt_menuBlock" in input_types
+    assert input_types["S_testExt_menuBlock"].mode == InputMode.FORCED_EMBEDDED_BLOCK
+    assert input_types["S_testExt_menuBlock"].embedded_block_opcode == "testExt_menuBlock"
+
+def test_find_input_and_dropdown_types_with_fillInGlobal():
+    """Test find_input_and_dropdown_types processes fillInGlobal in block arguments"""
+    blocks = [
+        {
+            "opcode": "testBlock",
+            "blockType": "reporter",
+            "text": "test [ARG]",
+            "arguments": {
+                "ARG": {
+                    "type": "string",
+                    "fillInGlobal": "global_menuBlock",
+                }
+            }
+        }
+    ]
+    input_types, dropdown_types = find_input_and_dropdown_types({}, blocks, "testExt")
+    
+    assert "S_global_menuBlock" in input_types
+    assert input_types["S_global_menuBlock"].mode == InputMode.FORCED_EMBEDDED_BLOCK
+    assert input_types["S_global_menuBlock"].embedded_block_opcode == "global_menuBlock"
+
+def test_find_input_and_dropdown_types_fillIn_not_duplicate():
+    """Test that fillIn does not create duplicates when same opcode appears multiple times"""
+    blocks = [
+        {
+            "opcode": "testBlock1",
+            "blockType": "reporter",
+            "text": "test1 [ARG]",
+            "arguments": {
+                "ARG": {
+                    "type": "string",
+                    "fillIn": "sharedMenu",
+                }
+            }
+        },
+        {
+            "opcode": "testBlock2",
+            "blockType": "reporter",
+            "text": "test2 [ARG]",
+            "arguments": {
+                "ARG": {
+                    "type": "string",
+                    "fillIn": "sharedMenu",
+                }
+            }
+        }
+    ]
+    input_types, dropdown_types = find_input_and_dropdown_types({}, blocks, "testExt")
+    
+    # Should only have one entry for the shared menu
+    assert "S_testExt_sharedMenu" in input_types
+    # Count how many times this appears - should be 1
+    matching_keys = [k for k in input_types.keys() if k == "S_testExt_sharedMenu"]
+    assert len(matching_keys) == 1
+
+def test_generate_block_opcode_info_fillIn_created_in_process_arguments():
+    """Test that fillIn input type is created during process_arguments if not already in input_types"""
+    block_data = {
+        "opcode": "dynamicBlock",
+        "blockType": "reporter",
+        "text": "dynamic [ARG]",
+        "arguments": {
+            "ARG": {
+                "type": "string",
+                "fillIn": "dynamicMenu",
+            }
+        }
+    }
+    # Start with empty input_types and dropdown_types (not pre-populated by find_input_and_dropdown_types)
+    input_types = {}
+    dropdown_types = {}
+    
+    opcode_block, new_opcode = generate_block_opcode_info(
+        block_info=block_data,
+        menus={},
+        input_types=input_types,
+        dropdown_types=dropdown_types,
+        extension_id="testExt",
+    )
+    
+    # Verify that the input type was dynamically created
+    assert "S_testExt_dynamicMenu" in input_types
+    assert input_types["S_testExt_dynamicMenu"].mode == InputMode.FORCED_EMBEDDED_BLOCK
+    assert input_types["S_testExt_dynamicMenu"].embedded_block_opcode == "testExt_dynamicMenu"
+    
+    # Verify the block uses the created input type
+    assert opcode_block is not None
+    assert opcode_block.inputs.has_key1("ARG")
+    assert opcode_block.inputs.get_by_key1("ARG").type == input_types["S_testExt_dynamicMenu"]
+
+def test_generate_block_opcode_info_fillInGlobal_created_in_process_arguments():
+    """Test that fillInGlobal input type is created during process_arguments if not already in input_types"""
+    block_data = {
+        "opcode": "dynamicBlock",
+        "blockType": "reporter",
+        "text": "dynamic [ARG]",
+        "arguments": {
+            "ARG": {
+                "type": "string",
+                "fillInGlobal": "globalMenu",
+            }
+        }
+    }
+    # Start with empty input_types and dropdown_types
+    input_types = {}
+    dropdown_types = {}
+    
+    opcode_block, new_opcode = generate_block_opcode_info(
+        block_info=block_data,
+        menus={},
+        input_types=input_types,
+        dropdown_types=dropdown_types,
+        extension_id="testExt",
+    )
+    
+    # Verify that the input type was dynamically created
+    assert "S_globalMenu" in input_types
+    assert input_types["S_globalMenu"].mode == InputMode.FORCED_EMBEDDED_BLOCK
+    assert input_types["S_globalMenu"].embedded_block_opcode == "globalMenu"
+    
+    # Verify the block uses the created input type
+    assert opcode_block is not None
+    assert opcode_block.inputs.has_key1("ARG")
+    assert opcode_block.inputs.get_by_key1("ARG").type == input_types["S_globalMenu"]
+
+def test_generate_block_opcode_info_fillIn_not_duplicate_in_process_arguments():
+    """Test that process_arguments doesn't create duplicate when fillIn already exists in input_types"""
+    # Pre-populate input_types with the fillIn entry
+    existing_input_type = InputType("Temp", {
+        "S_testExt_existingMenu": (InputMode.FORCED_EMBEDDED_BLOCK, "testExt_existingMenu", None, -1)
+    })
+    input_types = {
+        "S_testExt_existingMenu": existing_input_type["S_testExt_existingMenu"]
+    }
+    dropdown_types = {}
+    
+    block_data = {
+        "opcode": "testBlock",
+        "blockType": "reporter",
+        "text": "test [ARG]",
+        "arguments": {
+            "ARG": {
+                "type": "string",
+                "fillIn": "existingMenu",
+            }
+        }
+    }
+    
+    opcode_block, new_opcode = generate_block_opcode_info(
+        block_info=block_data,
+        menus={},
+        input_types=input_types,
+        dropdown_types=dropdown_types,
+        extension_id="testExt",
+    )
+    
+    # Verify that no duplicate was created - still only one entry
+    matching_keys = [k for k in input_types.keys() if k == "S_testExt_existingMenu"]
+    assert len(matching_keys) == 1
+    # Verify it's the same instance
+    assert input_types["S_testExt_existingMenu"] == existing_input_type["S_testExt_existingMenu"]
+
+def test_find_input_and_dropdown_types_with_both_fillIn_types():
+    """Test find_input_and_dropdown_types with both fillIn and fillInGlobal in different blocks"""
+    blocks = [
+        {
+            "opcode": "block1",
+            "blockType": "reporter",
+            "text": "block1 [ARG1]",
+            "arguments": {
+                "ARG1": {
+                    "type": "string",
+                    "fillIn": "localMenu",
+                }
+            }
+        },
+        {
+            "opcode": "block2",
+            "blockType": "reporter",
+            "text": "block2 [ARG2]",
+            "arguments": {
+                "ARG2": {
+                    "type": "string",
+                    "fillInGlobal": "globalMenu",
+                }
+            }
+        }
+    ]
+    input_types, dropdown_types = find_input_and_dropdown_types({}, blocks, "myExt")
+    
+    assert "S_myExt_localMenu" in input_types
+    assert "S_globalMenu" in input_types
+    assert input_types["S_myExt_localMenu"].embedded_block_opcode == "myExt_localMenu"
+    assert input_types["S_globalMenu"].embedded_block_opcode == "globalMenu"
 
 def test_generate_block_opcode_info_invalid_is_terminal(input_types, dropdown_types):
     block_data = {

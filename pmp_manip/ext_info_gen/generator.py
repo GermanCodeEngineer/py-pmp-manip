@@ -119,13 +119,6 @@ def find_input_and_dropdown_types(
                 menu_index, # uniqueness index
             )
             input_types[f"M_{menu_block_id}"] = input_type_info
-    for menu_block_id, input_type_info in input_types.items():
-        input_types[menu_block_id] = (
-            input_type_info[0],
-            input_type_info[1],
-            dropdown_types[input_type_info[2]],
-            input_type_info[3],
-        )
     
     for block_info in blocks: # TODO: add tests
         # Other types handled later
@@ -140,8 +133,22 @@ def find_input_and_dropdown_types(
                         # opcode makes them necessarily different, so the uniqueness values do not matter
                         input_types[fill_in_id] = (InputMode.FORCED_EMBEDDED_BLOCK, full_opcode, None, -1)
     
-    ExtensionInputType = InputType("ExtensionInputType", input_types)
+    # Create the dropdown enum first
     ExtensionDropdownType = DropdownType("ExtensionDropdownType", dropdown_types)
+    
+    # Now replace dropdown type names with actual DropdownType enum members in input_types dict
+    for key, input_type_info in list(input_types.items()):
+        if input_type_info[2] is not None and isinstance(input_type_info[2], str):
+            input_types[key] = (
+                input_type_info[0],
+                input_type_info[1],
+                ExtensionDropdownType[input_type_info[2]],
+                input_type_info[3],
+            )
+    
+    # Now create the input enum
+    ExtensionInputType = InputType("ExtensionInputType", input_types)
+    
     return (copy(ExtensionInputType._member_map_), copy(ExtensionDropdownType._member_map_))
 
 def generate_block_opcode_info(
@@ -568,9 +575,9 @@ def generate_file_code(
         cls_code = f"class {cls_name}({super_cls_name}):"
         if len(enum_pairs) == 0:
             return cls_code + f"\n{INDENT}pass"
-        for enum_item in enum_pairs.values():
+        for name, enum_item in enum_pairs.items():
             enum_item: GEnum
-            cls_code += f"\n{INDENT}{enum_item.name} = {grepr(enum_item.value, level_offset=1, vanilla_strings=True)}"
+            cls_code += f"\n{INDENT}{name} = {grepr(enum_item.value, level_offset=1, vanilla_strings=True)}"
         return cls_code
     
     file_code = "\n\n".join((
