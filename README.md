@@ -60,9 +60,10 @@ py-pmp-manip/
 │   └── utility/            # Utilities for other modules
 ├── docs/              # Documentation
 ├── scripts/           # Independent project-related scripts for developers
-│   ├── check_for_updates.py     # Checks for updates in foreign code files, from which e.g. constants are derived
-│   ├── make_uml.py              # Generates a UML-Diagram for Second Representation
-│   └── update_pyproject_toml.py # Updates pyproject.toml with version and dependencies
+│   ├── check_dependency_updates.py # Checks for updates of dependencies
+│   ├── check_source_updates.py        # Checks for updates in foreign code files, from which e.g. constants are derived
+│   ├── make_uml.py                 # Generates a UML-Diagram for Second Representation
+│   └── review_pyproject_toml.py    # Reviews pyproject.toml with version and dependencies
 └── tests/             # Unit tests
 ```
 

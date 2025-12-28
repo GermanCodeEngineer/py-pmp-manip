@@ -3,9 +3,21 @@ TODOs Sorted by Priorites
 Special:
     - TODOs in Code + read through code, optimize here and there
 
-Currently Working On: /
+Currently Working On:
+    - Fixing blocks with menus with isTypeable=true (see e.g. Animated Text Extension)
+    => Next Release
 
-Changelog since last Release: /
+Changelog since last Release:
+    - Code: Converted string references to direct references(using __future__.annotations)
+    - Removed pre-validation for URLs as extension sources
+    - Expanded direct extraction vm
+    - Updated builtin extension replacements
+    - Implemented fillIn shadow inputs and fixed shadow deserialization
+    - Allow objects to be stored in variables
+    - Refractoring
+    - Bug Fixes (also tested py-pmp-manip with and updated for some foreign PM projects)
+    - Added and improved scripts and release tutorial
+
 
 High: /
 
@@ -32,6 +44,8 @@ Low:
     - M: replace remaining io actions with wrappers (eg. file_exists instead of os.path.exists)
     - M: possibly reform special case system with custom classes possibly even with metaclass
     - M: add tests for pmp_manip/core/patterns.py and tree_tools.py
+    - M: add tests for FRLoopMutation
+    - S: move from os.path to pathlib
     - S: add copy method to OpcodeInfoAPI and possibly others
     - S: check if dropdown validation where only default kind: allows non strings? (should not)
     - S: possibly remove mode attribute of IRInputValue

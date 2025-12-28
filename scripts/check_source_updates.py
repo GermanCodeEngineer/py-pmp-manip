@@ -13,27 +13,27 @@ files_to_check = [
         "Update handler for trusted sources in pmp_manip/ext_info_gen/manager.py",
     ),
     (
-        "2025-10-04",
+        "2025-12-25",
         "https://github.com/PenguinMod/PenguinMod-Vm/blob/develop/src/extension-support/extension-manager.js",
         "Update BUILTIN_EXTENSIONS in pmp_manip/opcode_info/api/main.py",
     ),
     (
-        "2025-09-07",
+        "2025-12-25",
         "https://github.com/PenguinMod/PenguinMod-Vm/blob/develop/src/extensions/",
         "Ensure all builtin extensions are still compatible",
     ),
     (
-        "2025-09-04",
+        "2025-12-25",
         "https://github.com/PenguinMod/PenguinMod-Vm/blob/develop/src/util/",
         "Update util stub in overwritten require function",
     ),   
     (
-        "2025-09-16",
+        "2025-12-25",
         "https://github.com/PenguinMod/PenguinMod-Vm/blob/develop/src/serialization/",
         "Ensure project deserialization still works reliably",
     ),
     (
-        "2025-09-09",
+        "2025-12-25",
         "https://github.com/PenguinMod/PenguinMod-Vm/blob/develop/src/engine/runtime.js",
         "Update vm stub in pmp_manip/ext_info_gen/direct_extractor.js"
     ),

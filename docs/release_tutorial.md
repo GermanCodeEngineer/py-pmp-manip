@@ -37,43 +37,48 @@
 # Next Steps
 1. **View all changes in foreign code sources**, which this project derives information from:
     ```bash
-    python -m scripts.check_for_updates
+    python -m scripts.check_source_updates
     ```
-2. **Ensure all tests are successful** and generate coverage report:
+2. **Check for dependency updates** to see if newer versions are available:
+    ```bash
+    python -m scripts.check_dependency_updates
+    ```
+3. **Ensure all tests are successful** and generate coverage report:
     ```bash
     coverage run -m pytest tests/
     ```
     ```bash
     coverage html
     ```
-3. View coverage report: **Are all critical code files covered?**
-4. **Update UML-Graph** of Second Representation for documentation:
+4. View coverage report: **Are all critical code files covered?**
+5. **Update UML-Graph** of Second Representation for documentation:
     ```bash
     python -m scripts.make_uml pmp_manip.core.project SRProject
     ```
-5. **Update pyproject.toml** with the new **version number** and dependencies:
+6. **Review pyproject.toml** with the new dependencies:
     ```bash
-    python -m scripts.update_pyproject_toml --version 1.2.3
+    python -m scripts.review_pyproject_toml
     ```
-6. **Build package locally**:
+7. **Follow suggested changes and increase version number**
+8. **Build package locally**:
     ```bash
     pip install --upgrade build
     python -m build
     ```
-7. **Run docker install test**:
+9. **Run docker install test**:
     ```bash
     docker build -f install_test/Dockerfile -t package-install-test .
     docker run --rm package-install-test
     ```
-8. **Commit and Push all changes** (Just an Example):
+10. **Commit and Push all changes** (Just an Example):
     ```bash
     git add -A
     git commit -m "prepare next release"
     git push
     ``` 
-9. **Create a Git tag with the version number and Push** the tag to your remote:
+11. **Create a Git tag with the version number and Push** the tag to your remote:
     ```bash
     git tag v1.2.3
     git push origin v1.2.3
     ```
-10. **Verify CI passes on the release tag** (GitHub Actions)
+12. **Verify CI passes on the release tag** (GitHub Actions)
