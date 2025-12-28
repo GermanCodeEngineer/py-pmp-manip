@@ -5,7 +5,7 @@ from pmp_manip.important_consts import (
     OPCODE_VAR_VALUE, NEW_OPCODE_VAR_VALUE, OPCODE_LIST_VALUE, NEW_OPCODE_LIST_VALUE, 
     OPCODE_STOP_SCRIPT, OPCODE_CHECKBOX, NEW_OPCODE_CHECKBOX, OPCODE_POLYGON, NEW_OPCODE_POLYGON,
     OPCODE_FILTER_LIST_INDEX, OPCODE_FILTER_LIST_ITEM, OPCODE_EXPANDABLE_IF, OPCODE_EXPANDABLE_MATH,
-    OPCODE_CB_PROTOTYPE, ANY_OPCODE_CB_DEF, ANY_OPCODE_CB_ARG, 
+    OPCODE_CB_PROTOTYPE, ANY_OPCODE_CB_DEF, ANY_OPCODE_CB_ARG, OPCODE_FOREVER,
     OPCODE_CB_CALL, NEW_OPCODE_CB_CALL, OPCODE_CB_ARG_TEXT, OPCODE_CB_ARG_BOOL, 
     OPCODE_CB_DEF, NEW_OPCODE_CB_DEF, OPCODE_CB_DEF_RET, NEW_OPCODE_CB_DEF_REP,
     SHA256_SEC_LOCAL_ARGUMENT_NAME,
@@ -40,7 +40,7 @@ if TYPE_CHECKING:
 
 from pmp_manip.core.block_mutation import (
     FRCustomBlockMutation, FRCustomBlockArgumentMutation, FRCustomBlockCallMutation, FRExpandableIfMutation, FRExpandableMathMutation,
-    FRStopScriptMutation, FRPolygonMutation,
+    FRStopScriptMutation, FRPolygonMutation, FRLoopMutation,
     SRCustomBlockMutation, SRCustomBlockArgumentMutation, SRCustomBlockCallMutation, SRExpandableIfMutation, SRExpandableMathMutation,
 )
 
@@ -235,6 +235,7 @@ info_api.set_opcode_mutation_class(OPCODE_CB_PROTOTYPE, old_cls=FRCustomBlockMut
 info_api.set_opcode_mutation_class(OPCODE_CB_CALL, old_cls=FRCustomBlockCallMutation, new_cls=SRCustomBlockCallMutation)
 info_api.set_opcode_mutation_class(OPCODE_STOP_SCRIPT, old_cls=FRStopScriptMutation, new_cls=None)
 info_api.set_opcode_mutation_class(OPCODE_POLYGON, old_cls=FRPolygonMutation, new_cls=None)
+info_api.set_opcode_mutation_class(OPCODE_FOREVER, old_cls=FRLoopMutation, new_cls=None)
 info_api.set_opcode_mutation_class(OPCODE_EXPANDABLE_IF, old_cls=FRExpandableIfMutation, new_cls=SRExpandableIfMutation)
 info_api.set_opcode_mutation_class(OPCODE_EXPANDABLE_MATH, old_cls=FRExpandableIfMutation, new_cls=SRExpandableIfMutation)
 
@@ -425,6 +426,15 @@ info_api.add_opcode_case(OPCODE_POLYGON, SpecialCase(
     function=_1101_80e9,
 ))
 
+def _24ea_0df0(block: FRBlock, block_id: str, fti_if: FirstToInterIF) -> FRBlock:
+    # Remove the mutation, so that no mutation will be given to the IRBlock and SRBlock
+    block = copy(block)
+    block.mutation = None
+    return block
+info_api.add_opcode_case(OPCODE_FOREVER, SpecialCase(
+    type=SpecialCaseType.PRE_FIRST_TO_INTER, 
+    function=_24ea_0df0,
+))
 
 def _d0e6_50e9(block: FRBlock, block_id: str, fti_if: FirstToInterIF) -> IRBlock:
     # Return an empty, temporary block
@@ -565,6 +575,21 @@ def _f77b_dd4b(block: FRBlock, block_id: str, itf_if: InterToFirstIF) -> FRBlock
 info_api.add_opcode_case(OPCODE_POLYGON, SpecialCase(
     type=SpecialCaseType.POST_INTER_TO_FIRST, 
     function=_f77b_dd4b,
+))
+
+def _0435_8f0e(block: FRBlock, block_id: str, itf_if: InterToFirstIF) -> FRBlock:
+    # Add the mutation, so that a mutation will be given to the FRBlock
+    block = copy(block)
+    block.mutation = FRLoopMutation(
+        tag_name="mutation",
+        children=[],
+
+        has_break=True, # safer to assume it has a escape loop block
+    )
+    return block
+info_api.add_opcode_case(OPCODE_FOREVER, SpecialCase(
+    type=SpecialCaseType.POST_INTER_TO_FIRST, 
+    function=_0435_8f0e,
 ))
 
 

@@ -101,7 +101,11 @@ def _load_color_array(data: dict[str, Any], key: str, default: tuple[str, str, s
 
 @grepr_dataclass(
     grepr_fields=["tag_name", "children"], init=False, forbid_init_only_subcls=True,
-    suggested_subcls_names=["FRCustomBlockArgumentMutation", "FRCustomBlockMutation", "FRCustomBlockCallMutation", "FRStopScriptMutation", "FRPolygonMutation"]
+    suggested_subcls_names=[
+        "FRCustomBlockArgumentMutation", "FRCustomBlockMutation", "FRCustomBlockCallMutation", 
+        "FRExpandableIfMutation", "FRExpandableMathMutation", "FRStopScriptMutation", 
+        "FRPolygonMutation", "FRLoopMutation"
+    ]
 )
 class FRMutation(ABC):
     """
@@ -464,7 +468,7 @@ class FRCustomBlockCallMutation(FRMutation,
 @grepr_dataclass(grepr_fields=["branches", "ends_in_else"])
 class FRExpandableIfMutation(FRMutation,
         required_properties={"branches", "ends-in-else"},
-        optional_properties=set(),
+        optional_properties={"warp", "edited", "hasnext"},
     ):
     """
     The first representation for the mutation of an expandable if block
@@ -665,10 +669,52 @@ class FRPolygonMutation(FRMutation,
         """
         raise NotImplementedError("A second representation of a polygon mutation does not exist. It is not needed for an IRBlock or SRBlock")
 
+@grepr_dataclass(grepr_fields=["has_break"])
+class FRLoopMutation(FRMutation, 
+        required_properties={"hasbreak"},
+        optional_properties={"warp", "edited", "hasnext"},
+    ):
+    """
+    The first representation for the mutation of a (forever) loop block 
+    """
+
+    has_break: bool
+    
+    @classmethod
+    def from_data(cls, data: dict[str, Any]) -> FRLoopMutation:
+        """
+        Create a FRLoopMutation from json data
+        
+        Args:
+            data: the json data
+        """
+        return cls(
+            tag_name   = data["tagName"],
+            children   = deepcopy(data["children"]),
+            has_break  = _load_bool_value(data, key="hasbreak", default=False),
+        )
+
+    def to_data(self) -> dict[str, Any]:
+        """
+        Serializes a FRLoopMutation into json data
+        """
+        return {
+            "tagName"  : self.tag_name,
+            "children" : deepcopy(self.children),
+            "hasbreak" : self.has_break,
+        }
+   
+    def to_second(self, fti_if: FirstToInterIF) -> NoReturn:
+        """
+        A second representation of a loop mutation does not exist. 
+        It would just store alredy known information in a second place.
+        """
+        raise NotImplementedError("A second representation of a loop mutation does not exist. It is not needed for an IRBlock or SRBlock")
+
 
 @grepr_dataclass(
     grepr_fields=[], init=False, forbid_init_only_subcls=True, 
-    suggested_subcls_names=["SRCustomBlockArgumentMutation", "SRCustomBlockMutation", "SRCustomBlockCallMutation"],
+    suggested_subcls_names=["SRCustomBlockArgumentMutation", "SRCustomBlockMutation", "SRCustomBlockCallMutation", "SRExpandableIfMutation", "SRExpandableMathMutation"],
 )
 class SRMutation(ABC):
     """
@@ -957,7 +1003,7 @@ class SRExpandableMathMutation(SRMutation):
 __all__ = [
     "FRMutation", 
     "FRCustomBlockArgumentMutation", "FRCustomBlockMutation", "FRCustomBlockCallMutation", "FRExpandableIfMutation", "FRExpandableMathMutation",
-    "FRStopScriptMutation", "FRPolygonMutation",
+    "FRStopScriptMutation", "FRPolygonMutation", "FRLoopMutation",
     "SRMutation", 
     "SRCustomBlockArgumentMutation", "SRCustomBlockMutation", "SRCustomBlockCallMutation", "SRExpandableIfMutation", "SRExpandableMathMutation",
 ]

@@ -14,7 +14,7 @@ from pmp_manip.core.block_mutation  import (
 	_load_bool_value, _load_noquote_str_value, _load_color_array,
     FRMutation,
     FRCustomBlockArgumentMutation, FRCustomBlockMutation, FRCustomBlockCallMutation,
-    FRExpandableIfMutation, FRExpandableMathMutation, FRStopScriptMutation, FRPolygonMutation,
+    FRExpandableIfMutation, FRExpandableMathMutation, FRStopScriptMutation, FRPolygonMutation, FRLoopMutation,
     SRCustomBlockArgumentMutation, SRCustomBlockMutation, SRCustomBlockCallMutation,
     SRExpandableIfMutation, SRExpandableMathMutation,
 )
@@ -432,7 +432,7 @@ def test_FRExpandableMathMutation_from_to_data_and_to_second(fti_if: FirstToInte
 
 
 
-def test_FRStopScriptMutation_from_to_data_to_second(itf_if: InterToFirstIF):
+def test_FRStopScriptMutation_from_to_data_to_second(fti_if: FirstToInterIF):
     has_next = False
     data = {
         "tagName": "mutation",
@@ -449,7 +449,7 @@ def test_FRStopScriptMutation_from_to_data_to_second(itf_if: InterToFirstIF):
 
 
 
-def test_FRPolygonMutation_from_to_data_to_second(itf_if: InterToFirstIF):
+def test_FRPolygonMutation_from_to_data_to_second(fti_if: FirstToInterIF):
     data = {
         "tagName"  : "mutation",
         "children" : [],
@@ -467,6 +467,22 @@ def test_FRPolygonMutation_from_to_data_to_second(itf_if: InterToFirstIF):
     assert frmutation.scale == 50
     assert frmutation.expanded is True
     assert frmutation.needs_init is True
+    
+    assert frmutation.to_data() == data
+
+    with raises(NotImplementedError):
+        frmutation.to_second(fti_if)
+
+
+
+def test_FRLoopMutation_from_to_data_to_second(fti_if: FirstToInterIF):
+    data = {
+        "tagName"  : "mutation",
+        "children" : [],
+        "hasbreak" : False,
+    }
+    frmutation = FRLoopMutation.from_data(data)
+    assert frmutation.has_break is False
     
     assert frmutation.to_data() == data
 

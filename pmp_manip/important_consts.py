@@ -35,6 +35,7 @@ OPCODE_FILTER_LIST_INDEX       = "data_filterlistindex"
 OPCODE_FILTER_LIST_ITEM        = "data_filterlistitem"
 OPCODE_EXPANDABLE_IF           = "control_expandableIf"
 OPCODE_EXPANDABLE_MATH         = "operator_expandableMath"
+OPCODE_FOREVER                 = "control_forever"
 
 
 # Magic Numbers
