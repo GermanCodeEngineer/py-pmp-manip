@@ -44,8 +44,6 @@ def fetch_js_code(source: str, tolerate_file_path: bool) -> str:
     elif isinstance(source, str) and (source.startswith("http://") or source.startswith("https://")):
         logger.info(f"--> Fetching from URL: {source}")
         
-        if not validators_url(source):
-            raise MANIP_InvalidExtensionCodeSourceError(f"Invalid URL: {source}")
         try:
             response = requests_get(source, timeout=10) # TODO:(OPT) make configurable?
             response.raise_for_status()

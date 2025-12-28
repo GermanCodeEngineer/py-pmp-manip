@@ -151,12 +151,6 @@ def test_fetch_js_code_data_uri_invalid():
         fetch_js_code(data_uri, tolerate_file_path=False)
 
 
-def test_fetch_js_code_url_invalid():
-    from pmp_manip.ext_info_gen.fetch_js import fetch_js_code
-    url = "https://extensions...penguinmod.com/extensions/MubiLop/toastnotifs.js" # "..."
-    with raises(MANIP_InvalidExtensionCodeSourceError):
-        fetch_js_code(url, tolerate_file_path=False)
-
 def test_fetch_js_code_url_request_exception(monkeypatch: MonkeyPatch):
     def fake_requests_get(*args, **kwargs) -> str:
         # works offline too :)
