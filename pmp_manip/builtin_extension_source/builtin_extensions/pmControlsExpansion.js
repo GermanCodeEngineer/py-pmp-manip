@@ -45,58 +45,6 @@ class pmControlsExpansion {
                     },
                 },
                 {
-                    opcode: 'control_if',
-                    ppm_final_opcode: true,
-                    text: [
-                        'if [CONDITION] then',
-                    ],
-                    branchCount: 1,
-                    blockType: BlockType.CONDITIONAL,
-                    arguments: {
-                        CONDITION: { type: ArgumentType.BOOLEAN }
-                    }
-                },
-                {
-                    opcode: 'control_if_else',
-                    ppm_final_opcode: true,
-                    text: [
-                        'if [CONDITION] then',
-                        'else'
-                    ],
-                    branchCount: 2,
-                    blockType: BlockType.CONDITIONAL,
-                    arguments: {
-                        CONDITION: { type: ArgumentType.BOOLEAN }
-                    }
-                },
-                {
-                    opcode: 'ifElseIf',
-                    text: [
-                        'if [CONDITION1] then',
-                        'else if [CONDITION2] then'
-                    ],
-                    branchCount: 2,
-                    blockType: BlockType.CONDITIONAL,
-                    arguments: {
-                        CONDITION1: { type: ArgumentType.BOOLEAN },
-                        CONDITION2: { type: ArgumentType.BOOLEAN }
-                    }
-                },
-                {
-                    opcode: 'ifElseIfElse',
-                    text: [
-                        'if [CONDITION1] then',
-                        'else if [CONDITION2] then',
-                        'else'
-                    ],
-                    branchCount: 3,
-                    blockType: BlockType.CONDITIONAL,
-                    arguments: {
-                        CONDITION1: { type: ArgumentType.BOOLEAN },
-                        CONDITION2: { type: ArgumentType.BOOLEAN }
-                    }
-                },
-                {
                     opcode: "control_inline_stack_output",
                     ppm_final_opcode: true,
                     text: "inline block",
@@ -160,6 +108,7 @@ class pmControlsExpansion {
                         DATA: {
                             type: ArgumentType.STRING,
                             defaultValue: "abc",
+                            exemptFromNormalization: true
                         },
                         ICON: {
                             type: ArgumentType.IMAGE,
@@ -206,6 +155,58 @@ class pmControlsExpansion {
                     ppm_final_opcode: true,
                     text: "clear counter",
                     blockType: BlockType.COMMAND,
+                },
+                {
+                    opcode: 'control_if',
+                    ppm_final_opcode: true,
+                    text: [
+                        'if [CONDITION] then',
+                    ],
+                    branchCount: 1,
+                    blockType: BlockType.CONDITIONAL,
+                    arguments: {
+                        CONDITION: { type: ArgumentType.BOOLEAN }
+                    }
+                },
+                {
+                    opcode: 'control_if_else',
+                    ppm_final_opcode: true,
+                    text: [
+                        'if [CONDITION] then',
+                        'else'
+                    ],
+                    branchCount: 2,
+                    blockType: BlockType.CONDITIONAL,
+                    arguments: {
+                        CONDITION: { type: ArgumentType.BOOLEAN }
+                    }
+                },
+                {
+                    opcode: 'ifElseIf',
+                    text: [
+                        'if [CONDITION1] then',
+                        'else if [CONDITION2] then'
+                    ],
+                    branchCount: 2,
+                    blockType: BlockType.CONDITIONAL,
+                    arguments: {
+                        CONDITION1: { type: ArgumentType.BOOLEAN },
+                        CONDITION2: { type: ArgumentType.BOOLEAN }
+                    }
+                },
+                {
+                    opcode: 'ifElseIfElse',
+                    text: [
+                        'if [CONDITION1] then',
+                        'else if [CONDITION2] then',
+                        'else'
+                    ],
+                    branchCount: 3,
+                    blockType: BlockType.CONDITIONAL,
+                    arguments: {
+                        CONDITION1: { type: ArgumentType.BOOLEAN },
+                        CONDITION2: { type: ArgumentType.BOOLEAN }
+                    }
                 },
             ]
         };

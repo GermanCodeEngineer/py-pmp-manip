@@ -58,7 +58,10 @@ class Extension {
                         INPUT: {
                             type: ArgumentType.STRING,
                             defaultValue: '["a", "b", "c"]',
-                            exemptFromNormalization: true
+                            exemptFromNormalization: true,
+                            compilerInfo: {
+                                jwArrayUnmodified: true
+                            }
                         }
                     },
                     ...jwArray.Block
@@ -80,10 +83,20 @@ class Extension {
                 "---",
                 {
                     opcode: 'builder',
-                    text: 'array builder',
-                    branches: [{
-                        //accepts: 'jwArrayBuilder'
-                    }],
+                    text: 'array builder [SHADOW]',
+                    branches: [{}],
+                    arguments: {
+                        SHADOW: {
+                            fillIn: 'builderCurrent'
+                        }
+                    },
+                    ...jwArray.Block
+                },
+                {
+                    opcode: 'builderCurrent',
+                    text: 'current array',
+                    hideFromPalette: true,
+                    canDragDuplicate: true,
                     ...jwArray.Block
                 },
                 {
@@ -94,10 +107,20 @@ class Extension {
                         VALUE: {
                             type: ArgumentType.STRING,
                             defaultValue: "foo",
-                            exemptFromNormalization: true
+                            exemptFromNormalization: true,
+                            compilerInfo: {
+                                jwArrayUnmodified: true
+                            }
                         }
-                    },
-                    //notchAccepts: 'jwArrayBuilder'
+                    }
+                },
+                {
+                    opcode: 'builderSet',
+                    text: 'set builder to [ARRAY]',
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        ARRAY: jwArray.Argument
+                    }
                 },
                 "---",
                 {
@@ -114,6 +137,22 @@ class Extension {
                     }
                 },
                 {
+                    opcode: 'items',
+                    text: 'items [X] to [Y] in [ARRAY]',
+                    arguments: {
+                        ARRAY: jwArray.Argument,
+                        X: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 1
+                        },
+                        Y: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 3
+                        }
+                    },
+                    ...jwArray.Block
+                },
+                {
                     opcode: 'index',
                     text: 'index of [VALUE] in [ARRAY]',
                     blockType: BlockType.REPORTER,
@@ -122,7 +161,10 @@ class Extension {
                         VALUE: {
                             type: ArgumentType.STRING,
                             defaultValue: "foo",
-                            exemptFromNormalization: true
+                            exemptFromNormalization: true,
+                            compilerInfo: {
+                                jwArrayUnmodified: true
+                            }
                         }
                     }
                 },
@@ -134,7 +176,10 @@ class Extension {
                         ARRAY: jwArray.Argument,
                         VALUE: {
                             type: ArgumentType.STRING,
-                            exemptFromNormalization: true
+                            exemptFromNormalization: true,
+                            compilerInfo: {
+                                jwArrayUnmodified: true
+                            }
                         }
                     }
                 },
@@ -159,7 +204,10 @@ class Extension {
                         VALUE: {
                             type: ArgumentType.STRING,
                             defaultValue: "foo",
-                            exemptFromNormalization: true
+                            exemptFromNormalization: true,
+                            compilerInfo: {
+                                jwArrayUnmodified: true
+                            }
                         }
                     },
                     ...jwArray.Block
@@ -172,7 +220,10 @@ class Extension {
                         VALUE: {
                             type: ArgumentType.STRING,
                             defaultValue: "foo",
-                            exemptFromNormalization: true
+                            exemptFromNormalization: true,
+                            compilerInfo: {
+                                jwArrayUnmodified: true
+                            }
                         }
                     },
                     ...jwArray.Block
@@ -194,8 +245,20 @@ class Extension {
                         VALUE: {
                             type: ArgumentType.STRING,
                             defaultValue: "foo",
-                            exemptFromNormalization: true
+                            exemptFromNormalization: true,
+                            compilerInfo: {
+                                jwArrayUnmodified: true
+                            }
                         }
+                    },
+                    ...jwArray.Block
+                },
+                "---",
+                {
+                    opcode: 'reverse',
+                    text: 'reverse [ARRAY]',
+                    arguments: {
+                        ARRAY: jwArray.Argument
                     },
                     ...jwArray.Block
                 },
@@ -215,12 +278,15 @@ class Extension {
                     },
                     ...jwArray.Block
                 },
-                "---",
                 {
-                    opcode: 'reverse',
-                    text: 'reverse [ARRAY]',
+                    opcode: 'repeat',
+                    text: 'repeat [ARRAY] [TIMES] times',
                     arguments: {
-                        ARRAY: jwArray.Argument
+                        ARRAY: jwArray.Argument,
+                        TIMES: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 2
+                        }
                     },
                     ...jwArray.Block
                 },
@@ -235,6 +301,39 @@ class Extension {
                         }
                     },
                     ...jwArray.Block
+                },
+                "---",
+                {
+                    opcode: 'toString',
+                    text: 'stringify [ARRAY] [FORMAT]',
+                    blockType: BlockType.REPORTER,
+                    arguments: {
+                        ARRAY: jwArray.Argument,
+                        FORMAT: {
+                            menu: "stringifyFormat",
+                            defaultValue: "compact"
+                        }
+                    }
+                },
+                {
+                    opcode: 'join',
+                    text: 'join [ARRAY] with [DIVIDER]',
+                    blockType: BlockType.REPORTER,
+                    arguments: {
+                        ARRAY: jwArray.Argument,
+                        DIVIDER: {
+                            type: ArgumentType.STRING,
+                            defaultValue: ""
+                        }
+                    }
+                },
+                {
+                    opcode: 'sum',
+                    text: 'sum of [ARRAY]',
+                    blockType: BlockType.REPORTER,
+                    arguments: {
+                        ARRAY: jwArray.Argument
+                    }
                 },
                 "---",
                 {
@@ -266,18 +365,37 @@ class Extension {
                         }
                     }
                 },
-                /*{
-                    opcode: 'forEachBreak',
-                    text: 'break',
-                    blockType: BlockType.COMMAND,
-                    isTerminal: true
-                }*/
+                {
+                    opcode: 'basicSort',
+                    text: 'sort [ARRAY] [I] [V] > [VALUE]',
+                    arguments: {
+                        ARRAY: jwArray.Argument,
+                        I: {
+                            fillIn: 'forEachI'
+                        },
+                        V: {
+                            fillIn: 'forEachV'
+                        },
+                        VALUE: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 1
+                        }
+                    },
+                    ...jwArray.Block
+                }
             ],
             menus: {
                 list: {
                     acceptReporters: false,
                     items: "getLists",
                 },
+                stringifyFormat: {
+                    acceptReporters: false,
+                    items: [
+                        "compact",
+                        "pretty"
+                    ]
+                }
             }
         };
     }

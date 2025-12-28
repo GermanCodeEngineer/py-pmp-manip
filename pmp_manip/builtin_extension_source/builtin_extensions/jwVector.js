@@ -222,7 +222,14 @@ class Extension {
                     },
                     extensions: ["colours_looks"],
                     filter: [TargetType.SPRITE]
-                }
+                },
+                "---",
+                {
+                    opcode: 'getMouse',
+                    text: 'mouse position',
+                    extensions: ["colours_sensing"],
+                    ...Vector.Block
+                },
             ],
             menus: {
                 roundingFunctions: {

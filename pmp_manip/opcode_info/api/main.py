@@ -162,6 +162,8 @@ BUILTIN_EXTENSIONS: list[str] = [
     "jwDate",
     # scoped variables
     "jwScope",
+    # NEW xml extension
+    "jwXML",
 
     # jw: They'll think its made by jwklong >:)
     # (but it's not (yet (maybe (probably not (but its made by ianyourgod)))))

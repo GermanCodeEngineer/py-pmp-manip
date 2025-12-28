@@ -2,7 +2,6 @@ const BlockType = require('../../extension-support/block-type')
 const BlockShape = require('../../extension-support/block-shape')
 const ArgumentType = require('../../extension-support/argument-type')
 
-
 const Target = {
     Type: class {}, // not needed
     Block: {
@@ -164,6 +163,14 @@ class Extension {
                     },
                     ...Target.Block
                 },
+                {
+                    opcode: 'deleteClone',
+                    text: 'delete clone [TARGET]',
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        TARGET: Target.Argument
+                    }
+                },
                 '---',
                 {
                     opcode: 'all',
@@ -205,6 +212,11 @@ class Extension {
                         TARGET: Target.Argument
                     }
                 },*/
+                '---',
+                {
+                    blockType: BlockType.XML,
+                    xml: `<block type="control_run_as_sprite" />`
+                }
             ],
             menus: {
                 sprite: {
@@ -224,7 +236,9 @@ class Extension {
                         "stretch y",
                         "costume #",
                         "costume name",
-                        "visible"
+                        "visible",
+                        "layer",
+                        "volume"
                     ]
                 },
                 targetPropertySet: {
@@ -238,7 +252,9 @@ class Extension {
                         "stretch y",
                         "costume #",
                         "costume name",
-                        "visible"
+                        "visible",
+                        "layer",
+                        "volume"
                     ]
                 },
                 touchingObject: [
