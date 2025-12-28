@@ -548,6 +548,7 @@ const vmEnvironment = {
     }),
     document: defaultStubValue,
     localStorage: defaultStubValue,
+    MutationObserver: defaultStubValue,
 }
 
 
