@@ -70,6 +70,17 @@ class FRTarget(ABC):
         Returns:
             a dict containing the prepared values for common fields
         """
+        blocks = {
+            block_id: (
+                tuple(block_data)
+                if isinstance(block_data, list)
+                else FRBlock.from_data(block_data)
+            )
+            for block_id, block_data in data["blocks"].items()
+        }
+        for block_id, block in list(blocks.items()):
+            if block is None:
+                del blocks[block_id]
         return dict(
             is_stage=data["isStage"],
             name=data["name"],
@@ -77,14 +88,7 @@ class FRTarget(ABC):
             lists={key: tuple(value) for key, value in data["lists"].items()},
             broadcasts=copy(data["broadcasts"]),
             custom_vars=deepcopy(data.get("customVars", [])),
-            blocks={
-                block_id: (
-                    tuple(block_data)
-                    if isinstance(block_data, list)
-                    else FRBlock.from_data(block_data)
-                )
-                for block_id, block_data in data["blocks"].items()
-            },
+            blocks=blocks,
             comments={
                 comment_id: FRComment.from_data(comment_data)
                 for comment_id, comment_data in data["comments"].items()

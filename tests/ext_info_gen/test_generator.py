@@ -709,6 +709,32 @@ def test_find_input_and_dropdown_types_possible_value_invalid_length():
             "SOME_MENU": {"items": [["internal_id"]]} # missing public representation
         }, [], "someExtension")
 
+def test_find_input_and_dropdown_types_with_isTypeable():
+    menu_data = {
+        "TYPEABLE_MENU": {
+            "isTypeable": True,
+            "items": [
+                "option1",
+                {"text": "Option Two", "value": "opt2"},
+                ["Option 3", "opt3"],
+            ],
+        },
+    }
+    input_types, dropdown_types = find_input_and_dropdown_types(menu_data, [], "testExt")
+    
+    # Should create an input type because isTypeable implies acceptReporters
+    assert "M_TYPEABLE_MENU" in input_types
+    assert input_types["M_TYPEABLE_MENU"].mode == InputMode.BLOCK_AND_DROPDOWN
+    
+    # Check dropdown type
+    assert "TYPEABLE_MENU" in dropdown_types
+    assert dropdown_types["TYPEABLE_MENU"].value == DropdownTypeInfo(
+        direct_values=["option1", "Option Two", "Option 3"],
+        rules=[],
+        old_direct_values=["option1", "Option Two", "Option 3"],  # Should ignore "value" when isTypeable
+        fallback=None,
+    )
+
 
 
 def test_generate_block_opcode_info_event_with_string_arg_without_type(input_types, dropdown_types, example_opcode_blocks):

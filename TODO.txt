@@ -4,8 +4,6 @@ Special:
     - TODOs in Code + read through code, optimize here and there
 
 Currently Working On:
-    - Fixing blocks with menus with isTypeable=true (see e.g. Animated Text Extension)
-    - Fixing bugs with custom block arguments
     => Next Release
 
 Changelog since last Release:
@@ -17,7 +15,9 @@ Changelog since last Release:
     - Allow objects to be stored in variables
     - Refractoring
     - Added PM category expansions to info_api by default 
-    - Bug Fixes (also tested py-pmp-manip with and updated for some foreign PM projects)
+    - Fixed blocks with menus with isTypeable=true (see e.g. Animated Text Extension)
+    - Fixed bugs with custom block arguments
+    - Other Bug Fixes (also tested py-pmp-manip with and updated for some foreign PM projects)
     - Added and improved scripts and release tutorial
 
 

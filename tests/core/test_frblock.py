@@ -45,6 +45,10 @@ def test_FRBlock_from_data():
     assert frblock.shadow    == data["shadow"]
     assert frblock.top_level == data["topLevel"]
 
+def test_FRBlock_from_data_no_opcode():
+    data = ALL_FR_BLOCK_DATAS["N"]
+    assert FRBlock.from_data(data) is None
+
 def test_FRBlock_from_data_comment_without_mutation():
     data = ALL_FR_BLOCK_DATAS["b"]
     frblock = FRBlock.from_data(data)

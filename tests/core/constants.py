@@ -542,6 +542,13 @@ ALL_FR_BLOCK_DATAS = {
         "shadow": False,
         "topLevel": False,
     },
+    "N": {
+        "next": None, 
+        "parent": None, 
+        "inputs": {}, 
+        "fields": {}, 
+        "topLevel": False,
+    },
 }
 
 ALL_FR_BLOCKS = {

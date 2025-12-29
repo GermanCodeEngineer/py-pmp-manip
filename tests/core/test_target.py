@@ -121,6 +121,9 @@ def test_FRTarget_to_data_common():
     frsprite.variables = FR_STAGE.variables
     frsprite.lists = FR_STAGE.lists
     frsprite.broadcasts = FR_STAGE.broadcasts
+    expected_blocks = copy(ALL_FR_BLOCK_DATAS)
+    del expected_blocks["N"]
+
     data = frsprite._to_data_common()
     assert data["isStage"] is False
     assert data["name"] == "Sprite1"
@@ -128,7 +131,7 @@ def test_FRTarget_to_data_common():
     assert data["lists"] == STAGE_DATA["lists"]
     assert data["broadcasts"] == STAGE_DATA["broadcasts"]
     assert data["customVars"] == []
-    assert data["blocks"] == ALL_FR_BLOCK_DATAS
+    assert data["blocks"] == expected_blocks
     assert data["comments"] == ALL_COMMENT_DATAS
     assert data["currentCostume"] == 0
     assert data["costumes"] == SPRITE_DATA["costumes"]
@@ -236,7 +239,9 @@ def test_FRSprite_from_to_data():
     frsprite = FRSprite.from_data(SPRITE_DATA)
     assert frsprite == FR_SPRITE
 
-    assert frsprite.to_data() == SPRITE_DATA
+    expected_blocks = copy(ALL_FR_BLOCK_DATAS)
+    del expected_blocks["N"]
+    assert frsprite.to_data() == (SPRITE_DATA | {"blocks": expected_blocks})
 
 def test_FRSprite_from_data_missing_id():
     sprite_data = copy(SPRITE_DATA)

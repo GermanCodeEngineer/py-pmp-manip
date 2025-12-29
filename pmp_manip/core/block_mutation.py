@@ -115,7 +115,7 @@ class FRMutation(ABC):
     _subclasses_info_: ClassVar[dict[type[FRMutation], tuple[set[str], set[str]]]] = {}
     # stores classes required and optional properties
 
-    tag_name: str # always "mutation"
+    tag_name: Literal["mutation"] # always "mutation"
     children: list # always []
 
     def __init_subclass__(cls, *, required_properties: set[str], optional_properties: set[str]=set(), **kwargs):
@@ -240,6 +240,17 @@ class FRCustomBlockArgumentMutation(FRMutation,
             warp     = _load_bool_value(data, "warp", default=False),
             edited   = _load_bool_value(data, "edited", default=False),
             has_next = _load_bool_value(data, "hasnext", default=False),
+        )
+
+    @classmethod
+    def default(cls) -> FRCustomBlockArgumentMutation:
+        """
+        Create a default FRCustomBlockArgumentMutation
+        """
+        return cls(
+            tag_name = "mutation",
+            children = [],
+            color    = ("#FF6680", "#FF4D6A", "#FF3355"),
         )
 
     def to_data(self) -> dict[str, Any]:
@@ -789,11 +800,13 @@ class SRCustomBlockArgumentMutation(SRMutation):
         Returns:
             the FRCustomBlockArgumentMutation
         """
-        return FRCustomBlockArgumentMutation(
+        srmutation = FRCustomBlockArgumentMutation(
             tag_name = "mutation",
             children = [],
             color    = (self.main_color, self.prototype_color, self.outline_color),
         )
+        srmutation.store_argument_name(self.argument_name)
+        return srmutation
     
 @grepr_dataclass(grepr_fields=["custom_opcode", "no_screen_refresh", "optype", "main_color", "prototype_color", "outline_color"])
 class SRCustomBlockMutation(SRMutation):

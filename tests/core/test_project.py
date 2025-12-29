@@ -4,7 +4,7 @@ from uuid   import uuid4
 
 from pmp_manip.utility            import (
     gdumps, KeyReprDict, AbstractTreePath,
-    MANIP_ThanksError, MANIP_TypeValidationError, MANIP_RangeValidationError, 
+    MANIP_TypeValidationError, MANIP_RangeValidationError, 
     MANIP_SameValueTwiceError, MANIP_SpriteLayerStackError,
 )
 from pmp_manip.opcode_info.data import info_api
@@ -17,7 +17,7 @@ from pmp_manip.core.target     import FRStage, SRSprite, SRStage
 from pmp_manip.core.vars_lists import SRVariable, SRList
 
 from tests.core.constants import (
-    PROJECT_DATA, PROJECT_ASSET_FILES, 
+    ALL_FR_BLOCK_DATAS, PROJECT_DATA, PROJECT_ASSET_FILES, 
     FR_PROJECT, SR_PROJECT, 
     SB3_PROJECT_DATA_ORGINAL, SB3_PROJECT_DATA_CONVERTED,
     ALL_FR_MONITORS_CONVERTED,
@@ -42,8 +42,15 @@ def test_FRProject_from_to_data():
     )
     assert frproject == FR_PROJECT
 
+    expected_data = copy(PROJECT_DATA)
+    expected_data["targets"] = copy(PROJECT_DATA["targets"])
+    expected_data["targets"][1] = copy(PROJECT_DATA["targets"][1])
+    expected_data["targets"][1]["blocks"] = copy(ALL_FR_BLOCK_DATAS)
+    del expected_data["targets"][1]["blocks"]["N"]
+    expected_data["extensionURLs"] = {}
+
     project_data, asset_files = frproject.to_data()
-    assert project_data == (PROJECT_DATA | {"extensionURLs": {}})
+    assert project_data == expected_data
     assert asset_files == PROJECT_ASSET_FILES
 
 

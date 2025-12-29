@@ -64,19 +64,21 @@ def find_input_and_dropdown_types(
         possible_values: list[str|dict[str, str]]
         rules: list[DropdownValueRule] = []
         accept_reporters: bool
+        is_typeable: bool = False
 
         if not isinstance(menu_info, (dict, list, str)):
-            raise MANIP_InvalidCustomMenuError(f"Invalid custom menu {menu_block_id!r}: must be an object, array or string(method refernce)")
+            raise MANIP_InvalidCustomMenuError(f"Invalid custom menu {menu_block_id!r}: must be an object, array or string(method reference)")
         if   isinstance(menu_info, dict):
             possible_values = menu_info.get("items", [])
-            accept_reporters = menu_info.get("acceptReporters", False)
+            is_typeable = menu_info.get("isTypeable", False)
+            accept_reporters = menu_info.get("acceptReporters", is_typeable)
         elif isinstance(menu_info, (list, str)):
             possible_values = menu_info
             accept_reporters = False
 
         
         if not isinstance(possible_values, (dict, list, str)):
-            raise MANIP_InvalidCustomMenuError(f"Invalid custom menu {menu_block_id!r}: 'items' must be an array or string(method refernce)")
+            raise MANIP_InvalidCustomMenuError(f"Invalid custom menu {menu_block_id!r}: 'items' must be an array or string(method reference)")
         if   isinstance(possible_values, list): pass
         elif isinstance(possible_values, str): # str refers to a function and is therefore unpredictable
             possible_values = []
@@ -102,7 +104,10 @@ def find_input_and_dropdown_types(
                     raise MANIP_InvalidCustomMenuError(f"Invalid custom menu {menu_block_id!r}: item {i}: must have 2 items for an array")
                 new_possible_values.append(possible_value[0])
                 old_possible_values.append(possible_value[1])
-        
+        if is_typeable:
+            old_possible_values = new_possible_values # "value" is not supported, see:
+            # https://github.com/PenguinMod/PenguinMod-Docs/blob/654adb5afe4087b67549d7838d25862ec1a20785/docs/development/extensions/api/categories/category-info.md?plain=1#L27            
+
         dropdown_type_info = DropdownTypeInfo(
             direct_values     = new_possible_values,
             rules             = rules, # we assume the possible menu values are static
@@ -205,7 +210,7 @@ def generate_block_opcode_info(
                     builitin_input_type = ARGUMENT_TYPE_TO_INPUT_TYPE[argument_type]
                     fill_in_opcode = argument_info.get("fillIn")
                     fill_in_global_opcode = argument_info.get("fillInGlobal")
-                    if fill_in_opcode or fill_in_global_opcode: # TODO: add tests
+                    if fill_in_opcode or fill_in_global_opcode:
                         full_opcode = fill_in_global_opcode if fill_in_global_opcode else f"{extension_id}_{fill_in_opcode}"
                         fill_in_id = f"S_{full_opcode}"
                         if fill_in_id not in input_types:
@@ -229,7 +234,7 @@ def generate_block_opcode_info(
                             raise ValueError(f"Argument {repr(argument_id)}: 'menu' must refer to an existing menu")
                         menu_info = menus[argument_menu]
                         if   isinstance(menu_info, dict):
-                            accept_reporters = menu_info.get("acceptReporters", False)
+                            accept_reporters = menu_info.get("acceptReporters", menu_info.get("isTypeable", False))
                         else:
                             accept_reporters = False
 

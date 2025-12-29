@@ -463,9 +463,14 @@ class DropdownType(GEnum):
         
         if old_value in old_values:
             return new_values[old_values.index(old_value)]
-        else:
-            assert self.guess_default_kind is not None
+        elif self.guess_default_kind is not None:
             return (self.guess_default_kind, old_value)
+        
+        assert isinstance(old_value, str) # TODO: update tests
+        old_value = old_value.lower()
+        old_values = [s.lower() if isinstance(s, str) else s for s in old_values]
+        assert old_value in old_values
+        return new_values[old_values.index(old_value)]
 
     def translate_new_to_old_value(self, new_value: tuple[DropdownValueKind, DROPDOWN_VALUE_T]) -> DROPDOWN_VALUE_T:
         """

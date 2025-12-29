@@ -77,16 +77,16 @@ class FRBlock:
     mutation: FRMutation | None = None
 
     @classmethod
-    def from_data(cls, data: dict[str, Any]) -> FRBlock:
+    def from_data(cls, data: dict[str, Any]) -> FRBlock | None:
         """
-        Deserializes json data into a FRBlock
+        Deserializes json data into a FRBlock. Returns None if the block has no opcode
         
         Args:
             data: the json data
-        
-        Returns:
-            the FRBlock
         """
+        if "opcode" not in data:
+            return None
+            # Example: {"next": None, "parent": None, "inputs": {}, "fields": {}, "topLevel": False}
         if "mutation" in data:
             mutation = FRMutation.from_data(data["mutation"])
         else:

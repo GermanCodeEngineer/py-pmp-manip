@@ -278,6 +278,11 @@ def test_FRCustomBlockArgumentMutation_to_second_without_storing_argument(fti_if
         frmutation.to_second(fti_if)
 
 
+def test_FRCustomBlockArgumentMutation_default():
+    frmutation = FRCustomBlockArgumentMutation.default()
+    assert frmutation.color == ("#FF6680", "#FF4D6A", "#FF3355")
+
+
 
 def test_FRCustomBlockMutation_from_to_data_and_to_second(fti_if: FirstToInterIF):
     warp    = False
@@ -523,11 +528,13 @@ def test_SRCustomBlockArgumentMutation_to_first(itf_if: InterToFirstIF):
         prototype_color="#c38d12",
         outline_color="#e9d563",
     )
-    assert srmutation.to_first(itf_if) == FRCustomBlockArgumentMutation(
+    frmutation = FRCustomBlockArgumentMutation(
         tag_name="mutation",
         children=[],
         color=("#f8e43a", "#c38d12", "#e9d563"),
     )
+    frmutation.store_argument_name("my argument")
+    assert srmutation.to_first(itf_if) == frmutation
 
 
 
