@@ -156,7 +156,7 @@ class pmControlsExpansion {
                     text: "clear counter",
                     blockType: BlockType.COMMAND,
                 },
-                {
+                /*{ // would create conflicts with builtin categories
                     opcode: 'control_if',
                     ppm_final_opcode: true,
                     text: [
@@ -180,7 +180,7 @@ class pmControlsExpansion {
                     arguments: {
                         CONDITION: { type: ArgumentType.BOOLEAN }
                     }
-                },
+                },*/
                 {
                     opcode: 'ifElseIf',
                     text: [

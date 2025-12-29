@@ -1,6 +1,6 @@
 from pmp_manip.opcode_info.data_imports import *
 
-c_looks = OpcodeInfoGroup(name="c_looks", opcode_info=DualKeyDict({
+category = OpcodeInfoGroup(name="looks", opcode_info=DualKeyDict({
     ("looks_sayforsecs", "&looks::say (MESSAGE) for (SECONDS) seconds"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({

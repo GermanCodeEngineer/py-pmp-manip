@@ -1,6 +1,6 @@
 from pmp_manip.opcode_info.data_imports import *
 
-c_sensing = OpcodeInfoGroup(name="c_sensing", opcode_info=DualKeyDict({
+category = OpcodeInfoGroup(name="sensing", opcode_info=DualKeyDict({
     ("sensing_touchingobject", "&sensing::touching ([OBJECT]) ?"): OpcodeInfo(
         opcode_type=OpcodeType.BOOLEAN_REPORTER,
         inputs=DualKeyDict({

@@ -1,6 +1,6 @@
 from pmp_manip.opcode_info.data_imports import *
 
-c_control = OpcodeInfoGroup(name="c_control", opcode_info=DualKeyDict({
+category = OpcodeInfoGroup(name="control", opcode_info=DualKeyDict({
     ("control_wait", "&control::wait (SECONDS) seconds"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
@@ -35,7 +35,7 @@ c_control = OpcodeInfoGroup(name="c_control", opcode_info=DualKeyDict({
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
             ("VALUE", "RANGE"): InputInfo(BuiltinInputType.POSITIVE_INTEGER),
-            ("BODY", "BODY"): InputInfo(BuiltinInputType.SCRIPT),
+            ("SUBSTACK", "BODY"): InputInfo(BuiltinInputType.SCRIPT),
         }),
         dropdowns=DualKeyDict({
             ("VARIABLE", "VARIABLE"): DropdownInfo(BuiltinDropdownType.VARIABLE),

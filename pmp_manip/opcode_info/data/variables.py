@@ -1,6 +1,6 @@
 from pmp_manip.opcode_info.data_imports import *
 
-c_variables = OpcodeInfoGroup(name="c_variables", opcode_info=DualKeyDict({
+category = OpcodeInfoGroup(name="variables", opcode_info=DualKeyDict({
     ("data_setvariableto", "&variables::set [VARIABLE] to (VALUE)"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({

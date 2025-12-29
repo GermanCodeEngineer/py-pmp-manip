@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from pmp_manip.utility import DualKeyDict, ContentFingerprint
 from pmp_manip.opcode_info.api import (
     OpcodeInfoGroup, OpcodeInfo, OpcodeType, MonitorIdBehaviour, 

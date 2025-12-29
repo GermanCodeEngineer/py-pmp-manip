@@ -1,6 +1,6 @@
 from pmp_manip.opcode_info.data_imports import *
 
-c_lists = OpcodeInfoGroup(name="c_lists", opcode_info=DualKeyDict({
+category = OpcodeInfoGroup(name="lists", opcode_info=DualKeyDict({
     ("data_addtolist", "&lists::add (ITEM) to [LIST]"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({

@@ -1,6 +1,6 @@
 from pmp_manip.opcode_info.data_imports import *
 
-c_operators = OpcodeInfoGroup(name="c_operators", opcode_info=DualKeyDict({
+category = OpcodeInfoGroup(name="operators", opcode_info=DualKeyDict({
     ("operator_add", "&operators::(OPERAND1) + (OPERAND2)"): OpcodeInfo(
         opcode_type=OpcodeType.STRING_REPORTER,
         inputs=DualKeyDict({

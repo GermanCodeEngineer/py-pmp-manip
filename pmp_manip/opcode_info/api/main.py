@@ -24,6 +24,20 @@ if TYPE_CHECKING:
 
 # Derived from https://github.com/PenguinMod/PenguinMod-Vm/blob/develop/src/extension-support/extension-manager.js
 # FORMAT: extension_id: (extension_dir, [extension_file1.js, extension_file2.js, ...])
+BUILTIN_EXPANSIONS: list[str] = [
+    # pm: category expansions & seperations go here
+    # pmMotionExpansion: extra motion blocks that were in the category & new ones that werent
+    "pmMotionExpansion",
+    # pmOperatorsExpansion: extra operators that were in the category & new ones that werent
+    "pmOperatorsExpansion",
+    # pmSensingExpansion: extra sensing blocks that were in the category & new ones that werent
+    "pmSensingExpansion",
+    # pmControlsExpansion: extra control blocks that were in the category & new ones that werent
+    "pmControlsExpansion",
+    # pmEventsExpansion: extra event blocks that were in the category & new ones that werent
+    "pmEventsExpansion",
+]
+
 BUILTIN_EXTENSIONS: list[str] = [
     # These are the non-core built-in extensions.
     "pen",
@@ -44,17 +58,7 @@ BUILTIN_EXTENSIONS: list[str] = [
     # twFiles: replaces jgFiles as it works better on other devices
     "twFiles",
 
-    # pm: category expansions & seperations go here
-    # pmMotionExpansion: extra motion blocks that were in the category & new ones that werent
-    "pmMotionExpansion",
-    # pmOperatorsExpansion: extra operators that were in the category & new ones that werent
-    "pmOperatorsExpansion",
-    # pmSensingExpansion: extra sensing blocks that were in the category & new ones that werent
-    "pmSensingExpansion",
-    # pmControlsExpansion: extra control blocks that were in the category & new ones that werent
-    "pmControlsExpansion",
-    # pmEventsExpansion: extra event blocks that were in the category & new ones that werent
-    "pmEventsExpansion",
+    # see BUILTIN_EXPANSIONS
 
     # pmInlineBlocks: seperates the inline function block to prevent confusled
     "pmInlineBlocks",
@@ -703,6 +707,8 @@ class OpcodeInfoAPI:
         """
         from pmp_manip.ext_info_gen import generate_extension_info_py_file
         
+        if extension_id in BUILTIN_EXPANSIONS:
+            return # Already included
         if extension_source is None:
             if extension_id not in BUILTIN_EXTENSIONS:
                 raise MANIP_UnknownBuiltinExtensionError(f"Unknown builtin extension: {extension_id}. Either provide a source for a custom extension or create a GitHub issue for a builtin extension.")

@@ -1,6 +1,6 @@
 from pmp_manip.opcode_info.data_imports import *
 
-c_events = OpcodeInfoGroup(name="c_events", opcode_info=DualKeyDict({
+category = OpcodeInfoGroup(name="events", opcode_info=DualKeyDict({
     ("event_whenflagclicked", "&events::when green flag clicked"): OpcodeInfo(
         opcode_type=OpcodeType.HAT,
     ),

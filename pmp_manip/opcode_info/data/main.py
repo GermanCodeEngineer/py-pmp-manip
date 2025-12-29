@@ -24,15 +24,20 @@ from pmp_manip.opcode_info.api import (
     MonitorIdBehaviour,
 )
 
-from pmp_manip.opcode_info.data.c_motion    import c_motion
-from pmp_manip.opcode_info.data.c_looks     import c_looks
-from pmp_manip.opcode_info.data.c_sounds    import c_sounds
-from pmp_manip.opcode_info.data.c_events    import c_events
-from pmp_manip.opcode_info.data.c_control   import c_control
-from pmp_manip.opcode_info.data.c_sensing   import c_sensing
-from pmp_manip.opcode_info.data.c_operators import c_operators
-from pmp_manip.opcode_info.data.c_variables import c_variables
-from pmp_manip.opcode_info.data.c_lists     import c_lists
+from pmp_manip.opcode_info.data.motion    import category as c_motion
+from pmp_manip.opcode_info.data.looks     import category as c_looks
+from pmp_manip.opcode_info.data.sounds    import category as c_sounds
+from pmp_manip.opcode_info.data.events    import category as c_events
+from pmp_manip.opcode_info.data.control   import category as c_control
+from pmp_manip.opcode_info.data.sensing   import category as c_sensing
+from pmp_manip.opcode_info.data.operators import category as c_operators
+from pmp_manip.opcode_info.data.variables import category as c_variables
+from pmp_manip.opcode_info.data.lists     import category as c_lists
+from pmp_manip.opcode_info.data.pmControlsExpansion  import extension as pmControlsExpansion
+from pmp_manip.opcode_info.data.pmEventsExpansion    import extension as pmEventsExpansion
+from pmp_manip.opcode_info.data.pmMotionExpansion    import extension as pmMotionExpansion
+from pmp_manip.opcode_info.data.pmOperatorsExpansion import extension as pmOperatorsExpansion
+from pmp_manip.opcode_info.data.pmSensingExpansion   import extension as pmSensingExpansion
 
 if TYPE_CHECKING:
     from pmp_manip.core.trafo_interface import FirstToInterIF, InterToFirstIF, ValidationIF
@@ -226,7 +231,12 @@ info_api.add_group(c_operators    )
 info_api.add_group(c_variables    )
 info_api.add_group(c_lists        )
 info_api.add_group(c_custom_blocks)
-info_api.add_group(g_special)
+info_api.add_group(g_special      )
+info_api.add_group(pmControlsExpansion )
+info_api.add_group(pmEventsExpansion   )
+info_api.add_group(pmMotionExpansion   )
+info_api.add_group(pmOperatorsExpansion)
+info_api.add_group(pmSensingExpansion  )
 
 # Mutations
 info_api.set_opcodes_mutation_class(ANY_OPCODE_CB_ARG, old_cls=FRCustomBlockArgumentMutation, new_cls=SRCustomBlockArgumentMutation)
@@ -380,6 +390,8 @@ def _1a40_d676(block: FRBlock, block_id: str, fti_if: FirstToInterIF) -> FRBlock
     # Transfer argument name from a field into the mutation
     # because only real dropdowns should be listed in "fields"
     block = deepcopy(block)
+    if block.mutation is None:
+        block.mutation = FRCustomBlockArgumentMutation.default()
     mutation: FRCustomBlockArgumentMutation = block.mutation
     mutation.store_argument_name(block.fields["VALUE"][0])
     del block.fields["VALUE"]
@@ -592,6 +604,22 @@ info_api.add_opcode_case(OPCODE_FOREVER, SpecialCase(
     function=_0435_8f0e,
 ))
 
+def _4161_52c0(block: FRBlock, block_id: str, itf_if: InterToFirstIF) -> FRBlock:
+    # Transfer argument name from the mutation into a field
+    block = deepcopy(block)
+    if block.mutation is None:
+        block.mutation = FRCustomBlockArgumentMutation.default()
+    mutation: FRCustomBlockArgumentMutation = block.mutation
+    block.fields["VALUE"] = (
+        mutation._argument_name, 
+        string_to_sha256(mutation._argument_name, secondary=SHA256_SEC_LOCAL_ARGUMENT_NAME)
+    )
+    return block
+
+info_api.add_opcodes_case(ANY_OPCODE_CB_ARG, SpecialCase(
+    type=SpecialCaseType.POST_INTER_TO_FIRST, 
+    function=_4161_52c0,
+))
 
 def _26f9_8217(path: AbstractTreePath, block: SRBlock) -> None:
     mutation: SRCustomBlockMutation = block.mutation

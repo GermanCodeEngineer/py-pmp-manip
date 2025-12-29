@@ -1,6 +1,6 @@
 from pmp_manip.opcode_info.data_imports import *
 
-c_sounds = OpcodeInfoGroup(name="c_sounds", opcode_info=DualKeyDict({
+category = OpcodeInfoGroup(name="sounds", opcode_info=DualKeyDict({
     ("sound_playuntildone", "&sound::play sound ([SOUND]) until done"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({

@@ -1,6 +1,6 @@
 from pmp_manip.opcode_info.data_imports import *
 
-c_motion = OpcodeInfoGroup(name="c_motion", opcode_info=DualKeyDict({
+category = OpcodeInfoGroup(name="motion", opcode_info=DualKeyDict({
     ("motion_movesteps", "&motion::move (STEPS) steps"): OpcodeInfo(
         opcode_type=OpcodeType.STATEMENT,
         inputs=DualKeyDict({
