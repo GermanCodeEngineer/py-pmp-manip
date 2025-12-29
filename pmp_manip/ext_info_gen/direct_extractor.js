@@ -1,30 +1,29 @@
-const fs = require("fs");
-const path = require("path");
-const vm = require("vm");
-const Module = require("module");
+const fs = require("fs")
+const path = require("path")
+const vm = require("vm")
 
 // ---------- Step 1: Blacklist register ----------
 
-const BLACKLIST = new Set(["init", "initialize", "updateVideoDisplay", "_loop"]);
+const BLACKLIST = new Set(["init", "initialize", "updateVideoDisplay", "_loop"])
 
-let scratch_ext = null;
-let fullExtensionPath;
+let scratch_ext = null
+let fullExtensionPath
 
 function register(ext) {
     // Patch the prototype directly
-    const proto = typeof ext === "function" ? ext.prototype : Object.getPrototypeOf(ext);
+    const proto = typeof ext === "function" ? ext.prototype : Object.getPrototypeOf(ext)
     for (const method of BLACKLIST) {
         if (typeof proto[method] === "function") {
-            console.warn(`Patching prototype method '${method}'`);
-            proto[method] = function () {};
+            console.warn(`Patching prototype method '${method}'`)
+            proto[method] = function () {}
         }
     }
-    scratch_ext = ext;
-};
+    scratch_ext = ext
+}
 
 // ---------- Step 2: Setup Stubs and Proxy ----------
 
-let defaultStubValue;
+let defaultStubValue
 
 // This design was chosen because all these three will work with the above value as X
 // const y = new X()
@@ -41,36 +40,36 @@ function makeConfiguredStub({
 } = {}) {
     // The stub function/object to return for everything else
     if (basis === null) {
-        basis = Object.create(null);
+        basis = Object.create(null)
     }
 
-    basis.toString = basis.valueOf = basis[Symbol.toPrimitive] = () => "[STUB; PROPERTY OF py-pmp-manip]"
+    basis.toString = basis.valueOf = basis[Symbol.toPrimitive] = () => "[STUB PROPERTY OF py-pmp-manip]"
 
     // Assign known props
     for (const [key, value] of Object.entries(valueProps)) {
-        basis[key] = value;
+        basis[key] = value
     }
     for (const funcName of funcProps) {
         basis[funcName] = function () {
-            return defaultStubValue;
-        };
+            return defaultStubValue
+        }
     }
 
     // Proxy only property accesses, not apply/construct
     return new Proxy(basis, {
         get(target, prop, receiver) {
             if (Object.prototype.hasOwnProperty.call(target, prop)) {
-                return target[prop];
+                return target[prop]
             }
             if (allowStaticGet && typeof prop === "string" && /^[A-Z0-9_]+$/.test(prop)) {
-                return prop;
+                return prop
             }
-            if (prop === Symbol.toStringTag) return "Function";
-            if (prop === "prototype") return target.prototype;
-            if (prop === "constructor") return target.constructor;
-            return defaultStubValue;
+            if (prop === Symbol.toStringTag) return "Function"
+            if (prop === "prototype") return target.prototype
+            if (prop === "constructor") return target.constructor
+            return defaultStubValue
         },
-    });
+    })
 }
 
 // Create the ultimate stub globally
@@ -79,7 +78,7 @@ defaultStubValue = makeConfiguredStub({
   valueProps: {},
   funcProps: [],
   allowStaticGet: false,
-});
+})
 
 
 
@@ -346,7 +345,7 @@ const runtimeStub = makeConfiguredStub({
         "setExternalCommunicationMethod",
     ],
     allowStaticGet: true, // allow e.g. PROJECT_START
-});
+})
 
 const ScratchVar = makeConfiguredStub({
     basis: Object.create(null),
@@ -469,7 +468,7 @@ const stubModules = [
 
     path.resolve(__dirname, "../../extension-support/tw-l10n"),
     path.resolve(__dirname, "../../extension-support/extension-addon-switchers"),
-];
+]
 const stubValue = [
     ScratchVar.ArgumentType,
     ScratchVar.ArgumentAlignment,
@@ -491,39 +490,39 @@ const stubValue = [
             noopSwitch: {isNoop: true},
         },
     })
-];
+]
 
 function myRequire(moduleName) {
-    const fullPath = path.resolve(__dirname, moduleName);
+    const fullPath = path.resolve(__dirname, moduleName)
 
     // Forbid access to non-JS files e.g. .png
-    const extMatch = fullPath.match(/\.([a-zA-Z0-9]+)$/);
+    const extMatch = fullPath.match(/\.([a-zA-Z0-9]+)$/)
     if (extMatch && extMatch[1] !== "js") {
-        return defaultStubValue;
+        return defaultStubValue
     }
 
     // Modules you want to return a specific stub value
     if (stubModules.includes(fullPath)) {
-        return stubValue[stubModules.indexOf(fullPath)];
+        return stubValue[stubModules.indexOf(fullPath)]
     }
     
     // Only stub relative imports under ../../ or from external organizations
     if (moduleName.startsWith("../../") || moduleName.startsWith("@")) {
-        return defaultStubValue;
+        return defaultStubValue
     }
     
     // We do not care about translations and just want english anyway
     if (moduleName === "format-message") {
-        return ScratchVar.translate;
+        return ScratchVar.translate
     }
 
     if (moduleName.startsWith("three/")) {
         // can cause problems as the CJS modules of three do not work with require
-        return defaultStubValue;
+        return defaultStubValue
     }
 
     // fallback to real require
-    return require(moduleName);
+    return require(moduleName)
     /*
     Currently known packages which are required by builtin extensions:
         - scratch-translate-extension-languages
@@ -556,45 +555,45 @@ const vmEnvironment = {
 
 function runScript(code, filename) {
     try {
-        vm.createContext(vmEnvironment);
-        vm.runInContext(code, vmEnvironment, { filename });
+        vm.createContext(vmEnvironment)
+        vm.runInContext(code, vmEnvironment, { filename })
 
         if (!scratch_ext) {
-            const exported = vmEnvironment.module.exports;
+            const exported = vmEnvironment.module.exports
             // if a class is exported use it's getInfo
             if (typeof exported === "function" && /^class\s/.test(Function.prototype.toString.call(exported))) {
-                register(exported);
+                register(exported)
                 scratch_ext = new scratch_ext(ScratchVar.vm.runtime)
             } else {
-                process.exit(2); // Errno. 2 (nothing or invalid value registered)
+                process.exit(2) // Errno. 2 (nothing or invalid value registered)
             }
         }        
 
         if (!(typeof scratch_ext.getInfo === "function")) {
-            process.exit(2); // Errno. 2 (nothing or invalid value registered)
+            process.exit(2) // Errno. 2 (nothing or invalid value registered)
         }
 
-        const extensionInfo = scratch_ext.getInfo();
-        console.log(JSON.stringify(extensionInfo)); // must be the last call to console.log() or similar
+        const extensionInfo = scratch_ext.getInfo()
+        console.log(JSON.stringify(extensionInfo)) // must be the last call to console.log() or similar
     } catch (error) {
         if (error && error.stack) {
-            console.error(error.stack);
+            console.error(error.stack)
         } else {
-            console.error(error);
+            console.error(error)
         }
-        process.exit(1);
+        process.exit(1)
     }
 }
 
 // ---------- Entry point ----------
 
 if (require.main === module) { // like if __name__ == "__main__"
-    const filePath = process.argv[2];
-    fullExtensionPath = path.resolve(filePath);
-    const code = fs.readFileSync(fullExtensionPath, "utf-8");
+    const filePath = process.argv[2]
+    fullExtensionPath = path.resolve(filePath)
+    const code = fs.readFileSync(fullExtensionPath, "utf-8")
 
-    runScript(code, fullExtensionPath);
-    process.exit(0);
+    runScript(code, fullExtensionPath)
+    process.exit(0)
 }
 
-module.exports = {vmEnvironment, defaultStubValue};
+module.exports = {vmEnvironment, defaultStubValue}
