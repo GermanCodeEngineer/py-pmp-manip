@@ -40,11 +40,13 @@ def get_latest_version_pypi(package_name: str) -> str | None:
 
 
 def parse_dependency(dep_string: str) -> tuple[str, str]:
-    """Parse a dependency string like 'package==1.2.3' into (name, version)."""
-    if "==" in dep_string:
-        parts = dep_string.split("==")
-        return parts[0].strip(), parts[1].strip()
-    return dep_string.strip(), "unknown"
+    """Parse a dependency string like 'package==1.2.3' or 'package~=1.2' into (name, version)."""
+    # Handle different version specifiers: ==, ~=, >=, <=, >, <
+    for operator in ["~=", "==", ">=", "<=", ">", "<"]:
+        if operator in dep_string:
+            parts = dep_string.split(operator)
+            return parts[0].strip(), parts[1].strip()
+    return dep_string.strip(), None
 
 
 def compare_versions(current: str, latest: str) -> str:
@@ -104,19 +106,24 @@ def check_dependencies(pyproject_path: Path) -> None:
             installed_version = get_installed_version(package_name)
             latest_version = get_latest_version_pypi(package_name)
             
+            current_str = current_version if current_version else "any"
             installed_str = installed_version if installed_version else "Not installed"
             latest_str = latest_version if latest_version else "N/A"
             
-            if latest_version:
+            if latest_version and current_version:
                 status = compare_versions(current_version, latest_version)
-                print(f"{package_name:<25} {current_version:<18} {installed_str:<18} {latest_str:<18} {status:<10}")
+                print(f"{package_name:<25} {current_str:<18} {installed_str:<18} {latest_str:<18} {status:<10}")
                 
                 if status == "🔄":
                     updates_available.append((package_name, current_version, latest_version))
-                if not installed_version:
-                    not_installed.append(package_name)
+            elif latest_version:
+                # No version specified in pyproject.toml, just show latest
+                print(f"{package_name:<25} {current_str:<18} {installed_str:<18} {latest_str:<18} {'ℹ️':<10}")
             else:
-                print(f"{package_name:<25} {current_version:<18} {installed_str:<18} {latest_str:<18} {'❌':<10}")
+                print(f"{package_name:<25} {current_str:<18} {installed_str:<18} {latest_str:<18} {'❌':<10}")
+            
+            if not installed_version:
+                not_installed.append(package_name)
     
     # Check dev dependencies
     if dev_deps:
@@ -132,19 +139,24 @@ def check_dependencies(pyproject_path: Path) -> None:
             installed_version = get_installed_version(package_name)
             latest_version = get_latest_version_pypi(package_name)
             
+            current_str = current_version if current_version else "any"
             installed_str = installed_version if installed_version else "Not installed"
             latest_str = latest_version if latest_version else "N/A"
             
-            if latest_version:
+            if latest_version and current_version:
                 status = compare_versions(current_version, latest_version)
-                print(f"{package_name:<25} {current_version:<18} {installed_str:<18} {latest_str:<18} {status:<10}")
+                print(f"{package_name:<25} {current_str:<18} {installed_str:<18} {latest_str:<18} {status:<10}")
                 
                 if status == "🔄":
                     dev_updates_available.append((package_name, current_version, latest_version))
-                if not installed_version:
-                    dev_not_installed.append(package_name)
+            elif latest_version:
+                # No version specified in pyproject.toml, just show latest
+                print(f"{package_name:<25} {current_str:<18} {installed_str:<18} {latest_str:<18} {'ℹ️':<10}")
             else:
-                print(f"{package_name:<25} {current_version:<18} {installed_str:<18} {latest_str:<18} {'❌':<10}")
+                print(f"{package_name:<25} {current_str:<18} {installed_str:<18} {latest_str:<18} {'❌':<10}")
+            
+            if not installed_version:
+                dev_not_installed.append(package_name)
     
     # Summary
     print("\n" + "=" * 105)
@@ -178,7 +190,7 @@ def check_dependencies(pyproject_path: Path) -> None:
         print("\n✅ All dependencies are up to date!")
     
     print("\n" + "=" * 105)
-    print("Legend: ✅ Up to date  |  🔄 Update available  |  ⚠️ Ahead of PyPI  |  ❓ Cannot compare")
+    print("Legend: ✅ Up to date  |  🔄 Update available  |  ⚠️ Ahead of PyPI  |  ❓ Cannot compare  |  ℹ️ No version constraint")
     print("=" * 105)
 
 

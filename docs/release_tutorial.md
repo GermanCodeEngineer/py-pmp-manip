@@ -65,7 +65,7 @@
     pip install --upgrade build
     python -m build
     ```
-9. **Run docker install test**:
+9. **Run docker install test** (if possible):
     ```bash
     docker build -f install_test/Dockerfile -t package-install-test .
     docker run --rm package-install-test
