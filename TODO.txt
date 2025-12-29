@@ -6,20 +6,7 @@ Special:
 Currently Working On:
     => Next Release
 
-Changelog since last Release:
-    - Code: Converted string references to direct references(using __future__.annotations)
-    - Removed pre-validation for URLs as extension sources
-    - Expanded direct extraction vm
-    - Updated builtin extension replacements
-    - Implemented fillIn shadow inputs and fixed shadow deserialization
-    - Allow objects to be stored in variables
-    - Refractoring
-    - Added PM category expansions to info_api by default 
-    - Fixed blocks with menus with isTypeable=true (see e.g. Animated Text Extension)
-    - Fixed bugs with custom block arguments
-    - Other Bug Fixes (also tested py-pmp-manip with and updated for some foreign PM projects)
-    - Added and improved scripts and release tutorial
-
+Changelog since last Release: /
 
 High: /
 
