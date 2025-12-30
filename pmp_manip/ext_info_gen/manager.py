@@ -187,9 +187,9 @@ def generate_extension_info_py_file(
         MANIP_FailedFileWriteError(unlikely): if the JS code could not be written to a temporary file (eg. OS Error or Unicode Error)
         MANIP_FailedFileDeleteError(unlikely): if the temporary Javscript file could not be deleted
         MANIP_NoNodeJSInstalledError(not bundled): if Node.js is not installed or not found in PATH
-        MANIP_ExtensionExecutionTimeoutError: if the Node.js execution subprocess took too long
+        MANIP_SubprocessTimeoutError: if the Node.js execution subprocess took too long
         MANIP_ExtensionExecutionErrorInJavascript: if an error occurs inside the actual extension code
-        MANIP_UnexpectedExtensionExecutionError: if some other error raises during the subprocess call (eg. Permission or OS Error)
+        MANIP_UnexpectedSubprocessError: if some other error raises during the subprocess call (eg. Permission or OS Error)
         MANIP_ExtensionJSONDecodeError(unlikely): if the json output of the subprocess is invalid
 
         ### inherited from extract_extension_info_safely => MANIP_SafeExtensionInfoExtractionError if bundled

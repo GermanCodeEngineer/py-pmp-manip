@@ -1,16 +1,17 @@
 from __future__ import annotations
 from copy       import copy, deepcopy
 from json       import loads
-from typing     import Any
+from typing     import Any, IO
 from uuid       import UUID
 
 from pmp_manip.important_consts import SHA256_SEC_TARGET_NAME
 from pmp_manip.opcode_info.api  import OpcodeInfoAPI, DropdownValueKind
+from pmp_manip.project_api      import SCRATCH_API, PENGUINMOD_API, fetch_projects
 from pmp_manip.utility          import (
     grepr_dataclass, enforce_argument_types, 
     read_all_files_of_zip, create_zip_file, string_to_sha256, gdumps, KeyReprDict, AbstractTreePath,
     AA_TYPE, AA_NONE_OR_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_LIST_OF_TYPES, AA_RANGE, AA_EXACT_LEN,
-    MANIP_SameValueTwiceError, MANIP_SpriteLayerStackError,
+    MANIP_SameValueTwiceError, MANIP_SpriteLayerStackError, MANIP_UnexpectedSubprocessError
 )
 
 from pmp_manip.core.context       import PartialContext
@@ -103,25 +104,75 @@ class FRProject:
 
     @enforce_argument_types
     @classmethod
-    def from_file(cls, file_path: str) -> FRProject:
+    def from_file(cls, file_source: str | IO[bytes]) -> FRProject:
         """
-        Reads project data from a project file(.sb3 or .pmp) and creates a FRProject from it
+        Reads project data from a project file(.sb3 or .pmp) and creates a FRProject from it.
 
         Args:
-            file_path: file path to the .sb3 or .pmp file
-        
-        Returns:
-            the FRProject
+            file_source: file path to or bytes of the .sb3 or .pmp file
         """
-        contents = read_all_files_of_zip(file_path)
+        contents = read_all_files_of_zip(file_source)
         project_data = loads(contents["project.json"].decode())
         del contents["project.json"]
-        from pmp_manip.utility import write_file_text
 
-        if   file_path.endswith(".sb3"):
-            project_data = FRProject._data_sb3_to_pmp(project_data)
-        return FRProject.from_data(project_data, asset_files=KeyReprDict(contents))
+        if not(isinstance(file_source, str) and file_source.endswith(".pmp")):
+            project_data = cls._data_sb3_to_pmp(project_data)
+        return cls.from_data(project_data, asset_files=KeyReprDict(contents))
 
+    @enforce_argument_types
+    @classmethod
+    def fetch_by_id(cls, project_id: str, platform: TargetPlatform = TargetPlatform.PENGUINMOD) -> FRProject:
+        """
+        Fetch a project from the PenguinMod or Scratch API by it's ID using a Node.js subprocess.
+
+        Args:
+            project_id: the ID of the project (e.g. "0131435715")
+            platform: the platform the project is on (determines api url)
+        
+        Raises:
+            MANIP_FailedFileWriteError(unlikely): if the temporary directory could not be created
+            MANIP_NoNodeJSInstalledError: if Node.js is not installed or not found in PATH
+            MANIP_SubprocessTimeoutError: if the Node.js subprocess took too long
+            MANIP_UnexpectedSubprocessError: if the project could not be fetched or some error occurs during the subprocess call
+        """
+        projects, error = cls.fetch_by_ids(project_ids=[project_id], platform=platform)
+        if error is not None:
+            raise error
+        return projects[project_id]
+
+    @enforce_argument_types
+    @classmethod
+    def fetch_by_ids(cls, project_ids: list[str], platform: TargetPlatform = TargetPlatform.PENGUINMOD
+        ) -> tuple[dict[str, FRProject], MANIP_UnexpectedSubprocessError | None]:
+        """
+        Fetch multiple projects in parallel from the PenguinMod or Scratch API by their IDs using a Node.js subprocess.
+
+        Args:
+            project_ids: the IDs of the projects (e.g. ["0131435715", "9876543210"])
+            platform: the platform the projects are on (determines api url)
+        
+        Returns:
+            Dictionary mapping IDs to sucessfully fetched projects and an optional error if some projects failed to fetch.
+            
+        Raises:
+            MANIP_FailedFileWriteError(unlikely): if the temporary directory could not be created
+            MANIP_NoNodeJSInstalledError: if Node.js is not installed or not found in PATH
+            MANIP_SubprocessTimeoutError: if the Node.js subprocess took too long
+            MANIP_UnexpectedSubprocessError: if some error occurs during the subprocess call
+        """
+        match platform:
+            case TargetPlatform.SCRATCH:
+                api_url = SCRATCH_API
+            case TargetPlatform.PENGUINMOD:
+                api_url = PENGUINMOD_API
+        
+        results, error = fetch_projects(
+            project_ids=project_ids, api_url=api_url, 
+            timeout_base=30, timeout_per_project=10,
+        )
+        projects = {project_id: cls.from_file(file_source=results[project_id]) for project_id in project_ids}
+        return (projects, error)
+    
     @enforce_argument_types
     def to_file(self, file_path: str) -> None:
         """

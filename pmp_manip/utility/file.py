@@ -1,6 +1,7 @@
 from __future__ import annotations
 import os
 import shutil
+from typing import IO
 import zipfile, zlib
 
 from pmp_manip.utility.decorators import enforce_argument_types
@@ -10,12 +11,12 @@ from pmp_manip.utility.errors     import (
 )
 
 @enforce_argument_types
-def read_all_files_of_zip(zip_path: str) -> dict[str, bytes]:
+def read_all_files_of_zip(zip_source: str | IO[bytes]) -> dict[str, bytes]:
     """
     Reads all files from a ZIP archive and returns their contents
 
     Args:
-        zip_path: Path to the ZIP file
+        zip_source: Path to or Binary IO of the ZIP file
 
     Returns:
         dict[str, bytes]: An object mapping each file name
@@ -31,14 +32,14 @@ def read_all_files_of_zip(zip_path: str) -> dict[str, bytes]:
     """
     contents = {}
     try:
-        with zipfile.ZipFile(zip_path, "r") as zip_ref:
+        with zipfile.ZipFile(zip_source, "r") as zip_ref:
             for file_name in zip_ref.namelist():
                 try:
                     with zip_ref.open(file_name) as file_ref:
                         contents[file_name] = file_ref.read()
                 except (zlib.error, EOFError, MemoryError, OverflowError, KeyError,) as error:
                     raise MANIP_FailedFileReadError(
-                        f"Failed to extract {file_name!r} from zip {zip_path!r}: {error}"
+                        f"Failed to extract {file_name!r} from zip {zip_source!r}: {error}"
                     ) from error
 
     except FileNotFoundError as error:
@@ -50,7 +51,7 @@ def read_all_files_of_zip(zip_path: str) -> dict[str, bytes]:
             NotADirectoryError, UnicodeDecodeError, OSError,
             zipfile.BadZipFile, zipfile.LargeZipFile) as error:
         raise MANIP_FailedFileReadError(
-            f"Failed to read from {zip_path!r}: {error}"
+            f"Failed to read from {zip_source!r}: {error}"
         ) from error
 
     return contents

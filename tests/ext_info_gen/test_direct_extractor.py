@@ -5,7 +5,7 @@ from pmp_manip.utility import (
     delete_file,
     MANIP_FailedFileWriteError, MANIP_FailedFileDeleteError, 
     MANIP_NoNodeJSInstalledError, 
-    MANIP_ExtensionExecutionTimeoutError, MANIP_ExtensionExecutionErrorInJavascript, MANIP_UnexpectedExtensionExecutionError,
+    MANIP_SubprocessTimeoutError, MANIP_ExtensionExecutionErrorInJavascript, MANIP_UnexpectedSubprocessError,
     MANIP_ExtensionJSONDecodeError, 
 )
 
@@ -245,7 +245,7 @@ def test_extract_extension_info_directly_timeout_expired(monkeypatch: MonkeyPatc
     monkeypatch.setattr(direct_extractor_mod, "run_subprocess", fake_run_subprocess)
     from pmp_manip.ext_info_gen.direct_extractor import extract_extension_info_directly
     
-    with raises(MANIP_ExtensionExecutionTimeoutError):
+    with raises(MANIP_SubprocessTimeoutError):
         extract_extension_info_directly(EXAMPLE_EXTENSION_CODE)
 
 def test_extract_extension_info_directly_unexpected_error(monkeypatch: MonkeyPatch):
@@ -256,7 +256,7 @@ def test_extract_extension_info_directly_unexpected_error(monkeypatch: MonkeyPat
     monkeypatch.setattr(direct_extractor_mod, "run_subprocess", fake_run_subprocess)
     from pmp_manip.ext_info_gen.direct_extractor import extract_extension_info_directly
     
-    with raises(MANIP_UnexpectedExtensionExecutionError):
+    with raises(MANIP_UnexpectedSubprocessError):
         extract_extension_info_directly(EXAMPLE_EXTENSION_CODE)
 
 def test_extract_extension_info_directly_temp_delete_error(monkeypatch: MonkeyPatch):

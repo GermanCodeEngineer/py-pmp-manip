@@ -10,7 +10,7 @@ from pmp_manip.utility import (
     delete_file,
     MANIP_FailedFileWriteError, MANIP_FailedFileDeleteError, 
     MANIP_NoNodeJSInstalledError, 
-    MANIP_ExtensionExecutionTimeoutError, MANIP_ExtensionExecutionErrorInJavascript, MANIP_UnexpectedExtensionExecutionError,
+    MANIP_SubprocessTimeoutError, MANIP_ExtensionExecutionErrorInJavascript, MANIP_UnexpectedSubprocessError,
     MANIP_ExtensionJSONDecodeError, 
 )
 
@@ -33,9 +33,9 @@ def extract_extension_info_directly(js_code: str, code_encoding: str = "utf-8", 
         MANIP_FailedFileWriteError(unlikely): if the JS code could not be written to a temporary file (eg. OS Error or Unicode Error)
         MANIP_FailedFileDeleteError(unlikely): if the temporary Javscript file could not be deleted
         MANIP_NoNodeJSInstalledError: if Node.js is not installed or not found in PATH
-        MANIP_ExtensionExecutionTimeoutError: if the Node.js execution subprocess took too long
+        MANIP_SubprocessTimeoutError: if the Node.js execution subprocess took too long
         MANIP_ExtensionExecutionErrorInJavascript: if an error occurs inside the actual extension code
-        MANIP_UnexpectedExtensionExecutionError: if some other error raises during the subprocess call (eg. Permission or OS Error)
+        MANIP_UnexpectedSubprocessError: if some other error raises during the subprocess call (eg. Permission or OS Error)
         MANIP_ExtensionJSONDecodeError(unlikely): if the json output of the subprocess is invalid
     """
     try:
@@ -60,9 +60,9 @@ def extract_extension_info_directly(js_code: str, code_encoding: str = "utf-8", 
     except FileNotFoundError as error: # when python can not find the node executable
         raise MANIP_NoNodeJSInstalledError(f"Node.js is not installed or not found in PATH: {error}") from error
     except TimeoutExpired as error:
-        raise MANIP_ExtensionExecutionTimeoutError(f"Node.js subprocess trying to execute extension code took too long: {error}") from error
+        raise MANIP_SubprocessTimeoutError(f"Node.js subprocess trying to execute extension code took too long: {error}") from error
     except (SubprocessError, OSError, PermissionError) as error:
-        raise MANIP_UnexpectedExtensionExecutionError(f"Failed to run Node.js subprocess (to execute extension code): {error}") from error
+        raise MANIP_UnexpectedSubprocessError(f"Failed to run Node.js subprocess (to execute extension code): {error}") from error
     finally:
         try:
             delete_file(temp_js_path)

@@ -95,7 +95,7 @@ class MANIP_SameValueTwiceError(MANIP_ValidationError):
 
 
 ###############################################################
-#                 ERRORS FOR THE EXT INFO GEN                 #
+#         ERRORS FOR THE EXT INFO GEN AND PROJECT_API         #
 ###############################################################
 
 # fetch_js.py
@@ -106,13 +106,12 @@ class MANIP_NetworkFetchError(MANIP_FetchError): pass
 class MANIP_UnexpectedFetchError(MANIP_FetchError): pass
 class MANIP_FileFetchError(MANIP_FetchError): pass
 
-# direct_extractor.py / safe_extractor.py
+# direct_extractor.py / safe_extractor.py / api.py
 class MANIP_NoNodeJSInstalledError(MANIP_Error): pass
 
-class MANIP_ExtensionExecutionError(MANIP_Error): pass
-class MANIP_ExtensionExecutionTimeoutError(MANIP_ExtensionExecutionError): pass
-class MANIP_ExtensionExecutionErrorInJavascript(MANIP_ExtensionExecutionError): pass
-class MANIP_UnexpectedExtensionExecutionError(MANIP_ExtensionExecutionError): pass
+class MANIP_SubprocessTimeoutError(MANIP_Error): pass
+class MANIP_ExtensionExecutionErrorInJavascript(MANIP_Error): pass
+class MANIP_UnexpectedSubprocessError(MANIP_Error): pass
 
 class MANIP_ExtensionJSONDecodeError(MANIP_Error): pass
 
