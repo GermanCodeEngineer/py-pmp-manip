@@ -1,7 +1,7 @@
 from __future__ import annotations
+from io import BytesIO
 import os
 import shutil
-from typing import IO
 import zipfile, zlib
 
 from pmp_manip.utility.decorators import enforce_argument_types
@@ -11,7 +11,7 @@ from pmp_manip.utility.errors     import (
 )
 
 @enforce_argument_types
-def read_all_files_of_zip(zip_source: str | IO[bytes]) -> dict[str, bytes]:
+def read_all_files_of_zip(zip_source: str | BytesIO) -> dict[str, bytes]:
     """
     Reads all files from a ZIP archive and returns their contents
 

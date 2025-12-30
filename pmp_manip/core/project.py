@@ -1,7 +1,8 @@
 from __future__ import annotations
 from copy       import copy, deepcopy
+from io         import BytesIO
 from json       import loads
-from typing     import Any, IO
+from typing     import Any
 from uuid       import UUID
 
 from pmp_manip.important_consts import SHA256_SEC_TARGET_NAME
@@ -104,7 +105,7 @@ class FRProject:
 
     @enforce_argument_types
     @classmethod
-    def from_file(cls, file_source: str | IO[bytes]) -> FRProject:
+    def from_file(cls, file_source: str | BytesIO) -> FRProject:
         """
         Reads project data from a project file(.sb3 or .pmp) and creates a FRProject from it.
 
