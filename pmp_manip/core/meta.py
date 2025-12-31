@@ -20,7 +20,7 @@ class FRMeta:
     semver: str
     vm: str
     agent: str
-    platform: FRPenguinModPlatformMeta | None
+    platform: FRPlatformMeta | None
 
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> FRMeta:
@@ -38,7 +38,7 @@ class FRMeta:
             vm       = data["vm"    ],
             agent    = data["agent" ],
             platform = (
-                FRPenguinModPlatformMeta.from_data(data["platform"]) 
+                FRPlatformMeta.from_data(data["platform"]) 
                 if "platform" in data else None
             ),
         )
@@ -88,7 +88,7 @@ class FRMeta:
             semver   = cfg.platform_meta.scratch_semver,
             vm       = cfg.platform_meta.penguinmod_vm,
             agent    = "",
-            platform = FRPenguinModPlatformMeta(
+            platform = FRPlatformMeta(
                 name    = "PenguinMod",
                 url     = "https://penguinmod.com/",
                 version = "stable",
@@ -108,7 +108,7 @@ class FRMeta:
             raise MANIP_ThanksError() # project must be older or newer
 
 @grepr_dataclass(grepr_fields=["name", "url", "version"])
-class FRPenguinModPlatformMeta:
+class FRPlatformMeta:
     """
     The first representation for the metadata of the penguinmod platform
     """
@@ -118,15 +118,15 @@ class FRPenguinModPlatformMeta:
     version: str
 
     @classmethod
-    def from_data(cls, data: dict[str, str]) -> FRPenguinModPlatformMeta:
+    def from_data(cls, data: dict[str, str]) -> FRPlatformMeta:
         """
-        Deserializes json_data into a FRPenguinModPlatformMeta
+        Deserializes json_data into a FRPlatformMeta
         
         Args:
             data: the json_data
         
         Returns:
-            the FRPenguinModPlatformMeta
+            the FRPlatformMeta
         """
         return cls(
             name    = data["name"   ],
@@ -136,7 +136,7 @@ class FRPenguinModPlatformMeta:
     
     def to_data(self) -> dict[str, Any]:
         """
-        Serializes a FRPenguinModPlatformMeta into json data
+        Serializes a FRPlatformMeta into json data
         
         Returns:
             the json data
@@ -162,5 +162,5 @@ class FRPenguinModPlatformMeta:
             raise MANIP_ThanksError()
 
 
-__all__ = ["FRMeta", "FRPenguinModPlatformMeta"]
+__all__ = ["FRMeta", "FRPlatformMeta"]
 

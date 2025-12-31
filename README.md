@@ -25,6 +25,23 @@ git clone --recurse-submodules https://github.com/GermanCodeEngineer/py-pmp-mani
 cd py-pmp-manip
 pip install -e .
 ```
+Then **install Node.js >=18**:
+```bash
+# Using winget (installs latest LTS)
+winget install OpenJS.NodeJS.LTS
+
+# Or using Chocolatey
+choco install nodejs-lts
+
+# Verify version
+node --version
+```
+Or install manually from [nodejs.org](https://nodejs.org/en/download) (choose LTS version).
+
+Finally, **install npm dependencies** (this project uses JavaScript for some tasks):
+```bash
+npm install
+```
 
 ## 🧰 Basic Usage
 

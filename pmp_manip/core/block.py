@@ -93,8 +93,8 @@ class FRBlock:
             mutation = None
         return cls(
             opcode    = data["opcode"  ],
-            next      = data["next"    ],
-            parent    = data["parent"  ],
+            next      = data.get("next", None),
+            parent    = data.get("parent", None),
             inputs    = deepcopy(tuplify(data["inputs"])),
             fields    = deepcopy(tuplify(data["fields"])),
             shadow    = data.get("shadow", None),

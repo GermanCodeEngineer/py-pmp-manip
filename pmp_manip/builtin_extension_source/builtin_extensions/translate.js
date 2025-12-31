@@ -93,28 +93,6 @@ class Scratch3TranslateBlocks {
             return obj;
         });
     }
-    /**
-     * Get the human readable language value for the reporter block.
-     * @return {string} the language name of the project viewer.
-     */
-    getViewerLanguage () {
-        this._viewerLanguageCode = this.getViewerLanguageCode();
-        const names = languageNames.menuMap[this._viewerLanguageCode];
-        let langNameObj = names.find(obj => obj.code === this._viewerLanguageCode);
-
-        // If we don't have a name entry yet, try looking it up via the Google langauge
-        // code instead of Scratch's (e.g. for es-419 we look up es to get espanol)
-        if (!langNameObj && languageNames.scratchToGoogleMap[this._viewerLanguageCode]) {
-            const lookupCode = languageNames.scratchToGoogleMap[this._viewerLanguageCode];
-            langNameObj = names.find(obj => obj.code === lookupCode);
-        }
-
-        let langName = this._viewerLanguageCode;
-        if (langNameObj) {
-            langName = langNameObj.name;
-        }
-        return langName;
-    }
 
     /**
      * Get the viewer's language code.

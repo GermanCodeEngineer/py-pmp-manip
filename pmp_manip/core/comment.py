@@ -30,7 +30,7 @@ class FRComment:
             the FRComment
         """
         return cls(
-            block_id  = data["blockId"  ],
+            block_id  = data.get("blockId", None),
             x         = data["x"        ],
             y         = data["y"        ],
             width     = data["width"    ],

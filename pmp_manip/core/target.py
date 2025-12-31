@@ -328,7 +328,7 @@ class FRStage(FRTarget):
             tempo=data["tempo"],
             video_transparency=data["videoTransparency"],
             video_state=data["videoState"],
-            text_to_speech_language=data["textToSpeechLanguage"],
+            text_to_speech_language=data.get("textToSpeechLanguage", None),
         )
     
     def to_data(self) -> dict[str, Any]:

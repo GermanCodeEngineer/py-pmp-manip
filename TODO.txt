@@ -5,7 +5,9 @@ Special:
 
 Currently Working On: /
 
-Changelog since last Release: /
+Changelog since last Release:
+    - added tests for and integrated project_api
+    - improved project installation
 
 High: /
 

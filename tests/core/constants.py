@@ -29,7 +29,7 @@ from pmp_manip.core.custom_block   import (
     SRCustomBlockOptype,
 )
 from pmp_manip.core.enums          import SRSpriteRotationStyle, SRVideoState
-from pmp_manip.core.meta           import FRMeta, FRPenguinModPlatformMeta
+from pmp_manip.core.meta           import FRMeta, FRPlatformMeta
 from pmp_manip.core.monitor        import (
     LIST_MONITOR_DEFAULT_WIDTH, LIST_MONITOR_DEFAULT_HEIGHT,
     FRMonitor, SRMonitor, SRListMonitor,
@@ -2574,7 +2574,7 @@ FR_PROJECT = FRProject(
         semver="3.0.0",
         vm="0.2.0",
         agent="",
-        platform=FRPenguinModPlatformMeta(
+        platform=FRPlatformMeta(
             name="PenguinMod",
             url="https://penguinmod.com/",
             version="stable",

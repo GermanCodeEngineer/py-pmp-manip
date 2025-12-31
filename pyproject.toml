@@ -56,8 +56,5 @@ include = ["pmp_manip*"]
 [tool.setuptools]
 include-package-data = true
 
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-
 [tool.poetry.extras]
 nodejs = ["Node.js >= 18"]  # informational only

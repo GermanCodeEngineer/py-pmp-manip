@@ -1,0 +1,16 @@
+{
+  "name": "py-pmp-manip-js",
+  "dependencies": {
+    "argparse": "^2.0.1",
+    "jszip": "^3.10.1",
+    "pmp-protobuf": "^1.0.0",
+    
+    "pathfinding": "^0.4.18",
+    "scratch-translate-extension-languages": "^1.0.7",
+    "three": "^0.182.0"
+
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

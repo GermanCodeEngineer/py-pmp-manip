@@ -3,7 +3,7 @@ from pytest import raises
 from pmp_manip.config  import get_config
 from pmp_manip.utility import MANIP_ThanksError
 
-from pmp_manip.core.meta import FRMeta, FRPenguinModPlatformMeta, PENGUINMOD_PLATFORM_META_DATA
+from pmp_manip.core.meta import FRMeta, FRPlatformMeta, PENGUINMOD_PLATFORM_META_DATA
 
 
 cfg = get_config()
@@ -30,7 +30,7 @@ def test_FRMeta_from_data_penguinmod():
     assert meta.semver == meta_data["semver"]
     assert meta.vm == meta_data["vm"]
     assert meta.agent == meta_data["agent"]
-    assert isinstance(meta.platform, FRPenguinModPlatformMeta)
+    assert isinstance(meta.platform, FRPlatformMeta)
 
 def test_FRMeta_from_data_scratch():
     meta_data = SCRATCH_META_DATA
@@ -65,21 +65,21 @@ def test_FRMeta_new_penguinmod_meta():
     assert FRMeta.new_penguinmod_meta() == FRMeta.from_data(PENGUINMOD_META_DATA)
 
 
-def test_FRPenguinModPlatformMeta_from_to_data():
+def test_FRPlatformMeta_from_to_data():
     platform_meta_data = PENGUINMOD_META_DATA["platform"]
-    platform_meta = FRPenguinModPlatformMeta.from_data(platform_meta_data)
-    assert isinstance(platform_meta, FRPenguinModPlatformMeta)
+    platform_meta = FRPlatformMeta.from_data(platform_meta_data)
+    assert isinstance(platform_meta, FRPlatformMeta)
     assert platform_meta.name == platform_meta_data["name"]
     assert platform_meta.url == platform_meta_data["url"]
     assert platform_meta.version == platform_meta_data["version"]
     
     assert platform_meta.to_data() == platform_meta_data
 
-def test_FRPenguinModPlatformMeta_from_data_invalid():
+def test_FRPlatformMeta_from_data_invalid():
     with raises(MANIP_ThanksError):
-        FRPenguinModPlatformMeta.from_data(PENGUINMOD_META_DATA["platform"] | {"name": "MyScratchMod"})
+        FRPlatformMeta.from_data(PENGUINMOD_META_DATA["platform"] | {"name": "MyScratchMod"})
     with raises(MANIP_ThanksError):
-        FRPenguinModPlatformMeta.from_data(PENGUINMOD_META_DATA["platform"] | {"url": "https://my.scratchmod/"})
+        FRPlatformMeta.from_data(PENGUINMOD_META_DATA["platform"] | {"url": "https://my.scratchmod/"})
     with raises(MANIP_ThanksError):
-        FRPenguinModPlatformMeta.from_data(PENGUINMOD_META_DATA["platform"] | {"version": "99.12.34"})
+        FRPlatformMeta.from_data(PENGUINMOD_META_DATA["platform"] | {"version": "99.12.34"})
 
