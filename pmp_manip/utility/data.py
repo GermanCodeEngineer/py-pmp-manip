@@ -160,7 +160,7 @@ class ContentFingerprint:
         """
         return {
             "length": self.length,
-            "hash"  : self.hash  ,
+            "hash"  : self.hash,
         }
 
 @grepr_dataclass(grepr_fields=["value"], frozen=True, unsafe_hash=True)

@@ -35,7 +35,7 @@ class SpecialCaseType(GEnum):
     # should NEVER return MENU (or any other pseudo opcode type)
     """
     def example(
-        block: "SRBlock|IRBlock", validation_if: ValidationIF
+        block: SRBlock|IRBlock, validation_if: ValidationIF
     ) -> OpcodeType:
         ...
     """
