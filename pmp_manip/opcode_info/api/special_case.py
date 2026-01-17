@@ -90,7 +90,7 @@ class SpecialCaseType(GEnum):
         ...
     """    
 
-@grepr_dataclass(grepr_fields=["type", "function"])
+@grepr_dataclass()
 class SpecialCase:
     """
     Special Cases allows for custom behaviour for special blocks

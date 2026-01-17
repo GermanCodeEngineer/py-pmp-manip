@@ -22,7 +22,7 @@ def info_api_extended():
     return info_api_extended
 
 
-@grepr_dataclass(grepr_fields=["_block_ids"])
+@grepr_dataclass()
 class TEST_InterToFirstIF(InterToFirstIF):
     _block_ids: list[str] = field(default_factory=list)
 

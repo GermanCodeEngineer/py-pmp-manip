@@ -6,7 +6,7 @@ from pmp_manip.utility         import grepr_dataclass, AA_TYPE, AA_JSON_COMPATIB
 from pmp_manip.core.context import PartialContext, CompleteContext
 
 
-@grepr_dataclass(grepr_fields=["kind", "value"])
+@grepr_dataclass()
 class SRDropdownValue:
     """
     The second representation for a block dropdown, containing a kind and a value

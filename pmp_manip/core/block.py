@@ -55,7 +55,7 @@ def get_input_cls_for_input_mode(input_mode: InputMode) -> type[SRInputValue]:
     }[input_mode]
 
 
-@grepr_dataclass(grepr_fields=["opcode", "next", "parent", "inputs", "fields", "shadow", "top_level", "x", "y", "comment", "mutation"])
+@grepr_dataclass()
 class FRBlock:
     """
     The first representation for a block. It is very close to the json data in a project
@@ -319,7 +319,7 @@ class FRBlock:
 
 
 
-@grepr_dataclass(grepr_fields=["opcode", "inputs", "dropdowns", "comment", "mutation", "position", "next", "is_top_level"])
+@grepr_dataclass()
 class IRBlock:
     """
     The intermediate representation for a block. It has similarities with SRBlock but uses an id system
@@ -655,7 +655,7 @@ class IRBlock:
         
         return (self.position, new_blocks) 
  
-@grepr_dataclass(grepr_fields=["mode", "references", "immediate_block", "text"])
+@grepr_dataclass()
 class IRInputValue:
     """
     The intermediate representation for the value of a block's input
@@ -668,7 +668,7 @@ class IRInputValue:
 
 
 
-@grepr_dataclass(grepr_fields=["position", "blocks"])
+@grepr_dataclass()
 class SRScript:
     """
     The second representation for a script. 
@@ -752,7 +752,7 @@ class SRScript:
             sti_if.schedule_block_addition(block_ids[i], irblock)
         return block_ids[0]
 
-@grepr_dataclass(grepr_fields=["opcode", "inputs", "dropdowns", "comment", "mutation"])
+@grepr_dataclass()
 class SRBlock:
     """
     The second representation for a block. 
@@ -1087,8 +1087,7 @@ class SRBlock:
         )
 
 @grepr_dataclass(
-    grepr_fields=[], eq=False, order=False, init=False, forbid_init_only_subcls=True,
-    suggested_subcls_names=["SRBlockAndTextInputValue", "SRBlockAndDropdownInputValue", "SRBlockAndBoolInputValue", "SRBlockOnlyInputValue", "SRScriptInputValue", "SREmbeddedBlockInputValue"],
+    eq=False, order=False, init=False, forbid_init_only_subcls=True,
     # eq must be True for order to work, is overwritten
 )
 class SRInputValue(ABC):
@@ -1197,7 +1196,7 @@ class SRInputValue(ABC):
                 expects_reporter = True,
             )
 
-@grepr_dataclass(grepr_fields=["block", "immediate"])
+@grepr_dataclass()
 class SRBlockAndTextInputValue(SRInputValue):
     """
     The second representation for a block input, which has an immediate text field and might contain a block
@@ -1237,7 +1236,7 @@ class SRBlockAndTextInputValue(SRInputValue):
         )
         AA_TYPE(self, path, "immediate", str)
 
-@grepr_dataclass(grepr_fields=["block", "dropdown"])
+@grepr_dataclass()
 class SRBlockAndDropdownInputValue(SRInputValue):
     """
     The second representation for a block input, which has a dropdown and might contain a block
@@ -1285,7 +1284,7 @@ class SRBlockAndDropdownInputValue(SRInputValue):
             context       = context,
         )
 
-@grepr_dataclass(grepr_fields=["block", "immediate"])
+@grepr_dataclass()
 class SRBlockAndBoolInputValue(SRInputValue):
     """
     The second representation for a block input, which has an immediate boolean field and might contain a block
@@ -1325,7 +1324,7 @@ class SRBlockAndBoolInputValue(SRInputValue):
         )
         AA_TYPE(self, path, "immediate", bool)
 
-@grepr_dataclass(grepr_fields=["block"])
+@grepr_dataclass()
 class SRBlockOnlyInputValue(SRInputValue):
     """
     The second representation for a block input, which might contain a block
@@ -1363,7 +1362,7 @@ class SRBlockOnlyInputValue(SRInputValue):
             context       = context,
         )
 
-@grepr_dataclass(grepr_fields=["blocks"])
+@grepr_dataclass()
 class SRScriptInputValue(SRInputValue):
     """
     The second representation for a block input, which contains a substack of blocks
@@ -1414,7 +1413,7 @@ class SRScriptInputValue(SRInputValue):
                 is_last      = ((i+1) == len(self.blocks)),
             )
 
-@grepr_dataclass(grepr_fields=["block"])
+@grepr_dataclass()
 class SREmbeddedBlockInputValue(SRInputValue):
     """
     The second representation for a block input, which must contain a block with one specific opcode.

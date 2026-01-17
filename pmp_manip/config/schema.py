@@ -11,7 +11,7 @@ from pmp_manip.utility import (
 )
 
 
-@grepr_dataclass(grepr_fields=[])
+@grepr_dataclass()
 class ConfigBase(ABC):
     """
     The base class for a configuration
@@ -47,7 +47,7 @@ class ConfigBase(ABC):
             MANIP_ValidationError: if the Config is invalid
         """
 
-@grepr_dataclass(grepr_fields=["gen_opcode_info_dir", "js_fetch_interval", "node_js_exec_timeout", "is_trusted_extension_origin_handler"])
+@grepr_dataclass()
 class ExtInfoGenConfig(ConfigBase):
     """
     The configuration for the extension info generator module
@@ -76,7 +76,7 @@ class ExtInfoGenConfig(ConfigBase):
         AA_TYPE(self, path, "node_js_exec_timeout", float)
         AA_NONE_OR_CALLABLE(self, path, "is_trusted_extension_origin_handler")
 
-@grepr_dataclass(grepr_fields=["raise_if_monitor_position_outside_stage", "raise_if_monitor_bigger_then_stage"])
+@grepr_dataclass()
 class ValidationConfig(ConfigBase):
     """
     The configuration for the validation of a project or parts of it
@@ -98,7 +98,7 @@ class ValidationConfig(ConfigBase):
         AA_TYPE(self, path, "raise_if_monitor_position_outside_stage", bool)
         AA_TYPE(self, path, "raise_if_monitor_bigger_then_stage", bool)
 
-@grepr_dataclass(grepr_fields=["scratch_semver", "scratch_vm", "penguinmod_vm"])
+@grepr_dataclass()
 class PlatformMetaConfig(ConfigBase):
     """
     You probably should NOT change this.
@@ -123,7 +123,7 @@ class PlatformMetaConfig(ConfigBase):
         AA_TYPE(self, path, "scratch_vm"    , str)
         AA_TYPE(self, path, "penguinmod_vm" , str)
 
-@grepr_dataclass(grepr_fields=["ext_info_gen", "validation", "platform_meta"])
+@grepr_dataclass()
 class MasterConfig(ConfigBase):
     """
     The master configuration containing all subconfigurations for the pmp_manip project

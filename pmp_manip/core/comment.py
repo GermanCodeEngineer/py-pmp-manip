@@ -4,7 +4,7 @@ from typing     import Any
 from pmp_manip.utility import grepr_dataclass, AA_COORD_PAIR, AA_TYPE, AbstractTreePath, MANIP_InvalidValueError
 
 
-@grepr_dataclass(grepr_fields=["block_id", "x", "y", "width", "height", "minimized", "text"])
+@grepr_dataclass()
 class FRComment:
     """
     The first representation for a block. It is very close to the json data in a project
@@ -71,7 +71,7 @@ class FRComment:
         )
         return (self.block_id is not None, comment)
 
-@grepr_dataclass(grepr_fields=["position", "size", "is_minimized", "text"])
+@grepr_dataclass()
 class SRComment:
     """
     The second representation for a comment

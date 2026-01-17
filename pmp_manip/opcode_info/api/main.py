@@ -284,7 +284,7 @@ class MonitorIdBehaviour(GEnum):
     LIST                  = 8
     
 
-@grepr_dataclass(grepr_fields=["opcode_type", "inputs", "dropdowns", "can_have_monitor", "monitor_id_behaviour", "has_shadow", "has_variable_id", "special_cases", "old_mutation_cls", "new_mutation_cls", "allow_embedded"])
+@grepr_dataclass()
 class OpcodeInfo:
     """
     The information about all the blocks with a certain opcode
@@ -497,7 +497,7 @@ class OpcodeInfo:
         """
         return dict(self.get_dropdown_ids_infos().keys_key2_key1())
 
-@grepr_dataclass(grepr_fields=["name", "opcode_info"])
+@grepr_dataclass()
 class OpcodeInfoGroup:
     """
     Represents a group of block opcode information. 
@@ -534,7 +534,7 @@ class OpcodeInfoGroup:
             value = opcode_info,
         )
 
-@grepr_dataclass(grepr_fields=["opcode_info"])
+@grepr_dataclass()
 class OpcodeInfoAPI:
     """
     API which provides a way to fetch information about block opcodes

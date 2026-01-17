@@ -95,7 +95,7 @@ def generate_md5(data: bytes) -> str:
         md5_hash.update(data[i:i+4096])
     return md5_hash.hexdigest()
 
-@grepr_dataclass(grepr_fields=["length", "hash"])
+@grepr_dataclass()
 class ContentFingerprint:
     """
     Represents the fingerprint of string content. Stores length and hash for fast and efficient comparison. 
@@ -163,21 +163,21 @@ class ContentFingerprint:
             "hash"  : self.hash,
         }
 
-@grepr_dataclass(grepr_fields=["value"], frozen=True, unsafe_hash=True)
+@grepr_dataclass(frozen=True, unsafe_hash=True)
 class ATPathAttribute:
     """
     Represents an attribute of a visit path. Immutable/Frozen and Hashable.
     """
     value: str
 
-@grepr_dataclass(grepr_fields=["value"], frozen=True, unsafe_hash=True)
+@grepr_dataclass(frozen=True, unsafe_hash=True)
 class ATPathIndexOrKey:
     """
     Represents an index or key of a visit path. Immutable/Frozen and Hashable.
     """
     value: str
 
-@grepr_dataclass(grepr_fields=[], frozen=True, unsafe_hash=True, init=False, repr=False)
+@grepr_dataclass(frozen=True, unsafe_hash=True, init=False, repr=False)
 class AbstractTreePath:
     """
     Represents a visit path inside an Abstract Object Tree. Immutable/Frozen and Hashable.

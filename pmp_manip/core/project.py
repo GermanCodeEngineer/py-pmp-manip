@@ -24,7 +24,7 @@ from pmp_manip.core.target        import FRTarget, FRStage, FRSprite, SRTarget, 
 from pmp_manip.core.vars_lists    import SRVariable, SRList
 
 
-@grepr_dataclass(grepr_fields=["targets", "monitors", "extension_data", "extensions", "extension_urls", "meta", "asset_files"])
+@grepr_dataclass()
 class FRProject: 
     """
     The first representation (FR) of the project data tree. Its data is equivalent to the data stored in a .pmp file
@@ -304,7 +304,7 @@ class FRProject:
         )
 
 
-@grepr_dataclass(grepr_fields=["stage", "sprites", "sprite_layer_stack", "global_variables", "global_lists", "global_monitors", "extensions", "tempo", "video_transparency", "video_state", "text_to_speech_language"], eq=True) # eq must be True for order to work, is overwritten
+@grepr_dataclass(eq=True) # eq must be True for order to work, is overwritten
 class SRProject:
     """
     The second representation (SR) of a Scratch/PenguinMod Project

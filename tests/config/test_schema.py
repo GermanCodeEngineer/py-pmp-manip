@@ -10,7 +10,7 @@ from pmp_manip.config.schema  import ConfigBase, MasterConfig, ExtInfoGenConfig,
 from tests.utility import execute_attr_validation_tests
 
 
-@grepr_dataclass(grepr_fields=["a"])
+@grepr_dataclass()
 class TEST_Config(ConfigBase):
     a: int
 

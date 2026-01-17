@@ -30,7 +30,7 @@ class DropdownValueKind(GEnum):
     BACKDROP       = 11
     SOUND          = 12
 
-@grepr_dataclass(grepr_fields=["type"])
+@grepr_dataclass()
 class DropdownInfo:
     """
     The information about a dropdown of a certain opcode
@@ -121,7 +121,7 @@ class DropdownValueRule(GEnum):
     # used for dynamic menus in custom extensions, whose values can not be predicted in python
 
 
-@grepr_dataclass(grepr_fields=["direct_values", "rules", "old_direct_values", "fallback"])
+@grepr_dataclass()
 class DropdownTypeInfo:
     """
     The information about a dropdown type, which can be used for one or many opcodes

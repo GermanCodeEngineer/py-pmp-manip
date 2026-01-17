@@ -4,8 +4,9 @@ Special:
     - TODOs in Code + read through code, optimize here and there
 
 Currently Working On:
-    - L: reduce huge validation code
+    - L: reduce huge validation code + improve grepr_dataclass
     - L: when done -> make parts of utility an own module
+    - add tests for grepr_dataclass & others
 
 Changelog since last Release:
     - added tests for and integrated project_api

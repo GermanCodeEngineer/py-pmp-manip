@@ -99,14 +99,7 @@ def _load_color_array(data: dict[str, Any], key: str, default: tuple[str, str, s
     else:
         raise MANIP_DeserializationError(f"Invalid value for {key!r}, expected array-like value: {value}")
 
-@grepr_dataclass(
-    grepr_fields=["tag_name", "children"], init=False, forbid_init_only_subcls=True,
-    suggested_subcls_names=[
-        "FRCustomBlockArgumentMutation", "FRCustomBlockMutation", "FRCustomBlockCallMutation", 
-        "FRExpandableIfMutation", "FRExpandableMathMutation", "FRStopScriptMutation", 
-        "FRPolygonMutation", "FRLoopMutation"
-    ]
-)
+@grepr_dataclass(init=False, forbid_init_only_subcls=True)
 class FRMutation(ABC):
     """
     The first representation for the mutation of a block. Mutations hold special information, which only special blocks have
@@ -205,7 +198,7 @@ class FRMutation(ABC):
             the SRMutation
         """
 
-@grepr_dataclass(grepr_fields=["color",  "warp", "edited", "has_next"])
+@grepr_dataclass()
 class FRCustomBlockArgumentMutation(FRMutation,
     required_properties={"color"},
     optional_properties={"warp", "edited", "hasnext"},
@@ -308,7 +301,7 @@ class FRCustomBlockArgumentMutation(FRMutation,
             outline_color   = self.color[2],
         )
 
-@grepr_dataclass(grepr_fields=["proccode", "argument_ids", "argument_names", "argument_defaults", "warp", "returns", "edited", "optype", "color", "has_next"])
+@grepr_dataclass()
 class FRCustomBlockMutation(FRMutation, 
         required_properties={"proccode", "argumentids", "argumentnames", "argumentdefaults", "warp"},
         optional_properties={"returns", "edited", "optype", "color", "hasnext"},
@@ -397,7 +390,7 @@ class FRCustomBlockMutation(FRMutation,
             outline_color     = self.color[2],
         )
 
-@grepr_dataclass(grepr_fields=["proccode", "argument_ids", "warp", "returns", "edited", "optype", "color"])
+@grepr_dataclass()
 class FRCustomBlockCallMutation(FRMutation, 
         required_properties={"proccode", "argumentids", "warp"},
         optional_properties={"returns", "edited", "optype", "color", "hasnext"},
@@ -476,7 +469,7 @@ class FRCustomBlockCallMutation(FRMutation,
             ),
         )
 
-@grepr_dataclass(grepr_fields=["branches", "ends_in_else"])
+@grepr_dataclass()
 class FRExpandableIfMutation(FRMutation,
         required_properties={"branches", "ends-in-else"},
         optional_properties={"warp", "edited", "hasnext"},
@@ -526,7 +519,7 @@ class FRExpandableIfMutation(FRMutation,
             ends_in_else=self.ends_in_else,
         )
 
-@grepr_dataclass(grepr_fields=["input_count", "menu_values"])
+@grepr_dataclass()
 class FRExpandableMathMutation(FRMutation,
         required_properties={"inputcount", "menuvalues"},
         optional_properties=set(),
@@ -573,7 +566,7 @@ class FRExpandableMathMutation(FRMutation,
         """
         return SRExpandableMathMutation(operations=copy(self.menu_values))
 
-@grepr_dataclass(grepr_fields=["has_next"])
+@grepr_dataclass()
 class FRStopScriptMutation(FRMutation,
     required_properties={"hasnext"},
     optional_properties={"warp", "edited"},
@@ -623,7 +616,7 @@ class FRStopScriptMutation(FRMutation,
         """
         raise NotImplementedError("A second representation of a stop script mutation does not exist. It is not needed for an IRBlock or SRBlock")
 
-@grepr_dataclass(grepr_fields=["points", "color", "midle", "scale", "expanded", "needs_init"])
+@grepr_dataclass()
 class FRPolygonMutation(FRMutation, 
         required_properties={"points", "color", "midle", "scale", "expanded", "needsinit"},
         optional_properties=set(),
@@ -680,7 +673,7 @@ class FRPolygonMutation(FRMutation,
         """
         raise NotImplementedError("A second representation of a polygon mutation does not exist. It is not needed for an IRBlock or SRBlock")
 
-@grepr_dataclass(grepr_fields=["has_break"])
+@grepr_dataclass()
 class FRLoopMutation(FRMutation, 
         required_properties={"hasbreak"},
         optional_properties={"warp", "edited", "hasnext"},
@@ -723,10 +716,7 @@ class FRLoopMutation(FRMutation,
         raise NotImplementedError("A second representation of a loop mutation does not exist. It is not needed for an IRBlock or SRBlock")
 
 
-@grepr_dataclass(
-    grepr_fields=[], init=False, forbid_init_only_subcls=True, 
-    suggested_subcls_names=["SRCustomBlockArgumentMutation", "SRCustomBlockMutation", "SRCustomBlockCallMutation", "SRExpandableIfMutation", "SRExpandableMathMutation"],
-)
+@grepr_dataclass(init=False, forbid_init_only_subcls=True)
 class SRMutation(ABC):
     """
     The second representation for the mutation of a block. Mutations hold special information, which only special blocks have. This representation is much more user friendly then the first representation
@@ -759,7 +749,7 @@ class SRMutation(ABC):
             the FRMutation
         """
 
-@grepr_dataclass(grepr_fields=["argument_name", "main_color", "prototype_color", "outline_color"])
+@grepr_dataclass()
 class SRCustomBlockArgumentMutation(SRMutation):
     """
     The second representation for the mutation of a custom block argument reporter
@@ -808,7 +798,7 @@ class SRCustomBlockArgumentMutation(SRMutation):
         srmutation.store_argument_name(self.argument_name)
         return srmutation
     
-@grepr_dataclass(grepr_fields=["custom_opcode", "no_screen_refresh", "optype", "main_color", "prototype_color", "outline_color"])
+@grepr_dataclass()
 class SRCustomBlockMutation(SRMutation):
     """
     The second representation for the mutation of a custom block definition
@@ -881,7 +871,7 @@ class SRCustomBlockMutation(SRMutation):
             color             = (self.main_color, self.prototype_color, self.outline_color),
         )
 
-@grepr_dataclass(grepr_fields=["custom_opcode"])    
+@grepr_dataclass()
 class SRCustomBlockCallMutation(SRMutation):
     """
     The second representation for the mutation of a custom block call
@@ -942,7 +932,7 @@ class SRCustomBlockCallMutation(SRMutation):
             ),
         )
 
-@grepr_dataclass(grepr_fields=["branch_count", "ends_in_else"])
+@grepr_dataclass()
 class SRExpandableIfMutation(SRMutation):
     """
     The second representation for the mutation of an expandable if block
@@ -978,7 +968,7 @@ class SRExpandableIfMutation(SRMutation):
             ends_in_else=self.ends_in_else,
         )
 
-@grepr_dataclass(grepr_fields=["operations"])
+@grepr_dataclass()
 class SRExpandableMathMutation(SRMutation):
     """
     The second representation for the mutation of an expandable math block
