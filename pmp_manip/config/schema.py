@@ -1,7 +1,8 @@
 from __future__  import annotations
 from abc         import ABC, abstractmethod
 from datetime    import timedelta
-from dataclasses import field, FrozenInstanceError
+from dataclasses import field
+from dataclasses import FrozenInstanceError
 from typing      import Any, Callable
 
 from pmp_manip.utility import (

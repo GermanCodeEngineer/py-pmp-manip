@@ -1,18 +1,13 @@
 from __future__      import annotations
 from collections.abc import Iterable, Callable as ABCCallable, Mapping, Sequence
-from dataclasses     import dataclass
 from functools       import wraps
 from inspect         import signature
 from sys             import modules as sys_modules
 from types           import UnionType
 from typing          import (
-    Any, Literal, Callable, Union, ParamSpec, TypeVar, NoReturn,
+    Any, Literal, Callable, Union, ParamSpec, TypeVar,
     get_origin, get_args, get_type_hints,
 )
-
-
-from pmp_manip.utility.data import AbstractTreePath
-from pmp_manip.utility.repr import grepr
 
 
 PARAM_SPEC = ParamSpec("PARAM_SPEC")
@@ -265,58 +260,5 @@ def _check_type(value: Any, expected: Any, name: str, path: str = "") -> None:
         )
 
 
-def grepr_dataclass(*, repr: bool = True,
-        init: bool = True, eq: bool = True, order: bool = True, 
-        unsafe_hash: bool = False, frozen: bool = False, 
-        match_args: bool = True, kw_only: bool = False, 
-        slots: bool = False, weakref_slot: bool = False,
-        forbid_init_only_subcls: bool = False,
-        validate: bool = False,
-    ):
-    """
-    A decorator which combines @dataclass and a good representation system.
-    Args:
-        init...: dataclass parameters (except for order which is True by default here)
-        forbid_init_only_subcls: add a __init__ method to raises a NotImplementedError, which tells the user to use it's subclasses.
-        validate: add a validate method which ensures instance field values match type annotations and validation configuration.
-    """
-    if init: assert not forbid_init_only_subcls
-
-    def decorator(cls: TYPE_T) -> TYPE_T:
-        if forbid_init_only_subcls:
-            def __init__(self, *args, **kwargs) -> None | NoReturn:
-                if type(self) is cls:
-                    msg = f"Can not initialize parent class {cls!r} directly. Please use the subclasses"
-                    suggested_subcls_names = [cls.__name__ for cls in cls.__subclasses__()]
-                    if suggested_subcls_names:
-                        msg += " "
-                        msg += ", ".join(suggested_subcls_names)
-                    msg += "."
-                    raise NotImplementedError(msg)
-            cls.__init__ = __init__
-        
-        if repr:
-            cls.__repr__ = grepr
-            cls.__has_grepr__ = True
-
-        cls = dataclass(cls, 
-            init=init, repr=False, eq=eq,
-            order=order, unsafe_hash=unsafe_hash, frozen=frozen,
-            match_args=match_args, kw_only=kw_only,
-            slots=slots, weakref_slot=weakref_slot,
-        )
-        
-        if validate:
-            def validate_method(self, path: AbstractTreePath = AbstractTreePath(), *args, **kwargs) -> None:
-                # HERE
-                if callable(getattr(self, "post_validate", None)):
-                    self.post_validate(path, *args, **kwargs)
-            cls.validate = validate_method
-            cls.__has_validate__ = True
-        
-        return cls
-    return decorator
-
-
-__all__ = ["enforce_argument_types", "grepr_dataclass"]
+__all__ = ["enforce_argument_types"]
 
