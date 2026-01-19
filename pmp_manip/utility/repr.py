@@ -15,8 +15,9 @@ class KeyReprDict(dict):
 
 def grepr(obj, /, safe_dkd=False, level_offset=0, annotate_fields=True, vanilla_strings=False, *, indent=4) -> str:
     from pmp_manip.utility.dual_key_dict import DualKeyDict
+    from pmp_manip.utility.dataclasses import update_field
     def _grepr(obj, level=level_offset) -> tuple[str, bool]:
-        is_compatible = bool(getattr(obj, "__has_grepr__", False)) and not(isinstance(obj, type)) # the class also has _grepr
+        is_compatible = bool(getattr(obj, "__has_grepr__", False)) and not(isinstance(obj, type))
         if indent is not None:
             level += 1
             prefix = "\n" + indent * level
@@ -96,33 +97,19 @@ def grepr(obj, /, safe_dkd=False, level_offset=0, annotate_fields=True, vanilla_
         elif is_compatible:
             args = []
             allsimple = True
-            # Use __grepr_fields__ if available, otherwise fall back to all fields
-            if hasattr(obj, '__grepr_fields__'):
-                field_names = obj.__grepr_fields__
-                for field_name in field_names:
-                    if not hasattr(obj, field_name):
-                        continue
-                    value = getattr(obj, field_name)
-                    value, simple = _grepr(value, level)
-                    allsimple = allsimple and simple
-                    if annotate_fields:
-                        args.append(f"{field_name}={value}")
-                    else:
-                        args.append(value)
-            else:
-                # Legacy: use dataclass fields
-                for field in fields(obj):
-                    if not field.repr:
-                        continue
-                    if not hasattr(obj, field.name):
-                        continue
-                    value = getattr(obj, field.name)
-                    value, simple = _grepr(value, level)
-                    allsimple = allsimple and simple
-                    if annotate_fields:
-                        args.append(f"{field.name}={value}")
-                    else:
-                        args.append(value)
+            for field in fields(obj):
+                update_field(field) # apply default py-pmp-manip settings to field
+                if not field.metadata.get("grepr", True):
+                    continue
+                if not hasattr(obj, field.name):
+                    continue
+                value = getattr(obj, field.name)
+                value, simple = _grepr(value, level)
+                allsimple = allsimple and simple
+                if annotate_fields:
+                    args.append(f"{field.name}={value}")
+                else:
+                    args.append(value)
             class_name = obj.__class__.__name__
             if allsimple and len(args) <= 3:
                 return f"{class_name}({", ".join(args)})", not args

@@ -6,7 +6,8 @@ from hashlib     import sha256, md5
 from json        import dumps
 from typing      import overload, Iterable, Iterator, SupportsIndex, Any
 
-from pmp_manip.utility.decorators import grepr_dataclass, enforce_argument_types
+from pmp_manip.utility.dataclasses import grepr_dataclass
+from pmp_manip.utility.decorators  import enforce_argument_types
 
 
 _TOKEN_CHARSET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!#%()*+,-./:;=?@[]^_`{|}~"
@@ -177,7 +178,7 @@ class ATPathIndexOrKey:
     """
     value: str
 
-@grepr_dataclass(frozen=True, unsafe_hash=True, init=False, repr=False)
+@grepr_dataclass(frozen=True, unsafe_hash=True, init=False, grepr=False)
 class AbstractTreePath:
     """
     Represents a visit path inside an Abstract Object Tree. Immutable/Frozen and Hashable.
@@ -272,8 +273,11 @@ class NotSetType:
     An empty placeholder
     """
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "NotSet"
+
+    def __bool__(self) -> bool:
+        return False
 
 NotSet = NotSetType()
 

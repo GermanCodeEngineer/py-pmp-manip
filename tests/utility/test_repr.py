@@ -263,8 +263,6 @@ class TestGreprDataclass:
         user = User(username="alice", secret="password123")
         result = grepr(user)
         assert "alice" in result
-        # Check that __grepr_fields__ properly excludes the field
-        assert "secret" not in User.__grepr_fields__
         # The secret field should not appear in repr
         assert "secret=" not in result
     

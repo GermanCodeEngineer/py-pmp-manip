@@ -1,38 +1,62 @@
-from __future__      import annotations
-from dataclasses     import dataclass, fields as get_fields, field as base_field, MISSING
-from types           import MappingProxyType
-from typing          import Any, NoReturn, Callable
+from __future__  import annotations
+from dataclasses import dataclass, fields as get_fields, field as base_field, Field, MISSING, _MISSING_TYPE, replace
+from types       import MappingProxyType, NoneType
+from typing      import Any, NoReturn, Callable
 
 
-from pmp_manip.utility.data import AbstractTreePath, NotSetType, NotSet
-from pmp_manip.utility.repr import grepr
+from pmp_manip.utility.decorators import enforce_argument_types
+from pmp_manip.utility.repr       import grepr as good_repr
 
 
+VALIDATOR_FN = Callable | NoneType
+
+@enforce_argument_types
 def field(*,
-        default: Any | NotSetType = NotSet, default_factory: Callable | NotSetType = NotSet, 
-        init: bool = True, repr: bool = True, hash: bool | NotSetType = NotSet, compare: bool = True,
-        metadata: MappingProxyType | NotSetType = NotSet, kw_only: bool | NotSetType = NotSet,
-    ):
-    if default is NotSet: default = MISSING
-    if default_factory is NotSet: default_factory = MISSING
-    if hash is NotSet: hash = None
-    if metadata is NotSet: metadata = None
-    if kw_only is NotSet: kw_only = MISSING
+        default: Any | _MISSING_TYPE = MISSING, default_factory: Callable[[], Any] | _MISSING_TYPE = MISSING, 
+        init: bool = True, grepr: bool = True, hash: bool | NoneType = None, compare: bool = True,
+        metadata: MappingProxyType | NoneType = None, kw_only: bool | _MISSING_TYPE = MISSING,
+
+        validate_type: bool = False, validator_fn: VALIDATOR_FN = None,
+    ) -> Field:
     
-    base_field(
+    # Add custom metadata
+    custom_metadata = {
+        "grepr": grepr,
+        "validate_type": validate_type,
+        "validator_fn": validator_fn,
+    }
+    if metadata:
+        custom_metadata.update(metadata)
+    
+    field = base_field(
         default=default,
         default_factory=default_factory,
         init=init,
-        repr=repr,
+        repr=False,
         hash=hash,
         compare=compare,
-        metadata=metadata,
+        metadata=custom_metadata,
         kw_only=kw_only,
     )
-        
+    
+    return field
 
+def update_field(field: Field,
+        grepr: bool = True, 
+        validate_type: bool = False, validator_fn: VALIDATOR_FN = None,
+    ) -> None:
+    # Replace field metadata if needed (creates new mappingproxy)
+    if "grepr" not in field.metadata:
+        new_metadata = dict(field.metadata) if field.metadata else {}
+        new_metadata["grepr"] = grepr
+        new_metadata["validate_type"] = validate_type
+        new_metadata["validator_fn"] = validator_fn
+        # Use replace to create updated field with new metadata
+        updated = replace(field, metadata=new_metadata)
+        # Copy all attributes from updated field back to original
+        field.__dict__.update(updated.__dict__)
 
-def grepr_dataclass(*, repr: bool = True,
+def grepr_dataclass(*, grepr: bool = True,
         init: bool = True, eq: bool = True, order: bool = True, 
         unsafe_hash: bool = False, frozen: bool = False, 
         match_args: bool = True, kw_only: bool = False, 
@@ -44,7 +68,7 @@ def grepr_dataclass(*, repr: bool = True,
     A decorator which combines @dataclass and a good representation system.
     Args:
         init...: dataclass parameters (except for order which is True by default here)
-        forbid_init_only_subcls: add a __init__ method to raises a NotImplementedError, which tells the user to use it's subclasses.
+        forbid_init_only_subcls: add a __init__ method to raises a NotImplementedError, which tells the user to use it"s subclasses.
         validate: add a validate method which ensures instance field values match type annotations and validation configuration.
     """
     if init: assert not forbid_init_only_subcls
@@ -62,8 +86,8 @@ def grepr_dataclass(*, repr: bool = True,
                     raise NotImplementedError(msg)
             cls.__init__ = __init__
         
-        if repr:
-            cls.__repr__ = grepr
+        if grepr:
+            cls.__repr__ = good_repr
             cls.__has_grepr__ = True
 
         cls = dataclass(cls, 
@@ -72,8 +96,12 @@ def grepr_dataclass(*, repr: bool = True,
             match_args=match_args, kw_only=kw_only,
             slots=slots, weakref_slot=weakref_slot,
         )
+
+        for field in get_fields(cls):
+            update_field(field)
         
         if validate:
+            from pmp_manip.utility.data import AbstractTreePath
             def validate_method(self, path: AbstractTreePath = AbstractTreePath(), *args, **kwargs) -> None:
                 for field in get_fields(self):
                     pass
@@ -86,5 +114,5 @@ def grepr_dataclass(*, repr: bool = True,
     return decorator
 
 
-__all__ = ["grepr_dataclass"]
+__all__ = ["field", "update_field", "grepr_dataclass"]
 
