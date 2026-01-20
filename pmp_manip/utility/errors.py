@@ -201,4 +201,4 @@ class MANIP_FileNotFoundError(MANIP_OSError): pass
     
     "MANIP_ConfigurationError", 
 ]""" # TODO: when done with error update: reintroduce maintanence
-
+# MIGRATION: NOT AT ALL (might be split)

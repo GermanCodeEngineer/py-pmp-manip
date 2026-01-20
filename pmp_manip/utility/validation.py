@@ -238,4 +238,4 @@ __all__ = [
     "AA_EQUAL", "AA_NOT_EQUAL", "AA_BIGGER_OR_EQUAL", "AA_NOT_ONE_OF", 
     "is_valid_js_data_uri", "is_valid_directory_path", "is_valid_url",
 ]
-
+# MIGRATION: MOSTLY NOT (probably useless by the time the validation update is finished)

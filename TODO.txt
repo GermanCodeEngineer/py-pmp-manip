@@ -5,7 +5,7 @@ Special:
 
 Currently Working On:
     - L: reduce huge validation code + improve grepr_dataclass
-    - L: when done -> make parts of utility an own module
+    - L: when done -> make parts of utility an own module(see # MIGRATION)
     - add tests for grepr_dataclass & others
     - add tests for project fetching
 

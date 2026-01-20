@@ -190,4 +190,5 @@ __all__ = [
     "read_all_files_of_zip", "read_file_text", "write_file_text", 
     "delete_file", "delete_directory", "create_zip_file", "file_exists",
 ]
+# MIGRATION: FULLY
 

@@ -278,4 +278,4 @@ def _check_type(value: Any, expected: Any, name: str, path: AbstractTreePath | N
 
 
 __all__ = ["enforce_argument_types"]
-
+# MIGRATION: FULLY
