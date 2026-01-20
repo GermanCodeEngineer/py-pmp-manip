@@ -150,17 +150,17 @@
 <polyline fill="none" stroke="#555555" points="1488.38,-798.16 1488.38,-834.16"/>
 <text xml:space="preserve" text-anchor="middle" x="1497.88" y="-812.66" font-family="Helvetica,sans-Serif" font-size="10.00"> </text>
 </g>
-<!-- SRExpandableMathMutation -->
+<!-- SRExpandableOperatorMutation -->
 <g id="node10" class="node">
-<title>SRExpandableMathMutation</title>
+<title>SRExpandableOperatorMutation</title>
 <polygon fill="#f9f9f9" stroke="#555555" points="1672,-853.16 1672,-889.16 1924.5,-889.16 1924.5,-853.16 1672,-853.16"/>
-<text xml:space="preserve" text-anchor="middle" x="1742.25" y="-867.66" font-family="Helvetica,sans-Serif" font-size="10.00">SRExpandableMathMutation</text>
+<text xml:space="preserve" text-anchor="middle" x="1742.25" y="-867.66" font-family="Helvetica,sans-Serif" font-size="10.00">SRExpandableOperatorMutation</text>
 <polyline fill="none" stroke="#555555" points="1812.5,-853.16 1812.5,-889.16"/>
 <text xml:space="preserve" text-anchor="start" x="1820.5" y="-867.66" font-family="Helvetica,sans-Serif" font-size="10.00">operations: list[Literal]</text>
 </g>
-<!-- SRMutation&#45;&gt;SRExpandableMathMutation -->
+<!-- SRMutation&#45;&gt;SRExpandableOperatorMutation -->
 <g id="edge12" class="edge">
-<title>SRMutation&#45;&gt;SRExpandableMathMutation</title>
+<title>SRMutation&#45;&gt;SRExpandableOperatorMutation</title>
 <path fill="none" stroke="#0066cc" stroke-width="1.2" d="M1507.61,-823.69C1540.26,-829.42 1586.45,-837.44 1627,-844.16 1640.26,-846.35 1654.11,-848.61 1667.94,-850.84"/>
 <polygon fill="none" stroke="#0066cc" stroke-width="1.2" points="1667.31,-854.28 1677.74,-852.42 1668.42,-847.37 1667.31,-854.28"/>
 </g>

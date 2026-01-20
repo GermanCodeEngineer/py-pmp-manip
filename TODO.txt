@@ -3,9 +3,13 @@ TODOs Sorted by Priorites
 Special:
     - TODOs in Code + read through code, optimize here and there
 
-Currently Working On: /
+Currently Working On:
+    - add tests for project fetching
 
 Changelog since last Release:
+    - added new expandable blocks
+    => updated tests & documentation
+    - add old opcode typo correction system
     - added tests for and integrated project_api
     - improved project installation
 

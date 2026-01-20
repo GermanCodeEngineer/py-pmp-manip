@@ -6,7 +6,7 @@ from pmp_manip.utility import MANIP_UnknownOpcodeError
 
 from pmp_manip.important_consts  import (
     OPCODE_STOP_SCRIPT, OPCODE_POLYGON, OPCODE_CB_CALL,
-    OPCODE_EXPANDABLE_IF, OPCODE_EXPANDABLE_MATH,
+    OPCODE_EXPANDABLE_IF, OPCODE_EXPANDABLE_MATH, OPCODE_EXPANDABLE_JOIN,
 )
 from pmp_manip.opcode_info.api  import (
     BuiltinInputType, BuiltinDropdownType, DropdownType,
@@ -135,7 +135,7 @@ def test_generate_inputs_section_expandable_if():
         "    * SR-Class: [`SRScriptInputValue`](https://github.com/GermanCodeEngineer/py-pmp-manip/blob/main/docs/second_repr.md#SRScriptInputValue)\n"
     )
 
-def test_generate_inputs_section_expandable_math():
+def test_generate_inputs_section_expandable_operator():
     opcode_info = info_api.get_info_by_old(OPCODE_EXPANDABLE_MATH)
     generated = _generate_inputs_section(
         old_opcode=OPCODE_EXPANDABLE_MATH,
@@ -148,6 +148,22 @@ def test_generate_inputs_section_expandable_math():
         "format of keys: `OPERAND1`...`OPERANDn`\n"+
         "* `OPERAND1`...`OPERANDn`\n"+
         "    * type: **NUMBER**\n"+ 
+        "    * SR-Class: [`SRBlockAndTextInputValue`](https://github.com/GermanCodeEngineer/py-pmp-manip/blob/main/docs/second_repr.md#SRBlockAndTextInputValue)\n"
+    )
+
+def test_generate_inputs_section_expandable_join():
+    opcode_info = info_api.get_info_by_old(OPCODE_EXPANDABLE_JOIN)
+    generated = _generate_inputs_section(
+        old_opcode=OPCODE_EXPANDABLE_JOIN,
+        opcode_namespace="operators",
+        opcode_info=opcode_info,
+    )
+    assert generated == (
+        "### Inputs\n"+
+        "Depends on how many operations the block does. "+
+        "format of keys: `STRING1`...`STRINGn`\n"+
+        "* `STRING1`...`STRINGn`\n"+
+        "    * type: **TEXT**\n"+ 
         "    * SR-Class: [`SRBlockAndTextInputValue`](https://github.com/GermanCodeEngineer/py-pmp-manip/blob/main/docs/second_repr.md#SRBlockAndTextInputValue)\n"
     )
 

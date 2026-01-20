@@ -9,7 +9,8 @@ from pmp_manip.utility          import (
 
 from pmp_manip.core.block_mutation import (
     SRMutation, SRCustomBlockArgumentMutation, SRCustomBlockMutation, SRCustomBlockCallMutation,
-    SRExpandableIfMutation, SRExpandableMathMutation,
+    SRExpandableIfMutation, SRExpandableOperatorMutation, SRExpandableJoinMutation,
+    SRExpandableOperatorMenu,
 )
 from pmp_manip.core.block          import (SRScript, SRBlock, SRInputValue)
 from pmp_manip.core.comment        import SRComment
@@ -201,14 +202,24 @@ class ExpandableIfMutationPattern(Pattern):
     ends_in_else: ConstOrFunc[bool] | None = None
 
 @grepr_dataclass(grepr_fields=["operations"])
-class ExpandableMathMutationPattern(Pattern):
+class ExpandableOperatorMutationPattern(Pattern):
     """
-    Pattern for selecting SRExpandableMathMutation instances with certain data.
+    Pattern for selecting SRExpandableOperatorMutation instances with certain data.
     """
-    _match_type_: ClassVar = SRExpandableMathMutation
+    _match_type_: ClassVar = SRExpandableOperatorMutation
     _match_fields_: ClassVar = ["operations"]
 
-    operations: ConstOrFunc[list[Literal["+", "-", "*", "/", "^"]]] | None = None
+    operations: ConstOrFunc[list[SRExpandableOperatorMenu]] | None = None
+
+@grepr_dataclass(grepr_fields=["operations"])
+class ExpandableJoinMutationPattern(Pattern):
+    """
+    Pattern for selecting SRExpandableJoinMutation instances with certain data.
+    """
+    _match_type_: ClassVar = SRExpandableJoinMutation
+    _match_fields_: ClassVar = ["input_count"]
+
+    input_count: ConstOrFunc[int] | None = None
 
 @grepr_dataclass(grepr_fields=["segments"])
 class CBOpcodePattern(Pattern):
@@ -367,6 +378,7 @@ __all__ = [
     "PatternConst", "Pattern", 
     "ScriptPattern", "BlockPattern", "InputPattern", "DropdownPattern",
     "CBArgumentMutationPattern", "CBMutationPattern", "CBCallMutationPattern",
+    "ExpandableIfMutationPattern", "ExpandableOperatorMutationPattern", "ExpandableJoinMutationPattern",
     "CBOpcodePattern", "CBArgumentPattern",
     "SuccessfulMatchResult", "match_handler",
 ]

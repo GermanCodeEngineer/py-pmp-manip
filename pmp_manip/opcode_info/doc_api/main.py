@@ -9,7 +9,7 @@ from pmp_manip.utility    import (
 
 from pmp_manip.important_consts import (
     OPCODE_STOP_SCRIPT, OPCODE_POLYGON, OPCODE_CB_CALL,
-    OPCODE_EXPANDABLE_IF, OPCODE_EXPANDABLE_MATH,
+    OPCODE_EXPANDABLE_IF, ANY_OPCODE_EXPANDABLE_OPERATOR, OPCODE_EXPANDABLE_JOIN,
 )
 from pmp_manip.opcode_info.api import (
     OpcodeInfoAPI, OpcodeInfo, OpcodeType,
@@ -105,13 +105,21 @@ def _generate_inputs_section(old_opcode: str, opcode_namespace: str, opcode_info
             TAB+"* type: **SCRIPT**\n"+ 
             TAB+f"* SR-Class: {_inputsrcls_link(BuiltinInputType.SCRIPT)}\n"
         )
-    elif old_opcode == OPCODE_EXPANDABLE_MATH:
+    elif old_opcode in ANY_OPCODE_EXPANDABLE_OPERATOR:
         inputs_descr += (
             "Depends on how many operations the block does. "+
             "format of keys: `OPERAND1`...`OPERANDn`\n"+
             "* `OPERAND1`...`OPERANDn`\n"+
             TAB+"* type: **NUMBER**\n"+ 
             TAB+f"* SR-Class: {_inputsrcls_link(BuiltinInputType.NUMBER)}\n"
+        )
+    elif old_opcode == OPCODE_EXPANDABLE_JOIN:
+        inputs_descr += (
+            "Depends on how many operations the block does. "+
+            "format of keys: `STRING1`...`STRINGn`\n"+
+            "* `STRING1`...`STRINGn`\n"+
+            TAB+"* type: **TEXT**\n"+ 
+            TAB+f"* SR-Class: {_inputsrcls_link(BuiltinInputType.TEXT)}\n"
         )
     if inputs_descr.count("\n") == 1:
         inputs_descr = "### Inputs: /\n"

@@ -742,31 +742,36 @@ class OpcodeInfoAPI:
         return list(self.opcode_info.keys_key1())
     
     
+    def _correct_old_opcode(self, old: str) -> str:
+        """
+        Correct old opcode if needed (e.g. known typos).
+        Will be expanded in the future as new issues are found.
+        Example: `"operators_expandablejoininputs"` should be `"operator_expandablejoininputs"`
+        """
+        parts = old.split("_")
+        category = parts[0]
+        if category == "operators":
+            category = "operator"
+        parts[0] = category
+        return "_".join(parts)
+
     # Get new opcode for old opcode
     def get_new_by_old_safe(self, old: str) -> str | None:
         """
         Safely get the new opcode for an old opcode, return None if the old opcode is unknown.
         Use this one, if you want to handle the unknown case yourself
-        
-        Args:
-            old: the old opcode
-        
-        Returns:
-            the new opcode or None if the old opcode is unknown
         """
+        old = self._correct_old_opcode(old)
         if self.opcode_info.has_key1(old):
             return self.opcode_info.get_key2_for_key1(old)
         return None
     def get_new_by_old(self, old: str) -> str:
         """
-        Get the new opcode for an old opcode, raise MANIP_UnknownOpcodeError if the old opcode is unknown.
+        Get the new opcode for an old opcode.
         Use this one, if you do NOT want to handle the unknown case yourself
-        
-        Args:
-            old: the old opcode
-        
-        Returns:
-            the new opcode
+                
+        Raises:
+            MANIP_UnknownOpcodeError: if the old opcode is unknown
         """
         new = self.get_new_by_old_safe(old)
         if new is not None:
@@ -775,30 +780,21 @@ class OpcodeInfoAPI:
     
     
     # Get old opcode for new opcode
-    def get_old_by_new_safe(self, new: str) -> str:
+    def get_old_by_new_safe(self, new: str) -> str | None:
         """
         Safely get the old opcode for an new opcode, return None if the new opcode is unknown.
         Use this one, if you want to handle the unknown case yourself
-        
-        Args:
-            new: the new opcode
-        
-        Returns:
-            the old opcode or None if the new opcode is unknown
         """
         if self.opcode_info.has_key2(new):
             return self.opcode_info.get_key1_for_key2(new)
         return None
     def get_old_by_new(self, new: str) -> str:
         """
-        Get the old opcode for an new opcode, raise MANIP_UnknownOpcodeError if the new opcode is unknown.
+        Get the old opcode for an new opcode.
         Use this one, if you do NOT want to handle the unknown case yourself
-        
-        Args:
-            new: the new opcode
-        
-        Returns:
-            the old opcode
+                
+        Raises:
+            MANIP_UnknownOpcodeError: if the new opcode is unknown
         """
         old = self.get_old_by_new_safe(new)
         if old is not None:
@@ -818,6 +814,7 @@ class OpcodeInfoAPI:
         Returns:
             the opcode information or None if the old opcode is unknown
         """
+        old = self._correct_old_opcode(old)
         if self.opcode_info.has_key1(old):
             return self.opcode_info.get_by_key1(old)
         return None

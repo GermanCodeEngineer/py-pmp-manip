@@ -1,6 +1,6 @@
 from __future__  import annotations
 from abc         import ABC, abstractmethod
-from copy        import copy, deepcopy
+from copy        import deepcopy
 from dataclasses import field
 from json        import loads, JSONDecodeError
 from typing      import Any, ClassVar, NoReturn, Literal, TYPE_CHECKING
@@ -8,13 +8,14 @@ from typing      import Any, ClassVar, NoReturn, Literal, TYPE_CHECKING
 from pmp_manip.important_consts import SHA256_SEC_MAIN_ARGUMENT_NAME
 from pmp_manip.utility          import (
     grepr_dataclass, string_to_sha256, gdumps,
-    AA_TYPE, AA_HEX_COLOR, AA_LIST_OF_ONE_OF, AbstractTreePath,
+    AA_TYPE, AA_HEX_COLOR, AA_LIST_OF_TYPE, AA_MIN, AbstractTreePath,
     MANIP_ThanksError, MANIP_ConversionError, MANIP_DeserializationError, 
 )
 
 
 if TYPE_CHECKING: from pmp_manip.core.trafo_interface import FirstToInterIF, InterToFirstIF
 from pmp_manip.core.custom_block import SRCustomBlockOpcode, SRCustomBlockOptype
+from pmp_manip.core.enums import SRCodeEnum
 
 
 def _load_bool_value(data: dict[str, Any], key: str, default: bool, allow_null: bool = False) -> bool | None:
@@ -103,8 +104,8 @@ def _load_color_array(data: dict[str, Any], key: str, default: tuple[str, str, s
     grepr_fields=["tag_name", "children"], init=False, forbid_init_only_subcls=True,
     suggested_subcls_names=[
         "FRCustomBlockArgumentMutation", "FRCustomBlockMutation", "FRCustomBlockCallMutation", 
-        "FRExpandableIfMutation", "FRExpandableMathMutation", "FRStopScriptMutation", 
-        "FRPolygonMutation", "FRLoopMutation"
+        "FRExpandableIfMutation", "FRExpandableOperatorMutation", "FRExpandableJoinMutation",
+        "FRStopScriptMutation", "FRPolygonMutation", "FRLoopMutation"
     ]
 )
 class FRMutation(ABC):
@@ -422,9 +423,6 @@ class FRCustomBlockCallMutation(FRMutation,
         
         Args:
             data: the json data
-        
-        Returns:
-            the FRCustomBlockCallMutation
         """
         return cls(
             tag_name          = data["tagName" ],
@@ -442,9 +440,6 @@ class FRCustomBlockCallMutation(FRMutation,
     def to_data(self) -> dict[str, Any]:
         """
         Serializes a FRCustomBlockCallMutation into json data
-        
-        Returns:
-            the json data
         """
         return {
             "tagName"    : self.tag_name,
@@ -479,7 +474,7 @@ class FRCustomBlockCallMutation(FRMutation,
 @grepr_dataclass(grepr_fields=["branches", "ends_in_else"])
 class FRExpandableIfMutation(FRMutation,
         required_properties={"branches", "ends-in-else"},
-        optional_properties={"warp", "edited", "hasnext"},
+        optional_properties={"warp", "edited", "hasnext", "optimize"},
     ):
     """
     The first representation for the mutation of an expandable if block
@@ -526,22 +521,45 @@ class FRExpandableIfMutation(FRMutation,
             ends_in_else=self.ends_in_else,
         )
 
+class SRExpandableOperatorMenu(SRCodeEnum):
+    """
+    Helper class for expandable operator mutation menu values
+    """
+    ADD          = "+"
+    SUBTRACT     = "-"
+    MULTIPLY     = "*"
+    DIVIDE       = "/"
+    POWER        = "^"
+    GREATER      = "m"
+    GREATER_EQ   = "M"
+    LESS         = "l"
+    LESS_EQ      = "L"
+    EQUAL        = "e"
+    STRICT_EQUAL = "E"
+    NOT_EQUAL    = "n"
+    AND          = "a"
+    OR           = "o"
+    XOR          = "x"
+    NAND         = "n"
+    NOR          = "N"
+    XNOR         = "X"
+
 @grepr_dataclass(grepr_fields=["input_count", "menu_values"])
-class FRExpandableMathMutation(FRMutation,
+class FRExpandableOperatorMutation(FRMutation,
         required_properties={"inputcount", "menuvalues"},
-        optional_properties=set(),
+        optional_properties={"warp", "edited", "hasnext", "optimize"},
     ):
     """
     The first representation for the mutation of an expandable math block
     """
 
     input_count: int
-    menu_values: list[Literal["+", "-", "*", "/", "^"]]
-    
+    menu_values: list[Literal["+", "-", "*", "/", "^", "m", "M", "l", "L", "e", "E", "n", "a", "o", "x", "N", "X"]]
+
     @classmethod
-    def from_data(cls, data: dict[str, Any]) -> FRExpandableMathMutation:
+    def from_data(cls, data: dict[str, Any]) -> FRExpandableOperatorMutation:
         """
-        Create a FRExpandableMathMutation from json data
+        Create a FRExpandableOperatorMutation from json data
         
         Args:
             data: the json data
@@ -555,7 +573,7 @@ class FRExpandableMathMutation(FRMutation,
 
     def to_data(self) -> dict[str, Any]:
         """
-        Serializes a FRExpandableMathMutation into json data
+        Serializes a FRExpandableOperatorMutation into json data
         """
         return {
             "tagName"   : self.tag_name,
@@ -564,14 +582,61 @@ class FRExpandableMathMutation(FRMutation,
             "menuvalues": "".join(self.menu_values),
         }
    
-    def to_second(self, fti_if: FirstToInterIF) -> SRExpandableMathMutation:
+    def to_second(self, fti_if: FirstToInterIF) -> SRExpandableOperatorMutation:
         """
-        Convert a FRExpandableMathMutation into a SRExpandableMathMutation
+        Convert a FRExpandableOperatorMutation into a SRExpandableOperatorMutation
         
         Args:
             fti_if: interface which allows the management of other blocks
         """
-        return SRExpandableMathMutation(operations=copy(self.menu_values))
+        return SRExpandableOperatorMutation(
+            operations=[SRExpandableOperatorMenu.from_code(menu_value) for menu_value in self.menu_values],
+        )
+
+@grepr_dataclass(grepr_fields=["input_count", "menu_values"])
+class FRExpandableJoinMutation(FRMutation,
+        required_properties={"inputcount"},
+        optional_properties={"warp", "edited", "hasnext", "optimize"},
+    ):
+    """
+    The first representation for the mutation of an expandable join block
+    """
+
+    input_count: int
+    
+    @classmethod
+    def from_data(cls, data: dict[str, Any]) -> FRExpandableJoinMutation:
+        """
+        Create a FRExpandableJoinMutation from json data
+        
+        Args:
+            data: the json data
+        """
+        # Example {'tagName': 'mutation', 'warp': False, 'edited': False, 'hasnext': False, 'children': [], 'inputcount': '5'}
+        return cls(
+            tag_name    = data["tagName" ],
+            children    = deepcopy(data["children"]),
+            input_count = loads(data["inputcount"]),
+        )
+
+    def to_data(self) -> dict[str, Any]:
+        """
+        Serializes a FRExpandableJoinMutation into json data
+        """
+        return {
+            "tagName"   : self.tag_name,
+            "children"  : deepcopy(self.children),
+            "inputcount": gdumps(self.input_count),
+        }
+   
+    def to_second(self, fti_if: FirstToInterIF) -> SRExpandableJoinMutation:
+        """
+        Convert a FRExpandableJoinMutation into a SRExpandableJoinMutation
+        
+        Args:
+            fti_if: interface which allows the management of other blocks
+        """
+        return SRExpandableJoinMutation(input_count=self.input_count)
 
 @grepr_dataclass(grepr_fields=["has_next"])
 class FRStopScriptMutation(FRMutation,
@@ -725,7 +790,7 @@ class FRLoopMutation(FRMutation,
 
 @grepr_dataclass(
     grepr_fields=[], init=False, forbid_init_only_subcls=True, 
-    suggested_subcls_names=["SRCustomBlockArgumentMutation", "SRCustomBlockMutation", "SRCustomBlockCallMutation", "SRExpandableIfMutation", "SRExpandableMathMutation"],
+    suggested_subcls_names=["SRCustomBlockArgumentMutation", "SRCustomBlockMutation", "SRCustomBlockCallMutation", "SRExpandableIfMutation", "SRExpandableOperatorMutation", "SRExpandableJoinMutation"],
 )
 class SRMutation(ABC):
     """
@@ -979,45 +1044,81 @@ class SRExpandableIfMutation(SRMutation):
         )
 
 @grepr_dataclass(grepr_fields=["operations"])
-class SRExpandableMathMutation(SRMutation):
+class SRExpandableOperatorMutation(SRMutation):
     """
     The second representation for the mutation of an expandable math block
     """
 
-    operations: list[Literal["+", "-", "*", "/", "^"]]
+    operations: list[SRExpandableOperatorMenu]
     
     def validate(self, path: AbstractTreePath) -> None:
         """
-        Ensure the SRExpandableMathMutation is valid, raise MANIP_ValidationError if not
+        Ensure the SRExpandableOperatorMutation is valid, raise MANIP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
         
         Raises:
-            MANIP_ValidationError: if the SRExpandableMathMutation is invalid
+            MANIP_ValidationError: if the SRExpandableOperatorMutation is invalid
         """
-        AA_LIST_OF_ONE_OF(self, path, "operations", ["+", "-", "*", "/", "^"])
+        AA_LIST_OF_TYPE(self, path, "operations", SRExpandableOperatorMenu)
     
-    def to_first(self, itf_if: InterToFirstIF) -> FRExpandableMathMutation:
+    def to_first(self, itf_if: InterToFirstIF) -> FRExpandableOperatorMutation:
         """
-        As this mutation represents both first and second representation self will be returned
+        Convert a SRExpandableOperatorMutation into a FRExpandableOperatorMutation
 
         Args:
             itf_if: interface which allows the management of other blocks
         """
-        return FRExpandableMathMutation(
+        return FRExpandableOperatorMutation(
             tag_name="mutation",
             children=[],
             input_count=len(self.operations)+1,
-            menu_values=copy(self.operations),
+            menu_values=[enum.to_code() for enum in self.operations],
         )
 
+@grepr_dataclass(grepr_fields=["input_count"])
+class SRExpandableJoinMutation(SRMutation):
+    """
+    The second representation for the mutation of an expandable join block
+    """
+
+    input_count: int
+    
+    def validate(self, path: AbstractTreePath) -> None:
+        """
+        Ensure the SRExpandableJoinMutation is valid, raise MANIP_ValidationError if not
+        
+        Args:
+            path: the path from the project to itself. Used for better error messages
+        
+        Raises:
+            MANIP_ValidationError: if the SRExpandableJoinMutation is invalid
+        """
+        AA_TYPE(self, path, "input_count", int)
+        AA_MIN(self, path, "input_count", 1)
+    
+    def to_first(self, itf_if: InterToFirstIF) -> FRExpandableJoinMutation:
+        """
+        Convert a SRExpandableJoinMutation into a FRExpandableJoinMutation
+
+        Args:
+            itf_if: interface which allows the management of other blocks
+        """
+        return FRExpandableJoinMutation(
+            tag_name="mutation",
+            children=[],
+            input_count=self.input_count,
+        )
 
 __all__ = [
     "FRMutation", 
-    "FRCustomBlockArgumentMutation", "FRCustomBlockMutation", "FRCustomBlockCallMutation", "FRExpandableIfMutation", "FRExpandableMathMutation",
+    "FRCustomBlockArgumentMutation", "FRCustomBlockMutation", "FRCustomBlockCallMutation",
+    "FRExpandableIfMutation", "FRExpandableOperatorMutation", "FRExpandableJoinMutation",
     "FRStopScriptMutation", "FRPolygonMutation", "FRLoopMutation",
     "SRMutation", 
-    "SRCustomBlockArgumentMutation", "SRCustomBlockMutation", "SRCustomBlockCallMutation", "SRExpandableIfMutation", "SRExpandableMathMutation",
+    "SRCustomBlockArgumentMutation", "SRCustomBlockMutation", "SRCustomBlockCallMutation",
+    "SRExpandableIfMutation", "SRExpandableOperatorMutation", "SRExpandableJoinMutation",
+    "SRExpandableOperatorMenu",
 ]
 

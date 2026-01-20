@@ -6,17 +6,19 @@ from pmp_manip.important_consts import SHA256_SEC_MAIN_ARGUMENT_NAME
 from pmp_manip.utility          import (
     string_to_sha256, gdumps, grepr_dataclass, AbstractTreePath,
     MANIP_DeserializationError, MANIP_ConversionError, MANIP_ThanksError, 
-    MANIP_TypeValidationError, MANIP_InvalidValueError
+    MANIP_TypeValidationError, MANIP_InvalidValueError, MANIP_RangeValidationError
 )
 
 from pmp_manip.core.trafo_interface import FirstToInterIF, InterToFirstIF
 from pmp_manip.core.block_mutation  import (
 	_load_bool_value, _load_noquote_str_value, _load_color_array,
-    FRMutation,
+    FRMutation, 
     FRCustomBlockArgumentMutation, FRCustomBlockMutation, FRCustomBlockCallMutation,
-    FRExpandableIfMutation, FRExpandableMathMutation, FRStopScriptMutation, FRPolygonMutation, FRLoopMutation,
+    FRExpandableIfMutation, FRExpandableOperatorMutation, FRExpandableJoinMutation,
+    FRStopScriptMutation, FRPolygonMutation, FRLoopMutation,
     SRCustomBlockArgumentMutation, SRCustomBlockMutation, SRCustomBlockCallMutation,
-    SRExpandableIfMutation, SRExpandableMathMutation,
+    SRExpandableIfMutation, SRExpandableOperatorMutation, SRExpandableJoinMutation,
+    SRExpandableOperatorMenu,
 )
 from pmp_manip.core.custom_block    import SRCustomBlockOpcode, SRCustomBlockOptype
 
@@ -418,22 +420,39 @@ def test_FRExpandableIfMutation_from_to_data_and_to_second(fti_if: FirstToInterI
 
 
 
-def test_FRExpandableMathMutation_from_to_data_and_to_second(fti_if: FirstToInterIF):
+def test_FRExpandableOperatorMutation_from_to_data_and_to_second(fti_if: FirstToInterIF):
     data = {
         "tagName": "mutation",
         "children": [],
         "inputcount": "3",
         "menuvalues": "*^",
     }
-    frmutation = FRExpandableMathMutation.from_data(data)
+    frmutation = FRExpandableOperatorMutation.from_data(data)
     assert frmutation.input_count == 3
     assert frmutation.menu_values == ["*", "^"]
     
     assert frmutation.to_data() == data
     
     srmutation = frmutation.to_second(fti_if)
-    assert isinstance(srmutation, SRExpandableMathMutation)
-    assert srmutation.operations == ["*", "^"]
+    assert isinstance(srmutation, SRExpandableOperatorMutation)
+    assert srmutation.operations == [SRExpandableOperatorMenu.MULTIPLY, SRExpandableOperatorMenu.POWER]
+
+
+
+def test_FRExpandableJoinMutation_from_to_data_and_to_second(fti_if: FirstToInterIF):
+    data = {
+        "tagName": "mutation",
+        "children": [],
+        "inputcount": "3",
+    }
+    frmutation = FRExpandableJoinMutation.from_data(data)
+    assert frmutation.input_count == 3
+    
+    assert frmutation.to_data() == data
+    
+    srmutation = frmutation.to_second(fti_if)
+    assert isinstance(srmutation, SRExpandableJoinMutation)
+    assert srmutation.input_count == 3
 
 
 
@@ -676,8 +695,10 @@ def test_SRExpandableIfMutation_to_first(itf_if: InterToFirstIF):
 
 
 
-def test_SRExpandableMathMutation_validate():
-    srmutation = SRExpandableMathMutation(operations=["^", "-", "*"])
+def test_SRExpandableOperatorMutation_validate():
+    srmutation = SRExpandableOperatorMutation(
+        operations=[SRExpandableOperatorMenu.SUBTRACT, SRExpandableOperatorMenu.MULTIPLY],
+    )
 
     srmutation.validate(path=AbstractTreePath())
     
@@ -685,19 +706,47 @@ def test_SRExpandableMathMutation_validate():
         obj=srmutation,
         attr_tests=[
             ("operations", "*+-", MANIP_TypeValidationError),
-            ("operations", ["%"], MANIP_InvalidValueError),
+            ("operations", ["%"], MANIP_TypeValidationError),
         ],
-        validate_func=SRExpandableMathMutation.validate,
+        validate_func=SRExpandableOperatorMutation.validate,
         func_args=[AbstractTreePath()],
     )
 
 
-def test_SRExpandableMathMutation_to_first(itf_if: InterToFirstIF):
-    srmutation = SRExpandableMathMutation(operations=["^", "-", "*"])
-    assert srmutation.to_first(itf_if) == FRExpandableMathMutation(
+def test_SRExpandableOperatorMutation_to_first(itf_if: InterToFirstIF):
+    srmutation = SRExpandableOperatorMutation(
+        operations=[SRExpandableOperatorMenu.POWER, SRExpandableOperatorMenu.SUBTRACT, SRExpandableOperatorMenu.MULTIPLY],
+    )
+    assert srmutation.to_first(itf_if) == FRExpandableOperatorMutation(
         tag_name="mutation",
         children=[],
         input_count=4,
         menu_values=["^", "-", "*"],
+    )
+
+
+
+def test_SRExpandableJoinMutation_validate():
+    srmutation = SRExpandableJoinMutation(input_count=4)
+
+    srmutation.validate(path=AbstractTreePath())
+    
+    execute_attr_validation_tests(
+        obj=srmutation,
+        attr_tests=[
+            ("input_count", "4", MANIP_TypeValidationError),
+            ("input_count", 0, MANIP_RangeValidationError),
+        ],
+        validate_func=SRExpandableJoinMutation.validate,
+        func_args=[AbstractTreePath()],
+    )
+
+
+def test_SRExpandableJoinMutation_to_first(itf_if: InterToFirstIF):
+    srmutation = SRExpandableJoinMutation(input_count=4)
+    assert srmutation.to_first(itf_if) == FRExpandableJoinMutation(
+        tag_name="mutation",
+        children=[],
+        input_count=4,
     )
 

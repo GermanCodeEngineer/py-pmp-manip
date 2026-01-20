@@ -4,7 +4,10 @@ from copy   import copy, deepcopy
 from pmp_manip.important_consts import (
     OPCODE_VAR_VALUE, NEW_OPCODE_VAR_VALUE, OPCODE_LIST_VALUE, NEW_OPCODE_LIST_VALUE, 
     OPCODE_STOP_SCRIPT, OPCODE_CHECKBOX, NEW_OPCODE_CHECKBOX, OPCODE_POLYGON, NEW_OPCODE_POLYGON,
-    OPCODE_FILTER_LIST_INDEX, OPCODE_FILTER_LIST_ITEM, OPCODE_EXPANDABLE_IF, OPCODE_EXPANDABLE_MATH,
+    OPCODE_FILTER_LIST_INDEX, OPCODE_FILTER_LIST_ITEM,
+    OPCODE_EXPANDABLE_IF,
+    OPCODE_EXPANDABLE_MATH, OPCODE_EXPANDABLE_BOOL, OPCODE_EXPANDABLE_COMPARE, ANY_OPCODE_EXPANDABLE_OPERATOR, 
+    OPCODE_FOREVER, OPCODE_EXPANDABLE_JOIN,
     OPCODE_CB_PROTOTYPE, ANY_OPCODE_CB_DEF, ANY_OPCODE_CB_ARG, OPCODE_FOREVER,
     OPCODE_CB_CALL, NEW_OPCODE_CB_CALL, OPCODE_CB_ARG_TEXT, OPCODE_CB_ARG_BOOL, 
     OPCODE_CB_DEF, NEW_OPCODE_CB_DEF, OPCODE_CB_DEF_RET, NEW_OPCODE_CB_DEF_REP,
@@ -44,9 +47,11 @@ if TYPE_CHECKING:
     from pmp_manip.core.block           import FRBlock, IRBlock, SRBlock
 
 from pmp_manip.core.block_mutation import (
-    FRCustomBlockMutation, FRCustomBlockArgumentMutation, FRCustomBlockCallMutation, FRExpandableIfMutation, FRExpandableMathMutation,
+    FRCustomBlockMutation, FRCustomBlockArgumentMutation, FRCustomBlockCallMutation,
+    FRExpandableIfMutation, FRExpandableOperatorMutation, FRExpandableJoinMutation,
     FRStopScriptMutation, FRPolygonMutation, FRLoopMutation,
-    SRCustomBlockMutation, SRCustomBlockArgumentMutation, SRCustomBlockCallMutation, SRExpandableIfMutation, SRExpandableMathMutation,
+    SRCustomBlockMutation, SRCustomBlockArgumentMutation, SRCustomBlockCallMutation,
+    SRExpandableIfMutation, SRExpandableOperatorMutation, SRExpandableJoinMutation,
 )
 
 # MENUS
@@ -124,14 +129,19 @@ c_control.add_opcode(OPCODE_EXPANDABLE_IF, "&control::{{EXPANDABLE IF-THEN-ELSE 
         ("ADD", "ADD"): DropdownInfo(BuiltinDropdownType.EDITOR_BUTTON)
     }),
 ))
-c_operators.add_opcode(OPCODE_EXPANDABLE_MATH, "&operators::{{EXPANDABLE MATH CHAIN}}", OpcodeInfo(
+expandable_reporter = OpcodeInfo(
     opcode_type=OpcodeType.STATEMENT,
     inputs=DualKeyDict(), # Overwritten by special case
     dropdowns=DualKeyDict({
         ("REMOVE", "REMOVE"): DropdownInfo(BuiltinDropdownType.EDITOR_BUTTON),
         ("ADD", "ADD"): DropdownInfo(BuiltinDropdownType.EDITOR_BUTTON)
     }),
-))
+)
+c_operators.add_opcode(OPCODE_EXPANDABLE_MATH, "&operators::{{EXPANDABLE MATH CHAIN}}", expandable_reporter)
+c_operators.add_opcode(OPCODE_EXPANDABLE_BOOL, "&operators::{{EXPANDABLE BOOL CHAIN}}", expandable_reporter)
+c_operators.add_opcode(OPCODE_EXPANDABLE_COMPARE, "&operators::{{EXPANDABLE COMPARE CHAIN}}", expandable_reporter)
+c_operators.add_opcode(OPCODE_EXPANDABLE_JOIN, "&operators::{{EXPANDABLE JOIN CHAIN}}", expandable_reporter)
+
 c_variables.add_opcode(OPCODE_VAR_VALUE, NEW_OPCODE_VAR_VALUE, OpcodeInfo(
     opcode_type=OpcodeType.STRING_REPORTER,
     dropdowns=DualKeyDict({
@@ -247,7 +257,8 @@ info_api.set_opcode_mutation_class(OPCODE_STOP_SCRIPT, old_cls=FRStopScriptMutat
 info_api.set_opcode_mutation_class(OPCODE_POLYGON, old_cls=FRPolygonMutation, new_cls=None)
 info_api.set_opcode_mutation_class(OPCODE_FOREVER, old_cls=FRLoopMutation, new_cls=None)
 info_api.set_opcode_mutation_class(OPCODE_EXPANDABLE_IF, old_cls=FRExpandableIfMutation, new_cls=SRExpandableIfMutation)
-info_api.set_opcode_mutation_class(OPCODE_EXPANDABLE_MATH, old_cls=FRExpandableIfMutation, new_cls=SRExpandableIfMutation)
+info_api.set_opcodes_mutation_class(ANY_OPCODE_EXPANDABLE_OPERATOR, old_cls=FRExpandableOperatorMutation, new_cls=SRExpandableOperatorMutation)
+info_api.set_opcode_mutation_class(OPCODE_EXPANDABLE_JOIN, old_cls=FRExpandableJoinMutation, new_cls=SRExpandableJoinMutation)
 
 # Special Cases
 def _149c_e47b(block: "SRBlock|IRBlock", validation_if: ValidationIF) -> OpcodeType:
@@ -273,7 +284,6 @@ info_api.add_opcode_case(OPCODE_CB_CALL, SpecialCase(
     type=SpecialCaseType.GET_OPCODE_TYPE,
     function=_bd30_2f8b,
 ))
-
 
 
 def _f9c8_6ab0(block: FRBlock|IRBlock|SRBlock, fti_if: FirstToInterIF|None) -> DualKeyDict[str, str, InputType]:
@@ -351,9 +361,9 @@ info_api.add_opcode_case(OPCODE_EXPANDABLE_IF, SpecialCase(
 
 def _a70a_0e97(block: FRBlock|IRBlock|SRBlock, fti_if: FirstToInterIF|None) -> DualKeyDict[str, str, InputType]:
     # Generate SUBSTACK1, BOOL1 ... SUBSTACKn, BOOLn depending on demand
-    mutation: FRExpandableMathMutation | SRExpandableMathMutation = block.mutation
+    mutation: FRExpandableOperatorMutation | SRExpandableOperatorMutation = block.mutation
     input_infos = DualKeyDict()
-    input_count = (len(mutation.operations) + 1) if isinstance(mutation, SRExpandableMathMutation) else mutation.input_count
+    input_count = (len(mutation.operations) + 1) if isinstance(mutation, SRExpandableOperatorMutation) else mutation.input_count
     for input_index in range(input_count):
         input_infos.set(
             key1  = f"NUM{input_index+1}",
@@ -361,9 +371,24 @@ def _a70a_0e97(block: FRBlock|IRBlock|SRBlock, fti_if: FirstToInterIF|None) -> D
             value = InputInfo(BuiltinInputType.NUMBER),
         )
     return input_infos
-info_api.add_opcode_case(OPCODE_EXPANDABLE_MATH, SpecialCase(
+info_api.add_opcodes_case(ANY_OPCODE_EXPANDABLE_OPERATOR, SpecialCase(
     type=SpecialCaseType.GET_ALL_INPUT_IDS_INFO,
     function=_a70a_0e97,
+))
+
+def _d192_34a6(block: FRBlock|IRBlock|SRBlock, fti_if: FirstToInterIF|None) -> DualKeyDict[str, str, InputType]:
+    mutation: FRExpandableJoinMutation | SRExpandableJoinMutation = block.mutation
+    input_infos = DualKeyDict()
+    for input_index in range(mutation.input_count):
+        input_infos.set(
+            key1  = f"INPUT{input_index+1}",
+            key2  = f"STRING{input_index+1}",
+            value = InputInfo(BuiltinInputType.TEXT),
+        )
+    return input_infos
+info_api.add_opcode_case(OPCODE_EXPANDABLE_JOIN, SpecialCase(
+    type=SpecialCaseType.GET_ALL_INPUT_IDS_INFO,
+    function=_d192_34a6,
 ))
 
 

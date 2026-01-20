@@ -1387,8 +1387,10 @@ All value kinds are: `DropdownValueKind.`...
 Stores additional information special to some kinds of blocks. Only needed for some block opcodes(kinds of blocks). Common base for:
 * [`SRCustomBlockArgumentMutation`](#srcustomblockargumentmutation)
 * [`SRCustomBlockMutation`](#srcustomblockmutation)
+* [`SRCustomBlockCallMutation`](#srcustomblockcallmutation)
 * [`SRExpandableIfMutation`](#SRExpandableIfMutation)
-* [`SRExpandableMathMutation`](#SRExpandableMathMutation)
+* [`SRExpandableOperatorMutation`](#SRExpandableOperatorMutation)
+* [`SRExpandableJoinMutation`](#SRExpandableJoinMutation)
 
 ## `SRCustomBlockArgumentMutation`
 Inherits from [`SRMutation`](#srmutation). Used and required only by opcodes `"&customblocks::custom block text arg [ARGUMENT]"` and `"customblocks::custom block boolean arg [ARGUMENT]"`.
@@ -1512,17 +1514,35 @@ SRExpandableIfMutation(
 ```
 
 
-## `SRExpandableMathMutation`
-Inherits from [`SRMutation`](#srmutation). Used and required only by opcode `"&operators::{{EXPANDABLE MATH CHAIN}}"`.
-#### `SRExpandableMathMutation.operations`
-- **type**: `list[Literal["+", "-", "*", "/", "^"]]`
+## `SRExpandableOperatorMutation`
+Inherits from [`SRMutation`](#srmutation). Used and required only by opcodes `"&operators::{{EXPANDABLE MATH CHAIN}}"`, `"&operators::{{EXPANDABLE BOOL CHAIN}}"`, `"&operators::{{EXPANDABLE COMPARE CHAIN}}"`.
+#### `SRExpandableOperatorMutation.operations`
+- **type**: `list` of [`SRExpandableOperatorMenu`](#SRExpandableOperatorMenu)
 - **description**: the operations between the inputs
 ### Editor View Example
 The mutation itself can not be seen in the editor, only the block:<br>
-![](images/project_view/srexpandablemathmutation.png)
+![](images/project_view/srexpandableoperatormutation.png)
 ### Python Object Example
 ```python
-SRExpandableMathMutation(operations=["^", "-", "*"])
+SRExpandableOperatorMutation(
+    operations=[SRExpandableOperatorMenu.SUBTRACT, SRExpandableOperatorMenu.MULTIPLY],
+)
+```
+
+
+## `SRExpandableJoinMutation`
+Inherits from [`SRMutation`](#srmutation). Used and required only by opcode `"&operators::{{EXPANDABLE JOIN CHAIN}}"`.
+#### `SRExpandableJoinMutation.input_count`
+- **type**: `int` (minimum: `1`)
+- **description**: the count of inputs
+### Editor View Example
+The mutation itself can not be seen in the editor, only the block:<br>
+![](images/project_view/srexpandablejoinmutation.png)
+### Python Object Example
+```python
+SRExpandableJoinMutation(
+    input_count=4,
+)
 ```
 
 
@@ -1546,7 +1566,7 @@ Represents an argument of a [`SRCustomBlockOpcode`](#srcustomblockopcode). Immut
 
 ## `SRCustomBlockOptype`
 Enum Class. Represents the shape of a custom block (e.g. square statement, boolean, reporter)
-All possibly values are: `SRCustomBlockOptype.`...
+All possible values are: `SRCustomBlockOptype.`...
 | enum name          |
 |--------------------|
 | `STATEMENT`        |
@@ -1557,6 +1577,30 @@ All possibly values are: `SRCustomBlockOptype.`...
 ### Editor View Example
 ![](images/project_view/srcustomblockoptype.png)
 
+
+## `SRExpandableOperatorMenu`
+Enum Class. Represents the dropdown values between the inputs of an expandable operator
+All possible values are: `SRExpandableOperatorMenu.`...
+| enum name      |
+|----------------|
+| `ADD`          |
+| `SUBTRACT`     |
+| `MULTIPLY`     |
+| `DIVIDE`       |
+| `POWER`        |
+| `GREATER`      |
+| `GREATER_EQ`   |
+| `LESS`         |
+| `LESS_EQ`      |
+| `EQUAL`        |
+| `STRICT_EQUAL` |
+| `NOT_EQUAL`    |
+| `AND`          |
+| `OR`           |
+| `XOR`          |
+| `NAND`         |
+| `NOR`          |
+| `XNOR`         |
 
 ## `SRComment`
 Represents a comment, which can be either atttached to a block or "freely floating" in the "Code" tab of a sprite or the stage.

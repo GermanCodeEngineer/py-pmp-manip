@@ -307,11 +307,20 @@ Pattern for selecting [`SRExpandableIfMutation`](second_repr.md#SRExpandableIfMu
 * **default value**: `None`
 ---
 
-### `ExpandableMathMutationPattern`
-Pattern for selecting [`SRExpandableMathMutation`](second_repr.md#SRExpandableMathMutation) instances with certain data.
-#### `ExpandableMathMutationPattern.operations`
-* **type**: `ConstOrFunc[list[Literal["+", "-", "*", "/", "^"]]]` or `None`
+### `ExpandableOperatorMutationPattern`
+Pattern for selecting [`SRExpandableOperatorMutation`](second_repr.md#SRExpandableOperatorMutation) instances with certain data.
+#### `ExpandableOperatorMutationPattern.operations`
+* **type**: `ConstOrFunc[list[SRExpandableOperatorMenu]]`(see [`SRExpandableOperatorMenu`](second_repr.md#SRExpandableOperatorMenu)) or `None`
 * **description in SR**: the operations between the inputs
+* **default value**: `None`
+---
+
+### `ExpandableJoinMutationPattern`
+Pattern for selecting [`SRExpandableJoinMutation`](second_repr.md#SRExpandableJoinMutation) instances with certain data.
+#### `ExpandableJoinMutationPattern.input_count`
+* **type**: `ConstOrFunc[int]` or `None`
+* **description in SR**: the operations between the inputs
+- **description**: the count of inputs
 * **default value**: `None`
 ---
 
