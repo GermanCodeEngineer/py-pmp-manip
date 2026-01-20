@@ -10,7 +10,7 @@ from pmp_manip.core.custom_block   import SRCustomBlockOpcode
 from pmp_manip.core.vars_lists     import _variable_sha256, _list_sha256
 
 
-@grepr_dataclass(grepr_fields=["blocks", "block_comments", "scheduled_block_deletions"])
+@grepr_dataclass()
 class FirstToInterIF:
     """
     An interface which allows the management of other blocks in the same target during conversion from first to intermediate representation
@@ -87,12 +87,7 @@ class FirstToInterIF:
             return self.block_comments[comment_id]
         raise MANIP_ConversionError(f"Comment with id {comment_id!r} not found")
 
-@grepr_dataclass(grepr_fields=[
-    "blocks", 
-    "global_vars", "local_vars", "global_lists", "local_lists", "sprite_name", "_next_block_id_num",
-    "added_blocks", "added_comments", 
-    "_cb_mutations",
-])
+@grepr_dataclass()
 class InterToFirstIF:
     """
     An interface which allows the management of other blocks in the same target during conversion from first to intermediate representation
@@ -229,7 +224,7 @@ class InterToFirstIF:
             raise MANIP_ConversionError(f"List {list_name!r} not found")
         return _list_sha256(list_name, sprite_name)
 
-@grepr_dataclass(grepr_fields=["scripts", "cb_mutations"])
+@grepr_dataclass()
 class SecondReprIF:
     """
     ABC for an interface which holds scripts in second representation
@@ -282,7 +277,7 @@ class SecondReprIF:
                 recursive_block_search(block)
         return blocks
 
-@grepr_dataclass(grepr_fields=["added_blocks", "_next_block_id_num"])
+@grepr_dataclass()
 class SecondToInterIF(SecondReprIF):
     """
     An interface which allows the management of other blocks in the same target during conversion from second to intermediate representation

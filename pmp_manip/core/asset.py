@@ -17,7 +17,7 @@ EMPTY_SVG_COSTUME_XML = '<svg version="1.1" width="2" height="2" viewBox="-1 -1 
 EMPTY_SVG_COSTUME_ROTATION_CENTER = (240, 180)
 
 
-@grepr_dataclass(grepr_fields=["name", "asset_id", "data_format", "md5ext", "rotation_center_x", "rotation_center_y", "bitmap_resolution"])
+@grepr_dataclass()
 class FRCostume:
     """
     The first representation for a costume. It is very close to the json data in a project
@@ -111,7 +111,7 @@ class FRCostume:
                 content               = image,
             )
 
-@grepr_dataclass(grepr_fields=["name", "asset_id", "data_format", "md5ext", "rate", "sample_count"])
+@grepr_dataclass()
 class FRSound:
     """
     The first representation for a sound. It is very close to the json data in a project
@@ -181,10 +181,7 @@ class FRSound:
             # Other attributes can be derived from the sound files
         )
 
-@grepr_dataclass(
-    grepr_fields=["name", "file_extension", "rotation_center"], init=False, forbid_init_only_subcls=True,
-    suggested_subcls_names=["SRVectorCostume", "SRBitmapCostume"],
-)
+@grepr_dataclass(init=False, forbid_init_only_subcls=True)
 class SRCostume(ABC):
     """
     The second representation for a costume. It is more user friendly then the first representation.
@@ -221,7 +218,7 @@ class SRCostume(ABC):
             the FRCostume
         """
 
-@grepr_dataclass(grepr_fields=["content"], eq=True) # must be True for order to work, is overwritten
+@grepr_dataclass(eq=True) # must be True for order to work, is overwritten
 class SRVectorCostume(SRCostume):
     """
     The second representation for a vector(SVG) costume. It is more user friendly then the first representation
@@ -295,7 +292,7 @@ class SRVectorCostume(SRCostume):
             bitmap_resolution = None, 
         ), file_bytes)
 
-@grepr_dataclass(grepr_fields=["content", "has_double_resolution"], eq=True) # must be True for order to work, is overwritten
+@grepr_dataclass(eq=True) # must be True for order to work, is overwritten
 class SRBitmapCostume(SRCostume):
     """
     The second representation for a bitmap(usually PNG) costume. It is more user friendly then the first representation
@@ -368,7 +365,7 @@ class SRBitmapCostume(SRCostume):
         ), file_bytes)
 
 
-@grepr_dataclass(grepr_fields=["name", "file_extension", "content"])
+@grepr_dataclass()
 class SRSound:
     """
     The second representation for a sound. It is more user friendly then the first representation

@@ -7,10 +7,7 @@ from pmp_manip.utility import (
 )
 
 
-@grepr_dataclass(
-    grepr_fields=["id"], init=False, 
-    forbid_init_only_subcls=True, suggested_subcls_names=["SRBuiltinExtension", "SRCustomExtension"],
-)
+@grepr_dataclass(init=False, forbid_init_only_subcls=True)
 class SRExtension:
     """
     The second representation for an extension.
@@ -35,7 +32,7 @@ class SRExtension:
         AA_TYPE(self, path, "id", str) # TODO: possibly verify its one of PenguinMod's extension if not custom
         AA_ALNUM(self, path, "id")
 
-@grepr_dataclass(grepr_fields=[])
+@grepr_dataclass()
 class SRBuiltinExtension(SRExtension):
     """
     The second representation for a builtin extension.
@@ -43,7 +40,7 @@ class SRBuiltinExtension(SRExtension):
     Builtin Extensions do not specify a url
     """
 
-@grepr_dataclass(grepr_fields=["url"])
+@grepr_dataclass()
 class SRCustomExtension(SRExtension):
     """
     The second representation for a custom extension. 

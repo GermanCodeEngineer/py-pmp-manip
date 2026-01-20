@@ -7,7 +7,7 @@ from pmp_manip.important_consts         import OPCODE_POLYGON, OPCODE_FILTER_LIS
 from pmp_manip.opcode_info.api.dropdown import DropdownType, BuiltinDropdownType
 
 
-@grepr_dataclass(grepr_fields=["type", "menu"])
+@grepr_dataclass()
 class InputInfo:
     """
     The information about a input of a certain opcode
@@ -172,7 +172,7 @@ class BuiltinInputType(InputType):
     FILTER_LIST_INDEX                 = (InputMode.FORCED_EMBEDDED_BLOCK, OPCODE_FILTER_LIST_INDEX, None, 1)
     FILTER_LIST_ITEM                  = (InputMode.FORCED_EMBEDDED_BLOCK, OPCODE_FILTER_LIST_ITEM , None, 2)
 
-@grepr_dataclass(grepr_fields=["opcode", "inner"])
+@grepr_dataclass()
 class MenuInfo:
     """
     The information about a menu in an input

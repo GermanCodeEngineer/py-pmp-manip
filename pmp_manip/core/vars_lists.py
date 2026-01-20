@@ -36,7 +36,7 @@ def _list_sha256(list_name: str, sprite_name: str): # is needed!
 
 
 
-@grepr_dataclass(grepr_fields=["name", "current_value"])
+@grepr_dataclass()
 class SRVariable:
     
     name: str
@@ -80,7 +80,7 @@ class SRCloudVariable(SRVariable):
         """
         return (self.name, self.current_value, True)
 
-@grepr_dataclass(grepr_fields=["name", "current_value"])
+@grepr_dataclass()
 class SRList:
     
     name: str

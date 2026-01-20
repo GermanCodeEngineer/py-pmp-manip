@@ -104,7 +104,7 @@ def test_load_color_array():
 def test_FRMutation_init_subclass(reset_frmutation_subclass_info):
     class_names = {cls.__name__ for cls in FRMutation._subclasses_info_.keys()}
     assert "Dummy_FRMutation" not in class_names
-    @grepr_dataclass(grepr_fields=["abx"])
+    @grepr_dataclass()
     class Dummy_FRMutation(FRMutation, required_properties={"abx", "iop"}, optional_properties={"pkl"}):
         abx: str
         iop: list
@@ -120,7 +120,7 @@ def test_FRMutation_init_subclass(reset_frmutation_subclass_info):
 
 
 def test_FRMutation_find_from_data_subclasses(reset_frmutation_subclass_info):
-    @grepr_dataclass(grepr_fields=["size"])
+    @grepr_dataclass()
     class Dummy1_FRMutation(FRMutation, required_properties={"size"}):
         size: float
 
@@ -134,7 +134,7 @@ def test_FRMutation_find_from_data_subclasses(reset_frmutation_subclass_info):
         def to_data(self): pass
         def to_second(self, ticfti_if): pass
 
-    @grepr_dataclass(grepr_fields=["smart_activated", "title_text"])
+    @grepr_dataclass()
     class Dummy2_FRMutation(FRMutation, required_properties={"smartActivated"}, optional_properties={"titleText"}):
         smart_activated: bool
         title_text: str | None
@@ -150,7 +150,7 @@ def test_FRMutation_find_from_data_subclasses(reset_frmutation_subclass_info):
         def to_data(self): pass
         def to_second(self, ticfti_if): pass
     
-    @grepr_dataclass(grepr_fields=["smart_activated", "author_name"])
+    @grepr_dataclass()
     class Dummy3_FRMutation(FRMutation, required_properties={"smartActivated"}, optional_properties={"authorName"}):
         smart_activated: bool
         author_name: str | None
@@ -199,7 +199,7 @@ def test_FRMutation_from_data_and_post_init(monkeypatch: MonkeyPatch):
     with raises(MANIP_DeserializationError):
         FRMutation.from_data({...:...}) # does not matter
     
-    @grepr_dataclass(grepr_fields=["tag_name", "children"])
+    @grepr_dataclass()
     class DummyFRMutation(FRMutation, required_properties=set()):
         @classmethod
         def from_data(cls, data) -> "DummyFRMutation":

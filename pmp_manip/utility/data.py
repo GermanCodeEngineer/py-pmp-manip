@@ -6,7 +6,8 @@ from hashlib     import sha256, md5
 from json        import dumps
 from typing      import overload, Iterable, Iterator, SupportsIndex, Any
 
-from pmp_manip.utility.decorators import grepr_dataclass, enforce_argument_types
+from pmp_manip.utility.dataclasses import grepr_dataclass
+from pmp_manip.utility.decorators  import enforce_argument_types
 
 
 _TOKEN_CHARSET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!#%()*+,-./:;=?@[]^_`{|}~"
@@ -95,7 +96,7 @@ def generate_md5(data: bytes) -> str:
         md5_hash.update(data[i:i+4096])
     return md5_hash.hexdigest()
 
-@grepr_dataclass(grepr_fields=["length", "hash"])
+@grepr_dataclass()
 class ContentFingerprint:
     """
     Represents the fingerprint of string content. Stores length and hash for fast and efficient comparison. 
@@ -160,24 +161,24 @@ class ContentFingerprint:
         """
         return {
             "length": self.length,
-            "hash"  : self.hash  ,
+            "hash"  : self.hash,
         }
 
-@grepr_dataclass(grepr_fields=["value"], frozen=True, unsafe_hash=True)
+@grepr_dataclass(frozen=True, unsafe_hash=True)
 class ATPathAttribute:
     """
     Represents an attribute of a visit path. Immutable/Frozen and Hashable.
     """
     value: str
 
-@grepr_dataclass(grepr_fields=["value"], frozen=True, unsafe_hash=True)
+@grepr_dataclass(frozen=True, unsafe_hash=True)
 class ATPathIndexOrKey:
     """
     Represents an index or key of a visit path. Immutable/Frozen and Hashable.
     """
     value: str
 
-@grepr_dataclass(grepr_fields=[], frozen=True, unsafe_hash=True, init=False, repr=False)
+@grepr_dataclass(frozen=True, unsafe_hash=True, init=False, grepr=False)
 class AbstractTreePath:
     """
     Represents a visit path inside an Abstract Object Tree. Immutable/Frozen and Hashable.
@@ -272,8 +273,11 @@ class NotSetType:
     An empty placeholder
     """
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "NotSet"
+
+    def __bool__(self) -> bool:
+        return False
 
 NotSet = NotSetType()
 

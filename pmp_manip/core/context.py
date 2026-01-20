@@ -5,7 +5,7 @@ if TYPE_CHECKING: from pmp_manip.opcode_info.api import DropdownValueKind, DROPD
 from pmp_manip.utility import grepr_dataclass
 
 
-@grepr_dataclass(grepr_fields=["scope_variables", "scope_lists", "global_variables", "local_variables", "local_lists", "other_sprites", "backdrops"])
+@grepr_dataclass()
 class PartialContext:
     """
     A temporary dataclass which stores the context for dropdown validation excluding sprite context
@@ -19,7 +19,7 @@ class PartialContext:
     other_sprites: list[tuple[DropdownValueKind, DROPDOWN_VALUE_T]]
     backdrops: list[tuple[DropdownValueKind, DROPDOWN_VALUE_T]]
 
-@grepr_dataclass(grepr_fields=["scope_variables", "scope_lists", "global_variables", "local_variables", "local_lists", "other_sprites", "backdrops", "costumes", "sounds", "is_stage"])
+@grepr_dataclass()
 class CompleteContext:
     """
     A temporary dataclass which stores the context for dropdown validation including sprite context

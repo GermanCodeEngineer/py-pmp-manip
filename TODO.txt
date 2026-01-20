@@ -4,6 +4,9 @@ Special:
     - TODOs in Code + read through code, optimize here and there
 
 Currently Working On:
+    - L: reduce huge validation code + improve grepr_dataclass
+    - L: when done -> make parts of utility an own module
+    - add tests for grepr_dataclass & others
     - add tests for project fetching
 
 Changelog since last Release:
@@ -12,6 +15,7 @@ Changelog since last Release:
     - add old opcode typo correction system
     - added tests for and integrated project_api
     - improved project installation
+    - removed last string references
 
 High: /
 
@@ -22,7 +26,6 @@ Medium:
         => remove "Returns" section of docstrings to avoid doubling (easy to do simultaneously)
         => rethink error strategy (e.g. ValueError, TypeError) => should i wrap external errors instead of mine?
         => error formatting
-    - [M.OPT]: add FRProject.from_file alternative, fetch from project link 
     - S/M: implement variable_type and variable_id (example: "small_example")
     - S: explore extensionData (example of "2D MAINCRAFT")
     - S: add "previous costume" and "next costume" to costume menu

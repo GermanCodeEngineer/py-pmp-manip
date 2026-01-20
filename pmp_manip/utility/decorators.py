@@ -1,18 +1,13 @@
 from __future__      import annotations
-from collections.abc import Iterable
-from copy            import copy
-from dataclasses     import dataclass
+from collections.abc import Iterable, Callable as ABCCallable, Mapping, Sequence
 from functools       import wraps
 from inspect         import signature
 from sys             import modules as sys_modules
 from types           import UnionType
 from typing          import (
-    Any, Literal, Callable, Union, ParamSpec, TypeVar, NoReturn,
+    Any, Literal, Callable, Union, ParamSpec, TypeVar,
     get_origin, get_args, get_type_hints,
 )
-
-
-from pmp_manip.utility.repr import grepr
 
 
 PARAM_SPEC = ParamSpec("PARAM_SPEC")
@@ -92,15 +87,15 @@ def _check_type(value: Any, expected: Any, name: str, path: str = "") -> None:
     """
     Recursively checks that a given value matches the expected type.
     Runtime type enforcement that supports TypeVar, Union, Optional,
-    type[T], list[T], tuple[T,...], dict[K,V], Iterable[T].
+    type[T], list[T], tuple[T,...], dict[K,V], set[T], frozenset[T],
+    Iterable[T], Sequence[T], Mapping[K,V], Callable, and Literal.
     Raises TypeError on mismatch.
-
 
     Args:
         value: the actual value passed to the function
-        expected_type: The type annotation from the function signature
+        expected: The type annotation from the function signature
         name: the argument name (for error messages)
-        _path: internal path used for nested data reporting
+        path: internal path used for nested data reporting
 
     Raises:
         TypeError: If the value does not match the expected type
@@ -183,10 +178,41 @@ def _check_type(value: Any, expected: Any, name: str, path: str = "") -> None:
             _check_type(item, elem_t, name, path + f"[{i}]")
         return
 
-    # --- Handle Iterable[T] ---
+    # --- Handle Callable ---
+    if origin is ABCCallable or (origin is None and expected is ABCCallable):
+        if not callable(value):
+            raise TypeError(f"{name}{path}: expected Callable, got non-callable {type(value).__name__}")
+        # Note: We don't validate argument/return types for Callable[[int], str]
+        # as that would require runtime signature inspection
+        return
+
+    # --- Handle Mapping[K, V] ---
+    if origin is Mapping:
+        if not isinstance(value, Mapping):
+            raise TypeError(f"{name}{path}: expected Mapping, got {type(value).__name__}")
+        key_t, val_t = args if len(args) == 2 else (Any, Any)
+        for k, v in value.items():
+            _check_type(k, key_t, name, path + "[key]")
+            _check_type(v, val_t, name, path + "[value]")
+        return
+
+    # --- Handle Sequence[T] ---
+    if origin is Sequence:
+        if not isinstance(value, Sequence):
+            raise TypeError(f"{name}{path}: expected Sequence, got {type(value).__name__}")
+        elem_t = args[0] if args else Any
+        for i, item in enumerate(value):
+            _check_type(item, elem_t, name, path + f"[{i}]")
+        return
+
+    # --- Handle Iterable[T] (excluding str/bytes to avoid char-by-char validation) ---
     if origin is Iterable:
         if not isinstance(value, Iterable):
             raise TypeError(f"{name}{path}: expected Iterable, got {type(value).__name__}")
+        # Skip validation for strings/bytes - they're iterable but usually not intended
+        # for element-wise type checking
+        if isinstance(value, (str, bytes)):
+            return
         elem_t = args[0] if args else Any
         for i, item in enumerate(value):
             _check_type(item, elem_t, name, path + f"[{i}]")
@@ -205,74 +231,34 @@ def _check_type(value: Any, expected: Any, name: str, path: str = "") -> None:
         # For a class, check isinstance
         if isinstance(expected, type):
             if not isinstance(value, expected):
-                raise TypeError(f"{name}{path}: expected {expected}, got {type(value)}")
+                raise TypeError(
+                    f"{name}{path}: expected {expected.__name__}, "
+                    f"got {type(value).__name__}"
+                )
         else:
             # For other typing constructs, like NewType, etc.
             try:
                 if not isinstance(value, expected):
-                    raise TypeError(f"{name}{path}: expected {expected}, got {type(value)}")
+                    raise TypeError(
+                        f"{name}{path}: expected {expected}, "
+                        f"got {type(value).__name__}"
+                    )
             except TypeError:
                 # If isinstance fails (e.g., for NewType), raise error
-                raise TypeError(f"{name}{path}: value {value!r} does not match expected type {expected}")
+                raise TypeError(
+                    f"{name}{path}: value {value!r} does not match "
+                    f"expected type {expected}"
+                )
         return
 
     # --- Last fallback: ignore parameterization, just check origin ---
     if not isinstance(value, origin):
-        raise TypeError(f"{name}{path}: expected {origin}, got {type(value)}")
-
-
-def grepr_dataclass(*, grepr_fields: list[str], repr: bool = True,
-        init: bool = True, eq: bool = True, order: bool = True, 
-        unsafe_hash: bool = False, frozen: bool = False, 
-        match_args: bool = True, kw_only: bool = False, 
-        slots: bool = False, weakref_slot: bool = False,
-        forbid_init_only_subcls: bool = False,
-        suggested_subcls_names: list[str] | None = None,
-    ):
-    """
-    A decorator which combines @dataclass and a good representation system.
-    Args:
-        grepr_fields: fields for the good repr implementation
-        init...: dataclass parameters (except for order which is True by default here)
-        forbid_init_only_subcls: add a __init__ method to raises a NotImplementedError, which tells the user to use the subclasses.
-    """
-    if init: assert not forbid_init_only_subcls
-    if init: assert suggested_subcls_names is None
-    def decorator(cls: TYPE_T) -> TYPE_T:
-        if forbid_init_only_subcls:
-            def __init__(self, *args, **kwargs) -> None | NoReturn:
-                if type(self) is cls:
-                    msg = f"Can not initialize parent class {cls!r} directly. Please use the subclasses"
-                    if suggested_subcls_names:
-                        msg += " "
-                        msg += ", ".join(suggested_subcls_names)
-                    msg += "."
-                    raise NotImplementedError(msg)
-            cls.__init__ = __init__
-        
-        if repr:
-            def __repr__(self, *args, **kwargs) -> str:
-                return grepr(self, *args, **kwargs)
-            cls.__repr__ = __repr__
-            cls._grepr = True
-            nonlocal grepr_fields
-            fields = copy(grepr_fields)
-            for base in cls.__bases__:
-                if not getattr(base, "_grepr", False): continue
-                for field in base._grepr_fields:
-                    if field in fields: continue
-                    fields.append(field)
-            cls._grepr_fields = fields
-
-        cls = dataclass(cls, 
-            init=init, repr=False, eq=eq,
-            order=order, unsafe_hash=unsafe_hash, frozen=frozen,
-            match_args=match_args, kw_only=kw_only,
-            slots=slots, weakref_slot=weakref_slot,
+        origin_name = getattr(origin, '__name__', str(origin))
+        raise TypeError(
+            f"{name}{path}: expected {origin_name}, "
+            f"got {type(value).__name__}"
         )
-        return cls
-    return decorator
 
 
-__all__ = ["enforce_argument_types", "grepr_dataclass"]
+__all__ = ["enforce_argument_types"]
 

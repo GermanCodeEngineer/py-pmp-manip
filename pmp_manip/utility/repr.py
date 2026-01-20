@@ -1,4 +1,5 @@
 from __future__  import annotations
+from dataclasses import fields
 from enum        import Enum
 from tree_sitter import Node
 from typing      import Any
@@ -12,10 +13,11 @@ class KeyReprDict(dict):
     def __repr__(self) -> str:
         return grepr(self)
 
-def grepr(obj, /, safe_dkd=False, level_offset=0, annotate_fields=True, include_attributes=False, vanilla_strings=False, *, indent=4) -> str:
+def grepr(obj, /, safe_dkd=False, level_offset=0, annotate_fields=True, vanilla_strings=False, *, indent=4) -> str:
     from pmp_manip.utility.dual_key_dict import DualKeyDict
+    from pmp_manip.utility.dataclasses import update_field
     def _grepr(obj, level=level_offset) -> tuple[str, bool]:
-        is_compatible = bool(getattr(obj, "_grepr", False)) and not(isinstance(obj, type)) # the class also has _grepr
+        is_compatible = bool(getattr(obj, "__has_grepr__", False)) and not(isinstance(obj, type))
         if indent is not None:
             level += 1
             prefix = "\n" + indent * level
@@ -95,14 +97,17 @@ def grepr(obj, /, safe_dkd=False, level_offset=0, annotate_fields=True, include_
         elif is_compatible:
             args = []
             allsimple = True
-            for name in obj._grepr_fields:
-                if not hasattr(obj, name):
+            for field in fields(obj):
+                update_field(field) # apply default py-pmp-manip settings to field
+                if not field.metadata.get("grepr", True):
                     continue
-                value = getattr(obj, name)
+                if not hasattr(obj, field.name):
+                    continue
+                value = getattr(obj, field.name)
                 value, simple = _grepr(value, level)
                 allsimple = allsimple and simple
                 if annotate_fields:
-                    args.append(f"{name}={value}")
+                    args.append(f"{field.name}={value}")
                 else:
                     args.append(value)
             class_name = obj.__class__.__name__
@@ -111,7 +116,7 @@ def grepr(obj, /, safe_dkd=False, level_offset=0, annotate_fields=True, include_
             return f"{class_name}({prefix}{sep.join(args)}{end_sep})", False
         return repr(obj), True
  
-    is_compatible = bool(getattr(obj, "_grepr", False)) and not(isinstance(obj, type))
+    is_compatible = bool(getattr(obj, "__has_grepr__", False)) and not(isinstance(obj, type))
     if is_compatible or isinstance(obj, (list, tuple, set, DualKeyDict, dict, str)):
         if indent is not None and not isinstance(indent, str):
             indent = " " * indent

@@ -10,7 +10,7 @@ from pmp_manip.utility         import (
     MANIP_SameValueTwiceError, MANIP_ConversionError, MANIP_TypeValidationError,
 )
 
-@grepr_dataclass(grepr_fields=["segments"], frozen=True, unsafe_hash=True)
+@grepr_dataclass(frozen=True, unsafe_hash=True)
 class SRCustomBlockOpcode:
     """
     The second representation for the "custom opcode" of a custom block. 
@@ -143,7 +143,7 @@ class SRCustomBlockOpcode:
         return pairs
 
 
-@grepr_dataclass(grepr_fields=["name", "type"], frozen=True, unsafe_hash=True)
+@grepr_dataclass(frozen=True, unsafe_hash=True)
 class SRCustomBlockArgument:
     """
     The second representation for a argument of a custom opcode

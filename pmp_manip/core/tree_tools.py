@@ -159,7 +159,7 @@ def _visit_node_unfiltered(
                 pairs.extend(_visit_node_unfiltered(value, current_path))
     return pairs
 
-@grepr_dataclass(grepr_fields=["included_types"])
+@grepr_dataclass()
 class TreeVisitor(Generic[INCLUDED_T]):
     """
     Implements the recursive iteration of an Abstract Object Tree in Second Representation.

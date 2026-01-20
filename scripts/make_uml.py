@@ -1,4 +1,4 @@
-from dataclasses import is_dataclass, fields
+from dataclasses import is_dataclass
 from typing import get_origin, get_args, get_type_hints
 from types import UnionType, NoneType
 import inspect

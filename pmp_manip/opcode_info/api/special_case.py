@@ -35,7 +35,7 @@ class SpecialCaseType(GEnum):
     # should NEVER return MENU (or any other pseudo opcode type)
     """
     def example(
-        block: "SRBlock|IRBlock", validation_if: ValidationIF
+        block: SRBlock|IRBlock, validation_if: ValidationIF
     ) -> OpcodeType:
         ...
     """
@@ -90,7 +90,7 @@ class SpecialCaseType(GEnum):
         ...
     """    
 
-@grepr_dataclass(grepr_fields=["type", "function"])
+@grepr_dataclass()
 class SpecialCase:
     """
     Special Cases allows for custom behaviour for special blocks

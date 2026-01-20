@@ -29,7 +29,7 @@ LIST_MONITOR_MIN_WIDTH : int|float = 100
 LIST_MONITOR_MIN_HEIGHT: int|float = 60
 
 
-@grepr_dataclass(grepr_fields=["id", "mode", "opcode", "params", "sprite_name", "value", "x", "y", "visible", "width", "height", "slider_min", "slider_max", "is_discrete", "variable_type", "variable_id"])
+@grepr_dataclass()
 class FRMonitor:
     """
     The first representation for a monitor
@@ -202,7 +202,7 @@ class FRMonitor:
                 is_visible  = self.visible,
             )
 
-@grepr_dataclass(grepr_fields=["opcode", "dropdowns", "position", "is_visible"])
+@grepr_dataclass()
 class SRMonitor:
     """
     The second representation for a monitor. It is much more user friendly
@@ -422,7 +422,7 @@ class SRMonitor:
         )
         
 
-@grepr_dataclass(grepr_fields=["readout_mode", "slider_min", "slider_max", "allow_only_integers"])
+@grepr_dataclass()
 class SRVariableMonitor(SRMonitor):
     """
     The second representation exclusively for variable monitors
@@ -464,7 +464,7 @@ class SRVariableMonitor(SRMonitor):
 
         AA_BIGGER_OR_EQUAL(self, path, "slider_max", "slider_min")
 
-@grepr_dataclass(grepr_fields=["size"])
+@grepr_dataclass()
 class SRListMonitor(SRMonitor):
     """
     The second representation exclusively for list monitors

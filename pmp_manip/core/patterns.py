@@ -22,7 +22,7 @@ from pmp_manip.core.dropdown       import SRDropdownValue
 
 CONST_T = TypeVar("CONST_T")
 
-@grepr_dataclass(grepr_fields=["value"])
+@grepr_dataclass()
 class PatternConst(Generic[CONST_T]):
     """
     Requires an exact constant value at it's location in a pattern or similar. 
@@ -59,14 +59,7 @@ CBOpcodeHandler       : TypeAlias = "ConstOrFunc[SRCustomBlockOpcode]          |
 CBArgumentHandler     : TypeAlias = "ConstOrFunc[CBOpcodeSegmentT]             | CBArgumentPattern"
 CBArgumentTupleHandler: TypeAlias = "ConstOrFunc[tuple[CBOpcodeSegmentT]]      | tuple[CBArgumentHandler]"
 
-@grepr_dataclass(
-    grepr_fields=["access_point_id"], init=False, forbid_init_only_subcls=True,
-    suggested_subcls_names=[
-        "ScriptPattern", "BlockPattern", "InputPattern", "DropdownPattern",
-        "CBArgumentMutationPattern", "CBMutationPattern", "CBCallMutationPattern",
-        "CBOpcodePattern", "CBArgumentPattern",
-    ],
-)
+@grepr_dataclass(init=False, forbid_init_only_subcls=True)
 class Pattern:
     """
     Basis for a Pattern selecting Second Representation Scripts, Blocks etc.
@@ -103,7 +96,7 @@ class Pattern:
         return True
 
 
-@grepr_dataclass(grepr_fields=["position", "blocks"])
+@grepr_dataclass()
 class ScriptPattern(Pattern):
     """
     Pattern for selecting SRScript instances with certain data.
@@ -114,7 +107,7 @@ class ScriptPattern(Pattern):
     position: ConstOrFunc[tuple[int|float, int|float]] | None = None
     blocks  : BlockListHandler = _allow_anything_fn
 
-@grepr_dataclass(grepr_fields=["opcode", "inputs", "dropdowns", "comment", "mutation"])
+@grepr_dataclass()
 class BlockPattern(Pattern):
     """
     Pattern for selecting SRBlock instances with certain data.
@@ -128,7 +121,7 @@ class BlockPattern(Pattern):
     comment  : ConstOrFunc[SRComment | None] | None = None # possibly CommentPattern
     mutation : MutationHandler  | None = None
 
-@grepr_dataclass(grepr_fields=["blocks", "block", "immediate", "dropdown"])
+@grepr_dataclass()
 class InputPattern(Pattern):
     """
     Pattern for selecting SRInputValue or subclass instances with certain data.
@@ -141,7 +134,7 @@ class InputPattern(Pattern):
     immediate: ConstOrFunc[str | bool | None] = None
     dropdown : OptDropdownHandler | None = None
 
-@grepr_dataclass(grepr_fields=["kind", "value"])
+@grepr_dataclass()
 class DropdownPattern(Pattern):
     """
     Pattern for selecting SRDropdownValue instances with certain data.
@@ -152,7 +145,7 @@ class DropdownPattern(Pattern):
     kind : ConstOrFunc[DropdownValueKind] | None = None
     value: ConstOrFunc[DROPDOWN_VALUE_T ] | None = None
 
-@grepr_dataclass(grepr_fields=["argument_name", "main_color", "prototype_color", "outline_color"])
+@grepr_dataclass()
 class CBArgumentMutationPattern(Pattern):
     """
     Pattern for selecting SRCustomBlockArgumentMutation instances with certain data.
@@ -165,7 +158,7 @@ class CBArgumentMutationPattern(Pattern):
     prototype_color: ConstOrFunc[str] | None = None
     outline_color  : ConstOrFunc[str] | None = None
 
-@grepr_dataclass(grepr_fields=["custom_opcode", "no_screen_refresh", "optype", "main_color", "prototype_color", "outline_color"])
+@grepr_dataclass()
 class CBMutationPattern(Pattern):
     """
     Pattern for selecting SRCustomBlockMutation instances with certain data.
@@ -180,7 +173,7 @@ class CBMutationPattern(Pattern):
     prototype_color  : ConstOrFunc[str]  | None = None
     outline_color    : ConstOrFunc[str]  | None = None
 
-@grepr_dataclass(grepr_fields=["custom_opcode"])
+@grepr_dataclass()
 class CBCallMutationPattern(Pattern):
     """
     Pattern for selecting SRCustomBlockCallMutation instances with certain data.
@@ -190,7 +183,7 @@ class CBCallMutationPattern(Pattern):
 
     custom_opcode: CBOpcodeHandler | None = None
 
-@grepr_dataclass(grepr_fields=["branch_count", "ends_in_else"])
+@grepr_dataclass()
 class ExpandableIfMutationPattern(Pattern):
     """
     Pattern for selecting SRExpandableIfMutation instances with certain data.
@@ -201,7 +194,7 @@ class ExpandableIfMutationPattern(Pattern):
     branch_count: ConstOrFunc[int ] | None = None
     ends_in_else: ConstOrFunc[bool] | None = None
 
-@grepr_dataclass(grepr_fields=["operations"])
+@grepr_dataclass()
 class ExpandableOperatorMutationPattern(Pattern):
     """
     Pattern for selecting SRExpandableOperatorMutation instances with certain data.
@@ -211,7 +204,7 @@ class ExpandableOperatorMutationPattern(Pattern):
 
     operations: ConstOrFunc[list[SRExpandableOperatorMenu]] | None = None
 
-@grepr_dataclass(grepr_fields=["operations"])
+@grepr_dataclass()
 class ExpandableJoinMutationPattern(Pattern):
     """
     Pattern for selecting SRExpandableJoinMutation instances with certain data.
@@ -221,7 +214,7 @@ class ExpandableJoinMutationPattern(Pattern):
 
     input_count: ConstOrFunc[int] | None = None
 
-@grepr_dataclass(grepr_fields=["segments"])
+@grepr_dataclass()
 class CBOpcodePattern(Pattern):
     """
     Pattern for selecting SRCustomBlockOpcode instances with certain data.
@@ -231,7 +224,7 @@ class CBOpcodePattern(Pattern):
 
     segments: CBArgumentTupleHandler | None = None
 
-@grepr_dataclass(grepr_fields=["name", "type"])
+@grepr_dataclass()
 class CBArgumentPattern(Pattern):
     """
     Pattern for selecting SRCustomBlockArgument instances with certain data.
@@ -243,7 +236,7 @@ class CBArgumentPattern(Pattern):
     type: ConstOrFunc[SRCustomBlockArgumentType] | None = None
 
 
-@grepr_dataclass(grepr_fields=["access_points"])
+@grepr_dataclass()
 class SuccessfulMatchResult:
     """
     Represents the result of a sucessful match usuallly from a Pattern with a Second Representation Tree.

@@ -25,7 +25,7 @@ from pmp_manip.core.monitor         import FRMonitor, SRMonitor
 from pmp_manip.core.vars_lists      import SRVariable, SRCloudVariable, SRList
 
 
-@grepr_dataclass(grepr_fields=["is_stage", "name", "variables", "lists", "broadcasts", "custom_vars", "blocks", "comments", "current_costume", "costumes", "sounds", "id", "volume", "layer_order"])
+@grepr_dataclass()
 class FRTarget(ABC):
     """
     The first representation (FR) of a target. A target can be either a sprite or the stage
@@ -295,7 +295,7 @@ class FRTarget(ABC):
         
         return new_variables, new_lists
 
-@grepr_dataclass(grepr_fields=["tempo", "video_transparency", "video_state", "text_to_speech_language"])
+@grepr_dataclass()
 class FRStage(FRTarget):
     """
     The first representation (FR) of the stage
@@ -379,7 +379,7 @@ class FRStage(FRTarget):
         )
         return (new_stage, global_variables, global_lists)
 
-@grepr_dataclass(grepr_fields=["visible", "x", "y", "size", "direction", "draggable", "rotation_style"],)
+@grepr_dataclass()
 class FRSprite(FRTarget):
     """
     The first representation (FR) of a sprite
@@ -483,10 +483,7 @@ class FRSprite(FRTarget):
         return (new_sprite, None, None)
 
 
-@grepr_dataclass(
-    grepr_fields=["scripts", "comments", "costumes", "sounds", "costume_index", "volume"], 
-    init=False, forbid_init_only_subcls=True, suggested_subcls_names=["SRStage", "SRSprite"],
-)
+@grepr_dataclass(init=False, forbid_init_only_subcls=True)
 class SRTarget:
     """
     The second representation (SR) of a target, which is much more user friendly. A target can be either a sprite or the stage
@@ -707,7 +704,7 @@ class SRTarget:
         )        
         
 
-@grepr_dataclass(grepr_fields=[], init=True)
+@grepr_dataclass()
 class SRStage(SRTarget):
     """
     The second representation (SR) of the stage, which is much more user friendly
@@ -797,7 +794,7 @@ class SRStage(SRTarget):
         )
         return (old_stage, old_global_monitors, asset_files)
 
-@grepr_dataclass(grepr_fields=["name", "local_variables", "local_lists", "local_monitors", "is_visible", "position", "size", "direction", "is_draggable", " rotation_style", "uuid"])
+@grepr_dataclass()
 class SRSprite(SRTarget):
     """
     The second representation (SR) of a sprite, which is much more user friendly

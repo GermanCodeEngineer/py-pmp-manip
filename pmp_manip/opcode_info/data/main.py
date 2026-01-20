@@ -1,5 +1,6 @@
-from typing import TYPE_CHECKING
-from copy   import copy, deepcopy
+from __future__ import annotations
+from typing     import TYPE_CHECKING
+from copy       import copy, deepcopy
 
 from pmp_manip.important_consts import (
     OPCODE_VAR_VALUE, NEW_OPCODE_VAR_VALUE, OPCODE_LIST_VALUE, NEW_OPCODE_LIST_VALUE, 
@@ -261,7 +262,7 @@ info_api.set_opcodes_mutation_class(ANY_OPCODE_EXPANDABLE_OPERATOR, old_cls=FREx
 info_api.set_opcode_mutation_class(OPCODE_EXPANDABLE_JOIN, old_cls=FRExpandableJoinMutation, new_cls=SRExpandableJoinMutation)
 
 # Special Cases
-def _149c_e47b(block: "SRBlock|IRBlock", validation_if: ValidationIF) -> OpcodeType:
+def _149c_e47b(block: SRBlock|IRBlock, validation_if: ValidationIF) -> OpcodeType:
     dropdown_value = block.dropdowns["TARGET"]
     match dropdown_value.value:
         case "all" | "this script":
@@ -275,7 +276,7 @@ info_api.add_opcode_case(OPCODE_STOP_SCRIPT, SpecialCase(
     function=_149c_e47b,
 ))
 
-def _bd30_2f8b(block: "SRBlock|IRBlock", validation_if: ValidationIF) -> OpcodeType:
+def _bd30_2f8b(block: SRBlock|IRBlock, validation_if: ValidationIF) -> OpcodeType:
     # Get the complete mutation and derive OpcodeType from optype
     partial_mutation: SRCustomBlockCallMutation = block.mutation
     complete_mutation = validation_if.get_cb_mutation(partial_mutation.custom_opcode)

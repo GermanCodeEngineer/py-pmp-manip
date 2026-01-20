@@ -11,7 +11,7 @@ PENGUINMOD_PLATFORM_META_DATA = {
     "version": "stable",
 }
 
-@grepr_dataclass(grepr_fields=["semver", "vm", "agent", "platform"])
+@grepr_dataclass()
 class FRMeta:
     """
     The first representation for the metadata of a project
@@ -107,7 +107,7 @@ class FRMeta:
             # agent can be anything i do not care
             raise MANIP_ThanksError() # project must be older or newer
 
-@grepr_dataclass(grepr_fields=["name", "url", "version"])
+@grepr_dataclass()
 class FRPlatformMeta:
     """
     The first representation for the metadata of the penguinmod platform
