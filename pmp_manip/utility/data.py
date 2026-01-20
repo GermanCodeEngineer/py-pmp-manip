@@ -1,13 +1,10 @@
 from __future__  import annotations
-from copy        import copy
-from dataclasses import field
 from difflib     import SequenceMatcher
 from hashlib     import sha256, md5
 from json        import dumps
-from typing      import overload, Iterable, Iterator, SupportsIndex, Any
+from typing      import Any
 
-from pmp_manip.utility.dataclasses import grepr_dataclass
-from pmp_manip.utility.decorators  import enforce_argument_types
+from pmp_manip.utility.base import grepr_dataclass
 
 
 _TOKEN_CHARSET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!#%()*+,-./:;=?@[]^_`{|}~"
@@ -164,110 +161,6 @@ class ContentFingerprint:
             "hash"  : self.hash,
         }
 
-@grepr_dataclass(frozen=True, unsafe_hash=True)
-class ATPathAttribute:
-    """
-    Represents an attribute of a visit path. Immutable/Frozen and Hashable.
-    """
-    value: str
-
-@grepr_dataclass(frozen=True, unsafe_hash=True)
-class ATPathIndexOrKey:
-    """
-    Represents an index or key of a visit path. Immutable/Frozen and Hashable.
-    """
-    value: str
-
-@grepr_dataclass(frozen=True, unsafe_hash=True, init=False, grepr=False)
-class AbstractTreePath:
-    """
-    Represents a visit path inside an Abstract Object Tree. Immutable/Frozen and Hashable.
-    """
-    path: tuple[ATPathAttribute | ATPathIndexOrKey, ...] = field(default_factory=tuple)
-    
-    @enforce_argument_types
-    def __init__(self, path: Iterable[ATPathAttribute | ATPathIndexOrKey] = tuple()) -> None:
-        self.__dict__["path"] = tuple(path)
-    
-    def copy(self) -> AbstractTreePath:
-        return self.__copy__()
-    
-    def __copy__(self) -> AbstractTreePath:
-        return AbstractTreePath(copy(self.path))
-    
-    @enforce_argument_types
-    def add_attribute(self, attr: str) -> AbstractTreePath:
-        """
-        Adds an attribute to the path. Returns a new instance.
-        """
-        return AbstractTreePath(self.path + (ATPathAttribute(attr),))
-
-    @enforce_argument_types
-    def add_index_or_key(self, index_or_key: int | str | Any) -> AbstractTreePath:
-        """
-        Adds an index or key to the path. Returns a new instance.
-        """
-        return AbstractTreePath(self.path + (ATPathIndexOrKey(index_or_key),))
-    
-    @enforce_argument_types
-    def extend(self, other: AbstractTreePath) -> AbstractTreePath:
-        """
-        Extend the path by another path. Returns a new instance.
-        """
-        return AbstractTreePath(self.path + other.path)
-    
-    @enforce_argument_types
-    def go_up(self, n: int = 1) -> AbstractTreePath:
-        """
-        Removes the last `n` elements. Returns a new instance.
-        """
-        return self[:-n]
-    
-    @enforce_argument_types
-    def index(self, value: ATPathAttribute | ATPathIndexOrKey) -> int:
-        """
-        Find the index of an attribute, index or key.
-        """
-        return self.path.index(value)
-    
-    def __len__(self) -> int:
-        return len(self.path)
-    
-    def __iter__(self) -> Iterator[ATPathAttribute | ATPathIndexOrKey]:
-        return iter(self.path)
-    
-    @overload
-    def __getitem__(self, i: SupportsIndex, /) -> ATPathAttribute | ATPathIndexOrKey: ...
-    @overload
-    def __getitem__(self, i: slice, /) -> AbstractTreePath: ...
-    @enforce_argument_types
-    def __getitem__(self, i: SupportsIndex | slice, /) -> ATPathAttribute | ATPathIndexOrKey | AbstractTreePath:
-        if isinstance(i, slice):
-            new_path = self.path.__getitem__(i)
-            return AbstractTreePath(new_path)
-        else:
-            return self.path.__getitem__(i)
-    
-    @enforce_argument_types
-    def __add__(self, other: AbstractTreePath) -> AbstractTreePath:
-        return self.extend(other)
-    
-    @enforce_argument_types
-    def __contains__(self, value: ATPathAttribute | ATPathIndexOrKey) -> bool:
-        return value in self.path
-    
-    def __reversed__(self) -> Iterator[ATPathAttribute | ATPathIndexOrKey]:
-        return reversed(self.path)
-        
-    def __repr__(self) -> str:
-        path_string = ""
-        for item in self.path:
-            if   isinstance(item, ATPathAttribute):
-                path_string += f".{item.value}"
-            elif isinstance(item, ATPathIndexOrKey):
-                path_string += f"[{item.value!r}]"
-        return f"{type(self).__name__}({path_string})"
-
 class NotSetType:
     """
     An empty placeholder
@@ -284,6 +177,6 @@ NotSet = NotSetType()
 __all__ = [
     "remove_duplicates", "get_closest_matches", "tuplify", "listify", "gdumps",
     "string_to_sha256", "number_to_token", "generate_md5", "ContentFingerprint",
-    "ATPathAttribute", "ATPathIndexOrKey", "AbstractTreePath", "NotSetType", "NotSet",
+    "NotSetType", "NotSet",
 ]
 

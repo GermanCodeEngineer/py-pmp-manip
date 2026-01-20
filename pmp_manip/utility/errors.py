@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing     import TYPE_CHECKING
-if TYPE_CHECKING:
-    from pmp_manip.utility.data import AbstractTreePath
+
+if TYPE_CHECKING: from pmp_manip.utility.base import AbstractTreePath
 
 
 class MANIP_Error(Exception):

@@ -4,6 +4,8 @@ from enum        import Enum
 from tree_sitter import Node
 from typing      import Any
 
+from pmp_manip.utility.dual_key_dict import DualKeyDict
+
 
 class KeyReprDict(dict):
     """
@@ -14,8 +16,7 @@ class KeyReprDict(dict):
         return grepr(self)
 
 def grepr(obj, /, safe_dkd=False, level_offset=0, annotate_fields=True, vanilla_strings=False, *, indent=4) -> str:
-    from pmp_manip.utility.dual_key_dict import DualKeyDict
-    from pmp_manip.utility.dataclasses import get_field_options
+    from pmp_manip.utility.base import get_field_options
     def _grepr(obj, level=level_offset) -> tuple[str, bool]:
         is_compatible = bool(getattr(obj, "__has_grepr__", False)) and not(isinstance(obj, type))
         if indent is not None:

@@ -1,3 +1,6 @@
+import sys
+sys.stderr = open("out.lua", "w")
+
 from pmp_manip import *
 init_config(get_default_config())
 empty = SRProject.create_empty()

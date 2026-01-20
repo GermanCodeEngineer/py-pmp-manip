@@ -5,12 +5,11 @@ from inspect         import signature
 from sys             import modules as sys_modules
 from types           import UnionType
 from typing          import (
-    Any, Literal, Callable, Union, ParamSpec, TypeVar,
-    get_origin, get_args, get_type_hints, TYPE_CHECKING,
+    Any, Literal, Callable, Union, ParamSpec, TypeVar, TYPE_CHECKING,
+    get_origin, get_args, get_type_hints,
 )
 
-if TYPE_CHECKING:
-    from pmp_manip.utility.data import AbstractTreePath
+if TYPE_CHECKING: from pmp_manip.utility.base import AbstractTreePath
 
 
 PARAM_SPEC = ParamSpec("PARAM_SPEC")
@@ -115,7 +114,7 @@ def _check_type(value: Any, expected: Any, name: str, path: AbstractTreePath | N
     Raises:
         TypeError: If the value does not match the expected type
     """
-    from pmp_manip.utility.data import AbstractTreePath
+    from pmp_manip.utility.base import AbstractTreePath
     if path is None:
         path = AbstractTreePath()
 
