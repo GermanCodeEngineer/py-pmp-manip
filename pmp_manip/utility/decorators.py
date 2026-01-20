@@ -6,8 +6,11 @@ from sys             import modules as sys_modules
 from types           import UnionType
 from typing          import (
     Any, Literal, Callable, Union, ParamSpec, TypeVar,
-    get_origin, get_args, get_type_hints,
+    get_origin, get_args, get_type_hints, TYPE_CHECKING,
 )
+
+if TYPE_CHECKING:
+    from pmp_manip.utility.data import AbstractTreePath
 
 
 PARAM_SPEC = ParamSpec("PARAM_SPEC")
@@ -82,8 +85,20 @@ def _is_union(tp: object) -> bool:
         get_origin(tp) is Union  # typing.Union[int, str]
         or isinstance(tp, UnionType)  # new style: int | str
     )
-    
-def _check_type(value: Any, expected: Any, name: str, path: str = "") -> None:
+
+def _repr_type(t: type | Any) -> str:
+    """Format a type for display in error messages, similar to validation.py style."""
+    if not isinstance(t, type):
+        # Handle typing constructs
+        return str(t)
+    if t.__module__ == "builtins":
+        return t.__name__
+    elif t.__module__.startswith("pmp_manip."):
+        return f"pmp_manip.{t.__name__}"
+    else:
+        return f"{t.__module__}.{t.__name__}"
+
+def _check_type(value: Any, expected: Any, name: str, path: AbstractTreePath | None = None) -> None:
     """
     Recursively checks that a given value matches the expected type.
     Runtime type enforcement that supports TypeVar, Union, Optional,
@@ -95,11 +110,14 @@ def _check_type(value: Any, expected: Any, name: str, path: str = "") -> None:
         value: the actual value passed to the function
         expected: The type annotation from the function signature
         name: the argument name (for error messages)
-        path: internal path used for nested data reporting
+        path: AbstractTreePath for tracking location in nested data structures
 
     Raises:
         TypeError: If the value does not match the expected type
     """
+    from pmp_manip.utility.data import AbstractTreePath
+    if path is None:
+        path = AbstractTreePath()
 
     # --- Handle Any ---
     if expected is Any:
@@ -125,13 +143,13 @@ def _check_type(value: Any, expected: Any, name: str, path: str = "") -> None:
                 return
             except TypeError:
                 continue
-        raise TypeError(f"{name}{path}: value {value!r} does not match {expected!r}")
+        raise TypeError(f"{name}{path!r} must be one of types {expected} not {_repr_type(type(value))}")
 
 
     # --- Handle type[T] ---
     if origin is type:
         if not isinstance(value, type):
-            raise TypeError(f"{name}{path}: expected a class (type[T]), got {type(value).__name__}")
+            raise TypeError(f"{name}{path!r} must be a class (type[T]) not {_repr_type(type(value))}")
         target = args[0] if args else object
         # if the inner arg is a TypeVar, reduce to its bound
         if isinstance(target, TypeVar):
@@ -141,47 +159,47 @@ def _check_type(value: Any, expected: Any, name: str, path: str = "") -> None:
         else:
             targets = (target,)
         if target is not object and not issubclass(value, targets):
-            raise TypeError(f"{name}{path}: {value} is not a subclass of {targets}")
+            raise TypeError(f"{name}{path!r} must be a subclass of {targets} not {value}")
         return
 
     # --- Handle dict[K,V] ---
     if origin is dict:
         if not isinstance(value, dict):
-            raise TypeError(f"{name}{path}: expected dict, got {type(value).__name__}")
+            raise TypeError(f"{name}{path!r} must be a dict not {_repr_type(type(value))}")
         key_t, val_t = args if len(args) == 2 else (Any, Any)
         for k, v in value.items():
-            _check_type(k, key_t, name, path + "[key]")
-            _check_type(v, val_t, name, path + "[value]")
+            _check_type(k, key_t, name, path.add_index_or_key("key"))
+            _check_type(v, val_t, name, path.add_index_or_key("value"))
         return
 
     # --- Handle tuple[T,...] or fixed tuple ---
     if origin is tuple:
         if not isinstance(value, tuple):
-            raise TypeError(f"{name}{path}: expected tuple, got {type(value).__name__}")
+            raise TypeError(f"{name}{path!r} must be a tuple not {_repr_type(type(value))}")
         if len(args) == 2 and args[1] is Ellipsis:  # tuple[T, ...]
             elem_t = args[0]
             for i, item in enumerate(value):
-                _check_type(item, elem_t, name, path + f"[{i}]")
+                _check_type(item, elem_t, name, path.add_index_or_key(i))
         elif args:  # tuple[T1, T2, ...]
             if len(value) != len(args):
-                raise TypeError(f"{name}{path}: expected tuple of length {len(args)}, got {len(value)}")
+                raise TypeError(f"{name}{path!r} must be a tuple of length {len(args)} not length {len(value)}")
             for i, (item, elem_t) in enumerate(zip(value, args)):
-                _check_type(item, elem_t, name, path + f"[{i}]")
+                _check_type(item, elem_t, name, path.add_index_or_key(i))
         return
 
     # --- Handle list[T], set[T], frozenset[T] ---
     if origin in (list, set, frozenset):
         if not isinstance(value, origin):
-            raise TypeError(f"{name}{path}: expected {origin.__name__}, got {type(value).__name__}")
+            raise TypeError(f"{name}{path!r} must be a {origin.__name__} not {_repr_type(type(value))}")
         elem_t = args[0] if args else Any
         for i, item in enumerate(value):
-            _check_type(item, elem_t, name, path + f"[{i}]")
+            _check_type(item, elem_t, name, path.add_index_or_key(i))
         return
 
     # --- Handle Callable ---
     if origin is ABCCallable or (origin is None and expected is ABCCallable):
         if not callable(value):
-            raise TypeError(f"{name}{path}: expected Callable, got non-callable {type(value).__name__}")
+            raise TypeError(f"{name}{path!r} must be Callable not non-callable {_repr_type(type(value))}")
         # Note: We don't validate argument/return types for Callable[[int], str]
         # as that would require runtime signature inspection
         return
@@ -189,40 +207,40 @@ def _check_type(value: Any, expected: Any, name: str, path: str = "") -> None:
     # --- Handle Mapping[K, V] ---
     if origin is Mapping:
         if not isinstance(value, Mapping):
-            raise TypeError(f"{name}{path}: expected Mapping, got {type(value).__name__}")
+            raise TypeError(f"{name}{path!r} must be a Mapping not {_repr_type(type(value))}")
         key_t, val_t = args if len(args) == 2 else (Any, Any)
         for k, v in value.items():
-            _check_type(k, key_t, name, path + "[key]")
-            _check_type(v, val_t, name, path + "[value]")
+            _check_type(k, key_t, name, path.add_index_or_key("key"))
+            _check_type(v, val_t, name, path.add_index_or_key("value"))
         return
 
     # --- Handle Sequence[T] ---
     if origin is Sequence:
         if not isinstance(value, Sequence):
-            raise TypeError(f"{name}{path}: expected Sequence, got {type(value).__name__}")
+            raise TypeError(f"{name}{path!r} must be a Sequence not {_repr_type(type(value))}")
         elem_t = args[0] if args else Any
         for i, item in enumerate(value):
-            _check_type(item, elem_t, name, path + f"[{i}]")
+            _check_type(item, elem_t, name, path.add_index_or_key(i))
         return
 
     # --- Handle Iterable[T] (excluding str/bytes to avoid char-by-char validation) ---
     if origin is Iterable:
         if not isinstance(value, Iterable):
-            raise TypeError(f"{name}{path}: expected Iterable, got {type(value).__name__}")
+            raise TypeError(f"{name}{path!r} must be an Iterable not {_repr_type(type(value))}")
         # Skip validation for strings/bytes - they're iterable but usually not intended
         # for element-wise type checking
         if isinstance(value, (str, bytes)):
             return
         elem_t = args[0] if args else Any
         for i, item in enumerate(value):
-            _check_type(item, elem_t, name, path + f"[{i}]")
+            _check_type(item, elem_t, name, path.add_index_or_key(i))
         return
 
     # --- Handle Literal[V, ...] ---
     if origin is Literal:
         if value not in args:
             raise TypeError(
-                f"{name}{path}: value {value!r} not in Literal{args}"
+                f"{name}{path!r} must be one of Literal{args} not {value!r}"
             )
         return
 
@@ -232,22 +250,22 @@ def _check_type(value: Any, expected: Any, name: str, path: str = "") -> None:
         if isinstance(expected, type):
             if not isinstance(value, expected):
                 raise TypeError(
-                    f"{name}{path}: expected {expected.__name__}, "
-                    f"got {type(value).__name__}"
+                    f"{name}{path!r} must be of type {_repr_type(expected)} "
+                    f"not {_repr_type(type(value))}"
                 )
         else:
             # For other typing constructs, like NewType, etc.
             try:
                 if not isinstance(value, expected):
                     raise TypeError(
-                        f"{name}{path}: expected {expected}, "
-                        f"got {type(value).__name__}"
+                        f"{name}{path!r} must be of type {expected} "
+                        f"not {_repr_type(type(value))}"
                     )
             except TypeError:
                 # If isinstance fails (e.g., for NewType), raise error
                 raise TypeError(
-                    f"{name}{path}: value {value!r} does not match "
-                    f"expected type {expected}"
+                    f"{name}{path!r} must be of type {expected} "
+                    f"not {_repr_type(type(value))}"
                 )
         return
 
@@ -255,8 +273,8 @@ def _check_type(value: Any, expected: Any, name: str, path: str = "") -> None:
     if not isinstance(value, origin):
         origin_name = getattr(origin, '__name__', str(origin))
         raise TypeError(
-            f"{name}{path}: expected {origin_name}, "
-            f"got {type(value).__name__}"
+            f"{name}{path!r} must be of type {origin_name} "
+            f"not {_repr_type(type(value))}"
         )
 
 

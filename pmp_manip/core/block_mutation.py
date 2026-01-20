@@ -1067,7 +1067,7 @@ class SRExpandableOperatorMutation(SRMutation):
             menu_values=[enum.to_code() for enum in self.operations],
         )
 
-@grepr_dataclass(grepr_fields=["input_count"])
+@grepr_dataclass()
 class SRExpandableJoinMutation(SRMutation):
     """
     The second representation for the mutation of an expandable join block

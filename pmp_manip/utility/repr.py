@@ -15,7 +15,7 @@ class KeyReprDict(dict):
 
 def grepr(obj, /, safe_dkd=False, level_offset=0, annotate_fields=True, vanilla_strings=False, *, indent=4) -> str:
     from pmp_manip.utility.dual_key_dict import DualKeyDict
-    from pmp_manip.utility.dataclasses import update_field
+    from pmp_manip.utility.dataclasses import get_field_options
     def _grepr(obj, level=level_offset) -> tuple[str, bool]:
         is_compatible = bool(getattr(obj, "__has_grepr__", False)) and not(isinstance(obj, type))
         if indent is not None:
@@ -98,8 +98,8 @@ def grepr(obj, /, safe_dkd=False, level_offset=0, annotate_fields=True, vanilla_
             args = []
             allsimple = True
             for field in fields(obj):
-                update_field(field) # apply default py-pmp-manip settings to field
-                if not field.metadata.get("grepr", True):
+                options = get_field_options(field)
+                if not options["grepr"]:
                     continue
                 if not hasattr(obj, field.name):
                     continue
