@@ -8,7 +8,7 @@ from typing     import Any
 
 from pmp_manip.utility import (
     grepr_dataclass, xml_equal, image_equal, generate_md5,
-    AA_TYPE, AA_COORD_PAIR, AA_EQUAL, AbstractTreePath,
+    AA_TYPE, AA_COORD_PAIR, AA_EQUAL, AbstractTreePath, HasGreprValidate,
     MANIP_ThanksError,
 )
 
@@ -18,7 +18,7 @@ EMPTY_SVG_COSTUME_ROTATION_CENTER = (240, 180)
 
 
 @grepr_dataclass()
-class FRCostume:
+class FRCostume(HasGreprValidate):
     """
     The first representation for a costume. It is very close to the json data in a project
     """
@@ -112,7 +112,7 @@ class FRCostume:
             )
 
 @grepr_dataclass()
-class FRSound:
+class FRSound(HasGreprValidate):
     """
     The first representation for a sound. It is very close to the json data in a project
     """
@@ -182,7 +182,7 @@ class FRSound:
         )
 
 @grepr_dataclass(init=False, forbid_init_only_subcls=True)
-class SRCostume(ABC):
+class SRCostume(ABC, HasGreprValidate):
     """
     The second representation for a costume. It is more user friendly then the first representation.
     **Please use the subclasses SRVectorCostume and SRBitmapCostume for actual data**
@@ -366,7 +366,7 @@ class SRBitmapCostume(SRCostume):
 
 
 @grepr_dataclass()
-class SRSound:
+class SRSound(HasGreprValidate):
     """
     The second representation for a sound. It is more user friendly then the first representation
     """

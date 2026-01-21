@@ -2,12 +2,15 @@ from __future__  import annotations
 from copy        import copy
 from dataclasses import dataclass, fields as get_fields, field as base_field, Field, MISSING, _MISSING_TYPE
 from types       import MappingProxyType, NoneType
-from typing      import Any, NoReturn, Callable, overload, get_type_hints, Iterable, Iterator, SupportsIndex, Any
+from typing      import (
+    Any, NoReturn, Callable, Iterable, Iterator, SupportsIndex, Any, Protocol,
+    overload, get_type_hints, dataclass_transform, TYPE_CHECKING,
+)
 
 
 VALIDATOR_FN = Callable | NoneType # TODO
 
-FIELD_OPTIONS = {}
+FIELD_OPTIONS: dict[Field, dict[str, Any]] = {}
 
 def field(*,
         default: Any | _MISSING_TYPE = MISSING, default_factory: Callable[[], Any] | _MISSING_TYPE = MISSING, 
@@ -47,13 +50,20 @@ def get_field_options(field: Field) -> dict[str, Any]:
     update_field(field)
     return FIELD_OPTIONS[field]
 
+@dataclass_transform(
+    eq_default = True,
+    order_default = True,
+    kw_only_default = False,
+    frozen_default = False,
+    field_specifiers = (field,),
+)
 def grepr_dataclass(*, grepr: bool = True,
         init: bool = True, eq: bool = True, order: bool = True, 
         unsafe_hash: bool = False, frozen: bool = False, 
         match_args: bool = True, kw_only: bool = False, 
         slots: bool = False, weakref_slot: bool = False,
         forbid_init_only_subcls: bool = False,
-        validate: bool = False,
+        validate: bool = True,
     ):
     """
     A decorator which combines @dataclass and a good representation system.
@@ -94,9 +104,11 @@ def grepr_dataclass(*, grepr: bool = True,
             cls.__has_grepr__ = True
         
         if validate:
-            def validate_method(self, path: AbstractTreePath = AbstractTreePath(start_with_dot=True), *args, **kwargs) -> None:
+            def validate_method(self, path: AbstractTreePath | None = None, *args, **kwargs) -> None:
                 from pmp_manip.otility.decorators import _check_type
-                
+                if path is None:
+                    AbstractTreePath(start_with_dot=True)
+
                 # Get type hints to resolve string annotations
                 type_hints = get_type_hints(type(self))
                 
@@ -116,8 +128,8 @@ def grepr_dataclass(*, grepr: bool = True,
             cls.validate = validate_method
             cls.__has_validate__ = True
             
-            # Remove 'validate' from abstract methods if present (for ABC compatibility)
-            if hasattr(cls, '__abstractmethods__'):
+            # Remove "validate" from abstract methods if present (for ABC compatibility)
+            if hasattr(cls, "__abstractmethods__"):
                 abstractmethods = set(cls.__abstractmethods__)
                 abstractmethods.discard('validate')
                 cls.__abstractmethods__ = frozenset(abstractmethods)
@@ -125,23 +137,46 @@ def grepr_dataclass(*, grepr: bool = True,
         return cls
     return decorator
 
+class HasGreprValidate(Protocol):
+    """
+    Protocol to represent effects of @grepr_dataclass with `grepr=True` and `validate=true`.
+    """
+
+    # Needs to be synced with arguments of grepr
+    def __repr__(self, /,
+        safe_dkd:bool=False, level_offset:int=0, annotate_fields:bool=True,
+        vanilla_strings:bool=False, *, indent:int|str|None=4,
+    ) -> str:
+        """
+        Represent a dataclass in a way inspired by ast.dumps using `grepr`.
+        """
+        # Overriden by @grepr_dataclass
+    
+    def validate(self, path: AbstractTreePath | None = None, *args, **kwargs) -> None:
+        """
+        Validate a dataclass.
+        First ensures all fields (which do not have `validate_type=False`) to be of the annotated type.
+        Second calls and returns the return value of the `post_validate` method with `*args` and `**kwargs` if the class has one.
+        """
+        # Overriden by @grepr_dataclass
+
 
 @grepr_dataclass(frozen=True, unsafe_hash=True)
-class ATPathAttribute:
+class ATPathAttribute(HasGreprValidate):
     """
     Represents an attribute of a visit path. Immutable/Frozen and Hashable.
     """
     value: str
 
 @grepr_dataclass(frozen=True, unsafe_hash=True)
-class ATPathIndexOrKey:
+class ATPathIndexOrKey(HasGreprValidate):
     """
     Represents an index or key of a visit path. Immutable/Frozen and Hashable.
     """
     value: str
 
 @grepr_dataclass(frozen=True, unsafe_hash=True, init=False, grepr=False)
-class AbstractTreePath:
+class AbstractTreePath(HasGreprValidate):
     """
     Represents a visit path inside an Abstract Object Tree. Immutable/Frozen and Hashable.
     """
@@ -264,7 +299,7 @@ NotSet = NotSetType()
 
 
 __all__ = [
-    "field", "update_field", "grepr_dataclass",
+    "field", "update_field", "grepr_dataclass", "HasGreprValidate",
     "ATPathAttribute", "ATPathIndexOrKey", "AbstractTreePath",
     "NotSetType", "NotSet",
 ]

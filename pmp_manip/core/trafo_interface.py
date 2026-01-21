@@ -1,7 +1,9 @@
 from __future__  import annotations
-from dataclasses import field
 
-from pmp_manip.utility import grepr_dataclass, number_to_token, MANIP_ConversionError, MANIP_ValidationError
+from pmp_manip.utility import (
+    grepr_dataclass, field, number_to_token,
+    HasGreprValidate, MANIP_ConversionError, MANIP_ValidationError,
+)
 
 from pmp_manip.core.block_mutation import FRCustomBlockMutation, SRCustomBlockMutation
 from pmp_manip.core.block          import FRBlock, IRBlock, SRBlock, SRScript
@@ -11,7 +13,7 @@ from pmp_manip.core.vars_lists     import _variable_sha256, _list_sha256
 
 
 @grepr_dataclass()
-class FirstToInterIF:
+class FirstToInterIF(HasGreprValidate):
     """
     An interface which allows the management of other blocks in the same target during conversion from first to intermediate representation
     """
@@ -88,7 +90,7 @@ class FirstToInterIF:
         raise MANIP_ConversionError(f"Comment with id {comment_id!r} not found")
 
 @grepr_dataclass()
-class InterToFirstIF:
+class InterToFirstIF(HasGreprValidate):
     """
     An interface which allows the management of other blocks in the same target during conversion from first to intermediate representation
     """
@@ -225,7 +227,7 @@ class InterToFirstIF:
         return _list_sha256(list_name, sprite_name)
 
 @grepr_dataclass()
-class SecondReprIF:
+class SecondReprIF(HasGreprValidate):
     """
     ABC for an interface which holds scripts in second representation
     """

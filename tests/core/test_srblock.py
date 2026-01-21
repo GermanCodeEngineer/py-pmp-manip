@@ -1,12 +1,11 @@
-from copy        import copy, deepcopy
-from dataclasses import field
-from pytest      import fixture, raises
+from copy   import copy, deepcopy
+from pytest import fixture, raises
 
 from pmp_manip.important_consts import NEW_OPCODE_POLYGON
 from pmp_manip.opcode_info.api  import DropdownValueKind, OpcodeType, BuiltinInputType, InputMode
 from pmp_manip.opcode_info.data import info_api
 from pmp_manip.utility          import (
-    grepr_dataclass, AbstractTreePath, 
+    grepr_dataclass, field, AbstractTreePath, 
     MANIP_ConversionError,
     MANIP_TypeValidationError, MANIP_RangeValidationError, MANIP_InvalidOpcodeError, MANIP_InvalidBlockShapeError,
     MANIP_UnnecessaryInputError, MANIP_MissingInputError, MANIP_UnnecessaryDropdownError, MANIP_MissingDropdownError,

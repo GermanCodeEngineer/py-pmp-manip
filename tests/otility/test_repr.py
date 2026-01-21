@@ -1,6 +1,5 @@
 from __future__ import annotations
 from dataclasses import dataclass
-import pytest
 
 from pmp_manip.otility.base import grepr_dataclass
 from pmp_manip.otility.repr import grepr, KeyReprDict, GEnum
@@ -270,7 +269,7 @@ class TestGreprDataclass:
         assert "password123" not in result
     
     def test_dataclass_with_grepr_false_field(self):
-        """Test dataclass with field that has repr=False."""
+        """Test dataclass with field that has grepr=False."""
         from pmp_manip.otility.base import field
         
         @grepr_dataclass()
@@ -282,7 +281,7 @@ class TestGreprDataclass:
         result = grepr(account)
         assert "username=" in result
         assert "alice" in result
-        # Field with repr=False should not appear
+        # Field with grepr=False should not appear
         assert "password" not in result
         assert "secret" not in result
     

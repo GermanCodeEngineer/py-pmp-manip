@@ -1,13 +1,13 @@
-from __future__  import annotations
-from dataclasses import field
-from importlib   import util as importutil
-from os          import path
-from sys         import modules as sys_modules
-from typing      import TYPE_CHECKING, Type, Iterable
+from __future__ import annotations
+from importlib  import util as importutil
+from os         import path
+from sys        import modules as sys_modules
+from typing     import TYPE_CHECKING, Type, Iterable
 
 from pmp_manip.important_consts import BUILTIN_EXTENSIONS_SOURCE_DIRECTORY
 from pmp_manip.utility import (
-    grepr_dataclass, enforce_argument_types, file_exists, GEnum, DualKeyDict, 
+    grepr_dataclass, field, enforce_argument_types, file_exists,
+    GEnum, HasGreprValidate, DualKeyDict, 
     MANIP_UnknownOpcodeError, MANIP_SameOpcodeTwiceError,
     MANIP_ExtensionModuleNotFoundError, MANIP_UnexpectedExtensionModuleImportError, MANIP_UnknownBuiltinExtensionError,
 )
@@ -285,7 +285,7 @@ class MonitorIdBehaviour(GEnum):
     
 
 @grepr_dataclass()
-class OpcodeInfo:
+class OpcodeInfo(HasGreprValidate):
     """
     The information about all the blocks with a certain opcode
     """
@@ -498,7 +498,7 @@ class OpcodeInfo:
         return dict(self.get_dropdown_ids_infos().keys_key2_key1())
 
 @grepr_dataclass()
-class OpcodeInfoGroup:
+class OpcodeInfoGroup(HasGreprValidate):
     """
     Represents a group of block opcode information. 
     Therefore it's used to represent opcode information about categories and extensions
@@ -535,7 +535,7 @@ class OpcodeInfoGroup:
         )
 
 @grepr_dataclass()
-class OpcodeInfoAPI:
+class OpcodeInfoAPI(HasGreprValidate):
     """
     API which provides a way to fetch information about block opcodes
     """

@@ -10,7 +10,8 @@ from pmp_manip.opcode_info.api  import OpcodeInfoAPI, DropdownValueKind
 from pmp_manip.project_api      import SCRATCH_API, PENGUINMOD_API, fetch_projects
 from pmp_manip.utility          import (
     grepr_dataclass, enforce_argument_types, 
-    read_all_files_of_zip, create_zip_file, string_to_sha256, gdumps, KeyReprDict, AbstractTreePath,
+    read_all_files_of_zip, create_zip_file, string_to_sha256, gdumps,
+    KeyReprDict, AbstractTreePath, HasGreprValidate,
     AA_TYPE, AA_NONE_OR_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_LIST_OF_TYPES, AA_RANGE, AA_EXACT_LEN,
     MANIP_SameValueTwiceError, MANIP_SpriteLayerStackError, MANIP_UnexpectedSubprocessError
 )
@@ -25,7 +26,7 @@ from pmp_manip.core.vars_lists    import SRVariable, SRList
 
 
 @grepr_dataclass()
-class FRProject: 
+class FRProject(HasGreprValidate): 
     """
     The first representation (FR) of the project data tree. Its data is equivalent to the data stored in a .pmp file
     """

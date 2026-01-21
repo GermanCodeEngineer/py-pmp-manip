@@ -4,7 +4,7 @@ from typing     import Generic, TypeVar, Iterable, Any, cast, overload
 
 from pmp_manip.utility          import (
     grepr_dataclass, enforce_argument_types,
-    AbstractTreePath, ATPathAttribute, ATPathIndexOrKey, NotSet, NotSetType,
+    AbstractTreePath, ATPathAttribute, ATPathIndexOrKey, NotSet, NotSetType, HasGreprValidate,
 )
 
 from pmp_manip.core.asset          import SRCostume, SRVectorCostume, SRBitmapCostume, SRSound

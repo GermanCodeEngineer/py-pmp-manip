@@ -1,14 +1,13 @@
-from __future__  import annotations
-from abc         import ABC, abstractmethod
-from copy        import deepcopy
-from dataclasses import field
-from json        import loads, JSONDecodeError
-from typing      import Any, ClassVar, NoReturn, Literal, TYPE_CHECKING
+from __future__ import annotations
+from abc        import ABC, abstractmethod
+from copy       import deepcopy
+from json       import loads, JSONDecodeError
+from typing     import Any, ClassVar, NoReturn, Literal, TYPE_CHECKING
 
 from pmp_manip.important_consts import SHA256_SEC_MAIN_ARGUMENT_NAME
 from pmp_manip.utility          import (
-    grepr_dataclass, string_to_sha256, gdumps,
-    AA_TYPE, AA_HEX_COLOR, AA_LIST_OF_TYPE, AA_MIN, AbstractTreePath,
+    grepr_dataclass, field, string_to_sha256, gdumps,
+    AA_TYPE, AA_HEX_COLOR, AA_LIST_OF_TYPE, AA_MIN, AbstractTreePath, HasGreprValidate,
     MANIP_ThanksError, MANIP_ConversionError, MANIP_DeserializationError, 
 )
 
@@ -101,7 +100,7 @@ def _load_color_array(data: dict[str, Any], key: str, default: tuple[str, str, s
         raise MANIP_DeserializationError(f"Invalid value for {key!r}, expected array-like value: {value}")
 
 @grepr_dataclass(init=False, forbid_init_only_subcls=True)
-class FRMutation(ABC):
+class FRMutation(ABC, HasGreprValidate):
     """
     The first representation for the mutation of a block. Mutations hold special information, which only special blocks have
     """
@@ -201,8 +200,8 @@ class FRMutation(ABC):
 
 @grepr_dataclass()
 class FRCustomBlockArgumentMutation(FRMutation,
-    required_properties={"color"},
-    optional_properties={"warp", "edited", "hasnext"},
+        required_properties={"color"},
+        optional_properties={"warp", "edited", "hasnext"},
     ):
     """
     The first representation for the mutation of a custom block's argument reporter
@@ -782,7 +781,7 @@ class FRLoopMutation(FRMutation,
 
 
 @grepr_dataclass(init=False, forbid_init_only_subcls=True)
-class SRMutation(ABC):
+class SRMutation(ABC, HasGreprValidate):
     """
     The second representation for the mutation of a block. Mutations hold special information, which only special blocks have. This representation is much more user friendly then the first representation
     """

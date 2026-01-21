@@ -1,14 +1,14 @@
 from __future__ import annotations
 from typing     import Literal
 
-from pmp_manip.utility import grepr_dataclass, GEnum
+from pmp_manip.utility import grepr_dataclass, HasGreprValidate, GEnum
 
 from pmp_manip.important_consts         import OPCODE_POLYGON, OPCODE_FILTER_LIST_INDEX, OPCODE_FILTER_LIST_ITEM
 from pmp_manip.opcode_info.api.dropdown import DropdownType, BuiltinDropdownType
 
 
 @grepr_dataclass()
-class InputInfo:
+class InputInfo(HasGreprValidate):
     """
     The information about a input of a certain opcode
     """
@@ -173,7 +173,7 @@ class BuiltinInputType(InputType):
     FILTER_LIST_ITEM                  = (InputMode.FORCED_EMBEDDED_BLOCK, OPCODE_FILTER_LIST_ITEM , None, 2)
 
 @grepr_dataclass()
-class MenuInfo:
+class MenuInfo(HasGreprValidate):
     """
     The information about a menu in an input
     """

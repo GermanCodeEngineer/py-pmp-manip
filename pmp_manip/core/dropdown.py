@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 from pmp_manip.opcode_info.api import DropdownType, DropdownValueKind, DROPDOWN_VALUE_T
-from pmp_manip.utility         import grepr_dataclass, AA_TYPE, AA_JSON_COMPATIBLE, AbstractTreePath, MANIP_InvalidDropdownValueError
+from pmp_manip.utility         import (
+    grepr_dataclass, AA_TYPE, AA_JSON_COMPATIBLE,
+    AbstractTreePath, HasGreprValidate, MANIP_InvalidDropdownValueError
+)
 
 from pmp_manip.core.context import PartialContext, CompleteContext
 
 
 @grepr_dataclass()
-class SRDropdownValue:
+class SRDropdownValue(HasGreprValidate):
     """
     The second representation for a block dropdown, containing a kind and a value
     """

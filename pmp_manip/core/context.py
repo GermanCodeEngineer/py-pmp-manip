@@ -2,11 +2,11 @@ from __future__ import annotations
 from typing     import TYPE_CHECKING
 
 if TYPE_CHECKING: from pmp_manip.opcode_info.api import DropdownValueKind, DROPDOWN_VALUE_T
-from pmp_manip.utility import grepr_dataclass
+from pmp_manip.utility import grepr_dataclass, HasGreprValidate
 
 
 @grepr_dataclass()
-class PartialContext:
+class PartialContext(HasGreprValidate):
     """
     A temporary dataclass which stores the context for dropdown validation excluding sprite context
     """
@@ -20,7 +20,7 @@ class PartialContext:
     backdrops: list[tuple[DropdownValueKind, DROPDOWN_VALUE_T]]
 
 @grepr_dataclass()
-class CompleteContext:
+class CompleteContext(HasGreprValidate):
     """
     A temporary dataclass which stores the context for dropdown validation including sprite context
     """

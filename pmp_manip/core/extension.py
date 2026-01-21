@@ -3,12 +3,12 @@ from __future__ import annotations
 from pmp_manip.utility import (
     grepr_dataclass, 
     AA_TYPE, AA_ALNUM, is_valid_js_data_uri, is_valid_url, 
-    AbstractTreePath, MANIP_InvalidValueError,
+    AbstractTreePath, HasGreprValidate, MANIP_InvalidValueError,
 )
 
 
 @grepr_dataclass(init=False, forbid_init_only_subcls=True)
-class SRExtension:
+class SRExtension(HasGreprValidate):
     """
     The second representation for an extension.
     Creating an extension and adding it to a project is equivalent to clicking the "add extension" button

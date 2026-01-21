@@ -7,7 +7,7 @@ from pmp_manip.opcode_info.api  import OpcodeInfoAPI, MonitorIdBehaviour, Dropdo
 from pmp_manip.utility          import (
     grepr_dataclass, string_to_sha256,
     AA_TYPE, AA_TYPES, AA_DICT_OF_TYPE, AA_COORD_PAIR, AA_BOXED_COORD_PAIR, AA_EQUAL, AA_BIGGER_OR_EQUAL,
-    AbstractTreePath,
+    AbstractTreePath, HasGreprValidate,
     MANIP_InvalidOpcodeError, MANIP_MissingDropdownError, MANIP_UnnecessaryDropdownError, MANIP_ThanksError,
 )
 from pmp_manip.important_consts import (
@@ -30,7 +30,7 @@ LIST_MONITOR_MIN_HEIGHT: int|float = 60
 
 
 @grepr_dataclass()
-class FRMonitor:
+class FRMonitor(HasGreprValidate):
     """
     The first representation for a monitor
     """
@@ -203,7 +203,7 @@ class FRMonitor:
             )
 
 @grepr_dataclass()
-class SRMonitor:
+class SRMonitor(HasGreprValidate):
     """
     The second representation for a monitor. It is much more user friendly
     """

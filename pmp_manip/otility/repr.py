@@ -15,7 +15,10 @@ class KeyReprDict(dict):
     def __repr__(self) -> str:
         return grepr(self)
 
-def grepr(obj, /, safe_dkd=False, level_offset=0, annotate_fields=True, vanilla_strings=False, *, indent=4) -> str:
+def grepr(obj, /,
+        safe_dkd:bool=False, level_offset:int=0, annotate_fields:bool=True,
+        vanilla_strings:bool=False, *, indent:int|str|None=4,
+    ) -> str:
     from pmp_manip.otility.base import get_field_options
     def _grepr(obj, level=level_offset) -> tuple[str, bool]:
         is_compatible = bool(getattr(obj, "__has_grepr__", False)) and not(isinstance(obj, type))

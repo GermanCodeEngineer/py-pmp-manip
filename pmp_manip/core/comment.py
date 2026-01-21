@@ -1,11 +1,14 @@
 from __future__ import annotations
 from typing     import Any
 
-from pmp_manip.utility import grepr_dataclass, AA_COORD_PAIR, AA_TYPE, AbstractTreePath, MANIP_InvalidValueError
+from pmp_manip.utility import (
+    grepr_dataclass, AA_COORD_PAIR, AA_TYPE,
+    AbstractTreePath, HasGreprValidate, MANIP_InvalidValueError,
+)
 
 
 @grepr_dataclass()
-class FRComment:
+class FRComment(HasGreprValidate):
     """
     The first representation for a block. It is very close to the json data in a project
     """
@@ -72,7 +75,7 @@ class FRComment:
         return (self.block_id is not None, comment)
 
 @grepr_dataclass()
-class SRComment:
+class SRComment(HasGreprValidate):
     """
     The second representation for a comment
     """

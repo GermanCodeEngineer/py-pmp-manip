@@ -1,8 +1,10 @@
-from __future__  import annotations
-from dataclasses import field
-from typing      import Callable
+from __future__ import annotations
+from typing     import Callable
 
-from pmp_manip.utility import grepr_dataclass, remove_duplicates, GEnum, MANIP_BlameDevsError
+from pmp_manip.utility import (
+    grepr_dataclass, field, remove_duplicates,
+    GEnum, HasGreprValidate, MANIP_BlameDevsError,
+)
 
 from pmp_manip.core.context import PartialContext, CompleteContext
 
@@ -31,7 +33,7 @@ class DropdownValueKind(GEnum):
     SOUND          = 12
 
 @grepr_dataclass()
-class DropdownInfo:
+class DropdownInfo(HasGreprValidate):
     """
     The information about a dropdown of a certain opcode
     """
@@ -122,7 +124,7 @@ class DropdownValueRule(GEnum):
 
 
 @grepr_dataclass()
-class DropdownTypeInfo:
+class DropdownTypeInfo(HasGreprValidate):
     """
     The information about a dropdown type, which can be used for one or many opcodes
     """

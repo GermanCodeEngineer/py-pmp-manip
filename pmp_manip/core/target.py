@@ -1,16 +1,15 @@
-from __future__  import annotations
-from typing      import Any, Callable
-from copy        import copy, deepcopy
-from dataclasses import field
-from abc         import abstractmethod, ABC
-from uuid        import uuid4, UUID
+from __future__ import annotations
+from typing     import Any
+from copy       import copy, deepcopy
+from abc        import abstractmethod, ABC
+from uuid       import uuid4, UUID
 
 from pmp_manip.important_consts import SHA256_SEC_TARGET_NAME, SHA256_SEC_BROADCAST_MSG
 from pmp_manip.opcode_info.api  import OpcodeInfoAPI, DropdownValueKind, InputMode
 from pmp_manip.utility          import (
-    string_to_sha256, grepr_dataclass,
+    string_to_sha256, grepr_dataclass, field,
     AA_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_LIST_OF_TYPES, AA_MIN_LEN, AA_MIN, AA_RANGE, AA_COORD_PAIR, AA_NOT_ONE_OF, 
-    AbstractTreePath, 
+    AbstractTreePath, HasGreprValidate,
     MANIP_ThanksError, MANIP_SameValueTwiceError, MANIP_ConversionError,
 )
 
@@ -26,7 +25,7 @@ from pmp_manip.core.vars_lists      import SRVariable, SRCloudVariable, SRList
 
 
 @grepr_dataclass()
-class FRTarget(ABC):
+class FRTarget(ABC, HasGreprValidate):
     """
     The first representation (FR) of a target. A target can be either a sprite or the stage
     """
@@ -484,7 +483,7 @@ class FRSprite(FRTarget):
 
 
 @grepr_dataclass(init=False, forbid_init_only_subcls=True)
-class SRTarget:
+class SRTarget(HasGreprValidate):
     """
     The second representation (SR) of a target, which is much more user friendly. A target can be either a sprite or the stage
     """

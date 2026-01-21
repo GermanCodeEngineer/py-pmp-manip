@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing     import Callable
 
-from pmp_manip.utility import grepr_dataclass, GEnum
+from pmp_manip.utility import grepr_dataclass, HasGreprValidate, GEnum
 
 
 class SpecialCaseType(GEnum):
@@ -91,7 +91,7 @@ class SpecialCaseType(GEnum):
     """    
 
 @grepr_dataclass()
-class SpecialCase:
+class SpecialCase(HasGreprValidate):
     """
     Special Cases allows for custom behaviour for special blocks
     """

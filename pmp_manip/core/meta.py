@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing     import Any
 
 from pmp_manip.config  import get_config
-from pmp_manip.utility import grepr_dataclass, MANIP_ThanksError
+from pmp_manip.utility import grepr_dataclass, HasGreprValidate, MANIP_ThanksError
 
 
 PENGUINMOD_PLATFORM_META_DATA = {
@@ -12,7 +12,7 @@ PENGUINMOD_PLATFORM_META_DATA = {
 }
 
 @grepr_dataclass()
-class FRMeta:
+class FRMeta(HasGreprValidate):
     """
     The first representation for the metadata of a project
     """
@@ -108,7 +108,7 @@ class FRMeta:
             raise MANIP_ThanksError() # project must be older or newer
 
 @grepr_dataclass()
-class FRPlatformMeta:
+class FRPlatformMeta(HasGreprValidate):
     """
     The first representation for the metadata of the penguinmod platform
     """

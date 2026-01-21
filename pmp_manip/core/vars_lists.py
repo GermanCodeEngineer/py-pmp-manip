@@ -2,7 +2,10 @@ from __future__ import annotations
 from copy       import copy
 
 from pmp_manip.important_consts import SHA256_SEC_VARIABLE, SHA256_SEC_LIST
-from pmp_manip.utility          import string_to_sha256, grepr_dataclass, AA_TYPE, AA_TYPES, AA_LIST_OF_TYPES, AbstractTreePath
+from pmp_manip.utility          import (
+    string_to_sha256, grepr_dataclass, AA_TYPE, AA_TYPES, AA_LIST_OF_TYPES,
+    AbstractTreePath, HasGreprValidate,
+)
 
 
 
@@ -37,7 +40,7 @@ def _list_sha256(list_name: str, sprite_name: str): # is needed!
 
 
 @grepr_dataclass()
-class SRVariable:
+class SRVariable(HasGreprValidate):
     
     name: str
     current_value: int | float | str | bool
@@ -81,7 +84,7 @@ class SRCloudVariable(SRVariable):
         return (self.name, self.current_value, True)
 
 @grepr_dataclass()
-class SRList:
+class SRList(HasGreprValidate):
     
     name: str
     current_value: list[int | float | str | bool]

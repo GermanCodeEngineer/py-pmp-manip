@@ -147,7 +147,7 @@ def _check_type(value: Any, expected: Any, path: AbstractTreePath | None = None,
                 continue
         raise MANIP_TypeValidationError(
             path,
-            f"must be one of types {expected} not {_repr_type(type(value))}",
+            f"must be one of types {_repr_type(expected)} not {_repr_type(type(value))}",
             condition
         )
 

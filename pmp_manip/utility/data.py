@@ -4,7 +4,7 @@ from hashlib     import sha256, md5
 from json        import dumps
 from typing      import Any
 
-from pmp_manip.otility import grepr_dataclass
+from pmp_manip.otility import grepr_dataclass, HasGreprValidate
 
 
 _TOKEN_CHARSET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!#%()*+,-./:;=?@[]^_`{|}~"
@@ -94,7 +94,7 @@ def generate_md5(data: bytes) -> str:
     return md5_hash.hexdigest()
 
 @grepr_dataclass()
-class ContentFingerprint:
+class ContentFingerprint(HasGreprValidate):
     """
     Represents the fingerprint of string content. Stores length and hash for fast and efficient comparison. 
     """

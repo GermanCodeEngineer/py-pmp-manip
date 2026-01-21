@@ -53,7 +53,7 @@ def test_ExtInfoGenConfig_validate():
             ("is_trusted_extension_origin_handler", "https://raw.githubusercontent.com/Logise1123/FirebaseDB-/refs/heads/main/db.js", MANIP_TypeValidationError),
         ],
         validate_func=ExtInfoGenConfig.validate,
-        func_args=[[]],
+        func_args=[AbstractTreePath()],
     )
 
 
@@ -72,7 +72,7 @@ def test_ValidationConfig_validate():
             ("raise_if_monitor_bigger_then_stage", None, MANIP_TypeValidationError),
         ],
         validate_func=ValidationConfig.validate,
-        func_args=[[]],
+        func_args=[AbstractTreePath()],
     )
 
 

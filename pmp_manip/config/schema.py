@@ -1,24 +1,23 @@
 from __future__  import annotations
-from abc         import ABC, abstractmethod
+from abc         import ABC
 from datetime    import timedelta
-from dataclasses import field
 from dataclasses import FrozenInstanceError
 from typing      import Any, Callable
 
 from pmp_manip.utility import (
-    grepr_dataclass, is_valid_directory_path, 
-    AA_TYPE, AA_NONE_OR_CALLABLE, AbstractTreePath, 
+    grepr_dataclass, field, is_valid_directory_path, 
+    AA_TYPE, AbstractTreePath, HasGreprValidate,
     MANIP_InvalidDirPathError,
 )
 
 
 @grepr_dataclass()
-class ConfigBase(ABC):
+class ConfigBase(ABC, HasGreprValidate):
     """
     The base class for a configuration
     """
     
-    _frozen_: bool = field(init=False, default=False)
+    _frozen_: bool = field(init=False, default=False, grepr=False)
     
     def __setattr__(self, attr: str, value: Any) -> None:
         """
@@ -34,19 +33,7 @@ class ConfigBase(ABC):
         """
         if self._frozen_:
             raise FrozenInstanceError(f"cannot assign to field {attr!r}")
-        super().__setattr__(attr, value)        
-    
-    @abstractmethod
-    def validate(self, path: AbstractTreePath) -> None:
-        """
-        Ensure a Config is valid, raise MANIP_ValidationError if not
-        
-        Args:
-            path: the path from the top of the config tree to itself. Used for better error messages
-        
-        Raises:
-            MANIP_ValidationError: if the Config is invalid
-        """
+        super().__setattr__(attr, value)
 
 @grepr_dataclass(validate=True)
 class ExtInfoGenConfig(ConfigBase):
@@ -59,7 +46,7 @@ class ExtInfoGenConfig(ConfigBase):
     node_js_exec_timeout: float
     is_trusted_extension_origin_handler: Callable[[str], bool] | None
     
-    '''def validate(self, path: AbstractTreePath) -> None:
+    def post_validate(self, path: AbstractTreePath) -> None:
         """
         Ensure a ExtInfoGenConfig is valid, raise MANIP_ValidationError if not
         
@@ -67,15 +54,10 @@ class ExtInfoGenConfig(ConfigBase):
             path: the path from the top of the config tree to itself. Used for better error messages
         
         Raises:
-            MANIP_ValidationError: if the ExtInfoGenConfig is invalid
             MANIP_InvalidDirPathError: if the extension opcode info dir is invalid
         """
-        AA_TYPE(self, path, "gen_opcode_info_dir", str)
         if not is_valid_directory_path(self.gen_opcode_info_dir):
             raise MANIP_InvalidDirPathError(path, f"Invalid extension opcode info directory: {self.gen_opcode_info_dir}")
-        AA_TYPE(self, path, "js_fetch_interval", timedelta)
-        AA_TYPE(self, path, "node_js_exec_timeout", float)
-        AA_NONE_OR_CALLABLE(self, path, "is_trusted_extension_origin_handler")'''
 
 @grepr_dataclass()
 class ValidationConfig(ConfigBase):
@@ -100,7 +82,7 @@ class ValidationConfig(ConfigBase):
         AA_TYPE(self, path, "raise_if_monitor_bigger_then_stage", bool)
 
 @grepr_dataclass()
-class PlatformMetaConfig(ConfigBase):
+class PlatformMetaConfig(ConfigBase, HasGreprValidate):
     """
     You probably should NOT change this.
     The configuration containing the up to date version of Scratch and PenguinMod

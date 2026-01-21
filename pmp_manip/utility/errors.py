@@ -63,6 +63,10 @@ class MANIP_ConversionError(MANIP_Error): pass
 class MANIP_ValidationError(MANIP_Error): pass
 
 class MANIP_PathValidationError(MANIP_ValidationError):
+    path: AbstractTreePath
+    msg: str
+    condition: str | None
+    
     def __init__(self, path: AbstractTreePath, msg: str, condition: str|None = None) -> None:
         self.path      = path
         self.msg       = msg

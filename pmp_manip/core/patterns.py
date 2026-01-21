@@ -1,10 +1,10 @@
 from __future__  import annotations
-from dataclasses import field
-from typing      import TypeVar, Callable, TypeAlias, Generic, Any, Literal, ClassVar
+from typing      import TypeVar, Callable, TypeAlias, Generic, Any, ClassVar
 
 from pmp_manip.opcode_info.api import DropdownValueKind, DROPDOWN_VALUE_T
 from pmp_manip.utility          import (
-    grepr_dataclass, enforce_argument_types,
+    grepr_dataclass, field, enforce_argument_types,
+    HasGreprValidate,
 )
 
 from pmp_manip.core.block_mutation import (
@@ -60,7 +60,7 @@ CBArgumentHandler     : TypeAlias = "ConstOrFunc[CBOpcodeSegmentT]             |
 CBArgumentTupleHandler: TypeAlias = "ConstOrFunc[tuple[CBOpcodeSegmentT]]      | tuple[CBArgumentHandler]"
 
 @grepr_dataclass(init=False, forbid_init_only_subcls=True)
-class Pattern:
+class Pattern(HasGreprValidate):
     """
     Basis for a Pattern selecting Second Representation Scripts, Blocks etc.
     """
@@ -237,7 +237,7 @@ class CBArgumentPattern(Pattern):
 
 
 @grepr_dataclass()
-class SuccessfulMatchResult:
+class SuccessfulMatchResult(HasGreprValidate):
     """
     Represents the result of a sucessful match usuallly from a Pattern with a Second Representation Tree.
     Allows the access of auto-filled access points by their id.

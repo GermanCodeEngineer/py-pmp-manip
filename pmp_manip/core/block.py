@@ -1,9 +1,8 @@
-from __future__  import annotations
-from abc         import ABC, abstractmethod
-from copy        import deepcopy
-from dataclasses import field
-from json        import loads, dumps
-from typing      import Any, TYPE_CHECKING
+from __future__ import annotations
+from abc        import ABC, abstractmethod
+from copy       import deepcopy
+from json       import loads, dumps
+from typing     import Any, TYPE_CHECKING
 
 from pmp_manip.important_consts import (
     OPCODE_NUM_VAR_VALUE, OPCODE_VAR_VALUE, OPCODE_NUM_LIST_VALUE, OPCODE_LIST_VALUE,
@@ -18,10 +17,10 @@ from pmp_manip.opcode_info.api  import (
     DROPDOWN_VALUE_T,
 )
 from pmp_manip.utility          import (
-    grepr_dataclass, get_closest_matches, tuplify, listify, string_to_sha256,
+    grepr_dataclass, field, get_closest_matches, tuplify, listify, string_to_sha256,
     AA_TYPE, ADESCR_TYPE, AA_NONE, AA_NONE_OR_TYPE, AA_COORD_PAIR, 
     AA_LIST_OF_TYPE, AA_DICT_OF_TYPE, AA_MIN_LEN, AA_EQUAL,
-    AbstractTreePath,
+    AbstractTreePath, HasGreprValidate,
     MANIP_ConversionError,
     MANIP_UnnecessaryInputError, MANIP_MissingInputError, MANIP_UnnecessaryDropdownError, MANIP_MissingDropdownError, 
     MANIP_InvalidOpcodeError, MANIP_InvalidBlockShapeError,
@@ -56,7 +55,7 @@ def get_input_cls_for_input_mode(input_mode: InputMode) -> type[SRInputValue]:
 
 
 @grepr_dataclass()
-class FRBlock:
+class FRBlock(HasGreprValidate):
     """
     The first representation for a block. It is very close to the json data in a project
     """
@@ -320,7 +319,7 @@ class FRBlock:
 
 
 @grepr_dataclass()
-class IRBlock:
+class IRBlock(HasGreprValidate):
     """
     The intermediate representation for a block. It has similarities with SRBlock but uses an id system
     """
@@ -656,7 +655,7 @@ class IRBlock:
         return (self.position, new_blocks) 
  
 @grepr_dataclass()
-class IRInputValue:
+class IRInputValue(HasGreprValidate):
     """
     The intermediate representation for the value of a block's input
     """
@@ -669,7 +668,7 @@ class IRInputValue:
 
 
 @grepr_dataclass()
-class SRScript:
+class SRScript(HasGreprValidate):
     """
     The second representation for a script. 
     It uses a nested block structure and is much more user friendly then the first representation
@@ -753,7 +752,7 @@ class SRScript:
         return block_ids[0]
 
 @grepr_dataclass()
-class SRBlock:
+class SRBlock(HasGreprValidate):
     """
     The second representation for a block. 
     It uses a nested block structure and is much more user friendly then the first representation
@@ -1090,7 +1089,7 @@ class SRBlock:
     eq=False, order=False, init=False, forbid_init_only_subcls=True,
     # eq must be True for order to work, is overwritten
 )
-class SRInputValue(ABC):
+class SRInputValue(ABC, HasGreprValidate):
     """
     The second representation for a block input. 
     It can contain a substack of blocks, a block, an immediate text or boolean field and a dropdown
@@ -1099,10 +1098,10 @@ class SRInputValue(ABC):
     """
     
     # these are not guaranteed to exist and are only listed for good typing
-    blocks: list[SRBlock]     | None = field(init=False, repr=False, hash=False, compare=False) 
-    block: SRBlock            | None = field(init=False, repr=False, hash=False, compare=False)
-    immediate: str | bool     | None = field(init=False, repr=False, hash=False, compare=False)
-    dropdown: SRDropdownValue | None = field(init=False, repr=False, hash=False, compare=False)
+    blocks: list[SRBlock]     | None = field(init=False, grepr=False, hash=False, compare=False) 
+    block: SRBlock            | None = field(init=False, grepr=False, hash=False, compare=False)
+    immediate: str | bool     | None = field(init=False, grepr=False, hash=False, compare=False)
+    dropdown: SRDropdownValue | None = field(init=False, grepr=False, hash=False, compare=False)
 
     @classmethod
     def from_mode(cls,

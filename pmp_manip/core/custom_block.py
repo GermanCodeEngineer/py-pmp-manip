@@ -6,12 +6,12 @@ from pmp_manip.opcode_info.api import InputType, BuiltinInputType, InputInfo, Op
 from pmp_manip.utility         import (
     grepr_dataclass,
     AA_TYPE, AA_TUPLE_OF_TYPES, AA_MIN_LEN, AA_NOT_EQUAL,
-    GEnum, AbstractTreePath,
+    GEnum, AbstractTreePath, HasGreprValidate,
     MANIP_SameValueTwiceError, MANIP_ConversionError, MANIP_TypeValidationError,
 )
 
 @grepr_dataclass(frozen=True, unsafe_hash=True)
-class SRCustomBlockOpcode:
+class SRCustomBlockOpcode(HasGreprValidate):
     """
     The second representation for the "custom opcode" of a custom block. 
     It stores the segments, which can be either a string(=> a label) or a SRCustomBlockArgument with name and type
@@ -144,7 +144,7 @@ class SRCustomBlockOpcode:
 
 
 @grepr_dataclass(frozen=True, unsafe_hash=True)
-class SRCustomBlockArgument:
+class SRCustomBlockArgument(HasGreprValidate):
     """
     The second representation for a argument of a custom opcode
     """
