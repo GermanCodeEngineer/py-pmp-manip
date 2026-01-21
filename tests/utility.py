@@ -1,4 +1,4 @@
-from typing      import Any, Type, Callable, TypeVar
+from typing      import Any, Type, Callable
 from copy        import copy, deepcopy
 from pytest      import raises
 
@@ -6,9 +6,7 @@ from pmp_manip.utility import MANIP_ValidationError
 from pmp_manip.core.block   import FRBlock
 from pmp_manip.core.comment import FRComment
 
-_CPMT = TypeVar("_CPMT")
-
-def copymodify(obj: _CPMT, attr: str, value: Any) -> _CPMT:
+def copymodify[T](obj: T, attr: str, value: Any) -> T:
     """
     Copy an object and modify an attribute
     `copymodify(x, 'y', z)` is equivalent to `x2 = copy.copy(x)\nx2.y = z`
@@ -17,12 +15,10 @@ def copymodify(obj: _CPMT, attr: str, value: Any) -> _CPMT:
     setattr(copied_obj, attr, value)
     return copied_obj
 
-_AVTT = TypeVar("_AVTT")
-
-def execute_attr_validation_tests(
-        obj: _AVTT, 
+def execute_attr_validation_tests[T](
+        obj: T, 
         attr_tests: list[tuple[str, Any, Type[MANIP_ValidationError]]], 
-        validate_func: Callable[[_AVTT], None],
+        validate_func: Callable[[T], None],
         func_args: list[Any]=[],
     ) -> None:
     """

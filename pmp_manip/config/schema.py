@@ -48,7 +48,7 @@ class ConfigBase(ABC):
             MANIP_ValidationError: if the Config is invalid
         """
 
-@grepr_dataclass()
+@grepr_dataclass(validate=True)
 class ExtInfoGenConfig(ConfigBase):
     """
     The configuration for the extension info generator module
@@ -59,7 +59,7 @@ class ExtInfoGenConfig(ConfigBase):
     node_js_exec_timeout: float
     is_trusted_extension_origin_handler: Callable[[str], bool] | None
     
-    def validate(self, path: AbstractTreePath) -> None:
+    '''def validate(self, path: AbstractTreePath) -> None:
         """
         Ensure a ExtInfoGenConfig is valid, raise MANIP_ValidationError if not
         
@@ -75,7 +75,7 @@ class ExtInfoGenConfig(ConfigBase):
             raise MANIP_InvalidDirPathError(path, f"Invalid extension opcode info directory: {self.gen_opcode_info_dir}")
         AA_TYPE(self, path, "js_fetch_interval", timedelta)
         AA_TYPE(self, path, "node_js_exec_timeout", float)
-        AA_NONE_OR_CALLABLE(self, path, "is_trusted_extension_origin_handler")
+        AA_NONE_OR_CALLABLE(self, path, "is_trusted_extension_origin_handler")'''
 
 @grepr_dataclass()
 class ValidationConfig(ConfigBase):

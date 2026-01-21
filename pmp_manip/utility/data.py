@@ -4,7 +4,7 @@ from hashlib     import sha256, md5
 from json        import dumps
 from typing      import Any
 
-from pmp_manip.utility.base import grepr_dataclass
+from pmp_manip.otility import grepr_dataclass
 
 
 _TOKEN_CHARSET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!#%()*+,-./:;=?@[]^_`{|}~"
@@ -161,22 +161,8 @@ class ContentFingerprint:
             "hash"  : self.hash,
         }
 
-class NotSetType:
-    """
-    An empty placeholder
-    """
-
-    def __repr__(self) -> str:
-        return "NotSet"
-
-    def __bool__(self) -> bool:
-        return False
-
-NotSet = NotSetType()
-
 __all__ = [
     "remove_duplicates", "get_closest_matches", "tuplify", "listify", "gdumps",
     "string_to_sha256", "number_to_token", "generate_md5", "ContentFingerprint",
-    "NotSetType", "NotSet",
 ]
-# MIGRATION: NOT AT ALL
+

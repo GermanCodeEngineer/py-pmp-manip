@@ -3,7 +3,8 @@ from collections.abc import Callable as ABCCallable, Iterable, Mapping, Sequence
 from typing import Any, Literal
 import pytest
 
-from pmp_manip.utility.decorators import _check_type, enforce_argument_types
+from pmp_manip.otility.decorators import _check_type, enforce_argument_types
+from pmp_manip.utility.errors import MANIP_TypeValidationError
 
 
 class TestCheckType:
@@ -14,25 +15,25 @@ class TestCheckType:
     def test_basic_int(self):
         """Test basic int type checking."""
         _check_type(42, int, "value")
-        with pytest.raises(TypeError, match="expected int"):
+        with pytest.raises(MANIP_TypeValidationError, match="must be of type int"):
             _check_type("42", int, "value")
     
     def test_basic_str(self):
         """Test basic str type checking."""
         _check_type("hello", str, "value")
-        with pytest.raises(TypeError, match="expected str"):
+        with pytest.raises(MANIP_TypeValidationError, match="must be of type str"):
             _check_type(42, str, "value")
     
     def test_basic_bool(self):
         """Test basic bool type checking."""
         _check_type(True, bool, "value")
-        with pytest.raises(TypeError, match="expected bool"):
+        with pytest.raises(MANIP_TypeValidationError, match="must be of type bool"):
             _check_type(1, bool, "value")
     
     def test_basic_float(self):
         """Test basic float type checking."""
         _check_type(3.14, float, "value")
-        with pytest.raises(TypeError, match="expected float"):
+        with pytest.raises(MANIP_TypeValidationError, match="must be of type float"):
             _check_type(3, float, "value")
     
     # --- Any Type ---
@@ -50,14 +51,14 @@ class TestCheckType:
         """Test Union[int, str] type checking."""
         _check_type(42, int | str, "value")
         _check_type("hello", int | str, "value")
-        with pytest.raises(TypeError, match="does not match"):
+        with pytest.raises(MANIP_TypeValidationError, match="must be one of types"):
             _check_type(3.14, int | str, "value")
     
     def test_optional(self):
         """Test Optional (Union with None) type checking."""
         _check_type("hello", str | None, "value")
         _check_type(None, str | None, "value")
-        with pytest.raises(TypeError, match="does not match"):
+        with pytest.raises(MANIP_TypeValidationError, match="must be one of types"):
             _check_type(42, str | None, "value")
     
     # --- List Types ---
@@ -65,25 +66,25 @@ class TestCheckType:
     def test_list_basic(self):
         """Test basic list type checking."""
         _check_type([1, 2, 3], list, "value")
-        with pytest.raises(TypeError, match="expected list"):
+        with pytest.raises(MANIP_TypeValidationError, match="must be of type list"):
             _check_type((1, 2, 3), list, "value")
     
     def test_list_of_int(self):
         """Test list[int] type checking."""
         _check_type([1, 2, 3], list[int], "value")
-        with pytest.raises(TypeError, match="expected int"):
+        with pytest.raises(MANIP_TypeValidationError, match="must be of type int"):
             _check_type([1, "2", 3], list[int], "value")
     
     def test_list_of_str(self):
         """Test list[str] type checking."""
         _check_type(["a", "b", "c"], list[str], "value")
-        with pytest.raises(TypeError, match="expected str"):
+        with pytest.raises(MANIP_TypeValidationError, match="must be of type str"):
             _check_type(["a", 2, "c"], list[str], "value")
     
     def test_nested_list(self):
         """Test nested list type checking."""
         _check_type([[1, 2], [3, 4]], list[list[int]], "value")
-        with pytest.raises(TypeError, match="expected int"):
+        with pytest.raises(MANIP_TypeValidationError, match="must be of type int"):
             _check_type([[1, 2], [3, "4"]], list[list[int]], "value")
     
     def test_empty_list(self):
@@ -95,21 +96,21 @@ class TestCheckType:
     def test_tuple_basic(self):
         """Test basic tuple type checking."""
         _check_type((1, 2, 3), tuple, "value")
-        with pytest.raises(TypeError, match="expected tuple"):
+        with pytest.raises(MANIP_TypeValidationError, match="must be of type tuple"):
             _check_type([1, 2, 3], tuple, "value")
     
     def test_tuple_homogeneous(self):
         """Test tuple[int, ...] (homogeneous variable-length) type checking."""
         _check_type((1, 2, 3), tuple[int, ...], "value")
-        with pytest.raises(TypeError, match="expected int"):
+        with pytest.raises(MANIP_TypeValidationError, match="must be of type int"):
             _check_type((1, "2", 3), tuple[int, ...], "value")
     
     def test_tuple_fixed(self):
         """Test tuple[int, str, float] (fixed-length) type checking."""
         _check_type((1, "hello", 3.14), tuple[int, str, float], "value")
-        with pytest.raises(TypeError, match="expected tuple of length 3"):
+        with pytest.raises(MANIP_TypeValidationError, match="must be a tuple of length 3"):
             _check_type((1, "hello"), tuple[int, str, float], "value")
-        with pytest.raises(TypeError, match="expected str"):
+        with pytest.raises(MANIP_TypeValidationError, match="must be of type str"):
             _check_type((1, 2, 3.14), tuple[int, str, float], "value")
     
     # --- Set Types ---
@@ -117,13 +118,13 @@ class TestCheckType:
     def test_set_of_int(self):
         """Test set[int] type checking."""
         _check_type({1, 2, 3}, set[int], "value")
-        with pytest.raises(TypeError, match="expected int"):
+        with pytest.raises(MANIP_TypeValidationError, match="must be of type int"):
             _check_type({1, "2", 3}, set[int], "value")
     
     def test_frozenset_of_str(self):
         """Test frozenset[str] type checking."""
         _check_type(frozenset(["a", "b"]), frozenset[str], "value")
-        with pytest.raises(TypeError, match="expected str"):
+        with pytest.raises(MANIP_TypeValidationError, match="must be of type str"):
             _check_type(frozenset(["a", 2]), frozenset[str], "value")
     
     # --- Dict Types ---
@@ -131,21 +132,21 @@ class TestCheckType:
     def test_dict_basic(self):
         """Test basic dict type checking."""
         _check_type({"a": 1}, dict, "value")
-        with pytest.raises(TypeError, match="expected dict"):
+        with pytest.raises(MANIP_TypeValidationError, match="must be of type dict"):
             _check_type([("a", 1)], dict, "value")
     
     def test_dict_str_int(self):
         """Test dict[str, int] type checking."""
         _check_type({"a": 1, "b": 2}, dict[str, int], "value")
-        with pytest.raises(TypeError, match="expected str"):
+        with pytest.raises(MANIP_TypeValidationError, match="must be of type str"):
             _check_type({1: 1, "b": 2}, dict[str, int], "value")
-        with pytest.raises(TypeError, match="expected int"):
+        with pytest.raises(MANIP_TypeValidationError, match="must be of type int"):
             _check_type({"a": "1", "b": 2}, dict[str, int], "value")
     
     def test_nested_dict(self):
         """Test nested dict type checking."""
         _check_type({"a": {"x": 1}}, dict[str, dict[str, int]], "value")
-        with pytest.raises(TypeError, match="expected int"):
+        with pytest.raises(MANIP_TypeValidationError, match="must be of type int"):
             _check_type({"a": {"x": "1"}}, dict[str, dict[str, int]], "value")
     
     # --- Callable Types ---
@@ -155,7 +156,7 @@ class TestCheckType:
         def my_func():
             pass
         _check_type(my_func, ABCCallable, "value")
-        with pytest.raises(TypeError, match="expected Callable"):
+        with pytest.raises(MANIP_TypeValidationError, match="must be Callable"):
             _check_type("not callable", ABCCallable, "value")
     
     def test_callable_lambda(self):
@@ -180,7 +181,7 @@ class TestCheckType:
     def test_iterable_list(self):
         """Test Iterable[int] with list."""
         _check_type([1, 2, 3], Iterable[int], "value")
-        with pytest.raises(TypeError, match="expected int"):
+        with pytest.raises(MANIP_TypeValidationError, match="must be of type int"):
             _check_type([1, "2", 3], Iterable[int], "value")
     
     def test_iterable_string_skipped(self):
@@ -202,7 +203,7 @@ class TestCheckType:
     def test_mapping_dict(self):
         """Test Mapping[str, int] with dict."""
         _check_type({"a": 1, "b": 2}, Mapping[str, int], "value")
-        with pytest.raises(TypeError, match="expected str"):
+        with pytest.raises(MANIP_TypeValidationError, match="must be of type str"):
             _check_type({1: 1}, Mapping[str, int], "value")
     
     # --- Sequence Types ---
@@ -210,7 +211,7 @@ class TestCheckType:
     def test_sequence_list(self):
         """Test Sequence[int] with list."""
         _check_type([1, 2, 3], Sequence[int], "value")
-        with pytest.raises(TypeError, match="expected int"):
+        with pytest.raises(MANIP_TypeValidationError, match="must be of type int"):
             _check_type([1, "2", 3], Sequence[int], "value")
     
     def test_sequence_tuple(self):
@@ -230,9 +231,9 @@ class TestCheckType:
     
     def test_literal_no_match(self):
         """Test Literal type checking with non-matching value."""
-        with pytest.raises(TypeError, match="not in Literal"):
+        with pytest.raises(MANIP_TypeValidationError, match="must be one of Literal"):
             _check_type("yellow", Literal["red", "green", "blue"], "value")
-        with pytest.raises(TypeError, match="not in Literal"):
+        with pytest.raises(MANIP_TypeValidationError, match="must be one of Literal"):
             _check_type(4, Literal[1, 2, 3], "value")
     
     # --- type[T] ---
@@ -241,7 +242,7 @@ class TestCheckType:
         """Test type[T] checking."""
         _check_type(int, type[int], "value")
         _check_type(str, type[str], "value")
-        with pytest.raises(TypeError, match="expected a class"):
+        with pytest.raises(MANIP_TypeValidationError, match="must be a class"):
             _check_type(42, type[int], "value")
     
     def test_type_subclass(self):
@@ -252,7 +253,7 @@ class TestCheckType:
             pass
         _check_type(Derived, type[Base], "value")
         _check_type(Base, type[Base], "value")
-        with pytest.raises(TypeError, match="not a subclass"):
+        with pytest.raises(MANIP_TypeValidationError, match="must be a subclass"):
             _check_type(int, type[Base], "value")
     
     # --- Complex Nested Types ---
@@ -272,18 +273,18 @@ class TestCheckType:
     def test_list_of_unions(self):
         """Test list of union types."""
         _check_type([1, "hello", 2, "world"], list[int | str], "value")
-        with pytest.raises(TypeError, match="does not match"):
+        with pytest.raises(MANIP_TypeValidationError, match="must be one of types"):
             _check_type([1, "hello", 3.14], list[int | str], "value")
     
     # --- Error Messages ---
     
     def test_error_path_tracking(self):
         """Test that error messages include path information."""
-        with pytest.raises(TypeError, match=r"value\[1\]"):
+        with pytest.raises(MANIP_TypeValidationError, match=r"At \.value\[1\]"):
             _check_type([1, "2", 3], list[int], "value")
-        with pytest.raises(TypeError, match=r"value\[key\]"):
+        with pytest.raises(MANIP_TypeValidationError, match=r"At \.value\['key'\]"):
             _check_type({1: "a"}, dict[str, str], "value")
-        with pytest.raises(TypeError, match=r"value\[value\]"):
+        with pytest.raises(MANIP_TypeValidationError, match=r"At \.value\['value'\]"):
             _check_type({"a": 1}, dict[str, str], "value")
 
 
@@ -297,9 +298,9 @@ class TestEnforceArgumentTypes:
             return a + b
         
         assert add(1, 2) == 3
-        with pytest.raises(TypeError):
+        with pytest.raises(MANIP_TypeValidationError):
             add("1", 2)
-        with pytest.raises(TypeError):
+        with pytest.raises(MANIP_TypeValidationError):
             add(1, "2")
     
     def test_with_default_args(self):
@@ -310,7 +311,7 @@ class TestEnforceArgumentTypes:
         
         assert greet("Alice") == "Hello, Alice!"
         assert greet("Bob", "Hi") == "Hi, Bob!"
-        with pytest.raises(TypeError):
+        with pytest.raises(MANIP_TypeValidationError):
             greet(123)
     
     def test_with_optional(self):
@@ -321,7 +322,7 @@ class TestEnforceArgumentTypes:
         
         assert process("test") == "test"
         assert process(None) == "default"
-        with pytest.raises(TypeError):
+        with pytest.raises(MANIP_TypeValidationError):
             process(123)
     
     def test_with_list_type(self):
@@ -331,7 +332,7 @@ class TestEnforceArgumentTypes:
             return sum(numbers)
         
         assert sum_list([1, 2, 3]) == 6
-        with pytest.raises(TypeError):
+        with pytest.raises(MANIP_TypeValidationError):
             sum_list([1, "2", 3])
     
     def test_instance_method(self):
@@ -343,7 +344,7 @@ class TestEnforceArgumentTypes:
         
         calc = Calculator()
         assert calc.add(1, 2) == 3
-        with pytest.raises(TypeError):
+        with pytest.raises(MANIP_TypeValidationError):
             calc.add("1", 2)
     
     def test_class_method(self):
@@ -357,7 +358,7 @@ class TestEnforceArgumentTypes:
                 return f"{name}_{cls.value}"
         
         assert Factory.create("test") == "test_10"
-        with pytest.raises(TypeError):
+        with pytest.raises(MANIP_TypeValidationError):
             Factory.create(123)
     
     def test_static_method(self):
@@ -369,7 +370,7 @@ class TestEnforceArgumentTypes:
                 return a * b
         
         assert Utils.multiply(3, 4) == 12
-        with pytest.raises(TypeError):
+        with pytest.raises(MANIP_TypeValidationError):
             Utils.multiply("3", 4)
     
     def test_with_any(self):
@@ -389,7 +390,7 @@ class TestEnforceArgumentTypes:
             return func(value)
         
         assert apply(lambda x: x * 2, 5) == 10
-        with pytest.raises(TypeError):
+        with pytest.raises(MANIP_TypeValidationError):
             apply("not a function", 5)
     
     def test_kwargs(self):
@@ -400,5 +401,6 @@ class TestEnforceArgumentTypes:
         
         assert create_user(name="Alice", age=30) == {"name": "Alice", "age": 30, "active": True}
         assert create_user("Bob", 25, False) == {"name": "Bob", "age": 25, "active": False}
-        with pytest.raises(TypeError):
+        with pytest.raises(MANIP_TypeValidationError):
             create_user(name=123, age=30)
+

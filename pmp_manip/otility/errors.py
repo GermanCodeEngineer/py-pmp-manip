@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing     import TYPE_CHECKING
 
-if TYPE_CHECKING: from pmp_manip.otility import AbstractTreePath
+if TYPE_CHECKING: from pmp_manip.otility.base import AbstractTreePath
 
 
 class MANIP_Error(Exception):
@@ -14,20 +14,6 @@ class MANIP_PathError(MANIP_Error): pass
 class MANIP_ThanksError(MANIP_Error):
     def __init__(self):
         super().__init__("Your project is unique! It could help me with my research! Please create an issue with your project attached! https://github.com/GermanCodeEngineer/py-pmp-manip/issues/new/")
-
-
-###############################################################
-#                     COPIED BUILT-IN ERRORS                  #
-###############################################################
-
-class MANIP_NotImplementedError(MANIP_Error): pass
-class MANIP_TypeError(MANIP_Error, TypeError): pass
-class MANIP_KeyError(MANIP_Error, KeyError): pass
-class MANIP_IndexError(MANIP_Error, IndexError): pass
-class MANIP_ValueError(MANIP_Error, ValueError): pass
-class MANIP_AttributeError(MANIP_Error, AttributeError): pass
-class MANIP_OSError(MANIP_Error, OSError): pass
-class MANIP_FileNotFoundError(MANIP_OSError): pass
 
 
 ###############################################################
@@ -76,24 +62,24 @@ class MANIP_PathValidationError(MANIP_ValidationError):
         full_message += msg
         super().__init__(full_message)
     
-class MANIP_TypeValidationError(MANIP_PathValidationError, MANIP_TypeError): pass
-class MANIP_InvalidValueError(MANIP_PathValidationError, MANIP_ValueError): pass
-class MANIP_RangeValidationError(MANIP_PathValidationError, MANIP_ValueError): pass
+class MANIP_TypeValidationError(MANIP_PathValidationError): pass
+class MANIP_InvalidValueError(MANIP_PathValidationError): pass
+class MANIP_RangeValidationError(MANIP_PathValidationError): pass
 
-class MANIP_MissingInputError(MANIP_PathValidationError, MANIP_ValueError): pass
-class MANIP_UnnecessaryInputError(MANIP_PathValidationError, MANIP_ValueError): pass
-class MANIP_MissingDropdownError(MANIP_PathValidationError, MANIP_ValueError): pass
-class MANIP_UnnecessaryDropdownError(MANIP_PathValidationError, MANIP_ValueError): pass
+class MANIP_MissingInputError(MANIP_PathValidationError): pass
+class MANIP_UnnecessaryInputError(MANIP_PathValidationError): pass
+class MANIP_MissingDropdownError(MANIP_PathValidationError): pass
+class MANIP_UnnecessaryDropdownError(MANIP_PathValidationError): pass
 
-class MANIP_InvalidDropdownValueError(MANIP_PathValidationError, MANIP_ValueError): pass
+class MANIP_InvalidDropdownValueError(MANIP_PathValidationError): pass
 
-class MANIP_InvalidOpcodeError(MANIP_PathValidationError, MANIP_ValueError): pass
-class MANIP_InvalidBlockShapeError(MANIP_PathValidationError, MANIP_ValueError): pass
-class MANIP_InvalidDirPathError(MANIP_PathValidationError, MANIP_ValueError): pass
+class MANIP_InvalidOpcodeError(MANIP_PathValidationError): pass
+class MANIP_InvalidBlockShapeError(MANIP_PathValidationError): pass
+class MANIP_InvalidDirPathError(MANIP_PathValidationError): pass
 
-class MANIP_SpriteLayerStackError(MANIP_PathValidationError, ValueError): pass
+class MANIP_SpriteLayerStackError(MANIP_PathValidationError): pass
 
-class MANIP_SameValueTwiceError(MANIP_ValidationError, ValueError):
+class MANIP_SameValueTwiceError(MANIP_ValidationError):
     def __init__(self, path1: AbstractTreePath, path2: AbstractTreePath, msg: str, condition: str|None = None) -> None:
         self.path1     = path1
         self.path2     = path2
@@ -167,6 +153,18 @@ class MANIP_FailedFileWriteError(MANIP_Error): pass
 class MANIP_FailedFileReadError(MANIP_Error): pass
 class MANIP_FailedFileDeleteError(MANIP_Error): pass
 
+###############################################################
+#                     COPIED BUILT-IN ERRORS                  #
+###############################################################
+
+class MANIP_NotImplementedError(MANIP_Error): pass
+class MANIP_TypeError(MANIP_Error): pass
+class MANIP_KeyError(MANIP_Error): pass
+class MANIP_IndexError(MANIP_Error): pass
+class MANIP_ValueError(MANIP_Error): pass
+class MANIP_AttributeError(MANIP_Error): pass
+class MANIP_OSError(MANIP_Error): pass
+class MANIP_FileNotFoundError(MANIP_OSError): pass
 
 ###############################################################
 #                         SPECIAL ERRORS                      #

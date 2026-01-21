@@ -2,9 +2,7 @@ from __future__  import annotations
 from copy        import copy
 from dataclasses import dataclass, fields as get_fields, field as base_field, Field, MISSING, _MISSING_TYPE
 from types       import MappingProxyType, NoneType
-from typing      import Any, NoReturn, Callable, overload, Iterable, Iterator, SupportsIndex, Any
-
-from pmp_manip.utility.repr import grepr as good_repr
+from typing      import Any, NoReturn, Callable, overload, get_type_hints, Iterable, Iterator, SupportsIndex, Any
 
 
 VALIDATOR_FN = Callable | NoneType # TODO
@@ -89,20 +87,40 @@ def grepr_dataclass(*, grepr: bool = True,
             cls.__init__ = __init__
         
         if grepr:
-            cls.__repr__ = good_repr
+            def grepr_wrapper(self, *args, **kwargs) -> str:
+                from pmp_manip.otility.repr import grepr
+                return grepr(self, *args, **kwargs)
+            cls.__repr__ = grepr_wrapper
             cls.__has_grepr__ = True
         
         if validate:
-            def validate_method(self, path: AbstractTreePath = AbstractTreePath(), *args, **kwargs) -> None:
+            def validate_method(self, path: AbstractTreePath = AbstractTreePath(start_with_dot=True), *args, **kwargs) -> None:
+                from pmp_manip.otility.decorators import _check_type
+                
+                # Get type hints to resolve string annotations
+                type_hints = get_type_hints(type(self))
+                
                 for field in get_fields(self):
                     options = get_field_options(field)
                     if not options["validate_type"]:
                         continue
-                    
+                    # Use type hints instead of field.type to handle string annotations
+                    expected_type = type_hints.get(field.name, field.type)
+                    _check_type(
+                        value=getattr(self, field.name, NotSet),
+                        expected=expected_type,
+                        path=path.add_attribute(field.name),
+                    )
                 if callable(getattr(self, "post_validate", None)):
                     self.post_validate(path, *args, **kwargs)
             cls.validate = validate_method
             cls.__has_validate__ = True
+            
+            # Remove 'validate' from abstract methods if present (for ABC compatibility)
+            if hasattr(cls, '__abstractmethods__'):
+                abstractmethods = set(cls.__abstractmethods__)
+                abstractmethods.discard('validate')
+                cls.__abstractmethods__ = frozenset(abstractmethods)
         
         return cls
     return decorator
@@ -128,21 +146,23 @@ class AbstractTreePath:
     Represents a visit path inside an Abstract Object Tree. Immutable/Frozen and Hashable.
     """
     path: tuple[ATPathAttribute | ATPathIndexOrKey, ...] = field(default_factory=tuple)
-    
-    def __init__(self, path: Iterable[ATPathAttribute | ATPathIndexOrKey] = tuple()) -> None:
+    start_with_dot: bool = True
+
+    def __init__(self, path: Iterable[ATPathAttribute | ATPathIndexOrKey] = tuple(), start_with_dot: bool = True) -> None:
         try:
             iter(path)
         except TypeError:
-            raise TypeError("path must be an iterable")
+            raise ValueError("path must be an iterable of ATPathAttribute or ATPathIndexOrKey items")
         if not all(isinstance(item, (ATPathAttribute, ATPathIndexOrKey)) for item in path):
             raise ValueError("path must be an iterable of ATPathAttribute or ATPathIndexOrKey items")
         self.__dict__["path"] = tuple(path)
+        self.__dict__["start_with_dot"] = start_with_dot
     
     def copy(self) -> AbstractTreePath:
         return self.__copy__()
     
     def __copy__(self) -> AbstractTreePath:
-        return AbstractTreePath(copy(self.path))
+        return AbstractTreePath(copy(self.path), start_with_dot=self.start_with_dot)
     
     def add_attribute(self, attr: str) -> AbstractTreePath:
         """
@@ -150,13 +170,13 @@ class AbstractTreePath:
         """
         if not isinstance(attr, str):
             raise ValueError("attr must be a string")
-        return AbstractTreePath(self.path + (ATPathAttribute(attr),))
+        return AbstractTreePath(self.path + (ATPathAttribute(attr),), start_with_dot=self.start_with_dot)
 
     def add_index_or_key(self, index_or_key: int | str | Any) -> AbstractTreePath:
         """
         Adds an index or key to the path. Returns a new instance.
         """
-        return AbstractTreePath(self.path + (ATPathIndexOrKey(index_or_key),))
+        return AbstractTreePath(self.path + (ATPathIndexOrKey(index_or_key),), start_with_dot=self.start_with_dot)
     
     def extend(self, other: AbstractTreePath) -> AbstractTreePath:
         """
@@ -164,7 +184,7 @@ class AbstractTreePath:
         """
         if not isinstance(other, AbstractTreePath):
             raise ValueError("first argument must be an AbstractTreePath")
-        return AbstractTreePath(self.path + other.path)
+        return AbstractTreePath(self.path + other.path, start_with_dot=self.start_with_dot)
     
     def go_up(self, n: int = 1) -> AbstractTreePath:
         """
@@ -197,7 +217,7 @@ class AbstractTreePath:
             raise ValueError("first argument must be an index or slice")
         if isinstance(i, slice):
             new_path = self.path.__getitem__(i)
-            return AbstractTreePath(new_path)
+            return AbstractTreePath(new_path, start_with_dot=self.start_with_dot)
         else:
             return self.path.__getitem__(i)
     
@@ -221,8 +241,31 @@ class AbstractTreePath:
                 path_string += f".{item.value}"
             elif isinstance(item, ATPathIndexOrKey):
                 path_string += f"[{item.value!r}]"
-        return f"{type(self).__name__}({path_string})"
+        if not self.start_with_dot:
+            path_string = path_string.removeprefix(".")
+            # Removes if at the start, else does nothing
+        return path_string
+    
+    def __str__(self) -> str:
+        return f"{type(self).__name__}({self.__repr__()})"
+
+class NotSetType:
+    """
+    An empty placeholder
+    """
+
+    def __repr__(self) -> str:
+        return "NotSet"
+
+    def __bool__(self) -> bool:
+        return False
+
+NotSet = NotSetType()
 
 
-__all__ = ["field", "update_field", "grepr_dataclass", "ATPathAttribute", "ATPathIndexOrKey", "AbstractTreePath"]
-# MIGRATION: FULLY
+__all__ = [
+    "field", "update_field", "grepr_dataclass",
+    "ATPathAttribute", "ATPathIndexOrKey", "AbstractTreePath",
+    "NotSetType", "NotSet",
+]
+

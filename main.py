@@ -6,4 +6,4 @@ print(empty)
 
 
 print(CBCallMutationPattern())
-FRMutation()
+SRExpandableJoinMutation(input_count=2)

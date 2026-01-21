@@ -9,7 +9,7 @@ from types                  import NotImplementedType
 from warnings               import warn
 
 from pmp_manip.utility            import (
-    repr_tree, gdumps,
+    gdumps,
     MANIP_JsNodeTreeToJsonConversionError, MANIP_InvalidExtensionCodeSyntaxError, MANIP_BadExtensionCodeFormatError, MANIP_InvalidTranslationMessageError,
     MANIP_UnexpectedPropertyAccessWarning, MANIP_UnexpectedNotPossibleFeatureWarning,
     NotSet, NotSetType,
@@ -94,6 +94,21 @@ SCRATCH_STUB = {
 _js_parser: Parser | None = None
 
 
+
+def _repr_tree(node: Node, indent=0): # TODO: add tests
+    """Nicely formatted repr of a tree-sitter node and its (named) children."""
+    indent_str = "  " * indent
+    node_type = node.type
+
+    if node.child_count == 0:
+        text = node.text.decode()
+        return f"{indent_str}{node_type} ({text!r})"
+
+    lines = [f"{indent_str}{node_type}:"]
+    for child in node.named_children:
+        lines.append(_repr_tree(child, indent + 1))
+    return "\n".join(lines)
+
 def get_js_parser() -> Parser:
     """
     Returns the global tree sitter JavaScript Parser instance. Loads the Parser's Language at first execution
@@ -148,7 +163,7 @@ def ts_node_to_json(
                  f"Defaulting to None{ColorStyle.RESET_ALL}", MANIP_UnexpectedPropertyAccessWarning)
             return None
 
-        raise MANIP_JsNodeTreeToJsonConversionError(f"Unsupported member expression format:\n{repr_tree(node, indent=1)}")
+        raise MANIP_JsNodeTreeToJsonConversionError(f"Unsupported member expression format:\n{_repr_tree(node, indent=1)}")
 
     elif node.type == "object":
         result = {}

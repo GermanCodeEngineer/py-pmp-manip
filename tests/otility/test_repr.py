@@ -2,9 +2,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 import pytest
 
-from pmp_manip.utility.repr import grepr, KeyReprDict, GEnum
-from pmp_manip.utility.decorators import grepr_dataclass
-from pmp_manip.utility.dual_key_dict import DualKeyDict
+from pmp_manip.otility.base import grepr_dataclass
+from pmp_manip.otility.repr import grepr, KeyReprDict, GEnum
+from pmp_manip.otility.dual_key_dict import DualKeyDict
 
 
 class TestGreprBasicTypes:
@@ -255,25 +255,28 @@ class TestGreprDataclass:
     
     def test_dataclass_excluded_fields(self):
         """Test dataclass with excluded fields."""
-        @grepr_dataclass(grepr_exclude_fields=["secret"])
+        from pmp_manip.otility.base import field
+        
+        @grepr_dataclass()
         class User:
             username: str
-            secret: str
+            secret: str = field(grepr=False)
         
         user = User(username="alice", secret="password123")
         result = grepr(user)
         assert "alice" in result
         # The secret field should not appear in repr
         assert "secret=" not in result
+        assert "password123" not in result
     
-    def test_dataclass_with_repr_false_field(self):
+    def test_dataclass_with_grepr_false_field(self):
         """Test dataclass with field that has repr=False."""
-        from dataclasses import field
+        from pmp_manip.otility.base import field
         
         @grepr_dataclass()
         class Account:
             username: str
-            password: str = field(repr=False)
+            password: str = field(grepr=False)
         
         account = Account(username="alice", password="secret")
         result = grepr(account)

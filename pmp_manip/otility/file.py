@@ -4,7 +4,7 @@ import os
 import shutil
 import zipfile, zlib
 
-from pmp_manip.utility.decorators import enforce_argument_types
+from pmp_manip.otility.decorators import enforce_argument_types
 from pmp_manip.utility.errors     import (
     MANIP_TypeError, MANIP_ValueError, 
     MANIP_OSError, MANIP_FileNotFoundError, MANIP_FailedFileWriteError, MANIP_FailedFileReadError, MANIP_FailedFileDeleteError,
@@ -190,5 +190,4 @@ __all__ = [
     "read_all_files_of_zip", "read_file_text", "write_file_text", 
     "delete_file", "delete_directory", "create_zip_file", "file_exists",
 ]
-# MIGRATION: FULLY
 

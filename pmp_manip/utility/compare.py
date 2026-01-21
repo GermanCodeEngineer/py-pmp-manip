@@ -3,8 +3,7 @@ from logging    import getLogger
 from lxml       import etree
 from PIL        import Image
 
-from pmp_manip.utility.file import write_file_text
-from pmp_manip.utility.repr import grepr
+from pmp_manip.otility import grepr, write_file_text
 
 def xml_equal(xml1: etree._Element, xml2: etree._Element, /) -> bool:
     """
@@ -59,4 +58,4 @@ def assert_lists_equal_ignore_order(a: list, b: list, /) -> None:
 
 
 __all__ = ["xml_equal", "image_equal", "lists_equal_ignore_order", "assert_lists_equal_ignore_order"]
-# MIGRATION: NOT AT ALL
+

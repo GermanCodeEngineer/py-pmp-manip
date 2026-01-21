@@ -5,9 +5,11 @@ Special:
 
 Currently Working On:
     - L: reduce huge validation code + improve grepr_dataclass
+    - can / should grepr_dataclass be converted to a parent class and init_sublcs
     - L: when done -> make parts of utility an own module(see # MIGRATION)
     - add tests for grepr_dataclass & others
     - add tests for project fetching
+    - make sure get at ATPath works with ".keys()"
 
 Changelog since last Release:
     - added new expandable blocks
