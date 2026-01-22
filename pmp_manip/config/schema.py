@@ -48,7 +48,7 @@ class ExtInfoGenConfig(ConfigBase):
     
     def post_validate(self, path: AbstractTreePath) -> None:
         """
-        Ensure a ExtInfoGenConfig is valid, raise MANIP_ValidationError if not
+        Ensure an instance is valid, raise MANIP_ValidationError if not
         
         Args:
             path: the path from the top of the config tree to itself. Used for better error messages
@@ -68,19 +68,6 @@ class ValidationConfig(ConfigBase):
     raise_if_monitor_position_outside_stage: bool
     raise_if_monitor_bigger_then_stage: bool
 
-    def validate(self, path: AbstractTreePath) -> None:
-        """
-        Ensure a ValidationConfig is valid, raise MANIP_ValidationError if not
-        
-        Args:
-            path: the path from the top of the config tree to itself. Used for better error messages
-        
-        Raises:
-            MANIP_ValidationError: if the ValidationConfig is invalid
-        """
-        AA_TYPE(self, path, "raise_if_monitor_position_outside_stage", bool)
-        AA_TYPE(self, path, "raise_if_monitor_bigger_then_stage", bool)
-
 @grepr_dataclass()
 class PlatformMetaConfig(ConfigBase, HasGreprValidate):
     """
@@ -88,23 +75,9 @@ class PlatformMetaConfig(ConfigBase, HasGreprValidate):
     The configuration containing the up to date version of Scratch and PenguinMod
     """
 
-    scratch_semver: str
+    scratch_semver: str # TODO:(OPT) possibly implement stricter validation
     scratch_vm: str
     penguinmod_vm: str
-
-    def validate(self, path: AbstractTreePath) -> None:
-        """
-        Ensure a PlatformMetaConfig is valid, raise MANIP_ValidationError if not
-        
-        Args:
-            path: the path from the top of the config tree to itself. Used for better error messages
-        
-        Raises:
-            MANIP_ValidationError: if the PlatformMetaConfig is invalid
-        """
-        AA_TYPE(self, path, "scratch_semver", str) # TODO:(OPT) possibly implement stricter validation
-        AA_TYPE(self, path, "scratch_vm"    , str)
-        AA_TYPE(self, path, "penguinmod_vm" , str)
 
 @grepr_dataclass()
 class MasterConfig(ConfigBase):
@@ -116,20 +89,16 @@ class MasterConfig(ConfigBase):
     validation: ValidationConfig
     platform_meta: PlatformMetaConfig
 
-    def validate(self, path: AbstractTreePath = AbstractTreePath()) -> None:
+    def post_validate(self, path: AbstractTreePath) -> None:
         """
-        Ensure a MasterConfig is valid, raise MANIP_ValidationError if not
+        Ensure an instance is valid, raise MANIP_ValidationError if not
         
         Args:
             path: the path from the top of the config tree to itself. Used for better error messages
         
         Raises:
-            MANIP_ValidationError: if the MasterConfig is invalid
+            MANIP_ValidationError: if the instance is invalid
         """
-        AA_TYPE(self, path, "ext_info_gen" , ExtInfoGenConfig  )
-        AA_TYPE(self, path, "validation"   , ValidationConfig  )
-        AA_TYPE(self, path, "platform_meta", PlatformMetaConfig)
-        
         self.ext_info_gen .validate(path.add_attribute("ext_info_gen" ))
         self.validation   .validate(path.add_attribute("validation"   ))
         self.platform_meta.validate(path.add_attribute("platform_meta"))

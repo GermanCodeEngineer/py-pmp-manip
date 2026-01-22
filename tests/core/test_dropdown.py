@@ -1,7 +1,7 @@
 from pytest import fixture, raises
 
 from pmp_manip.opcode_info.api import BuiltinDropdownType, DropdownValueKind
-from pmp_manip.utility         import MANIP_TypeValidationError, MANIP_InvalidDropdownValueError
+from pmp_manip.utility         import AbstractTreePath, MANIP_TypeValidationError, MANIP_InvalidDropdownValueError
 
 from pmp_manip.core.context  import PartialContext
 from pmp_manip.core.dropdown import SRDropdownValue
@@ -51,7 +51,7 @@ def test_SRDropdownValue_validate():
             ("value", set(), MANIP_TypeValidationError),
         ],
         validate_func=SRDropdownValue.validate,
-        func_args=[[]],
+        func_args=[AbstractTreePath()],
     )
 
 
@@ -65,7 +65,7 @@ def test_SRDropdownValue_validate_value(context):
             ("value", "a non existing sprite", MANIP_InvalidDropdownValueError),
         ],
         validate_func=SRDropdownValue.validate_value,
-        func_args=[[], BuiltinDropdownType.MOUSE_OR_OTHER_SPRITE, context],
+        func_args=[AbstractTreePath(), BuiltinDropdownType.MOUSE_OR_OTHER_SPRITE, context],
     )
 
     dropdown_value = SRDropdownValue(kind=DropdownValueKind.SOUND, value="a message")

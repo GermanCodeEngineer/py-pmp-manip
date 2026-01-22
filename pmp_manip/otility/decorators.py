@@ -87,11 +87,20 @@ def _is_union(tp: object) -> bool:
         or isinstance(tp, UnionType)  # new style: int | str
     )
 
-def _repr_type(t: type | Any) -> str:
-    """Format a type for display in error messages, similar to validation.py style."""
+def _repr_type(t: type | Any, notset_as_special: bool = True) -> str:
+    """Format a type for display in error messages, similar to validation.py style.
+    
+    Args:
+        t: The type to represent
+        notset_as_special: If True, represent NotSetType as '<not set>' instead of the class name
+    """
+    from pmp_manip.otility.base import NotSetType
+    
     if not isinstance(t, type):
         # Handle typing constructs
         return str(t)
+    if notset_as_special and t is NotSetType:
+        return "<not set>"
     if t.__module__ == "builtins":
         return t.__name__
     elif t.__module__.startswith("pmp_manip."):
@@ -99,7 +108,7 @@ def _repr_type(t: type | Any) -> str:
     else:
         return f"{t.__module__}.{t.__name__}"
 
-def _check_type(value: Any, expected: Any, path: AbstractTreePath | None = None, condition: str | None = None) -> None:
+def _check_type(value: Any, expected: Any, path: AbstractTreePath | None = None, condition: str | None = None, notset_as_special: bool = True) -> None:
     """
     Recursively checks that a given value matches the expected type.
     Runtime type enforcement that supports TypeVar, Union, Optional,
@@ -112,6 +121,7 @@ def _check_type(value: Any, expected: Any, path: AbstractTreePath | None = None,
         expected: The type annotation from the function signature
         path: AbstractTreePath for tracking location in nested data structures
         condition: Optional context for why this type is required (e.g., "because it's an instance of X")
+        notset_as_special: If True, represent NotSetType as "<not set>" instead of the class name in error messages
 
     Raises:
         MANIP_TypeValidationError: If the value does not match the expected type
@@ -141,13 +151,13 @@ def _check_type(value: Any, expected: Any, path: AbstractTreePath | None = None,
         arms = get_args(expected) if get_args(expected) else expected.__args__
         for arm in arms:
             try:
-                _check_type(value, arm, path, condition)
+                _check_type(value, arm, path, condition, notset_as_special)
                 return
             except MANIP_TypeValidationError:
                 continue
         raise MANIP_TypeValidationError(
             path,
-            f"must be one of types {_repr_type(expected)} not {_repr_type(type(value))}",
+            f"must be one of types {_repr_type(expected, notset_as_special)} not {_repr_type(type(value), notset_as_special)}",
             condition
         )
 
@@ -157,7 +167,7 @@ def _check_type(value: Any, expected: Any, path: AbstractTreePath | None = None,
         if not isinstance(value, type):
             raise MANIP_TypeValidationError(
                 path,
-                f"must be a class (type[T]) not {_repr_type(type(value))}",
+                f"must be a class (type[T]) not {_repr_type(type(value), notset_as_special)}",
                 condition
             )
         target = args[0] if args else object
@@ -181,14 +191,14 @@ def _check_type(value: Any, expected: Any, path: AbstractTreePath | None = None,
         if not isinstance(value, dict):
             raise MANIP_TypeValidationError(
                 path,
-                f"must be a dict not {_repr_type(type(value))}",
+                f"must be a dict not {_repr_type(type(value), notset_as_special)}",
                 condition
             )
         key_t, val_t = args if len(args) == 2 else (Any, Any)
         keys_path = path.add_attribute("keys()")
         for i, (k, v) in enumerate(value.items()):
-            _check_type(k, key_t, keys_path.add_index_or_key(i), condition)
-            _check_type(v, val_t, path.add_index_or_key(k), condition)
+            _check_type(k, key_t, keys_path.add_index_or_key(i), condition, notset_as_special)
+            _check_type(v, val_t, path.add_index_or_key(k), condition, notset_as_special)
         return
 
     # --- Handle tuple[T,...] or fixed tuple ---
@@ -196,13 +206,13 @@ def _check_type(value: Any, expected: Any, path: AbstractTreePath | None = None,
         if not isinstance(value, tuple):
             raise MANIP_TypeValidationError(
                 path,
-                f"must be a tuple not {_repr_type(type(value))}",
+                f"must be a tuple not {_repr_type(type(value), notset_as_special)}",
                 condition
             )
         if len(args) == 2 and args[1] is Ellipsis:  # tuple[T, ...]
             elem_t = args[0]
             for i, item in enumerate(value):
-                _check_type(item, elem_t, path.add_index_or_key(i), condition)
+                _check_type(item, elem_t, path.add_index_or_key(i), condition, notset_as_special)
         elif args:  # tuple[T1, T2, ...]
             if len(value) != len(args):
                 raise MANIP_TypeValidationError(
@@ -211,7 +221,7 @@ def _check_type(value: Any, expected: Any, path: AbstractTreePath | None = None,
                     condition
                 )
             for i, (item, elem_t) in enumerate(zip(value, args)):
-                _check_type(item, elem_t, path.add_index_or_key(i), condition)
+                _check_type(item, elem_t, path.add_index_or_key(i), condition, notset_as_special)
         return
 
     # --- Handle list[T], set[T], frozenset[T] ---
@@ -219,12 +229,12 @@ def _check_type(value: Any, expected: Any, path: AbstractTreePath | None = None,
         if not isinstance(value, origin):
             raise MANIP_TypeValidationError(
                 path,
-                f"must be a {origin.__name__} not {_repr_type(type(value))}",
+                f"must be a {origin.__name__} not {_repr_type(type(value), notset_as_special)}",
                 condition
             )
         elem_t = args[0] if args else Any
         for i, item in enumerate(value):
-            _check_type(item, elem_t, path.add_index_or_key(i), condition)
+            _check_type(item, elem_t, path.add_index_or_key(i), condition, notset_as_special)
         return
 
     # --- Handle Callable ---
@@ -232,7 +242,7 @@ def _check_type(value: Any, expected: Any, path: AbstractTreePath | None = None,
         if not callable(value):
             raise MANIP_TypeValidationError(
                 path,
-                f"must be Callable not non-callable {_repr_type(type(value))}",
+                f"must be Callable not non-callable {_repr_type(type(value), notset_as_special)}",
                 condition
             )
         # Note: We don't validate argument/return types for Callable[[int], str]
@@ -244,14 +254,14 @@ def _check_type(value: Any, expected: Any, path: AbstractTreePath | None = None,
         if not isinstance(value, Mapping):
             raise MANIP_TypeValidationError(
                 path,
-                f"must be a Mapping not {_repr_type(type(value))}",
+                f"must be a Mapping not {_repr_type(type(value), notset_as_special)}",
                 condition
             )
         key_t, val_t = args if len(args) == 2 else (Any, Any)
         keys_path = path.add_attribute("keys()")
         for i, (k, v) in enumerate(value.items()):
-            _check_type(k, key_t, keys_path.add_index_or_key(i), condition)
-            _check_type(v, val_t, path.add_index_or_key(k), condition)
+            _check_type(k, key_t, keys_path.add_index_or_key(i), condition, notset_as_special)
+            _check_type(v, val_t, path.add_index_or_key(k), condition, notset_as_special)
         return
 
     # --- Handle Sequence[T] ---
@@ -259,12 +269,12 @@ def _check_type(value: Any, expected: Any, path: AbstractTreePath | None = None,
         if not isinstance(value, Sequence):
             raise MANIP_TypeValidationError(
                 path,
-                f"must be a Sequence not {_repr_type(type(value))}",
+                f"must be a Sequence not {_repr_type(type(value), notset_as_special)}",
                 condition
             )
         elem_t = args[0] if args else Any
         for i, item in enumerate(value):
-            _check_type(item, elem_t, path.add_index_or_key(i), condition)
+            _check_type(item, elem_t, path.add_index_or_key(i), condition, notset_as_special)
         return
 
     # --- Handle Iterable[T] (excluding str/bytes to avoid char-by-char validation) ---
@@ -272,7 +282,7 @@ def _check_type(value: Any, expected: Any, path: AbstractTreePath | None = None,
         if not isinstance(value, Iterable):
             raise MANIP_TypeValidationError(
                 path,
-                f"must be an Iterable not {_repr_type(type(value))}",
+                f"must be an Iterable not {_repr_type(type(value), notset_as_special)}",
                 condition
             )
         # Skip validation for strings/bytes - they're iterable but usually not intended
@@ -281,7 +291,7 @@ def _check_type(value: Any, expected: Any, path: AbstractTreePath | None = None,
             return
         elem_t = args[0] if args else Any
         for i, item in enumerate(value):
-            _check_type(item, elem_t, path.add_index_or_key(i), condition)
+            _check_type(item, elem_t, path.add_index_or_key(i), condition, notset_as_special)
         return
 
     # --- Handle Literal[V, ...] ---
@@ -301,7 +311,7 @@ def _check_type(value: Any, expected: Any, path: AbstractTreePath | None = None,
             if not isinstance(value, expected):
                 raise MANIP_TypeValidationError(
                     path,
-                    f"must be of type {_repr_type(expected)} not {_repr_type(type(value))}",
+                    f"must be of type {_repr_type(expected, notset_as_special)} not {_repr_type(type(value), notset_as_special)}",
                     condition
                 )
         else:
@@ -310,14 +320,14 @@ def _check_type(value: Any, expected: Any, path: AbstractTreePath | None = None,
                 if not isinstance(value, expected):
                     raise MANIP_TypeValidationError(
                         path,
-                        f"must be of type {expected} not {_repr_type(type(value))}",
+                        f"must be of type {expected} not {_repr_type(type(value), notset_as_special)}",
                         condition
                     )
             except TypeError:
                 # If isinstance fails (e.g., for NewType), raise error
                 raise MANIP_TypeValidationError(
                     path,
-                    f"must be of type {expected} not {_repr_type(type(value))}",
+                    f"must be of type {expected} not {_repr_type(type(value), notset_as_special)}",
                     condition
                 )
         return
@@ -327,7 +337,7 @@ def _check_type(value: Any, expected: Any, path: AbstractTreePath | None = None,
         origin_name = getattr(origin, "__name__", str(origin))
         raise MANIP_TypeValidationError(
             path,
-            f"must be of type {origin_name} not {_repr_type(type(value))}",
+            f"must be of type {origin_name} not {_repr_type(type(value), notset_as_special)}",
             condition
         )
 

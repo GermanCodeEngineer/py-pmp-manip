@@ -387,36 +387,21 @@ class SRProject:
         return True
 
     @enforce_argument_types
-    def validate(self, info_api: OpcodeInfoAPI) -> None:
+    def post_validate(self, path: AbstractTreePath, info_api: OpcodeInfoAPI) -> None:
         """
-        Ensure a SRProject is valid, raise MANIP_ValidationError if not
+        Ensure an instance is valid, raise MANIP_ValidationError if not
         
         Args:
             info_api: the opcode info api used to fetch information about opcodes
         
-        Returns:
-            None
-        
         Raises:
-            MANIP_ValidationError: if the SRProject is invalid
+            MANIP_ValidationError: if the instance is invalid
             MANIP_SameValueTwiceError(MANIP_ValidationError): if two sprites or extensions have the same name
         """
-        path = AbstractTreePath()
-        AA_TYPE(self, path, "stage", SRStage)
-        AA_LIST_OF_TYPE(self, path, "sprites", SRSprite)
-        AA_LIST_OF_TYPE(self, path, "sprite_layer_stack", UUID)
         AA_EXACT_LEN(self, path, "sprite_layer_stack", 
             length=len(self.sprites), condition=f"In this case the project has {len(self.sprites)} sprites(s)"
         )
-        AA_LIST_OF_TYPE(self, path, "global_variables", SRVariable)
-        AA_LIST_OF_TYPE(self, path, "global_lists", SRList)
-        AA_LIST_OF_TYPE(self, path, "global_monitors", SRMonitor)
-        AA_LIST_OF_TYPES(self, path, "extensions", (SRBuiltinExtension, SRCustomExtension))
-        AA_TYPE(self, path, "tempo", int)
         AA_RANGE(self, path, "tempo", min=20, max=500)
-        AA_TYPES(self, path, "video_transparency", (int, float))
-        AA_TYPE(self, path, "video_state", SRVideoState)
-        AA_NONE_OR_TYPE(self, path, "text_to_speech_language", SRTTSLanguage)
         
         self.stage.validate(path.add_attribute("stage"), info_api)
 

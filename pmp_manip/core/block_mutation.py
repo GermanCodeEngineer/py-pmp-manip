@@ -787,21 +787,6 @@ class SRMutation(ABC, HasGreprValidate):
     """
 
     @abstractmethod
-    def validate(self, path: AbstractTreePath) -> None:
-        """
-        Ensure the SRMutation is valid, raise MANIP_ValidationError if not
-        
-        Args:
-            path: the path from the project to itself. Used for better error messages
-        
-        Returns:
-            None
-        
-        Raises:
-            MANIP_ValidationError: if the SRMutation is invalid
-        """
-
-    @abstractmethod
     def to_first(self, itf_if: InterToFirstIF) -> FRMutation:
         """
         Convert a SRMutation into a FRMutation
@@ -826,20 +811,16 @@ class SRCustomBlockArgumentMutation(SRMutation):
     prototype_color: str
     outline_color: str
 
-    def validate(self, path: AbstractTreePath) -> None:
+    def post_validate(self, path: AbstractTreePath) -> None:
         """
-        Ensure the SRCustomBlockArgumentMutation is valid, raise MANIP_ValidationError if not
+        Ensure an instance is valid, raise MANIP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
         
-        Returns:
-            None
-        
         Raises:
-            MANIP_ValidationError: if the SRCustomBlockArgumentMutation is invalid
+            MANIP_ValidationError: if the instance is invalid
         """
-        AA_TYPE(self, path, "argument_name", str)
         AA_HEX_COLOR(self, path, "main_color")
         AA_HEX_COLOR(self, path, "prototype_color")
         AA_HEX_COLOR(self, path, "outline_color")
@@ -878,22 +859,16 @@ class SRCustomBlockMutation(SRMutation):
     prototype_color: str
     outline_color: str
     
-    def validate(self, path: AbstractTreePath) -> None:
+    def post_validate(self, path: AbstractTreePath) -> None:
         """
-        Ensure the SRCustomBlockMutation is valid, raise MANIP_ValidationError if not
+        Ensure an instance is valid, raise MANIP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
         
-        Returns:
-            None
-        
         Raises:
-            MANIP_ValidationError: if the SRCustomBlockMutation is invalid
+            MANIP_ValidationError: if the instance is invalid
         """
-        AA_TYPE(self, path, "custom_opcode", SRCustomBlockOpcode)
-        AA_TYPE(self, path, "no_screen_refresh", bool)
-        AA_TYPE(self, path, "optype", SRCustomBlockOptype)
         AA_HEX_COLOR(self, path, "main_color")
         AA_HEX_COLOR(self, path, "prototype_color")
         AA_HEX_COLOR(self, path, "outline_color")
@@ -943,21 +918,16 @@ class SRCustomBlockCallMutation(SRMutation):
     
     custom_opcode: SRCustomBlockOpcode
     
-    def validate(self, path: AbstractTreePath) -> None:
+    def post_validate(self, path: AbstractTreePath) -> None:
         """
-        Ensure the SRCustomBlockCallMutation is valid, raise MANIP_ValidationError if not
+        Ensure an instance is valid, raise MANIP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
         
-        Returns:
-            None
-        
         Raises:
-            MANIP_ValidationError: if the SRCustomBlockCallMutation is invalid
+            MANIP_ValidationError: if the instance is invalid
         """
-        AA_TYPE(self, path, "custom_opcode", SRCustomBlockOpcode)
-
         self.custom_opcode.validate(path.add_attribute("custom_opcode"))
     
     def to_first(self, itf_if: InterToFirstIF) -> FRCustomBlockCallMutation:
@@ -1005,19 +975,6 @@ class SRExpandableIfMutation(SRMutation):
     branch_count: int
     ends_in_else: bool
     
-    def validate(self, path: AbstractTreePath) -> None:
-        """
-        Ensure the SRExpandableIfMutation is valid, raise MANIP_ValidationError if not
-        
-        Args:
-            path: the path from the project to itself. Used for better error messages
-        
-        Raises:
-            MANIP_ValidationError: if the SRExpandableIfMutation is invalid
-        """
-        AA_TYPE(self, path, "branch_count", int)
-        AA_TYPE(self, path, "ends_in_else", bool)
-    
     def to_first(self, itf_if: InterToFirstIF) -> FRExpandableIfMutation:
         """
         Convert a SRExpandableIfMutation into a FRExpandableIfMutation
@@ -1039,18 +996,6 @@ class SRExpandableOperatorMutation(SRMutation):
     """
 
     operations: list[SRExpandableOperatorMenu]
-    
-    def validate(self, path: AbstractTreePath) -> None:
-        """
-        Ensure the SRExpandableOperatorMutation is valid, raise MANIP_ValidationError if not
-        
-        Args:
-            path: the path from the project to itself. Used for better error messages
-        
-        Raises:
-            MANIP_ValidationError: if the SRExpandableOperatorMutation is invalid
-        """
-        AA_LIST_OF_TYPE(self, path, "operations", SRExpandableOperatorMenu)
     
     def to_first(self, itf_if: InterToFirstIF) -> FRExpandableOperatorMutation:
         """
@@ -1074,17 +1019,16 @@ class SRExpandableJoinMutation(SRMutation):
 
     input_count: int
     
-    def validate(self, path: AbstractTreePath) -> None:
+    def post_validate(self, path: AbstractTreePath) -> None:
         """
-        Ensure the SRExpandableJoinMutation is valid, raise MANIP_ValidationError if not
+        Ensure an instance is valid, raise MANIP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
         
         Raises:
-            MANIP_ValidationError: if the SRExpandableJoinMutation is invalid
+            MANIP_ValidationError: if the SRExpandinstanceableJoinMutation is invalid
         """
-        AA_TYPE(self, path, "input_count", int)
         AA_MIN(self, path, "input_count", 1)
     
     def to_first(self, itf_if: InterToFirstIF) -> FRExpandableJoinMutation:

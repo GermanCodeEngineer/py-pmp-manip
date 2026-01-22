@@ -1,6 +1,6 @@
 from __future__ import annotations
 from copy       import deepcopy
-from typing     import Any
+from typing     import Any, Literal
 
 from pmp_manip.config           import get_config
 from pmp_manip.opcode_info.api  import OpcodeInfoAPI, MonitorIdBehaviour, DropdownType, DROPDOWN_VALUE_T
@@ -230,34 +230,26 @@ class SRMonitor(HasGreprValidate):
                 f"is neither {NEW_OPCODE_VAR_VALUE!r} nor {NEW_OPCODE_LIST_VALUE!r}")
             
     
-    def validate(self, path: AbstractTreePath, info_api: OpcodeInfoAPI) -> None:
+    def post_validate(self, path: AbstractTreePath, info_api: OpcodeInfoAPI) -> None:
         """
-        Ensure a SRMonitor is valid, raise MANIP_ValidationError if not
+        Ensure an instance is valid, raise MANIP_ValidationError if not
         To validate the exact dropdown values you should additionally call the validate_dropdown_values method
         
         Args:
             path: the path from the project to itself. Used for better error messages
             info_api: the opcode info api used to fetch information about opcodes
         
-        Returns:
-            None
-        
         Raises:
-            MANIP_ValidationError: if the SRMonitor is invalid
+            MANIP_ValidationError: if the instance is invalid
             MANIP_InvalidOpcodeError(MANIP_ValidationError): if the opcode is not a defined opcode
             MANIP_UnnecessaryDropdownError(MANIP_ValidationError): if a key of dropdowns is not expected for the specific opcode
             MANIP_MissingDropdownError(MANIP_ValidationError): if an expected key of dropdowns for the specific opcode is missing
         """
-        AA_TYPE(self, path, "opcode", str)
-        AA_DICT_OF_TYPE(self, path, "dropdowns", key_t=str, value_t=SRDropdownValue)
         if get_config().validation.raise_if_monitor_position_outside_stage:
             AA_BOXED_COORD_PAIR(self, path, "position", 
                 min_x=-(STAGE_WIDTH //2), max_x=(STAGE_WIDTH //2), 
                 min_y=-(STAGE_HEIGHT//2), max_y=(STAGE_HEIGHT//2),
             )
-        else:
-            AA_COORD_PAIR(self, path, "position")
-        AA_TYPE(self, path, "is_visible", bool)
         
         cls_name = self.__class__.__name__
         opcode_info = info_api.get_info_by_new_safe(self.opcode)
@@ -433,34 +425,26 @@ class SRVariableMonitor(SRMonitor):
     slider_max: int | float
     allow_only_integers: bool
     
-    def validate(self, path: AbstractTreePath, info_api: OpcodeInfoAPI):
+    def post_validate(self, path: AbstractTreePath, info_api: OpcodeInfoAPI):
         """
-        Ensure a SRVariableMonitor is valid, raise MANIP_ValidationError if not
+        Ensure an instance is valid, raise MANIP_ValidationError if not
         To validate the exact dropdown values you should additionally call the validate_dropdown_values method
         
         Args:
             path: the path from the project to itself. Used for better error messages
             info_api: the opcode info api used to fetch information about opcodes
         
-        Returns:
-            None
-        
         Raises:
-            MANIP_ValidationError: if the SRVariableMonitor is invalid
+            MANIP_ValidationError: if the instance is invalid
         """
-        super().validate(path, info_api)
+        super().post_validate(path, info_api)
         AA_EQUAL(self, path, "opcode", NEW_OPCODE_VAR_VALUE)
         
-        AA_TYPE(self, path, "readout_mode", SRVariableMonitorReadoutMode)
-        AA_TYPE(self, path, "allow_only_integers", bool)
         if self.allow_only_integers:
             allowed_types = (int,)
             condition = "When allow_only_integers is True"
-        else:
-            allowed_types = (int, float)
-            condition = "When allow_only_integers is False"
-        AA_TYPES(self, path, "slider_min", allowed_types, condition=condition)
-        AA_TYPES(self, path, "slider_max", allowed_types, condition=condition)
+            AA_TYPES(self, path, "slider_min", allowed_types, condition=condition)
+            AA_TYPES(self, path, "slider_max", allowed_types, condition=condition)
 
         AA_BIGGER_OR_EQUAL(self, path, "slider_max", "slider_min")
 
@@ -472,22 +456,19 @@ class SRListMonitor(SRMonitor):
 
     size: tuple[int | float, int | float]
     
-    def validate(self, path: AbstractTreePath, info_api: OpcodeInfoAPI):
+    def post_validate(self, path: AbstractTreePath, info_api: OpcodeInfoAPI):
         """
-        Ensure a SRListMonitor is valid, raise MANIP_ValidationError if not
+        Ensure an instance is valid, raise MANIP_ValidationError if not
         To validate the exact dropdown values you should additionally call the validate_dropdown_values method
         
         Args:
             path: the path from the project to itself. Used for better error messages
             info_api: the opcode info api used to fetch information about opcodes
         
-        Returns:
-            None
-        
         Raises:
-            MANIP_ValidationError: if the SRListMonitor is invalid
+            MANIP_ValidationError: if the instance is invalid
         """
-        super().validate(path, info_api)
+        super().post_validate(path, info_api)
         AA_EQUAL(self, path, "opcode", NEW_OPCODE_LIST_VALUE)
         
         if get_config().validation.raise_if_monitor_bigger_then_stage:

@@ -18,6 +18,7 @@ def field(*,
         metadata: MappingProxyType | NoneType = None, kw_only: bool | _MISSING_TYPE = MISSING,
 
         validate_type: bool = True, validator_fn: VALIDATOR_FN = None,
+        validate_require_exist: bool = True,
     ) -> Field:
     field = base_field(
         default=default,
@@ -31,12 +32,13 @@ def field(*,
     )
     if (validator_fn is not None) and (not callable(validator_fn)):
         raise ValueError("validator_fn must be a function or callable")
-    update_field(field, grepr, validate_type, validator_fn)
+    update_field(field, grepr, validate_type, validator_fn, validate_require_exist)
     return field
 
 def update_field(field: Field,
-        grepr: bool = True, 
-        validate_type: bool = True, validator_fn: VALIDATOR_FN = None,
+        grepr: bool = True, validate_type: bool = True,
+        validator_fn: VALIDATOR_FN = None,
+        validate_require_exist: bool = True,
     ) -> None:
     # Replace field metadata if needed (creates new mappingproxy)
     if field not in FIELD_OPTIONS:
@@ -44,6 +46,7 @@ def update_field(field: Field,
             "grepr": grepr,
             "validate_type": validate_type,
             "validator_fn": validator_fn,
+            "validate_require_exist": validate_require_exist,
         }
 
 def get_field_options(field: Field) -> dict[str, Any]:
@@ -107,7 +110,7 @@ def grepr_dataclass(*, grepr: bool = True,
             def validate_method(self, path: AbstractTreePath | None = None, *args, **kwargs) -> None:
                 from pmp_manip.otility.decorators import _check_type
                 if path is None:
-                    AbstractTreePath(start_with_dot=True)
+                    path = AbstractTreePath(start_with_dot=True)
 
                 # Get type hints to resolve string annotations
                 type_hints = get_type_hints(type(self))
@@ -118,11 +121,20 @@ def grepr_dataclass(*, grepr: bool = True,
                         continue
                     # Use type hints instead of field.type to handle string annotations
                     expected_type = type_hints.get(field.name, field.type)
-                    _check_type(
-                        value=getattr(self, field.name, NotSet),
-                        expected=expected_type,
-                        path=path.add_attribute(field.name),
-                    )
+                    if hasattr(self, field.name):
+                        _check_type(
+                            value=getattr(self, field.name),
+                            expected=expected_type,
+                            path=path.add_attribute(field.name),
+                            notset_as_special=False,
+                        )
+                    elif options["validate_require_exist"]:
+                        _check_type(
+                            value=NotSet,
+                            expected=expected_type,
+                            path=path.add_attribute(field.name),
+                            notset_as_special=True,
+                        )
                 if callable(getattr(self, "post_validate", None)):
                     self.post_validate(path, *args, **kwargs)
             cls.validate = validate_method
@@ -157,6 +169,10 @@ class HasGreprValidate(Protocol):
         Validate a dataclass.
         First ensures all fields (which do not have `validate_type=False`) to be of the annotated type.
         Second calls and returns the return value of the `post_validate` method with `*args` and `**kwargs` if the class has one.
+        
+        Raises:
+            TypeValidationError(ValidationError): if a field does not match the annotated type.
+            Other Errors(subclasses of ValidationError): possibly raised in `post_validate`.
         """
         # Overriden by @grepr_dataclass
 

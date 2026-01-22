@@ -494,31 +494,22 @@ class SRTarget(HasGreprValidate):
     costume_index: int
     volume: int | float
 
-    def validate(self, path: AbstractTreePath, info_api: OpcodeInfoAPI) -> None:
+    def post_validate(self, path: AbstractTreePath, info_api: OpcodeInfoAPI) -> None:
         """
-        Ensure a SRTarget is valid, raise MANIP_ValidationError if not
+        Ensure an instance is valid, raise MANIP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
             info_api: the opcode info api used to fetch information about opcodes
         
-        Returns:
-            None
-        
         Raises:
-            MANIP_ValidationError: if the SRTarget is invalid
+            MANIP_ValidationError: if the instance is invalid
             MANIP_SameValueTwiceError(MANIP_ValidationError): if two costumes or two sounds have the same name
         """
-        AA_LIST_OF_TYPE(self, path, "scripts", SRScript)
-        AA_LIST_OF_TYPE(self, path, "comments", SRComment)
-        AA_LIST_OF_TYPES(self, path, "costumes", (SRVectorCostume, SRBitmapCostume))
         AA_MIN_LEN(self, path, "costumes", min_len=1)
-        AA_LIST_OF_TYPE(self, path, "sounds", SRSound)
-        AA_TYPE(self, path, "costume_index", int)
         AA_RANGE(self, path, "costume_index", 
             min=0, max=len(self.costumes)-1, condition=f"In this case the sprite has {len(self.costumes)} costume(s)",
         )
-        AA_TYPES(self, path, "volume", (int, float))
         AA_RANGE(self, path, "volume", min=0, max=100)
         
         for i, comment in enumerate(self.comments):
@@ -844,37 +835,22 @@ class SRSprite(SRTarget):
             raise AttributeError('Cannot modify "uuid" after creation')
         super().__setattr__(name, value)
     
-    def validate(self, path: AbstractTreePath, info_api: OpcodeInfoAPI) -> None:
+    def post_validate(self, path: AbstractTreePath, info_api: OpcodeInfoAPI) -> None:
         """
-        Ensure a SRSprite is valid, raise MANIP_ValidationError if not
+        Ensure an instance is valid, raise MANIP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
             info_api: the opcode info api used to fetch information about opcodes
         
-        Returns:
-            None
-        
         Raises:
-            MANIP_ValidationError: if the SRSprite is invalid
+            MANIP_ValidationError: if the instance is invalid
         """
-        super().validate(path, info_api)
+        super().post_validate(path, info_api)
         
-        AA_TYPE(self, path, "name", str)
         AA_NOT_ONE_OF(self, path, "name", ["_myself_", "_stage_", "_mouse_", "_edge_"])
-        AA_LIST_OF_TYPE(self, path, "local_variables", SRVariable)
-        AA_LIST_OF_TYPE(self, path, "local_lists", SRList)
-        AA_LIST_OF_TYPE(self, path, "local_monitors", SRMonitor)
-        AA_TYPE(self, path, "is_visible", bool)
-        AA_COORD_PAIR(self, path, "position")
-        AA_TYPES(self, path, "size", (int, float))
         AA_MIN(self, path, "size", min=0)
-        AA_TYPES(self, path, "direction", (int, float))
         AA_RANGE(self, path, "direction", min=-180, max=180)
-        AA_TYPE(self, path, "is_draggable", bool)
-        AA_TYPE(self, path, "rotation_style", SRSpriteRotationStyle)
-        AA_TYPE(self, path, "uuid", UUID)
-        
         
         for i, variable in enumerate(self.local_variables):
             variable.validate(path.add_attribute("local_variables").add_index_or_key(i))

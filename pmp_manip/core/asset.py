@@ -192,23 +192,6 @@ class SRCostume(ABC, HasGreprValidate):
     file_extension: str
     rotation_center: tuple[int | float, int | float]
 
-    def validate(self, path: AbstractTreePath) -> None:
-        """
-        Ensure a SRCostume is valid, raise MANIP_ValidationError if not
-        
-        Args:
-            path: the path from the project to itself. Used for better error messages
-        
-        Returns:
-            None
-        
-        Raises:
-            MANIP_ValidationError: if the SRCostume is invalid
-        """
-        AA_TYPE(self, path, "name", str)
-        AA_TYPE(self, path, "file_extension", str)
-        AA_COORD_PAIR(self, path, "rotation_center")
-
     @abstractmethod
     def to_first(self) -> tuple[FRCostume, bytes]: 
         """
@@ -251,23 +234,17 @@ class SRVectorCostume(SRCostume):
         other: SRVectorCostume = other
         return xml_equal(self.content, other.content)
         
-    def validate(self, path: AbstractTreePath) -> None:
+    def post_validate(self, path: AbstractTreePath) -> None:
         """
-        Ensure a SRVectorCostume is valid, raise MANIP_ValidationError if not
+        Ensure an instance is valid, raise MANIP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
         
-        Returns:
-            None
-        
         Raises:
-            MANIP_ValidationError: if the SRVectorCostume is invalid
+            MANIP_ValidationError: if the instance is invalid
         """
-        super().validate(path)
-        
         AA_EQUAL(self, path, "file_extension", "svg")
-        AA_TYPE(self, path, "content", etree._Element)
     
     def to_first(self) -> tuple[FRCostume, bytes]:
         """
@@ -320,24 +297,6 @@ class SRBitmapCostume(SRCostume):
             (self.has_double_resolution is other.has_double_resolution)
             and image_equal(self.content, other.content)
         )
-    
-    def validate(self, path: AbstractTreePath) -> None:
-        """
-        Ensure a SRBitmapCostume is valid, raise MANIP_ValidationError if not
-        
-        Args:
-            path: the path from the project to itself. Used for better error messages
-        
-        Returns:
-            None
-        
-        Raises:
-            MANIP_ValidationError: if the SRBitmapCostume is invalid
-        """
-        super().validate(path)
-        
-        AA_TYPE(self, path, "content", Image.Image)
-        AA_TYPE(self, path, "has_double_resolution", bool)
 
     def to_first(self) -> tuple[FRCostume, bytes]:
         """
@@ -374,23 +333,6 @@ class SRSound(HasGreprValidate):
     name: str
     file_extension: str # i've only seen "wav", "mp3", "ogg"; others might work
     content: AudioSegment
-    
-    def validate(self, path: AbstractTreePath) -> None:
-        """
-        Ensure a SRSound is valid, raise MANIP_ValidationError if not
-        
-        Args:
-            path: the path from the project to itself. Used for better error messages
-        
-        Returns:
-            None
-        
-        Raises:
-            MANIP_ValidationError: if the SRSound is invalid
-        """
-        AA_TYPE(self, path, "name", str)
-        AA_TYPE(self, path, "file_extension", str)
-        AA_TYPE(self, path, "content", AudioSegment)
     
     def to_first(self) -> tuple[FRSound, bytes]:
         """

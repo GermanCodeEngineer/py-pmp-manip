@@ -57,7 +57,7 @@ DropdownDictHandler   : TypeAlias =  ConstOrFunc[dict[str, SRDropdownValue]]   |
 
 CBOpcodeHandler       : TypeAlias = "ConstOrFunc[SRCustomBlockOpcode]          | CBOpcodePattern"
 CBArgumentHandler     : TypeAlias = "ConstOrFunc[CBOpcodeSegmentT]             | CBArgumentPattern"
-CBArgumentTupleHandler: TypeAlias = "ConstOrFunc[tuple[CBOpcodeSegmentT]]      | tuple[CBArgumentHandler]"
+CBArgumentTupleHandler: TypeAlias = "ConstOrFunc[tuple[CBOpcodeSegmentT, ...]] | tuple[CBArgumentHandler, ...]"
 
 @grepr_dataclass(init=False, forbid_init_only_subcls=True)
 class Pattern(HasGreprValidate):
@@ -288,8 +288,8 @@ class SuccessfulMatchResult(HasGreprValidate):
     
 
 def _match_list_tuple_handler(
-    handler: list[ConstOrFunc[Any] | Pattern] | tuple[ConstOrFunc[Any] | Pattern],
-    value: list[Any] | tuple[Any],
+    handler: list[ConstOrFunc[Any] | Pattern] | tuple[ConstOrFunc[Any] | Pattern, ...],
+    value: list[Any] | tuple[Any, ...],
     result: SuccessfulMatchResult,
 ) -> bool:
     """

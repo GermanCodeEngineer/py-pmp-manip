@@ -16,21 +16,17 @@ class SRExtension(HasGreprValidate):
     
     id: str
 
-    def validate(self, path: AbstractTreePath) -> None:
+    def post_validate(self, path: AbstractTreePath) -> None:
         """
-        Ensure a SRExtension is valid, raise MANIP_ValidationError if not
+        Ensure an instance is valid, raise MANIP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
         
-        Returns:
-            None
-        
         Raises:
-            MANIP_ValidationError: if the SRExtension is invalid
+            MANIP_ValidationError: if the instance is invalid
         """
-        AA_TYPE(self, path, "id", str) # TODO: possibly verify its one of PenguinMod's extension if not custom
-        AA_ALNUM(self, path, "id")
+        AA_ALNUM(self, path, "id") # TODO: possibly verify its one of PenguinMod's extension if not custom
 
 @grepr_dataclass()
 class SRBuiltinExtension(SRExtension):
@@ -51,23 +47,19 @@ class SRCustomExtension(SRExtension):
     url: str # either "https://..." or "data:application/javascript,..."
     # TODO:(OPT) find a way to not show whole huge JS data URI's
     
-    def validate(self, path: AbstractTreePath):
+    def post_validate(self, path: AbstractTreePath):
         """
-        Ensure a SRCustomExtension is valid, raise MANIP_ValidationError if not
+        Ensure an instance is valid, raise MANIP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
         
-        Returns:
-            None
-        
         Raises:
-            MANIP_ValidationError: if the SRCustomExtension is invalid
+            MANIP_ValidationError: if the instance is invalid
             MANIP_InvalidValueError(MANIP_ValidationError): if the url is invalid
         """
-        super().validate(path)
+        super().post_validate(path)
 
-        AA_TYPE(self, path, "url", str)
         if not (is_valid_url(self.url) or is_valid_js_data_uri(self.url)):
             raise MANIP_InvalidValueError(path, f"url of {self.__class__.__name__} must be either a valid url or a valid javascript data uri.")
 

@@ -43,26 +43,10 @@ def _list_sha256(list_name: str, sprite_name: str): # is needed!
 class SRVariable(HasGreprValidate):
     
     name: str
-    current_value: int | float | str | bool
-
-    def validate(self, path: AbstractTreePath) -> None:
-        """
-        Ensure a SRVariable is valid, raise MANIP_ValidationError if not
-        
-        Args:
-            path: the path from the project to itself. Used for better error messages
-        
-        Returns:
-            None
-        
-        Raises:
-            MANIP_ValidationError: if the SRVariable is invalid
-        """
-        AA_TYPE(self, path, "name", str)
-        AA_TYPES(self, path, "current_value", (int, float, str, bool, dict))
-        # Only the above types can be saved in Scratch Project's Variables (JSON limitations)
-        # dict is allowed too because some extensions save custom types in it
-        # TODO: possibly validate dict contents
+    current_value: int | float | str | bool | dict[str, int|float|str|bool | dict] # ...
+    # Only the above types can be saved in Scratch Project's Variables (JSON limitations)
+    # dict is allowed too because some extensions save custom types in it
+    # TODO: possibly validate dict contents
     
     def to_tuple(self) -> tuple[str, str]:
         """
@@ -88,23 +72,7 @@ class SRList(HasGreprValidate):
     
     name: str
     current_value: list[int | float | str | bool]
-
-    def validate(self, path: AbstractTreePath):
-        """
-        Ensure a SRList is valid, raise MANIP_ValidationError if not
-        
-        Args:
-            path: the path from the project to itself. Used for better error messages
-        
-        Returns:
-            None
-        
-        Raises:
-            MANIP_ValidationError: if the SRList is invalid
-        """
-        AA_TYPE(self, path, "name", str)
-        AA_LIST_OF_TYPES(self, path, "current_value", (int, float, str, bool))
-        # Only the above types can be saved in Scratch Project's Lists (JSON limitations)
+    # Only the above types can be saved in Scratch Project's Lists (JSON limitations)
 
     def to_tuple(self) -> tuple[str, str]:
         """

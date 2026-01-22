@@ -10,6 +10,10 @@ Currently Working On:
     - add tests for grepr_dataclass & others
     - add tests for project fetching
     - make sure get at ATPath works with ".keys()"
+    - make sure SRBlockAndTextInputValue.validate accepts only str for .immediate
+    - make sure SRDropdownValue.value allows only str, int, bool
+    - super().validate()
+    - optimize SRInputValue.post_validate?
     => XL: add tests for and document utility
 
 Changelog since last Release:

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pmp_manip.opcode_info.api import DropdownType, DropdownValueKind, DROPDOWN_VALUE_T
 from pmp_manip.utility         import (
-    grepr_dataclass, AA_TYPE, AA_JSON_COMPATIBLE,
+    grepr_dataclass,
     AbstractTreePath, HasGreprValidate, MANIP_InvalidDropdownValueError
 )
 
@@ -42,23 +42,6 @@ class SRDropdownValue(HasGreprValidate):
             the tuple of (kind, value)
         """
         return (self.kind, self.value)
-
-    def validate(self, path: AbstractTreePath) -> None:
-        """
-        Ensure a SRDropdownValue is structurally valid, raise MANIP_ValidationError if not
-        For exact validation, you should additionally call the validate_value method
-        
-        Args:
-            path: the path from the project to itself. Used for better error messages
-        
-        Returns:
-            None
-        
-        Raises:
-            MANIP_ValidationError: if the SRDropdownValue is invalid
-        """
-        AA_TYPE(self, path, "kind", DropdownValueKind)
-        AA_JSON_COMPATIBLE(self, path, "value")
 
     def validate_value(self, 
         path: AbstractTreePath, 

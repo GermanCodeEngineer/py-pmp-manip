@@ -17,7 +17,7 @@ class SRCustomBlockOpcode(HasGreprValidate):
     It stores the segments, which can be either a string(=> a label) or a SRCustomBlockArgument with name and type
     """
 
-    segments: tuple[str | SRCustomBlockArgument]
+    segments: tuple[str | SRCustomBlockArgument, ...]
 
     @classmethod
     def from_proccode_argument_names(cls, proccode: str, argument_names: list[str]) -> SRCustomBlockOpcode:
@@ -91,21 +91,17 @@ class SRCustomBlockOpcode(HasGreprValidate):
             for segment in self.segments if isinstance(segment, SRCustomBlockArgument)
         }
     
-    def validate(self, path: AbstractTreePath) -> None:
+    def post_validate(self, path: AbstractTreePath) -> None:
         """
-        Ensures the custom block opcode is valid, raise MANIP_ValidationError if not
+        Ensures an instance is valid, raise MANIP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
         
-        Returns:
-            None
-        
         Raises:
-            MANIP_ValidationError: if the SRCustomBlockOpcode is invalid
+            MANIP_ValidationError: if the instance is invalid
             MANIP_SameValueTwiceError(MANIP_ValidationError): if two arguments have the same name
         """
-        AA_TUPLE_OF_TYPES(self, path, "segments", (str, SRCustomBlockArgument))
         AA_MIN_LEN(self, path, "segments", min_len=1)
 
         names = {}
@@ -152,22 +148,17 @@ class SRCustomBlockArgument(HasGreprValidate):
     name: str
     type: SRCustomBlockArgumentType
 
-    def validate(self, path: AbstractTreePath) -> None:
+    def post_validate(self, path: AbstractTreePath) -> None:
         """
-        Ensures the custom block argument is valid, raise MANIP_ValidationError if not
+        Ensures an instance is valid, raise MANIP_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
         
-        Returns:
-            None
-        
         Raises:
-            MANIP_ValidationError: if the SRCustomBlockArgument is invalid
+            MANIP_ValidationError: if the instance is invalid
         """
-        AA_TYPE(self, path, "name", str)
         AA_NOT_EQUAL(self, path, "name", value="")
-        AA_TYPE(self, path, "type", SRCustomBlockArgumentType)
 
 class SRCustomBlockArgumentType(GEnum):
     """

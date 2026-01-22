@@ -211,7 +211,7 @@ def test_SRProject_eq_same_sprites():
 
 def test_SRProject_validate(info_api_extended):
     srproject = SR_PROJECT
-    srproject.validate(info_api_extended)
+    srproject.validate(AbstractTreePath(), info_api_extended)
 
     execute_attr_validation_tests(
         obj=srproject,
@@ -237,7 +237,7 @@ def test_SRProject_validate(info_api_extended):
             ("text_to_speech_language", "fr", MANIP_TypeValidationError),
         ],
         validate_func=SRProject.validate,
-        func_args=[info_api],
+        func_args=[AbstractTreePath(), info_api],
     )
 
 def test_SRProject_validate_extensions():

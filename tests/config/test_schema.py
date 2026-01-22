@@ -14,9 +14,6 @@ from tests.utility import execute_attr_validation_tests
 class TEST_Config(ConfigBase):
     a: int
 
-    def validate(self, path: AbstractTreePath) -> None: # to fulfill abstractmethod
-        pass
-
 
 
 def test_ConfigBase_setattr_not_frozen():
