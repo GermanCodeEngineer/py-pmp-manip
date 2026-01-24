@@ -3,8 +3,8 @@ from copy       import copy
 
 from pmp_manip.important_consts import SHA256_SEC_VARIABLE, SHA256_SEC_LIST
 from pmp_manip.utility          import (
-    string_to_sha256, grepr_dataclass, AA_TYPE, AA_TYPES, AA_LIST_OF_TYPES,
-    AbstractTreePath, HasGreprValidate,
+    string_to_sha256, grepr_dataclass,
+    HasGreprValidate,
 )
 
 

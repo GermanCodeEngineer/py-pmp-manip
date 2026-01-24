@@ -12,8 +12,8 @@ Currently Working On:
     - make sure get at ATPath works with ".keys()"
     - make sure SRBlockAndTextInputValue.validate accepts only str for .immediate
     - make sure SRDropdownValue.value allows only str, int, bool
-    - super().validate()
-    - optimize SRInputValue.post_validate?
+    - finish ValidateAttribute creation
+    - remove VDESCR_TYPE
     => XL: add tests for and document utility
 
 Changelog since last Release:

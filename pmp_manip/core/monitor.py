@@ -6,8 +6,7 @@ from pmp_manip.config           import get_config
 from pmp_manip.opcode_info.api  import OpcodeInfoAPI, MonitorIdBehaviour, DropdownType, DROPDOWN_VALUE_T
 from pmp_manip.utility          import (
     grepr_dataclass, string_to_sha256,
-    AA_TYPE, AA_TYPES, AA_DICT_OF_TYPE, AA_COORD_PAIR, AA_BOXED_COORD_PAIR, AA_EQUAL, AA_BIGGER_OR_EQUAL,
-    AbstractTreePath, HasGreprValidate,
+    ValidateAttribute, AbstractTreePath, HasGreprValidate,
     MANIP_InvalidOpcodeError, MANIP_MissingDropdownError, MANIP_UnnecessaryDropdownError, MANIP_ThanksError,
 )
 from pmp_manip.important_consts import (
@@ -246,7 +245,7 @@ class SRMonitor(HasGreprValidate):
             MANIP_MissingDropdownError(MANIP_ValidationError): if an expected key of dropdowns for the specific opcode is missing
         """
         if get_config().validation.raise_if_monitor_position_outside_stage:
-            AA_BOXED_COORD_PAIR(self, path, "position", 
+            ValidateAttribute.VA_BOXED_COORD_PAIR(self, path, "position", 
                 min_x=-(STAGE_WIDTH //2), max_x=(STAGE_WIDTH //2), 
                 min_y=-(STAGE_HEIGHT//2), max_y=(STAGE_HEIGHT//2),
             )
@@ -438,15 +437,15 @@ class SRVariableMonitor(SRMonitor):
             MANIP_ValidationError: if the instance is invalid
         """
         super().post_validate(path, info_api)
-        AA_EQUAL(self, path, "opcode", NEW_OPCODE_VAR_VALUE)
+        ValidateAttribute.VA_EQUAL(self, path, "opcode", NEW_OPCODE_VAR_VALUE)
         
         if self.allow_only_integers:
             allowed_types = (int,)
             condition = "When allow_only_integers is True"
-            AA_TYPES(self, path, "slider_min", allowed_types, condition=condition)
-            AA_TYPES(self, path, "slider_max", allowed_types, condition=condition)
+            ValidateAttribute.VA_TYPE(self, path, "slider_min", int, condition=condition)
+            ValidateAttribute.VA_TYPE(self, path, "slider_max", int, condition=condition)
 
-        AA_BIGGER_OR_EQUAL(self, path, "slider_max", "slider_min")
+        ValidateAttribute.VA_BIGGER_OR_EQUAL(self, path, "slider_max", "slider_min")
 
 @grepr_dataclass()
 class SRListMonitor(SRMonitor):
@@ -469,13 +468,13 @@ class SRListMonitor(SRMonitor):
             MANIP_ValidationError: if the instance is invalid
         """
         super().post_validate(path, info_api)
-        AA_EQUAL(self, path, "opcode", NEW_OPCODE_LIST_VALUE)
+        ValidateAttribute.VA_EQUAL(self, path, "opcode", NEW_OPCODE_LIST_VALUE)
         
         if get_config().validation.raise_if_monitor_bigger_then_stage:
             max_x, max_y = STAGE_WIDTH, STAGE_HEIGHT
         else:
             max_x, max_y = None, None
-        AA_BOXED_COORD_PAIR(self, path, "size", 
+        ValidateAttribute.VA_BOXED_COORD_PAIR(self, path, "size", 
             min_x=LIST_MONITOR_MIN_WIDTH , max_x=max_x, 
             min_y=LIST_MONITOR_MIN_HEIGHT, max_y=max_y,
         )

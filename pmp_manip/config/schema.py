@@ -6,7 +6,7 @@ from typing      import Any, Callable
 
 from pmp_manip.utility import (
     grepr_dataclass, field, is_valid_directory_path, 
-    AA_TYPE, AbstractTreePath, HasGreprValidate,
+    AbstractTreePath, HasGreprValidate,
     MANIP_InvalidDirPathError,
 )
 

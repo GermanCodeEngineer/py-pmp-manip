@@ -4,8 +4,7 @@ from typing     import Iterable
 
 from pmp_manip.opcode_info.api import InputType, BuiltinInputType, InputInfo, OpcodeType
 from pmp_manip.utility         import (
-    grepr_dataclass,
-    AA_TYPE, AA_TUPLE_OF_TYPES, AA_MIN_LEN, AA_NOT_EQUAL,
+    grepr_dataclass, ValidateAttribute,
     GEnum, AbstractTreePath, HasGreprValidate,
     MANIP_SameValueTwiceError, MANIP_ConversionError, MANIP_TypeValidationError,
 )
@@ -102,7 +101,7 @@ class SRCustomBlockOpcode(HasGreprValidate):
             MANIP_ValidationError: if the instance is invalid
             MANIP_SameValueTwiceError(MANIP_ValidationError): if two arguments have the same name
         """
-        AA_MIN_LEN(self, path, "segments", min_len=1)
+        ValidateAttribute.VA_MIN_LEN(self, path, "segments", 1)
 
         names = {}
         last_was_label = False
@@ -158,7 +157,7 @@ class SRCustomBlockArgument(HasGreprValidate):
         Raises:
             MANIP_ValidationError: if the instance is invalid
         """
-        AA_NOT_EQUAL(self, path, "name", value="")
+        ValidateAttribute.VA_NOT_EQUAL(self, path, "name", value="")
 
 class SRCustomBlockArgumentType(GEnum):
     """

@@ -1,8 +1,9 @@
-from __future__ import annotations
-from abc        import ABC
-from copy       import deepcopy
-from json       import loads, dumps
-from typing     import Any, TYPE_CHECKING
+from __future__  import annotations
+from abc         import ABC
+from copy        import deepcopy
+from dataclasses import Field
+from json        import loads, dumps
+from typing      import Any, TYPE_CHECKING
 
 from pmp_manip.important_consts import (
     OPCODE_NUM_VAR_VALUE, OPCODE_VAR_VALUE, OPCODE_NUM_LIST_VALUE, OPCODE_LIST_VALUE,
@@ -18,9 +19,7 @@ from pmp_manip.opcode_info.api  import (
 )
 from pmp_manip.utility          import (
     grepr_dataclass, field, get_closest_matches, tuplify, listify, string_to_sha256,
-    AA_TYPE, ADESCR_TYPE, AA_NONE, AA_NONE_OR_TYPE, AA_COORD_PAIR, 
-    AA_LIST_OF_TYPE, AA_DICT_OF_TYPE, AA_MIN_LEN, AA_EQUAL,
-    AbstractTreePath, HasGreprValidate,
+    ValidateAttribute, AbstractTreePath, HasGreprValidate,
     MANIP_ConversionError,
     MANIP_UnnecessaryInputError, MANIP_MissingInputError, MANIP_UnnecessaryDropdownError, MANIP_MissingDropdownError, 
     MANIP_InvalidOpcodeError, MANIP_InvalidBlockShapeError,
@@ -34,6 +33,12 @@ from pmp_manip.core.comment        import SRComment
 from pmp_manip.core.context        import CompleteContext
 from pmp_manip.core.dropdown       import SRDropdownValue
 
+
+def no_field() -> Field:
+    """
+    Create a dataclass field which is never initialized or used and is not required to exist during validation.
+    """
+    return field(init=False, grepr=False, hash=False, compare=False, validate_require_exist=False)
 
 def get_input_cls_for_input_mode(input_mode: InputMode) -> type[SRInputValue]:
     """
@@ -695,7 +700,7 @@ class SRScript(HasGreprValidate):
         Raises:
             MANIP_ValidationError: if the instance is invalid
         """
-        AA_MIN_LEN(self, path, "blocks", min_len=1)
+        ValidateAttribute.VA_MIN_LEN(self, path, "blocks", min_len=1)
         
         for i, block in enumerate(self.blocks):
             current_path = path.add_attribute("blocks").add_index_or_key(i)
@@ -788,7 +793,7 @@ class SRBlock(HasGreprValidate):
             MANIP_InvalidBlockShapeError(MANIP_ValidationError): if e.g. a reporter block was expected but a non-reporter block was found
         """
         if expected_opcode is not None:
-            AA_EQUAL(self, path, "opcode", expected_opcode, condition="For this opcode of the parent block")
+            ValidateAttribute.VA_EQUAL(self, path, "opcode", expected_opcode, condition="For this opcode of the parent block")
         
         cls_name = self.__class__.__name__
         opcode_info = info_api.get_info_by_new_safe(self.opcode)
@@ -804,9 +809,9 @@ class SRBlock(HasGreprValidate):
             self.comment.validate(path.add_attribute("comment"))
         
         if opcode_info.new_mutation_cls is None:
-            AA_NONE(self, path, "mutation", condition="For this opcode")
+            ValidateAttribute.VA_NONE(self, path, "mutation", condition="For this opcode")
         else:
-            AA_TYPE(self, path, "mutation", opcode_info.new_mutation_cls, condition="For this opcode")
+            ValidateAttribute.VA_TYPE(self, path, "mutation", opcode_info.new_mutation_cls, condition="For this opcode")
             self.mutation.validate(path.add_attribute("mutation"))
 
         input_infos = opcode_info.get_new_input_ids_infos(block=self, fti_if=None) 
@@ -820,7 +825,7 @@ class SRBlock(HasGreprValidate):
             input_type = input_infos[new_input_id].type
             input_path = path.add_attribute("inputs").add_index_or_key(new_input_id)
             input_cls = get_input_cls_for_input_mode(input_type.mode)
-            ADESCR_TYPE(self, input_path, f"input {new_input_id!r}", input, input_cls, condition="For this opcode")
+            ValidateAttribute.VDESCR_TYPE(self, input_path, f"input {new_input_id!r}", input, input_cls, condition="For this opcode")
             input.validate(
                 path          = input_path,
                 info_api      = info_api,
@@ -1088,10 +1093,10 @@ class SRInputValue(ABC, HasGreprValidate):
     """
     
     # these are not guaranteed to exist and are only listed for good typing
-    blocks: list[SRBlock]     | None = field(init=False, grepr=False, hash=False, compare=False, validate_require_exist=False) 
-    block: SRBlock            | None = field(init=False, grepr=False, hash=False, compare=False, validate_require_exist=False)
-    immediate: str | bool     | None = field(init=False, grepr=False, hash=False, compare=False, validate_require_exist=False)
-    dropdown: SRDropdownValue | None = field(init=False, grepr=False, hash=False, compare=False, validate_require_exist=False)
+    blocks: list[SRBlock]     | None = no_field()
+    block: SRBlock            | None = no_field()
+    immediate: str | bool     | None = no_field()
+    dropdown: SRDropdownValue | None = no_field()
 
     @classmethod
     def from_mode(cls,
@@ -1132,7 +1137,8 @@ class SRInputValue(ABC, HasGreprValidate):
         path: AbstractTreePath, 
         info_api: OpcodeInfoAPI,
         validation_if: ValidationIF, 
-        context: CompleteContext, 
+        context: CompleteContext,
+        input_type: InputType | None = None,
     ) -> None:
         """
         *[Helper Method]* Ensures the block of this input is valid, raise MANIP_ValidationError if not
@@ -1140,19 +1146,15 @@ class SRInputValue(ABC, HasGreprValidate):
         Args:
             path: the path from the project to itself. Used for better error messages
             info_api: the opcode info api used to fetch information about opcodes
-            validation_if: interface which allows the management of other blocks 
+            validation_if: interface which allows the management of other blocks
             context: Context about parts of the project. Used to validate dropdowns
-        
-        Returns:
-            None
+            input_type: irrelevant
         
         Raises:
             MANIP_ValidationError: if the block of the SRInputValue is invalid
         """
-        block: SRBlock = self.block
-        AA_NONE_OR_TYPE(self, path, "block", SRBlock)
-        if block is not None:
-            block.validate(
+        if self.block is not None:
+            self.block.validate(
                 path             = path.add_attribute("block"),
                 info_api         = info_api,
                 validation_if    = validation_if,
@@ -1166,48 +1168,22 @@ class SRBlockAndTextInputValue(SRInputValue):
     The second representation for a block input, which has an immediate text field and might contain a block
     """
 
+    blocks: None = no_field() 
     block: SRBlock | None
     immediate: str
+    dropdown: None = no_field()
 
-    blocks: list[SRBlock]     | None = field(validate_require_exist=False) 
-    block: SRBlock            | None = field(validate_require_exist=True )
-    immediate: str            | None = field(validate_require_exist=True )
-    dropdown: SRDropdownValue | None = field(validate_require_exist=False)
-
-    def post_validate(self, 
-        path: AbstractTreePath, 
-        info_api: OpcodeInfoAPI,
-        validation_if: ValidationIF, 
-        context: CompleteContext, 
-        input_type: InputType, 
-    ) -> None:
-        """
-        Ensures an instance is valid, raise MANIP_ValidationError if not
-        
-        Args:
-            path: the path from the project to itself. Used for better error messages
-            info_api: the opcode info api used to fetch information about opcodes
-            validation_if: interface which allows the management of other blocks 
-            context: Context about parts of the project. Used to validate dropdowns
-            input_type: the type of this input. Used to valdiate dropdowns
-        
-        Raises:
-            MANIP_ValidationError: if the instance is invalid
-        """
-        self._validate_block(
-            path          = path,
-            info_api      = info_api,
-            validation_if = validation_if,
-            context       = context,
-        )
+    post_validate = SRInputValue._validate_block
 
 @grepr_dataclass()
 class SRBlockAndDropdownInputValue(SRInputValue):
     """
     The second representation for a block input, which has a dropdown and might contain a block
     """
-    
+
+    blocks: None = no_field()
     block: SRBlock | None
+    immediate: None = no_field()
     dropdown: SRDropdownValue
 
     def post_validate(self, 
@@ -1225,7 +1201,7 @@ class SRBlockAndDropdownInputValue(SRInputValue):
             info_api: the opcode info api used to fetch information about opcodes
             validation_if: interface which allows the management of other blocks 
             context: Context about parts of the project. Used to validate dropdowns
-            input_type: the type of this input. Used to valdiate dropdowns
+            input_type: the type of this input. Used to validate dropdowns
         
         Raises:
             MANIP_ValidationError: if the instance is invalid
@@ -1235,6 +1211,7 @@ class SRBlockAndDropdownInputValue(SRInputValue):
             info_api      = info_api,
             validation_if = validation_if,
             context       = context,
+            input_type    = input_type,
         )
         
         current_path = path.add_attribute("dropdown")
@@ -1251,35 +1228,12 @@ class SRBlockAndBoolInputValue(SRInputValue):
     The second representation for a block input, which has an immediate boolean field and might contain a block
     """
 
+    blocks: None = no_field() 
     block: SRBlock | None
     immediate: bool # Can not be None, default is False (see IRBlock.to_second, case InputMode.BLOCK_AND_BOOL)
+    dropdown: None = no_field()
 
-    def post_validate(self, 
-        path: AbstractTreePath, 
-        info_api: OpcodeInfoAPI,
-        validation_if: ValidationIF, 
-        context: CompleteContext, 
-        input_type: InputType, 
-    ) -> None:
-        """
-        Ensures an instance is valid, raise MANIP_ValidationError if not
-        
-        Args:
-            path: the path from the project to itself. Used for better error messages
-            info_api: the opcode info api used to fetch information about opcodes
-            validation_if: interface which allows the management of other blocks 
-            context: Context about parts of the project. Used to validate dropdowns
-            input_type: the type of this input. Used to valdiate dropdowns
-        
-        Raises:
-            MANIP_ValidationError: if the instance is invalid
-        """
-        self._validate_block(
-            path          = path,
-            info_api      = info_api,
-            validation_if = validation_if,
-            context       = context,
-        )
+    post_validate = SRInputValue._validate_block
 
 @grepr_dataclass()
 class SRBlockOnlyInputValue(SRInputValue):
@@ -1287,34 +1241,12 @@ class SRBlockOnlyInputValue(SRInputValue):
     The second representation for a block input, which might contain a block
     """
     
+    blocks: None = no_field() 
     block: SRBlock | None
+    immediate: None = no_field()
+    dropdown: None = no_field()
 
-    def post_validate(self, 
-        path: AbstractTreePath, 
-        info_api: OpcodeInfoAPI,
-        validation_if: ValidationIF, 
-        context: CompleteContext, 
-        input_type: InputType, 
-    ) -> None:
-        """
-        Ensures an instance is valid, raise MANIP_ValidationError if not
-        
-        Args:
-            path: the path from the project to itself. Used for better error messages
-            info_api: the opcode info api used to fetch information about opcodes
-            validation_if: interface which allows the management of other blocks 
-            context: Context about parts of the project. Used to validate dropdowns
-            input_type: the type of this input. Used to valdiate dropdowns
-        
-        Raises:
-            MANIP_ValidationError: if the instance is invalid
-        """
-        self._validate_block(
-            path          = path,
-            info_api      = info_api,
-            validation_if = validation_if,
-            context       = context,
-        )
+    post_validate = SRInputValue._validate_block
 
 @grepr_dataclass()
 class SRScriptInputValue(SRInputValue):
@@ -1322,7 +1254,10 @@ class SRScriptInputValue(SRInputValue):
     The second representation for a block input, which contains a substack of blocks
     """
     
-    blocks: list[SRBlock]
+    blocks: list[SRBlock] 
+    block: None = no_field()
+    immediate: None = no_field()
+    dropdown: None = no_field()
 
     def post_validate(self, 
         path: AbstractTreePath, 
@@ -1339,7 +1274,7 @@ class SRScriptInputValue(SRInputValue):
             info_api: the opcode info api used to fetch information about opcodes
             validation_if: interface which allows the management of other blocks 
             context: Context about parts of the project. Used to validate dropdowns
-            input_type: the type of this input. Used to valdiate dropdowns
+            input_type: the type of this input. Used to validate dropdowns
         
         Raises:
             MANIP_ValidationError: if the SRScriptInputValue is invalid
@@ -1369,7 +1304,10 @@ class SREmbeddedBlockInputValue(SRInputValue):
     The second representation for a block input, which must contain a block with one specific opcode.
     """
     
+    blocks: None = no_field()
     block: SRBlock
+    immediate: None = no_field()
+    dropdown: None = no_field()
 
     def post_validate(self, 
         path: AbstractTreePath, 
@@ -1386,7 +1324,7 @@ class SREmbeddedBlockInputValue(SRInputValue):
             info_api: the opcode info api used to fetch information about opcodes
             validation_if: interface which allows the management of other blocks 
             context: Context about parts of the project. Used to validate dropdowns
-            input_type: the type of this input. Used to valdiate dropdowns
+            input_type: the type of this input. Used to validate dropdowns
         
         Raises:
             MANIP_ValidationError: if the instance is invalid

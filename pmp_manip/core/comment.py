@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing     import Any
 
 from pmp_manip.utility import (
-    grepr_dataclass, AA_COORD_PAIR, AA_TYPE,
+    grepr_dataclass,
     AbstractTreePath, HasGreprValidate, MANIP_InvalidValueError,
 )
 

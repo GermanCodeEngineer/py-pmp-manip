@@ -243,7 +243,7 @@ def test_SRProject_validate(info_api_extended):
 def test_SRProject_validate_extensions():
     srproject = SRProject.create_empty()
     srproject.extensions.append(SRBuiltinExtension("jgJSON"))
-    srproject.validate(info_api)
+    srproject.validate(AbstractTreePath(), info_api)
 
 
 def test_SRProject_validate_same_sprite_name():
@@ -253,7 +253,7 @@ def test_SRProject_validate_same_sprite_name():
     srproject.sprites = [sprite1, sprite2]
     srproject.sprite_layer_stack = [sprite2.uuid, sprite1.uuid]
     with raises(MANIP_SameValueTwiceError):
-        srproject.validate(info_api)
+        srproject.validate(AbstractTreePath(), info_api)
 
 def test_SRProject_validate_same_extension_id():
     srproject = SRProject.create_empty()
@@ -262,7 +262,7 @@ def test_SRProject_validate_same_extension_id():
         SRBuiltinExtension(id="thatExtension"),
     ]
     with raises(MANIP_SameValueTwiceError):
-        srproject.validate(info_api)
+        srproject.validate(AbstractTreePath(), info_api)
 
 def test_SRProject_validate_sprites_same_sprite_uuid():
     srproject = SRProject.create_empty()

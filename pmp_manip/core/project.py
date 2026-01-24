@@ -11,8 +11,7 @@ from pmp_manip.project_api      import SCRATCH_API, PENGUINMOD_API, fetch_projec
 from pmp_manip.utility          import (
     grepr_dataclass, enforce_argument_types, 
     read_all_files_of_zip, create_zip_file, string_to_sha256, gdumps,
-    KeyReprDict, AbstractTreePath, HasGreprValidate,
-    AA_TYPE, AA_NONE_OR_TYPE, AA_TYPES, AA_LIST_OF_TYPE, AA_LIST_OF_TYPES, AA_RANGE, AA_EXACT_LEN,
+    KeyReprDict, AbstractTreePath, HasGreprValidate, ValidateAttribute,
     MANIP_SameValueTwiceError, MANIP_SpriteLayerStackError, MANIP_UnexpectedSubprocessError
 )
 
@@ -398,10 +397,10 @@ class SRProject:
             MANIP_ValidationError: if the instance is invalid
             MANIP_SameValueTwiceError(MANIP_ValidationError): if two sprites or extensions have the same name
         """
-        AA_EXACT_LEN(self, path, "sprite_layer_stack", 
+        ValidateAttribute.VA_EXACT_LEN(self, path, "sprite_layer_stack", 
             length=len(self.sprites), condition=f"In this case the project has {len(self.sprites)} sprites(s)"
         )
-        AA_RANGE(self, path, "tempo", min=20, max=500)
+        ValidateAttribute.VA_RANGE(self, path, "tempo", min=20, max=500)
         
         self.stage.validate(path.add_attribute("stage"), info_api)
 

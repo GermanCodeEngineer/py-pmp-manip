@@ -8,7 +8,7 @@ from typing     import Any
 
 from pmp_manip.utility import (
     grepr_dataclass, xml_equal, image_equal, generate_md5,
-    AA_TYPE, AA_COORD_PAIR, AA_EQUAL, AbstractTreePath, HasGreprValidate,
+    ValidateAttribute, AbstractTreePath, HasGreprValidate,
     MANIP_ThanksError,
 )
 
@@ -244,7 +244,7 @@ class SRVectorCostume(SRCostume):
         Raises:
             MANIP_ValidationError: if the instance is invalid
         """
-        AA_EQUAL(self, path, "file_extension", "svg")
+        ValidateAttribute.VA_EQUAL(self, path, "file_extension", "svg")
     
     def to_first(self) -> tuple[FRCostume, bytes]:
         """

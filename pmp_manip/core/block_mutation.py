@@ -7,7 +7,7 @@ from typing     import Any, ClassVar, NoReturn, Literal, TYPE_CHECKING
 from pmp_manip.important_consts import SHA256_SEC_MAIN_ARGUMENT_NAME
 from pmp_manip.utility          import (
     grepr_dataclass, field, string_to_sha256, gdumps,
-    AA_TYPE, AA_HEX_COLOR, AA_LIST_OF_TYPE, AA_MIN, AbstractTreePath, HasGreprValidate,
+    ValidateAttribute, AbstractTreePath, HasGreprValidate,
     MANIP_ThanksError, MANIP_ConversionError, MANIP_DeserializationError, 
 )
 
@@ -821,9 +821,9 @@ class SRCustomBlockArgumentMutation(SRMutation):
         Raises:
             MANIP_ValidationError: if the instance is invalid
         """
-        AA_HEX_COLOR(self, path, "main_color")
-        AA_HEX_COLOR(self, path, "prototype_color")
-        AA_HEX_COLOR(self, path, "outline_color")
+        ValidateAttribute.VA_HEX_COLOR(self, path, "main_color")
+        ValidateAttribute.VA_HEX_COLOR(self, path, "prototype_color")
+        ValidateAttribute.VA_HEX_COLOR(self, path, "outline_color")
     
     def to_first(self, itf_if: InterToFirstIF) -> FRCustomBlockArgumentMutation:
         """
@@ -869,9 +869,9 @@ class SRCustomBlockMutation(SRMutation):
         Raises:
             MANIP_ValidationError: if the instance is invalid
         """
-        AA_HEX_COLOR(self, path, "main_color")
-        AA_HEX_COLOR(self, path, "prototype_color")
-        AA_HEX_COLOR(self, path, "outline_color")
+        ValidateAttribute.VA_HEX_COLOR(self, path, "main_color")
+        ValidateAttribute.VA_HEX_COLOR(self, path, "prototype_color")
+        ValidateAttribute.VA_HEX_COLOR(self, path, "outline_color")
 
         self.custom_opcode.validate(path.add_attribute("custom_opcode"))
 
@@ -1029,7 +1029,7 @@ class SRExpandableJoinMutation(SRMutation):
         Raises:
             MANIP_ValidationError: if the SRExpandinstanceableJoinMutation is invalid
         """
-        AA_MIN(self, path, "input_count", 1)
+        ValidateAttribute.VA_MIN(self, path, "input_count", 1)
     
     def to_first(self, itf_if: InterToFirstIF) -> FRExpandableJoinMutation:
         """

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from pmp_manip.utility import (
-    grepr_dataclass, 
-    AA_TYPE, AA_ALNUM, is_valid_js_data_uri, is_valid_url, 
-    AbstractTreePath, HasGreprValidate, MANIP_InvalidValueError,
+    grepr_dataclass, is_valid_js_data_uri, is_valid_url, 
+    ValidateAttribute, AbstractTreePath, HasGreprValidate,
+    MANIP_InvalidValueError,
 )
 
 
@@ -26,7 +26,7 @@ class SRExtension(HasGreprValidate):
         Raises:
             MANIP_ValidationError: if the instance is invalid
         """
-        AA_ALNUM(self, path, "id") # TODO: possibly verify its one of PenguinMod's extension if not custom
+        ValidateAttribute.VA_ALNUM(self, path, "id") # TODO: possibly verify its one of PenguinMod's extension if not custom
 
 @grepr_dataclass()
 class SRBuiltinExtension(SRExtension):
