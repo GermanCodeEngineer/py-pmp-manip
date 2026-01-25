@@ -4,7 +4,7 @@ from requests               import HTTPError
 from pmp_manip.utility            import (
     MANIP_InvalidExtensionCodeSourceError, 
     MANIP_NetworkFetchError, MANIP_UnexpectedFetchError, MANIP_FileFetchError, 
-    MANIP_FileNotFoundError, MANIP_FailedFileReadError,
+    MANIPO_FileNotFoundError, MANIPO_FailedFileReadError,
 )
 
 
@@ -202,12 +202,12 @@ def test_fetch_js_code_file_not_allowed(monkeypatch: MonkeyPatch):
 
 def test_fetch_js_code_file_doesnt_exist(monkeypatch: MonkeyPatch):
     from pmp_manip.ext_info_gen.fetch_js import fetch_js_code
-    with raises(MANIP_FileNotFoundError):
+    with raises(MANIPO_FileNotFoundError):
         fetch_js_code("www/bbb.yyy", tolerate_file_path=True)
 
 def test_fetch_js_code_file_couldnt_read(monkeypatch: MonkeyPatch):
     def fake_read_file_text(*args, **kwargs) -> str:
-        raise MANIP_FailedFileReadError()
+        raise MANIPO_FailedFileReadError()
     
     from pmp_manip.ext_info_gen import fetch_js as fetch_js_mod
     monkeypatch.setattr(fetch_js_mod, "read_file_text", fake_read_file_text)

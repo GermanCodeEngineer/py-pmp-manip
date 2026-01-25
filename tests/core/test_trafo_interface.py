@@ -2,7 +2,7 @@ from copy   import deepcopy
 from pytest import fixture, raises
 
 from pmp_manip.important_consts import SHA256_SEC_MAIN_ARGUMENT_NAME
-from pmp_manip.utility          import lists_equal_ignore_order, assert_lists_equal_ignore_order, string_to_sha256, MANIP_ConversionError, MANIP_ValidationError
+from pmp_manip.utility          import lists_equal_ignore_order, assert_lists_equal_ignore_order, string_to_sha256, MANIP_ConversionError, MANIPO_ValidationError
 
 from pmp_manip.core.trafo_interface import FirstToInterIF, InterToFirstIF, SecondReprIF, SecondToInterIF, ValidationIF
 from pmp_manip.core.block_mutation  import FRCustomBlockMutation, SRCustomBlockMutation
@@ -342,7 +342,7 @@ def test_ValidationIF_get_cb_mutation(validation_if: ValidationIF):
 
 def test_ValidationIF_get_cb_mutation_invalid_custom_opcode(validation_if: ValidationIF):
     validation_if_copy = deepcopy(validation_if)
-    with raises(MANIP_ValidationError):
+    with raises(MANIPO_ValidationError):
         validation_if_copy.get_cb_mutation(SRCustomBlockOpcode(segments=("hi")))
     assert validation_if_copy == validation_if
 

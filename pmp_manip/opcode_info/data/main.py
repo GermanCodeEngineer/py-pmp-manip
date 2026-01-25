@@ -17,7 +17,7 @@ from pmp_manip.important_consts import (
 from pmp_manip.utility          import (
     string_to_sha256, AbstractTreePath, 
     DualKeyDict, 
-    MANIP_InvalidValueError,
+    MANIPO_InvalidValueError,
 )
 
 from pmp_manip.opcode_info.api import (
@@ -651,10 +651,10 @@ def _26f9_8217(path: AbstractTreePath, block: SRBlock) -> None:
     mutation: SRCustomBlockMutation = block.mutation
     if block.opcode == NEW_OPCODE_CB_DEF:
         if mutation.optype.is_reporter():
-            raise MANIP_InvalidValueError(path, f"If mutation.optype of a {block.__class__.__name__} is any ...REPORTER optype, opcode should be {NEW_OPCODE_CB_DEF_REP!r}")
+            raise MANIPO_InvalidValueError(path, f"If mutation.optype of a {block.__class__.__name__} is any ...REPORTER optype, opcode should be {NEW_OPCODE_CB_DEF_REP!r}")
     elif block.opcode == NEW_OPCODE_CB_DEF_REP:
         if not mutation.optype.is_reporter():
-            raise MANIP_InvalidValueError(path, f"If mutation.optype of a {block.__class__.__name__} is NOT any ...REPORTER optype, opcode should be {NEW_OPCODE_CB_DEF!r}")
+            raise MANIPO_InvalidValueError(path, f"If mutation.optype of a {block.__class__.__name__} is NOT any ...REPORTER optype, opcode should be {NEW_OPCODE_CB_DEF!r}")
     else: raise ValueError()
 info_api.add_opcodes_case(ANY_OPCODE_CB_DEF, SpecialCase(
     type=SpecialCaseType.POST_VALIDATION,

@@ -3,7 +3,7 @@ from subprocess   import run as run_subprocess, TimeoutExpired
 
 from pmp_manip.utility import (
     delete_file,
-    MANIP_FailedFileWriteError, MANIP_FailedFileDeleteError, 
+    MANIPO_FailedFileWriteError, MANIPO_FailedFileDeleteError, 
     MANIP_NoNodeJSInstalledError, 
     MANIP_SubprocessTimeoutError, MANIP_ExtensionExecutionErrorInJavascript, MANIP_UnexpectedSubprocessError,
     MANIP_ExtensionJSONDecodeError, 
@@ -223,7 +223,7 @@ def test_extract_extension_info_directly():
 def test_extract_extension_info_directly_write_error():
     from pmp_manip.ext_info_gen.direct_extractor import extract_extension_info_directly
     # Contains an unpaired high surrogate (U+D800)
-    with raises(MANIP_FailedFileWriteError):
+    with raises(MANIPO_FailedFileWriteError):
         extract_extension_info_directly("this will fail: \ud800")
         
 def test_extract_extension_info_directly_not_installed(monkeypatch: MonkeyPatch):
@@ -264,14 +264,14 @@ def test_extract_extension_info_directly_temp_delete_error(monkeypatch: MonkeyPa
     def fake_delete_file(file, *args, **kwargs):
         nonlocal temp_file_path
         temp_file_path = file
-        raise MANIP_FailedFileDeleteError()
+        raise MANIPO_FailedFileDeleteError()
 
     import pmp_manip.ext_info_gen.direct_extractor as direct_extractor_mod
     monkeypatch.setattr(direct_extractor_mod, "delete_file", fake_delete_file)
     from pmp_manip.ext_info_gen.direct_extractor import extract_extension_info_directly
     
     try:
-        with raises(MANIP_FailedFileDeleteError):
+        with raises(MANIPO_FailedFileDeleteError):
             extract_extension_info_directly(EXAMPLE_EXTENSION_CODE)
     finally:
         delete_file(temp_file_path)

@@ -131,7 +131,7 @@ class FRProject(HasGreprValidate):
             platform: the platform the project is on (determines api url)
         
         Raises:
-            MANIP_FailedFileWriteError(unlikely): if the temporary directory could not be created
+            MANIPO_FailedFileWriteError(unlikely): if the temporary directory could not be created
             MANIP_NoNodeJSInstalledError: if Node.js is not installed or not found in PATH
             MANIP_SubprocessTimeoutError: if the Node.js subprocess took too long
             MANIP_UnexpectedSubprocessError: if the project could not be fetched or some error occurs during the subprocess call
@@ -156,7 +156,7 @@ class FRProject(HasGreprValidate):
             Dictionary mapping IDs to sucessfully fetched projects and an optional error if some projects failed to fetch.
             
         Raises:
-            MANIP_FailedFileWriteError(unlikely): if the temporary directory could not be created
+            MANIPO_FailedFileWriteError(unlikely): if the temporary directory could not be created
             MANIP_NoNodeJSInstalledError: if Node.js is not installed or not found in PATH
             MANIP_SubprocessTimeoutError: if the Node.js subprocess took too long
             MANIP_UnexpectedSubprocessError: if some error occurs during the subprocess call
@@ -216,7 +216,7 @@ class FRProject(HasGreprValidate):
             MANIP_SafeExtensionInfoExtractionError: if the extension info could not be extracted through safe analysis
             MANIP_ExtensionInfoConvertionError: if the extracted extension info could not be converted into the format of this project
             MANIP_ThanksError(unlikely): if a block argument uses the mysterious Scratch.ArgumentType.SEPERATOR
-            MANIP_FailedFileWriteError(unlikely): if the generated extension info file or cache file or their directory could not be written/created
+            MANIPO_FailedFileWriteError(unlikely): if the generated extension info file or cache file or their directory could not be written/created
     
         Warnings:
             MANIP_UnexpectedPropertyAccessWarning: if a property of 'this' is accessed in the getInfo method of the extension code in safe analysis
@@ -388,14 +388,14 @@ class SRProject:
     @enforce_argument_types
     def post_validate(self, path: AbstractTreePath, info_api: OpcodeInfoAPI) -> None:
         """
-        Ensure an instance is valid, raise MANIP_ValidationError if not
+        Ensure an instance is valid, raise MANIPO_ValidationError if not
         
         Args:
             info_api: the opcode info api used to fetch information about opcodes
         
         Raises:
-            MANIP_ValidationError: if the instance is invalid
-            MANIP_SameValueTwiceError(MANIP_ValidationError): if two sprites or extensions have the same name
+            MANIPO_ValidationError: if the instance is invalid
+            MANIP_SameValueTwiceError(MANIPO_ValidationError): if two sprites or extensions have the same name
         """
         ValidateAttribute.VA_EXACT_LEN(self, path, "sprite_layer_stack", 
             len(self.sprites), condition=f"In this case the project has {len(self.sprites)} sprites(s)"
@@ -488,7 +488,7 @@ class SRProject:
 
     def _validate_sprites(self, path: AbstractTreePath, info_api: OpcodeInfoAPI) -> None:
         """
-        Ensure the sprites of a SRProject are valid, raise MANIP_ValidationError if not
+        Ensure the sprites of a SRProject are valid, raise MANIPO_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -498,8 +498,8 @@ class SRProject:
             None
         
         Raises:
-            MANIP_SameValueTwiceError(MANIP_ValidationError): if two sprites have the same UUID **OR** if the same UUID is included twice in sprite_layer_stack 
-            MANIP_SpriteLayerStackError(MANIP_ValidationError): if the sprite_layer_stack contains a UUID which belongs to no sprite 
+            MANIP_SameValueTwiceError(MANIPO_ValidationError): if two sprites have the same UUID **OR** if the same UUID is included twice in sprite_layer_stack 
+            MANIP_SpriteLayerStackError(MANIPO_ValidationError): if the sprite_layer_stack contains a UUID which belongs to no sprite 
         """
         sprite_uuid_paths: dict[UUID, list] = {}
         for i, sprite in enumerate(self.sprites):
@@ -534,7 +534,7 @@ class SRProject:
             None
         
         Raises:
-            MANIP_SameValueTwiceError(MANIP_ValidationError): if the project contains vars with the same name
+            MANIP_SameValueTwiceError(MANIPO_ValidationError): if the project contains vars with the same name
         """
         defined_variables = {}
         for i, variable in enumerate(self.global_variables):
@@ -563,7 +563,7 @@ class SRProject:
             None
         
         Raises:
-            MANIP_SameValueTwiceError(MANIP_ValidationError): if the project contains lists with the same name
+            MANIP_SameValueTwiceError(MANIPO_ValidationError): if the project contains lists with the same name
         """
         defined_lists = {}
         for i, list_ in enumerate(self.global_lists):
@@ -598,7 +598,7 @@ class SRProject:
             MANIP_SafeExtensionInfoExtractionError: if the extension info could not be extracted through safe analysis
             MANIP_ExtensionInfoConvertionError: if the extracted extension info could not be converted into the format of this project
             MANIP_ThanksError(unlikely): if a block argument uses the mysterious Scratch.ArgumentType.SEPERATOR
-            MANIP_FailedFileWriteError(unlikely): if the generated extension info file or cache file or their directory could not be written/created
+            MANIPO_FailedFileWriteError(unlikely): if the generated extension info file or cache file or their directory could not be written/created
     
         Warnings:
             MANIP_UnexpectedPropertyAccessWarning: if a property of 'this' is accessed in the getInfo method of the extension code in safe analysis

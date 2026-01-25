@@ -9,7 +9,9 @@ from pmp_manip.utility          import (
 
 from pmp_manip.core.asset          import SRCostume, SRVectorCostume, SRBitmapCostume, SRSound
 from pmp_manip.core.block_mutation import (
-    SRMutation, SRCustomBlockArgumentMutation, SRCustomBlockMutation, SRCustomBlockCallMutation
+    SRMutation, SRCustomBlockArgumentMutation, SRCustomBlockMutation, SRCustomBlockCallMutation,
+    SRExpandableIfMutation, SRExpandableOperatorMutation, SRExpandableJoinMutation,
+    SRExpandableOperatorMenu,
 )
 from pmp_manip.core.block          import (
     SRScript, SRBlock, SRInputValue,
@@ -40,7 +42,8 @@ ALL_SECOND_REPR_TYPES = (
     SRDropdownValue,
     
     SRMutation, SRCustomBlockArgumentMutation, SRCustomBlockMutation, SRCustomBlockCallMutation,
-    SRCustomBlockOpcode, SRCustomBlockArgument,
+    SRExpandableIfMutation, SRExpandableOperatorMutation, SRExpandableJoinMutation,
+    SRCustomBlockOpcode, SRCustomBlockArgument, SRExpandableOperatorMenu,
     
     SRComment,
     SRCostume, SRVectorCostume, SRBitmapCostume,
@@ -60,7 +63,8 @@ SECOND_REPR_T = (
     SRDropdownValue |
     
     SRMutation | SRCustomBlockArgumentMutation | SRCustomBlockMutation | SRCustomBlockCallMutation |
-    SRCustomBlockOpcode | SRCustomBlockArgument |
+    SRExpandableIfMutation | SRExpandableOperatorMutation | SRExpandableJoinMutation |
+    SRCustomBlockOpcode | SRCustomBlockArgument | SRExpandableOperatorMenu |
     
     SRComment |
     SRCostume | SRVectorCostume | SRBitmapCostume |
@@ -100,6 +104,9 @@ YIELD_FIELDS: dict[type[SECOND_REPR_T], list[str]] = {
     SRCustomBlockArgumentMutation: [],
     SRCustomBlockMutation: ["custom_opcode"],
     SRCustomBlockCallMutation: ["custom_opcode"],
+    SRExpandableIfMutation: [],
+    SRExpandableOperatorMutation: [],
+    SRExpandableJoinMutation: [],
     SRCustomBlockOpcode: ["segments"], # see above
     SRCustomBlockArgument: [], # see above
     
@@ -202,8 +209,12 @@ class TreeVisitor(Generic[INCLUDED_T]):
 def get_path_in_tree(tree: SECOND_REPR_T, path: AbstractTreePath, default: NotSetType = NotSet) -> SECOND_REPR_T: ...
 @overload
 def get_path_in_tree(tree: SECOND_REPR_T, path: AbstractTreePath, default: ARG_T) -> SECOND_REPR_T | ARG_T: ...
+@overload
+def get_path_in_tree(tree: Any, path: AbstractTreePath, default: NotSetType = NotSet) -> Any: ...
+@overload
+def get_path_in_tree(tree: Any, path: AbstractTreePath, default: ARG_T) -> Any | ARG_T: ...
 @enforce_argument_types
-def get_path_in_tree(tree: SECOND_REPR_T, path: AbstractTreePath, default: NotSetType | ARG_T = NotSet) -> SECOND_REPR_T | ARG_T:
+def get_path_in_tree(tree: SECOND_REPR_T | Any, path: AbstractTreePath, default: NotSetType | ARG_T = NotSet) -> SECOND_REPR_T | Any | ARG_T:
     """
     Dynamically get a node in an Abstract Second Representation Tree by its path.
 
@@ -213,6 +224,10 @@ def get_path_in_tree(tree: SECOND_REPR_T, path: AbstractTreePath, default: NotSe
     current_object = tree
     for i, item in enumerate(path):
         if   isinstance(item, ATPathAttribute):
+            if isinstance(current_object, dict) and (item.value == "keys()"):
+                # keys can only be accessed with d.keys()[key_index] not d[key]
+                current_object = list(current_object.keys())
+                continue
             try:
                 current_object = getattr(current_object, item.value)
             except (AttributeError, TypeError, Exception) as error:

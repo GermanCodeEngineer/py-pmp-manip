@@ -7,7 +7,7 @@ from pmp_manip.opcode_info.data import info_api
 from pmp_manip.utility          import (
     grepr_dataclass, field, AbstractTreePath, 
     MANIP_ConversionError,
-    MANIP_TypeValidationError, MANIP_RangeValidationError, MANIP_InvalidOpcodeError, MANIP_InvalidBlockShapeError,
+    MANIPO_TypeValidationError, MANIPO_RangeValidationError, MANIP_InvalidOpcodeError, MANIP_InvalidBlockShapeError,
     MANIP_UnnecessaryInputError, MANIP_MissingInputError, MANIP_UnnecessaryDropdownError, MANIP_MissingDropdownError,
 )
 
@@ -128,10 +128,10 @@ def test_SRScript_validate(validation_if, context):
     execute_attr_validation_tests(
         obj=srscript,
         attr_tests=[
-            ("position", 5, MANIP_TypeValidationError),
-            ("blocks", {}, MANIP_TypeValidationError),
-            ("blocks", [8], MANIP_TypeValidationError),
-            ("blocks", [], MANIP_RangeValidationError),
+            ("position", 5, MANIPO_TypeValidationError),
+            ("blocks", {}, MANIPO_TypeValidationError),
+            ("blocks", [8], MANIPO_TypeValidationError),
+            ("blocks", [], MANIPO_RangeValidationError),
         ],
         validate_func=SRScript.validate,
         func_args=[AbstractTreePath(), info_api, validation_if, context],
@@ -160,12 +160,12 @@ def test_SRBlock_validate(validation_if, context):
     execute_attr_validation_tests(
         obj=srblock,
         attr_tests=[
-            ("opcode", {}, MANIP_TypeValidationError),
+            ("opcode", {}, MANIPO_TypeValidationError),
             ("opcode", "some_undefined_opcode", MANIP_InvalidOpcodeError),
-            ("inputs", {5:6}, MANIP_TypeValidationError),
-            ("dropdowns", [], MANIP_TypeValidationError),
-            ("comment", 89, MANIP_TypeValidationError),
-            ("mutation", "hi", MANIP_TypeValidationError),
+            ("inputs", {5:6}, MANIPO_TypeValidationError),
+            ("dropdowns", [], MANIPO_TypeValidationError),
+            ("comment", 89, MANIPO_TypeValidationError),
+            ("mutation", "hi", MANIPO_TypeValidationError),
         ],
         validate_func=SRBlock.validate,
         func_args=[AbstractTreePath(), info_api, validation_if, context, False],
@@ -182,13 +182,13 @@ def test_SRBlock_validate_cb_def(validation_if, context):
 def test_SRBlock_validate_unexpected_mutation(validation_if, context):
     srblock = copy(ALL_SR_SCRIPTS[0].blocks[1])
     srblock.mutation = {...}
-    with raises(MANIP_TypeValidationError):
+    with raises(MANIPO_TypeValidationError):
         srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False)
 
 def test_SRBlock_validate_missing_mutation(validation_if, context):
     srblock = copy(ALL_SR_SCRIPTS[4].blocks[0])
     srblock.mutation = None
-    with raises(MANIP_TypeValidationError):
+    with raises(MANIPO_TypeValidationError):
         srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False)
 
 def test_SRBlock_validate_invalid_reporter_shape(validation_if, context):
@@ -227,7 +227,7 @@ def test_SRBlock_validate_post_handler(validation_if, context):
 def test_SRBlock_validate_invalid_input_cls(validation_if, context):
     srblock = deepcopy(ALL_SR_SCRIPTS[0].blocks[0])
     srblock.inputs["MESSAGE"] = SRBlockOnlyInputValue(block=None)
-    with raises(MANIP_TypeValidationError):
+    with raises(MANIPO_TypeValidationError):
         srblock.validate(AbstractTreePath(), info_api, validation_if, context, expects_reporter=False)
 
 def test_SRBlock_validate_editor_button(validation_if, context):
@@ -579,8 +579,8 @@ def test_SRBlockAndTextInputValue_validate(validation_if, context):
     execute_attr_validation_tests(
         obj=input_value,
         attr_tests=[
-            ("block", 5, MANIP_TypeValidationError),
-            ("immediate", {}, MANIP_TypeValidationError),
+            ("block", 5, MANIPO_TypeValidationError),
+            ("immediate", {}, MANIPO_TypeValidationError),
         ],
         validate_func=SRBlockAndTextInputValue.validate,
         func_args=[AbstractTreePath(), info_api, validation_if, context, input_type],
@@ -597,8 +597,8 @@ def test_SRBlockAndDropdownInputValue_validate(validation_if, context):
     execute_attr_validation_tests(
         obj=input_value,
         attr_tests=[
-            ("block", 5, MANIP_TypeValidationError),
-            ("dropdown", {}, MANIP_TypeValidationError),
+            ("block", 5, MANIPO_TypeValidationError),
+            ("dropdown", {}, MANIPO_TypeValidationError),
         ],
         validate_func=SRBlockAndDropdownInputValue.validate,
         func_args=[AbstractTreePath(), info_api, validation_if, context, input_type],
@@ -615,8 +615,8 @@ def test_SRBlockAndBoolInputValue_validate(validation_if, context):
     execute_attr_validation_tests(
         obj=input_value,
         attr_tests=[
-            ("block", 5.7, MANIP_TypeValidationError),
-            ("immediate", "hi", MANIP_TypeValidationError),
+            ("block", 5.7, MANIPO_TypeValidationError),
+            ("immediate", "hi", MANIPO_TypeValidationError),
         ],
         validate_func=SRBlockAndBoolInputValue.validate,
         func_args=[AbstractTreePath(), info_api, validation_if, context, input_type],
@@ -632,7 +632,7 @@ def test_SRBlockOnlyInputValue_validate(validation_if, context):
     execute_attr_validation_tests(
         obj=input_value,
         attr_tests=[
-            ("block", 5, MANIP_TypeValidationError),
+            ("block", 5, MANIPO_TypeValidationError),
         ],
         validate_func=SRBlockOnlyInputValue.validate,
         func_args=[AbstractTreePath(), info_api, validation_if, context, input_type],
@@ -648,8 +648,8 @@ def test_SRScriptInputValue_validate(validation_if, context):
     execute_attr_validation_tests(
         obj=input_value,
         attr_tests=[
-            ("blocks", 9, MANIP_TypeValidationError),
-            ("blocks", [{}], MANIP_TypeValidationError),
+            ("blocks", 9, MANIPO_TypeValidationError),
+            ("blocks", [{}], MANIPO_TypeValidationError),
         ],
         validate_func=SRScriptInputValue.validate,
         func_args=[AbstractTreePath(), info_api, validation_if, context, input_type],
@@ -680,8 +680,8 @@ def test_SREmbeddedBlockInputValue_validate(validation_if, context):
     execute_attr_validation_tests(
         obj=input_value,
         attr_tests=[
-            ("block", 7, MANIP_TypeValidationError),
-            ("block", None, MANIP_TypeValidationError),
+            ("block", 7, MANIPO_TypeValidationError),
+            ("block", None, MANIPO_TypeValidationError),
         ],
         validate_func=SREmbeddedBlockInputValue.validate,
         func_args=[AbstractTreePath(), info_api, validation_if, context, input_type],

@@ -10,7 +10,7 @@ from validators   import url as validators_url
 from pmp_manip.utility            import (
     read_file_text,
     MANIP_InvalidExtensionCodeSourceError, 
-    MANIP_NetworkFetchError, MANIP_UnexpectedFetchError, MANIP_FileFetchError, MANIP_FileNotFoundError,
+    MANIP_NetworkFetchError, MANIP_UnexpectedFetchError, MANIP_FileFetchError, MANIPO_FileNotFoundError,
 )
 
 
@@ -26,7 +26,7 @@ def fetch_js_code(source: str, tolerate_file_path: bool) -> str:
         MANIP_InvalidExtensionCodeSourceError: If the source data URI, URL or file_path is invalid or if a file path is passed even tough tolerate_file_paths is False or if the passed value is an invalid source
         MANIP_NetworkFetchError: For any network-related error (like 404 (not found))
         MANIP_UnexpectedFetchError: For any other unexpected error while fetching URL
-        MANIP_FileNotFoundError: If the local file does not exist
+        MANIPO_FileNotFoundError: If the local file does not exist
         MANIP_FileFetchError: If the file cannot be read
     """
     logger = getLogger()
@@ -64,7 +64,7 @@ def fetch_js_code(source: str, tolerate_file_path: bool) -> str:
             raise MANIP_InvalidExtensionCodeSourceError(f"Fetching by a file path is forbidden: {source}")
         
         if not path.exists(source):
-            raise MANIP_FileNotFoundError(f"File not found: {source}")
+            raise MANIPO_FileNotFoundError(f"File not found: {source}")
         try:
             return read_file_text(source)
         except Exception as error:

@@ -103,7 +103,7 @@ class ContentFingerprint(HasGreprValidate):
     hash: str
     
     @staticmethod
-    def hash_value(value: str) -> bytes:
+    def hash_value(value: str) -> str:
         """
         Hash a value with the chosen hash algorithm (sha256 here)
         
@@ -154,7 +154,6 @@ class ContentFingerprint(HasGreprValidate):
     def to_json(self) -> dict[str, Any]:
         """
         Serialize the figerprint to JSON
-        
         """
         return {
             "length": self.length,

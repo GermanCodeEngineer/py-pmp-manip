@@ -50,7 +50,7 @@ class SRDropdownValue(HasGreprValidate):
     ) -> None:
         """
         Ensures the value of a SRDropdownValue is allowed under given circumstances(context),
-        raise MANIP_ValidationError if not. 
+        raise MANIPO_ValidationError if not. 
         For example, it ensures that only variables are referenced, which actually exist.     
         For structural validation call the validate method
         
@@ -63,7 +63,7 @@ class SRDropdownValue(HasGreprValidate):
             None
         
         Raises:
-            MANIP_InvalidDropdownValueError(MANIP_ValidationError): if the value is invalid in the specific situation
+            MANIP_InvalidDropdownValueError(MANIPO_ValidationError): if the value is invalid in the specific situation
         """
         possible_values = dropdown_type.calculate_possible_new_dropdown_values(context=context)
         default_kind = dropdown_type.calculation_default_kind

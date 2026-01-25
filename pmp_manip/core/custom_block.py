@@ -6,7 +6,7 @@ from pmp_manip.opcode_info.api import InputType, BuiltinInputType, InputInfo, Op
 from pmp_manip.utility         import (
     grepr_dataclass, ValidateAttribute,
     GEnum, AbstractTreePath, HasGreprValidate,
-    MANIP_SameValueTwiceError, MANIP_ConversionError, MANIP_TypeValidationError,
+    MANIP_SameValueTwiceError, MANIP_ConversionError, MANIPO_TypeValidationError,
 )
 
 @grepr_dataclass(frozen=True, unsafe_hash=True)
@@ -92,14 +92,14 @@ class SRCustomBlockOpcode(HasGreprValidate):
     
     def post_validate(self, path: AbstractTreePath) -> None:
         """
-        Ensures an instance is valid, raise MANIP_ValidationError if not
+        Ensures an instance is valid, raise MANIPO_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
         
         Raises:
-            MANIP_ValidationError: if the instance is invalid
-            MANIP_SameValueTwiceError(MANIP_ValidationError): if two arguments have the same name
+            MANIPO_ValidationError: if the instance is invalid
+            MANIP_SameValueTwiceError(MANIPO_ValidationError): if two arguments have the same name
         """
         ValidateAttribute.VA_MIN_LEN(self, path, "segments", 1)
 
@@ -118,7 +118,7 @@ class SRCustomBlockOpcode(HasGreprValidate):
                 last_was_label = False
             else:
                 if last_was_label:
-                    raise MANIP_TypeValidationError(path, f"A custom block opcode must not contain two labels in a row")
+                    raise MANIPO_TypeValidationError(path, f"A custom block opcode must not contain two labels in a row")
                 last_was_label = True
     
     def _visit_node_unfiltered_(self, path: AbstractTreePath) -> Iterable[tuple[AbstractTreePath, SRCustomBlockArgument]]:
@@ -149,15 +149,15 @@ class SRCustomBlockArgument(HasGreprValidate):
 
     def post_validate(self, path: AbstractTreePath) -> None:
         """
-        Ensures an instance is valid, raise MANIP_ValidationError if not
+        Ensures an instance is valid, raise MANIPO_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
         
         Raises:
-            MANIP_ValidationError: if the instance is invalid
+            MANIPO_ValidationError: if the instance is invalid
         """
-        ValidateAttribute.VA_NOT_EQUAL(self, path, "name", "")
+        ValidateAttribute.VA_NOT_ONE_OF(self, path, "name", [""])
 
 class SRCustomBlockArgumentType(GEnum):
     """

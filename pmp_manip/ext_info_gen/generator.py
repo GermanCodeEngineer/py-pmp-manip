@@ -10,7 +10,7 @@ from pmp_manip.opcode_info.api import (
 )
 from pmp_manip.utility         import (
     grepr, DualKeyDict, GEnum,
-    MANIP_ThanksError, MANIP_ValueError, MANIP_NotImplementedError,
+    MANIP_ThanksError,
     MANIP_InvalidCustomMenuError, MANIP_InvalidCustomBlockError,
     MANIP_UnknownExtensionAttributeError, 
 )
@@ -175,7 +175,7 @@ def generate_block_opcode_info(
     
     Raises:
         MANIP_InvalidCustomBlockError: if the block information is invalid
-        MANIP_NotImplementedError: if an XML block is given to this function
+        NotImplementedError: if an XML block is given to this function
         MANIP_ThanksError: if an argument uses the mysterious Scratch.ArgumentType.SEPERATOR
     """
     def process_arguments(
@@ -402,7 +402,7 @@ def generate_block_opcode_info(
             case "label" | "button":
                 return (None, None) # not really block, but a label or button, can just be skipped
             case "xml":
-                raise MANIP_NotImplementedError("XML blocks are NOT supported. It is pretty much impossible to translate one into a database entry.") # TODO: reconsider
+                raise NotImplementedError("XML blocks are NOT supported. It is pretty much impossible to translate one into a database entry.") # TODO: reconsider
             case _:
                 raise ValueError("Unknown value for 'blockType'")
         
@@ -469,7 +469,7 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
         MANIP_UnknownExtensionAttributeError: if the extension has an unknown attribute
         MANIP_InvalidCustomMenuError: if the information about a menu is invalid
         MANIP_InvalidCustomBlockError: if information of a block is invalid
-        MANIP_NotImplementedError: if an XML block is included in the extension info
+        NotImplementedError: if an XML block is included in the extension info
         MANIP_ThanksError: if a block argument uses the mysterious Scratch.ArgumentType.SEPERATOR
     # TODO: update tests
     """
@@ -520,7 +520,7 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
                     key2  = new_opcode,
                     value = opcode_info,
                 )
-            except MANIP_ValueError as error:
+            except ValueError as error:
                 old_exists = info_group_content.has_key1(old_opcode)
                 new_exists = info_group_content.has_key2(new_opcode)
                 if   old_exists: # => old opcode key conflict

@@ -20,14 +20,7 @@ class MANIP_ThanksError(MANIP_Error):
 #                     COPIED BUILT-IN ERRORS                  #
 ###############################################################
 
-class MANIP_NotImplementedError(MANIP_Error): pass
-class MANIP_TypeError(MANIP_Error, TypeError): pass
-class MANIP_KeyError(MANIP_Error, KeyError): pass
-class MANIP_IndexError(MANIP_Error, IndexError): pass
-class MANIP_ValueError(MANIP_Error, ValueError): pass
-class MANIP_AttributeError(MANIP_Error, AttributeError): pass
-class MANIP_OSError(MANIP_Error, OSError): pass
-class MANIP_FileNotFoundError(MANIP_OSError): pass
+class MANIPO_FileNotFoundError(OSError): pass
 
 
 ###############################################################
@@ -60,9 +53,9 @@ class MANIP_ConversionError(MANIP_Error): pass
 #                    ERRORS FOR VALIDATION                    #
 ###############################################################
 
-class MANIP_ValidationError(MANIP_Error): pass
+class MANIPO_ValidationError(MANIP_Error): pass
 
-class MANIP_PathValidationError(MANIP_ValidationError):
+class MANIPO_PathValidationError(MANIPO_ValidationError):
     path: AbstractTreePath
     msg: str
     condition: str | None
@@ -80,24 +73,24 @@ class MANIP_PathValidationError(MANIP_ValidationError):
         full_message += msg
         super().__init__(full_message)
     
-class MANIP_TypeValidationError(MANIP_PathValidationError, MANIP_TypeError): pass
-class MANIP_InvalidValueError(MANIP_PathValidationError, MANIP_ValueError): pass
-class MANIP_RangeValidationError(MANIP_PathValidationError, MANIP_ValueError): pass
+class MANIPO_TypeValidationError(MANIPO_PathValidationError, TypeError): pass
+class MANIPO_InvalidValueError(MANIPO_PathValidationError, ValueError): pass
+class MANIPO_RangeValidationError(MANIPO_PathValidationError, ValueError): pass
 
-class MANIP_MissingInputError(MANIP_PathValidationError, MANIP_ValueError): pass
-class MANIP_UnnecessaryInputError(MANIP_PathValidationError, MANIP_ValueError): pass
-class MANIP_MissingDropdownError(MANIP_PathValidationError, MANIP_ValueError): pass
-class MANIP_UnnecessaryDropdownError(MANIP_PathValidationError, MANIP_ValueError): pass
+class MANIP_MissingInputError(MANIPO_PathValidationError, ValueError): pass
+class MANIP_UnnecessaryInputError(MANIPO_PathValidationError, ValueError): pass
+class MANIP_MissingDropdownError(MANIPO_PathValidationError, ValueError): pass
+class MANIP_UnnecessaryDropdownError(MANIPO_PathValidationError, ValueError): pass
 
-class MANIP_InvalidDropdownValueError(MANIP_PathValidationError, MANIP_ValueError): pass
+class MANIP_InvalidDropdownValueError(MANIPO_PathValidationError, ValueError): pass
 
-class MANIP_InvalidOpcodeError(MANIP_PathValidationError, MANIP_ValueError): pass
-class MANIP_InvalidBlockShapeError(MANIP_PathValidationError, MANIP_ValueError): pass
-class MANIP_InvalidDirPathError(MANIP_PathValidationError, MANIP_ValueError): pass
+class MANIP_InvalidOpcodeError(MANIPO_PathValidationError, ValueError): pass
+class MANIP_InvalidBlockShapeError(MANIPO_PathValidationError, ValueError): pass
+class MANIP_InvalidDirPathError(MANIPO_PathValidationError, ValueError): pass
 
-class MANIP_SpriteLayerStackError(MANIP_PathValidationError, ValueError): pass
+class MANIP_SpriteLayerStackError(MANIPO_PathValidationError, ValueError): pass
 
-class MANIP_SameValueTwiceError(MANIP_ValidationError, ValueError):
+class MANIP_SameValueTwiceError(MANIPO_ValidationError, ValueError):
     def __init__(self, path1: AbstractTreePath, path2: AbstractTreePath, msg: str, condition: str|None = None) -> None:
         self.path1     = path1
         self.path2     = path2
@@ -167,9 +160,9 @@ class MANIP_ConfigurationError(MANIP_Error): pass
 #                       ERRORS FOR UTILITY                    #
 ###############################################################
 
-class MANIP_FailedFileWriteError(MANIP_Error): pass
-class MANIP_FailedFileReadError(MANIP_Error): pass
-class MANIP_FailedFileDeleteError(MANIP_Error): pass
+class MANIPO_FailedFileWriteError(MANIP_Error): pass
+class MANIPO_FailedFileReadError(MANIP_Error): pass
+class MANIPO_FailedFileDeleteError(MANIP_Error): pass
 
 
 ###############################################################
@@ -190,8 +183,8 @@ class MANIP_FailedFileDeleteError(MANIP_Error): pass
     "MANIP_DeserializationError", "MANIP_ConversionError",
     
     
-    "MANIP_ValidationError", "MANIP_PathValidationError", "MANIP_TypeValidationError", "MANIP_InvalidValueError",
-    "MANIP_RangeValidationError", "MANIP_MissingInputError", "MANIP_UnnecessaryInputError", 
+    "MANIPO_ValidationError", "MANIPO_PathValidationError", "MANIPO_TypeValidationError", "MANIPO_InvalidValueError",
+    "MANIPO_RangeValidationError", "MANIP_MissingInputError", "MANIP_UnnecessaryInputError", 
     "MANIP_MissingDropdownError", "MANIP_UnnecessaryDropdownError", "MANIP_InvalidDropdownValueError", 
     "MANIP_InvalidOpcodeError", "MANIP_InvalidBlockShapeError", "MANIP_SpriteLayerStackError", 
     "MANIP_SameValueTwiceError",

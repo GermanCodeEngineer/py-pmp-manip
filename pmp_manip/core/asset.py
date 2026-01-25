@@ -236,13 +236,13 @@ class SRVectorCostume(SRCostume):
         
     def post_validate(self, path: AbstractTreePath) -> None:
         """
-        Ensure an instance is valid, raise MANIP_ValidationError if not
+        Ensure an instance is valid, raise MANIPO_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
         
         Raises:
-            MANIP_ValidationError: if the instance is invalid
+            MANIPO_ValidationError: if the instance is invalid
         """
         ValidateAttribute.VA_EQUAL(self, path, "file_extension", "svg")
     

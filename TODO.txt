@@ -13,10 +13,12 @@ Currently Working On:
     - make sure SRBlockAndTextInputValue.validate accepts only str for .immediate
     - make sure SRDropdownValue.value allows only str, int, bool
     - finish ValidateAttribute creation
-    - remove VDESCR_TYPE
     - finalize AbstractTreePath representation
     - move utility/validation.py to otility
-    => XL: add tests for and document utility
+    - include get/set/exists path to otility
+    - fix errors distribution
+    - question necessity of file utils
+    => XL: add tests for and document utility and especially otility
 
 Changelog since last Release:
     - added new expandable blocks
@@ -25,6 +27,7 @@ Changelog since last Release:
     - added tests for and integrated project_api
     - improved project installation
     - removed last string references
+    - updated abstract tree tools
 
 High: /
 
@@ -36,6 +39,7 @@ Medium:
         => rethink error strategy (e.g. ValueError, TypeError) => should i wrap external errors instead of mine?
         => error formatting
     - S/M: implement variable_type and variable_id (example: "small_example")
+    - S/M: improve difficult maintanence of YIELD_FIELDS (=> make it depend on the new field system)
     - S: explore extensionData (example of "2D MAINCRAFT")
     - S: add "previous costume" and "next costume" to costume menu
         => explore for similar updates

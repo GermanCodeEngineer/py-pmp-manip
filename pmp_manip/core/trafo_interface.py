@@ -2,7 +2,7 @@ from __future__  import annotations
 
 from pmp_manip.utility import (
     grepr_dataclass, field, number_to_token,
-    HasGreprValidate, MANIP_ConversionError, MANIP_ValidationError,
+    HasGreprValidate, MANIP_ConversionError, MANIPO_ValidationError,
 )
 
 from pmp_manip.core.block_mutation import FRCustomBlockMutation, SRCustomBlockMutation
@@ -345,7 +345,7 @@ class ValidationIF(SecondReprIF):
         """
         if custom_opcode in self.cb_mutations:
             return self.cb_mutations[custom_opcode]
-        raise MANIP_ValidationError(f"Mutation of custom_opcode {custom_opcode!r} not found")
+        raise MANIPO_ValidationError(f"Mutation of custom_opcode {custom_opcode!r} not found")
 
 
 __all__ = ["FirstToInterIF", "InterToFirstIF", "SecondReprIF", "SecondToInterIF", "ValidationIF"]

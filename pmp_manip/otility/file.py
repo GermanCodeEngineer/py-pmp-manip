@@ -6,8 +6,7 @@ import zipfile, zlib
 
 from pmp_manip.otility.decorators import enforce_argument_types
 from pmp_manip.utility.errors     import (
-    MANIP_TypeError, MANIP_ValueError, 
-    MANIP_OSError, MANIP_FileNotFoundError, MANIP_FailedFileWriteError, MANIP_FailedFileReadError, MANIP_FailedFileDeleteError,
+    MANIPO_FileNotFoundError, MANIPO_FailedFileWriteError, MANIPO_FailedFileReadError, MANIPO_FailedFileDeleteError,
 )
 
 @enforce_argument_types
@@ -27,8 +26,8 @@ def read_all_files_of_zip(zip_source: str | BytesIO) -> dict[str, bytes]:
         - File names inside the archive are preserved as-is
 
     Raises:
-        MANIP_FileNotFoundError: If the ZIP file was not found
-        MANIP_FailedFileReadError: For OS-related errors on the zip file or one its files like, closed, permission denied, invalid path, or decoding/unpacking failures
+        MANIPO_FileNotFoundError: If the ZIP file was not found
+        MANIPO_FailedFileReadError: For OS-related errors on the zip file or one its files like, closed, permission denied, invalid path, or decoding/unpacking failures
     """
     contents = {}
     try:
@@ -38,19 +37,19 @@ def read_all_files_of_zip(zip_source: str | BytesIO) -> dict[str, bytes]:
                     with zip_ref.open(file_name) as file_ref:
                         contents[file_name] = file_ref.read()
                 except (zlib.error, EOFError, MemoryError, OverflowError, KeyError,) as error:
-                    raise MANIP_FailedFileReadError(
+                    raise MANIPO_FailedFileReadError(
                         f"Failed to extract {file_name!r} from zip {zip_source!r}: {error}"
                     ) from error
 
     except FileNotFoundError as error:
-        raise MANIP_FileNotFoundError(
+        raise MANIPO_FileNotFoundError(
             f"Failed to read, zip file does not exist: {error}"
         ) from error
 
     except (ValueError, PermissionError, IsADirectoryError,
             NotADirectoryError, UnicodeDecodeError, OSError,
             zipfile.BadZipFile, zipfile.LargeZipFile) as error:
-        raise MANIP_FailedFileReadError(
+        raise MANIPO_FailedFileReadError(
             f"Failed to read from {zip_source!r}: {error}"
         ) from error
 
@@ -69,18 +68,18 @@ def read_file_text(file_path: str, encoding: str = "utf-8") -> str:
         str: The contents of the file.
 
     Raises:
-        MANIP_FileNotFoundError: If the file was not found
-        MANIP_FailedFileReadError: For OS-related errors like, closed, permission denied, invalid path, or decoding failures
+        MANIPO_FileNotFoundError: If the file was not found
+        MANIPO_FailedFileReadError: For OS-related errors like, closed, permission denied, invalid path, or decoding failures
     """
     try:
         with open(file_path, "r", encoding=encoding) as file:
             return file.read()
 
     except FileNotFoundError as error:
-        raise MANIP_FileNotFoundError(f"Failed to read, file does not exist: {error}") from error
+        raise MANIPO_FileNotFoundError(f"Failed to read, file does not exist: {error}") from error
     except (ValueError, PermissionError, IsADirectoryError,
             NotADirectoryError, UnicodeDecodeError, OSError) as error:
-        raise MANIP_FailedFileReadError(f"Failed to read from {file_path!r}: {error}") from error
+        raise MANIPO_FailedFileReadError(f"Failed to read from {file_path!r}: {error}") from error
 
 @enforce_argument_types
 def write_file_text(file_path: str, text: str, encoding: str = "utf-8") -> None:
@@ -94,8 +93,8 @@ def write_file_text(file_path: str, text: str, encoding: str = "utf-8") -> None:
         encoding: the text encoding to use
     
     Raises:
-        MANIP_ValueError: If the file is in an invalid state or mode for writing
-        MANIP_FailedFileWriteError: If an OS-level error occurs (e.g., file not found, permission denied,
+        ValueError: If the file is in an invalid state or mode for writing
+        MANIPO_FailedFileWriteError: If an OS-level error occurs (e.g., file not found, permission denied,
                                  is a directory, or other I/O-related failure) or `text` is not compatible with `encoding`
     """
 
@@ -104,11 +103,11 @@ def write_file_text(file_path: str, text: str, encoding: str = "utf-8") -> None:
             file.write(text)
 
     except ValueError as error:
-        raise MANIP_ValueError(str(error)) from error
+        raise ValueError(str(error)) from error
     except UnicodeDecodeError as error:
-        raise MANIP_FailedFileWriteError(f"Failed to write to {file_path!r} because of encoding failure: {error}") from error
+        raise MANIPO_FailedFileWriteError(f"Failed to write to {file_path!r} because of encoding failure: {error}") from error
     except (FileNotFoundError, OSError, PermissionError, IsADirectoryError) as error:
-        raise MANIP_FailedFileWriteError(f"Failed to write to {file_path!r}: {error}") from error
+        raise MANIPO_FailedFileWriteError(f"Failed to write to {file_path!r}: {error}") from error
 
 @enforce_argument_types
 def delete_file(file_path: str) -> None:
@@ -119,8 +118,8 @@ def delete_file(file_path: str) -> None:
         file_path: Path to the file to delete
 
     Raises:
-        MANIP_ValueError: If `file_path` is invalid or not a proper file path
-        MANIP_FailedFileDeleteError: If an OS-level error occurs (e.g., file not found, permission denied,
+        ValueError: If `file_path` is invalid or not a proper file path
+        MANIPO_FailedFileDeleteError: If an OS-level error occurs (e.g., file not found, permission denied,
                                   is a directory, or other I/O-related failure)
     """
 
@@ -128,9 +127,9 @@ def delete_file(file_path: str) -> None:
         os.remove(file_path)
 
     except ValueError as error:
-        raise MANIP_ValueError(str(error)) from error
+        raise ValueError(str(error)) from error
     except (FileNotFoundError, PermissionError, IsADirectoryError, OSError) as error:
-        raise MANIP_FailedFileDeleteError(f"Failed to delete file at {file_path!r}: {error}") from error
+        raise MANIPO_FailedFileDeleteError(f"Failed to delete file at {file_path!r}: {error}") from error
 
 @enforce_argument_types
 def delete_directory(dir_path: str) -> None:
@@ -141,17 +140,17 @@ def delete_directory(dir_path: str) -> None:
         dir_path: Path to the directory to delete
 
     Raises:
-        MANIP_ValueError: If `dir_path` is invalid or not a proper directory path
-        MANIP_FailedFileDeleteError: If an OS-level error occurs (e.g., directory not found, permission denied,
+        ValueError: If `dir_path` is invalid or not a proper directory path
+        MANIPO_FailedFileDeleteError: If an OS-level error occurs (e.g., directory not found, permission denied,
                                       is a file, or other I/O-related failure)
     """
     try:
         shutil.rmtree(dir_path)
     
     except ValueError as error:
-        raise MANIP_ValueError(str(error)) from error
+        raise ValueError(str(error)) from error
     except (FileNotFoundError, PermissionError, NotADirectoryError, OSError) as error:
-        raise MANIP_FailedFileDeleteError(f"Failed to delete directory at {dir_path!r}: {error}") from error
+        raise MANIPO_FailedFileDeleteError(f"Failed to delete directory at {dir_path!r}: {error}") from error
 
 @enforce_argument_types
 def create_zip_file(zip_path: str, contents: dict[str, bytes]) -> None:
@@ -179,11 +178,11 @@ def file_exists(file_path: str) -> bool:
         return os.path.exists(file_path)
     
     except TypeError as error:
-        raise MANIP_TypeError(str(error)) from error
+        raise TypeError(str(error)) from error
     except ValueError as error:
-        raise MANIP_ValueError(str(error)) from error
+        raise ValueError(str(error)) from error
     except OSError as error:
-        raise MANIP_OSError(str(error)) from error
+        raise
 
 
 __all__ = [

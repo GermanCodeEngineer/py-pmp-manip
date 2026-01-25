@@ -48,7 +48,7 @@ class ExtInfoGenConfig(ConfigBase):
     
     def post_validate(self, path: AbstractTreePath) -> None:
         """
-        Ensure an instance is valid, raise MANIP_ValidationError if not
+        Ensure an instance is valid, raise MANIPO_ValidationError if not
         
         Args:
             path: the path from the top of the config tree to itself. Used for better error messages
@@ -91,13 +91,13 @@ class MasterConfig(ConfigBase):
 
     def post_validate(self, path: AbstractTreePath) -> None:
         """
-        Ensure an instance is valid, raise MANIP_ValidationError if not
+        Ensure an instance is valid, raise MANIPO_ValidationError if not
         
         Args:
             path: the path from the top of the config tree to itself. Used for better error messages
         
         Raises:
-            MANIP_ValidationError: if the instance is invalid
+            MANIPO_ValidationError: if the instance is invalid
         """
         self.ext_info_gen .validate(path.add_attribute("ext_info_gen" ))
         self.validation   .validate(path.add_attribute("validation"   ))

@@ -8,6 +8,7 @@ from pmp_manip.utility          import (
     grepr_dataclass, string_to_sha256,
     ValidateAttribute, AbstractTreePath, HasGreprValidate,
     MANIP_InvalidOpcodeError, MANIP_MissingDropdownError, MANIP_UnnecessaryDropdownError, MANIP_ThanksError,
+    MANIPO_RangeValidationError,
 )
 from pmp_manip.important_consts import (
     OPCODE_VAR_VALUE, OPCODE_LIST_VALUE, NEW_OPCODE_VAR_VALUE, NEW_OPCODE_LIST_VALUE, 
@@ -231,7 +232,7 @@ class SRMonitor(HasGreprValidate):
     
     def post_validate(self, path: AbstractTreePath, info_api: OpcodeInfoAPI) -> None:
         """
-        Ensure an instance is valid, raise MANIP_ValidationError if not
+        Ensure an instance is valid, raise MANIPO_ValidationError if not
         To validate the exact dropdown values you should additionally call the validate_dropdown_values method
         
         Args:
@@ -239,10 +240,10 @@ class SRMonitor(HasGreprValidate):
             info_api: the opcode info api used to fetch information about opcodes
         
         Raises:
-            MANIP_ValidationError: if the instance is invalid
-            MANIP_InvalidOpcodeError(MANIP_ValidationError): if the opcode is not a defined opcode
-            MANIP_UnnecessaryDropdownError(MANIP_ValidationError): if a key of dropdowns is not expected for the specific opcode
-            MANIP_MissingDropdownError(MANIP_ValidationError): if an expected key of dropdowns for the specific opcode is missing
+            MANIPO_ValidationError: if the instance is invalid
+            MANIP_InvalidOpcodeError(MANIPO_ValidationError): if the opcode is not a defined opcode
+            MANIP_UnnecessaryDropdownError(MANIPO_ValidationError): if a key of dropdowns is not expected for the specific opcode
+            MANIP_MissingDropdownError(MANIPO_ValidationError): if an expected key of dropdowns for the specific opcode is missing
         """
         if get_config().validation.raise_if_monitor_position_outside_stage:
             ValidateAttribute.VA_BOXED_COORD_PAIR(self, path, "position", 
@@ -276,7 +277,7 @@ class SRMonitor(HasGreprValidate):
         context: PartialContext | CompleteContext,
      ) -> None:
         """
-        Ensure the dropdown values of a SRMonitor are valid, raise MANIP_ValidationError if not
+        Ensure the dropdown values of a SRMonitor are valid, raise MANIPO_ValidationError if not
         For validation of the monitor itself, call the validate method
         
         Args:
@@ -288,7 +289,7 @@ class SRMonitor(HasGreprValidate):
             None
         
         Raises:
-            MANIP_ValidationError: if some of the dropdown values of the SRMonitor are invalid
+            MANIPO_ValidationError: if some of the dropdown values of the SRMonitor are invalid
         """
         opcode_info = info_api.get_info_by_new(self.opcode)
         dropdown_infos = opcode_info.get_new_dropdown_ids_infos()
@@ -426,7 +427,7 @@ class SRVariableMonitor(SRMonitor):
     
     def post_validate(self, path: AbstractTreePath, info_api: OpcodeInfoAPI):
         """
-        Ensure an instance is valid, raise MANIP_ValidationError if not
+        Ensure an instance is valid, raise MANIPO_ValidationError if not
         To validate the exact dropdown values you should additionally call the validate_dropdown_values method
         
         Args:
@@ -434,18 +435,18 @@ class SRVariableMonitor(SRMonitor):
             info_api: the opcode info api used to fetch information about opcodes
         
         Raises:
-            MANIP_ValidationError: if the instance is invalid
+            MANIPO_ValidationError: if the instance is invalid
         """
         super().post_validate(path, info_api)
         ValidateAttribute.VA_EQUAL(self, path, "opcode", NEW_OPCODE_VAR_VALUE)
         
         if self.allow_only_integers:
-            allowed_types = (int,)
             condition = "When allow_only_integers is True"
             ValidateAttribute.VA_TYPE(self, path, "slider_min", int, condition=condition)
             ValidateAttribute.VA_TYPE(self, path, "slider_max", int, condition=condition)
 
-        ValidateAttribute.VA_BIGGER_OR_EQUAL(self, path, "slider_max", "slider_min")
+        if not(self.slider_max >= self.slider_min):
+            raise MANIPO_RangeValidationError(path, f"slider_max of a SRVariableMonitor must be bigger then or equal to slider_min")
 
 @grepr_dataclass()
 class SRListMonitor(SRMonitor):
@@ -457,7 +458,7 @@ class SRListMonitor(SRMonitor):
     
     def post_validate(self, path: AbstractTreePath, info_api: OpcodeInfoAPI):
         """
-        Ensure an instance is valid, raise MANIP_ValidationError if not
+        Ensure an instance is valid, raise MANIPO_ValidationError if not
         To validate the exact dropdown values you should additionally call the validate_dropdown_values method
         
         Args:
@@ -465,7 +466,7 @@ class SRListMonitor(SRMonitor):
             info_api: the opcode info api used to fetch information about opcodes
         
         Raises:
-            MANIP_ValidationError: if the instance is invalid
+            MANIPO_ValidationError: if the instance is invalid
         """
         super().post_validate(path, info_api)
         ValidateAttribute.VA_EQUAL(self, path, "opcode", NEW_OPCODE_LIST_VALUE)

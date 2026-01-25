@@ -6,7 +6,7 @@ from pmp_manip.important_consts import SHA256_SEC_MAIN_ARGUMENT_NAME
 from pmp_manip.utility          import (
     string_to_sha256, gdumps, grepr_dataclass, AbstractTreePath,
     MANIP_DeserializationError, MANIP_ConversionError, MANIP_ThanksError, 
-    MANIP_TypeValidationError, MANIP_InvalidValueError, MANIP_RangeValidationError
+    MANIPO_TypeValidationError, MANIPO_InvalidValueError, MANIPO_RangeValidationError
 )
 
 from pmp_manip.core.trafo_interface import FirstToInterIF, InterToFirstIF
@@ -527,13 +527,13 @@ def test_SRCustomBlockArgumentMutation_validate():
     execute_attr_validation_tests(
         obj=srmutation,
         attr_tests=[
-            ("argument_name", 5, MANIP_TypeValidationError),
-            ("main_color", {}, MANIP_TypeValidationError),
-            ("main_color", "", MANIP_InvalidValueError),
-            ("prototype_color", [], MANIP_TypeValidationError),
-            ("prototype_color", "#abc", MANIP_InvalidValueError),
-            ("outline_color", (), MANIP_TypeValidationError),
-            ("outline_color", "255", MANIP_InvalidValueError),
+            ("argument_name", 5, MANIPO_TypeValidationError),
+            ("main_color", {}, MANIPO_TypeValidationError),
+            ("main_color", "", MANIPO_InvalidValueError),
+            ("prototype_color", [], MANIPO_TypeValidationError),
+            ("prototype_color", "#abc", MANIPO_InvalidValueError),
+            ("outline_color", (), MANIPO_TypeValidationError),
+            ("outline_color", "255", MANIPO_InvalidValueError),
         ],
         validate_func=SRCustomBlockArgumentMutation.validate,
         func_args=[AbstractTreePath()],
@@ -572,14 +572,14 @@ def test_SRCustomBlockMutation_validate():
     execute_attr_validation_tests(
         obj=srmutation,
         attr_tests=[
-            ("custom_opcode", "some custom opcode", MANIP_TypeValidationError),
-            ("no_screen_refresh", None, MANIP_TypeValidationError),
-            ("main_color", {}, MANIP_TypeValidationError),
-            ("main_color", "", MANIP_InvalidValueError),
-            ("prototype_color", [], MANIP_TypeValidationError),
-            ("prototype_color", "#abc", MANIP_InvalidValueError),
-            ("outline_color", (), MANIP_TypeValidationError),
-            ("outline_color", "255", MANIP_InvalidValueError),
+            ("custom_opcode", "some custom opcode", MANIPO_TypeValidationError),
+            ("no_screen_refresh", None, MANIPO_TypeValidationError),
+            ("main_color", {}, MANIPO_TypeValidationError),
+            ("main_color", "", MANIPO_InvalidValueError),
+            ("prototype_color", [], MANIPO_TypeValidationError),
+            ("prototype_color", "#abc", MANIPO_InvalidValueError),
+            ("outline_color", (), MANIPO_TypeValidationError),
+            ("outline_color", "255", MANIPO_InvalidValueError),
         ],
         validate_func=SRCustomBlockMutation.validate,
         func_args=[AbstractTreePath()],
@@ -623,7 +623,7 @@ def test_SRCustomBlockCallMutation_validate():
     execute_attr_validation_tests(
         obj=srmutation,
         attr_tests=[
-            ("custom_opcode", "some custom opcode", MANIP_TypeValidationError),
+            ("custom_opcode", "some custom opcode", MANIPO_TypeValidationError),
         ],
         validate_func=SRCustomBlockCallMutation.validate,
         func_args=[AbstractTreePath()],
@@ -673,8 +673,8 @@ def test_SRExpandableIfMutation_validate():
     execute_attr_validation_tests(
         obj=srmutation,
         attr_tests=[
-            ("branch_count", "3", MANIP_TypeValidationError),
-            ("ends_in_else", 1, MANIP_TypeValidationError),
+            ("branch_count", "3", MANIPO_TypeValidationError),
+            ("ends_in_else", 1, MANIPO_TypeValidationError),
         ],
         validate_func=SRExpandableIfMutation.validate,
         func_args=[AbstractTreePath()],
@@ -705,8 +705,8 @@ def test_SRExpandableOperatorMutation_validate():
     execute_attr_validation_tests(
         obj=srmutation,
         attr_tests=[
-            ("operations", "*+-", MANIP_TypeValidationError),
-            ("operations", ["%"], MANIP_TypeValidationError),
+            ("operations", "*+-", MANIPO_TypeValidationError),
+            ("operations", ["%"], MANIPO_TypeValidationError),
         ],
         validate_func=SRExpandableOperatorMutation.validate,
         func_args=[AbstractTreePath()],
@@ -734,8 +734,8 @@ def test_SRExpandableJoinMutation_validate():
     execute_attr_validation_tests(
         obj=srmutation,
         attr_tests=[
-            ("input_count", "4", MANIP_TypeValidationError),
-            ("input_count", 0, MANIP_RangeValidationError),
+            ("input_count", "4", MANIPO_TypeValidationError),
+            ("input_count", 0, MANIPO_RangeValidationError),
         ],
         validate_func=SRExpandableJoinMutation.validate,
         func_args=[AbstractTreePath()],

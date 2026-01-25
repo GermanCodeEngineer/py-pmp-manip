@@ -9,7 +9,7 @@ from pmp_manip.config           import get_config, init_config, get_default_conf
 from pmp_manip.important_consts import BUILTIN_EXTENSIONS_SOURCE_DIRECTORY
 from pmp_manip.utility          import (
     read_file_text, write_file_text, file_exists, enforce_argument_types, ContentFingerprint,
-    MANIP_Error, MANIP_FailedFileReadError, MANIP_FailedFileWriteError, MANIP_ThanksError, MANIP_ExtensionFetchError,
+    MANIP_Error, MANIPO_FailedFileReadError, MANIPO_FailedFileWriteError, MANIP_ThanksError, MANIP_ExtensionFetchError,
     MANIP_DirectExtensionInfoExtractionError, MANIP_SafeExtensionInfoExtractionError,
     MANIP_NoNodeJSInstalledError, MANIP_ExtensionInfoConvertionError,
 )
@@ -113,7 +113,7 @@ def _get_cache(cache_file_path: str) -> dict[str, dict[str, Any]]:
         return {}
     try:
         return loads(read_file_text(cache_file_path))
-    except (MANIP_FailedFileReadError, JSONDecodeError):
+    except (MANIPO_FailedFileReadError, JSONDecodeError):
         return {}
 
 def _update_cache(
@@ -131,7 +131,7 @@ def _update_cache(
         py_code: the generated python code
     
     Raises:
-        MANIP_FailedFileWriteError: if the cache file could not be written
+        MANIPO_FailedFileWriteError: if the cache file could not be written
     """
     if dest_file_name in old_cache:
         old_cache[dest_file_name]["lastUpdate"] = datetime.now(timezone.utc).isoformat()
@@ -145,8 +145,8 @@ def _update_cache(
     cache_str = dumps(cache, indent=4)
     try:
         write_file_text(cache_file_path, cache_str)
-    except MANIP_FailedFileWriteError as error:
-        raise MANIP_FailedFileWriteError(f"Could not update cache at {cache_file_path!r}: {error}") from error
+    except MANIPO_FailedFileWriteError as error:
+        raise MANIPO_FailedFileWriteError(f"Could not update cache at {cache_file_path!r}: {error}") from error
 
 @enforce_argument_types
 def generate_extension_info_py_file(
@@ -169,11 +169,11 @@ def generate_extension_info_py_file(
         MANIP_SafeExtensionInfoExtractionError: if the extension info could not be extracted through safe analysis
         MANIP_ExtensionInfoConvertionError: if the extracted extension info could not be converted into the format of this project
         MANIP_ThanksError(unlikely, not bundled): if a block argument uses the mysterious Scratch.ArgumentType.SEPERATOR
-        MANIP_FailedFileWriteError(unlikely): if the generated extension info file or cache file or their directory could not be written/created
+        MANIPO_FailedFileWriteError(unlikely): if the generated extension info file or cache file or their directory could not be written/created
     
     Raises (if NOT bundled):
         ### created here or not bundled anyway:
-        MANIP_FailedFileWriteError(unlikely): if the cache file or generated extension info file or its directory could not be written/created
+        MANIPO_FailedFileWriteError(unlikely): if the cache file or generated extension info file or its directory could not be written/created
         MANIP_NoNodeJSInstalledError(not bundled): if Node.js is not installed or not found in PATH
         
         ### inherited from fetch_js => MANIP_ExtensionFetchError if bundled
@@ -184,8 +184,8 @@ def generate_extension_info_py_file(
         MANIP_FileFetchError: If the source file cannot be read
         
         ### inherited from extract_extension_info_directly => MANIP_DirectExtensionInfoExtractionError if bundled
-        MANIP_FailedFileWriteError(unlikely): if the JS code could not be written to a temporary file (eg. OS Error or Unicode Error)
-        MANIP_FailedFileDeleteError(unlikely): if the temporary Javscript file could not be deleted
+        MANIPO_FailedFileWriteError(unlikely): if the JS code could not be written to a temporary file (eg. OS Error or Unicode Error)
+        MANIPO_FailedFileDeleteError(unlikely): if the temporary Javscript file could not be deleted
         MANIP_NoNodeJSInstalledError(not bundled): if Node.js is not installed or not found in PATH
         MANIP_SubprocessTimeoutError: if the Node.js execution subprocess took too long
         MANIP_ExtensionExecutionErrorInJavascript: if an error occurs inside the actual extension code
@@ -201,7 +201,7 @@ def generate_extension_info_py_file(
         MANIP_UnknownExtensionAttributeError: if the extension has an unknown attribute
         MANIP_InvalidCustomMenuError: if the information about a menu is invalid
         MANIP_InvalidCustomBlockError: if information of a block is invalid
-        MANIP_NotImplementedError: if an XML block is included in the extension info
+        NotImplementedError: if an XML block is included in the extension info
         MANIP_ThanksError(unlikely, not bundled): if a block argument uses the mysterious Scratch.ArgumentType.SEPERATOR
 
     Warnings:
@@ -288,15 +288,15 @@ def generate_extension_info_py_file(
     try:
         makedirs(cfg.ext_info_gen.gen_opcode_info_dir, exist_ok=True)
     except OSError as error:
-        raise MANIP_FailedFileWriteError(
+        raise MANIPO_FailedFileWriteError(
             f"Error in extension {extension_id!r}: Could not create directory of the extension info file at "
             f"{cfg.ext_info_gen.gen_opcode_info_dir!r}. Is your configuration correct?: {error}"
         ) from error
 
     try:
         write_file_text(dest_file_path, file_code)
-    except MANIP_FailedFileWriteError as error:
-        raise MANIP_FailedFileWriteError(
+    except MANIPO_FailedFileWriteError as error:
+        raise MANIPO_FailedFileWriteError(
             f"Error in extension {extension_id!r}: Could not write extension info file to {cache_file_path!r}. "
             f"Is your configuration correct?: {error}"
         ) from error

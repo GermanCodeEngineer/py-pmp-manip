@@ -3,7 +3,6 @@ from copy       import copy, deepcopy
 from typing     import Generic, Iterable, Iterator, NoReturn, TypeVar
 
 from pmp_manip.otility.decorators import enforce_argument_types
-from pmp_manip.utility.errors     import MANIP_KeyError, MANIP_ValueError
 
 
 _K1 =  TypeVar("_K1")
@@ -65,13 +64,13 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
         
         if  has_key1 and not(has_key2):
             real_key2 = self.get_key2_for_key1(key1)
-            raise MANIP_ValueError(f"key1 {key1!r} already exists with different key2 {real_key2!r}")
+            raise ValueError(f"key1 {key1!r} already exists with different key2 {real_key2!r}")
         elif has_key2 and not(has_key1):
             real_key1 = self.get_key1_for_key2(key2)
-            raise MANIP_ValueError(f"key2 {key2!r} already exists with different key1 {real_key1!r}")
+            raise ValueError(f"key2 {key2!r} already exists with different key1 {real_key1!r}")
         elif has_key1 and (self.get_key2_for_key1(key1) != key2):
             real_key2 = self.get_key2_for_key1(key1)
-            raise MANIP_ValueError(f"key1 {key1!r} exists with different key2 {real_key2!r}")
+            raise ValueError(f"key1 {key1!r} exists with different key2 {real_key2!r}")
             
         self._values  [key1] = value
         self._k2_to_k1[key2] = key1
@@ -80,13 +79,13 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
     @enforce_argument_types
     def update_by_key1(self, key1: _K1, value: _V) -> None:
         if not self.has_key1(key1):
-            raise MANIP_KeyError("`update_by_key1` can not be used to add a new entry. Please use `set` instead")
+            raise KeyError("`update_by_key1` can not be used to add a new entry. Please use `set` instead")
         self._values[key1] = value
 
     @enforce_argument_types
     def update_by_key2(self, key2: _K2, value: _V) -> None:
         if not self.has_key2(key2):
-            raise MANIP_KeyError("`update_by_key2` can not be used to add a new entry. Please use `set` instead")
+            raise KeyError("`update_by_key2` can not be used to add a new entry. Please use `set` instead")
         key1 = self.get_key1_for_key2(key2)
         self._values[key1] = value
     
@@ -106,25 +105,25 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
         try:
             return self._values[key1]
         except KeyError: pass
-        raise MANIP_KeyError(f"key1 {key1!r} does not exist")
+        raise KeyError(f"key1 {key1!r} does not exist")
 
     @enforce_argument_types
     def get_by_key2(self, key2: _K2) -> _V:
-        key1 = self.get_key1_for_key2(key2) # we can just let a MANIP_KeyError raise and not do it ourselves
+        key1 = self.get_key1_for_key2(key2) # we can just let a KeyError raise and not do it ourselves
         return self._values[key1]
 
     @enforce_argument_types
     def get_by_key1_with_default[_ARG](self, key1: _K1, default: _ARG) -> _V | _ARG:
         try:
             return self.get_by_key1(key1)
-        except MANIP_KeyError:
+        except KeyError:
             return default
 
     @enforce_argument_types
     def get_by_key2_with_default[_ARG](self, key2: _K2, default: _ARG) -> _V | _ARG:
         try:
             return self.get_by_key2(key2)
-        except MANIP_KeyError:
+        except KeyError:
             return default
 
     
@@ -147,7 +146,7 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
         else:
             self._k2_to_k1.pop(key2)
             return self._values.pop(key1)
-        raise MANIP_KeyError(f"key1 {key1!r} does not exist")
+        raise KeyError(f"key1 {key1!r} does not exist")
 
     @enforce_argument_types
     def pop_by_key2(self, key2: _K2) -> _V:
@@ -157,20 +156,20 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
         else:
             self._k1_to_k2.pop(key1)
             return self._values.pop(key1)
-        raise MANIP_KeyError(f"key2 {key2!r} does not exist")
+        raise KeyError(f"key2 {key2!r} does not exist")
 
     @enforce_argument_types
     def pop_by_key1_with_default[_ARG](self, key1: _K1, default: _ARG) -> _V | _ARG:
         try:
             return self.pop_by_key1(key1)
-        except MANIP_KeyError:
+        except KeyError:
             return default
 
     @enforce_argument_types
     def pop_by_key2_with_default[_ARG](self, key2: _K2, default: _ARG) -> _V | _ARG:
         try:
             return self.pop_by_key2(key2)
-        except MANIP_KeyError:
+        except KeyError:
             return default
 
     
@@ -178,20 +177,20 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
     @enforce_argument_types
     def change_key1_by_key2(self, key2: _K2, new_key1: _K1) -> None:
         if not self.has_key2(key2):
-            raise MANIP_KeyError(f"key2 {key2!r} does not exist")
+            raise KeyError(f"key2 {key2!r} does not exist")
         if self.has_key1(new_key1):
             real_key2 = self.get_key2_for_key1(new_key1)
-            raise MANIP_ValueError(f"new key1 {new_key1!r} already exists with different key2 {real_key2!r}")
+            raise ValueError(f"new key1 {new_key1!r} already exists with different key2 {real_key2!r}")
         value = self.pop_by_key2(key2)
         self.set(new_key1, key2, value)
     
     @enforce_argument_types
     def change_key2_by_key1(self, key1: _K1, new_key2: _K2) -> None:
         if not self.has_key1(key1):
-            raise MANIP_KeyError(f"key1 {key1!r} does not exist")
+            raise KeyError(f"key1 {key1!r} does not exist")
         if self.has_key2(new_key2):
             real_key1 = self.get_key1_for_key2(new_key2)
-            raise MANIP_ValueError(f"new key2 {new_key2!r} already exists with different key1 {real_key1!r}")
+            raise ValueError(f"new key2 {new_key2!r} already exists with different key1 {real_key1!r}")
         value = self.pop_by_key1(key1)
         self.set(key1, new_key2, value)        
 
@@ -199,26 +198,26 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
     @enforce_argument_types
     def change_key1_key2_by_key1(self, old_key1: _K1, new_key1: _K1, new_key2: _K2) -> None:
         if not self.has_key1(old_key1):
-            raise MANIP_KeyError(f"old key1 {old_key1!r} does not exist")
+            raise KeyError(f"old key1 {old_key1!r} does not exist")
         if self.has_key1(new_key1):
             real_key2 = self.get_key2_for_key1(new_key1)
-            raise MANIP_ValueError(f"new key1 {new_key1!r} already exists with different key2 {real_key2!r}")
+            raise ValueError(f"new key1 {new_key1!r} already exists with different key2 {real_key2!r}")
         if self.has_key2(new_key2):
             real_key1 = self.get_key1_for_key2(new_key2)
-            raise MANIP_ValueError(f"new key2 {new_key2!r} already exists with different key1 {real_key1!r}")
+            raise ValueError(f"new key2 {new_key2!r} already exists with different key1 {real_key1!r}")
         value = self.pop_by_key1(old_key1)
         self.set(new_key1, new_key2, value)        
 
     @enforce_argument_types
     def change_key1_key2_by_key2(self, old_key2: _K2, new_key1: _K1, new_key2: _K2) -> None:
         if not self.has_key2(old_key2):
-            raise MANIP_KeyError(f"old key2 {old_key2!r} does not exist")
+            raise KeyError(f"old key2 {old_key2!r} does not exist")
         if self.has_key1(new_key1):
             real_key2 = self.get_key2_for_key1(new_key1)
-            raise MANIP_ValueError(f"new key1 {new_key1!r} already exists with different key2 {real_key2!r}")
+            raise ValueError(f"new key1 {new_key1!r} already exists with different key2 {real_key2!r}")
         if self.has_key2(new_key2):
             real_key1 = self.get_key1_for_key2(new_key2)
-            raise MANIP_ValueError(f"new key2 {new_key2!r} already exists with different key1 {real_key1!r}")
+            raise ValueError(f"new key2 {new_key2!r} already exists with different key1 {real_key1!r}")
         value = self.pop_by_key2(old_key2)
         self.set(new_key1, new_key2, value)
     
@@ -237,14 +236,14 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
         try:
             return self._k2_to_k1[key2]
         except KeyError: pass
-        raise MANIP_KeyError(f"key2 {key2!r} does not exist")
+        raise KeyError(f"key2 {key2!r} does not exist")
 
     @enforce_argument_types
     def get_key2_for_key1(self, key1: _K1) -> _K2:
         try:
             return self._k1_to_k2[key1]
         except KeyError: pass
-        raise MANIP_KeyError(f"key1 {key1!r} does not exist")
+        raise KeyError(f"key1 {key1!r} does not exist")
 
 
     # Iteration methods
@@ -315,13 +314,13 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
             
             if  has_key1 and not(has_key2):
                 real_key2 = self.get_key2_for_key1(key1)
-                raise MANIP_ValueError(f"key1 {key1!r} already exists in DualKeyDict with different key2 {real_key2!r}")
+                raise ValueError(f"key1 {key1!r} already exists in DualKeyDict with different key2 {real_key2!r}")
             elif has_key2 and not(has_key1):
                 real_key1 = self.get_key1_for_key2(key2)
-                raise MANIP_ValueError(f"key2 {key2!r} already exists in DualKeyDict with different key1 {real_key1!r}")
+                raise ValueError(f"key2 {key2!r} already exists in DualKeyDict with different key1 {real_key1!r}")
             elif self.get_key2_for_key1(key1) != key2:
                 real_key2 = self.get_key2_for_key1(key1)
-                raise MANIP_ValueError(f"key1 {key1!r} exists in DualKeyDict with different key2 {real_key2!r}")
+                raise ValueError(f"key1 {key1!r} exists in DualKeyDict with different key2 {real_key2!r}")
             
             self._values  [key1] = evalue
             self._k2_to_k1[key2] = key1
