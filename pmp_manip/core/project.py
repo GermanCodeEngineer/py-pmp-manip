@@ -398,9 +398,9 @@ class SRProject:
             MANIP_SameValueTwiceError(MANIP_ValidationError): if two sprites or extensions have the same name
         """
         ValidateAttribute.VA_EXACT_LEN(self, path, "sprite_layer_stack", 
-            length=len(self.sprites), condition=f"In this case the project has {len(self.sprites)} sprites(s)"
+            len(self.sprites), condition=f"In this case the project has {len(self.sprites)} sprites(s)"
         )
-        ValidateAttribute.VA_RANGE(self, path, "tempo", min=20, max=500)
+        ValidateAttribute.VA_RANGE(self, path, "tempo", 20, 500)
         
         self.stage.validate(path.add_attribute("stage"), info_api)
 

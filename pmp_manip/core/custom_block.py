@@ -157,7 +157,7 @@ class SRCustomBlockArgument(HasGreprValidate):
         Raises:
             MANIP_ValidationError: if the instance is invalid
         """
-        ValidateAttribute.VA_NOT_EQUAL(self, path, "name", value="")
+        ValidateAttribute.VA_NOT_EQUAL(self, path, "name", "")
 
 class SRCustomBlockArgumentType(GEnum):
     """

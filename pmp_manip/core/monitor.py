@@ -246,8 +246,8 @@ class SRMonitor(HasGreprValidate):
         """
         if get_config().validation.raise_if_monitor_position_outside_stage:
             ValidateAttribute.VA_BOXED_COORD_PAIR(self, path, "position", 
-                min_x=-(STAGE_WIDTH //2), max_x=(STAGE_WIDTH //2), 
-                min_y=-(STAGE_HEIGHT//2), max_y=(STAGE_HEIGHT//2),
+                -(STAGE_WIDTH //2), (STAGE_WIDTH //2), # min_x, max_x
+                -(STAGE_HEIGHT//2), (STAGE_HEIGHT//2), # min_y, max_y
             )
         
         cls_name = self.__class__.__name__
@@ -475,8 +475,8 @@ class SRListMonitor(SRMonitor):
         else:
             max_x, max_y = None, None
         ValidateAttribute.VA_BOXED_COORD_PAIR(self, path, "size", 
-            min_x=LIST_MONITOR_MIN_WIDTH , max_x=max_x, 
-            min_y=LIST_MONITOR_MIN_HEIGHT, max_y=max_y,
+            LIST_MONITOR_MIN_WIDTH, max_x, 
+            LIST_MONITOR_MIN_HEIGHT, max_y,
         )
 
 

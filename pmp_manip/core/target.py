@@ -505,11 +505,11 @@ class SRTarget(HasGreprValidate):
             MANIP_ValidationError: if the instance is invalid
             MANIP_SameValueTwiceError(MANIP_ValidationError): if two costumes or two sounds have the same name
         """
-        ValidateAttribute.VA_MIN_LEN(self, path, "costumes", min_len=1)
+        ValidateAttribute.VA_MIN_LEN(self, path, "costumes", 1)
         ValidateAttribute.VA_RANGE(self, path, "costume_index", 
-            min=0, max=len(self.costumes)-1, condition=f"In this case the sprite has {len(self.costumes)} costume(s)",
+            0, len(self.costumes)-1, condition=f"In this case the sprite has {len(self.costumes)} costume(s)",
         )
-        ValidateAttribute.VA_RANGE(self, path, "volume", min=0, max=100)
+        ValidateAttribute.VA_RANGE(self, path, "volume", 0, 100)
         
         for i, comment in enumerate(self.comments):
             comment.validate(path.add_attribute("comments").add_index_or_key(i))
@@ -848,8 +848,8 @@ class SRSprite(SRTarget):
         super().post_validate(path, info_api)
         
         ValidateAttribute.VA_NOT_ONE_OF(self, path, "name", ["_myself_", "_stage_", "_mouse_", "_edge_"])
-        ValidateAttribute.VA_MIN(self, path, "size", min=0)
-        ValidateAttribute.VA_RANGE(self, path, "direction", min=-180, max=180)
+        ValidateAttribute.VA_MIN(self, path, "size", 0)
+        ValidateAttribute.VA_RANGE(self, path, "direction", -180, 180)
         
         for i, variable in enumerate(self.local_variables):
             variable.validate(path.add_attribute("local_variables").add_index_or_key(i))

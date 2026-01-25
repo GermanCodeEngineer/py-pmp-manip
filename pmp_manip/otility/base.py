@@ -108,7 +108,7 @@ def grepr_dataclass(*, grepr: bool = True,
         
         if validate:
             def validate_method(self, path: AbstractTreePath | None = None, *args, **kwargs) -> None:
-                from pmp_manip.otility.decorators import _check_type
+                from pmp_manip.otility.decorators import enforce_type
                 if path is None:
                     path = AbstractTreePath(start_with_dot=True)
 
@@ -122,14 +122,14 @@ def grepr_dataclass(*, grepr: bool = True,
                     # Use type hints instead of field.type to handle string annotations
                     expected_type = type_hints.get(field.name, field.type)
                     if hasattr(self, field.name):
-                        _check_type(
+                        enforce_type(
                             value=getattr(self, field.name),
                             expected=expected_type,
                             path=path.add_attribute(field.name),
                             notset_as_special=False,
                         )
                     elif options["validate_require_exist"]:
-                        _check_type(
+                        enforce_type(
                             value=NotSet,
                             expected=expected_type,
                             path=path.add_attribute(field.name),

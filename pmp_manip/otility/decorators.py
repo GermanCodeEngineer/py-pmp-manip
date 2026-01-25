@@ -74,7 +74,7 @@ def enforce_argument_types(func: Callable[PARAM_SPEC, RETURN_T]) -> Callable[PAR
                     continue
                 if type(expected_type).__name__ == "TypeVar":
                     continue
-                _check_type(value, expected_type, path=AbstractTreePath(start_with_dot=False).add_attribute(name))
+                enforce_type(value, expected_type, path=AbstractTreePath(start_with_dot=False).add_attribute(name))
 
         return func(*args, **kwargs)
 
@@ -103,12 +103,14 @@ def _repr_type(t: type | Any, notset_as_special: bool = True) -> str:
         return "<not set>"
     if t.__module__ == "builtins":
         return t.__name__
-    elif t.__module__.startswith("pmp_manip."):
+    elif t.__module__.startswith("pmp_manip.utility."): # ignore exact file name
+        return f"pmp_manip.utility.{t.__name__}"
+    elif t.__module__.startswith("pmp_manip."): # ignore sub module name eg. "core"
         return f"pmp_manip.{t.__name__}"
     else:
         return f"{t.__module__}.{t.__name__}"
 
-def _check_type(value: Any, expected: Any, path: AbstractTreePath | None = None, condition: str | None = None, notset_as_special: bool = True) -> None:
+def enforce_type(value: Any, expected: Any, path: AbstractTreePath | None = None, condition: str | None = None, notset_as_special: bool = True) -> None:
     """
     Recursively checks that a given value matches the expected type.
     Runtime type enforcement that supports TypeVar, Union, Optional,
@@ -138,7 +140,7 @@ def _check_type(value: Any, expected: Any, path: AbstractTreePath | None = None,
     # --- Handle TypeVar ---
     if isinstance(expected, TypeVar):
         if expected.__bound__ is not None:
-            return _check_type(value, expected.__bound__, path, condition)
+            return enforce_type(value, expected.__bound__, path, condition)
         # Unbound TypeVar -> accept anything
         return
 
@@ -151,7 +153,7 @@ def _check_type(value: Any, expected: Any, path: AbstractTreePath | None = None,
         arms = get_args(expected) if get_args(expected) else expected.__args__
         for arm in arms:
             try:
-                _check_type(value, arm, path, condition, notset_as_special)
+                enforce_type(value, arm, path, condition, notset_as_special)
                 return
             except MANIP_TypeValidationError:
                 continue
@@ -197,8 +199,8 @@ def _check_type(value: Any, expected: Any, path: AbstractTreePath | None = None,
         key_t, val_t = args if len(args) == 2 else (Any, Any)
         keys_path = path.add_attribute("keys()")
         for i, (k, v) in enumerate(value.items()):
-            _check_type(k, key_t, keys_path.add_index_or_key(i), condition, notset_as_special)
-            _check_type(v, val_t, path.add_index_or_key(k), condition, notset_as_special)
+            enforce_type(k, key_t, keys_path.add_index_or_key(i), condition, notset_as_special)
+            enforce_type(v, val_t, path.add_index_or_key(k), condition, notset_as_special)
         return
 
     # --- Handle tuple[T,...] or fixed tuple ---
@@ -212,7 +214,7 @@ def _check_type(value: Any, expected: Any, path: AbstractTreePath | None = None,
         if len(args) == 2 and args[1] is Ellipsis:  # tuple[T, ...]
             elem_t = args[0]
             for i, item in enumerate(value):
-                _check_type(item, elem_t, path.add_index_or_key(i), condition, notset_as_special)
+                enforce_type(item, elem_t, path.add_index_or_key(i), condition, notset_as_special)
         elif args:  # tuple[T1, T2, ...]
             if len(value) != len(args):
                 raise MANIP_TypeValidationError(
@@ -221,7 +223,7 @@ def _check_type(value: Any, expected: Any, path: AbstractTreePath | None = None,
                     condition
                 )
             for i, (item, elem_t) in enumerate(zip(value, args)):
-                _check_type(item, elem_t, path.add_index_or_key(i), condition, notset_as_special)
+                enforce_type(item, elem_t, path.add_index_or_key(i), condition, notset_as_special)
         return
 
     # --- Handle list[T], set[T], frozenset[T] ---
@@ -234,7 +236,7 @@ def _check_type(value: Any, expected: Any, path: AbstractTreePath | None = None,
             )
         elem_t = args[0] if args else Any
         for i, item in enumerate(value):
-            _check_type(item, elem_t, path.add_index_or_key(i), condition, notset_as_special)
+            enforce_type(item, elem_t, path.add_index_or_key(i), condition, notset_as_special)
         return
 
     # --- Handle Callable ---
@@ -260,8 +262,8 @@ def _check_type(value: Any, expected: Any, path: AbstractTreePath | None = None,
         key_t, val_t = args if len(args) == 2 else (Any, Any)
         keys_path = path.add_attribute("keys()")
         for i, (k, v) in enumerate(value.items()):
-            _check_type(k, key_t, keys_path.add_index_or_key(i), condition, notset_as_special)
-            _check_type(v, val_t, path.add_index_or_key(k), condition, notset_as_special)
+            enforce_type(k, key_t, keys_path.add_index_or_key(i), condition, notset_as_special)
+            enforce_type(v, val_t, path.add_index_or_key(k), condition, notset_as_special)
         return
 
     # --- Handle Sequence[T] ---
@@ -274,7 +276,7 @@ def _check_type(value: Any, expected: Any, path: AbstractTreePath | None = None,
             )
         elem_t = args[0] if args else Any
         for i, item in enumerate(value):
-            _check_type(item, elem_t, path.add_index_or_key(i), condition, notset_as_special)
+            enforce_type(item, elem_t, path.add_index_or_key(i), condition, notset_as_special)
         return
 
     # --- Handle Iterable[T] (excluding str/bytes to avoid char-by-char validation) ---
@@ -291,7 +293,7 @@ def _check_type(value: Any, expected: Any, path: AbstractTreePath | None = None,
             return
         elem_t = args[0] if args else Any
         for i, item in enumerate(value):
-            _check_type(item, elem_t, path.add_index_or_key(i), condition, notset_as_special)
+            enforce_type(item, elem_t, path.add_index_or_key(i), condition, notset_as_special)
         return
 
     # --- Handle Literal[V, ...] ---
@@ -342,5 +344,5 @@ def _check_type(value: Any, expected: Any, path: AbstractTreePath | None = None,
         )
 
 
-__all__ = ["enforce_argument_types"]
+__all__ = ["enforce_argument_types", "enforce_type"]
 

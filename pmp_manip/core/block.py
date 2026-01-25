@@ -700,7 +700,7 @@ class SRScript(HasGreprValidate):
         Raises:
             MANIP_ValidationError: if the instance is invalid
         """
-        ValidateAttribute.VA_MIN_LEN(self, path, "blocks", min_len=1)
+        ValidateAttribute.VA_MIN_LEN(self, path, "blocks", 1)
         
         for i, block in enumerate(self.blocks):
             current_path = path.add_attribute("blocks").add_index_or_key(i)
@@ -809,7 +809,7 @@ class SRBlock(HasGreprValidate):
             self.comment.validate(path.add_attribute("comment"))
         
         if opcode_info.new_mutation_cls is None:
-            ValidateAttribute.VA_NONE(self, path, "mutation", condition="For this opcode")
+            ValidateAttribute.VA_TYPE(self, path, "mutation", type(None), condition="For this opcode")
         else:
             ValidateAttribute.VA_TYPE(self, path, "mutation", opcode_info.new_mutation_cls, condition="For this opcode")
             self.mutation.validate(path.add_attribute("mutation"))

@@ -2,11 +2,12 @@ from __future__ import annotations
 import inspect
 import os
 import re
+from functools import cached_property
 from pathlib import Path
 from typing import Any, Callable
 from urllib.parse import urlparse
 
-from pmp_manip.otility import AbstractTreePath
+from pmp_manip.otility import grepr_dataclass, enforce_type, AbstractTreePath, NotSetType
 
 from pmp_manip.utility.errors import MANIP_PathValidationError, MANIP_TypeValidationError, MANIP_RangeValidationError, MANIP_InvalidValueError
 
@@ -14,7 +15,18 @@ from pmp_manip.utility.errors import MANIP_PathValidationError, MANIP_TypeValida
 def _value_and_descr(obj, attr: str) -> tuple[Any, str]:
     return getattr(obj, attr), f"{attr} of a {_repr_type(obj.__class__)}"
 
-def _repr_type(t: type) -> str:
+def _repr_type(t: type | Any, notset_as_special: bool = True) -> str:
+    """Format a type for display in error messages, similar to validation.py style.
+    
+    Args:
+        t: The type to represent
+        notset_as_special: If True, represent NotSetType as '<not set>' instead of the class name
+    """
+    if not isinstance(t, type):
+        # Handle typing constructs
+        return str(t)
+    if notset_as_special and t is NotSetType:
+        return "<not set>"
     if t.__module__ == "builtins":
         return t.__name__
     elif t.__module__.startswith("pmp_manip.utility."): # ignore exact file name
@@ -24,25 +36,41 @@ def _repr_type(t: type) -> str:
     else:
         return f"{t.__module__}.{t.__name__}"
 
-def _make_validator(
-        is_valid_fn: Callable[[Any], bool],
-        error_cls: type[MANIP_PathValidationError], create_error_fn: Callable[..., str],
-    ):
-    is_valid_arg_count = len(inspect.signature(is_valid_fn).parameters) + 2 # - attr_value + self, path, attr
+def _passes(fn: Callable[..., Any], *args, **kwargs) -> bool:
+    try:
+        fn(*args, **kwargs)
+        return True
+    except MANIP_PathValidationError:
+        return False
 
-    def validator(self: Any, path: AbstractTreePath, attr: str, *args, condition: str | None = None) -> None:
-        arg_count = len(args) + 3 # self, path, attr
-        if arg_count != is_valid_arg_count:
-            raise TypeError(f"Validator expected {is_valid_arg_count} positional argument(s) but got {arg_count}")
+@grepr_dataclass(frozen=True, unsafe_hash=True)
+class Validator(Callable[..., None]):
+    is_valid_fn: Callable[..., bool]
+    error_cls: type[MANIP_PathValidationError]
+    create_error_fn: Callable[..., str]
+    pre_validate_fn: Callable[..., None] | None = None
+
+    @cached_property
+    def is_valid_arg_count(self) -> int:
+        return len(inspect.signature(self.is_valid_fn).parameters) + 2 # - attr_value + self, path, attr
+
+    def __call__(self, obj: Any, path: AbstractTreePath, attr: str, *args, condition: str | None = None) -> None:
+        if self.pre_validate_fn is not None:
+            self.pre_validate_fn(obj, path, attr, *args, condition=condition)
         
-        attr_value, descr = _value_and_descr(self, attr)
-        if not is_valid_fn(attr_value, *args):
-            raise error_cls(path, create_error_fn(attr_value, descr, *args), condition)
-    return validator
+        arg_count = len(args) + 3 # self, path, attr
+        if arg_count != self.is_valid_arg_count:
+            print("a", args)
+            raise TypeError(f"Validator expected {self.is_valid_arg_count} positional argument(s) but got {arg_count}")
+        
+        attr_value, descr = _value_and_descr(obj, attr)
+        if not self.is_valid_fn(attr_value, *args):
+            raise self.error_cls(path, self.create_error_fn(attr_value, descr, *args), condition)
+
 
 class ValidateAttribute:
-    VA_TYPE = _make_validator(
-        is_valid_fn=lambda attr_value, t: isinstance(attr_value, t),
+    VA_TYPE = Validator(
+        is_valid_fn=lambda attr_value, t: _passes(enforce_type, attr_value, t),
         error_cls=MANIP_TypeValidationError,
         create_error_fn=lambda attr_value, descr, t: f"{descr} must be of type {_repr_type(t)} not {_repr_type(attr_value.__class__)}"
     )
@@ -52,74 +80,59 @@ class ValidateAttribute:
         if not isinstance(value, t):
             raise MANIP_TypeValidationError(path, f"{descr} must be of type {_repr_type(t)} not {_repr_type(value.__class__)}", condition)
 
-    VA_NONE = _make_validator(
-        is_valid_fn=lambda attr_value: attr_value is None,
-        error_cls=MANIP_TypeValidationError,
-        create_error_fn=lambda attr_value, descr: f"{descr} must be None not {_repr_type(attr_value.__class__)}"
-    )
-
-    VA_MIN = _make_validator(
+    VA_MIN = Validator(
         is_valid_fn=lambda attr_value, min: attr_value >= min,
-        error_cls=MANIP_TypeValidationError,
+        error_cls=MANIP_RangeValidationError,
         create_error_fn=lambda attr_value, descr, min: f"{descr} must be at least {min}"
     )
 
-    VA_RANGE = _make_validator(
+    VA_RANGE = Validator(
         is_valid_fn=lambda attr_value, min, max: (attr_value >= min) and (attr_value <= max),
         error_cls=MANIP_RangeValidationError,
         create_error_fn=lambda attr_value, descr, min, max: f"{descr} must be at least {min} and at most {max}"
     )
 
-    VA_MIN_LEN = _make_validator(
+    VA_MIN_LEN = Validator(
         is_valid_fn=lambda attr_value, min_len: len(attr_value) >= min_len,
         error_cls=MANIP_RangeValidationError,
         create_error_fn=lambda attr_value, descr, min_len: f"{descr} must contain at least {min_len} element(s)"
     )
-    # HERE
 
-    #@staticmethod
-    #def VA_MIN_LEN(obj, path, attr, min_len: int, condition=None):
-    #    attr_value, descr = _value_and_descr(obj, attr)
-    #    if len(attr_value) < min_len:
-    #        raise MANIP_RangeValidationError(path, f"{descr} must contain at least {min_len} element(s)", condition)
+    VA_EXACT_LEN = Validator(
+        is_valid_fn=lambda attr_value, length: len(attr_value) == length,
+        error_cls=MANIP_RangeValidationError,
+        create_error_fn=lambda attr_value, descr, length: f"{descr} must contain exactly {length} element(s)"
+    )
 
-    @staticmethod
-    def VA_EXACT_LEN(obj, path, attr, length: int, condition=None):
-        attr_value, descr = _value_and_descr(obj, attr)
-        if len(attr_value) != length:
-            raise MANIP_RangeValidationError(path, f"{descr} must contain exactly {length} element(s)", condition)
+    VA_BOXED_COORD_PAIR = Validator(
+        pre_validate_fn=lambda obj, path, attr, min_x, max_x, min_y, max_y, condition=None: (
+            ValidateAttribute.VA_TYPE(obj, path, attr, tuple[int|float, int|float], condition=condition),
+        ),
+        is_valid_fn=lambda attr_value, min_x, max_x, min_y, max_y: (
+                ((min_x is None) or (attr_value[0] >= min_x))
+            and ((max_x is None) or (attr_value[0] <= max_x))
+            and ((min_y is None) or (attr_value[1] >= min_y))
+            and ((max_y is None) or (attr_value[1] <= max_y))
+        ),
+        error_cls=MANIP_RangeValidationError,
+        create_error_fn=lambda attr_value, descr, min_x, max_x, min_y, max_y: (
+            f"{descr} must be a coordinate pair(i.e. tuple of length 2). Each item must be an int or float. "
+            f"The first coordinate must be in range from {min_x} to {max_x}. The second coordinate must be in "
+            f"range from {min_y} to {max_y} not {attr_value}"
+        )
+    )
 
-    @staticmethod
-    def VA_BOXED_COORD_PAIR(
-        obj, path, attr, 
-        min_x: int|float|None, max_x: int|float|None, min_y:int|float|None, max_y: int|float|None, 
-        condition=None
-    ):
-        attr_value, descr = _value_and_descr(obj, attr)
-        msg = f"{descr} must be a coordinate pair. It must be a tuple of length 2. Each item must be an int or float. The first coordinate must be in range from {min_x} to {max_x}. The second coordinate must be in range from {min_y} to {max_y} not {attr_value}"
-        if (
-            (not isinstance(attr_value, tuple)) or (len(attr_value) != 2) 
-            or (not isinstance(attr_value[0], (int, float))) 
-            or (not isinstance(attr_value[1], (int, float)))
-        ):
-            raise MANIP_TypeValidationError(path, msg, condition)
-        if (
-            ((min_x is not None) and (attr_value[0] < min_x)) or ((max_x is not None) and (attr_value[0] > max_x))
-            or ((min_y is not None) and (attr_value[1] < min_y)) or ((max_y is not None) and (attr_value[1] > max_y))
-        ):
-            raise MANIP_RangeValidationError(path, msg, condition)
+    VA_EQUAL = Validator(
+        is_valid_fn=lambda attr_value, value: attr_value == value,
+        error_cls=MANIP_InvalidValueError,
+        create_error_fn=lambda attr_value, descr, value: f"{descr} must be {value!r}"
+    )
 
-    @staticmethod
-    def VA_EQUAL(obj, path, attr, value, condition=None):
-        attr_value, descr = _value_and_descr(obj, attr)
-        if attr_value != value:
-            raise MANIP_InvalidValueError(path, f"{descr} must be {value!r}", condition)
-
-    @staticmethod
-    def VA_NOT_EQUAL(obj, path, attr, value, condition=None):
-        attr_value, descr = _value_and_descr(obj, attr)
-        if attr_value == value:
-            raise MANIP_InvalidValueError(path, f"{descr} must NOT be {value!r}", condition)
+    VA_NOT_EQUAL = Validator(
+        is_valid_fn=lambda attr_value, value: attr_value != value,
+        error_cls=MANIP_InvalidValueError,
+        create_error_fn=lambda attr_value, descr, value: f"{descr} must NOT be {value!r}"
+    )
 
     @staticmethod
     def VA_BIGGER_OR_EQUAL(obj, path, attr1, attr2, condition=None):
@@ -128,27 +141,23 @@ class ValidateAttribute:
         if not(attr1_value >= attr2_value):
             raise MANIP_RangeValidationError(path, f"{attr1_descr} must be bigger then or equal to {attr2}", condition)
 
-    @staticmethod
-    def VA_NOT_ONE_OF(obj, path, attr, forbidden_values, condition=None):
-        attr_value, descr = _value_and_descr(obj, attr)
-        if attr_value in forbidden_values:
-            raise MANIP_InvalidValueError(path, f"{descr} must not be one of {forbidden_values!r}")
+    VA_NOT_ONE_OF = Validator(
+        is_valid_fn=lambda attr_value, forbidden_values: attr_value not in forbidden_values,
+        error_cls=MANIP_InvalidValueError,
+        create_error_fn=lambda attr_value, descr, forbidden_values: f"{descr} must not be one of {forbidden_values!r}"
+    )
 
-    @staticmethod
-    def VA_HEX_COLOR(obj, path, attr, condition=None):
-        attr_value, descr = _value_and_descr(obj, attr)
-        msg = f"{descr} must be a valid hex color eg. '#FF0956'"
-        if not isinstance(attr_value, str):
-            raise MANIP_TypeValidationError(path, msg)
-        if not bool(re.fullmatch(r'#([0-9a-fA-F]{6})', attr_value)):
-            raise MANIP_InvalidValueError(path, msg)
+    VA_HEX_COLOR = Validator(
+        is_valid_fn=lambda attr_value: isinstance(attr_value, str) and bool(re.fullmatch(r'#([0-9a-fA-F]{6})', attr_value)),
+        error_cls=MANIP_InvalidValueError,
+        create_error_fn=lambda attr_value, descr: f"{descr} must be a valid hex color eg. '#FF0956'"
+    )
 
-    @staticmethod
-    def VA_ALNUM(obj, path, attr, condition=None):
-        attr_value, descr = _value_and_descr(obj, attr)
-        attr_value: str
-        if not attr_value.isalnum():
-            raise MANIP_InvalidValueError(path, f"{descr} must contain only alpha-numeric characters")
+    VA_ALNUM = Validator(
+        is_valid_fn=lambda attr_value: isinstance(attr_value, str) and attr_value.isalnum(),
+        error_cls=MANIP_InvalidValueError,
+        create_error_fn=lambda attr_value, descr: f"{descr} must contain only alpha-numeric characters"
+    )
 
 def is_valid_js_data_uri(s) -> bool:
     pattern = r"^data:application/javascript(;charset=[^,]+)?,.*"
