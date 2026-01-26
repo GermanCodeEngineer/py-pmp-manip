@@ -4,7 +4,7 @@ from dataclasses import dataclass, fields as get_fields, field as base_field, Fi
 from types       import MappingProxyType, NoneType
 from typing      import (
     Any, NoReturn, Callable, Iterable, Iterator, SupportsIndex, Any, Protocol,
-    overload, get_type_hints, dataclass_transform, TYPE_CHECKING,
+    TypeVar, overload, get_type_hints, dataclass_transform, TYPE_CHECKING,
 )
 
 
@@ -176,6 +176,18 @@ class HasGreprValidate(Protocol):
         """
         # Overriden by @grepr_dataclass
 
+class NotSetType:
+    """
+    An empty placeholder
+    """
+
+    def __repr__(self) -> str:
+        return "NotSet"
+
+    def __bool__(self) -> bool:
+        return False
+
+NotSet = NotSetType()
 
 @grepr_dataclass(frozen=True, unsafe_hash=True)
 class ATPathAttribute(HasGreprValidate):
@@ -299,19 +311,63 @@ class AbstractTreePath(HasGreprValidate):
     
     def __str__(self) -> str:
         return f"{type(self).__name__}({self.__repr__()})"
+    
+    @overload
+    def get_in_tree(self, tree: Any, default: NotSetType = NotSet) -> Any: ...
+    @overload
+    def get_in_tree[DEFAULT_T](self, tree: Any, default: DEFAULT_T) -> Any | DEFAULT_T: ...
+    def get_in_tree[DEFAULT_T](self, tree: Any, default: NotSetType | DEFAULT_T = NotSet) -> Any | DEFAULT_T:
+        """
+        Dynamically get a node in an arbitrary object tree by this path.
+        """
+        current_object = tree
+        for i, item in enumerate(self):
+            if   isinstance(item, ATPathAttribute):
+                if isinstance(current_object, dict) and (item.value == "keys()"):
+                    # keys can only be accessed with d.keys()[key_index] not d[key]
+                    current_object = list(current_object.keys())
+                    continue
+                try:
+                    current_object = getattr(current_object, item.value)
+                except (AttributeError, TypeError, Exception) as error:
+                    if default is NotSet:
+                        raise ValueError(f"Failed to get attribute {item.value!r} of object at path {self[:i]}: {error}") from error
+                    return default
+            elif isinstance(item, ATPathIndexOrKey):
+                try:
+                    current_object = current_object[item.value]
+                except (IndexError, KeyError, TypeError, Exception) as error:
+                    if default is NotSet:
+                        raise ValueError(f"Failed to get index or key {item.value!r} of object at path {self[:i]}: {error}") from error
+                    return default
+        return current_object
 
-class NotSetType:
-    """
-    An empty placeholder
-    """
+    def exists_in_tree(self, tree: Any) -> bool:
+        """
+        Checks if this path is accessible in an arbitrary object tree.
+        """
+        try:
+            self.get_in_tree(tree)
+            return True
+        except ValueError:
+            return False
 
-    def __repr__(self) -> str:
-        return "NotSet"
-
-    def __bool__(self) -> bool:
-        return False
-
-NotSet = NotSetType()
+    def set_in_tree(self, tree: Any, value: Any) -> None:
+        """
+        Dynamically set a node in an arbitrary object tree by this path to a value.
+        """
+        obj = self[:-1].get_in_tree(tree)
+        path_item = self[-1]
+        if   isinstance(path_item, ATPathAttribute):
+            try:
+                setattr(obj, path_item.value, value)
+            except (AttributeError, TypeError) as error:
+                raise type(error)(f"Failed to set attribute {path_item.value!r} of object at path {self}: {error}") from error
+        elif isinstance(path_item, ATPathIndexOrKey):
+            try:
+                obj[path_item.value] = value
+            except (IndexError, TypeError) as error:
+                raise type(error)(f"Failed to set index or key {path_item.value!r} of object at path {self}: {error}") from error
 
 
 __all__ = [

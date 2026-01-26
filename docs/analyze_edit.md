@@ -39,27 +39,27 @@ for target in targets:
 ```
 It is seemingly harder then we thought. It is technically possible to do this manually, **but `pmp_manip` provides better alternatives.**
 
-### `TreeVisitor`
-A `TreeVisitor` object automates the (filtered) iteration of a whole `SRProject` or parts of it.
-There are two ways to create a `TreeVisitor` object.
+### `SRTreeVisitor`
+A `SRTreeVisitor` object automates the (filtered) iteration of a whole `SRProject` or parts of it.
+There are two ways to create a `SRTreeVisitor` object.
 
-### `TreeVisitor.new_include_all_except(excluded: Iterable[type[SECOND_REPR_T]]) -> TreeVisitor[SECOND_REPR_T]`
-`new_include_all_except` creates a `TreeVisitor` which includes all second representation objects except for the specified types.
+### `SRTreeVisitor.create_new_include_all_except(excluded: Iterable[type[SECOND_REPR_T]]) -> SRTreeVisitor[SECOND_REPR_T]`
+`create_new_include_all_except` creates a `SRTreeVisitor` which includes all second representation objects except for the specified types.
 
 
-### `TreeVisitor.new_include_only(included: Iterable[type[INCLUDED_T]]) -> TreeVisitor[INCLUDED_T]`
-`new_include_only` creates a `TreeVisitor` which only includes second representation objects of the specified types.
+### `SRTreeVisitor.create_new_include_only(included: Iterable[type[INCLUDED_T]]) -> SRTreeVisitor[INCLUDED_T]`
+`create_new_include_only` creates a `SRTreeVisitor` which only includes second representation objects of the specified types.
 
-### `TreeVisitor.visit_tree(obj: SECOND_REPR_T) -> dict[AbstractTreePath, INCLUDED_T]`
-Run the alredy configured `TreeVisitor` recursively on an Abstract Second Representation Tree.
+### `SRTreeVisitor.visit_tree(obj: SECOND_REPR_T) -> dict[AbstractTreePath, INCLUDED_T]`
+Run the alredy configured `SRTreeVisitor` recursively on an Abstract Second Representation Tree.
 Returns a map from node path (from tree root to value) to node value.
 
-### Example using `TreeVisitor`
+### Example using `SRTreeVisitor`
 Let us try it:
 ```python
 from pmp_manip import (
     get_default_config, init_config, info_api, FRProject,
-    TreeVisitor,
+    SRTreeVisitor,
 )
 
 cfg = get_default_config()
@@ -68,10 +68,10 @@ init_config(cfg)
 frproject = FRProject.from_file("assets/from_online/my 1st platformer.pmp")
 srproject = frproject.to_second(info_api)
 
-# Create our TreeVisitor with configuration. Let us allow everything for now:
-visitor = TreeVisitor.new_include_all_except(excluded=[])
+# Create our SRTreeVisitor with configuration. Let us allow everything for now:
+visitor = SRTreeVisitor.create_new_include_all_except(excluded=[])
 
-# Run the TreeVisitor
+# Run the SRTreeVisitor
 path_to_node_map = visitor.visit_tree(srproject)
 # Get only nodes and discard paths (just for this example)
 all_nodes = list(path_to_node_map.values())
@@ -96,13 +96,13 @@ Sample node type: SRVectorCostume
 Sample node type: SRSound
 ```
 We got over 500 nodes of varying types like `SRStage`, `SRBlock` or `SRSound`.
-But we are only looking for blocks. For that we need to configure our `TreeVisitor` differently:
+But we are only looking for blocks. For that we need to configure our `SRTreeVisitor` differently:
 
 ```python
 from pmp_manip import (
     get_default_config, init_config, info_api, FRProject,
     SRBlock,
-    TreeVisitor,
+    SRTreeVisitor,
 )
 
 cfg = get_default_config()
@@ -112,7 +112,7 @@ frproject = FRProject.from_file("assets/from_online/my 1st platformer.pmp")
 srproject = frproject.to_second(info_api)
 
 # Let us allow only blocks(SRBlock) this time:
-visitor = TreeVisitor.new_include_only(included=[SRBlock])
+visitor = SRTreeVisitor.create_new_include_only(included=[SRBlock])
 
 path_to_node_map = visitor.visit_tree(srproject)
 # Get only nodes and discard paths (just for this example)
@@ -152,7 +152,7 @@ SRBlock(
 )
 ```
 We reached our goal! You know now how to find all node of a/multiple types in a project.
-You can run a `TreeVisitor` on parts of a project too e.g. only the stage, a single script etc.
+You can run a `SRTreeVisitor` on parts of a project too e.g. only the stage, a single script etc.
 
 ### Searching for more complex Block and Script Patterns
 What if you are not looking for all blocks but only some blocks e.g. with a certain `opcode`?
@@ -504,7 +504,7 @@ Let us now use the above pattern:
 from pmp_manip import (
     get_default_config, init_config, info_api, FRProject, SRScript,
     ScriptPattern, BlockPattern, InputPattern, PatternConst,
-    TreeVisitor, AbstractTreePath, match_handler,
+    SRTreeVisitor, AbstractTreePath, match_handler,
 )
 
 cfg = get_default_config()
@@ -532,8 +532,8 @@ pattern = ScriptPattern(
     ],
 )
 
-visitor = TreeVisitor.new_include_only(included=[SRScript])
-# Run the TreeVisitor only on the first sprite(=> no scripts from stage or other sprite will even be considered)
+visitor = SRTreeVisitor.create_new_include_only(included=[SRScript])
+# Run the SRTreeVisitor only on the first sprite(=> no scripts from stage or other sprite will even be considered)
 player_sprite = srproject.sprites[0]
 path_to_node_map = visitor.visit_tree(player_sprite)
 # Find all matches
@@ -807,7 +807,7 @@ For example, what if you want a dynamic opcode check?
 from pmp_manip import (
     get_default_config, init_config, info_api, FRProject, SRScript,
     ScriptPattern, BlockPattern, InputPattern, PatternConst,
-    TreeVisitor, AbstractTreePath, SuccessfulMatchResult, match_handler,
+    SRTreeVisitor, AbstractTreePath, SuccessfulMatchResult, match_handler,
 )
 
 cfg = get_default_config()
@@ -848,8 +848,8 @@ pattern = ScriptPattern(
     ],
 )
 
-visitor = TreeVisitor.new_include_only(included=[SRScript])
-# Run the TreeVisitor on the whole project
+visitor = SRTreeVisitor.create_new_include_only(included=[SRScript])
+# Run the SRTreeVisitor on the whole project
 path_to_node_map = visitor.visit_tree(srproject)
 # Find all matches
 matches: list[tuple[AbstractTreePath, SRScript]] = []
@@ -1019,7 +1019,7 @@ So we need to use a custom handler:
 from pmp_manip import (
     get_default_config, init_config, info_api, FRProject, SRScript, SRBlock,
     ScriptPattern, BlockPattern, DropdownPattern, PatternConst,
-    TreeVisitor, AbstractTreePath, SuccessfulMatchResult, match_handler,
+    SRTreeVisitor, AbstractTreePath, SuccessfulMatchResult, match_handler,
 )
 
 cfg = get_default_config()
@@ -1068,8 +1068,8 @@ pattern = ScriptPattern(
     blocks=are_blocks_acceptible
 )
 
-visitor = TreeVisitor.new_include_only(included=[SRScript])
-# Run the TreeVisitor on the whole project
+visitor = SRTreeVisitor.create_new_include_only(included=[SRScript])
+# Run the SRTreeVisitor on the whole project
 path_to_node_map = visitor.visit_tree(srproject)
 # Find all matches
 matches: list[tuple[AbstractTreePath, SRScript]] = []
@@ -1285,7 +1285,7 @@ from pmp_manip import (
     FRProject, SRScript, SRBlock, 
     SRScriptInputValue, SRBlockAndBoolInputValue, SRBlockAndDropdownInputValue, SRDropdownValue, DropdownValueKind,
     ScriptPattern, BlockPattern, InputPattern, PatternConst,
-    TreeVisitor, AbstractTreePath, set_path_in_tree, match_handler,
+    SRTreeVisitor, AbstractTreePath, match_handler,
 )
 
 cfg = get_default_config()
@@ -1313,7 +1313,7 @@ pattern = ScriptPattern(
     ],
 )
 
-visitor = TreeVisitor.new_include_only(included=[SRScript])
+visitor = SRTreeVisitor.create_new_include_only(included=[SRScript])
 path_to_node_map = visitor.visit_tree(srproject)
 
 messages_and_conditions: list[tuple[SRDropdownValue, SRBlock]] = []
@@ -1354,9 +1354,8 @@ for path, node in path_to_node_map.items():
     print(new_script)
     
     # Replace the old with the new script in the same location
-    set_path_in_tree(
+    path.set_in_tree(
         tree=srproject,
-        path=path,
         value=new_script,
     )
     
@@ -1692,7 +1691,7 @@ from pmp_manip import (
     FRProject, SRScript, SRBlock, 
     SRScriptInputValue, SRBlockAndBoolInputValue, SRBlockAndDropdownInputValue, SRDropdownValue, DropdownValueKind,
     ScriptPattern, BlockPattern, InputPattern, PatternConst,
-    TreeVisitor, AbstractTreePath, set_path_in_tree, match_handler,
+    SRTreeVisitor, AbstractTreePath, match_handler,
 )
 
 cfg = get_default_config()
@@ -1734,7 +1733,7 @@ pattern = ScriptPattern(
     ],
 )
 
-visitor = TreeVisitor.new_include_only(included=[SRScript])
+visitor = SRTreeVisitor.create_new_include_only(included=[SRScript])
 path_to_node_map = visitor.visit_tree(srproject)
 
 messages_and_conditions: list[tuple[SRDropdownValue, SRBlock]] = []
@@ -1770,9 +1769,8 @@ for path, node in path_to_node_map.items():
     print("New script to replace old one:")
     print(new_script)
     
-    set_path_in_tree(
+    path.set_in_tree(
         tree=srproject,
-        path=path,
         value=new_script,
     )
     

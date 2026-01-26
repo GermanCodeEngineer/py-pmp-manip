@@ -8,7 +8,7 @@ from pmp_manip.opcode_info.api import (
 )
 from pmp_manip.utility         import (
     DualKeyDict,
-    MANIP_ThanksError, MANIP_NotImplementedError,
+    MANIP_ThanksError,
     MANIP_InvalidCustomMenuError, MANIP_InvalidCustomBlockError,
     MANIP_UnknownExtensionAttributeError, 
 )
@@ -1238,7 +1238,7 @@ def test_generate_block_opcode_info_xml_block(input_types, dropdown_types):
         "blockType": "xml",
         "xml": ..., # does not matter
     }
-    with raises(MANIP_NotImplementedError):
+    with raises(NotImplementedError):
         generate_block_opcode_info(
             block_info=block_data,
             menus=EXAMPLE_MENU_DATA,

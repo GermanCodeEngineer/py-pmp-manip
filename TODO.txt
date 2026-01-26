@@ -9,14 +9,10 @@ Currently Working On:
     - L: when done -> make parts of utility an own module(see # MIGRATION)
     - add tests for grepr_dataclass & others
     - add tests for project fetching
-    - make sure get at ATPath works with ".keys()"
     - make sure SRBlockAndTextInputValue.validate accepts only str for .immediate
     - make sure SRDropdownValue.value allows only str, int, bool
     - finish ValidateAttribute creation
     - finalize AbstractTreePath representation
-    - move utility/validation.py to otility
-    - include get/set/exists path to otility
-    - fix errors distribution
     - question necessity of file utils
     => XL: add tests for and document utility and especially otility
 

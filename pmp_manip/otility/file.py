@@ -64,9 +64,6 @@ def read_file_text(file_path: str, encoding: str = "utf-8") -> str:
         file_path: path to the file to read
         encoding: encoding to use when reading the file. default is 'utf-8'
 
-    Returns:
-        str: The contents of the file.
-
     Raises:
         MANIPO_FileNotFoundError: If the file was not found
         MANIPO_FailedFileReadError: For OS-related errors like, closed, permission denied, invalid path, or decoding failures

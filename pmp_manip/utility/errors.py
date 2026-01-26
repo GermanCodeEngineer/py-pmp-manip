@@ -1,27 +1,25 @@
 from __future__ import annotations
-from typing     import TYPE_CHECKING
 
-if TYPE_CHECKING: from pmp_manip.otility import AbstractTreePath
+from pmp_manip.otility import (
+    AbstractTreePath,
+    MANIPO_Error, MANIPO_ValidationError, MANIPO_PathValidationError,
+    MANIPO_TypeValidationError, MANIPO_InvalidValueError, MANIPO_RangeValidationError,
+    MANIPO_FailedFileWriteError, MANIPO_FailedFileReadError, MANIPO_FailedFileDeleteError,
+    MANIPO_FileNotFoundError,
+)
 
 
-class MANIP_Error(Exception):
-    pass
-
-
+class MANIP_Error(Exception): pass
 class MANIP_BlameDevsError(MANIP_Error): pass
-class MANIP_PathError(MANIP_Error): pass
-
 class MANIP_ThanksError(MANIP_Error):
     def __init__(self):
         super().__init__("Your project is unique! It could help me with my research! Please create an issue with your project attached! https://github.com/GermanCodeEngineer/py-pmp-manip/issues/new/")
-
 
 ###############################################################
 #                     COPIED BUILT-IN ERRORS                  #
 ###############################################################
 
 class MANIPO_FileNotFoundError(OSError): pass
-
 
 ###############################################################
 #                ERRORS FOR THE OPCODE INFO API               #
@@ -53,30 +51,6 @@ class MANIP_ConversionError(MANIP_Error): pass
 #                    ERRORS FOR VALIDATION                    #
 ###############################################################
 
-class MANIPO_ValidationError(MANIP_Error): pass
-
-class MANIPO_PathValidationError(MANIPO_ValidationError):
-    path: AbstractTreePath
-    msg: str
-    condition: str | None
-    
-    def __init__(self, path: AbstractTreePath, msg: str, condition: str|None = None) -> None:
-        self.path      = path
-        self.msg       = msg
-        self.condition = condition
-        
-        full_message = ""
-        if len(path) > 0:
-            full_message += f"At {path!r}: "
-        if condition is not None:
-            full_message += f"{condition}: "
-        full_message += msg
-        super().__init__(full_message)
-    
-class MANIPO_TypeValidationError(MANIPO_PathValidationError, TypeError): pass
-class MANIPO_InvalidValueError(MANIPO_PathValidationError, ValueError): pass
-class MANIPO_RangeValidationError(MANIPO_PathValidationError, ValueError): pass
-
 class MANIP_MissingInputError(MANIPO_PathValidationError, ValueError): pass
 class MANIP_UnnecessaryInputError(MANIPO_PathValidationError, ValueError): pass
 class MANIP_MissingDropdownError(MANIPO_PathValidationError, ValueError): pass
@@ -102,8 +76,6 @@ class MANIP_SameValueTwiceError(MANIPO_ValidationError, ValueError):
             full_message += f"{condition}: "
         full_message += msg
         super().__init__(full_message)
-
-
 
 ###############################################################
 #         ERRORS FOR THE EXT INFO GEN AND PROJECT_API         #
@@ -146,9 +118,6 @@ class MANIP_DirectExtensionInfoExtractionError(MANIP_Error): """Groups any error
 class MANIP_SafeExtensionInfoExtractionError(MANIP_Error): """Groups any error in extract_extension_info_safely"""
 class MANIP_ExtensionInfoConvertionError(MANIP_Error): """Groups any error in generate_opcode_info_group"""
 
-
-
-
 ###############################################################
 #                      ERRORS FOR THE CONFIG                  #
 ###############################################################
@@ -156,48 +125,5 @@ class MANIP_ExtensionInfoConvertionError(MANIP_Error): """Groups any error in ge
 class MANIP_ConfigurationError(MANIP_Error): pass
 
 
-###############################################################
-#                       ERRORS FOR UTILITY                    #
-###############################################################
+"""__all__ = []""" # TODO: when done with error update: reintroduce maintanence
 
-class MANIPO_FailedFileWriteError(MANIP_Error): pass
-class MANIPO_FailedFileReadError(MANIP_Error): pass
-class MANIPO_FailedFileDeleteError(MANIP_Error): pass
-
-
-###############################################################
-#                         SPECIAL ERRORS                      #
-###############################################################
-
-#class MANIP_TempNotImplementedError(MANIP_Error):
-#    """Occurs on features that are not YET implemented"""
-
-
-"""__all__ = [
-    "MANIP_Error", "MANIP_BlameDevsError", "MANIP_ThanksError", 
-    
-    
-    "MANIP_OpcodeInfoError", "MANIP_UnknownOpcodeError", "MANIP_SameOpcodeTwiceError", 
-    
-    
-    "MANIP_DeserializationError", "MANIP_ConversionError",
-    
-    
-    "MANIPO_ValidationError", "MANIPO_PathValidationError", "MANIPO_TypeValidationError", "MANIPO_InvalidValueError",
-    "MANIPO_RangeValidationError", "MANIP_MissingInputError", "MANIP_UnnecessaryInputError", 
-    "MANIP_MissingDropdownError", "MANIP_UnnecessaryDropdownError", "MANIP_InvalidDropdownValueError", 
-    "MANIP_InvalidOpcodeError", "MANIP_InvalidBlockShapeError", "MANIP_SpriteLayerStackError", 
-    "MANIP_SameValueTwiceError",
-    
-    
-    "MANIP_InvalidExtensionSourceError", 
-    "MANIP_FetchError", "MANIP_NetworkFetchError", "MANIP_UnexpectedFetchError", "MANIP_FileFetchError",
-    "MANIP_JsParsingError", 
-    "MANIP_InvalidExtensionCodeError", "MANIP_EsprimaToJsonConversionError", 
-    
-    "MANIP_UnknownExtensionAttributeError",
-    
-    
-    "MANIP_ConfigurationError", 
-]""" # TODO: when done with error update: reintroduce maintanence
-# MIGRATION: NOT AT ALL (might be split)

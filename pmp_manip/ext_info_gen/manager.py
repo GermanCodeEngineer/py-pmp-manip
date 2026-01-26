@@ -9,7 +9,9 @@ from pmp_manip.config           import get_config, init_config, get_default_conf
 from pmp_manip.important_consts import BUILTIN_EXTENSIONS_SOURCE_DIRECTORY
 from pmp_manip.utility          import (
     read_file_text, write_file_text, file_exists, enforce_argument_types, ContentFingerprint,
-    MANIP_Error, MANIPO_FailedFileReadError, MANIPO_FailedFileWriteError, MANIP_ThanksError, MANIP_ExtensionFetchError,
+    MANIP_Error, MANIPO_FileNotFoundError,
+    MANIPO_FailedFileReadError, MANIPO_FailedFileWriteError, MANIPO_FailedFileDeleteError,
+    MANIP_ThanksError, MANIP_ExtensionFetchError,
     MANIP_DirectExtensionInfoExtractionError, MANIP_SafeExtensionInfoExtractionError,
     MANIP_NoNodeJSInstalledError, MANIP_ExtensionInfoConvertionError,
 )
@@ -78,7 +80,7 @@ def _consider_state(dest_file_name: str, dest_file_path: str, cache: dict[str, d
         return STATUS_REGEN
     try:
         python_code = read_file_text(dest_file_path)
-    except MANIP_Error:
+    except MANIPO_FileNotFoundError, MANIPO_FailedFileReadError:
         return STATUS_REGEN # we can not know if python code has changed, so regenerate
     file_cache = cache[dest_file_name]
     try:
@@ -228,7 +230,7 @@ def generate_extension_info_py_file(
     
     try:
         js_code = fetch_js_code(source, tolerate_file_path)
-    except MANIP_Error as error:
+    except (MANIP_Error, MANIPO_FileNotFoundError) as error:
         if bundle_errors:
             raise MANIP_ExtensionFetchError(f"Error in extension {extension_id!r}: Failed to fetch extension code: {error}") from error
         else:
@@ -251,7 +253,7 @@ def generate_extension_info_py_file(
             extension_info = extract_extension_info_directly(js_code)
         except MANIP_NoNodeJSInstalledError:
             raise
-        except MANIP_Error as error:
+        except (MANIP_Error, MANIPO_FailedFileWriteError, MANIPO_FailedFileDeleteError) as error:
             if bundle_errors:
                 raise MANIP_DirectExtensionInfoExtractionError(
                     f"Error in extension {extension_id!r}: Failed to extract extension info through direct execution: {error}"
@@ -276,7 +278,7 @@ def generate_extension_info_py_file(
         info_group, input_types, dropdown_types = generate_opcode_info_group(extension_info)
     except MANIP_ThanksError:
         raise
-    except MANIP_Error as error:
+    except (MANIP_Error, NotImplementedError) as error:
         if bundle_errors:
             raise MANIP_ExtensionInfoConvertionError(
                 f"Error in extension {extension_id!r}: Failed to convert extension info into required format: {error}"
