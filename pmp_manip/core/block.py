@@ -38,7 +38,7 @@ def no_field() -> Field:
     """
     Create a dataclass field which is never initialized or used and is not required to exist during validation.
     """
-    return field(init=False, grepr=False, hash=False, compare=False, validate_require_exist=False)
+    return field(init=False, grepr=False, hash=False, compare=False, validate_require_exist=False, call_subvalidate=False)
 
 def get_input_cls_for_input_mode(input_mode: InputMode) -> type[SRInputValue]:
     """
@@ -332,8 +332,8 @@ class IRBlock(HasGreprValidate):
     opcode: str
     inputs: dict[str, IRInputValue]
     dropdowns: dict[str, DROPDOWN_VALUE_T]
-    comment: SRComment | None
-    mutation: SRMutation | None
+    comment: SRComment | None = field(call_subvalidate=True)
+    mutation: SRMutation | None = field(call_subvalidate=True)
     position: tuple[int | float, int | float] | None
     next: str | None
     is_top_level: bool
@@ -761,8 +761,8 @@ class SRBlock(HasGreprValidate):
     opcode: str
     inputs: dict[str, SRInputValue] = field(default_factory=dict)
     dropdowns: dict[str, SRDropdownValue] = field(default_factory=dict)
-    comment: SRComment | None = None
-    mutation: SRMutation | None = None
+    comment: SRComment | None = field(default=None, call_subvalidate=True)
+    mutation: SRMutation | None = field(default=None, call_subvalidate=True)
     
     def post_validate(self, 
         path: AbstractTreePath, 
@@ -805,14 +805,10 @@ class SRBlock(HasGreprValidate):
             )
             raise MANIP_InvalidOpcodeError(path, msg)
         
-        if self.comment is not None:
-            self.comment.validate(path.add_attribute("comment"))
-        
         if opcode_info.new_mutation_cls is None:
             ValidateAttribute.VA_TYPE(self, path, "mutation", type(None), condition="For this opcode")
         else:
             ValidateAttribute.VA_TYPE(self, path, "mutation", opcode_info.new_mutation_cls, condition="For this opcode")
-            self.mutation.validate(path.add_attribute("mutation"))
 
         input_infos = opcode_info.get_new_input_ids_infos(block=self, fti_if=None) 
         # maps input ids to their types # fti_if is not necessary for a IRBlock
@@ -1215,7 +1211,6 @@ class SRBlockAndDropdownInputValue(SRInputValue):
         )
         
         current_path = path.add_attribute("dropdown")
-        self.dropdown.validate(current_path)
         self.dropdown.validate_value(
             path          = current_path,
             dropdown_type = input_type.corresponding_dropdown_type,

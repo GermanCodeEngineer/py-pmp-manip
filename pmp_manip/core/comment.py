@@ -85,7 +85,7 @@ class SRComment(HasGreprValidate):
     is_minimized: bool
     text: str
     
-    def post_validate(self, path: AbstractTreePath) -> None:
+    def post_validate(self, path: AbstractTreePath, *args, **kwargs) -> None:
         """
         Ensure an instance is valid, raise MANIPO_ValidationError if not
         

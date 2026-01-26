@@ -85,23 +85,9 @@ class MasterConfig(ConfigBase):
     The master configuration containing all subconfigurations for the pmp_manip project
     """
 
-    ext_info_gen: ExtInfoGenConfig
-    validation: ValidationConfig
-    platform_meta: PlatformMetaConfig
-
-    def post_validate(self, path: AbstractTreePath) -> None:
-        """
-        Ensure an instance is valid, raise MANIPO_ValidationError if not
-        
-        Args:
-            path: the path from the top of the config tree to itself. Used for better error messages
-        
-        Raises:
-            MANIPO_ValidationError: if the instance is invalid
-        """
-        self.ext_info_gen .validate(path.add_attribute("ext_info_gen" ))
-        self.validation   .validate(path.add_attribute("validation"   ))
-        self.platform_meta.validate(path.add_attribute("platform_meta"))
+    ext_info_gen: ExtInfoGenConfig = field(call_subvalidate=True)
+    validation: ValidationConfig = field(call_subvalidate=True)
+    platform_meta: PlatformMetaConfig = field(call_subvalidate=True)
 
 
 __all__ = ["ExtInfoGenConfig", "ValidationConfig", "PlatformMetaConfig", "MasterConfig"]

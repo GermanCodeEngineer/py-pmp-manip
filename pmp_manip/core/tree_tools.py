@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing     import Iterable, Any
 
-from pmp_manip.utility import grepr_dataclass, enforce_argument_types, TreeVisitor as BaseTreeVisitor
+from pmp_manip.utility import enforce_argument_types, TreeVisitor as BaseTreeVisitor
 
 from pmp_manip.core.asset          import SRCostume, SRVectorCostume, SRBitmapCostume, SRSound
 from pmp_manip.core.block_mutation import (

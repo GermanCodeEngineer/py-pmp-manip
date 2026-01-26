@@ -15,9 +15,9 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
     """
     
     
-    # Initialization methods
     @enforce_argument_types
     def __init__(self, iterable: dict[tuple[_K1, _K2], _V] | None = None, /) -> None:
+        """Initialize a DualKeyDict from an optional dictionary of (key1, key2): value mappings."""
         self._values  : dict[_K1, _V ] = {}
         self._k2_to_k1: dict[_K2, _K1] = {}
         self._k1_to_k2: dict[_K1, _K2] = {}
@@ -29,6 +29,7 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
     @enforce_argument_types
     @classmethod
     def from_single_key_value(cls, iterable: Iterable[tuple[_K1, _V]], /) -> DualKeyDict[_K1, _K1, _V]:
+        """Create a DualKeyDict where both key1 and key2 are the same."""
         return DualKeyDict({
             (key, key): value for key, value in iterable
         })
@@ -36,6 +37,7 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
     @enforce_argument_types
     @classmethod
     def from_both_keys(cls, iterable: Iterable[tuple[_K1, _K2]], value: _V, /) -> DualKeyDict[_K1, _K2, _V]:
+        """Create a DualKeyDict where all entries share the same value."""
         return DualKeyDict({
             (key1, key2): value for key1, key2 in iterable
         })
@@ -94,6 +96,7 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
         return self.__ior__(value)
     
     def clear(self) -> None:
+        """Remove all entries from the dictionary."""
         self._values  : dict[_K1, _V ] = {}
         self._k2_to_k1: dict[_K2, _K1] = {}
         self._k1_to_k2: dict[_K1, _K2] = {}
@@ -225,10 +228,12 @@ class DualKeyDict(Generic[_K1, _K2, _V]):
     # Key Access methods
     @enforce_argument_types
     def has_key1(self, key1: _K1) -> bool:
+        """Check if key1 exists in the dictionary."""
         return key1 in self._values
     
     @enforce_argument_types
     def has_key2(self, key2: _K2) -> bool:
+        """Check if key2 exists in the dictionary."""
         return key2 in self._k2_to_k1
 
     @enforce_argument_types

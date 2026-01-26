@@ -4,7 +4,7 @@ from dataclasses import dataclass, fields as get_fields, field as base_field, Fi
 from types       import MappingProxyType, NoneType
 from typing      import (
     Any, NoReturn, Callable, Iterable, Iterator, SupportsIndex, Any, Protocol,
-    TypeVar, overload, get_type_hints, dataclass_transform, TYPE_CHECKING,
+    overload, get_type_hints, dataclass_transform, TYPE_CHECKING,
 )
 
 
@@ -18,8 +18,21 @@ def field(*,
         metadata: MappingProxyType | NoneType = None, kw_only: bool | _MISSING_TYPE = MISSING,
 
         validate_type: bool = True, validator_fn: VALIDATOR_FN = None,
-        validate_require_exist: bool = True,
+        validate_require_exist: bool = True, call_subvalidate: bool = False,
     ) -> Field:
+    """
+    Create a dataclass field with extended validation and representation options.
+    
+    Wraps the standard dataclass field with additional options:
+    - `grepr`: Whether to include in grepr representation
+    - `validate_type`: Whether to enforce type checking on this field
+    - `validator_fn`: Custom validation function
+    - `validate_require_exist`: Whether field must exist during validation
+    - `call_subvalidate`: Whether to call validate() method on field values
+    
+    Raises:
+        ValueError: if validator_fn is provided but not callable
+    """
     field = base_field(
         default=default,
         default_factory=default_factory,
@@ -32,24 +45,26 @@ def field(*,
     )
     if (validator_fn is not None) and (not callable(validator_fn)):
         raise ValueError("validator_fn must be a function or callable")
-    update_field(field, grepr, validate_type, validator_fn, validate_require_exist)
+    update_field(field, grepr, validate_type, validator_fn, validate_require_exist, call_subvalidate)
     return field
 
 def update_field(field: Field,
-        grepr: bool = True, validate_type: bool = True,
-        validator_fn: VALIDATOR_FN = None,
-        validate_require_exist: bool = True,
+        grepr: bool = True,
+        validate_type: bool = True, validator_fn: VALIDATOR_FN = None,
+        validate_require_exist: bool = True, call_subvalidate: bool = False,
     ) -> None:
-    # Replace field metadata if needed (creates new mappingproxy)
+    """Store custom field options for use by @grepr_dataclass validation and representation."""
     if field not in FIELD_OPTIONS:
-        FIELD_OPTIONS[field] = {
-            "grepr": grepr,
-            "validate_type": validate_type,
-            "validator_fn": validator_fn,
-            "validate_require_exist": validate_require_exist,
-        }
+        FIELD_OPTIONS[field] = dict(
+            grepr=grepr,
+            validate_type=validate_type,
+            validator_fn=validator_fn,
+            validate_require_exist=validate_require_exist,
+            call_subvalidate=call_subvalidate,
+        )
 
 def get_field_options(field: Field) -> dict[str, Any]:
+    """Retrieve custom options for a field, ensuring they are registered if not present."""
     update_field(field)
     return FIELD_OPTIONS[field]
 
@@ -135,6 +150,15 @@ def grepr_dataclass(*, grepr: bool = True,
                             path=path.add_attribute(field.name),
                             notset_as_special=True,
                         )
+                
+                for field in get_fields(self):
+                    options = get_field_options(field)
+                    if not options["call_subvalidate"]:
+                        continue
+                    field_value = getattr(self, field.name, None)
+                    if callable(getattr(field_value, "validate", None)):
+                        field_value.validate(path.add_attribute(field.name), *args, **kwargs)
+                
                 if callable(getattr(self, "post_validate", None)):
                     self.post_validate(path, *args, **kwargs)
             cls.validate = validate_method
@@ -297,7 +321,7 @@ class AbstractTreePath(HasGreprValidate):
     def __reversed__(self) -> Iterator[ATPathAttribute | ATPathIndexOrKey]:
         return reversed(self.path)
         
-    def __repr__(self) -> str:
+    def repr_as_python_code(self) -> str:
         path_string = ""
         for item in self.path:
             if   isinstance(item, ATPathAttribute):
@@ -309,8 +333,8 @@ class AbstractTreePath(HasGreprValidate):
             # Removes if at the start, else does nothing
         return path_string
     
-    def __str__(self) -> str:
-        return f"{type(self).__name__}({self.__repr__()})"
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}({self.repr_as_python_code()})"
     
     @overload
     def get_in_tree(self, tree: Any, default: NotSetType = NotSet) -> Any: ...

@@ -24,6 +24,16 @@ def _passes(fn: Callable[..., Any], *args, **kwargs) -> bool:
 
 @grepr_dataclass(frozen=True, unsafe_hash=True)
 class Validator(Callable[..., None]):
+    """
+    Validates a single field attribute, raising MANIPO_PathValidationError subclass on failure.
+    
+    The is_valid_fn callable determines if validation passes, and create_error_fn generates
+    a descriptive error message. Optional pre_validate_fn runs first to validate prerequisites.
+    
+    Raises:
+        TypeError: if incorrect number of arguments provided to __call__
+        MANIPO_PathValidationError: if validation fails
+    """
     is_valid_fn: Callable[..., bool]
     error_cls: type[MANIPO_PathValidationError]
     create_error_fn: Callable[..., str]
@@ -127,10 +137,12 @@ class ValidateAttribute:
     )
 
 def is_valid_js_data_uri(s) -> bool:
+    """Check if string is a valid JavaScript data URI."""
     pattern = r"^data:application/javascript(;charset=[^,]+)?,.*"
     return re.match(pattern, s) is not None
 
 def is_valid_directory_path(path_str: str) -> bool:
+    """Check if path exists as a directory or can be created in a writable parent directory."""
     path = Path(path_str)
 
     if path.exists():
@@ -146,6 +158,7 @@ def is_valid_directory_path(path_str: str) -> bool:
         return False
 
 def is_valid_url(url: str) -> bool:
+    """Check if string is a valid HTTP(S) URL with a domain."""
     try:
         result = urlparse(url)
         return (

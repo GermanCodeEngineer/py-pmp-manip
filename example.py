@@ -18,12 +18,20 @@ project_ids = ['0413801085', '9366671966', '3029310207', '1987658125', '84392889
 #for project_id in project_ids:
 #    if file_exists(f"projects/{project_id}.pmp"):
 #        frproject = FRProject.from_file(f"projects/{project_id}.pmp")
-frproject = FRProject.from_file("Projekt.pmp")
+#frproject = FRProject.from_file("Projekt.pmp")
 
-#projects, error = FRProject.fetch_by_ids(project_ids)
-#print(FRProject.__repr__(projects))
-#if error:
-#    raise error
+projects, error = FRProject.fetch_by_ids(project_ids)
+print(FRProject.__repr__(projects))
+print(100*"<>")
+for frproject in projects.values():
+    if frproject:
+        print(100*"=")
+        print(frproject.extensions, frproject.extension_urls)
+        frproject.add_all_extensions_to_info_api(info_api)
+        srproject = frproject.to_second(info_api)
+        print(srproject)
+if error:
+    raise error
 
 #frproject = FRProject.fetch_by_id("0131435715")
 ##print(frproject)

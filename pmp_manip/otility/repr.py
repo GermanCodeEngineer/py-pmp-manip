@@ -1,16 +1,13 @@
 from __future__  import annotations
 from dataclasses import fields
 from enum        import Enum
-from tree_sitter import Node
 from typing      import Any
 
 from pmp_manip.otility.dual_key_dict import DualKeyDict
 
 
 class KeyReprDict(dict):
-    """
-    Behaves exactly like butilins.dict, only the repr method is different. It only shows keys and not values of the dictionary.
-    """
+    """Dict subclass that displays only its keys in repr, not values. Inherits all dict functionality."""
     
     def __repr__(self) -> str:
         return grepr(self)
@@ -19,6 +16,22 @@ def grepr(obj, /,
         safe_dkd:bool=False, level_offset:int=0, annotate_fields:bool=True,
         vanilla_strings:bool=False, *, indent:int|str|None=4,
     ) -> str:
+    """
+    Generate a custom string representation of an object with enhanced formatting.
+    
+    Provides pretty-printed output for dataclasses, collections, DualKeyDict, and nested structures.
+    By default, dataclass fields marked with grepr=False are excluded from output.
+    
+    Returns:
+        str: Formatted representation of the object
+        
+    Args:
+        safe_dkd: If True, represent DualKeyDict using dict notation; otherwise use custom notation
+        level_offset: Initial indentation level for nested structures
+        annotate_fields: Include field names in dataclass representations
+        vanilla_strings: If True, use repr() for strings; otherwise use custom quoting
+        indent: Number of spaces (int) or indent string for multi-line formatting; None for single-line
+    """
     from pmp_manip.otility.base import get_field_options
     def _grepr(obj, level=level_offset) -> tuple[str, bool]:
         is_compatible = bool(getattr(obj, "__has_grepr__", False)) and not(isinstance(obj, type))

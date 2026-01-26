@@ -586,6 +586,16 @@ def test_SRBlockAndTextInputValue_validate(validation_if, context):
         func_args=[AbstractTreePath(), info_api, validation_if, context, input_type],
     )
 
+def test_SRBlockAndTextInputValue_immediate_must_be_str(validation_if, context):
+    input_type = BuiltinInputType.TEXT
+    input_value = SRBlockAndTextInputValue(
+        block=None,
+        immediate=True,
+    )
+    with raises(MANIPO_TypeValidationError):
+        input_value.validate(AbstractTreePath(), info_api, validation_if, context, input_type)
+
+
 def test_SRBlockAndDropdownInputValue_validate(validation_if, context):
     input_type = BuiltinInputType.MOUSE_OR_OTHER_SPRITE
     input_value = SRBlockAndDropdownInputValue(
@@ -603,6 +613,13 @@ def test_SRBlockAndDropdownInputValue_validate(validation_if, context):
         validate_func=SRBlockAndDropdownInputValue.validate,
         func_args=[AbstractTreePath(), info_api, validation_if, context, input_type],
     )
+
+
+def test_SRDropdownValue_value_must_be_allowed_type():
+    dropdown = SRDropdownValue(kind=DropdownValueKind.STANDARD, value=1.2)
+    with raises(MANIPO_TypeValidationError):
+        dropdown.validate(AbstractTreePath())
+
 
 def test_SRBlockAndBoolInputValue_validate(validation_if, context):
     input_type = BuiltinInputType.BOOLEAN

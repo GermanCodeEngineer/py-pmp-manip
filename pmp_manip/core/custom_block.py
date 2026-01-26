@@ -90,7 +90,7 @@ class SRCustomBlockOpcode(HasGreprValidate):
             for segment in self.segments if isinstance(segment, SRCustomBlockArgument)
         }
     
-    def post_validate(self, path: AbstractTreePath) -> None:
+    def post_validate(self, path: AbstractTreePath, *args, **kwargs) -> None:
         """
         Ensures an instance is valid, raise MANIPO_ValidationError if not
         

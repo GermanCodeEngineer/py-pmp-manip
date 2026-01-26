@@ -80,7 +80,7 @@ def _consider_state(dest_file_name: str, dest_file_path: str, cache: dict[str, d
         return STATUS_REGEN
     try:
         python_code = read_file_text(dest_file_path)
-    except MANIPO_FileNotFoundError, MANIPO_FailedFileReadError:
+    except (MANIPO_FileNotFoundError, MANIPO_FailedFileReadError):
         return STATUS_REGEN # we can not know if python code has changed, so regenerate
     file_cache = cache[dest_file_name]
     try:

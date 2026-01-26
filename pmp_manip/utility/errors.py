@@ -11,6 +11,7 @@ from pmp_manip.otility import (
 
 class MANIP_Error(Exception): pass
 class MANIP_BlameDevsError(MANIP_Error): pass
+class MANIP_ImplementationDetailsExposedError(MANIP_Error): pass
 class MANIP_ThanksError(MANIP_Error):
     def __init__(self):
         super().__init__("Your project is unique! It could help me with my research! Please create an issue with your project attached! https://github.com/GermanCodeEngineer/py-pmp-manip/issues/new/")

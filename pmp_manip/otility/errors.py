@@ -9,6 +9,11 @@ class MANIPO_Error(Exception): pass
 
 class MANIPO_ValidationError(MANIPO_Error): pass
 class MANIPO_PathValidationError(MANIPO_ValidationError):
+    """Validation error with location tracking for nested structures.
+    
+    Combines path, message, and optional condition to create descriptive validation errors.
+    Message automatically includes path location and condition if provided.
+    """
     def __init__(self, path: AbstractTreePath, msg: str, condition: str|None = None) -> None:
         self.path      = path
         self.msg       = msg
@@ -16,7 +21,7 @@ class MANIPO_PathValidationError(MANIPO_ValidationError):
         
         full_message = ""
         if len(path) > 0:
-            full_message += f"At {path!r}: "
+            full_message += f"At {path.repr_as_python_code()}: "
         if condition is not None:
             full_message += f"{condition}: "
         full_message += msg

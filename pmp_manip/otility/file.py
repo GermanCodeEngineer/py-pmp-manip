@@ -1,21 +1,22 @@
 from __future__ import annotations
 from io import BytesIO
+from pathlib import Path
 import os
 import shutil
 import zipfile, zlib
 
 from pmp_manip.otility.decorators import enforce_argument_types
-from pmp_manip.utility.errors     import (
+from pmp_manip.otility.errors     import (
     MANIPO_FileNotFoundError, MANIPO_FailedFileWriteError, MANIPO_FailedFileReadError, MANIPO_FailedFileDeleteError,
 )
 
 @enforce_argument_types
-def read_all_files_of_zip(zip_source: str | BytesIO) -> dict[str, bytes]:
+def read_all_files_of_zip(zip_source: str | Path | BytesIO) -> dict[str, bytes]:
     """
     Reads all files from a ZIP archive and returns their contents
 
     Args:
-        zip_source: Path to or Binary IO of the ZIP file
+        zip_source: Path to (str or pathlib.Path) or Binary IO of the ZIP file
 
     Returns:
         dict[str, bytes]: An object mapping each file name
@@ -31,7 +32,7 @@ def read_all_files_of_zip(zip_source: str | BytesIO) -> dict[str, bytes]:
     """
     contents = {}
     try:
-        with zipfile.ZipFile(zip_source, "r") as zip_ref:
+        with zipfile.ZipFile(str(zip_source) if isinstance(zip_source, Path) else zip_source, "r") as zip_ref:
             for file_name in zip_ref.namelist():
                 try:
                     with zip_ref.open(file_name) as file_ref:
@@ -56,12 +57,12 @@ def read_all_files_of_zip(zip_source: str | BytesIO) -> dict[str, bytes]:
     return contents
 
 @enforce_argument_types
-def read_file_text(file_path: str, encoding: str = "utf-8") -> str:
+def read_file_text(file_path: str | Path, encoding: str = "utf-8") -> str:
     """
     Read the text content of a file
 
     Args:
-        file_path: path to the file to read
+        file_path: path (str or pathlib.Path) to the file to read
         encoding: encoding to use when reading the file. default is 'utf-8'
 
     Raises:
@@ -69,7 +70,7 @@ def read_file_text(file_path: str, encoding: str = "utf-8") -> str:
         MANIPO_FailedFileReadError: For OS-related errors like, closed, permission denied, invalid path, or decoding failures
     """
     try:
-        with open(file_path, "r", encoding=encoding) as file:
+        with open(str(file_path) if isinstance(file_path, Path) else file_path, "r", encoding=encoding) as file:
             return file.read()
 
     except FileNotFoundError as error:
@@ -79,13 +80,13 @@ def read_file_text(file_path: str, encoding: str = "utf-8") -> str:
         raise MANIPO_FailedFileReadError(f"Failed to read from {file_path!r}: {error}") from error
 
 @enforce_argument_types
-def write_file_text(file_path: str, text: str, encoding: str = "utf-8") -> None:
+def write_file_text(file_path: str | Path, text: str, encoding: str = "utf-8") -> None:
 
     """
     Write text to a file.
 
     Args:
-        file_path: file path of the file to write to
+        file_path: file path (str or pathlib.Path) of the file to write to
         text: the text to write
         encoding: the text encoding to use
     
@@ -96,7 +97,7 @@ def write_file_text(file_path: str, text: str, encoding: str = "utf-8") -> None:
     """
 
     try:
-        with open(file_path, mode="w", encoding=encoding) as file:
+        with open(str(file_path) if isinstance(file_path, Path) else file_path, mode="w", encoding=encoding) as file:
             file.write(text)
 
     except ValueError as error:
@@ -107,12 +108,12 @@ def write_file_text(file_path: str, text: str, encoding: str = "utf-8") -> None:
         raise MANIPO_FailedFileWriteError(f"Failed to write to {file_path!r}: {error}") from error
 
 @enforce_argument_types
-def delete_file(file_path: str) -> None:
+def delete_file(file_path: str | Path) -> None:
     """
     Delete a file from the filesystem
 
     Args:
-        file_path: Path to the file to delete
+        file_path: Path (str or pathlib.Path) to the file to delete
 
     Raises:
         ValueError: If `file_path` is invalid or not a proper file path
@@ -121,7 +122,7 @@ def delete_file(file_path: str) -> None:
     """
 
     try:
-        os.remove(file_path)
+        os.remove(str(file_path) if isinstance(file_path, Path) else file_path)
 
     except ValueError as error:
         raise ValueError(str(error)) from error
@@ -129,12 +130,12 @@ def delete_file(file_path: str) -> None:
         raise MANIPO_FailedFileDeleteError(f"Failed to delete file at {file_path!r}: {error}") from error
 
 @enforce_argument_types
-def delete_directory(dir_path: str) -> None:
+def delete_directory(dir_path: str | Path) -> None:
     """
     Delete a directory and all its contents from the filesystem
 
     Args:
-        dir_path: Path to the directory to delete
+        dir_path: Path (str or pathlib.Path) to the directory to delete
 
     Raises:
         ValueError: If `dir_path` is invalid or not a proper directory path
@@ -142,7 +143,7 @@ def delete_directory(dir_path: str) -> None:
                                       is a file, or other I/O-related failure)
     """
     try:
-        shutil.rmtree(dir_path)
+        shutil.rmtree(str(dir_path) if isinstance(dir_path, Path) else dir_path)
     
     except ValueError as error:
         raise ValueError(str(error)) from error
@@ -150,29 +151,29 @@ def delete_directory(dir_path: str) -> None:
         raise MANIPO_FailedFileDeleteError(f"Failed to delete directory at {dir_path!r}: {error}") from error
 
 @enforce_argument_types
-def create_zip_file(zip_path: str, contents: dict[str, bytes]) -> None:
+def create_zip_file(zip_path: str | Path, contents: dict[str, bytes]) -> None:
     """
     Creates a ZIP file at `zip_path` containing the given contents
 
     Args:
-        file_path: Destination path for the ZIP file
+        zip_path: Destination path (str or pathlib.Path) for the ZIP file
         contents: A dictionary where keys are filenames (inside the ZIP)
                   and values are their corresponding file contents in bytes
     """ # TODO: add good error handling
-    with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_DEFLATED) as zip_out:
+    with zipfile.ZipFile(str(zip_path) if isinstance(zip_path, Path) else zip_path, "w", compression=zipfile.ZIP_DEFLATED) as zip_out:
         for name, data in contents.items():
             zip_out.writestr(name, data)
 
 @enforce_argument_types
-def file_exists(file_path: str) -> bool:
+def file_exists(file_path: str | Path) -> bool:
     """
     Checks if a file exists at the specified path
 
     Args:
-        file_path: the path to check
+        file_path: the path (str or pathlib.Path) to check
     """
     try:
-        return os.path.exists(file_path)
+        return os.path.exists(str(file_path) if isinstance(file_path, Path) else file_path)
     
     except TypeError as error:
         raise TypeError(str(error)) from error

@@ -811,7 +811,7 @@ class SRCustomBlockArgumentMutation(SRMutation):
     prototype_color: str
     outline_color: str
 
-    def post_validate(self, path: AbstractTreePath) -> None:
+    def post_validate(self, path: AbstractTreePath, *args, **kwargs) -> None:
         """
         Ensure an instance is valid, raise MANIPO_ValidationError if not
         
@@ -849,7 +849,7 @@ class SRCustomBlockMutation(SRMutation):
     The second representation for the mutation of a custom block definition
     """
     
-    custom_opcode: SRCustomBlockOpcode
+    custom_opcode: SRCustomBlockOpcode = field(call_subvalidate=True)
     no_screen_refresh: bool
     optype: SRCustomBlockOptype
     
@@ -859,7 +859,7 @@ class SRCustomBlockMutation(SRMutation):
     prototype_color: str
     outline_color: str
     
-    def post_validate(self, path: AbstractTreePath) -> None:
+    def post_validate(self, path: AbstractTreePath, *args, **kwargs) -> None:
         """
         Ensure an instance is valid, raise MANIPO_ValidationError if not
         
@@ -872,9 +872,6 @@ class SRCustomBlockMutation(SRMutation):
         ValidateAttribute.VA_HEX_COLOR(self, path, "main_color")
         ValidateAttribute.VA_HEX_COLOR(self, path, "prototype_color")
         ValidateAttribute.VA_HEX_COLOR(self, path, "outline_color")
-
-        self.custom_opcode.validate(path.add_attribute("custom_opcode"))
-
     
     def to_first(self, itf_if: InterToFirstIF) -> FRCustomBlockMutation:
         """
@@ -916,19 +913,7 @@ class SRCustomBlockCallMutation(SRMutation):
     The second representation for the mutation of a custom block call
     """
     
-    custom_opcode: SRCustomBlockOpcode
-    
-    def post_validate(self, path: AbstractTreePath) -> None:
-        """
-        Ensure an instance is valid, raise MANIPO_ValidationError if not
-        
-        Args:
-            path: the path from the project to itself. Used for better error messages
-        
-        Raises:
-            MANIPO_ValidationError: if the instance is invalid
-        """
-        self.custom_opcode.validate(path.add_attribute("custom_opcode"))
+    custom_opcode: SRCustomBlockOpcode = field(call_subvalidate=True)
     
     def to_first(self, itf_if: InterToFirstIF) -> FRCustomBlockCallMutation:
         """
@@ -1019,7 +1004,7 @@ class SRExpandableJoinMutation(SRMutation):
 
     input_count: int
     
-    def post_validate(self, path: AbstractTreePath) -> None:
+    def post_validate(self, path: AbstractTreePath, *args, **kwargs) -> None:
         """
         Ensure an instance is valid, raise MANIPO_ValidationError if not
         
@@ -1027,7 +1012,7 @@ class SRExpandableJoinMutation(SRMutation):
             path: the path from the project to itself. Used for better error messages
         
         Raises:
-            MANIPO_ValidationError: if the SRExpandinstanceableJoinMutation is invalid
+            MANIPO_ValidationError: if the instance is invalid
         """
         ValidateAttribute.VA_MIN(self, path, "input_count", 1)
     

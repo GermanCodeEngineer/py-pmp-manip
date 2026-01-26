@@ -1,8 +1,9 @@
-from __future__ import annotations
+from __future__  import annotations
 from dataclasses import fields as get_fields
-from typing      import Generic, TypeVar, Iterable, Any, cast
+from typing      import cast, Generic, TypeVar, Iterable, Any
 
-from pmp_manip.utility import grepr_dataclass, enforce_argument_types, AbstractTreePath
+from pmp_manip.otility.base       import grepr_dataclass, AbstractTreePath
+from pmp_manip.otility.decorators import enforce_argument_types
 
 
 INCLUDED_T = TypeVar("INCLUDED_T")
@@ -12,6 +13,8 @@ DEFAULT_T = TypeVar("DEFAULT_T")
 class TreeVisitor(Generic[INCLUDED_T]):
     """
     Implements the recursive iteration of an arbitrary object tree.
+    **NOTE: Only dataclasses can be visited correctly as tree nodes.**
+    Non-dataclass objects (except list, tuple, set, frozenset, dict) will not have their attributes traversed.
     """
     included_types: tuple[type[INCLUDED_T], ...]
     
@@ -37,8 +40,13 @@ class TreeVisitor(Generic[INCLUDED_T]):
     def _get_yield_fields(cls: type[Any]) -> list[str]:
         """
         Get the relevant fields of a dataclass-like node type.
+        **NOTE: Only works with dataclasses.**
         """
-        return [field.name for field in get_fields(cls)]
+        try:
+            fields = get_fields(cls)
+        except TypeError:
+            return []
+        return [field.name for field in fields]
     
     @classmethod
     def _visit_node_unfiltered(cls,
@@ -48,13 +56,15 @@ class TreeVisitor(Generic[INCLUDED_T]):
         """
         Run the tree visitor unfiltered on an arbitrary object tree.
         Returns pairs of node path (from tree root to value) and node value.
+        **NOTE: Non-dataclass objects (except list, tuple, set, frozenset, dict) will only be yielded as values,
+        their attributes will not be traversed.**
         
         Args:
             obj: the object tree to iterate recursively
             path: the path from the tree root to obj
         """
         pairs = []
-        if   isinstance(obj, (list, tuple)):
+        if   isinstance(obj, (list, tuple, set, frozenset)):
             for i, item in enumerate(obj):
                 current_path = path.add_index_or_key(i)
                 pairs.append((current_path, item))
@@ -83,6 +93,8 @@ class TreeVisitor(Generic[INCLUDED_T]):
         """
         Run the tree visitor recursively on an arbitrary object tree.
         Returns a map from node path (from tree root to value) to node value.
+        **NOTE: Non-dataclass objects (except list, tuple, set, frozenset, dict) will only be yielded as values,
+        their attributes will not be traversed.**
         """
         unfiltered_pairs = self._visit_node_unfiltered(obj, path=AbstractTreePath())
         filtered_map: dict[AbstractTreePath, INCLUDED_T] = {}

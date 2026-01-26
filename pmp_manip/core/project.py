@@ -9,7 +9,7 @@ from pmp_manip.important_consts import SHA256_SEC_TARGET_NAME
 from pmp_manip.opcode_info.api  import OpcodeInfoAPI, DropdownValueKind
 from pmp_manip.project_api      import SCRATCH_API, PENGUINMOD_API, fetch_projects
 from pmp_manip.utility          import (
-    grepr_dataclass, enforce_argument_types, 
+    grepr_dataclass, field, enforce_argument_types, 
     read_all_files_of_zip, create_zip_file, string_to_sha256, gdumps,
     KeyReprDict, AbstractTreePath, HasGreprValidate, ValidateAttribute,
     MANIP_SameValueTwiceError, MANIP_SpriteLayerStackError, MANIP_UnexpectedSubprocessError
@@ -171,7 +171,7 @@ class FRProject(HasGreprValidate):
             project_ids=project_ids, api_url=api_url, 
             timeout_base=30, timeout_per_project=10,
         )
-        projects = {project_id: cls.from_file(file_source=results[project_id]) for project_id in project_ids}
+        projects = {project_id: cls.from_file(file_source=results[project_id]) if project_id in results else None for project_id in project_ids}
         return (projects, error)
     
     @enforce_argument_types
@@ -310,7 +310,7 @@ class SRProject:
     The second representation (SR) of a Scratch/PenguinMod Project
     """
     
-    stage: SRStage
+    stage: SRStage = field(call_subvalidate=True)
     sprites: list[SRSprite]
     sprite_layer_stack: list[UUID]
     global_variables: list[SRVariable]
@@ -401,8 +401,6 @@ class SRProject:
             len(self.sprites), condition=f"In this case the project has {len(self.sprites)} sprites(s)"
         )
         ValidateAttribute.VA_RANGE(self, path, "tempo", 20, 500)
-        
-        self.stage.validate(path.add_attribute("stage"), info_api)
 
         self._validate_sprites(path, info_api)
         

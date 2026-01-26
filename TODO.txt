@@ -1,18 +1,10 @@
 TODOs Sorted by Priorites
 
-Special:
-    - TODOs in Code + read through code, optimize here and there
-
 Currently Working On:
     - L: reduce huge validation code + improve grepr_dataclass
-        - rename and refractor validate methods
+        - add tests for grepr_dataclass & others
+        - add tests for project fetching
     - L: when done -> make parts of utility an own module(see # MIGRATION)
-    - add tests for grepr_dataclass & others
-    - add tests for project fetching
-    - make sure SRBlockAndTextInputValue.validate accepts only str for .immediate
-    - make sure SRDropdownValue.value allows only str, int, bool
-    - finish ValidateAttribute creation
-    - finalize AbstractTreePath representation
     - question necessity of file utils
     => XL: add tests for and document utility and especially otility
 
@@ -24,6 +16,9 @@ Changelog since last Release:
     - improved project installation
     - removed last string references
     - updated abstract tree tools
+
+Special:
+    - TODOs in Code + read through code, optimize here and there
 
 High: /
 

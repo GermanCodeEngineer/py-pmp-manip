@@ -48,7 +48,7 @@ def test_SRDropdownValue_validate():
         obj=dropdown_value,
         attr_tests=[
             ("kind", {}, MANIPO_TypeValidationError),
-            ("value", set(), MANIPO_TypeValidationError),
+            ("value", b"", MANIPO_TypeValidationError),
         ],
         validate_func=SRDropdownValue.validate,
         func_args=[AbstractTreePath()],
