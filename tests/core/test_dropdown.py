@@ -6,7 +6,7 @@ from pmp_manip.utility         import AbstractTreePath, GU_TypeValidationError, 
 from pmp_manip.core.context  import PartialContext
 from pmp_manip.core.dropdown import SRDropdownValue
 
-from tests.utility import execute_attr_validation_tests
+from tests.utils import execute_attr_validation_tests
 
 @fixture
 def context():

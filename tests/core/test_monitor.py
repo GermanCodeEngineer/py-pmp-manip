@@ -25,7 +25,7 @@ from pmp_manip.core.monitor         import (
 )
 from pmp_manip.core.vars_lists      import _variable_sha256, _list_sha256
 
-from tests.utility import execute_attr_validation_tests
+from tests.utils import execute_attr_validation_tests
 from tests.core.constants import ALL_IR_BLOCKS
 
 

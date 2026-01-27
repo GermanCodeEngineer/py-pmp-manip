@@ -67,7 +67,7 @@ def extract_extension_info_directly(js_code: str, code_encoding: str = "utf-8", 
         try:
             delete_file(temp_js_path)
         except GU_FailedFileDeleteError as error:
-            raise MANIPO_FailedFileDeleteError(f"Failed to remove temporary javascript file at {temp_js_path!r}: {error}") from error
+            raise GU_FailedFileDeleteError(f"Failed to remove temporary javascript file at {temp_js_path!r}: {error}") from error
 
     if result.returncode != 0:
         if   result.returncode == 2:

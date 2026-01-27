@@ -25,7 +25,7 @@ from pmp_manip.core.dropdown        import SRDropdownValue
 
 from tests.core.constants import ALL_IR_BLOCKS, ALL_SR_SCRIPTS
 
-from tests.utility import execute_attr_validation_tests
+from tests.utils import execute_attr_validation_tests
 
 
 @fixture

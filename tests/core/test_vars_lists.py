@@ -5,7 +5,7 @@ from pmp_manip.utility          import string_to_sha256, AbstractTreePath, GU_Ty
 
 from pmp_manip.core.vars_lists import _variable_sha256, _list_sha256, SRVariable, SRCloudVariable, SRList
 
-from tests.utility import execute_attr_validation_tests
+from tests.utils import execute_attr_validation_tests
 
 
 

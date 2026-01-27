@@ -65,20 +65,15 @@
     pip install --upgrade build
     python -m build
     ```
-9. **Run docker install test** (if possible):
-    ```bash
-    docker build -f install_test/Dockerfile -t package-install-test .
-    docker run --rm package-install-test
-    ```
-10. **Commit and Push all changes** (Just an Example):
+9. **Commit and Push all changes** (Just an Example):
     ```bash
     git add -A
     git commit -m "prepare next release"
     git push
     ``` 
-11. **Create a Git tag with the version number and Push** the tag to your remote:
+10. **Create a Git tag with the version number and Push** the tag to your remote:
     ```bash
     git tag v1.2.3
     git push origin v1.2.3
     ```
-12. **Verify CI passes on the release tag** (GitHub Actions)
+11. **Verify CI passes on the release tag** (GitHub Actions)

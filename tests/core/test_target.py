@@ -31,7 +31,7 @@ from tests.core.constants import (
     ALL_FR_BLOCKS, ALL_FR_BLOCK_DATAS, ALL_FR_MONITORS_CONVERTED, ALL_COMMENT_DATAS,
 )
 
-from tests.utility import execute_attr_validation_tests, nest_all_blocks_comments
+from tests.utils import execute_attr_validation_tests, nest_all_blocks_comments
 
 
 

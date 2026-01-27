@@ -1,20 +1,8 @@
 TODOs Sorted by Priorites
 
-Currently Working On:
-    - L: reduce huge validation code + improve grepr_dataclass
-        - add tests for grepr_dataclass & others
-    - L: when done -> make parts of utility an own module
-    - question necessity of file utils
-    => XL: add tests for and document utility and especially otility
+Currently Working On: /
 
-Changelog since last Release:
-    - added new expandable blocks
-    => updated tests & documentation
-    - add old opcode typo correction system
-    - added tests for and integrated project_api
-    - improved project installation
-    - removed last string references
-    - updated abstract tree tools
+Changelog since last Release: /
 
 Special:
     - TODOs in Code + read through code, optimize here and there
@@ -24,7 +12,7 @@ High:
 
 Medium:
     - XL: add tests for and document opcode_info
-    - XL: spit into internal and public functions/methods etc (easier in VSCode)
+    - XL: spit into internal and public functions/methods etc
         => add enforce_argument_types decorator to public ones
         => remove "Returns" section of docstrings to avoid doubling (easy to do simultaneously)
         => rethink error strategy (e.g. ValueError, TypeError) => should i wrap external errors instead of mine?

@@ -7,7 +7,7 @@ from pmp_manip.utility import grepr_dataclass, AbstractTreePath, GU_TypeValidati
 from pmp_manip.config.manager import get_default_config
 from pmp_manip.config.schema  import ConfigBase, MasterConfig, ExtInfoGenConfig, ValidationConfig, PlatformMetaConfig
 
-from tests.utility import execute_attr_validation_tests
+from tests.utils import execute_attr_validation_tests
 
 
 @grepr_dataclass()

@@ -2,7 +2,7 @@ from pmp_manip.utility import AbstractTreePath, GU_InvalidValueError
 
 from pmp_manip.core.extension import SRExtension, SRBuiltinExtension, SRCustomExtension
 
-from tests.utility import execute_attr_validation_tests
+from tests.utils import execute_attr_validation_tests
 
 
 

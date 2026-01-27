@@ -23,7 +23,7 @@ from tests.core.constants import (
     ALL_FR_MONITORS_CONVERTED,
 )
 
-from tests.utility import execute_attr_validation_tests
+from tests.utils import execute_attr_validation_tests
 
 @fixture
 def info_api_extended():

@@ -15,7 +15,7 @@ from pmp_manip.core.asset import (
     EMPTY_SVG_COSTUME_XML, EMPTY_SVG_COSTUME_ROTATION_CENTER,
 )
 
-from tests.utility import execute_attr_validation_tests
+from tests.utils import execute_attr_validation_tests
 
 
 SIMPLE_BITMAP_EXAMPLE = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\rIDATx\x9cc\xf8\xcf\xc0\xf0\x1f\x00\x05\x00\x01\xff\x89\x99=\x1d\x00\x00\x00\x00IEND\xaeB`\x82"

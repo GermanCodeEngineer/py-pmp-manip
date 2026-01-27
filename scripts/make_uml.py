@@ -21,6 +21,8 @@ def _repr_t(t: type) -> str:
         tname = str(None)
     elif hasattr(t, "__name__"):
         tname = getattr(t, "__name__")
+    else:
+        tname = str(t)
     return tname
 
 

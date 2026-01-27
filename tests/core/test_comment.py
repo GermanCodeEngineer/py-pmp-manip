@@ -2,7 +2,7 @@ from pmp_manip.utility import AbstractTreePath, GU_TypeValidationError, GU_Inval
 
 from pmp_manip.core.comment import FRComment, SRComment
 
-from tests.utility import execute_attr_validation_tests
+from tests.utils import execute_attr_validation_tests
 
 
 RAW_COMMENT_DATA_ATTACHED = {

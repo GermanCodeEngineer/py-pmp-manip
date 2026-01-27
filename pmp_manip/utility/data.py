@@ -1,15 +1,15 @@
-from __future__  import annotations
-from difflib     import SequenceMatcher
-from hashlib     import sha256, md5
-from json        import dumps
-from typing      import Any
+from __future__ import annotations
+from difflib    import SequenceMatcher
+from hashlib    import sha256, md5
+from json       import dumps
+from typing     import overload, Any, Iterable 
 
 from gceutils import grepr_dataclass, HasGreprValidate
 
 
 _TOKEN_CHARSET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!#%()*+,-./:;=?@[]^_`{|}~"
 
-def remove_duplicates(items: list) -> list:
+def remove_duplicates[T](items: Iterable[T]) -> list[T]:
     seen = []
     result = []
     for item in items:
@@ -21,32 +21,48 @@ def remove_duplicates(items: list) -> list:
 def get_closest_matches(string, possible_values: list[str], n: int) -> list[str]:
     similarity_scores = [(item, SequenceMatcher(None, string, item).ratio()) for item in possible_values]
     sorted_matches = sorted(similarity_scores, key=lambda x: x[1], reverse=True)
-    return [i[0] for i in sorted_matches[:n]]   
+    return [i[0] for i in sorted_matches[:n]]
 
-def tuplify(obj) -> tuple | dict | Any:
-    if   isinstance(obj, list):
+@overload
+def tuplify[T](obj: list[T]) -> tuple[T]: ...
+@overload
+def tuplify(obj: Any) -> Any: ...
+def tuplify[T](obj: list[T] | Any) -> tuple[T] | Any:
+    """
+    Replace lists with tuples in a data tree.
+    """
+    if   isinstance(obj, (tuple, list)):
         return tuple(tuplify(item) for item in obj)
     elif isinstance(obj, dict):
         return {tuplify(key): tuplify(value) for key, value in obj.items()}
-    elif isinstance(obj, (set, tuple)):
-        return type(obj)(tuplify(item) for item in obj)
     else:
         return obj
 
-def listify(obj) -> list | dict | Any:
-    if   isinstance(obj, tuple):
+@overload
+def listify[T](obj: tuple[T]) -> list[T]: ...
+@overload
+def listify(obj: Any) -> Any: ...
+def listify[T](obj: tuple[T] | Any) -> list[T] | Any:
+    """
+    Replace tuples with lists in a data tree.
+    """
+    if   isinstance(obj, (tuple, list)):
         return [listify(item) for item in obj]
     elif isinstance(obj, dict):
         return {listify(key): listify(value) for key, value in obj.items()}
-    elif isinstance(obj, (set, list)):
-        return type(obj)(tuplify(item) for item in obj)
     else:
         return obj
 
 def gdumps(obj) -> str:
-    return dumps(obj, separators=(",", ":"))  # no spaces after commas or colons
+    """
+    Dump json values without spaces after commas or colons.
+    """
+    return dumps(obj, separators=(",", ":"))
 
 def string_to_sha256(primary: str | int | bool, secondary: str|None=None, tertiary: str|None=None) -> str:
+    """
+    Hash a string with sha256. Optionally use `secondary` and `tertiary` to create seperate groups of hashes without conflicts.
+    """
     def _string_to_sha256(input_string: str | int | bool, digits: int) -> str:
         hex_hash = sha256(str(input_string).encode()).hexdigest()
 
@@ -70,6 +86,9 @@ def string_to_sha256(primary: str | int | bool, secondary: str|None=None, tertia
         
 
 def number_to_token(number: int) -> str:
+    """
+    Convert a number into a PenguinMod block identifier.
+    """
     base = len(_TOKEN_CHARSET)
     result = []
     while number > 0:
@@ -80,13 +99,10 @@ def number_to_token(number: int) -> str:
 
 def generate_md5(data: bytes) -> str:
     """
-    Generate an MD5 hash for a given bytes object
+    Generate an MD5 hash for a given bytes object.
 
     Args:
         data: the input data in bytes
-
-    Returns:
-        A hexadecimal MD5 hash string
     """
     md5_hash = md5()
     for i in range(0, len(data), 4096):

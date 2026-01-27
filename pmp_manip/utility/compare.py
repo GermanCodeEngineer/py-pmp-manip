@@ -21,20 +21,20 @@ def xml_equal(xml1: etree._Element, xml2: etree._Element, /) -> bool:
 def image_equal(img1: Image.Image, img2: Image.Image, /) -> bool:
     """
     Compare two PIL Image instances for strict equality:
-    same size, mode, and pixel data.
+    same size, mode, and pixel data. Returns true if they are equal.
     
     Args:
         img1: the first image
         img2: the second image
-    
-    Returns:
-        wether the two images are equal
     """
     if (img1.mode != img2.mode) or (img1.size != img2.size):
         return False
     return img1.tobytes() == img2.tobytes()
 
 def lists_equal_ignore_order(a: list, b: list, /, log: bool = True) -> bool:
+    """
+    Compare the items of two lists ignoring order.
+    """
     if len(a) != len(b):
         return False
 
@@ -50,6 +50,7 @@ def lists_equal_ignore_order(a: list, b: list, /, log: bool = True) -> bool:
 
 def assert_lists_equal_ignore_order(a: list, b: list, /) -> None:
     if not lists_equal_ignore_order(a, b, log=False):
+        assert write_file_text.__name__ != "write_file_text"
         f = print # to disable searches for "print" with a bracket
         f(f"See a.comp and b.comp for the full data")
         write_file_text("a.comp", grepr(a))

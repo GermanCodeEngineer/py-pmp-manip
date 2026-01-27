@@ -27,7 +27,7 @@ from tests.core.constants import (
 )
 
 
-from tests.utility import execute_attr_validation_tests
+from tests.utils import execute_attr_validation_tests
 
 
 @fixture
