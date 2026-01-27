@@ -9,6 +9,7 @@ authors = [{name = "GermanCodeEngineer", email = "germancodeengineer@proton.me"}
 
 # sometimes auto generated
 dependencies = [
+    "gceutils~=1.0",
     "Pillow~=12.1",
     "Requests~=2.32",
     "colorama~=0.4",
