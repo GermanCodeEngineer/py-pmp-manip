@@ -116,14 +116,14 @@ def grepr_dataclass(*, grepr: bool = True,
         
         if grepr:
             def grepr_wrapper(self, *args, **kwargs) -> str:
-                from pmp_manip.otility.repr import grepr
+                from gceutils.repr import grepr
                 return grepr(self, *args, **kwargs)
             cls.__repr__ = grepr_wrapper
             cls.__has_grepr__ = True
         
         if validate:
             def validate_method(self, path: AbstractTreePath | None = None, *args, **kwargs) -> None:
-                from pmp_manip.otility.decorators import enforce_type
+                from gceutils.decorators import enforce_type
                 if path is None:
                     path = AbstractTreePath(start_with_dot=True)
 

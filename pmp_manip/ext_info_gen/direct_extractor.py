@@ -8,7 +8,7 @@ from typing       import Any
 from pmp_manip.config  import get_config
 from pmp_manip.utility import (
     delete_file,
-    MANIPO_FailedFileWriteError, MANIPO_FailedFileDeleteError, 
+    GU_FailedFileWriteError, GU_FailedFileDeleteError, 
     MANIP_NoNodeJSInstalledError, 
     MANIP_SubprocessTimeoutError, MANIP_ExtensionExecutionErrorInJavascript, MANIP_UnexpectedSubprocessError,
     MANIP_ExtensionJSONDecodeError, 
@@ -30,8 +30,8 @@ def extract_extension_info_directly(js_code: str, code_encoding: str = "utf-8", 
         is_strict: (for developers) wether to be strict e.g. about property accesses in the node subprocess
 
     Raises:
-        MANIPO_FailedFileWriteError(unlikely): if the JS code could not be written to a temporary file (eg. OS Error or Unicode Error)
-        MANIPO_FailedFileDeleteError(unlikely): if the temporary Javscript file could not be deleted
+        GU_FailedFileWriteError(unlikely): if the JS code could not be written to a temporary file (eg. OS Error or Unicode Error)
+        GU_FailedFileDeleteError(unlikely): if the temporary Javscript file could not be deleted
         MANIP_NoNodeJSInstalledError: if Node.js is not installed or not found in PATH
         MANIP_SubprocessTimeoutError: if the Node.js execution subprocess took too long
         MANIP_ExtensionExecutionErrorInJavascript: if an error occurs inside the actual extension code
@@ -47,7 +47,7 @@ def extract_extension_info_directly(js_code: str, code_encoding: str = "utf-8", 
             temp_js_path = temp_file.name
 
     except (FileNotFoundError, OSError, PermissionError, UnicodeEncodeError) as error:
-        raise MANIPO_FailedFileWriteError(f"Failed to create or write javascript code to temporary file: {error}") from error
+        raise GU_FailedFileWriteError(f"Failed to create or write javascript code to temporary file: {error}") from error
     
     try:
         result = run_subprocess(
@@ -66,7 +66,7 @@ def extract_extension_info_directly(js_code: str, code_encoding: str = "utf-8", 
     finally:
         try:
             delete_file(temp_js_path)
-        except MANIPO_FailedFileDeleteError as error:
+        except GU_FailedFileDeleteError as error:
             raise MANIPO_FailedFileDeleteError(f"Failed to remove temporary javascript file at {temp_js_path!r}: {error}") from error
 
     if result.returncode != 0:

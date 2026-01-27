@@ -2,7 +2,7 @@ from __future__ import annotations
 from colorama   import init as colorama_init
 from datetime   import timedelta
 
-from pmp_manip.utility import enforce_argument_types, MANIP_ConfigurationError, MANIPO_ValidationError
+from pmp_manip.utility import enforce_argument_types, MANIP_ConfigurationError, GU_ValidationError
 
 from pmp_manip.config.schema import *
 
@@ -30,7 +30,7 @@ def init_config(config: MasterConfig) -> None:
         raise MANIP_ConfigurationError("Configuration has already been initialized")
     try:
         config.validate()
-    except MANIPO_ValidationError as error:
+    except GU_ValidationError as error:
         raise MANIP_ConfigurationError(f"Invalid Configuration: {error}") from error
     
     config.ext_info_gen ._frozen_ = True

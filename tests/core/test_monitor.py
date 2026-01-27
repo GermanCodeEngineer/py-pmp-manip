@@ -11,8 +11,8 @@ from pmp_manip.opcode_info.data import info_api
 from pmp_manip.important_consts import SHA256_SEC_TARGET_NAME
 from pmp_manip.utility          import (
     string_to_sha256, AbstractTreePath,
-    MANIP_ThanksError, MANIPO_TypeValidationError, MANIP_InvalidOpcodeError, MANIP_UnnecessaryDropdownError, 
-    MANIP_MissingDropdownError, MANIPO_RangeValidationError, MANIPO_InvalidValueError,
+    MANIP_ThanksError, GU_TypeValidationError, MANIP_InvalidOpcodeError, MANIP_UnnecessaryDropdownError, 
+    MANIP_MissingDropdownError, GU_RangeValidationError, GU_InvalidValueError,
 )
 
 from pmp_manip.core.trafo_interface import InterToFirstIF
@@ -845,12 +845,12 @@ def test_SRMonitor_validate(info_api_extended):
     execute_attr_validation_tests(
         obj=srmonitor,
         attr_tests=[
-            ("opcode", set(), MANIPO_TypeValidationError),
+            ("opcode", set(), GU_TypeValidationError),
             ("opcode", "some undefined opcode", MANIP_InvalidOpcodeError),
-            ("dropdowns", [], MANIPO_TypeValidationError),
-            ("dropdowns", {8:9}, MANIPO_TypeValidationError),
-            ("position", 9, MANIPO_TypeValidationError),
-            ("is_visible", None, MANIPO_TypeValidationError),
+            ("dropdowns", [], GU_TypeValidationError),
+            ("dropdowns", {8:9}, GU_TypeValidationError),
+            ("position", 9, GU_TypeValidationError),
+            ("is_visible", None, GU_TypeValidationError),
         ],
         validate_func=SRMonitor.validate,
         func_args=[AbstractTreePath(), info_api_extended],
@@ -859,7 +859,7 @@ def test_SRMonitor_validate(info_api_extended):
 def test_SRMonitor_validate_position_outside_stage(info_api_extended):
     srmonitor = copy(ALL_LOCAL_SR_MONITORS[3])
     srmonitor.position = (STAGE_HEIGHT * 2, STAGE_HEIGHT * 2)
-    with raises(MANIPO_RangeValidationError):
+    with raises(GU_RangeValidationError):
         srmonitor.validate(AbstractTreePath(), info_api_extended)
 
 def test_SRMonitor_validate_unexpected_dropdown(info_api_extended):
@@ -960,11 +960,11 @@ def test_SRVariableMonitor_validate_all_numbers(info_api_extended):
     execute_attr_validation_tests(
         obj=srmonitor,
         attr_tests=[
-            ("allow_only_integers", 8, MANIPO_TypeValidationError),
-            ("readout_mode", "normal", MANIPO_TypeValidationError),
-            ("slider_min", "", MANIPO_TypeValidationError),
-            ("slider_max", None, MANIPO_TypeValidationError),
-            ("slider_min", 200, MANIPO_RangeValidationError), # bigger then slider_max
+            ("allow_only_integers", 8, GU_TypeValidationError),
+            ("readout_mode", "normal", GU_TypeValidationError),
+            ("slider_min", "", GU_TypeValidationError),
+            ("slider_max", None, GU_TypeValidationError),
+            ("slider_min", 200, GU_RangeValidationError), # bigger then slider_max
         ],
         validate_func=SRVariableMonitor.validate,
         func_args=[AbstractTreePath(), info_api_extended],
@@ -977,8 +977,8 @@ def test_SRVariableMonitor_validate_only_integers(info_api_extended):
     execute_attr_validation_tests(
         obj=srmonitor,
         attr_tests=[
-            ("slider_min", 4.3, MANIPO_TypeValidationError),
-            ("slider_max", 90.45, MANIPO_TypeValidationError),
+            ("slider_min", 4.3, GU_TypeValidationError),
+            ("slider_max", 90.45, GU_TypeValidationError),
         ],
         validate_func=SRVariableMonitor.validate,
         func_args=[AbstractTreePath(), info_api_extended],
@@ -988,7 +988,7 @@ def test_SRVariableMonitor_validate_invalid_opcode(info_api_extended):
     srmonitor: SRVariableMonitor= copy(ALL_GLOBAL_SR_MONITORS[0])
     srmonitor.opcode = "&motion::x position"
     srmonitor.dropdowns = {}
-    with raises(MANIPO_InvalidValueError):
+    with raises(GU_InvalidValueError):
         srmonitor.validate(AbstractTreePath(), info_api_extended)
 
 
@@ -1012,7 +1012,7 @@ def test_SRListMonitor_validate_too_big_size(monkeypatch: MonkeyPatch, info_api_
     srmonitor = copy(ALL_GLOBAL_SR_MONITORS[2])
     srmonitor: SRListMonitor
     srmonitor.size = (2*STAGE_WIDTH, 2*STAGE_HEIGHT)
-    with raises(MANIPO_RangeValidationError):
+    with raises(GU_RangeValidationError):
         srmonitor.validate(AbstractTreePath(), info_api_extended)
     
     modified_cfg = get_default_config()
@@ -1027,7 +1027,7 @@ def test_SRListMonitor_validate_invalid_opcode(info_api_extended):
     srmonitor: SRListMonitor
     srmonitor.opcode = "&motion::x position"
     srmonitor.dropdowns = {}
-    with raises(MANIPO_InvalidValueError):
+    with raises(GU_InvalidValueError):
         srmonitor.validate(AbstractTreePath(), info_api_extended)
 
 

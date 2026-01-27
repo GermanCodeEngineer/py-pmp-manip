@@ -3,7 +3,7 @@ from logging    import getLogger
 from lxml       import etree
 from PIL        import Image
 
-from pmp_manip.otility import grepr, write_file_text
+from gceutils import grepr, write_file_text
 
 def xml_equal(xml1: etree._Element, xml2: etree._Element, /) -> bool:
     """

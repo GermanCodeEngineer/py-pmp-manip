@@ -495,15 +495,15 @@ class SRTarget(HasGreprValidate):
 
     def post_validate(self, path: AbstractTreePath, info_api: OpcodeInfoAPI) -> None:
         """
-        Ensure an instance is valid, raise MANIPO_ValidationError if not
+        Ensure an instance is valid, raise GU_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
             info_api: the opcode info api used to fetch information about opcodes
         
         Raises:
-            MANIPO_ValidationError: if the instance is invalid
-            MANIP_SameValueTwiceError(MANIPO_ValidationError): if two costumes or two sounds have the same name
+            GU_ValidationError: if the instance is invalid
+            MANIP_SameValueTwiceError(GU_ValidationError): if two costumes or two sounds have the same name
         """
         ValidateAttribute.VA_MIN_LEN(self, path, "costumes", 1)
         ValidateAttribute.VA_RANGE(self, path, "costume_index", 
@@ -538,7 +538,7 @@ class SRTarget(HasGreprValidate):
         context: PartialContext,
     ) -> None:
         """
-        Ensure the scripts of a SRTarget are valid, raise MANIPO_ValidationError if not
+        Ensure the scripts of a SRTarget are valid, raise GU_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -549,8 +549,8 @@ class SRTarget(HasGreprValidate):
             None
         
         Raises:
-            MANIPO_ValidationError: if the scripts of the SRTarget are invalid
-            MANIP_SameValueTwiceError(MANIPO_ValidationError): if two custom blocks have the same custom_opcode.
+            GU_ValidationError: if the scripts of the SRTarget are invalid
+            MANIP_SameValueTwiceError(GU_ValidationError): if two custom blocks have the same custom_opcode.
         """
         context = self._get_complete_context(partial_context=context)
         validation_if = ValidationIF(scripts=self.scripts)
@@ -836,14 +836,14 @@ class SRSprite(SRTarget):
     
     def post_validate(self, path: AbstractTreePath, info_api: OpcodeInfoAPI) -> None:
         """
-        Ensure an instance is valid, raise MANIPO_ValidationError if not
+        Ensure an instance is valid, raise GU_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
             info_api: the opcode info api used to fetch information about opcodes
         
         Raises:
-            MANIPO_ValidationError: if the instance is invalid
+            GU_ValidationError: if the instance is invalid
         """
         super().post_validate(path, info_api)
         
@@ -865,7 +865,7 @@ class SRSprite(SRTarget):
         context: PartialContext | CompleteContext,
     ) -> None:
         """
-        Ensure the dropdown values of the monitors of a SRSprite are valid, raise MANIPO_ValidationError if not
+        Ensure the dropdown values of the monitors of a SRSprite are valid, raise GU_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
@@ -876,7 +876,7 @@ class SRSprite(SRTarget):
             None
         
         Raises:
-            MANIPO_ValidationError: if the monitor dropdown values of the SRSprite are invalid
+            GU_ValidationError: if the monitor dropdown values of the SRSprite are invalid
         """
         context = self._get_complete_context(partial_context=context)
         for i, monitor in enumerate(self.local_monitors):

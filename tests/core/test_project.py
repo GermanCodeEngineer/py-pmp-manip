@@ -4,7 +4,7 @@ from uuid   import uuid4
 
 from pmp_manip.utility            import (
     gdumps, KeyReprDict, AbstractTreePath,
-    MANIPO_TypeValidationError, MANIPO_RangeValidationError, 
+    GU_TypeValidationError, GU_RangeValidationError, 
     MANIP_SameValueTwiceError, MANIP_SpriteLayerStackError,
 )
 from pmp_manip.opcode_info.data import info_api
@@ -216,25 +216,25 @@ def test_SRProject_validate(info_api_extended):
     execute_attr_validation_tests(
         obj=srproject,
         attr_tests=[
-            ("stage", 5, MANIPO_TypeValidationError),
-            ("sprites", (), MANIPO_TypeValidationError),
-            ("sprites", [6.7], MANIPO_TypeValidationError),
-            ("sprite_layer_stack", None, MANIPO_TypeValidationError),
-            ("sprite_layer_stack", [None], MANIPO_TypeValidationError),
-            ("sprite_layer_stack", [uuid4(), uuid4()], MANIPO_RangeValidationError), # must have exactly 1 item
-            ("global_variables", {}, MANIPO_TypeValidationError),
-            ("global_variables", ["bye"], MANIPO_TypeValidationError),
-            ("global_lists", set(), MANIPO_TypeValidationError),
-            ("global_lists", [{}], MANIPO_TypeValidationError),
-            ("global_monitors", (), MANIPO_TypeValidationError),
-            ("global_monitors", [[]], MANIPO_TypeValidationError),
-            ("extensions", 7, MANIPO_TypeValidationError),
-            ("extensions", ["jgJSON"], MANIPO_TypeValidationError),
-            ("tempo", 5.6, MANIPO_TypeValidationError),
-            ("tempo", 10, MANIPO_RangeValidationError), # too low
-            ("video_transparency", "invalid", MANIPO_TypeValidationError),
-            ("video_state", "on", MANIPO_TypeValidationError),
-            ("text_to_speech_language", "fr", MANIPO_TypeValidationError),
+            ("stage", 5, GU_TypeValidationError),
+            ("sprites", (), GU_TypeValidationError),
+            ("sprites", [6.7], GU_TypeValidationError),
+            ("sprite_layer_stack", None, GU_TypeValidationError),
+            ("sprite_layer_stack", [None], GU_TypeValidationError),
+            ("sprite_layer_stack", [uuid4(), uuid4()], GU_RangeValidationError), # must have exactly 1 item
+            ("global_variables", {}, GU_TypeValidationError),
+            ("global_variables", ["bye"], GU_TypeValidationError),
+            ("global_lists", set(), GU_TypeValidationError),
+            ("global_lists", [{}], GU_TypeValidationError),
+            ("global_monitors", (), GU_TypeValidationError),
+            ("global_monitors", [[]], GU_TypeValidationError),
+            ("extensions", 7, GU_TypeValidationError),
+            ("extensions", ["jgJSON"], GU_TypeValidationError),
+            ("tempo", 5.6, GU_TypeValidationError),
+            ("tempo", 10, GU_RangeValidationError), # too low
+            ("video_transparency", "invalid", GU_TypeValidationError),
+            ("video_state", "on", GU_TypeValidationError),
+            ("text_to_speech_language", "fr", GU_TypeValidationError),
         ],
         validate_func=SRProject.validate,
         func_args=[AbstractTreePath(), info_api],

@@ -1,7 +1,7 @@
 from pytest import fixture, raises
 
 from pmp_manip.opcode_info.api import BuiltinDropdownType, DropdownValueKind
-from pmp_manip.utility         import AbstractTreePath, MANIPO_TypeValidationError, MANIP_InvalidDropdownValueError
+from pmp_manip.utility         import AbstractTreePath, GU_TypeValidationError, MANIP_InvalidDropdownValueError
 
 from pmp_manip.core.context  import PartialContext
 from pmp_manip.core.dropdown import SRDropdownValue
@@ -47,8 +47,8 @@ def test_SRDropdownValue_validate():
     execute_attr_validation_tests(
         obj=dropdown_value,
         attr_tests=[
-            ("kind", {}, MANIPO_TypeValidationError),
-            ("value", b"", MANIPO_TypeValidationError),
+            ("kind", {}, GU_TypeValidationError),
+            ("value", b"", GU_TypeValidationError),
         ],
         validate_func=SRDropdownValue.validate,
         func_args=[AbstractTreePath()],

@@ -3,7 +3,7 @@ from dataclasses import fields
 from enum        import Enum
 from typing      import Any
 
-from pmp_manip.otility.dual_key_dict import DualKeyDict
+from gceutils.dual_key_dict import DualKeyDict
 
 
 class KeyReprDict(dict):
@@ -32,7 +32,7 @@ def grepr(obj, /,
         vanilla_strings: If True, use repr() for strings; otherwise use custom quoting
         indent: Number of spaces (int) or indent string for multi-line formatting; None for single-line
     """
-    from pmp_manip.otility.base import get_field_options
+    from gceutils.base import get_field_options
     def _grepr(obj, level=level_offset) -> tuple[str, bool]:
         is_compatible = bool(getattr(obj, "__has_grepr__", False)) and not(isinstance(obj, type))
         if indent is not None:
@@ -141,6 +141,7 @@ def grepr(obj, /,
     return repr(obj)
 
 class GEnum(Enum):
+    """Base class for enums with enhanced repr."""
     name: str
     value: Any
 

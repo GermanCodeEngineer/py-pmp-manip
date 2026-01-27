@@ -7,7 +7,7 @@ from pytest import fixture, raises
 
 from pmp_manip.utility import (
     xml_equal, image_equal, generate_md5, KeyReprDict, AbstractTreePath,
-    MANIPO_TypeValidationError, MANIPO_InvalidValueError, MANIP_ThanksError,
+    GU_TypeValidationError, GU_InvalidValueError, MANIP_ThanksError,
 )
 
 from pmp_manip.core.asset import (
@@ -320,11 +320,11 @@ def test_SRVectorCostume_validate():
     execute_attr_validation_tests(
         obj=srcostume,
         attr_tests=[
-            ("name", 5, MANIPO_TypeValidationError),
-            ("file_extension", {}, MANIPO_TypeValidationError),
-            ("file_extension", "jpg", MANIPO_InvalidValueError),
-            ("rotation_center", [], MANIPO_TypeValidationError),
-            ("content", "<svg></svg>", MANIPO_TypeValidationError),
+            ("name", 5, GU_TypeValidationError),
+            ("file_extension", {}, GU_TypeValidationError),
+            ("file_extension", "jpg", GU_InvalidValueError),
+            ("rotation_center", [], GU_TypeValidationError),
+            ("content", "<svg></svg>", GU_TypeValidationError),
         ],
         validate_func=SRVectorCostume.validate,
         func_args=[AbstractTreePath()],
@@ -435,11 +435,11 @@ def test_SRBitmapCostume_validate(bitmap_example):
     execute_attr_validation_tests(
         obj=srcostume,
         attr_tests=[
-            ("name", 5, MANIPO_TypeValidationError),
-            ("file_extension", {}, MANIPO_TypeValidationError),
-            ("rotation_center", [], MANIPO_TypeValidationError),
-            ("content", b"\x89PNG", MANIPO_TypeValidationError),
-            ("has_double_resolution", "hi", MANIPO_TypeValidationError),
+            ("name", 5, GU_TypeValidationError),
+            ("file_extension", {}, GU_TypeValidationError),
+            ("rotation_center", [], GU_TypeValidationError),
+            ("content", b"\x89PNG", GU_TypeValidationError),
+            ("has_double_resolution", "hi", GU_TypeValidationError),
         ],
         validate_func=SRBitmapCostume.validate,
         func_args=[AbstractTreePath()],
@@ -482,9 +482,9 @@ def test_SRSound_validate(sound_example):
     execute_attr_validation_tests(
         obj=srsound,
         attr_tests=[
-            ("name", 5, MANIPO_TypeValidationError),
-            ("file_extension", {}, MANIPO_TypeValidationError),
-            ("content", b"123456", MANIPO_TypeValidationError),
+            ("name", 5, GU_TypeValidationError),
+            ("file_extension", {}, GU_TypeValidationError),
+            ("content", b"123456", GU_TypeValidationError),
         ],
         validate_func=SRSound.validate,
         func_args=[AbstractTreePath()],

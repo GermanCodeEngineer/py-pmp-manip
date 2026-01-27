@@ -48,7 +48,7 @@ class ExtInfoGenConfig(ConfigBase):
     
     def post_validate(self, path: AbstractTreePath) -> None:
         """
-        Ensure an instance is valid, raise MANIPO_ValidationError if not
+        Ensure an instance is valid, raise GU_ValidationError if not
         
         Args:
             path: the path from the top of the config tree to itself. Used for better error messages

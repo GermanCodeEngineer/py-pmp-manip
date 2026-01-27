@@ -3,8 +3,7 @@ TODOs Sorted by Priorites
 Currently Working On:
     - L: reduce huge validation code + improve grepr_dataclass
         - add tests for grepr_dataclass & others
-        - add tests for project fetching
-    - L: when done -> make parts of utility an own module(see # MIGRATION)
+    - L: when done -> make parts of utility an own module
     - question necessity of file utils
     => XL: add tests for and document utility and especially otility
 
@@ -20,7 +19,8 @@ Changelog since last Release:
 Special:
     - TODOs in Code + read through code, optimize here and there
 
-High: /
+High: 
+    - fix and add tests for project fetching
 
 Medium:
     - XL: add tests for and document opcode_info

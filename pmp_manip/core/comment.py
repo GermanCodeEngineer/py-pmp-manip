@@ -3,7 +3,7 @@ from typing     import Any
 
 from pmp_manip.utility import (
     grepr_dataclass,
-    AbstractTreePath, HasGreprValidate, MANIPO_InvalidValueError,
+    AbstractTreePath, HasGreprValidate, GU_InvalidValueError,
 )
 
 
@@ -87,17 +87,17 @@ class SRComment(HasGreprValidate):
     
     def post_validate(self, path: AbstractTreePath, *args, **kwargs) -> None:
         """
-        Ensure an instance is valid, raise MANIPO_ValidationError if not
+        Ensure an instance is valid, raise GU_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
         
         Raises:
-            MANIPO_ValidationError: if the instance is invalid
-            MANIPO_InvalidValueError(MANIPO_ValidationError): if size is smaller then the minimum
+            GU_ValidationError: if the instance is invalid
+            GU_InvalidValueError(GU_ValidationError): if size is smaller then the minimum
         """
         if (self.size[0] < 52) or (self.size[1] < 32):
-            raise MANIPO_InvalidValueError(path, f"size of {self.__class__.__name__} must be at least 52 by 32")
+            raise GU_InvalidValueError(path, f"size of {self.__class__.__name__} must be at least 52 by 32")
 
     def to_first(self, block_id: str | None) -> FRComment:
         """

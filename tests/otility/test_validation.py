@@ -3,14 +3,14 @@ import pytest
 import tempfile
 from pathlib import Path
 
-from pmp_manip.otility.validation import (
+from gceutils.validation import (
     Validator, ValidateAttribute, 
     is_valid_js_data_uri, is_valid_directory_path, is_valid_url
 )
-from pmp_manip.otility.base import AbstractTreePath, grepr_dataclass
-from pmp_manip.utility.errors import (
-    MANIPO_TypeValidationError, MANIPO_RangeValidationError, 
-    MANIPO_InvalidValueError, MANIPO_PathValidationError
+from gceutils.base import AbstractTreePath, grepr_dataclass
+from gceutils.errors import (
+    GU_TypeValidationError, GU_RangeValidationError, 
+    GU_InvalidValueError, GU_PathValidationError
 )
 
 
@@ -21,7 +21,7 @@ class TestValidator:
         """Test creating a Validator."""
         validator = Validator(
             is_valid_fn=lambda value: value > 0,
-            error_cls=MANIPO_RangeValidationError,
+            error_cls=GU_RangeValidationError,
             create_error_fn=lambda value, descr: f"{descr} must be positive"
         )
         assert validator is not None
@@ -35,7 +35,7 @@ class TestValidator:
         obj = TestObj(value=10)
         validator = Validator(
             is_valid_fn=lambda value: value > 0,
-            error_cls=MANIPO_RangeValidationError,
+            error_cls=GU_RangeValidationError,
             create_error_fn=lambda value, descr: f"{descr} must be positive"
         )
         
@@ -51,12 +51,94 @@ class TestValidator:
         obj = TestObj(value=-5)
         validator = Validator(
             is_valid_fn=lambda value: value > 0,
-            error_cls=MANIPO_RangeValidationError,
+            error_cls=GU_RangeValidationError,
             create_error_fn=lambda value, descr: f"{descr} must be positive"
         )
         
-        with pytest.raises(MANIPO_RangeValidationError):
+        with pytest.raises(GU_RangeValidationError):
             validator(obj, AbstractTreePath(), "value")
+    
+    def test_validator_with_pre_validate_fn_success(self):
+        """Test validator with pre_validate_fn that passes."""
+        @grepr_dataclass()
+        class TestObj:
+            value: int
+        
+        obj = TestObj(value=10)
+        
+        def pre_validate(obj, path, attr, *args, condition=None):
+            # Pre-validation passes
+            pass
+        
+        validator = Validator(
+            pre_validate_fn=pre_validate,
+            is_valid_fn=lambda value: value > 0,
+            error_cls=GU_RangeValidationError,
+            create_error_fn=lambda value, descr: f"{descr} must be positive"
+        )
+        
+        # Should not raise
+        validator(obj, AbstractTreePath(), "value")
+    
+    def test_validator_with_pre_validate_fn_failure(self):
+        """Test validator with pre_validate_fn that fails."""
+        @grepr_dataclass()
+        class TestObj:
+            value: tuple[int, int]
+        
+        obj = TestObj(value=(10, 20))
+        
+        def pre_validate(obj, path, attr, *args, condition=None):
+            # Pre-validation fails
+            raise GU_RangeValidationError(path, "Pre-validation failed")
+        
+        validator = Validator(
+            pre_validate_fn=pre_validate,
+            is_valid_fn=lambda value, min_x, max_x: value[0] >= min_x and value[0] <= max_x,
+            error_cls=GU_RangeValidationError,
+            create_error_fn=lambda value, descr, min_x, max_x: f"{descr} out of range"
+        )
+        
+        with pytest.raises(GU_RangeValidationError):
+            validator(obj, AbstractTreePath(), "value", 0, 5)
+    
+    def test_validator_wrong_arg_count(self):
+        """Test validator with incorrect number of arguments."""
+        @grepr_dataclass()
+        class TestObj:
+            value: int
+        
+        obj = TestObj(value=10)
+        
+        # Validator expects 2 args (min, max) for RANGE
+        validator = Validator(
+            is_valid_fn=lambda value, min, max: value >= min and value <= max,
+            error_cls=GU_RangeValidationError,
+            create_error_fn=lambda value, descr, min, max: f"{descr} must be between {min} and {max}"
+        )
+        
+        # Call with only 1 arg (should expect 2)
+        with pytest.raises(TypeError):
+            validator(obj, AbstractTreePath(), "value", 5)
+    
+    def test_validator_with_condition(self):
+        """Test validator with condition parameter."""
+        @grepr_dataclass()
+        class TestObj:
+            value: int
+        
+        obj = TestObj(value=-5)
+        
+        validator = Validator(
+            is_valid_fn=lambda value: value > 0,
+            error_cls=GU_RangeValidationError,
+            create_error_fn=lambda value, descr: f"{descr} must be positive"
+        )
+        
+        with pytest.raises(GU_RangeValidationError) as exc_info:
+            validator(obj, AbstractTreePath(), "value", condition="custom_condition")
+        
+        assert "custom_condition" in str(exc_info.value)
 
 
 class TestValidateAttributeType:
@@ -90,7 +172,7 @@ class TestValidateAttributeType:
         
         obj = TestObj(value="42")
         
-        with pytest.raises(MANIPO_TypeValidationError):
+        with pytest.raises(GU_TypeValidationError):
             ValidateAttribute.VA_TYPE(obj, AbstractTreePath(), "value", int)
 
 
@@ -115,7 +197,7 @@ class TestValidateAttributeRange:
         
         obj = TestObj(value=3)
         
-        with pytest.raises(MANIPO_RangeValidationError):
+        with pytest.raises(GU_RangeValidationError):
             ValidateAttribute.VA_MIN(obj, AbstractTreePath(), "value", 5)
     
     def test_va_range(self):
@@ -136,7 +218,7 @@ class TestValidateAttributeRange:
         
         obj = TestObj(value=5)
         
-        with pytest.raises(MANIPO_RangeValidationError):
+        with pytest.raises(GU_RangeValidationError):
             ValidateAttribute.VA_RANGE(obj, AbstractTreePath(), "value", 10, 100)
     
     def test_va_range_above_max(self):
@@ -147,7 +229,7 @@ class TestValidateAttributeRange:
         
         obj = TestObj(value=150)
         
-        with pytest.raises(MANIPO_RangeValidationError):
+        with pytest.raises(GU_RangeValidationError):
             ValidateAttribute.VA_RANGE(obj, AbstractTreePath(), "value", 10, 100)
 
 
@@ -172,7 +254,7 @@ class TestValidateAttributeLength:
         
         obj = TestObj(items=[1])
         
-        with pytest.raises(MANIPO_RangeValidationError):
+        with pytest.raises(GU_RangeValidationError):
             ValidateAttribute.VA_MIN_LEN(obj, AbstractTreePath(), "items", 3)
     
     def test_va_exact_len(self):
@@ -193,7 +275,7 @@ class TestValidateAttributeLength:
         
         obj = TestObj(items=[1, 2])
         
-        with pytest.raises(MANIPO_RangeValidationError):
+        with pytest.raises(GU_RangeValidationError):
             ValidateAttribute.VA_EXACT_LEN(obj, AbstractTreePath(), "items", 3)
 
 
@@ -234,7 +316,7 @@ class TestValidateAttributeCoordinate:
         
         obj = TestObj(coord=(150, 50))
         
-        with pytest.raises(MANIPO_RangeValidationError):
+        with pytest.raises(GU_RangeValidationError):
             ValidateAttribute.VA_BOXED_COORD_PAIR(
                 obj, AbstractTreePath(), "coord",
                 0, 100, 0, 100
@@ -275,7 +357,7 @@ class TestValidateAttributeComparison:
         
         obj = TestObj(value="actual")
         
-        with pytest.raises(MANIPO_InvalidValueError):
+        with pytest.raises(GU_InvalidValueError):
             ValidateAttribute.VA_EQUAL(obj, AbstractTreePath(), "value", "expected")
     
     def test_va_not_one_of(self):
@@ -299,7 +381,7 @@ class TestValidateAttributeComparison:
         
         obj = TestObj(value="forbidden")
         
-        with pytest.raises(MANIPO_InvalidValueError):
+        with pytest.raises(GU_InvalidValueError):
             ValidateAttribute.VA_NOT_ONE_OF(
                 obj, AbstractTreePath(), "value",
                 ["forbidden", "also_forbidden"]
@@ -347,7 +429,7 @@ class TestValidateAttributeFormat:
         
         obj = TestObj(color="FF0000")  # Missing #
         
-        with pytest.raises(MANIPO_InvalidValueError):
+        with pytest.raises(GU_InvalidValueError):
             ValidateAttribute.VA_HEX_COLOR(obj, AbstractTreePath(), "color")
     
     def test_va_hex_color_invalid_chars(self):
@@ -358,7 +440,7 @@ class TestValidateAttributeFormat:
         
         obj = TestObj(color="#GGGGGG")
         
-        with pytest.raises(MANIPO_InvalidValueError):
+        with pytest.raises(GU_InvalidValueError):
             ValidateAttribute.VA_HEX_COLOR(obj, AbstractTreePath(), "color")
     
     def test_va_alnum_valid(self):
@@ -379,7 +461,7 @@ class TestValidateAttributeFormat:
         
         obj = TestObj(value="abc-123")
         
-        with pytest.raises(MANIPO_InvalidValueError):
+        with pytest.raises(GU_InvalidValueError):
             ValidateAttribute.VA_ALNUM(obj, AbstractTreePath(), "value")
 
 
@@ -428,8 +510,29 @@ class TestIsValidDirectoryPath:
     
     def test_invalid_nonexistent_unwritable_parent(self):
         """Test nonexistent path with unwritable parent."""
-        # Try path under root (usually unwritable for normal users)
-        assert is_valid_directory_path("/root/nonexistent/path/that/cannot/be/created") is False
+        import sys
+        
+        # Use platform-specific unwritable paths
+        if sys.platform == "win32":
+            # Windows: Use a non-existent drive letter (highly unlikely to exist)
+            test_path = "Z:/nonexistent/path/that/cannot/be/created"
+        else:
+            # Unix/Linux: Try path under root (usually unwritable for normal users)
+            test_path = "/root/nonexistent/path/that/cannot/be/created"
+        
+        assert is_valid_directory_path(test_path) is False
+    
+    def test_is_valid_directory_path_exception_handling(self):
+        """Test that is_valid_directory_path handles exceptions gracefully."""
+        from unittest.mock import patch
+        
+        # The try-except in is_valid_directory_path catches exceptions
+        # during parent directory traversal
+        with patch('gceutils.validation.os.access', side_effect=Exception("Mocked exception")):
+            # This should trigger the exception handler when checking os.access
+            result = is_valid_directory_path("/nonexistent/path/to/check")
+            # Exception should be caught and return False
+            assert result is False
 
 
 class TestIsValidUrl:
@@ -470,3 +573,64 @@ class TestIsValidUrl:
     def test_valid_url_subdomain(self):
         """Test valid URL with subdomain."""
         assert is_valid_url("https://sub.example.com") is True
+    
+    def test_is_valid_url_exception_handling(self):
+        """Test that is_valid_url handles exceptions gracefully."""
+        from unittest.mock import patch
+        
+        # Mock urlparse to raise an exception
+        with patch('gceutils.validation.urlparse', side_effect=Exception("Mocked exception")):
+            result = is_valid_url("https://example.com")
+            assert result is False
+
+
+class TestPathValidationError:
+    """Test GU_PathValidationError with different path conditions."""
+    
+    def test_error_with_empty_path(self):
+        """Test error with empty path."""
+        path = AbstractTreePath()
+        error = GU_PathValidationError(path, "Test message")
+        assert "Test message" in str(error)
+        assert error.path == path
+        assert error.msg == "Test message"
+        assert error.condition is None
+    
+    def test_error_with_nonempty_path(self):
+        """Test error with non-empty path."""
+        path = AbstractTreePath().add_attribute("field").add_index_or_key(0)
+        error = GU_PathValidationError(path, "Test message")
+        error_str = str(error)
+        assert "Test message" in error_str
+        assert "At" in error_str  # Path should be included
+    
+    def test_error_with_condition(self):
+        """Test error with condition."""
+        path = AbstractTreePath()
+        error = GU_PathValidationError(path, "Test message", condition="test_condition")
+        error_str = str(error)
+        assert "Test message" in error_str
+        assert "test_condition" in error_str
+        assert error.condition == "test_condition"
+    
+    def test_error_with_path_and_condition(self):
+        """Test error with both path and condition."""
+        path = AbstractTreePath().add_attribute("field")
+        error = GU_PathValidationError(path, "Test message", condition="test_condition")
+        error_str = str(error)
+        assert "Test message" in error_str
+        assert "test_condition" in error_str
+        assert "At" in error_str
+
+
+class TestValidationFunctionExceptions:
+    """Test exception handling in validation functions."""
+    
+    def test_is_valid_url_with_exception(self):
+        """Test is_valid_url when urlparse raises exception."""
+        # Test with various invalid inputs that might cause exceptions
+        result = is_valid_url("")
+        assert result is False
+        
+        result = is_valid_url("not a url")
+        assert result is False

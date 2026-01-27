@@ -8,8 +8,8 @@ from pmp_manip.opcode_info.api  import DropdownValueKind
 from pmp_manip.opcode_info.data import info_api
 from pmp_manip.utility          import (
     string_to_sha256, assert_lists_equal_ignore_order, xml_equal, AbstractTreePath,
-    MANIP_ThanksError, MANIP_ConversionError, MANIPO_TypeValidationError, MANIPO_RangeValidationError, 
-    MANIP_SameValueTwiceError, MANIPO_InvalidValueError
+    MANIP_ThanksError, MANIP_ConversionError, GU_TypeValidationError, GU_RangeValidationError, 
+    MANIP_SameValueTwiceError, GU_InvalidValueError
 )
 
 from pmp_manip.core.asset           import SRVectorCostume, SRSound
@@ -266,20 +266,20 @@ def test_SRTarget_validate(info_api_extended):
     execute_attr_validation_tests(
         obj=srtarget,
         attr_tests=[
-            ("scripts", 5, MANIPO_TypeValidationError),
-            ("scripts", [5], MANIPO_TypeValidationError),
-            ("comments", (), MANIPO_TypeValidationError),
-            ("comments", [()], MANIPO_TypeValidationError),
-            ("costumes", {}, MANIPO_TypeValidationError),
-            ("costumes", [], MANIPO_RangeValidationError),
-            ("costumes", [{}], MANIPO_TypeValidationError),
-            ("sounds", "a str", MANIPO_TypeValidationError),
-            ("sounds", ["a str"], MANIPO_TypeValidationError),
-            ("costume_index", "costume1", MANIPO_TypeValidationError),
-            ("costume_index", 3, MANIPO_RangeValidationError),
-            ("volume", [], MANIPO_TypeValidationError),
-            ("volume", -5, MANIPO_RangeValidationError),
-            ("volume", 105, MANIPO_RangeValidationError),
+            ("scripts", 5, GU_TypeValidationError),
+            ("scripts", [5], GU_TypeValidationError),
+            ("comments", (), GU_TypeValidationError),
+            ("comments", [()], GU_TypeValidationError),
+            ("costumes", {}, GU_TypeValidationError),
+            ("costumes", [], GU_RangeValidationError),
+            ("costumes", [{}], GU_TypeValidationError),
+            ("sounds", "a str", GU_TypeValidationError),
+            ("sounds", ["a str"], GU_TypeValidationError),
+            ("costume_index", "costume1", GU_TypeValidationError),
+            ("costume_index", 3, GU_RangeValidationError),
+            ("volume", [], GU_TypeValidationError),
+            ("volume", -5, GU_RangeValidationError),
+            ("volume", 105, GU_RangeValidationError),
         ],
         validate_func=SRTarget.validate,
         func_args=[AbstractTreePath(), info_api],
@@ -538,23 +538,23 @@ def test_SRSprite_validate(info_api_extended):
     execute_attr_validation_tests(
         obj=srsprite,
         attr_tests=[
-            ("name", False, MANIPO_TypeValidationError),
-            ("name", "_stage_", MANIPO_InvalidValueError),
-            ("local_variables", (), MANIPO_TypeValidationError),
-            ("local_variables", [()], MANIPO_TypeValidationError),
-            ("local_lists", {}, MANIPO_TypeValidationError),
-            ("local_lists", [{}], MANIPO_TypeValidationError),
-            ("local_monitors", None, MANIPO_TypeValidationError),
-            ("local_monitors", [None], MANIPO_TypeValidationError),
-            ("is_visible", "a str", MANIPO_TypeValidationError),
-            ("position", 45, MANIPO_TypeValidationError),
-            ("position", ("", ""), MANIPO_TypeValidationError),
-            ("size", "100", MANIPO_TypeValidationError),
-            ("size", -4, MANIPO_RangeValidationError),
-            ("direction", [], MANIPO_TypeValidationError),
-            ("direction", 190, MANIPO_RangeValidationError),
-            ("is_draggable", [], MANIPO_TypeValidationError),
-            ("rotation_style", "don't rotate", MANIPO_TypeValidationError),
+            ("name", False, GU_TypeValidationError),
+            ("name", "_stage_", GU_InvalidValueError),
+            ("local_variables", (), GU_TypeValidationError),
+            ("local_variables", [()], GU_TypeValidationError),
+            ("local_lists", {}, GU_TypeValidationError),
+            ("local_lists", [{}], GU_TypeValidationError),
+            ("local_monitors", None, GU_TypeValidationError),
+            ("local_monitors", [None], GU_TypeValidationError),
+            ("is_visible", "a str", GU_TypeValidationError),
+            ("position", 45, GU_TypeValidationError),
+            ("position", ("", ""), GU_TypeValidationError),
+            ("size", "100", GU_TypeValidationError),
+            ("size", -4, GU_RangeValidationError),
+            ("direction", [], GU_TypeValidationError),
+            ("direction", 190, GU_RangeValidationError),
+            ("is_draggable", [], GU_TypeValidationError),
+            ("rotation_style", "don't rotate", GU_TypeValidationError),
         ],
         validate_func=SRSprite.validate,
         func_args=[AbstractTreePath(), info_api_extended],
@@ -573,7 +573,7 @@ def test_SRSprite_validate_vars_lists():
 def test_SRSprite_validate_uuid():
     srsprite = SRSprite.create_empty(name="my sprite")
     srsprite.__dict__["uuid"] = "abc-def-ghi"
-    with raises(MANIPO_TypeValidationError):
+    with raises(GU_TypeValidationError):
         srsprite.validate(AbstractTreePath(), info_api)
 
 

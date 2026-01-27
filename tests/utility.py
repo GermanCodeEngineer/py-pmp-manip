@@ -2,7 +2,7 @@ from typing      import Any, Type, Callable
 from copy        import copy, deepcopy
 from pytest      import raises
 
-from pmp_manip.utility import MANIPO_ValidationError
+from pmp_manip.utility import GU_ValidationError
 from pmp_manip.core.block   import FRBlock
 from pmp_manip.core.comment import FRComment
 
@@ -17,7 +17,7 @@ def copymodify[T](obj: T, attr: str, value: Any) -> T:
 
 def execute_attr_validation_tests[T](
         obj: T, 
-        attr_tests: list[tuple[str, Any, Type[MANIPO_ValidationError]]], 
+        attr_tests: list[tuple[str, Any, Type[GU_ValidationError]]], 
         validate_func: Callable[[T], None],
         func_args: list[Any]=[],
     ) -> None:

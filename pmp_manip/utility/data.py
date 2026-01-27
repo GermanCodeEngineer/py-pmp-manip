@@ -4,7 +4,7 @@ from hashlib     import sha256, md5
 from json        import dumps
 from typing      import Any
 
-from pmp_manip.otility import grepr_dataclass, HasGreprValidate
+from gceutils import grepr_dataclass, HasGreprValidate
 
 
 _TOKEN_CHARSET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!#%()*+,-./:;=?@[]^_`{|}~"

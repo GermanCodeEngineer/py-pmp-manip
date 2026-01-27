@@ -3,7 +3,7 @@ from __future__ import annotations
 from pmp_manip.utility import (
     grepr_dataclass, is_valid_js_data_uri, is_valid_url, 
     ValidateAttribute, AbstractTreePath, HasGreprValidate,
-    MANIPO_InvalidValueError,
+    GU_InvalidValueError,
 )
 
 
@@ -18,13 +18,13 @@ class SRExtension(HasGreprValidate):
 
     def post_validate(self, path: AbstractTreePath) -> None:
         """
-        Ensure an instance is valid, raise MANIPO_ValidationError if not
+        Ensure an instance is valid, raise GU_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
         
         Raises:
-            MANIPO_ValidationError: if the instance is invalid
+            GU_ValidationError: if the instance is invalid
         """
         ValidateAttribute.VA_ALNUM(self, path, "id") # TODO: possibly verify its one of PenguinMod's extension if not custom
 
@@ -49,19 +49,19 @@ class SRCustomExtension(SRExtension):
     
     def post_validate(self, path: AbstractTreePath):
         """
-        Ensure an instance is valid, raise MANIPO_ValidationError if not
+        Ensure an instance is valid, raise GU_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
         
         Raises:
-            MANIPO_ValidationError: if the instance is invalid
-            MANIPO_InvalidValueError(MANIPO_ValidationError): if the url is invalid
+            GU_ValidationError: if the instance is invalid
+            GU_InvalidValueError(GU_ValidationError): if the url is invalid
         """
         super().post_validate(path)
 
         if not (is_valid_url(self.url) or is_valid_js_data_uri(self.url)):
-            raise MANIPO_InvalidValueError(path, f"url of {self.__class__.__name__} must be either a valid url or a valid javascript data uri.")
+            raise GU_InvalidValueError(path, f"url of {self.__class__.__name__} must be either a valid url or a valid javascript data uri.")
 
 
 __all__ = ["SRExtension", "SRBuiltinExtension", "SRCustomExtension"]

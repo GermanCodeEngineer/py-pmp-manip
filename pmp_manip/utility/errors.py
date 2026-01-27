@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from pmp_manip.otility import (
+from gceutils import (
     AbstractTreePath,
-    MANIPO_Error, MANIPO_ValidationError, MANIPO_PathValidationError,
-    MANIPO_TypeValidationError, MANIPO_InvalidValueError, MANIPO_RangeValidationError,
-    MANIPO_FailedFileWriteError, MANIPO_FailedFileReadError, MANIPO_FailedFileDeleteError,
-    MANIPO_FileNotFoundError,
+    GU_Error, GU_ValidationError, GU_PathValidationError,
+    GU_TypeValidationError, GU_InvalidValueError, GU_RangeValidationError,
+    GU_FailedFileWriteError, GU_FailedFileReadError, GU_FailedFileDeleteError,
+    GU_FileNotFoundError,
 )
 
 
@@ -20,7 +20,7 @@ class MANIP_ThanksError(MANIP_Error):
 #                     COPIED BUILT-IN ERRORS                  #
 ###############################################################
 
-class MANIPO_FileNotFoundError(OSError): pass
+class GU_FileNotFoundError(OSError): pass
 
 ###############################################################
 #                ERRORS FOR THE OPCODE INFO API               #
@@ -52,20 +52,20 @@ class MANIP_ConversionError(MANIP_Error): pass
 #                    ERRORS FOR VALIDATION                    #
 ###############################################################
 
-class MANIP_MissingInputError(MANIPO_PathValidationError, ValueError): pass
-class MANIP_UnnecessaryInputError(MANIPO_PathValidationError, ValueError): pass
-class MANIP_MissingDropdownError(MANIPO_PathValidationError, ValueError): pass
-class MANIP_UnnecessaryDropdownError(MANIPO_PathValidationError, ValueError): pass
+class MANIP_MissingInputError(GU_PathValidationError, ValueError): pass
+class MANIP_UnnecessaryInputError(GU_PathValidationError, ValueError): pass
+class MANIP_MissingDropdownError(GU_PathValidationError, ValueError): pass
+class MANIP_UnnecessaryDropdownError(GU_PathValidationError, ValueError): pass
 
-class MANIP_InvalidDropdownValueError(MANIPO_PathValidationError, ValueError): pass
+class MANIP_InvalidDropdownValueError(GU_PathValidationError, ValueError): pass
 
-class MANIP_InvalidOpcodeError(MANIPO_PathValidationError, ValueError): pass
-class MANIP_InvalidBlockShapeError(MANIPO_PathValidationError, ValueError): pass
-class MANIP_InvalidDirPathError(MANIPO_PathValidationError, ValueError): pass
+class MANIP_InvalidOpcodeError(GU_PathValidationError, ValueError): pass
+class MANIP_InvalidBlockShapeError(GU_PathValidationError, ValueError): pass
+class MANIP_InvalidDirPathError(GU_PathValidationError, ValueError): pass
 
-class MANIP_SpriteLayerStackError(MANIPO_PathValidationError, ValueError): pass
+class MANIP_SpriteLayerStackError(GU_PathValidationError, ValueError): pass
 
-class MANIP_SameValueTwiceError(MANIPO_ValidationError, ValueError):
+class MANIP_SameValueTwiceError(GU_ValidationError, ValueError):
     def __init__(self, path1: AbstractTreePath, path2: AbstractTreePath, msg: str, condition: str|None = None) -> None:
         self.path1     = path1
         self.path2     = path2

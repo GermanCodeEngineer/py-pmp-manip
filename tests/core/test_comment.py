@@ -1,4 +1,4 @@
-from pmp_manip.utility import AbstractTreePath, MANIPO_TypeValidationError, MANIPO_InvalidValueError
+from pmp_manip.utility import AbstractTreePath, GU_TypeValidationError, GU_InvalidValueError
 
 from pmp_manip.core.comment import FRComment, SRComment
 
@@ -85,11 +85,11 @@ def test_SRComment_validate():
     execute_attr_validation_tests(
         obj=srcomment,
         attr_tests=[
-            ("position", [10], MANIPO_TypeValidationError),
-            ("size", 50, MANIPO_TypeValidationError),
-            ("size", (30, 30), MANIPO_InvalidValueError),  # Too small
-            ("is_minimized", "nope", MANIPO_TypeValidationError),
-            ("text", {}, MANIPO_TypeValidationError),
+            ("position", [10], GU_TypeValidationError),
+            ("size", 50, GU_TypeValidationError),
+            ("size", (30, 30), GU_InvalidValueError),  # Too small
+            ("is_minimized", "nope", GU_TypeValidationError),
+            ("text", {}, GU_TypeValidationError),
         ],
         validate_func=SRComment.validate,
         func_args=[AbstractTreePath()],

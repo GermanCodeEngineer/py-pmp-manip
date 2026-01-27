@@ -1,7 +1,7 @@
 from pytest import fixture
 
 from pmp_manip.important_consts import SHA256_SEC_VARIABLE, SHA256_SEC_LIST
-from pmp_manip.utility          import string_to_sha256, AbstractTreePath, MANIPO_TypeValidationError
+from pmp_manip.utility          import string_to_sha256, AbstractTreePath, GU_TypeValidationError
 
 from pmp_manip.core.vars_lists import _variable_sha256, _list_sha256, SRVariable, SRCloudVariable, SRList
 
@@ -33,8 +33,8 @@ def test_SRVariable_validate():
     execute_attr_validation_tests(
         obj=srvariable,
         attr_tests=[
-            ("name", {}, MANIPO_TypeValidationError),
-            ("current_value", [], MANIPO_TypeValidationError),
+            ("name", {}, GU_TypeValidationError),
+            ("current_value", [], GU_TypeValidationError),
         ],
         validate_func=SRVariable.validate,
         func_args=[AbstractTreePath()],
@@ -69,8 +69,8 @@ def test_SRList_validate():
     execute_attr_validation_tests(
         obj=srlist,
         attr_tests=[
-            ("name", {}, MANIPO_TypeValidationError),
-            ("current_value", {}, MANIPO_TypeValidationError),
+            ("name", {}, GU_TypeValidationError),
+            ("current_value", {}, GU_TypeValidationError),
         ],
         validate_func=SRList.validate,
         func_args=[AbstractTreePath()],

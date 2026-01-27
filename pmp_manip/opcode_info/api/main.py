@@ -699,7 +699,7 @@ class OpcodeInfoAPI(HasGreprValidate):
             MANIP_SafeExtensionInfoExtractionError: if the extension info could not be extracted through safe analysis
             MANIP_ExtensionInfoConvertionError: if the extracted extension info could not be converted into the format of this project
             MANIP_ThanksError(unlikely): if a block argument uses the mysterious Scratch.ArgumentType.SEPERATOR
-            MANIPO_FailedFileWriteError(unlikely): if the generated extension info file or cache file or their directory could not be written/created
+            GU_FailedFileWriteError(unlikely): if the generated extension info file or cache file or their directory could not be written/created
     
         Warnings:
             MANIP_UnexpectedPropertyAccessWarning: if a property of 'this' is accessed in the getInfo method of the extension code in safe analysis

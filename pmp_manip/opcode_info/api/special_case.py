@@ -84,7 +84,7 @@ class SpecialCaseType(GEnum):
 
     POST_VALIDATION = 6
     # execute after SRBlock.validate
-    # should raise subclass of MANIPO_ValidationError if invalid
+    # should raise subclass of GU_ValidationError if invalid
     """
     def example(path: AbstractTreePath, block: SRBlock) -> None:
         ...

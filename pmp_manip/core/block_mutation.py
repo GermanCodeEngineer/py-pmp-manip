@@ -813,13 +813,13 @@ class SRCustomBlockArgumentMutation(SRMutation):
 
     def post_validate(self, path: AbstractTreePath, *args, **kwargs) -> None:
         """
-        Ensure an instance is valid, raise MANIPO_ValidationError if not
+        Ensure an instance is valid, raise GU_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
         
         Raises:
-            MANIPO_ValidationError: if the instance is invalid
+            GU_ValidationError: if the instance is invalid
         """
         ValidateAttribute.VA_HEX_COLOR(self, path, "main_color")
         ValidateAttribute.VA_HEX_COLOR(self, path, "prototype_color")
@@ -861,13 +861,13 @@ class SRCustomBlockMutation(SRMutation):
     
     def post_validate(self, path: AbstractTreePath, *args, **kwargs) -> None:
         """
-        Ensure an instance is valid, raise MANIPO_ValidationError if not
+        Ensure an instance is valid, raise GU_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
         
         Raises:
-            MANIPO_ValidationError: if the instance is invalid
+            GU_ValidationError: if the instance is invalid
         """
         ValidateAttribute.VA_HEX_COLOR(self, path, "main_color")
         ValidateAttribute.VA_HEX_COLOR(self, path, "prototype_color")
@@ -1006,13 +1006,13 @@ class SRExpandableJoinMutation(SRMutation):
     
     def post_validate(self, path: AbstractTreePath, *args, **kwargs) -> None:
         """
-        Ensure an instance is valid, raise MANIPO_ValidationError if not
+        Ensure an instance is valid, raise GU_ValidationError if not
         
         Args:
             path: the path from the project to itself. Used for better error messages
         
         Raises:
-            MANIPO_ValidationError: if the instance is invalid
+            GU_ValidationError: if the instance is invalid
         """
         ValidateAttribute.VA_MIN(self, path, "input_count", 1)
     

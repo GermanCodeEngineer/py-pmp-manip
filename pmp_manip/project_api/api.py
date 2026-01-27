@@ -62,7 +62,7 @@ def fetch_projects(
         Dictionary mapping project IDs to BytesIO objects for successfully fetched projects and an optional error if some projects failed.
 
     Raises:
-        MANIPO_FailedFileWriteError(unlikely): if the temporary directory could not be created
+        GU_FailedFileWriteError(unlikely): if the temporary directory could not be created
         MANIP_NoNodeJSInstalledError: if Node.js is not installed or not found in PATH
         MANIP_SubprocessTimeoutError: if the Node.js subprocess took too long
         MANIP_UnexpectedSubprocessError: if some error occurs during the subprocess call

@@ -1,14 +1,16 @@
 from __future__ import annotations
 from typing     import TYPE_CHECKING
 
-if TYPE_CHECKING: from pmp_manip.otility.base import AbstractTreePath
+if TYPE_CHECKING: from gceutils.base import AbstractTreePath
 
 
-class MANIPO_Error(Exception): pass
+class GU_Error(Exception):
+    """Base exception for all errors in GceUtils."""
 
 
-class MANIPO_ValidationError(MANIPO_Error): pass
-class MANIPO_PathValidationError(MANIPO_ValidationError):
+class GU_ValidationError(GU_Error):
+    """Base exception for all validation errors in GceUtils."""
+class GU_PathValidationError(GU_ValidationError):
     """Validation error with location tracking for nested structures.
     
     Combines path, message, and optional condition to create descriptive validation errors.
@@ -27,21 +29,21 @@ class MANIPO_PathValidationError(MANIPO_ValidationError):
         full_message += msg
         super().__init__(full_message)
     
-class MANIPO_TypeValidationError(MANIPO_PathValidationError): pass
-class MANIPO_InvalidValueError(MANIPO_PathValidationError): pass
-class MANIPO_RangeValidationError(MANIPO_PathValidationError): pass
+class GU_TypeValidationError(GU_PathValidationError, TypeError): pass
+class GU_InvalidValueError(GU_PathValidationError, ValueError): pass
+class GU_RangeValidationError(GU_PathValidationError, ValueError): pass
 
 
-class MANIPO_FailedFileWriteError(MANIPO_Error): pass
-class MANIPO_FailedFileReadError(MANIPO_Error): pass
-class MANIPO_FailedFileDeleteError(MANIPO_Error): pass
-class MANIPO_FileNotFoundError(OSError): pass
+class GU_FailedFileWriteError(GU_Error, OSError): pass
+class GU_FailedFileReadError(GU_Error, OSError): pass
+class GU_FailedFileDeleteError(GU_Error, OSError): pass
+class GU_FileNotFoundError(GU_Error, FileNotFoundError): pass
 
 
 __all__ = [
-    "MANIPO_Error", "MANIPO_ValidationError", "MANIPO_PathValidationError",
-    "MANIPO_TypeValidationError", "MANIPO_InvalidValueError", "MANIPO_RangeValidationError",
-    "MANIPO_FailedFileWriteError", "MANIPO_FailedFileReadError", "MANIPO_FailedFileDeleteError",
-    "MANIPO_FileNotFoundError",
+    "GU_Error", "GU_ValidationError", "GU_PathValidationError",
+    "GU_TypeValidationError", "GU_InvalidValueError", "GU_RangeValidationError",
+    "GU_FailedFileWriteError", "GU_FailedFileReadError", "GU_FailedFileDeleteError",
+    "GU_FileNotFoundError",
 ]
 

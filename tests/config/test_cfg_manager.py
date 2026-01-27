@@ -1,7 +1,7 @@
 from datetime import timedelta
 from pytest   import raises, MonkeyPatch
 
-from pmp_manip.utility import MANIP_ConfigurationError, MANIPO_TypeValidationError
+from pmp_manip.utility import MANIP_ConfigurationError, GU_TypeValidationError
 
 from pmp_manip.config.manager import init_config, get_config, get_default_config
 from pmp_manip.config.schema  import MasterConfig, ExtInfoGenConfig, ValidationConfig, PlatformMetaConfig
@@ -21,7 +21,7 @@ def test_init_config_invalid_type(monkeypatch: MonkeyPatch):
     from pmp_manip.config import manager as manager_mod
     monkeypatch.setattr(manager_mod, "_config_instance", None)
 
-    with raises(MANIPO_TypeValidationError):
+    with raises(GU_TypeValidationError):
         init_config(5)
 
 def test_init_config_validation_fail(monkeypatch: MonkeyPatch):

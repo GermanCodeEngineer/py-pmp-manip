@@ -1,91 +1,129 @@
 from __future__ import annotations
 import pytest
 
-from pmp_manip.utility.errors import (
-    MANIP_BlameDevsError,
-    MANIP_ImplementationDetailsExposedError,
-    MANIP_ThanksError
+from gceutils.base import AbstractTreePath
+from gceutils.errors import (
+    GU_Error,
+    GU_ValidationError,
+    GU_PathValidationError,
 )
 
 
-class TestBlameDevsError:
-    """Test MANIP_BlameDevsError exception."""
+class TestGU_PathValidationError:
+    """Test GU_PathValidationError logic."""
     
-    def test_raise_blame_devs_error(self):
-        """Test raising BlameDevsError."""
-        with pytest.raises(MANIP_BlameDevsError):
-            raise MANIP_BlameDevsError("This is a dev error")
+    def test_error_with_empty_path_no_condition(self):
+        """Test error with empty path and no condition."""
+        path = AbstractTreePath()
+        error = GU_PathValidationError(path, "Test message")
+        
+        # Check attributes
+        assert error.path == path
+        assert error.msg == "Test message"
+        assert error.condition is None
+        
+        # Check message formatting (no path prefix, no condition)
+        error_str = str(error)
+        assert error_str == "Test message"
+        assert "At" not in error_str
     
-    def test_blame_devs_error_message(self):
-        """Test BlameDevsError message."""
-        try:
-            raise MANIP_BlameDevsError("Dev mistake")
-        except MANIP_BlameDevsError as e:
-            assert "Dev mistake" in str(e)
+    def test_error_with_nonempty_path_no_condition(self):
+        """Test error with non-empty path and no condition."""
+        path = AbstractTreePath().add_attribute("field")
+        error = GU_PathValidationError(path, "Test message")
+        
+        # Check attributes
+        assert error.path == path
+        assert error.msg == "Test message"
+        assert error.condition is None
+        
+        # Check message formatting (should include path)
+        error_str = str(error)
+        assert "Test message" in error_str
+        assert "At" in error_str
+        assert "field" in error_str
     
-    def test_blame_devs_error_inheritance(self):
-        """Test that BlameDevsError is an Exception."""
-        error = MANIP_BlameDevsError("test")
+    def test_error_with_empty_path_with_condition(self):
+        """Test error with empty path and condition."""
+        path = AbstractTreePath()
+        error = GU_PathValidationError(path, "Test message", condition="my_condition")
+        
+        # Check attributes
+        assert error.path == path
+        assert error.msg == "Test message"
+        assert error.condition == "my_condition"
+        
+        # Check message formatting (no path, but has condition)
+        error_str = str(error)
+        assert "Test message" in error_str
+        assert "my_condition:" in error_str
+        assert "At" not in error_str
+    
+    def test_error_with_nonempty_path_with_condition(self):
+        """Test error with non-empty path and condition."""
+        path = AbstractTreePath().add_attribute("field").add_index_or_key(0)
+        error = GU_PathValidationError(path, "Test message", condition="my_condition")
+        
+        # Check attributes
+        assert error.path == path
+        assert error.msg == "Test message"
+        assert error.condition == "my_condition"
+        
+        # Check message formatting (should include both path and condition)
+        error_str = str(error)
+        assert "Test message" in error_str
+        assert "my_condition:" in error_str
+        assert "At" in error_str
+        assert "field" in error_str
+    
+    def test_error_message_order(self):
+        """Test that error message has correct order: path, condition, message."""
+        path = AbstractTreePath().add_attribute("my_field")
+        error = GU_PathValidationError(path, "value is wrong", condition="when checking")
+        
+        error_str = str(error)
+        
+        # Find positions to verify order
+        at_pos = error_str.find("At")
+        condition_pos = error_str.find("when checking:")
+        msg_pos = error_str.find("value is wrong")
+        
+        # All should be present
+        assert at_pos != -1
+        assert condition_pos != -1
+        assert msg_pos != -1
+        
+        # Order should be: At ... : when checking: value is wrong
+        assert at_pos < condition_pos < msg_pos
+    
+    def test_error_can_be_raised(self):
+        """Test that error can be raised and caught."""
+        path = AbstractTreePath()
+        
+        with pytest.raises(GU_PathValidationError) as exc_info:
+            raise GU_PathValidationError(path, "Test error")
+        
+        assert "Test error" in str(exc_info.value)
+    
+    def test_error_is_validation_error(self):
+        """Test that GU_PathValidationError is a GU_ValidationError."""
+        path = AbstractTreePath()
+        error = GU_PathValidationError(path, "Test")
+        
+        assert isinstance(error, GU_ValidationError)
+        assert isinstance(error, GU_Error)
         assert isinstance(error, Exception)
-
-
-class TestImplementationDetailsExposedError:
-    """Test MANIP_ImplementationDetailsExposedError exception."""
     
-    def test_raise_implementation_details_error(self):
-        """Test raising ImplementationDetailsExposedError."""
-        with pytest.raises(MANIP_ImplementationDetailsExposedError):
-            raise MANIP_ImplementationDetailsExposedError("Implementation detail leaked")
-    
-    def test_implementation_details_error_message(self):
-        """Test ImplementationDetailsExposedError message."""
-        try:
-            raise MANIP_ImplementationDetailsExposedError("Details leaked")
-        except MANIP_ImplementationDetailsExposedError as e:
-            assert "Details leaked" in str(e)
-    
-    def test_implementation_details_error_inheritance(self):
-        """Test that ImplementationDetailsExposedError is an Exception."""
-        error = MANIP_ImplementationDetailsExposedError("test")
-        assert isinstance(error, Exception)
-
-
-class TestThanksError:
-    """Test MANIP_ThanksError exception."""
-    
-    def test_raise_thanks_error(self):
-        """Test raising ThanksError."""
-        with pytest.raises(MANIP_ThanksError):
-            raise MANIP_ThanksError()
-    
-    def test_thanks_error_message(self):
-        """Test ThanksError message."""
-        try:
-            raise MANIP_ThanksError()
-        except MANIP_ThanksError as e:
-            # ThanksError has a fixed message
-            assert "unique" in str(e).lower() or "research" in str(e).lower()
-    
-    def test_thanks_error_inheritance(self):
-        """Test that ThanksError is an Exception."""
-        error = MANIP_ThanksError()
-        assert isinstance(error, Exception)
-
-
-class TestErrorInheritance:
-    """Test error inheritance hierarchy."""
-    
-    def test_blame_devs_is_exception(self):
-        """Test BlameDevsError is an Exception."""
-        with pytest.raises(Exception):
-            raise MANIP_BlameDevsError("test")
-    
-    def test_implementation_details_is_exception(self):
-        """Test ImplementationDetailsExposedError is an Exception."""
-        with pytest.raises(Exception):
-            raise MANIP_ImplementationDetailsExposedError("test")
-    
-    def test_thanks_is_exception(self):
-        """Test ThanksError is an Exception."""
-        with pytest.raises(Exception):
-            raise MANIP_ThanksError()
+    def test_path_with_multiple_levels(self):
+        """Test error with deeply nested path."""
+        path = (AbstractTreePath()
+                .add_attribute("root")
+                .add_index_or_key(0)
+                .add_attribute("child")
+                .add_index_or_key("key"))
+        
+        error = GU_PathValidationError(path, "Deep error")
+        error_str = str(error)
+        
+        assert "At" in error_str
+        assert "Deep error" in error_str

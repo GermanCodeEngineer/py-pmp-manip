@@ -2,7 +2,7 @@ from __future__ import annotations
 import pytest
 from pathlib import Path
 
-from pmp_manip.otility.tree_tools import TreeVisitor
+from gceutils.tree_tools import TreeVisitor
 
 
 class TestTreeVisitor:
@@ -134,7 +134,7 @@ class TestTreeVisitorDataclass:
     
     def test_visit_dataclass_basic(self):
         """Test visiting a simple dataclass."""
-        from pmp_manip.otility.base import grepr_dataclass
+        from gceutils.base import grepr_dataclass
         
         @grepr_dataclass()
         class Person:
@@ -150,7 +150,7 @@ class TestTreeVisitorDataclass:
     
     def test_visit_nested_dataclass(self):
         """Test visiting nested dataclasses."""
-        from pmp_manip.otility.base import grepr_dataclass
+        from gceutils.base import grepr_dataclass
         
         @grepr_dataclass()
         class Address:
@@ -174,7 +174,7 @@ class TestTreeVisitorDataclass:
     
     def test_visit_dataclass_with_list(self):
         """Test visiting dataclass containing lists."""
-        from pmp_manip.otility.base import grepr_dataclass
+        from gceutils.base import grepr_dataclass
         
         @grepr_dataclass()
         class Team:
@@ -187,3 +187,46 @@ class TestTreeVisitorDataclass:
         
         # Should find team name and all member names
         assert len(result) >= 4
+
+
+class TestTreeVisitorWithCustom:
+    """Test TreeVisitor with custom _visit_node_unfiltered_ methods."""
+    
+    def test_visit_custom_visit_method(self):
+        """Test visiting object with custom _visit_node_unfiltered_ method."""
+        from gceutils.base import grepr_dataclass
+        
+        class CustomObject:
+            def __init__(self, values):
+                self.values = values
+            
+            def _visit_node_unfiltered_(self, path):
+                # Custom visit method that yields values
+                from gceutils.base import AbstractTreePath
+                pairs = []
+                for i, val in enumerate(self.values):
+                    new_path = path.add_index_or_key(i)
+                    pairs.append((new_path, val))
+                return pairs
+        
+        visitor = TreeVisitor.create_new_include_only([int, str])
+        obj = CustomObject([1, "hello", 2, "world"])
+        result = visitor.visit_tree(obj)
+        
+        # Should find all values through custom method
+        assert len(result) >= 4
+    
+    def test_visit_non_dataclass_no_traversal(self):
+        """Test that non-dataclass, non-collection objects don't have attributes traversed."""
+        
+        class PlainClass:
+            def __init__(self):
+                self.attr1 = "hidden"
+                self.attr2 = 42
+        
+        visitor = TreeVisitor.create_new_include_only([str, int])
+        obj = PlainClass()
+        result = visitor.visit_tree(obj)
+        
+        # Should not traverse attributes of plain class (not a dataclass)
+        assert len(result) == 0

@@ -2,8 +2,8 @@ from __future__  import annotations
 from dataclasses import fields as get_fields
 from typing      import cast, Generic, TypeVar, Iterable, Any
 
-from pmp_manip.otility.base       import grepr_dataclass, AbstractTreePath
-from pmp_manip.otility.decorators import enforce_argument_types
+from gceutils.base       import grepr_dataclass, AbstractTreePath
+from gceutils.decorators import enforce_argument_types
 
 
 INCLUDED_T = TypeVar("INCLUDED_T")

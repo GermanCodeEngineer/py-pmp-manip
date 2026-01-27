@@ -9,8 +9,8 @@ from pmp_manip.config           import get_config, init_config, get_default_conf
 from pmp_manip.important_consts import BUILTIN_EXTENSIONS_SOURCE_DIRECTORY
 from pmp_manip.utility          import (
     read_file_text, write_file_text, file_exists, enforce_argument_types, ContentFingerprint,
-    MANIP_Error, MANIPO_FileNotFoundError,
-    MANIPO_FailedFileReadError, MANIPO_FailedFileWriteError, MANIPO_FailedFileDeleteError,
+    MANIP_Error, GU_FileNotFoundError,
+    GU_FailedFileReadError, GU_FailedFileWriteError, GU_FailedFileDeleteError,
     MANIP_ThanksError, MANIP_ExtensionFetchError,
     MANIP_DirectExtensionInfoExtractionError, MANIP_SafeExtensionInfoExtractionError,
     MANIP_NoNodeJSInstalledError, MANIP_ExtensionInfoConvertionError,
@@ -80,7 +80,7 @@ def _consider_state(dest_file_name: str, dest_file_path: str, cache: dict[str, d
         return STATUS_REGEN
     try:
         python_code = read_file_text(dest_file_path)
-    except (MANIPO_FileNotFoundError, MANIPO_FailedFileReadError):
+    except (GU_FileNotFoundError, GU_FailedFileReadError):
         return STATUS_REGEN # we can not know if python code has changed, so regenerate
     file_cache = cache[dest_file_name]
     try:
@@ -115,7 +115,7 @@ def _get_cache(cache_file_path: str) -> dict[str, dict[str, Any]]:
         return {}
     try:
         return loads(read_file_text(cache_file_path))
-    except (MANIPO_FailedFileReadError, JSONDecodeError):
+    except (GU_FailedFileReadError, JSONDecodeError):
         return {}
 
 def _update_cache(
@@ -133,7 +133,7 @@ def _update_cache(
         py_code: the generated python code
     
     Raises:
-        MANIPO_FailedFileWriteError: if the cache file could not be written
+        GU_FailedFileWriteError: if the cache file could not be written
     """
     if dest_file_name in old_cache:
         old_cache[dest_file_name]["lastUpdate"] = datetime.now(timezone.utc).isoformat()
@@ -147,8 +147,8 @@ def _update_cache(
     cache_str = dumps(cache, indent=4)
     try:
         write_file_text(cache_file_path, cache_str)
-    except MANIPO_FailedFileWriteError as error:
-        raise MANIPO_FailedFileWriteError(f"Could not update cache at {cache_file_path!r}: {error}") from error
+    except GU_FailedFileWriteError as error:
+        raise GU_FailedFileWriteError(f"Could not update cache at {cache_file_path!r}: {error}") from error
 
 @enforce_argument_types
 def generate_extension_info_py_file(
@@ -171,11 +171,11 @@ def generate_extension_info_py_file(
         MANIP_SafeExtensionInfoExtractionError: if the extension info could not be extracted through safe analysis
         MANIP_ExtensionInfoConvertionError: if the extracted extension info could not be converted into the format of this project
         MANIP_ThanksError(unlikely, not bundled): if a block argument uses the mysterious Scratch.ArgumentType.SEPERATOR
-        MANIPO_FailedFileWriteError(unlikely): if the generated extension info file or cache file or their directory could not be written/created
+        GU_FailedFileWriteError(unlikely): if the generated extension info file or cache file or their directory could not be written/created
     
     Raises (if NOT bundled):
         ### created here or not bundled anyway:
-        MANIPO_FailedFileWriteError(unlikely): if the cache file or generated extension info file or its directory could not be written/created
+        GU_FailedFileWriteError(unlikely): if the cache file or generated extension info file or its directory could not be written/created
         MANIP_NoNodeJSInstalledError(not bundled): if Node.js is not installed or not found in PATH
         
         ### inherited from fetch_js => MANIP_ExtensionFetchError if bundled
@@ -186,8 +186,8 @@ def generate_extension_info_py_file(
         MANIP_FileFetchError: If the source file cannot be read
         
         ### inherited from extract_extension_info_directly => MANIP_DirectExtensionInfoExtractionError if bundled
-        MANIPO_FailedFileWriteError(unlikely): if the JS code could not be written to a temporary file (eg. OS Error or Unicode Error)
-        MANIPO_FailedFileDeleteError(unlikely): if the temporary Javscript file could not be deleted
+        GU_FailedFileWriteError(unlikely): if the JS code could not be written to a temporary file (eg. OS Error or Unicode Error)
+        GU_FailedFileDeleteError(unlikely): if the temporary Javscript file could not be deleted
         MANIP_NoNodeJSInstalledError(not bundled): if Node.js is not installed or not found in PATH
         MANIP_SubprocessTimeoutError: if the Node.js execution subprocess took too long
         MANIP_ExtensionExecutionErrorInJavascript: if an error occurs inside the actual extension code
@@ -230,7 +230,7 @@ def generate_extension_info_py_file(
     
     try:
         js_code = fetch_js_code(source, tolerate_file_path)
-    except (MANIP_Error, MANIPO_FileNotFoundError) as error:
+    except (MANIP_Error, GU_FileNotFoundError) as error:
         if bundle_errors:
             raise MANIP_ExtensionFetchError(f"Error in extension {extension_id!r}: Failed to fetch extension code: {error}") from error
         else:
@@ -253,7 +253,7 @@ def generate_extension_info_py_file(
             extension_info = extract_extension_info_directly(js_code)
         except MANIP_NoNodeJSInstalledError:
             raise
-        except (MANIP_Error, MANIPO_FailedFileWriteError, MANIPO_FailedFileDeleteError) as error:
+        except (MANIP_Error, GU_FailedFileWriteError, GU_FailedFileDeleteError) as error:
             if bundle_errors:
                 raise MANIP_DirectExtensionInfoExtractionError(
                     f"Error in extension {extension_id!r}: Failed to extract extension info through direct execution: {error}"
@@ -290,15 +290,15 @@ def generate_extension_info_py_file(
     try:
         makedirs(cfg.ext_info_gen.gen_opcode_info_dir, exist_ok=True)
     except OSError as error:
-        raise MANIPO_FailedFileWriteError(
+        raise GU_FailedFileWriteError(
             f"Error in extension {extension_id!r}: Could not create directory of the extension info file at "
             f"{cfg.ext_info_gen.gen_opcode_info_dir!r}. Is your configuration correct?: {error}"
         ) from error
 
     try:
         write_file_text(dest_file_path, file_code)
-    except MANIPO_FailedFileWriteError as error:
-        raise MANIPO_FailedFileWriteError(
+    except GU_FailedFileWriteError as error:
+        raise GU_FailedFileWriteError(
             f"Error in extension {extension_id!r}: Could not write extension info file to {cache_file_path!r}. "
             f"Is your configuration correct?: {error}"
         ) from error

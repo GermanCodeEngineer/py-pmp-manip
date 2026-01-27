@@ -2,7 +2,7 @@ from dataclasses import FrozenInstanceError
 from datetime    import timedelta
 from pytest      import raises
 
-from pmp_manip.utility import grepr_dataclass, AbstractTreePath, MANIPO_TypeValidationError, MANIP_InvalidDirPathError
+from pmp_manip.utility import grepr_dataclass, AbstractTreePath, GU_TypeValidationError, MANIP_InvalidDirPathError
 
 from pmp_manip.config.manager import get_default_config
 from pmp_manip.config.schema  import ConfigBase, MasterConfig, ExtInfoGenConfig, ValidationConfig, PlatformMetaConfig
@@ -43,11 +43,11 @@ def test_ExtInfoGenConfig_validate():
     execute_attr_validation_tests(
         obj=config,
         attr_tests=[
-            ("gen_opcode_info_dir", 5, MANIPO_TypeValidationError),
+            ("gen_opcode_info_dir", 5, GU_TypeValidationError),
             ("gen_opcode_info_dir", __file__, MANIP_InvalidDirPathError),
-            ("js_fetch_interval", {}, MANIPO_TypeValidationError),
-            ("node_js_exec_timeout", [], MANIPO_TypeValidationError),
-            ("is_trusted_extension_origin_handler", "https://raw.githubusercontent.com/Logise1123/FirebaseDB-/refs/heads/main/db.js", MANIPO_TypeValidationError),
+            ("js_fetch_interval", {}, GU_TypeValidationError),
+            ("node_js_exec_timeout", [], GU_TypeValidationError),
+            ("is_trusted_extension_origin_handler", "https://raw.githubusercontent.com/Logise1123/FirebaseDB-/refs/heads/main/db.js", GU_TypeValidationError),
         ],
         validate_func=ExtInfoGenConfig.validate,
         func_args=[AbstractTreePath()],
@@ -65,8 +65,8 @@ def test_ValidationConfig_validate():
     execute_attr_validation_tests(
         obj=config,
         attr_tests=[
-            ("raise_if_monitor_position_outside_stage", set(), MANIPO_TypeValidationError),
-            ("raise_if_monitor_bigger_then_stage", None, MANIPO_TypeValidationError),
+            ("raise_if_monitor_position_outside_stage", set(), GU_TypeValidationError),
+            ("raise_if_monitor_bigger_then_stage", None, GU_TypeValidationError),
         ],
         validate_func=ValidationConfig.validate,
         func_args=[AbstractTreePath()],
@@ -85,9 +85,9 @@ def test_PlatformMetaConfig_validate():
     execute_attr_validation_tests(
         obj=config,
         attr_tests=[
-            ("scratch_semver", 31, MANIPO_TypeValidationError),
-            ("scratch_vm", (11, 1, 0), MANIPO_TypeValidationError),
-            ("penguinmod_vm", 2.0, MANIPO_TypeValidationError),
+            ("scratch_semver", 31, GU_TypeValidationError),
+            ("scratch_vm", (11, 1, 0), GU_TypeValidationError),
+            ("penguinmod_vm", 2.0, GU_TypeValidationError),
         ],
         validate_func=PlatformMetaConfig.validate,
         func_args=[AbstractTreePath()],
@@ -102,15 +102,15 @@ def test_MasterConfig_validate():
     execute_attr_validation_tests(
         obj=config,
         attr_tests=[
-            ("ext_info_gen", {}, MANIPO_TypeValidationError),
+            ("ext_info_gen", {}, GU_TypeValidationError),
             ("ext_info_gen", ExtInfoGenConfig(
                     gen_opcode_info_dir=".", 
                     js_fetch_interval=3,
                     node_js_exec_timeout=1.0,
                     is_trusted_extension_origin_handler=None,
-                ), MANIPO_TypeValidationError),
-            ("validation", config.ext_info_gen, MANIPO_TypeValidationError),
-            ("platform_meta", [], MANIPO_TypeValidationError),
+                ), GU_TypeValidationError),
+            ("validation", config.ext_info_gen, GU_TypeValidationError),
+            ("platform_meta", [], GU_TypeValidationError),
         ],
         validate_func=MasterConfig.validate,
         func_args=[AbstractTreePath()],
