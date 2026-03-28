@@ -304,7 +304,7 @@ class FRCustomBlockArgumentMutation(FRMutation,
 @grepr_dataclass()
 class FRCustomBlockMutation(FRMutation, 
         required_properties={"proccode", "argumentids", "argumentnames", "argumentdefaults", "warp"},
-        optional_properties={"returns", "edited", "optype", "color", "hasnext"},
+        optional_properties={"returns", "edited", "optype", "color", "hasnext", "isreporter", "isglobal", "targetid", "type"},
     ):
     """
     The first representation for the mutation of a custom block definition

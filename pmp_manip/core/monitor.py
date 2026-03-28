@@ -70,26 +70,26 @@ class FRMonitor(HasGreprValidate):
         """
         return cls(
             # Core Properties
-            id          = data["id"        ], 
-            mode        = data["mode"      ], 
-            opcode      = data["opcode"    ], 
-            params      = deepcopy(data["params"]), 
-            sprite_name = data["spriteName"],
-            value       = data["value"     ],
-            x           = data["x"         ],
-            y           = data["y"         ],
-            visible     = data["visible"   ],
+            id          = data["id"], 
+            mode        = data["mode"], 
+            opcode      = data["opcode"], 
+            params      = deepcopy(data.get("params", {})),
+            sprite_name = data.get("spriteName", None),
+            value       = data.get("value", 0),
+            x           = data["x"],
+            y           = data["y"],
+            visible     = data.get("visible", False),
             
             # Properties for some opcodes
-            width       = data["width" ],
-            height      = data["height"],
-            slider_min  = data.get("sliderMin" , None),
-            slider_max  = data.get("sliderMax" , None),
+            width       = data.get("width", 0),
+            height      = data.get("height", 0),
+            slider_min  = data.get("sliderMin", None),
+            slider_max  = data.get("sliderMax", None),
             is_discrete = data.get("isDiscrete", None),
 
             # Properties which matter for blocks from custom extensions
             variable_type = data.get("variableType", None),
-            variable_id   = data.get("variableId"  , None),
+            variable_id   = data.get("variableId", None),
         )
     
     def to_data(self) -> dict[str, Any]:

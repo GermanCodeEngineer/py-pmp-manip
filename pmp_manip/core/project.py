@@ -64,9 +64,9 @@ class FRProject(HasGreprValidate):
                 for monitor_data in data["monitors"]
             ],
             extension_data = deepcopy(data.get("extensionData", {})),
-            extensions     = copy(data["extensions"]),
+            extensions     = copy(data.get("extensions", [])),
             extension_urls = KeyReprDict(data.get("extensionURLs", {})),
-            meta           = FRMeta.from_data(data["meta"]),
+            meta           = FRMeta.from_data(data["meta"]) if "meta" in data else FRMeta.new_scratch_meta(),
             asset_files    = copy(asset_files),
         )
     
