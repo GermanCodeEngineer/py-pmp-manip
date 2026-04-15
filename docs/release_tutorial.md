@@ -43,37 +43,42 @@
     ```bash
     python -m scripts.check_dependency_updates
     ```
-3. **Ensure all tests are successful** and generate coverage report:
+3. **Bundle required npm JS files** for pip distribution (if needed):
+    ```bash
+    python -m scripts.bundle_npm_package
+    ```
+   This will place the JS file in `pmp_manip/builtin_extension_source/` by default.
+4. **Ensure all tests are successful** and generate coverage report:
     ```bash
     coverage run -m pytest tests/
     ```
     ```bash
     coverage html
     ```
-4. View coverage report: **Are all critical code files covered?**
-5. **Update UML-Graph** of Second Representation for documentation:
+5. View coverage report: **Are all critical code files covered?**
+6. **Update UML-Graph** of Second Representation for documentation:
     ```bash
     python -m scripts.make_uml pmp_manip.core.project SRProject
     ```
-6. **Review pyproject.toml** with the new dependencies:
+7. **Review pyproject.toml** with the new dependencies:
     ```bash
     python -m scripts.review_pyproject_toml
     ```
-7. **Follow suggested changes and increase version number**
-8. **Build package locally**:
+8. **Follow suggested changes and increase version number**
+9. **Build package locally**:
     ```bash
     pip install --upgrade build
     python -m build
     ```
-9. **Commit and Push all changes** (Just an Example):
+10. **Commit and Push all changes** (Just an Example):
     ```bash
     git add -A
     git commit -m "prepare next release"
     git push
     ``` 
-10. **Create a Git tag with the version number and Push** the tag to your remote:
+11. **Create a Git tag with the version number and Push** the tag to your remote:
     ```bash
     git tag v1.2.3
     git push origin v1.2.3
     ```
-11. **Verify CI passes on the release tag** (GitHub Actions)
+12. **Verify CI passes on the release tag** (GitHub Actions)

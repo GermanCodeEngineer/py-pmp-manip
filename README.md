@@ -21,11 +21,11 @@ pip install py-pmp-manip
 ```
 **Or clone** directly. Do not forget to **include submodules**:
 ```bash
-git clone --recurse-submodules https://github.com/GermanCodeEngineer/py-pmp-manip.git
+git clone --recurse-submodules https://github.com/GermanCodeEngineer/py-pmp-manip
 cd py-pmp-manip
 pip install -e .
 ```
-Then **install Node.js >=18**:
+Then **install Node.js >=18** (this project uses JavaScript for some features):
 ```bash
 # Using winget (installs latest LTS)
 winget install OpenJS.NodeJS.LTS
@@ -37,11 +37,6 @@ choco install nodejs-lts
 node --version
 ```
 Or install manually from [nodejs.org](https://nodejs.org/en/download) (choose LTS version).
-
-Finally, **install npm dependencies** (this project uses JavaScript for some tasks):
-```bash
-npm install
-```
 
 ## 🧰 Basic Usage
 

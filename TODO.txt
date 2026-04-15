@@ -1,6 +1,9 @@
 TODOs Sorted by Priorites
 
-Currently Working On: /
+Currently Working On:
+    - easier installation and more stable node interfaces and npm packages
+        => ship node executable with releases?
+    - update js deps (also development ones)
 
 Changelog since last Release: /
 

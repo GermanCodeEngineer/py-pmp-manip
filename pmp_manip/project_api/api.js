@@ -1,9 +1,9 @@
 // Mostly stolen from
 // https://github.com/PenguinMod/penguinmod.github.io/blob/develop/src/lib/project-fetcher-hoc.jsx
 
-const {ArgumentParser} = require("argparse")
-const JSZip = require("jszip")
-const {protobufToJson} = require("pmp-protobuf")
+const {ArgumentParser} = require("../minifed_node_packages/argparse")
+const JSZip = require("../minifed_node_packages/jszip")
+const {protobufToJson} = require("../minifed_node_packages/pmp-protobuf")
 const fs = require("fs")
 const path = require("path")
 

@@ -17,7 +17,7 @@ from pmp_manip.utility import (
 EXTRACTOR_PATH = path.join(path.dirname(__file__), "direct_extractor.js")
    
 
-def extract_extension_info_directly(js_code: str, code_encoding: str = "utf-8", is_strict: bool = False) -> dict[str, Any]:
+def extract_extension_info_directly(js_code: str, code_encoding: str = "utf-8") -> dict[str, Any]:
     """
     Extract the return value of the getInfo method of the extension class based on the extension's javascript code,
     A node subprocess is run, which lets the outer code run and then calls and logs the return value of the getInfo method of the extension class.
@@ -27,7 +27,6 @@ def extract_extension_info_directly(js_code: str, code_encoding: str = "utf-8", 
     Args:
         js_code: the full JS code of the extension.
         code_encoding: the text encoding of `js_code`
-        is_strict: (for developers) wether to be strict e.g. about property accesses in the node subprocess
 
     Raises:
         GU_FailedFileWriteError(unlikely): if the JS code could not be written to a temporary file (eg. OS Error or Unicode Error)
@@ -51,7 +50,7 @@ def extract_extension_info_directly(js_code: str, code_encoding: str = "utf-8", 
     
     try:
         result = run_subprocess(
-            ["node", EXTRACTOR_PATH, temp_js_path, dumps(is_strict)],
+            ["node", EXTRACTOR_PATH, temp_js_path],
             capture_output=True,
             text=True,
             encoding="utf-8",

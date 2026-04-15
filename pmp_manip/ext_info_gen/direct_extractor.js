@@ -521,13 +521,19 @@ function myRequire(moduleName) {
         return defaultStubValue
     }
 
-    // fallback to real require
-    return require(moduleName)
+    // fallback to real require in minified node packages
+    const minifiedDir = path.resolve(__dirname, "../../minifed_node_packages/");
+    const localPath = path.join(minifiedDir, moduleName);
+    try {
+        // Let Node.js resolve file extension automatically
+        return require(localPath);
+    } catch (e) {
+        // If not found, fall back to normal require
+        return require(moduleName);
+    }
     /*
     Currently known packages which are required by builtin extensions:
         - scratch-translate-extension-languages
-        - three
-        - pathfinding
     */
 }
 
