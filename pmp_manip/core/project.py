@@ -2,6 +2,7 @@ from __future__ import annotations
 from copy       import copy, deepcopy
 from io         import BytesIO
 from json       import loads
+from pathlib    import Path
 from typing     import Any
 from uuid       import UUID
 
@@ -9,7 +10,7 @@ from pmp_manip.important_consts import SHA256_SEC_TARGET_NAME
 from pmp_manip.opcode_info.api  import OpcodeInfoAPI, DropdownValueKind
 from pmp_manip.project_api      import SCRATCH_API, PENGUINMOD_API, fetch_projects
 from pmp_manip.utility          import (
-    grepr_dataclass, field, enforce_argument_types, 
+    grepr_dataclass, field, enforce_argument_types,
     read_all_files_of_zip, create_zip_file, string_to_sha256, gdumps,
     KeyReprDict, AbstractTreePath, HasGreprValidate, ValidateAttribute,
     MANIP_SameValueTwiceError, MANIP_SpriteLayerStackError, MANIP_UnexpectedSubprocessError
@@ -25,7 +26,7 @@ from pmp_manip.core.vars_lists    import SRVariable, SRList
 
 
 @grepr_dataclass()
-class FRProject(HasGreprValidate): 
+class FRProject(HasGreprValidate):
     """
     The first representation (FR) of the project data tree. Its data is equivalent to the data stored in a .pmp file
     """
@@ -36,21 +37,21 @@ class FRProject(HasGreprValidate):
     extensions: list[str]
     extension_urls: dict[str, str]
     meta: FRMeta
-    asset_files: dict[str, bytes] 
+    asset_files: dict[str, bytes]
     # using KeyReprDict here to only show file names and not their gigantic byte values in repr
 
     @classmethod
-    def from_data(cls, 
-        data: dict, 
-        asset_files: dict[str, bytes], 
+    def from_data(cls,
+        data: dict,
+        asset_files: dict[str, bytes],
     ) -> FRProject:
         """
         Deserializes json_data into a FRProject
-        
+
         Args:
             data: the json_data
             asset_files: the contents of the costume and sound files
-        
+
         Returns:
             the FRProject
         """
@@ -60,7 +61,7 @@ class FRProject(HasGreprValidate):
                 for i, target_data in enumerate(data["targets"])
             ],
             monitors = [
-                FRMonitor.from_data(monitor_data) 
+                FRMonitor.from_data(monitor_data)
                 for monitor_data in data["monitors"]
             ],
             extension_data = deepcopy(data.get("extensionData", {})),
@@ -69,11 +70,11 @@ class FRProject(HasGreprValidate):
             meta           = FRMeta.from_data(data["meta"]),
             asset_files    = copy(asset_files),
         )
-    
+
     def to_data(self) -> tuple[dict[str, Any], dict[str, bytes]]:
         """
         Serializes a FRProject into json data
-        
+
         Returns:
             the json data and the asset files
         """
@@ -94,7 +95,7 @@ class FRProject(HasGreprValidate):
 
         Args:
             project_data: the project data in sb3 format
-        
+
         Returns:
             the project data in pmp format
         """
@@ -105,7 +106,7 @@ class FRProject(HasGreprValidate):
 
     @enforce_argument_types
     @classmethod
-    def from_file(cls, file_source: str | BytesIO) -> FRProject:
+    def from_file(cls, file_source: str | Path | BytesIO) -> FRProject:
         """
         Reads project data from a project file(.sb3 or .pmp) and creates a FRProject from it.
 
@@ -116,7 +117,7 @@ class FRProject(HasGreprValidate):
         project_data = loads(contents["project.json"].decode())
         del contents["project.json"]
 
-        if not(isinstance(file_source, str) and file_source.endswith(".pmp")):
+        if not(isinstance(file_source, (str, Path)) and str(file_source).endswith(".pmp")):
             project_data = cls._data_sb3_to_pmp(project_data)
         return cls.from_data(project_data, asset_files=KeyReprDict(contents))
 
@@ -129,7 +130,7 @@ class FRProject(HasGreprValidate):
         Args:
             project_id: the ID of the project (e.g. "0131435715")
             platform: the platform the project is on (determines api url)
-        
+
         Raises:
             GU_FailedFileWriteError(unlikely): if the temporary directory could not be created
             MANIP_NoNodeJSInstalledError: if Node.js is not installed or not found in PATH
@@ -151,10 +152,10 @@ class FRProject(HasGreprValidate):
         Args:
             project_ids: the IDs of the projects (e.g. ["0131435715", "9876543210"])
             platform: the platform the projects are on (determines api url)
-        
+
         Returns:
             Dictionary mapping IDs to sucessfully fetched projects and an optional error if some projects failed to fetch.
-            
+
         Raises:
             GU_FailedFileWriteError(unlikely): if the temporary directory could not be created
             MANIP_NoNodeJSInstalledError: if Node.js is not installed or not found in PATH
@@ -166,22 +167,22 @@ class FRProject(HasGreprValidate):
                 api_url = SCRATCH_API
             case TargetPlatform.PENGUINMOD:
                 api_url = PENGUINMOD_API
-        
+
         results, error = fetch_projects(
-            project_ids=project_ids, api_url=api_url, 
+            project_ids=project_ids, api_url=api_url,
             timeout_base=30, timeout_per_project=10,
         )
         projects = {project_id: cls.from_file(file_source=results[project_id]) if project_id in results else None for project_id in project_ids}
         return (projects, error)
-    
+
     @enforce_argument_types
-    def to_file(self, file_path: str) -> None:
+    def to_file(self, file_path: str | Path) -> None:
         """
         Writes the project data to a project file(.sb3 or .pmp)
 
         Args:
             file_path: file path to the .sb3 or .pmp file
-        
+
         Returns:
             the FRProject
         """
@@ -193,7 +194,7 @@ class FRProject(HasGreprValidate):
     def __post_init__(self) -> None:
         """
         Ensure my assumption about extension_data was correct
-        
+
         Returns:
             None
         """
@@ -205,7 +206,7 @@ class FRProject(HasGreprValidate):
         For every extension of the project generate and import the required opcode info py file and add it to the OpcodeInfoAPI.
         If cached versions exist and they are up to date, they will be kept and not replaced.
         **[WARNING] Does not copy info_api, but modifies it**
-        
+
         Raises:
             MANIP_UnknownBuiltinExtensionError: if one tries to add an unknown or not yet implemented builtin extension
             MANIP_ExtensionModuleNotFoundError: If the extension's python module does not exist
@@ -217,7 +218,7 @@ class FRProject(HasGreprValidate):
             MANIP_ExtensionInfoConvertionError: if the extracted extension info could not be converted into the format of this project
             MANIP_ThanksError(unlikely): if a block argument uses the mysterious Scratch.ArgumentType.SEPERATOR
             GU_FailedFileWriteError(unlikely): if the generated extension info file or cache file or their directory could not be written/created
-    
+
         Warnings:
             MANIP_UnexpectedPropertyAccessWarning: if a property of 'this' is accessed in the getInfo method of the extension code in safe analysis
             MANIP_UnexpectedNotPossibleFeatureWarning: if an impossible to implement feature is used (eg. ternary expr) in the getInfo method of the extension code in safe analysis
@@ -227,15 +228,15 @@ class FRProject(HasGreprValidate):
                 extension_id=extension_id,
                 extension_source=self.extension_urls.get(extension_id, None),
             )
-    
+
     @enforce_argument_types
     def to_second(self, info_api: OpcodeInfoAPI) -> SRProject:
         """
         Converts a FRProject into a SRProject
-        
+
         Args:
             info_api: the opcode info api used to fetch information about opcodes
-        
+
         Returns:
             the SRProject
         """
@@ -247,36 +248,36 @@ class FRProject(HasGreprValidate):
             if  target.is_stage:
                 old_stage: FRStage = target
                 new_stage, global_variables, global_lists = old_stage.to_second(
-                    asset_files=self.asset_files, 
+                    asset_files=self.asset_files,
                     info_api=info_api,
                 )
             else:
                 target: FRSprite
                 new_sprite, _, _ = target.to_second(
-                    asset_files=self.asset_files, 
+                    asset_files=self.asset_files,
                     info_api=info_api,
                 )
                 new_sprite: SRSprite
                 new_sprites.append(new_sprite)
                 sprite_layer_stack_dict[target.layer_order] = new_sprite.uuid
-        
+
         global_monitors = []
         sprite_names = [sprite.name for sprite in new_sprites]
         for monitor in self.monitors:
             new_monitor = monitor.to_second(info_api, sprite_names)
-            if new_monitor is None: 
+            if new_monitor is None:
                 continue
             if monitor.sprite_name is None:
                 global_monitors.append(new_monitor)
             else:
                 sprite_index = sprite_names.index(monitor.sprite_name)
                 new_sprites[sprite_index].local_monitors.append(new_monitor)
-       
+
         if old_stage.text_to_speech_language is None:
             new_tts_language = None
         else:
             new_tts_language = SRTTSLanguage.from_code(old_stage.text_to_speech_language)
-        
+
         new_extensions = []
         for extension_id in self.extensions:
             if extension_id in self.extension_urls.keys():
@@ -288,7 +289,7 @@ class FRProject(HasGreprValidate):
                 new_extensions.append(SRBuiltinExtension(
                     id  = extension_id,
                 ))
-        
+
         return SRProject(
             stage                   = new_stage,
             sprites                 = new_sprites,
@@ -305,11 +306,11 @@ class FRProject(HasGreprValidate):
 
 
 @grepr_dataclass(eq=True) # eq must be True for order to work, is overwritten
-class SRProject:
+class SRProject(HasGreprValidate):
     """
     The second representation (SR) of a Scratch/PenguinMod Project
     """
-    
+
     stage: SRStage = field(call_subvalidate=True)
     sprites: list[SRSprite]
     sprite_layer_stack: list[UUID]
@@ -326,7 +327,7 @@ class SRProject:
     def create_empty(cls) -> SRProject:
         """
         Create an empty SRProject with no sprites, variables etc. and the default settings
-        
+
         Returns:
             the empty SRProject
         """
@@ -358,7 +359,7 @@ class SRProject:
         """
         if not isinstance(other, SRProject):
             return NotImplemented
-        
+
         if (
             self.stage                   != other.stage or
             self.sprites                 != other.sprites or
@@ -389,35 +390,35 @@ class SRProject:
     def post_validate(self, path: AbstractTreePath, info_api: OpcodeInfoAPI) -> None:
         """
         Ensure an instance is valid, raise GU_ValidationError if not
-        
+
         Args:
             info_api: the opcode info api used to fetch information about opcodes
-        
+
         Raises:
             GU_ValidationError: if the instance is invalid
             MANIP_SameValueTwiceError(GU_ValidationError): if two sprites or extensions have the same name
         """
-        ValidateAttribute.VA_EXACT_LEN(self, path, "sprite_layer_stack", 
+        ValidateAttribute.VA_EXACT_LEN(self, path, "sprite_layer_stack",
             len(self.sprites), condition=f"In this case the project has {len(self.sprites)} sprites(s)"
         )
         ValidateAttribute.VA_RANGE(self, path, "tempo", 20, 500)
 
         self._validate_sprites(path, info_api)
-        
+
         for i, variable in enumerate(self.global_variables):
             variable.validate(path.add_attribute("global_variables").add_index_or_key(i))
         for i, list_ in enumerate(self.global_lists):
             list_.validate(path.add_attribute("global_lists").add_index_or_key(i))
-        
+
         self._validate_var_names(path)
         self._validate_list_names(path)
-        
+
         for i, monitor in enumerate(self.global_monitors):
             monitor.validate(path.add_attribute("global_monitors").add_index_or_key(i), info_api)
-        
+
         for i, extension in enumerate(self.extensions):
             extension.validate(path.add_attribute("extensions").add_index_or_key(i))
-        
+
         defined_extensions = {}
         for i, extension in enumerate(self.extensions):
             current_path = path.add_attribute("extensions").add_index_or_key(i)
@@ -425,7 +426,7 @@ class SRProject:
                 other_path = defined_extensions[extension.id]
                 raise MANIP_SameValueTwiceError(other_path, current_path, "Two extensions must not have the same id")
             defined_extensions[extension.id] = current_path
-        
+
         # 1. Ensure no same sprite name
         # 2. Validate Dropdown Values
         defined_sprites      = {}
@@ -441,7 +442,7 @@ class SRProject:
                 (DropdownValueKind.VARIABLE, variable.name) for variable in sprite.local_variables]
             local_lists    [sprite.name] = [
                 (DropdownValueKind.LIST    , list_   .name) for list_    in sprite.local_lists]
-        
+
         global_variables = [(DropdownValueKind.VARIABLE, variable.name) for variable in self.global_variables]
         global_lists     = [(DropdownValueKind.LIST    , list_   .name) for list_    in self.global_lists    ]
         backdrops            = [(DropdownValueKind.BACKDROP, backdrop.name) for backdrop in self.stage.costumes      ]
@@ -463,41 +464,41 @@ class SRProject:
                 backdrops        = backdrops,
             )
             target.validate_scripts(
-                path     = current_path, 
-                info_api = info_api, 
+                path     = current_path,
+                info_api = info_api,
                 context  = partial_context,
             )
-            if i == 0: 
+            if i == 0:
                 global_context = partial_context
             else:
                 target: SRSprite
                 target.validate_monitor_dropdown_values(
-                    path     = current_path, 
-                    info_api = info_api, 
+                    path     = current_path,
+                    info_api = info_api,
                     context  = partial_context,
                 )
-        
+
         for i, monitor in enumerate(self.global_monitors):
             monitor.validate_dropdown_values(
-                path     = path.add_attribute("global_monitors").add_index_or_key(i), 
-                info_api = info_api, 
+                path     = path.add_attribute("global_monitors").add_index_or_key(i),
+                info_api = info_api,
                 context  = global_context,
             )
 
     def _validate_sprites(self, path: AbstractTreePath, info_api: OpcodeInfoAPI) -> None:
         """
         Ensure the sprites of a SRProject are valid, raise GU_ValidationError if not
-        
+
         Args:
             path: the path from the project to itself. Used for better error messages
             info_api: the opcode info api used to fetch information about opcodes
-        
+
         Returns:
             None
-        
+
         Raises:
-            MANIP_SameValueTwiceError(GU_ValidationError): if two sprites have the same UUID **OR** if the same UUID is included twice in sprite_layer_stack 
-            MANIP_SpriteLayerStackError(GU_ValidationError): if the sprite_layer_stack contains a UUID which belongs to no sprite 
+            MANIP_SameValueTwiceError(GU_ValidationError): if two sprites have the same UUID **OR** if the same UUID is included twice in sprite_layer_stack
+            MANIP_SpriteLayerStackError(GU_ValidationError): if the sprite_layer_stack contains a UUID which belongs to no sprite
         """
         sprite_uuid_paths: dict[UUID, list] = {}
         for i, sprite in enumerate(self.sprites):
@@ -507,7 +508,7 @@ class SRProject:
                 other_path = sprite_uuid_paths[sprite.uuid]
                 raise MANIP_SameValueTwiceError(other_path, current_path, "Two sprites must npt have the same UUID")
             sprite_uuid_paths[sprite.uuid] = current_path
-        
+
 
         stack_uuid_paths: dict[UUID, list] = {}
         for i, uuid in enumerate(self.sprite_layer_stack):
@@ -520,17 +521,17 @@ class SRProject:
             stack_uuid_paths[uuid] = current_path
         # same length and uniqueness is assured and every UUID must have a partner sprite
         # => no sprite can possibly be missing a partner UUID
-        
+
     def _validate_var_names(self, path: AbstractTreePath) -> None:
         """
         Ensures no variables with the same name exist
 
         Args:
             path: the path from the project to itself. Used for better error messages
-        
+
         Returns:
             None
-        
+
         Raises:
             MANIP_SameValueTwiceError(GU_ValidationError): if the project contains vars with the same name
         """
@@ -541,7 +542,7 @@ class SRProject:
                 other_path = defined_variables[variable.name]
                 raise MANIP_SameValueTwiceError(other_path, current_path, "Two variables must not have the same name")
             defined_variables[variable.name] = current_path
-        
+
         for i, sprite in enumerate(self.sprites):
             for j, variable in enumerate(sprite.local_variables):
                 current_path = path.add_attribute("sprites").add_index_or_key(i).add_attribute("local_variables").add_index_or_key(j)
@@ -549,17 +550,17 @@ class SRProject:
                     other_path = defined_variables[variable.name]
                     raise MANIP_SameValueTwiceError(other_path, current_path, "Two variables must not have the same name")
                 defined_variables[variable.name] = current_path
-        
+
     def _validate_list_names(self, path: AbstractTreePath) -> None:
         """
         Ensures no lists with the same name exist
 
         Args:
             path: the path from the project to itself. Used for better error messages
-        
+
         Returns:
             None
-        
+
         Raises:
             MANIP_SameValueTwiceError(GU_ValidationError): if the project contains lists with the same name
         """
@@ -570,7 +571,7 @@ class SRProject:
                 other_path = defined_lists[list_.name]
                 raise MANIP_SameValueTwiceError(other_path, current_path, "Two lists must not have the same name")
             defined_lists[list_.name] = current_path
-        
+
         for i, sprite in enumerate(self.sprites):
             for j, list_ in enumerate(sprite.local_lists):
                 current_path = path.add_attribute("sprites").add_index_or_key(i).add_attribute("local_lists").add_index_or_key(j)
@@ -578,14 +579,14 @@ class SRProject:
                     other_path = defined_lists[list_.name]
                     raise MANIP_SameValueTwiceError(other_path, current_path, "Two lists must not have the same name")
                 defined_lists[list_.name] = current_path
-    
+
     @enforce_argument_types
     def add_all_extensions_to_info_api(self, info_api: OpcodeInfoAPI) -> None:
         """
         For every extension of the project generate and import the required opcode info py file and add it to the OpcodeInfoAPI.
         If cached versions exist and they are up to date, they will be kept and not replaced.
         [WARNING] Does not copy info_api, but modifies it
-        
+
         Raises:
             MANIP_UnknownBuiltinExtensionError: if one tries to add an unknown or not yet implemented builtin extension
             MANIP_ExtensionModuleNotFoundError: If the extension's python module does not exist
@@ -597,7 +598,7 @@ class SRProject:
             MANIP_ExtensionInfoConvertionError: if the extracted extension info could not be converted into the format of this project
             MANIP_ThanksError(unlikely): if a block argument uses the mysterious Scratch.ArgumentType.SEPERATOR
             GU_FailedFileWriteError(unlikely): if the generated extension info file or cache file or their directory could not be written/created
-    
+
         Warnings:
             MANIP_UnexpectedPropertyAccessWarning: if a property of 'this' is accessed in the getInfo method of the extension code in safe analysis
             MANIP_UnexpectedNotPossibleFeatureWarning: if an impossible to implement feature is used (eg. ternary expr) in the getInfo method of the extension code in safe analysis
@@ -613,11 +614,11 @@ class SRProject:
                     extension_id=extension.id,
                     extension_source=extension.url,
                 )
-    
+
     def _find_broadcast_messages(self) -> list[str]:
         """
         Finds the used broadcast messages in all sprites and the stage
-        
+
         Returns:
             the used broadcast messages
         """
@@ -628,15 +629,15 @@ class SRProject:
                 for block in script.blocks:
                     broadcast_messages.extend(block.find_broadcast_messages())
         return broadcast_messages
-    
+
     @enforce_argument_types
     def to_first(self, info_api: OpcodeInfoAPI, target_platform: TargetPlatform = TargetPlatform.PENGUINMOD) -> FRProject:
         """
         Converts a SRProject into a FRProject
-        
+
         Args:
             info_api: the opcode info api used to fetch information about opcodes
-        
+
         Returns:
             the FRProject
         """
@@ -659,7 +660,7 @@ class SRProject:
         old_targets.append(old_stage)
         old_monitors.extend(old_global_monitors)
         asset_files.update(stage_asset_files)
-        
+
         for new_sprite in self.sprites:
             old_sprite, old_local_monitors, sprite_asset_files = new_sprite.to_first(
                 info_api     = info_api,
