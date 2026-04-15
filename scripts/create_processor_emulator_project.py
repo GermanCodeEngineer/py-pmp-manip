@@ -8,6 +8,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from lxml import etree
+import json
 
 from pmp_manip import (
     get_default_config,
@@ -19,6 +20,7 @@ from pmp_manip import (
     SRVariable,
     SRList,
 )
+from pmp_manip.core.extension import SRBuiltinExtension
 from pmp_manip.core.block import (
     SRBlock,
     SRScript,
@@ -27,6 +29,7 @@ from pmp_manip.core.block import (
     SRBlockAndBoolInputValue,
     SRScriptInputValue,
 )
+from pmp_manip.core.monitor import SRVariableMonitor, SRListMonitor, LIST_MONITOR_DEFAULT_WIDTH, LIST_MONITOR_DEFAULT_HEIGHT
 from pmp_manip.core.block_mutation import (
     SRCustomBlockMutation,
     SRCustomBlockCallMutation,
@@ -40,6 +43,7 @@ from pmp_manip.core.custom_block import (
 )
 from pmp_manip.core.dropdown import SRDropdownValue
 from pmp_manip.opcode_info.api.dropdown import DropdownValueKind
+from pmp_manip.core.enums import SRVariableMonitorReadoutMode
 from pmp_manip.utility import AbstractTreePath
 
 
@@ -95,6 +99,28 @@ def list_item_ref(list_name: str, index_block: SRBlock) -> SRBlock:
         inputs={"INDEX": txt("1", index_block)},
         dropdowns={"LIST": dd(DropdownValueKind.LIST, list_name)},
     )
+
+
+def json_list_element(list_name: str, index_block: SRBlock, element_index: int) -> SRBlock:
+    """Get an element from a JSON-formatted list stored in a project list.
+
+    Composes: jwArray.get(ELEMENT_INDEX) of jwArray.parse(item(list_name, INDEX))
+    Uses 1-based indexing for element_index.
+    """
+    # the item (a JSON string) from the project list at INDEX
+    list_item = block(
+        "&lists::item (INDEX) of [LIST]",
+        inputs={"INDEX": txt("1", index_block)},
+        dropdowns={"LIST": dd(DropdownValueKind.LIST, list_name)},
+    )
+    # parse the JSON string into an array using jwArray.parse
+    parse_block = block("&jwArray::parse (INPUT) as array", inputs={"INPUT": txt("", list_item)})
+    # get the requested element from the parsed array
+    get_block = block(
+        "&jwArray::get (INDEX) in (ARRAY)",
+        inputs={"INDEX": txt(str(element_index)), "ARRAY": txt("", parse_block)},
+    )
+    return get_block
 
 
 def equals(a: SRBlock, b: SRBlock | None = None, imm_b: str = "") -> SRBlock:
@@ -186,12 +212,11 @@ def create_processor_project() -> SRProject:
     variable_names = [
         "pc",
         "halted",
-        "step_requested",
         "branch_taken",
         "cmp_flag",
         "opcode_handled",
         "last_opcode",
-        "status_text",
+        
         "instr_a",
         "instr_b",
         "instr_c",
@@ -201,17 +226,47 @@ def create_processor_project() -> SRProject:
         "r3",
     ]
     cpu.local_variables = [SRVariable(name=name, current_value=0) for name in variable_names]
-    for name in ("last_opcode", "status_text"):
+    for name in ("last_opcode",):
         for var in cpu.local_variables:
             if var.name == name:
                 var.current_value = ""
 
     cpu.local_lists = [
-        SRList(name="prog_op", current_value=[]),
-        SRList(name="prog_a", current_value=[]),
-        SRList(name="prog_b", current_value=[]),
-        SRList(name="prog_c", current_value=[]),
+        SRList(name="prog_json", current_value=[]),
     ]
+
+    # Create monitors for local variables and lists automatically
+    cpu.local_monitors = []
+    # Start y at 120 and decrease by 5 for each monitor
+    mon_x = -240
+    mon_y = 120
+    y_step = -20
+    for var in cpu.local_variables:
+        cpu.local_monitors.append(
+            SRVariableMonitor(
+                opcode = "&variables::value of [VARIABLE]",
+                dropdowns = {"VARIABLE": dd(DropdownValueKind.VARIABLE, var.name)},
+                position = (mon_x, mon_y),
+                is_visible = True,
+                readout_mode = SRVariableMonitorReadoutMode.NORMAL,
+                slider_min = 0,
+                slider_max = 100,
+                allow_only_integers = False,
+            )
+        )
+        mon_y += y_step
+    
+    for lst in cpu.local_lists:
+        cpu.local_monitors.append(
+            SRListMonitor(
+                opcode = "&variables::value of [LIST]",
+                dropdowns = {"LIST": dd(DropdownValueKind.LIST, lst.name)},
+                position = (80, -180),
+                is_visible = True,
+                size = (170, 360),
+            )
+        )
+        mon_y += y_step
 
     set_reg_opcode = SRCustomBlockOpcode(
         segments=(
@@ -247,11 +302,13 @@ def create_processor_project() -> SRProject:
     def value_arg_for_set() -> SRBlock:
         return cb_arg_text("value")
 
+    # status display removed per request (no speech bubble / always-running hats)
     cpu.scripts.append(
         SRScript(
             position=(24, 48),
             blocks=[
                 define_set_reg,
+                
                 block(
                     "&control::if <CONDITION> then {THEN}",
                     inputs={
@@ -528,10 +585,10 @@ def create_processor_project() -> SRProject:
                 define_exec_one_step,
                 set_var("branch_taken", imm="0"),
                 set_var("opcode_handled", imm="0"),
-                set_var("last_opcode", list_item_ref("prog_op", var_ref("pc"))),
-                set_var("instr_a", list_item_ref("prog_a", var_ref("pc"))),
-                set_var("instr_b", list_item_ref("prog_b", var_ref("pc"))),
-                set_var("instr_c", list_item_ref("prog_c", var_ref("pc"))),
+                set_var("last_opcode", json_list_element("prog_json", var_ref("pc"), 1)),
+                set_var("instr_a", json_list_element("prog_json", var_ref("pc"), 2)),
+                set_var("instr_b", json_list_element("prog_json", var_ref("pc"), 3)),
+                set_var("instr_c", json_list_element("prog_json", var_ref("pc"), 4)),
                 block(
                     "&control::if <CONDITION> then {THEN}",
                     inputs={
@@ -651,12 +708,11 @@ def create_processor_project() -> SRProject:
     init_blocks = [
         set_var("pc", imm="1"),
         set_var("halted", imm="0"),
-        set_var("step_requested", imm="0"),
         set_var("branch_taken", imm="0"),
         set_var("cmp_flag", imm="0"),
         set_var("opcode_handled", imm="0"),
         set_var("last_opcode", imm=""),
-        set_var("status_text", imm=""),
+        
         set_var("instr_a", imm="0"),
         set_var("instr_b", imm="0"),
         set_var("instr_c", imm="0"),
@@ -664,19 +720,6 @@ def create_processor_project() -> SRProject:
         set_var("r1", imm="0"),
         set_var("r2", imm="0"),
         set_var("r3", imm="0"),
-        block("&lists::delete all of [LIST]", dropdowns={"LIST": dd(DropdownValueKind.LIST, "prog_op")}),
-        block("&lists::delete all of [LIST]", dropdowns={"LIST": dd(DropdownValueKind.LIST, "prog_a")}),
-        block("&lists::delete all of [LIST]", dropdowns={"LIST": dd(DropdownValueKind.LIST, "prog_b")}),
-        block("&lists::delete all of [LIST]", dropdowns={"LIST": dd(DropdownValueKind.LIST, "prog_c")}),
-        block("&variables::show variable [VARIABLE]", dropdowns={"VARIABLE": dd(DropdownValueKind.VARIABLE, "pc")}),
-        block("&variables::show variable [VARIABLE]", dropdowns={"VARIABLE": dd(DropdownValueKind.VARIABLE, "halted")}),
-        block("&variables::show variable [VARIABLE]", dropdowns={"VARIABLE": dd(DropdownValueKind.VARIABLE, "last_opcode")}),
-        block("&variables::show variable [VARIABLE]", dropdowns={"VARIABLE": dd(DropdownValueKind.VARIABLE, "r0")}),
-        block("&variables::show variable [VARIABLE]", dropdowns={"VARIABLE": dd(DropdownValueKind.VARIABLE, "r1")}),
-        block("&variables::show variable [VARIABLE]", dropdowns={"VARIABLE": dd(DropdownValueKind.VARIABLE, "r2")}),
-        block("&variables::show variable [VARIABLE]", dropdowns={"VARIABLE": dd(DropdownValueKind.VARIABLE, "r3")}),
-        block("&variables::show variable [VARIABLE]", dropdowns={"VARIABLE": dd(DropdownValueKind.VARIABLE, "status_text")}),
-        block("&lists::show list [LIST]", dropdowns={"LIST": dd(DropdownValueKind.LIST, "prog_op")}),
     ]
 
     program = [
@@ -691,31 +734,15 @@ def create_processor_project() -> SRProject:
         ("MUL", "2", "1", "3"),
         ("HALT", "0", "0", "0"),
     ]
-    for op, a, b, c in program:
-        init_blocks.extend(
-            [
-                block(
-                    "&lists::add (ITEM) to [LIST]",
-                    inputs={"ITEM": txt(op)},
-                    dropdowns={"LIST": dd(DropdownValueKind.LIST, "prog_op")},
-                ),
-                block(
-                    "&lists::add (ITEM) to [LIST]",
-                    inputs={"ITEM": txt(a)},
-                    dropdowns={"LIST": dd(DropdownValueKind.LIST, "prog_a")},
-                ),
-                block(
-                    "&lists::add (ITEM) to [LIST]",
-                    inputs={"ITEM": txt(b)},
-                    dropdowns={"LIST": dd(DropdownValueKind.LIST, "prog_b")},
-                ),
-                block(
-                    "&lists::add (ITEM) to [LIST]",
-                    inputs={"ITEM": txt(c)},
-                    dropdowns={"LIST": dd(DropdownValueKind.LIST, "prog_c")},
-                ),
-            ]
-        )
+    # initial program is stored as JSON strings in `prog_json` (see below)
+
+    # Store a JSON-formatted representation of each instruction in the project
+    # so the project file contains the program as JSON arrays (usable by jwArray).
+    prog_json_values = [json.dumps([op, a, b, c]) for op, a, b, c in program]
+    for lst in cpu.local_lists:
+        if lst.name == "prog_json":
+            lst.current_value = prog_json_values
+            break
 
     cpu.scripts.append(
         SRScript(
@@ -732,40 +759,18 @@ def create_processor_project() -> SRProject:
                     "&events::when [KEY] key pressed",
                     dropdowns={"KEY": dd(DropdownValueKind.STANDARD, "space")},
                 ),
-                set_var("step_requested", imm="1"),
-            ],
-        )
-    )
-
-    cpu.scripts.append(
-        SRScript(
-            position=(560, 620),
-            blocks=[
-                block("&events::always"),
                 block(
                     "&control::if <CONDITION> then {THEN}",
                     inputs={
-                        "CONDITION": bool_in(
-                            block(
-                                "&operators::<OPERAND1> and <OPERAND2>",
-                                inputs={
-                                    "OPERAND1": bool_in(equals(var_ref("step_requested"), imm_b="1"), immediate=False),
-                                    "OPERAND2": bool_in(equals(var_ref("halted"), imm_b="0"), immediate=False),
-                                },
-                            ),
-                            immediate=False,
-                        ),
-                        "THEN": SRScriptInputValue(
-                            blocks=[
-                                call_custom(exec_step_opcode, {}),
-                                set_var("step_requested", imm="0"),
-                            ]
-                        ),
+                        "CONDITION": bool_in(equals(var_ref("halted"), imm_b="0"), immediate=False),
+                        "THEN": SRScriptInputValue(blocks=[call_custom(exec_step_opcode, {})]),
                     },
                 ),
             ],
         )
     )
+
+    # step loop removed; stepping is triggered directly by key press handler
 
     status_join = block(
         "&operators::join (STRING1) (STRING2)",
@@ -865,19 +870,12 @@ def create_processor_project() -> SRProject:
         },
     )
 
-    cpu.scripts.append(
-        SRScript(
-            position=(560, 800),
-            blocks=[
-                block("&events::always"),
-                set_var("status_text", status_join),
-                block("&looks::say (MESSAGE)", inputs={"MESSAGE": txt("", var_ref("status_text"))}),
-            ],
-        )
-    )
+    # status display removed per request
 
     project.sprites.append(cpu)
     project.sprite_layer_stack = [cpu.uuid]
+    # Add builtin jwArray extension so blocks that expect it can be used at runtime
+    project.extensions.append(SRBuiltinExtension(id="jwArray"))
     return project
 
 
@@ -885,6 +883,8 @@ def create_and_write_processor_emulator(output: str | Path = "processor_emulator
     """Create, validate and export the processor emulator project."""
     out = Path(output)
     project = create_processor_project()
+    # Ensure opcode info for all declared extensions (jwArray) is present in info_api
+    project.add_all_extensions_to_info_api(info_api)
     project.validate(AbstractTreePath(), info_api)
     fr = project.to_first(info_api)
     fr.to_file(str(out))
