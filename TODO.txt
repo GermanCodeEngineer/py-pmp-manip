@@ -4,13 +4,14 @@ Currently Working On:
     - easier installation and more stable node interfaces and npm packages
         => ship node executable with releases?
     - update js deps (also development ones)
+    - ensure sharkpool extensions are compatible
 
 Changelog since last Release: /
 
 Special:
     - TODOs in Code + read through code, optimize here and there
 
-High: 
+High:
     - fix and add tests for project fetching
 
 Medium:

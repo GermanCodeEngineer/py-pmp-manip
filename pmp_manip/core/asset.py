@@ -22,7 +22,7 @@ class FRCostume(HasGreprValidate):
     """
     The first representation for a costume. It is very close to the json data in a project
     """
-    
+
     name: str
     asset_id: str
     data_format: str
@@ -35,10 +35,10 @@ class FRCostume(HasGreprValidate):
     def from_data(cls, data: dict[str, Any]) -> FRCostume:
         """
         Deserializes json data into a FRCostume
-        
+
         Args:
             data: the json data
-        
+
         Returns:
             the FRCostume
         """
@@ -52,11 +52,11 @@ class FRCostume(HasGreprValidate):
             rotation_center_y = data["rotationCenterY"],
             bitmap_resolution = data.get("bitmapResolution", None),
         )
-    
+
     def to_data(self) -> dict[str, Any]:
         """
         Serializes a FRCostume into json data
-        
+
         Returns:
             the json data
         """
@@ -71,20 +71,20 @@ class FRCostume(HasGreprValidate):
         if self.bitmap_resolution is not None:
             data["bitmapResolution"] = self.bitmap_resolution
         return data
-    
-    def to_second(self, asset_files: dict[str, bytes]) -> SRVectorCostume | SRBitmapCostume: 
+
+    def to_second(self, asset_files: dict[str, bytes]) -> SRVectorCostume | SRBitmapCostume:
         """
         Converts a FRCostume into a SRCostume
-        
+
         Args:
             asset_files: the asset files, which store the contents of costumes and sounds
-        
+
         Returns:
             the SRCostume
         """
         rotation_center = (self.rotation_center_x, self.rotation_center_y)
         content_bytes = asset_files[self.md5ext]
-        
+
         if self.data_format == "svg":
             return SRVectorCostume(
                 name              = self.name,
@@ -116,22 +116,22 @@ class FRSound(HasGreprValidate):
     """
     The first representation for a sound. It is very close to the json data in a project
     """
-    
+
     name: str
     asset_id: str
     data_format: str
     md5ext: str
     rate: int
     sample_count: int
-    
+
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> FRSound:
         """
         Deserializes json data into a FRSound
-        
+
         Args:
             data: the json data
-        
+
         Returns:
             the FRSound
         """
@@ -147,7 +147,7 @@ class FRSound(HasGreprValidate):
     def to_data(self) -> dict[str, Any]:
         """
         Serializes a FRSound into json data
-        
+
         Returns:
             the json data
         """
@@ -164,16 +164,16 @@ class FRSound(HasGreprValidate):
     def to_second(self, asset_files: dict[str, bytes]) -> SRSound:
         """
         Converts a FRSound into a SRSound
-        
+
         Args:
             asset_files: the asset files, which store the contents of costumes and sounds
-        
+
         Returns:
             the SRSound
         """
         content_bytes = asset_files[self.md5ext]
         audio_segment = AudioSegment.from_file(BytesIO(content_bytes), format=self.data_format)
-        
+
         return SRSound(
             name           = self.name,
             file_extension = self.data_format,
@@ -193,10 +193,10 @@ class SRCostume(ABC, HasGreprValidate):
     rotation_center: tuple[int | float, int | float]
 
     @abstractmethod
-    def to_first(self) -> tuple[FRCostume, bytes]: 
+    def to_first(self) -> tuple[FRCostume, bytes]:
         """
-        Converts a SRCostume into a FRCostume 
-        
+        Converts a SRCostume into a FRCostume
+
         Returns:
             the FRCostume
         """
@@ -206,9 +206,9 @@ class SRVectorCostume(SRCostume):
     """
     The second representation for a vector(SVG) costume. It is more user friendly then the first representation
     """
-    
+
     content: etree._Element
-        
+
     @classmethod
     def create_empty(cls, name: str = "empty") -> SRCostume:
         return cls(
@@ -233,40 +233,40 @@ class SRVectorCostume(SRCostume):
             return False
         other: SRVectorCostume = other
         return xml_equal(self.content, other.content)
-        
+
     def post_validate(self, path: AbstractTreePath) -> None:
         """
         Ensure an instance is valid, raise GU_ValidationError if not
-        
+
         Args:
             path: the path from the project to itself. Used for better error messages
-        
+
         Raises:
             GU_ValidationError: if the instance is invalid
         """
         ValidateAttribute.VA_EQUAL(self, path, "file_extension", "svg")
-    
+
     def to_first(self) -> tuple[FRCostume, bytes]:
         """
         Converts a SRVectorCostume into a FRCostume
-        
+
         Returns:
             the FRCostume
         """
         file_bytes: bytes = etree.tostring(self.content, method="c14n")
-        md5 = generate_md5(file_bytes) 
-        # I am using the md5 hash here(guessed by "md5ext"). 
-        # I do not know which hashing method Scratch uses. 
+        md5 = generate_md5(file_bytes)
+        # I am using the md5 hash here(guessed by "md5ext").
+        # I do not know which hashing method Scratch uses.
         # Scratch md5ext and mine do NOT match. I have uploaded generated project multiple times
         # and there do not seem to be any consequences.
         return (FRCostume(
             name              = self.name,
-            asset_id          = md5, 
-            data_format       = self.file_extension, 
-            md5ext            = f"{md5}.{self.file_extension}", 
-            rotation_center_x = self.rotation_center[0], 
-            rotation_center_y = self.rotation_center[1], 
-            bitmap_resolution = None, 
+            asset_id          = md5,
+            data_format       = self.file_extension,
+            md5ext            = f"{md5}.{self.file_extension}",
+            rotation_center_x = self.rotation_center[0],
+            rotation_center_y = self.rotation_center[1],
+            bitmap_resolution = None,
         ), file_bytes)
 
 @grepr_dataclass(eq=True) # must be True for order to work, is overwritten
@@ -274,11 +274,11 @@ class SRBitmapCostume(SRCostume):
     """
     The second representation for a bitmap(usually PNG) costume. It is more user friendly then the first representation
     """
-    
+
     # file_extension: i've only seen "png", "jpg"; others might work
     content: Image.Image
     has_double_resolution: bool
-    
+
     def __eq__(self, other) -> bool:
         """
         Checks whether a SRBitmapCostume is equal to another.
@@ -301,7 +301,7 @@ class SRBitmapCostume(SRCostume):
     def to_first(self) -> tuple[FRCostume, bytes]:
         """
         Converts a SRBitmapCostume into a FRCostume
-        
+
         Returns:
             the FRCostume
         """
@@ -309,18 +309,18 @@ class SRBitmapCostume(SRCostume):
         self.content.save(bytes_io, format=self.file_extension)
         file_bytes = bytes_io.getvalue()
         md5 = generate_md5(file_bytes)
-        # I am using the md5 hash here(guessed by "md5ext"). 
-        # I do not know which hashing method Scratch uses. 
+        # I am using the md5 hash here(guessed by "md5ext").
+        # I do not know which hashing method Scratch uses.
         # Scratch md5ext and mine do NOT match. I have uploaded generated project multiple times
         # and there do not seem to be any consequences.
         return (FRCostume(
             name              = self.name,
-            asset_id          = md5, 
-            data_format       = self.file_extension, 
-            md5ext            = f"{md5}.{self.file_extension}", 
-            rotation_center_x = self.rotation_center[0], 
-            rotation_center_y = self.rotation_center[1], 
-            bitmap_resolution = 2 if self.has_double_resolution else 1, 
+            asset_id          = md5,
+            data_format       = self.file_extension,
+            md5ext            = f"{md5}.{self.file_extension}",
+            rotation_center_x = self.rotation_center[0],
+            rotation_center_y = self.rotation_center[1],
+            bitmap_resolution = 2 if self.has_double_resolution else 1,
         ), file_bytes)
 
 
@@ -333,11 +333,11 @@ class SRSound(HasGreprValidate):
     name: str
     file_extension: str # i've only seen "wav", "mp3", "ogg"; others might work
     content: AudioSegment
-    
+
     def to_first(self) -> tuple[FRSound, bytes]:
         """
         Converts a SRSound into a FRSound
-        
+
         Returns:
             the FRSound
         """
@@ -345,19 +345,19 @@ class SRSound(HasGreprValidate):
         self.content.export(bytes_io, format=self.file_extension)
         file_bytes = bytes_io.getvalue()
         md5 = generate_md5(file_bytes)
-        # I am using the md5 hash here(guessed by "md5ext"). 
-        # I do not know which hashing method Scratch uses. 
+        # I am using the md5 hash here(guessed by "md5ext").
+        # I do not know which hashing method Scratch uses.
         # Scratch md5ext and mine do NOT match. I have uploaded generated project multiple times
         # and there do not seem to be any consequences.
         return (FRSound(
             name              = self.name,
-            asset_id          = md5, 
-            data_format       = self.file_extension, 
-            md5ext            = f"{md5}.{self.file_extension}", 
+            asset_id          = md5,
+            data_format       = self.file_extension,
+            md5ext            = f"{md5}.{self.file_extension}",
             rate              = self.content.frame_rate,
             sample_count      = len(self.content.get_array_of_samples()),
         ), file_bytes)
- 
+
 
 __all__ = ["FRCostume", "SRVectorCostume", "SRBitmapCostume", "FRSound", "SRCostume", "SRSound"]
 

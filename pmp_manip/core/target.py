@@ -28,7 +28,7 @@ class FRTarget(ABC, HasGreprValidate):
     """
     The first representation (FR) of a target. A target can be either a sprite or the stage
     """
-    
+
     is_stage: bool
     name: str
     variables: dict[str, tuple[str, (int|float|str|bool)] | tuple[str, (int|float|str|bool), bool]]
@@ -39,20 +39,20 @@ class FRTarget(ABC, HasGreprValidate):
     comments: dict[str, FRComment]
     current_costume: int
     costumes: list[FRCostume]
-    sounds: list[FRSound] 
+    sounds: list[FRSound]
     volume: int | float
     layer_order: int
     id: str
-    
+
     @classmethod
     @abstractmethod
     def from_data(cls, data: dict[str, Any]) -> FRTarget:
         """
         Deserializes json_data into a FRTarget
-        
+
         Args:
             data: the json_data
-        
+
         Returns:
             the FRTarget
         """
@@ -101,7 +101,7 @@ class FRTarget(ABC, HasGreprValidate):
     def __post_init__(self) -> None:
         """
         Ensure my assumption about custom_vars was correct
-        
+
         Returns:
             None
         """
@@ -111,7 +111,7 @@ class FRTarget(ABC, HasGreprValidate):
     def to_data(self) -> dict[str, Any]:
         """
         Serializes a FRTarget into json data
-        
+
         Returns:
             the json data
         """
@@ -151,27 +151,27 @@ class FRTarget(ABC, HasGreprValidate):
         }
 
     @abstractmethod
-    def to_second(self, 
+    def to_second(self,
         asset_files: dict[str, bytes],
         info_api: OpcodeInfoAPI,
     ) -> tuple[SRTarget, list[SRVariable] | None,  list[SRList] | None]:
         """
         Converts a FRTarget into a SRTarget
-        
+
         Args:
             asset_files: the asset files, which store the contents of costumes and sounds
             info_api: the opcode info api used to fetch information about opcodes
-        
+
         Returns:
             the SRTarget, a list of the global variables or None, a list of the global lists or None
         """
 
     def _to_second_common(self, asset_files: dict[str, bytes], info_api: OpcodeInfoAPI) -> tuple[
-        list[SRScript], 
-        list[SRComment], 
-        list[SRVectorCostume | SRBitmapCostume], 
-        list[SRSound], 
-        list[SRVariable], 
+        list[SRScript],
+        list[SRComment],
+        list[SRVectorCostume | SRBitmapCostume],
+        list[SRSound],
+        list[SRVariable],
         list[SRList],
     ]:
         """
@@ -179,7 +179,7 @@ class FRTarget(ABC, HasGreprValidate):
 
         Args:
             info_api: the opcode info api used to fetch information about opcodes
-        
+
         Returns:
             lists of scripts, floating comments, costumes, sounds, variables and lists
         """
@@ -207,7 +207,7 @@ class FRTarget(ABC, HasGreprValidate):
                 in_shadow_input = False, # set below if supposed to be true
             )
             new_blocks[block_id] = new_block
-        
+
         for block_id, new_block in new_blocks.items():
             block_info = info_api.get_info_by_old(new_block.opcode)
             input_infos = block_info.get_old_input_ids_infos(new_block, fti_if=None)
@@ -221,14 +221,14 @@ class FRTarget(ABC, HasGreprValidate):
 
         for block_id in fti_if.scheduled_block_deletions:
             del new_blocks[block_id]
-        
+
         # Get all top level block ids
         top_level_block_ids: list[str] = []
         [
-            top_level_block_ids.append(block_id) 
+            top_level_block_ids.append(block_id)
             if block.is_top_level else None for block_id, block in new_blocks.items()
         ]
-        
+
         # Account for that one bug(not my fault), where a block is falsely independent
         for block_id, block in new_blocks.items():
             for input_value in block.inputs.values():
@@ -251,7 +251,7 @@ class FRTarget(ABC, HasGreprValidate):
                 position = position,
                 blocks   = script_blocks,
             ))
-        
+
         new_variables, new_lists = self._to_second_variables_lists()
         return (
             new_scripts,
@@ -261,11 +261,11 @@ class FRTarget(ABC, HasGreprValidate):
             new_variables,
             new_lists,
         )
-    
+
     def _to_second_variables_lists(self) -> tuple[list[SRVariable], list[SRList]]:
         """
         Converts the variables and lists of a FRProject into second representation and returns them
-        
+
         Returns:
             list of variables and list of lists in second representation
         """
@@ -281,7 +281,7 @@ class FRTarget(ABC, HasGreprValidate):
                 )
             else:
                 raise MANIP_ConversionError(f"Invalid variable data {variable}")
-        
+
         new_lists = []
         for list_ in self.lists.values():
             if len(list_) == 2:
@@ -290,7 +290,7 @@ class FRTarget(ABC, HasGreprValidate):
                 )
             else:
                 raise MANIP_ConversionError(f"Invalid list data {list_}")
-        
+
         return new_variables, new_lists
 
 @grepr_dataclass()
@@ -298,7 +298,7 @@ class FRStage(FRTarget):
     """
     The first representation (FR) of the stage
     """
-    
+
     tempo: int
     video_transparency: int | float
     video_state: str
@@ -308,10 +308,10 @@ class FRStage(FRTarget):
     def from_data(cls, data: dict[str, Any]) -> FRStage:
         """
         Deserializes json_data into a FRStage
-        
+
         Args:
             data: the json_data
-        
+
         Returns:
             the FRStage
         """
@@ -328,11 +328,11 @@ class FRStage(FRTarget):
             video_state=data["videoState"],
             text_to_speech_language=data.get("textToSpeechLanguage", None),
         )
-    
+
     def to_data(self) -> dict[str, Any]:
         """
         Serializes a FRStage into json data
-        
+
         Returns:
             the json data
         """
@@ -344,18 +344,18 @@ class FRStage(FRTarget):
             "textToSpeechLanguage": self.text_to_speech_language,
         }
         return data
-    
-    def to_second(self, 
+
+    def to_second(self,
         asset_files: dict[str, bytes],
         info_api: OpcodeInfoAPI,
     ) -> tuple[SRStage, list[SRVariable],  list[SRList]]:
         """
         Converts a FRStage into a SRStage
-        
+
         Args:
             asset_files: the asset files, which store the contents of costumes and sounds
             info_api: the opcode info api used to fetch information about opcodes
-        
+
         Returns:
             the SRStage, a list of the global variables, a list of the global lists
         """
@@ -395,10 +395,10 @@ class FRSprite(FRTarget):
     def from_data(cls, data: dict[str, Any]) -> FRSprite:
         """
         Deserializes json_data into a FRSprite
-        
+
         Args:
             data: the json_data
-        
+
         Returns:
             the FRSprite
         """
@@ -422,7 +422,7 @@ class FRSprite(FRTarget):
     def to_data(self) -> dict[str, Any]:
         """
         Serializes a FRSprite into json data
-        
+
         Returns:
             the json data
         """
@@ -437,18 +437,18 @@ class FRSprite(FRTarget):
             "rotationStyle": self.rotation_style,
         }
         return data
-    
-    def to_second(self, 
+
+    def to_second(self,
         asset_files: dict[str, bytes],
         info_api: OpcodeInfoAPI,
     ) -> tuple[SRSprite, None, None]:
         """
         Converts a FRSprite into a SRSprite
-        
+
         Args:
             asset_files: the asset files, which store the contents of costumes and sounds
             info_api: the opcode info api used to fetch information about opcodes
-        
+
         Returns:
             the SRSprite, None, None
         """
@@ -496,21 +496,21 @@ class SRTarget(HasGreprValidate):
     def post_validate(self, path: AbstractTreePath, info_api: OpcodeInfoAPI) -> None:
         """
         Ensure an instance is valid, raise GU_ValidationError if not
-        
+
         Args:
             path: the path from the project to itself. Used for better error messages
             info_api: the opcode info api used to fetch information about opcodes
-        
+
         Raises:
             GU_ValidationError: if the instance is invalid
             MANIP_SameValueTwiceError(GU_ValidationError): if two costumes or two sounds have the same name
         """
         ValidateAttribute.VA_MIN_LEN(self, path, "costumes", 1)
-        ValidateAttribute.VA_RANGE(self, path, "costume_index", 
+        ValidateAttribute.VA_RANGE(self, path, "costume_index",
             0, len(self.costumes)-1, condition=f"In this case the sprite has {len(self.costumes)} costume(s)",
         )
         ValidateAttribute.VA_RANGE(self, path, "volume", 0, 100)
-        
+
         for i, comment in enumerate(self.comments):
             comment.validate(path.add_attribute("comments").add_index_or_key(i))
 
@@ -522,7 +522,7 @@ class SRTarget(HasGreprValidate):
                 other_path = defined_costumes[costume.name]
                 raise MANIP_SameValueTwiceError(other_path, current_path, "Two costumes must not have the same name")
             defined_costumes[costume.name] = current_path
-        
+
         defined_sounds = {}
         for i, sound in enumerate(self.sounds):
             current_path = path.add_attribute("sounds").add_index_or_key(i)
@@ -531,23 +531,23 @@ class SRTarget(HasGreprValidate):
                 other_path = defined_sounds[sound.name]
                 raise MANIP_SameValueTwiceError(other_path, current_path, "Two sounds must not have the same name")
             defined_sounds[sound.name] = current_path
-    
-    def validate_scripts(self, 
-        path: AbstractTreePath, 
+
+    def validate_scripts(self,
+        path: AbstractTreePath,
         info_api: OpcodeInfoAPI,
         context: PartialContext,
     ) -> None:
         """
         Ensure the scripts of a SRTarget are valid, raise GU_ValidationError if not
-        
+
         Args:
             path: the path from the project to itself. Used for better error messages
             info_api: the opcode info api used to fetch information about opcodes
             context: Context about parts of the project. Used to validate dropdowns
-        
+
         Returns:
             None
-        
+
         Raises:
             GU_ValidationError: if the scripts of the SRTarget are invalid
             MANIP_SameValueTwiceError(GU_ValidationError): if two custom blocks have the same custom_opcode.
@@ -579,7 +579,7 @@ class SRTarget(HasGreprValidate):
 
         Args:
             partial_context: the partial context (project context)
-        
+
         Returns:
             the complete context
         """
@@ -589,7 +589,7 @@ class SRTarget(HasGreprValidate):
             sounds   = [(DropdownValueKind.SOUND  , sound  .name) for sound   in self.sounds  ],
             is_stage = isinstance(self, SRStage),
         )
-    
+
     def _to_first_common(self,
         info_api: OpcodeInfoAPI,
         global_vars: list[SRVariable],
@@ -611,7 +611,7 @@ class SRTarget(HasGreprValidate):
             global_vars: a list of global variables
             global_lists: a list of global lists
             global_monitors: the non-local monitors (only needed for a SRStage)
-        
+
         Returns:
             the blocks, comments, costumes, sounds, variables, lists and monitors in first representation
             and the file contents of the target assets
@@ -630,11 +630,11 @@ class SRTarget(HasGreprValidate):
             local_vars    = self.local_variables
             local_lists   = self.local_lists
             new_monitors  = self.local_monitors
-        
+
         sti_if = SecondToInterIF(scripts=self.scripts)
         for script in self.scripts:
             top_level_id = script.to_inter(sti_if, info_api)
-        
+
         itf_if = InterToFirstIF(
             blocks=sti_if.produced_blocks,
             global_vars=[variable.name for variable in global_vars],
@@ -644,13 +644,13 @@ class SRTarget(HasGreprValidate):
             sprite_name=sprite_name,
             _next_block_id_num=sti_if._next_block_id_num, # to avoid reusing the same ids
         )
-        
+
         id_to_parent_id = {}
         for block_id, block in sti_if.produced_blocks.items():
             block_ids = block.get_references()
             for block_id in block_ids:
                 id_to_parent_id[block_id] = block_id
-        
+
         for block_id, block in sti_if.produced_blocks.items():
             old_block = block.to_first(
                 itf_if, info_api,
@@ -659,9 +659,9 @@ class SRTarget(HasGreprValidate):
                 own_id=block_id,
             )
             itf_if.schedule_block_addition(block_id, old_block)
-        
+
         [itf_if.add_comment(comment.to_first(block_id=None), floating=True) for comment in self.comments]
-        
+
         asset_files = {}
         old_costumes = []
         for costume in self.costumes:
@@ -690,8 +690,8 @@ class SRTarget(HasGreprValidate):
             old_variables, old_lists,
             old_monitors,
             asset_files,
-        )        
-        
+        )
+
 
 @grepr_dataclass()
 class SRStage(SRTarget):
@@ -703,7 +703,7 @@ class SRStage(SRTarget):
     def create_empty(cls) -> SRTarget:
         """
         Create an empty SRTarget with no scripts, costumes etc. and the default settings
-        
+
         Returns:
             the empty SRTarget
         """
@@ -716,7 +716,7 @@ class SRStage(SRTarget):
             volume=100,
         )
 
-    def to_first(self, 
+    def to_first(self,
         info_api: OpcodeInfoAPI,
         global_vars: list[SRVariable],
         global_lists: list[SRList],
@@ -729,7 +729,7 @@ class SRStage(SRTarget):
     ) -> tuple[FRStage, list[FRMonitor], dict[str, bytes]]:
         """
         Converts a SRStage into a FRStage
-        
+
         Args:
             info_api: the opcode info api used to fetch information about opcodes
             global_vars: a list of global variables
@@ -740,7 +740,7 @@ class SRStage(SRTarget):
             video_transparency: the video extensions transparency
             video_state: the state of the video extension
             text_to_speech_language: the tts language of the tts extension
-        
+
         Returns:
             the FRStage, a list of global monitors and the resulting asset files
         """
@@ -788,7 +788,7 @@ class SRSprite(SRTarget):
     """
     The second representation (SR) of a sprite, which is much more user friendly
     """
-    
+
     name: str
     local_variables: list[SRVariable]
     local_lists: list[SRList]
@@ -800,12 +800,12 @@ class SRSprite(SRTarget):
     is_draggable: bool
     rotation_style: SRSpriteRotationStyle
     uuid: UUID = field(default_factory=uuid4, init=False, compare=False)
-    
+
     @classmethod
     def create_empty(cls, name: str) -> SRSprite:
         """
         Create an empty SRSprite with no scripts, costumes, variables, local monitors etc. and the default settings
-        
+
         Returns:
             the empty SRSprite
         """
@@ -816,7 +816,7 @@ class SRSprite(SRTarget):
             sounds=[],
             costume_index=0,
             volume=100,
-            
+
             name=name,
             local_variables=[],
             local_lists=[],
@@ -833,60 +833,60 @@ class SRSprite(SRTarget):
         if name == "uuid" and hasattr(self, "uuid"):
             raise AttributeError('Cannot modify "uuid" after creation')
         super().__setattr__(name, value)
-    
+
     def post_validate(self, path: AbstractTreePath, info_api: OpcodeInfoAPI) -> None:
         """
         Ensure an instance is valid, raise GU_ValidationError if not
-        
+
         Args:
             path: the path from the project to itself. Used for better error messages
             info_api: the opcode info api used to fetch information about opcodes
-        
+
         Raises:
             GU_ValidationError: if the instance is invalid
         """
         super().post_validate(path, info_api)
-        
+
         ValidateAttribute.VA_NOT_ONE_OF(self, path, "name", ["_myself_", "_stage_", "_mouse_", "_edge_"])
         ValidateAttribute.VA_MIN(self, path, "size", 0)
         ValidateAttribute.VA_RANGE(self, path, "direction", -180, 180)
-        
+
         for i, variable in enumerate(self.local_variables):
             variable.validate(path.add_attribute("local_variables").add_index_or_key(i))
         for i, list_ in enumerate(self.local_lists):
             list_.validate(path.add_attribute("local_lists").add_index_or_key(i))
-        
+
         for i, monitor in enumerate(self.local_monitors):
             monitor.validate(path.add_attribute("local_monitors").add_index_or_key(i), info_api)
-    
-    def validate_monitor_dropdown_values(self, 
-        path: AbstractTreePath, 
+
+    def validate_monitor_dropdown_values(self,
+        path: AbstractTreePath,
         info_api: OpcodeInfoAPI,
         context: PartialContext | CompleteContext,
     ) -> None:
         """
         Ensure the dropdown values of the monitors of a SRSprite are valid, raise GU_ValidationError if not
-        
+
         Args:
             path: the path from the project to itself. Used for better error messages
             info_api: the opcode info api used to fetch information about opcodes
             context: Context about parts of the project. Used to validate dropdowns
-        
+
         Returns:
             None
-        
+
         Raises:
             GU_ValidationError: if the monitor dropdown values of the SRSprite are invalid
         """
         context = self._get_complete_context(partial_context=context)
         for i, monitor in enumerate(self.local_monitors):
             monitor.validate_dropdown_values(
-                path     = path.add_attribute("local_monitors").add_index_or_key(i), 
-                info_api = info_api, 
+                path     = path.add_attribute("local_monitors").add_index_or_key(i),
+                info_api = info_api,
                 context  = context,
             )
 
-    def to_first(self, 
+    def to_first(self,
         info_api: OpcodeInfoAPI,
         global_vars: list[SRVariable],
         global_lists: list[SRList],
@@ -894,13 +894,13 @@ class SRSprite(SRTarget):
     ) -> tuple[FRSprite, list[FRMonitor], dict[str, bytes]]:
         """
         Converts a SRSprite into a FRSprite
-        
+
         Args:
             info_api: the opcode info api used to fetch information about opcodes
             global_vars: a list of global variables
             global_lists: a list of global lists
             layer_order: the relative layer the sprite is on
-        
+
         Returns:
             the FRSprite and the resulting asset files
         """

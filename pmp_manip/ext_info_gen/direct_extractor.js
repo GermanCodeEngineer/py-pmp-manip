@@ -37,6 +37,7 @@ function makeConfiguredStub({
     valueProps = {},
     funcProps = [],
     allowStaticGet = false,
+    preserveConstructorAndPrototype = false,
 } = {}) {
     // The stub function/object to return for everything else
     if (basis === null) {
@@ -65,8 +66,8 @@ function makeConfiguredStub({
                 return prop
             }
             if (prop === Symbol.toStringTag) return "Function"
-            if (prop === "prototype") return target.prototype
-            if (prop === "constructor") return target.constructor
+            if (prop === "prototype") return preserveConstructorAndPrototype ? target.prototype : defaultStubValue
+            if (prop === "constructor") return preserveConstructorAndPrototype ? target.constructor : defaultStubValue
             return defaultStubValue
         },
     })
@@ -84,7 +85,6 @@ defaultStubValue = makeConfiguredStub({
 
 // Derived from https://github.com/PenguinMod/PenguinMod-Vm/blob/develop/src/engine/runtime.js
 const runtimeStub = makeConfiguredStub({
-    basis: Object.create(null),
     valueProps: {
         // Instance properties
         targets: [],
@@ -244,7 +244,6 @@ const runtimeStub = makeConfiguredStub({
 
         // Set only in methods
         renderer: makeConfiguredStub({
-            basis: Object.create(null),
             valueProps: {
                 _nativeSize: [480, 360], // Idk
             },
@@ -348,7 +347,6 @@ const runtimeStub = makeConfiguredStub({
 })
 
 const ScratchVar = makeConfiguredStub({
-    basis: Object.create(null),
     valueProps: {
         // Must be kept in sync with safe_extractor.py
         // Derived from https://github.com/PenguinMod/PenguinMod-Vm/blob/develop/src/extension-support/tw-extension-api-common.js
@@ -416,7 +414,6 @@ const ScratchVar = makeConfiguredStub({
             "STAGE": "stage"
         },
         extensions: makeConfiguredStub({
-            basis: Object.create(null),
             valueProps: {
                 unsandboxed: true,
                 register: register,
@@ -428,7 +425,6 @@ const ScratchVar = makeConfiguredStub({
             valueProps: {
                 setup: makeConfiguredStub({
                     basis: (newTranslations) => makeConfiguredStub({
-                        basis: Object.create(null),
                         valueProps: {
                             locale: "en",
                         },
@@ -438,7 +434,6 @@ const ScratchVar = makeConfiguredStub({
         }),
 
         vm: makeConfiguredStub({
-            basis: Object.create(null),
             valueProps: {
                 runtime: runtimeStub,
             },
@@ -546,7 +541,6 @@ const vmEnvironment = {
     vm: ScratchVar.vm,
 
     window: makeConfiguredStub({
-        basis: Object.create(null),
         valueProps: {
             vm: ScratchVar.vm,
         },
@@ -554,6 +548,7 @@ const vmEnvironment = {
     document: defaultStubValue,
     localStorage: defaultStubValue,
     MutationObserver: defaultStubValue,
+    ReduxStore: defaultStubValue,
 }
 
 
