@@ -30,7 +30,7 @@ let defaultStubValue
 // X()
 // const {a, b} = X
 // X.a.b ...
-// ... (keep your other imports and code)    
+// ... (keep your other imports and code)
 
 function makeConfiguredStub({
     basis = null,
@@ -123,7 +123,7 @@ const runtimeStub = makeConfiguredStub({
         getNumberOfCloudVariables: () => 0,
         addCloudVariable: () => {},
         removeCloudVariable: () => {},
-        
+
         origin: null,
         _stageTarget: null,
         addonBlocks: {},
@@ -170,8 +170,8 @@ const runtimeStub = makeConfiguredStub({
         THREAD_STEP_INTERVAL: 1000 / 60,
         THREAD_STEP_INTERVAL_COMPATIBILITY: 1000 / 30,
         MAX_CLONES: 300,
-        
-        
+
+
         // Methods which are expected to return sth
         getMonitorState: () => new Map(), // OrderedMap in reality, but does not really matter
         getBlocksXML: () => [],
@@ -181,7 +181,7 @@ const runtimeStub = makeConfiguredStub({
         getOpcodeFunction: () => defaultStubValue,
         getIsHat: () => false,
         getIsEdgeActivatedHat: false,
-        
+
         getAddonBlock: () => null,
         getTargetById: () => null,
         getSpriteTargetByName: () => null,
@@ -192,8 +192,8 @@ const runtimeStub = makeConfiguredStub({
         getEditingTarget: defaultStubValue,
         getAllVarNamesOfType: () => [],
         getLabelForOpcode: () => defaultStubValue,
-        
-        _makeExtensionMenuId: () => "myExt_menu_myMenu", 
+
+        _makeExtensionMenuId: () => "myExt_menu_myMenu",
         _convertMenuItems: () => [],
         _buildMenuForScratchBlocks: () => defaultStubValue,
         _buildCustomFieldInfo: () => defaultStubValue,
@@ -241,7 +241,7 @@ const runtimeStub = makeConfiguredStub({
         prependListener: () => this,
         prependOnceListener: () => this,
         eventNames: () => [],
-        
+
         // Set only in methods
         renderer: makeConfiguredStub({
             basis: Object.create(null),
@@ -476,7 +476,7 @@ const stubValue = [
     ScratchVar.BlockShape,
     ScratchVar.NotchShape,
     ScratchVar.TargetType,
-    
+
     ScratchVar.Cast,
     ScratchVar.Clone,
     ScratchVar.Color,
@@ -505,12 +505,12 @@ function myRequire(moduleName) {
     if (stubModules.includes(fullPath)) {
         return stubValue[stubModules.indexOf(fullPath)]
     }
-    
+
     // Only stub relative imports under ../../ or from external organizations
     if (moduleName.startsWith("../../") || moduleName.startsWith("@")) {
         return defaultStubValue
     }
-    
+
     // We do not care about translations and just want english anyway
     if (moduleName === "format-message") {
         return ScratchVar.translate
@@ -522,7 +522,7 @@ function myRequire(moduleName) {
     }
 
     // fallback to real require in minified node packages
-    const minifiedDir = path.resolve(__dirname, "../../minifed_node_packages/");
+    const minifiedDir = path.resolve(__dirname, "../minified_node_packages/");
     const localPath = path.join(minifiedDir, moduleName);
     try {
         // Let Node.js resolve file extension automatically
@@ -544,7 +544,7 @@ const vmEnvironment = {
     require: myRequire,
     Scratch: ScratchVar,
     vm: ScratchVar.vm,
-    
+
     window: makeConfiguredStub({
         basis: Object.create(null),
         valueProps: {
@@ -573,7 +573,7 @@ function runScript(code, filename) {
             } else {
                 process.exit(2) // Errno. 2 (nothing or invalid value registered)
             }
-        }        
+        }
 
         if (!(typeof scratch_ext.getInfo === "function")) {
             process.exit(2) // Errno. 2 (nothing or invalid value registered)

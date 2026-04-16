@@ -83,14 +83,14 @@ def main() -> None:
             {"package": "jszip"},
             {"package": "pmp-protobuf"},
         ]
-        output_dir = Path("pmp_manip") / "minifed_node_packages"
+        output_dir = Path("pmp_manip") / "minified_node_packages"
         for entry in all:
             bundle_npm_package(entry["package"], output_dir, entry["package"].replace('/', '_'))
-    
+
     elif args.command == "bundle":
         # Default/manual mode
         package = args.package
-        output_dir = args.output_dir if args.output_dir is not None else str(Path("pmp_manip") / "minifed_node_packages")
+        output_dir = args.output_dir if args.output_dir is not None else str(Path("pmp_manip") / "minified_node_packages")
         output_name = args.output_name if args.output_name is not None else f"{package.replace('/', '_')}"
         bundle_npm_package(package, Path(output_dir), output_name)
 
