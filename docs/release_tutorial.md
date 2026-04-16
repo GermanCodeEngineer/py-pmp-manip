@@ -75,7 +75,7 @@
     git add -A
     git commit -m "prepare next release"
     git push
-    ``` 
+    ```
 11. **Create a Git tag with the version number and Push** the tag to your remote:
     ```bash
     git tag v1.2.3
