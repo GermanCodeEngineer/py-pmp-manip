@@ -203,24 +203,28 @@ def generate_block_opcode_info(
         for argument_id, argument_info in arguments.items():
             argument_type: str = argument_info.get("type", None)
             argument_menu: str|None = argument_info.get("menu", None)
+            fill_in_opcode = argument_info.get("fillIn")
+            fill_in_global_opcode = argument_info.get("fillInGlobal")
+            fill_in_input_type = None
+            if fill_in_opcode or fill_in_global_opcode:
+                full_opcode = fill_in_global_opcode if fill_in_global_opcode else f"{extension_id}_{fill_in_opcode}"
+                fill_in_id = f"S_{full_opcode}"
+                if fill_in_id not in input_types:
+                    # opcode makes them necessarily different, so the uniqueness values do not matter
+                    temp_cls = InputType("Temp", {
+                        fill_in_id: (InputMode.FORCED_EMBEDDED_BLOCK, full_opcode, None, -1)
+                    })
+                    input_types[fill_in_id] = temp_cls[fill_in_id]
+                fill_in_input_type = input_types[fill_in_id]
+            
             input_info = None
             dropdown_info = None
             match argument_type:
                 case "string"|"number"|"Boolean"|"color"|"angle"|"matrix"|"note"|"costume"|"sound"|"broadcast":
                     builitin_input_type = ARGUMENT_TYPE_TO_INPUT_TYPE[argument_type]
-                    fill_in_opcode = argument_info.get("fillIn")
-                    fill_in_global_opcode = argument_info.get("fillInGlobal")
-                    if fill_in_opcode or fill_in_global_opcode:
-                        full_opcode = fill_in_global_opcode if fill_in_global_opcode else f"{extension_id}_{fill_in_opcode}"
-                        fill_in_id = f"S_{full_opcode}"
-                        if fill_in_id not in input_types:
-                            # opcode makes them necessarily different, so the uniqueness values do not matter
-                            temp_cls = InputType("Temp", {
-                                fill_in_id: (InputMode.FORCED_EMBEDDED_BLOCK, full_opcode, None, -1)
-                            })
-                            input_types[fill_in_id] = temp_cls[fill_in_id]
+                    if fill_in_input_type is not None:
                         input_info = InputInfo(
-                            type=input_types[fill_in_id],
+                            type=fill_in_input_type,
                             menu=None,
                         )
                     elif argument_menu is None:
@@ -258,7 +262,10 @@ def generate_block_opcode_info(
                 case "seperator":
                     raise MANIP_ThanksError() # I could not find out what thats used for
                 case None: # # like in the "switch" block, no text just an optional block
-                    input_info = InputInfo(type=BuiltinInputType.ROUND, menu=None)
+                    input_info = InputInfo(
+                        type=BuiltinInputType.ROUND if (fill_in_input_type is None) else fill_in_input_type,
+                        menu=None,
+                    )
 
             if (input_info is not None) and (dropdown_info is None):
                 inputs.set(key1=argument_id, key2=argument_id, value=input_info)
