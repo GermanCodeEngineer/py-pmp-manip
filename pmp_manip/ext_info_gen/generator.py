@@ -201,7 +201,7 @@ def generate_block_opcode_info(
         dropdowns: DualKeyDict[str, str, DropdownInfo] = DualKeyDict()
 
         for argument_id, argument_info in arguments.items():
-            argument_type: str = argument_info.get("type", "string")
+            argument_type: str = argument_info.get("type", None)
             argument_menu: str|None = argument_info.get("menu", None)
             input_info = None
             dropdown_info = None
