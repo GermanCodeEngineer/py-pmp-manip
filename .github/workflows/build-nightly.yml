@@ -26,7 +26,7 @@ jobs:
         run: |
           BASE_VERSION=$(grep '^version =' pyproject.toml | sed -E "s/version = ['\"]([0-9]+\.[0-9]+\.[0-9]+).*['\"]/\1/")
           VERSION_DATE=$(date +'%Y%m%d')
-          sed -i "s/^version = .*/version = '"$BASE_VERSION.dev$VERSION_DATE+nightly"'/" pyproject.toml
+          sed -i "s/^version = .*/version = '"$BASE_VERSION.dev$VERSION_DATE"'/" pyproject.toml
 
       - name: Build package
         run: |
