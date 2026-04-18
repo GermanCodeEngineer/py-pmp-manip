@@ -1,9 +1,9 @@
 // Mostly stolen from
 // https://github.com/PenguinMod/penguinmod.github.io/blob/develop/src/lib/project-fetcher-hoc.jsx
 
-const {ArgumentParser} = require("../minifed_node_packages/argparse")
-const JSZip = require("../minifed_node_packages/jszip")
-const {protobufToJson} = require("../minifed_node_packages/pmp-protobuf")
+const {ArgumentParser} = require("../minified_node_packages/argparse")
+const JSZip = require("../minified_node_packages/jszip")
+const {protobufToJson} = require("../minified_node_packages/pmp-protobuf")
 const fs = require("fs")
 const path = require("path")
 
@@ -21,7 +21,7 @@ function fetchProject(apiURL, projectId) {
             // Now get the assets
             const zip = new JSZip()
             zip.file("project.json", JSON.stringify(projectJson))
-            
+
             if (typeof project.assets !== "object") {
                 throw new TypeError("Invalid type given inside the assets list.")
             }
@@ -52,17 +52,17 @@ if (require.main === module) {
     const parser = new ArgumentParser({
         description: "Fetch PenguinMod projects"
     })
-    
+
     parser.add_argument("api_url", {
         help: `The API URL`,
     })
-    
+
     const subparsers = parser.add_subparsers({
         title: "commands",
         dest: "command",
         required: true
     })
-        
+
     // Project command
     const projectParser = subparsers.add_parser("project", {
         help: "Fetch a project by ID and save as (.pmp) file"
@@ -73,7 +73,7 @@ if (require.main === module) {
     projectParser.add_argument("output_file", {
         help: "Output file path",
     })
-    
+
     // Projects command (parallel fetching)
     const projectsParser = subparsers.add_parser("projects", {
         help: "Fetch multiple projects in parallel"
@@ -92,9 +92,9 @@ if (require.main === module) {
         dest: "prefix",
         default: "project_"
     })
-    
+
     const args = parser.parse_args()
-    
+
     if (args.command === "project") {
         fetchProject(args.api_url, args.project_id)
             .then((buffer) => {
@@ -123,12 +123,12 @@ if (require.main === module) {
                     success: false
                 }))
         })
-        
+
         Promise.all(fetchPromises)
             .then(results => {
                 let successCount = 0
                 let failCount = 0
-                
+
                 results.forEach(result => {
                     if (result.success) {
                         const filename = path.join(
@@ -143,7 +143,7 @@ if (require.main === module) {
                         failCount++
                     }
                 })
-                
+
                 console.log(`\nCompleted: ${successCount} succeeded, ${failCount} failed`)
                 if (failCount > 0) {
                     process.exitCode = 1

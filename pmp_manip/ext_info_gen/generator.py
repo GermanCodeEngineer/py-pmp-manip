@@ -12,7 +12,7 @@ from pmp_manip.utility         import (
     grepr, DualKeyDict, GEnum,
     MANIP_ThanksError,
     MANIP_InvalidCustomMenuError, MANIP_InvalidCustomBlockError,
-    MANIP_UnknownExtensionAttributeError, 
+    MANIP_UnknownExtensionAttributeError,
 )
 
 
@@ -43,19 +43,19 @@ KNOWN_EXTENSION_INFO_ATTRS = {
 }
 
 def find_input_and_dropdown_types(
-        menus: dict[str, dict[str, Any]|list], blocks: list[dict[str, Any] | str], 
+        menus: dict[str, dict[str, Any]|list], blocks: list[dict[str, Any] | str],
         extension_id: str
     ) -> tuple[dict[str, InputType], dict[str, DropdownType]]:
     """
     Returns two dictionaries, which contain the derived input and dropdown types based on arguments and shadows
-    
+
     Args:
         menus: the dict mapping menu id to menu information
         blocks: the block information
         extension_id: the id of the extension
-    
+
     Raises:
-        MANIP_InvalidCustomMenuError: if the information about a menu is invalid 
+        MANIP_InvalidCustomMenuError: if the information about a menu is invalid
     """
     input_types: dict[str, InputType] = {}
     dropdown_types: dict[str, DropdownType] = {}
@@ -76,14 +76,14 @@ def find_input_and_dropdown_types(
             possible_values = menu_info
             accept_reporters = False
 
-        
+
         if not isinstance(possible_values, (dict, list, str)):
             raise MANIP_InvalidCustomMenuError(f"Invalid custom menu {menu_block_id!r}: 'items' must be an array or string(method reference)")
         if   isinstance(possible_values, list): pass
         elif isinstance(possible_values, str): # str refers to a function and is therefore unpredictable
             possible_values = []
             rules.append(DropdownValueRule.EXTENSION_UNPREDICTABLE)
-        
+
         new_possible_values = []
         old_possible_values = []
         for i, possible_value in enumerate(possible_values):
@@ -106,7 +106,7 @@ def find_input_and_dropdown_types(
                 old_possible_values.append(possible_value[1])
         if is_typeable:
             old_possible_values = new_possible_values # "value" is not supported, see:
-            # https://github.com/PenguinMod/PenguinMod-Docs/blob/654adb5afe4087b67549d7838d25862ec1a20785/docs/development/extensions/api/categories/category-info.md?plain=1#L27            
+            # https://github.com/PenguinMod/PenguinMod-Docs/blob/654adb5afe4087b67549d7838d25862ec1a20785/docs/development/extensions/api/categories/category-info.md?plain=1#L27
 
         dropdown_type_info = DropdownTypeInfo(
             direct_values     = new_possible_values,
@@ -124,7 +124,7 @@ def find_input_and_dropdown_types(
                 menu_index, # uniqueness index
             )
             input_types[f"M_{menu_block_id}"] = input_type_info
-    
+
     for block_info in blocks: # TODO: add tests
         # Other types handled later
         if isinstance(block_info, dict):
@@ -137,10 +137,10 @@ def find_input_and_dropdown_types(
                     if fill_in_id not in input_types:
                         # opcode makes them necessarily different, so the uniqueness values do not matter
                         input_types[fill_in_id] = (InputMode.FORCED_EMBEDDED_BLOCK, full_opcode, None, -1)
-    
+
     # Create the dropdown enum first
     ExtensionDropdownType = DropdownType("ExtensionDropdownType", dropdown_types)
-    
+
     # Now replace dropdown type names with actual DropdownType enum members in input_types dict
     for key, input_type_info in list(input_types.items()):
         if input_type_info[2] is not None and isinstance(input_type_info[2], str):
@@ -150,14 +150,14 @@ def find_input_and_dropdown_types(
                 ExtensionDropdownType[input_type_info[2]],
                 input_type_info[3],
             )
-    
+
     # Now create the input enum
     ExtensionInputType = InputType("ExtensionInputType", input_types)
-    
+
     return (copy(ExtensionInputType._member_map_), copy(ExtensionDropdownType._member_map_))
 
 def generate_block_opcode_info(
-        block_info: dict[str, Any], 
+        block_info: dict[str, Any],
         menus: dict[str, dict[str, Any] | list],
         input_types: dict[str, InputType],
         dropdown_types: dict[str, DropdownType],
@@ -172,34 +172,34 @@ def generate_block_opcode_info(
         input_types: the custom input types
         dropdown_types: the custom dropdown types
         extension_id: the id of the extension
-    
+
     Raises:
         MANIP_InvalidCustomBlockError: if the block information is invalid
         NotImplementedError: if an XML block is given to this function
         MANIP_ThanksError: if an argument uses the mysterious Scratch.ArgumentType.SEPERATOR
     """
     def process_arguments(
-            arguments: dict[str, dict[str, Any]], 
+            arguments: dict[str, dict[str, Any]],
             menus: dict[str, dict|list],
             input_types: dict[str, InputType],
             dropdown_types: dict[str, DropdownType],
    ) -> tuple[DualKeyDict[str, str, InputInfo], DualKeyDict[str, str, DropdownInfo]]:
         """
         Process the argument information into input and field information. Completes input_types
-        
+
         Args:
             arguments: the argument information
             menus: the dict mapping menu id to menu information
             input_types: the custom input types
             dropdown_types: the custom dropdown types
-        
+
         Raises:
             ValueError: if a non-existant menu is referenced or a menu link is combined with a not matching argument type
             MANIP_ThanksError: if the mysterious Scratch.ArgumentType.SEPERATOR is used
         """
         inputs: DualKeyDict[str, str, InputInfo] = DualKeyDict()
         dropdowns: DualKeyDict[str, str, DropdownInfo] = DualKeyDict()
-    
+
         for argument_id, argument_info in arguments.items():
             argument_type: str = argument_info.get("type", "string")
             argument_menu: str|None = argument_info.get("menu", None)
@@ -259,12 +259,12 @@ def generate_block_opcode_info(
                     raise MANIP_ThanksError() # I could not find out what thats used for
                 case None: # # like in the "switch" block, no text just an optional block
                     input_info = InputInfo(type=BuiltinInputType.ROUND, menu=None)
-            
+
             if (input_info is not None) and (dropdown_info is None):
                 inputs.set(key1=argument_id, key2=argument_id, value=input_info)
             elif (input_info is None) and (dropdown_info is not None):
                 dropdowns.set(key1=argument_id, key2=argument_id, value=dropdown_info)
-        
+
         for i in range(branch_count):
             input_id = "SUBSTACK" if i == 0 else f"SUBSTACK{i+1}"
             input_info = InputInfo(
@@ -273,9 +273,9 @@ def generate_block_opcode_info(
             )
             inputs.set(key1=input_id, key2=input_id, value=input_info)
         return (inputs, dropdowns)
-    
+
     def generate_new_opcode(
-        text: str | list[str], 
+        text: str | list[str],
         arguments: dict[str, dict[Any]],
         inputs: DualKeyDict[str, str, InputInfo],
         dropdowns: DualKeyDict[str, str, DropdownInfo],
@@ -283,20 +283,20 @@ def generate_block_opcode_info(
     ) -> str:
         """
         Generate the new opcode of a block based on the text field. Might modify inputs
-        
+
         Args:
             text: the text attribute of the block info
             arguments: the argument information
             branch_count: the count of substacks the block has
-        
+
         Raises:
-            ValueError: if 'branchCount' and 'text' do not match    
+            ValueError: if 'branchCount' and 'text' do not match
         """
-        
+
         def get_input_argument_brackets(input_type: InputType) -> tuple[str, str]:
             """
             Get the bracket formatting of an input required for new opcodes
-            
+
             Args:
                 input_type: the type of input
             """
@@ -321,7 +321,7 @@ def generate_block_opcode_info(
                     return "{", "}" # pragma: no cover
                 case InputMode.FORCED_EMBEDDED_BLOCK: # pragma: no cover
                     return "{:", ":}" # pragma: no cover
-        
+
         text_lines: list[str] = text if isinstance(text, list) else [text]
         unified_text = "\n".join(text_lines)
         if ("{{" in unified_text) or ("}}" in unified_text):
@@ -345,7 +345,7 @@ def generate_block_opcode_info(
                             menu=None,
                         )
                         inputs.set(key1=argument_name, key2=argument_name, value=input_info)
-                    
+
                     if   inputs.has_key1(argument_name):
                         input_type = inputs.get_by_key1(argument_name).type
                         opening, closing = get_input_argument_brackets(input_type)
@@ -357,7 +357,7 @@ def generate_block_opcode_info(
                 else:
                     new_opcode_segments.append(line_segment)
             new_opcode_segments.append("{SUBSTACK}" if i == 0 else f"{{SUBSTACK{i+1}}}")
-            
+
         if   branch_count == len(text_lines):
             pass
         elif (branch_count + 1) == len(text_lines):
@@ -365,8 +365,8 @@ def generate_block_opcode_info(
         else:
             raise ValueError("'branchCount' must be equal to or at most 1 bigger then the line count of 'text'")
         prefix = overwrite_category if (overwrite_category is not None) else extension_id
-        return f"&{prefix}::{" ".join(new_opcode_segments)}" 
-    
+        return f"&{prefix}::{" ".join(new_opcode_segments)}"
+
     try:
         block_type: str = block_info.get("blockType", "command")
         branch_count: int = block_info.get("branchCount", None)
@@ -379,14 +379,14 @@ def generate_block_opcode_info(
         else:
             branch_count = 0
         is_final_opcode: bool = block_info.get("ppm_final_opcode", False) # Custom property
-        
+
         is_terminal: bool = bool(block_info.get("isTerminal", False) or block_info.get("terminal", False))
         arguments: dict[str, dict[str, Any]] = block_info.get("arguments", {})
         opcode_type: OpcodeType
         if is_terminal and (block_type != "command"):
             raise ValueError("'isTerminal'/'terminal' can only be True when 'blockType' is Scratch.BlockType.COMMAND(='command')")
 
-        
+
         match block_type:
             case "command":
                 opcode_type = OpcodeType.ENDING_STATEMENT if is_terminal else OpcodeType.STATEMENT
@@ -402,20 +402,22 @@ def generate_block_opcode_info(
             case "label" | "button":
                 return (None, None) # not really block, but a label or button, can just be skipped
             case "xml":
-                raise NotImplementedError("XML blocks are NOT supported. It is pretty much impossible to translate one into a database entry.") # TODO: reconsider
+                # TODO: raise warning instead? # commented for extension 'SPmbpCST'
+                # raise NotImplementedError("XML blocks are NOT supported. It is pretty much impossible to translate one into a database entry.") # TODO: reconsider
+                return (None, None)
             case _:
                 raise ValueError("Unknown value for 'blockType'")
-        
+
         if "opcode" not in block_info:
-            raise MANIP_InvalidCustomBlockError(f"Invalid block info missing attribute 'opcode' (block 'Unknown'): {block_info}")  
+            raise MANIP_InvalidCustomBlockError(f"Invalid block info missing attribute 'opcode' (block 'Unknown'): {block_info}")
         opcode: str = block_info["opcode"] # might not be included so must come after eg. "label" blocks have returned alredy
         if is_final_opcode:
             overwrite_category = opcode.split("_", maxsplit=1)[0]
         else:
             overwrite_category = None
-        
+
         inputs, dropdowns = process_arguments(arguments, menus, input_types, dropdown_types)
-        
+
         disable_monitor = block_info.get("disableMonitor", None)
         checkbox_in_flyout = block_info.get("checkboxInFlyout", None)
         if isinstance(disable_monitor, bool):
@@ -424,7 +426,7 @@ def generate_block_opcode_info(
             disable_monitor = not checkbox_in_flyout
         else:
             disable_monitor = False
-        
+
         can_have_monitor = opcode_type.is_reporter and (not inputs) and (not disable_monitor)
         if can_have_monitor:
             if dropdowns:
@@ -433,7 +435,7 @@ def generate_block_opcode_info(
                 monitor_id_hehaviour = MonitorIdBehaviour.OPCFULL
         else:
             monitor_id_hehaviour = None
-            
+
         new_opcode = generate_new_opcode(
             text=block_info.get("text", opcode),
             arguments=arguments,
@@ -451,11 +453,11 @@ def generate_block_opcode_info(
             has_variable_id=(can_have_monitor and bool(dropdowns)), # if there are any dropdowns
             allow_embedded=allow_embedded,
         )
-        
+
     except ValueError as error:
         block_opcode = repr(block_info.get('opcode', 'Unknown'))
         raise MANIP_InvalidCustomBlockError(f"Invalid block info (block {block_opcode}): {error}: {block_info}") from error
-    
+
     return (opcode_info, new_opcode)
 
 def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeInfoGroup, dict[str, InputType], dict[str, DropdownType]]:
@@ -464,7 +466,7 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
 
     Args:
         extension_info: the raw extension information
-    
+
     Raises:
         MANIP_UnknownExtensionAttributeError: if the extension has an unknown attribute
         MANIP_InvalidCustomMenuError: if the information about a menu is invalid
@@ -487,7 +489,7 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
         if attr not in KNOWN_EXTENSION_INFO_ATTRS:
             raise MANIP_UnknownExtensionAttributeError(f"Unknown or not (yet) implemented extension attribute: {repr(attr)}")
 
-    
+
     extension_id = extension_info["id"]
     blocks: list[dict[str, Any] | str] = extension_info.get("blocks", [])
     menus: dict[str, dict[str, Any]|list] = extension_info.get("menus", {})
@@ -500,15 +502,15 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
             continue # ignore eg. "---"
         elif isinstance(block_info, dict):
             opcode_info, new_opcode = generate_block_opcode_info(
-                block_info, 
-                menus=menus, 
+                block_info,
+                menus=menus,
                 input_types=input_types,
                 dropdown_types=dropdown_types,
                 extension_id=extension_id,
             )
         else:
             raise MANIP_InvalidCustomBlockError(f"Invalid block info: Expected type str or dict (block {i}): {block_info}")
-        
+
         if opcode_info is not None:
             old_opcode: str = block_info["opcode"] # "opcode" is guaranteed to exis
             is_final_opcode: bool = block_info.get("ppm_final_opcode", False) # Custom property
@@ -547,7 +549,7 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
         name=extension_id,
         opcode_info=info_group_content,
     )
-    
+
     for menu_opcode in menus.keys():
         old_menu_opcode = f"{extension_id}_menu_{menu_opcode}"
         new_menu_opcode = f"&{extension_id}::#menu:{menu_opcode}"
@@ -556,8 +558,8 @@ def generate_opcode_info_group(extension_info: dict[str, Any]) -> tuple[OpcodeIn
     return (info_group, input_types, dropdown_types)
 
 def generate_file_code(
-        info_group: OpcodeInfoGroup, 
-        input_types: dict[str, InputType], 
+        info_group: OpcodeInfoGroup,
+        input_types: dict[str, InputType],
         dropdown_types: dict[str, DropdownType],
     ) -> str:
     """
@@ -571,7 +573,7 @@ def generate_file_code(
     def generate_enum_code(cls_name: str, super_cls_name: str, enum_pairs: dict[str, GEnum]) -> str:
         """
         Generate the python code which can recreate the given Enum class from pairs and name
-        
+
         Args:
             cls_name: the name of the Enum class
             super_cls_name: the name of the superclass of the Enum class
@@ -584,7 +586,7 @@ def generate_file_code(
             enum_item: GEnum
             cls_code += f"\n{INDENT}{name} = {grepr(enum_item.value, level_offset=1, vanilla_strings=True)}"
         return cls_code
-    
+
     file_code = "\n\n".join((
         f"from {DATA_IMPORTS_IMPORT_PATH} import *",
         generate_enum_code("ExtensionDropdownType", "DropdownType", dropdown_types),
