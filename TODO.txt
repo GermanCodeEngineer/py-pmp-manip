@@ -13,6 +13,7 @@ Special:
 
 High:
     - fix and add tests for project fetching
+    - add support for `customVariables` and `extensionData`(e.g. extension steve0greatnesstimers)
 
 Medium:
     - XL: add tests for and document opcode_info
