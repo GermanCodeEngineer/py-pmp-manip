@@ -1,6 +1,7 @@
 const fs = require("fs")
 const path = require("path")
 const vm = require("vm")
+const formatMessage = require('../minified_node_packages/format-message');
 
 // ---------- Step 1: Blacklist register ----------
 
