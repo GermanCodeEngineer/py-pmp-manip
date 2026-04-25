@@ -8,6 +8,11 @@ files_to_check = [
         "Update the Scratch Object stub in pmp_manip/ext_info_gen/direct_extractor.js and safe_extractor.py",
     ),
     (
+        "2026-04-25",
+        "https://github.com/PenguinMod/PenguinMod-Vm/blob/develop/src/extension-support/tw-l10n.js",
+        "Update Scratch.translate stub in pmp_manip/ext_info_gen/direct_extractor.js",
+    ),
+    (
         "2025-09-04",
         "https://github.com/PenguinMod/penguinmod.github.io/blob/develop/src/containers/tw-security-manager.jsx",
         "Update handler for trusted sources in pmp_manip/ext_info_gen/manager.py",

@@ -76,12 +76,12 @@ def main() -> None:
     args = parser.parse_args()
 
     if (args.command == "build-all") or (args.command is None):
-        # Example: add your predefined packages here
         all = [
             {"package": "scratch-translate-extension-languages"},
             {"package": "argparse"},
             {"package": "jszip"},
             {"package": "pmp-protobuf"},
+            {"package": "format-message"},
         ]
         output_dir = Path("pmp_manip") / "minified_node_packages"
         for entry in all:

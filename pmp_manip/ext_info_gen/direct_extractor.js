@@ -346,6 +346,51 @@ const runtimeStub = makeConfiguredStub({
     allowStaticGet: true, // allow e.g. PROJECT_START
 })
 
+// Derived from https://github.com/PenguinMod/PenguinMod-Vm/blob/develop/src/extension-support/tw-l10n.js
+const createTranslate = () => {
+    const namespace = formatMessage.namespace();
+
+    const translate = (message, args) => {
+        if (message && typeof message === 'object') {
+            // already in the expected format
+        } else if (typeof message === 'string') {
+            message = {
+                default: message
+            };
+        } else {
+            throw new Error('unsupported data type in translate()');
+        }
+        return namespace(message, args);
+    };
+
+    const generateId = defaultMessage => `_${defaultMessage}`;
+
+    const getLocale = () => 'en';
+
+    let storedTranslations = {};
+    translate.setup = newTranslations => {
+        if (newTranslations) {
+            storedTranslations = newTranslations;
+        }
+        namespace.setup({
+            locale: getLocale(),
+            missingTranslation: 'ignore',
+            generateId,
+            translations: storedTranslations
+        });
+    };
+
+    Object.defineProperty(translate, 'language', {
+        configurable: true,
+        enumerable: true,
+        get: () => getLocale()
+    });
+
+    translate.setup({});
+
+    return translate;
+};
+
 const ScratchVar = makeConfiguredStub({
     valueProps: {
         // Must be kept in sync with safe_extractor.py
@@ -420,18 +465,7 @@ const ScratchVar = makeConfiguredStub({
                 isPenguinMod: true
             },
         }),
-        translate: makeConfiguredStub({
-            basis: (m) => (typeof m === "string" ? m : m.default || ""),
-            valueProps: {
-                setup: makeConfiguredStub({
-                    basis: (newTranslations) => makeConfiguredStub({
-                        valueProps: {
-                            locale: "en",
-                        },
-                    }),
-                }),
-            },
-        }),
+        translate: createTranslate(),
 
         vm: makeConfiguredStub({
             valueProps: {
