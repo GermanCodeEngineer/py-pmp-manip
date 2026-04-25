@@ -13,6 +13,7 @@ Special:
 
 High:
     - fix and add tests for project fetching
+    - add support for `customVariables` and `extensionData`(e.g. extension steve0greatnesstimers)
 
 Medium:
     - XL: add tests for and document opcode_info
@@ -45,6 +46,7 @@ Low:
     - S: explore "customFonts" (example of "2D MAINCRAFT")
     - S: extensionid must follow pattern: /^[a-z0-9]+$/i.test(extensionInfo.id)
     - S: investigate id generation at https://github.com/TurboWarp/scratch-storage/blob/develop/src/FetchWorkerTool.js#90
+    - S: make Scratch.translate actually work, but just always translate to english, if it is possible to set english translations
 
 Formatting:
     - XL: add all errors to docstrings

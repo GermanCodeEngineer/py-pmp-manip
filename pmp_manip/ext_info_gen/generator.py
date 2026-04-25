@@ -72,6 +72,10 @@ def find_input_and_dropdown_types(
             possible_values = menu_info.get("items", [])
             is_typeable = menu_info.get("isTypeable", False)
             accept_reporters = menu_info.get("acceptReporters", is_typeable)
+            variable_type = menu_info.get("variableType", None)
+            if isinstance(variable_type, str):
+                rules.append(DropdownValueRule.EXTENSION_UNPREDICTABLE)
+
         elif isinstance(menu_info, (list, str)):
             possible_values = menu_info
             accept_reporters = False
@@ -216,7 +220,7 @@ def generate_block_opcode_info(
                     })
                     input_types[fill_in_id] = temp_cls[fill_in_id]
                 fill_in_input_type = input_types[fill_in_id]
-            
+
             input_info = None
             dropdown_info = None
             match argument_type:

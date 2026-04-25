@@ -2,6 +2,10 @@
 
 > A modular python tool for creating, editing and inspecting Penguinmod(.pmp) and Scratch(.sb3) project files.
 
+- [PyPI](https://pypi.org/project/py-pmp-manip/)
+- [Test PyPI](https://test.pypi.org/project/py-pmp-manip/)
+ 
+
 ---
 
 ## 🚀 Features

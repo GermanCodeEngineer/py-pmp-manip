@@ -25,8 +25,8 @@ jobs:
       - name: Set nightly version
         run: |
           BASE_VERSION=$(grep '^version =' pyproject.toml | sed -E "s/version = ['\"]([0-9]+\.[0-9]+\.[0-9]+).*['\"]/\1/")
-          VERSION_DATE=$(date +'%Y%m%d')
-          sed -i "s/^version = .*/version = '"$BASE_VERSION.dev$VERSION_DATE"'/" pyproject.toml
+          VERSION_DATETIME=$(date +'%Y%m%d%H%M')
+          sed -i "s/^version = .*/version = '"$BASE_VERSION.dev$VERSION_DATETIME"'/" pyproject.toml
 
       - name: Build package
         run: |
