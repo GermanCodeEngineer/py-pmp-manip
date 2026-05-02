@@ -47,6 +47,7 @@ Low:
     - S: extensionid must follow pattern: /^[a-z0-9]+$/i.test(extensionInfo.id)
     - S: investigate id generation at https://github.com/TurboWarp/scratch-storage/blob/develop/src/FetchWorkerTool.js#90
     - S: make Scratch.translate actually work, but just always translate to english, if it is possible to set english translations
+    - S: investigate why order of blocks in gen_ext_opcode_info is presumably sometimes random (see https://github.com/GermanCodeEngineer/PM-Extensions/blob/main/python/tools/create_helpers.py)
 
 Formatting:
     - XL: add all errors to docstrings
