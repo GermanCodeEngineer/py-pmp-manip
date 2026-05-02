@@ -14,6 +14,8 @@ Special:
 High:
     - fix and add tests for project fetching
     - add support for `customVariables` and `extensionData`(e.g. extension steve0greatnesstimers)
+    - create new forks to replace builtin_extension_source (only minimal changes: "if non-runtime" checks instead of removing code)
+        => possibly aggressively prioritize the edited fork versions over the original PM versions for more safety 
 
 Medium:
     - XL: add tests for and document opcode_info
