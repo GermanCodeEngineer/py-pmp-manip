@@ -11,7 +11,7 @@ authors = [{name = "GermanCodeEngineer", email = "germancodeengineer@proton.me"}
 dependencies = [
     "gceutils~=1.0",
     "Pillow>=12.2.0",
-    "Requests~=2.33",
+    "Requests~=2.34",
     "colorama~=0.4",
     "lxml~=6.1",
     "pydub_ng~=0.2",
