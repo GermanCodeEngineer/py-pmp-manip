@@ -305,7 +305,7 @@ class FRProject(HasGreprValidate):
 
 
 @grepr_dataclass(eq=True) # eq must be True for order to work, is overwritten
-class SRProject:
+class SRProject(HasGreprValidate):
     """
     The second representation (SR) of a Scratch/PenguinMod Project
     """
