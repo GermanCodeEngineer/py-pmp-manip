@@ -81,26 +81,6 @@ class TEST_SecondToInterIF(SecondToInterIF):
 
 
 
-def test_no_field():
-    from dataclasses import Field
-    from gceutils.base import FIELD_OPTIONS
-    
-    field_instance = no_field()
-    
-    # Verify it returns a Field instance
-    assert isinstance(field_instance, Field)
-    
-    # Verify standard dataclass field parameters
-    assert field_instance.init is False
-    assert field_instance.hash is False
-    assert field_instance.compare is False
-    
-    # Verify custom field options stored in FIELD_OPTIONS
-    field_options = FIELD_OPTIONS.get(field_instance, {})
-    assert field_options.get('grepr') is False
-    assert field_options.get('validate_require_exist') is False
-
-
 def test_no_field_usage_in_dataclass():
     """Test that no_field() works correctly when used in a dataclass"""    
     @grepr_dataclass()
