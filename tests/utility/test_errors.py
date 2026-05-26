@@ -1,7 +1,7 @@
 from __future__ import annotations
 import pytest
 
-from gceutils.base import AbstractTreePath
+from gceutils import AbstractTreePath
 from pmp_manip.utility.errors import (
     MANIP_Error,
     MANIP_BlameDevsError,
