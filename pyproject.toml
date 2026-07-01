@@ -15,7 +15,7 @@ dependencies = [
     "colorama~=0.4",
     "lxml~=6.1",
     "pydub_ng~=0.2",
-    "tree_sitter~=0.25",
+    "tree_sitter~=0.26",
     "tree_sitter_javascript~=0.25",
     "validators~=0.35",
 ]
