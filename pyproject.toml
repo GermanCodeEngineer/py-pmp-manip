@@ -39,7 +39,7 @@ dev = [
     "graphviz~=0.21",
     "pytest~=9.1",
     "tomlkit~=0.15",
-    "coverage~=7.15",
+    "coverage~=7.16",
     "pipreqs~=0.5",
 ]
 
