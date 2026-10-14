@@ -17,7 +17,7 @@ dependencies = [
     "pydub_ng~=0.2",
     "tree_sitter~=0.26",
     "tree_sitter_javascript~=0.25",
-    "validators~=0.35",
+    "validators~=0.36",
 ]
 
 classifiers = [
