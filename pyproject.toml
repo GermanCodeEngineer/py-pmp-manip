@@ -37,7 +37,7 @@ Issues = "https://github.com/GermanCodeEngineer/py-pmp-manip/issues/"
 [project.optional-dependencies]
 dev = [
     "graphviz~=0.21",
-    "pytest~=9.1",
+    "pytest~=9.2",
     "tomlkit~=0.15",
     "coverage~=7.17",
     "pipreqs~=0.5",
