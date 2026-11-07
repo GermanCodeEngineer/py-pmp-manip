@@ -927,6 +927,8 @@ class SRBlock(HasGreprValidate):
                 sub_blocks = [] if input_value.block is None else [input_value.block]
             elif isinstance(input_value, SRScriptInputValue):
                 sub_blocks = input_value.blocks
+            else:
+                sub_blocks = [] # TODO: possibly raise error
             
             for sub_block in sub_blocks:
                 broadcast_messages.extend(sub_block.find_broadcast_messages())
